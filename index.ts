@@ -1,3 +1,5 @@
+import { getConfig } from "@config";
+
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
 	dir: process.cwd() + "/server/api",
@@ -5,8 +7,10 @@ const router = new Bun.FileSystemRouter({
 
 console.log("[+] Starting FediProject...");
 
+const config = getConfig();
+
 Bun.serve({
-	port: 8653,
+	port: config.http.port,
 	hostname: "0.0.0.0", // defaults to "0.0.0.0"
 	async fetch(req) {
 		const matchedRoute = router.match(req);
