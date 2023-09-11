@@ -7,7 +7,7 @@ const config = getConfig();
 @Entity({
 	name: "users",
 })
-export class User extends BaseEntity {
+export class DBUser extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
@@ -35,7 +35,7 @@ export class User extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at!: Date;
 
-	toAccount(): Account {
+	toAPI(): Account {
 		return {
 			acct: `@${this.username}@${getHost()}`,
 			avatar: "",
