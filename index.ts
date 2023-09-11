@@ -3,21 +3,24 @@ const router = new Bun.FileSystemRouter({
 	dir: process.cwd() + "/server/api",
 })
 
+console.log("[+] Starting FediProject...");
+
 Bun.serve({
-	port: 8080,
+	port: 8653,
 	hostname: "0.0.0.0", // defaults to "0.0.0.0"
 	async fetch(req) {
-		const url = new URL(req.url);
-
 		const matchedRoute = router.match(req);
 
 		if (matchedRoute) {
-			return (await import(matchedRoute.filePath)).default(req, matchedRoute);
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+			return (await import(matchedRoute.filePath)).default(req, matchedRoute) as Response | Promise<Response>;
 		} else {
-			const response = new Response(undefined, {
+			return new Response(undefined, {
 				status: 404,
 				statusText: "Route not found",
 			});
 		}
 	},
 });
+
+console.log("[+] FediProject started!")

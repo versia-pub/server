@@ -1,3 +1,3 @@
-export type URLs = {
+export interface URLs {
 	streaming_api: string;
-};
+}

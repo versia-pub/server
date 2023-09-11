@@ -1,6 +1,6 @@
 import { Meta } from "./attachment";
 
-export type AsyncAttachment = {
+export interface AsyncAttachment {
 	id: string;
 	type: "unknown" | "image" | "gifv" | "video" | "audio";
 	url: string | null;
@@ -10,4 +10,4 @@ export type AsyncAttachment = {
 	meta: Meta | null;
 	description: string | null;
 	blurhash: string | null;
-};
+}

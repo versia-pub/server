@@ -1,4 +1,4 @@
-export type Marker = {
+export interface Marker {
 	home: {
 		last_read_id: string;
 		version: number;
@@ -9,4 +9,4 @@ export type Marker = {
 		version: number;
 		updated_at: string;
 	};
-};
+}

@@ -2,7 +2,7 @@ import { Account } from "./account";
 import { Stats } from "./stats";
 import { URLs } from "./urls";
 
-export type Instance = {
+export interface Instance {
 	uri: string;
 	title: string;
 	description: string;
@@ -11,7 +11,7 @@ export type Instance = {
 	thumbnail: string | null;
 	urls: URLs;
 	stats: Stats;
-	languages: Array<string>;
+	languages: string[];
 	registrations: boolean;
 	approval_required: boolean;
 	invites_enabled: boolean;
@@ -23,7 +23,7 @@ export type Instance = {
 			characters_reserved_per_url: number;
 		};
 		media_attachments: {
-			supported_mime_types: Array<string>;
+			supported_mime_types: string[];
 			image_size_limit: number;
 			image_matrix_limit: number;
 			video_size_limit: number;
@@ -38,10 +38,10 @@ export type Instance = {
 		};
 	};
 	contact_account: Account;
-	rules: Array<InstanceRule>;
-};
+	rules: InstanceRule[];
+}
 
-export type InstanceRule = {
+export interface InstanceRule {
 	id: string;
 	text: string;
-};
+}

@@ -1,7 +1,7 @@
-export type List = {
+export interface List {
 	id: string;
 	title: string;
 	replies_policy: RepliesPolicy;
-};
+}
 
 export type RepliesPolicy = "followed" | "list" | "none";

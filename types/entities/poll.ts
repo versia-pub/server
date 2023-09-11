@@ -1,11 +1,11 @@
 import { PollOption } from "./poll_option";
 
-export type Poll = {
+export interface Poll {
 	id: string;
 	expires_at: string | null;
 	expired: boolean;
 	multiple: boolean;
 	votes_count: number;
-	options: Array<PollOption>;
+	options: PollOption[];
 	voted: boolean;
-};
+}

@@ -1,8 +1,8 @@
 import { History } from "./history";
 
-export type Tag = {
+export interface Tag {
 	name: string;
 	url: string;
-	history: Array<History>;
+	history: History[];
 	following?: boolean;
-};
+}

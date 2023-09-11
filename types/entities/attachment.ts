@@ -1,4 +1,4 @@
-export type Sub = {
+export interface Sub {
 	// For Image, Gifv, and Video
 	width?: number;
 	height?: number;
@@ -11,14 +11,14 @@ export type Sub = {
 	// For Audio, Gifv, and Video
 	duration?: number;
 	bitrate?: number;
-};
+}
 
-export type Focus = {
+export interface Focus {
 	x: number;
 	y: number;
-};
+}
 
-export type Meta = {
+export interface Meta {
 	original?: Sub;
 	small?: Sub;
 	focus?: Focus;
@@ -32,9 +32,9 @@ export type Meta = {
 	audio_encode?: string;
 	audio_bitrate?: string;
 	audio_channel?: string;
-};
+}
 
-export type Attachment = {
+export interface Attachment {
 	id: string;
 	type: "unknown" | "image" | "gifv" | "video" | "audio";
 	url: string;
@@ -44,4 +44,4 @@ export type Attachment = {
 	meta: Meta | null;
 	description: string | null;
 	blurhash: string | null;
-};
+}

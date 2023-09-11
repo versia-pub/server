@@ -6,7 +6,7 @@ import { Emoji } from "./emoji";
 import { Mention } from "./mention";
 import { Poll } from "./poll";
 
-export type Status = {
+export interface Status {
 	id: string;
 	uri: string;
 	url: string;
@@ -26,9 +26,9 @@ export type Status = {
 	sensitive: boolean;
 	spoiler_text: string;
 	visibility: "public" | "unlisted" | "private" | "direct";
-	media_attachments: Array<Attachment>;
-	mentions: Array<Mention>;
-	tags: Array<StatusTag>;
+	media_attachments: Attachment[];
+	mentions: Mention[];
+	tags: StatusTag[];
 	card: Card | null;
 	poll: Poll | null;
 	application: Application | null;
@@ -38,9 +38,9 @@ export type Status = {
 	// These parameters are unique parameters in fedibird.com for quote.
 	quote_id?: string;
 	quote?: Status | null;
-};
+}
 
-export type StatusTag = {
+export interface StatusTag {
 	name: string;
 	url: string;
-};
+}

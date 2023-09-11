@@ -1,9 +1,9 @@
 import { Account } from "./account";
 import { Status } from "./status";
 
-export type Conversation = {
+export interface Conversation {
 	id: string;
-	accounts: Array<Account>;
+	accounts: Account[];
 	last_status: Status | null;
 	unread: boolean;
-};
+}

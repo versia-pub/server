@@ -1,4 +1,4 @@
-export type Relationship = {
+export interface Relationship {
 	id: string;
 	following: boolean;
 	followed_by: boolean;
@@ -12,5 +12,5 @@ export type Relationship = {
 	endorsed: boolean;
 	notifying: boolean;
 	note: string;
-	languages: Array<string>;
-};
+	languages: string[];
+}

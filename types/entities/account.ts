@@ -3,7 +3,7 @@ import { Field } from "./field";
 import { Role } from "./role";
 import { Source } from "./source";
 
-export type Account = {
+export interface Account {
 	id: string;
 	username: string;
 	acct: string;
@@ -24,11 +24,11 @@ export type Account = {
 	avatar_static: string;
 	header: string;
 	header_static: string;
-	emojis: Array<Emoji>;
+	emojis: Emoji[];
 	moved: Account | null;
-	fields: Array<Field>;
+	fields: Field[];
 	bot: boolean;
 	source?: Source;
 	role?: Role;
 	mute_expires_at?: string;
-};
+}

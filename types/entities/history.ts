@@ -1,5 +1,5 @@
-export type History = {
+export interface History {
 	day: string;
 	uses: number;
 	accounts: number;
-};
+}

@@ -1,6 +1,6 @@
 import data from "../config/config.toml";
 
-export type ConfigType = {
+export interface ConfigType {
 	database: {
 		host: string;
 		port: number;
@@ -8,7 +8,7 @@ export type ConfigType = {
 		password: string;
 		database: string;
 	}
-	[ key: string ]: any;
+	[ key: string ]: unknown;
 }
 
 export const getConfig = () => {

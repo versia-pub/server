@@ -1,7 +1,7 @@
 import { Emoji } from "./emoji";
 import { StatusTag } from "./status";
 
-export type Announcement = {
+export interface Announcement {
 	id: string;
 	content: string;
 	starts_at: string | null;
@@ -11,29 +11,29 @@ export type Announcement = {
 	published_at: string;
 	updated_at: string;
 	read: boolean | null;
-	mentions: Array<AnnouncementAccount>;
-	statuses: Array<AnnouncementStatus>;
-	tags: Array<StatusTag>;
-	emojis: Array<Emoji>;
-	reactions: Array<AnnouncementReaction>;
-};
+	mentions: AnnouncementAccount[];
+	statuses: AnnouncementStatus[];
+	tags: StatusTag[];
+	emojis: Emoji[];
+	reactions: AnnouncementReaction[];
+}
 
-export type AnnouncementAccount = {
+export interface AnnouncementAccount {
 	id: string;
 	username: string;
 	url: string;
 	acct: string;
-};
+}
 
-export type AnnouncementStatus = {
+export interface AnnouncementStatus {
 	id: string;
 	url: string;
-};
+}
 
-export type AnnouncementReaction = {
+export interface AnnouncementReaction {
 	name: string;
 	count: number;
 	me: boolean | null;
 	url: string | null;
 	static_url: string | null;
-};
+}

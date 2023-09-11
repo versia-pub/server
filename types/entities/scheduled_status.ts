@@ -1,9 +1,9 @@
 import { Attachment } from "./attachment";
 import { StatusParams } from "./status_params";
 
-export type ScheduledStatus = {
+export interface ScheduledStatus {
 	id: string;
 	scheduled_at: string;
 	params: StatusParams;
-	media_attachments: Array<Attachment>;
-};
+	media_attachments: Attachment[];
+}

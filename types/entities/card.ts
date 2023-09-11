@@ -1,4 +1,4 @@
-export type Card = {
+export interface Card {
 	url: string;
 	title: string;
 	description: string;
@@ -13,4 +13,4 @@ export type Card = {
 	height: number;
 	embed_url: string;
 	blurhash: string | null;
-};
+}
