@@ -109,24 +109,44 @@ export default async (
 
 
 
-		return jsonResponse(await compact({
-			"@context": [
-				"https://www.w3.org/ns/activitystreams",
-				"https://w3id.org/security/v1",
-			],
-			id: `${getHost()}/@${user.username}/inbox`,
-			type: "OrderedCollectionPage",
-			totalItems: count,
-			partOf: `${getHost()}/@${user.username}/inbox`,
-			// Next is less recent posts chronologically, uses min_id
-			next: `${getHost()}/@${user.username}/outbox?min_id=${
-				posts[posts.length - 1].id
-			}&page=true`,
-			// Prev is more recent posts chronologically, uses max_id
-			prev: `${getHost()}/@${user.username}/outbox?max_id=${
-				posts[0].id
-			}&page=true`,
-			orderedItems: posts.slice(0, 10).map(post => post.data) as NodeObject[]
-		}));
+		return jsonResponse(
+			await compact({
+				"@context": [
+					"https://www.w3.org/ns/activitystreams",
+					{
+						ostatus: "http://ostatus.org#",
+						atomUri: "ostatus:atomUri",
+						inReplyToAtomUri: "ostatus:inReplyToAtomUri",
+						conversation: "ostatus:conversation",
+						sensitive: "as:sensitive",
+						toot: "http://joinmastodon.org/ns#",
+						votersCount: "toot:votersCount",
+						litepub: "http://litepub.social/ns#",
+						directMessage: "litepub:directMessage",
+						Emoji: "toot:Emoji",
+						focalPoint: {
+							"@container": "@list",
+							"@id": "toot:focalPoint",
+						},
+						blurhash: "toot:blurhash",
+					},
+				],
+				id: `${getHost()}/@${user.username}/inbox`,
+				type: "OrderedCollectionPage",
+				totalItems: count,
+				partOf: `${getHost()}/@${user.username}/inbox`,
+				// Next is less recent posts chronologically, uses min_id
+				next: `${getHost()}/@${user.username}/outbox?min_id=${
+					posts[posts.length - 1].id
+				}&page=true`,
+				// Prev is more recent posts chronologically, uses max_id
+				prev: `${getHost()}/@${user.username}/outbox?max_id=${
+					posts[0].id
+				}&page=true`,
+				orderedItems: posts
+					.slice(0, 10)
+					.map((post) => post.data) as NodeObject[],
+			})
+		);
 	}
 };
