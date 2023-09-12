@@ -20,5 +20,7 @@ export default async (
 		return errorResponse("User not found", 404);
 	}
 
-	
+	return jsonResponse({
+		
+	})
 };

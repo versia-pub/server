@@ -32,8 +32,18 @@ export default async (
 			{
 				rel: "self",
 				type: "application/activity+json",
-				href: `${getHost()}/@${user.username}/actor`
+				href: `https://${getHost()}/@${user.username}/actor`
 			},
+			{
+				rel: "https://webfinger.net/rel/profile-page",
+				type: "text/html",
+				href: `https://${getHost()}/@${user.username}`
+			},
+			{
+				rel: "self",
+				type: "application/activity+json; profile=\"https://www.w3.org/ns/activitystreams\"",
+				href: `https://${getHost()}/@${user.username}/actor`
+			}
 		]
 	})
 };
