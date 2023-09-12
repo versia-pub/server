@@ -1,4 +1,4 @@
-import { errorResponse, jsonResponse } from "@response";
+import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { RawObject } from "~database/entities/RawObject";
 
@@ -15,5 +15,5 @@ export default async (
 
 	if (!object) return errorResponse("Object not found", 404)
 
-	return jsonResponse(object);
+	return jsonLdResponse(object);
 };

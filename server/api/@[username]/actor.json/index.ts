@@ -1,4 +1,4 @@
-import { errorResponse, jsonResponse } from "@response";
+import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
 import { getHost } from "@config";
@@ -19,7 +19,7 @@ export default async (
 		return errorResponse("User not found", 404);
 	}
 
-	return jsonResponse(
+	return jsonLdResponse(
 		await compact({
 			"@context": [
 				"https://www.w3.org/ns/activitystreams",
