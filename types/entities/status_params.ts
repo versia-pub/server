@@ -1,4 +1,4 @@
-export interface StatusParams {
+export interface APIStatusParams {
 	text: string;
 	in_reply_to_id: string | null;
 	media_ids: string[] | null;

@@ -1,7 +1,7 @@
-export interface List {
+export interface APIList {
 	id: string;
 	title: string;
-	replies_policy: RepliesPolicy;
+	replies_policy: APIRepliesPolicy;
 }
 
-export type RepliesPolicy = "followed" | "list" | "none";
+export type APIRepliesPolicy = "followed" | "list" | "none";

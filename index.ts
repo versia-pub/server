@@ -1,4 +1,5 @@
 import { getConfig } from "@config";
+import "reflect-metadata";
 
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",

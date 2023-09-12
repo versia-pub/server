@@ -1,4 +1,4 @@
-export interface Mention {
+export interface APIMention {
 	id: string;
 	username: string;
 	url: string;

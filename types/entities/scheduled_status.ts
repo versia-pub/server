@@ -1,9 +1,9 @@
-import { Attachment } from "./attachment";
-import { StatusParams } from "./status_params";
+import { APIAttachment } from "./attachment";
+import { APIStatusParams } from "./status_params";
 
-export interface ScheduledStatus {
+export interface APIScheduledStatus {
 	id: string;
 	scheduled_at: string;
-	params: StatusParams;
-	media_attachments: Attachment[];
+	params: APIStatusParams;
+	media_attachments: APIAttachment[];
 }

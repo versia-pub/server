@@ -1,4 +1,4 @@
-export interface Sub {
+export interface APISub {
 	// For Image, Gifv, and Video
 	width?: number;
 	height?: number;
@@ -13,15 +13,15 @@ export interface Sub {
 	bitrate?: number;
 }
 
-export interface Focus {
+export interface APIFocus {
 	x: number;
 	y: number;
 }
 
-export interface Meta {
-	original?: Sub;
-	small?: Sub;
-	focus?: Focus;
+export interface APIMeta {
+	original?: APISub;
+	small?: APISub;
+	focus?: APIFocus;
 	length?: string;
 	duration?: number;
 	fps?: number;
@@ -34,14 +34,14 @@ export interface Meta {
 	audio_channel?: string;
 }
 
-export interface Attachment {
+export interface APIAttachment {
 	id: string;
 	type: "unknown" | "image" | "gifv" | "video" | "audio";
 	url: string;
 	remote_url: string | null;
 	preview_url: string | null;
 	text_url: string | null;
-	meta: Meta | null;
+	meta: APIMeta | null;
 	description: string | null;
 	blurhash: string | null;
 }

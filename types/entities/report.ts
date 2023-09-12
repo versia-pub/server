@@ -1,15 +1,15 @@
-import { Account } from "./account";
+import { APIAccount } from "./account";
 
-export interface Report {
+export interface APIReport {
 	id: string;
 	action_taken: boolean;
 	action_taken_at: string | null;
-	category: Category;
+	category: APICategory;
 	comment: string;
 	forwarded: boolean;
 	status_ids: string[] | null;
 	rule_ids: string[] | null;
-	target_account: Account;
+	target_account: APIAccount;
 }
 
-export type Category = "spam" | "violation" | "other";
+export type APICategory = "spam" | "violation" | "other";

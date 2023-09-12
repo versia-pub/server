@@ -1,8 +1,11 @@
-import { jsonResponse } from "@response";
+import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { DBStatus } from "~database/entities/DBStatus";
-import { DBUser } from "~database/entities/DBUser";
+import { Status } from "~database/entities/Status";
+import { User } from "~database/entities/User";
 
+/**
+ * Fetch all statuses for a user
+ */
 export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
@@ -24,19 +27,14 @@ export default async (
 		tagged?: string;
 	} = matchedRoute.query;
 
-	const user = await DBUser.findOneBy({
+	const user = await User.findOneBy({
 		id,
 	});
 
 	if (!user)
-		return jsonResponse(
-			{
-				error: "User not found",
-			},
-			404
-		);
+		return errorResponse("User not found", 404)
 
-	const statuses = await DBStatus.find({
+	const statuses = await Status.find({
 		where: {
 			account: {
 				id: user.id,

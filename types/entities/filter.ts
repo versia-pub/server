@@ -1,4 +1,4 @@
-export interface Filter {
+export interface APIFilter {
 	id: string;
 	phrase: string;
 	context: FilterContext[];

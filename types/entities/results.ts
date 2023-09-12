@@ -1,9 +1,9 @@
-import { Account } from "./account";
-import { Status } from "./status";
-import { Tag } from "./tag";
+import { APIAccount } from "./account";
+import { APIStatus } from "./status";
+import { APITag } from "./tag";
 
-export interface Results {
-	accounts: Account[];
-	statuses: Status[];
-	hashtags: Tag[];
+export interface APIResults {
+	accounts: APIAccount[];
+	statuses: APIStatus[];
+	hashtags: APITag[];
 }

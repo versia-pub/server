@@ -1,13 +1,16 @@
 import { getConfig, getHost } from "@config";
 import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Account } from "~types/entities/account";
+import { APIAccount } from "~types/entities/account";
 
 const config = getConfig();
 
+/**
+ * Stores local and remote users
+ */
 @Entity({
 	name: "users",
 })
-export class DBUser extends BaseEntity {
+export class User extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
@@ -16,8 +19,10 @@ export class DBUser extends BaseEntity {
 	})
 	username!: string;
 
-	@Column("varchar")
-	password!: string;
+	@Column("varchar", {
+		nullable: true,
+	})
+	password!: string | null;
 
 	@Column("varchar", {
 		unique: true,
@@ -35,7 +40,11 @@ export class DBUser extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at!: Date;
 
-	toAPI(): Account {
+	@Column("boolean")
+	isRemote!: boolean;
+
+	// eslint-disable-next-line @typescript-eslint/require-await
+	async toAPI(): Promise<APIAccount> {
 		return {
 			acct: `@${this.username}@${getHost()}`,
 			avatar: "",

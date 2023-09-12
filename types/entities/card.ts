@@ -1,4 +1,4 @@
-export interface Card {
+export interface APICard {
 	url: string;
 	title: string;
 	description: string;

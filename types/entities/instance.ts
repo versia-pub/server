@@ -1,16 +1,16 @@
-import { Account } from "./account";
-import { Stats } from "./stats";
-import { URLs } from "./urls";
+import { APIAccount } from "./account";
+import { APIStats } from "./stats";
+import { APIURLs } from "./urls";
 
-export interface Instance {
+export interface APIInstance {
 	uri: string;
 	title: string;
 	description: string;
 	email: string;
 	version: string;
 	thumbnail: string | null;
-	urls: URLs;
-	stats: Stats;
+	urls: APIURLs;
+	stats: APIStats;
 	languages: string[];
 	registrations: boolean;
 	approval_required: boolean;
@@ -37,11 +37,11 @@ export interface Instance {
 			max_expiration: number;
 		};
 	};
-	contact_account: Account;
-	rules: InstanceRule[];
+	contact_account: APIAccount;
+	rules: APIInstanceRule[];
 }
 
-export interface InstanceRule {
+export interface APIInstanceRule {
 	id: string;
 	text: string;
 }

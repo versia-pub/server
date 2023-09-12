@@ -1,9 +1,9 @@
-import { Account } from "./account";
-import { Status } from "./status";
+import { APIAccount } from "./account";
+import { APIStatus } from "./status";
 
-export interface Conversation {
+export interface APIConversation {
 	id: string;
-	accounts: Account[];
-	last_status: Status | null;
+	accounts: APIAccount[];
+	last_status: APIStatus | null;
 	unread: boolean;
 }

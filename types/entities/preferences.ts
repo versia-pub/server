@@ -1,4 +1,4 @@
-export interface Preferences {
+export interface APIPreferences {
 	"posting:default:visibility": "public" | "unlisted" | "private" | "direct";
 	"posting:default:sensitive": boolean;
 	"posting:default:language": string | null;

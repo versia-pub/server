@@ -1,4 +1,4 @@
-export interface Emoji {
+export interface APIEmoji {
 	shortcode: string;
 	static_url: string;
 	url: string;

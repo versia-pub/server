@@ -1,4 +1,4 @@
-export interface Marker {
+export interface APIMarker {
 	home: {
 		last_read_id: string;
 		version: number;

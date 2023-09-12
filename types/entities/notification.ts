@@ -1,12 +1,12 @@
-import { Account } from "./account";
-import { Status } from "./status";
+import { APIAccount } from "./account";
+import { APIStatus } from "./status";
 
-export interface Notification {
-	account: Account;
+export interface APINotification {
+	account: APIAccount;
 	created_at: string;
 	id: string;
-	status?: Status;
-	type: NotificationType;
+	status?: APIStatus;
+	type: APINotificationType;
 }
 
-export type NotificationType = string;
+export type APINotificationType = string;

@@ -1,6 +1,6 @@
-import { Status } from "./status";
+import { APIStatus } from "./status";
 
-export interface Context {
-	ancestors: Status[];
-	descendants: Status[];
+export interface APIContext {
+	ancestors: APIStatus[];
+	descendants: APIStatus[];
 }

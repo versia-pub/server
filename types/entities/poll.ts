@@ -1,11 +1,11 @@
-import { PollOption } from "./poll_option";
+import { APIPollOption } from "./poll_option";
 
-export interface Poll {
+export interface APIPoll {
 	id: string;
 	expires_at: string | null;
 	expired: boolean;
 	multiple: boolean;
 	votes_count: number;
-	options: PollOption[];
+	options: APIPollOption[];
 	voted: boolean;
 }

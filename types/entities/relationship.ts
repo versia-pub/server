@@ -1,4 +1,4 @@
-export interface Relationship {
+export interface APIRelationship {
 	id: string;
 	following: boolean;
 	followed_by: boolean;

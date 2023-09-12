@@ -1,7 +1,7 @@
-import { Emoji } from "./emoji";
-import { StatusTag } from "./status";
+import { APIEmoji } from "./emoji";
+import { APIStatusTag } from "./status";
 
-export interface Announcement {
+export interface APIAnnouncement {
 	id: string;
 	content: string;
 	starts_at: string | null;
@@ -13,8 +13,8 @@ export interface Announcement {
 	read: boolean | null;
 	mentions: AnnouncementAccount[];
 	statuses: AnnouncementStatus[];
-	tags: StatusTag[];
-	emojis: Emoji[];
+	tags: APIStatusTag[];
+	emojis: APIEmoji[];
 	reactions: AnnouncementReaction[];
 }
 

@@ -1,9 +1,9 @@
-import { Emoji } from "./emoji";
-import { Field } from "./field";
-import { Role } from "./role";
-import { Source } from "./source";
+import { APIEmoji } from "./emoji";
+import { APIField } from "./field";
+import { APIRole } from "./role";
+import { APISource } from "./source";
 
-export interface Account {
+export interface APIAccount {
 	id: string;
 	username: string;
 	acct: string;
@@ -24,11 +24,11 @@ export interface Account {
 	avatar_static: string;
 	header: string;
 	header_static: string;
-	emojis: Emoji[];
-	moved: Account | null;
-	fields: Field[];
+	emojis: APIEmoji[];
+	moved: APIAccount | null;
+	fields: APIField[];
 	bot: boolean;
-	source?: Source;
-	role?: Role;
+	source?: APISource;
+	role?: APIRole;
 	mute_expires_at?: string;
 }

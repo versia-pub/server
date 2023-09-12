@@ -1,4 +1,4 @@
-export interface Activity {
+export interface APIActivity {
 	week: string;
 	statuses: string;
 	logins: string;

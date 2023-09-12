@@ -1,4 +1,4 @@
-export interface IdentityProof {
+export interface APIIdentityProof {
 	provider: string;
 	provider_username: string;
 	updated_at: string;

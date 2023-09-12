@@ -1,8 +1,8 @@
-import { History } from "./history";
+import { APIHistory } from "./history";
 
-export interface Tag {
+export interface APITag {
 	name: string;
 	url: string;
-	history: History[];
+	history: APIHistory[];
 	following?: boolean;
 }

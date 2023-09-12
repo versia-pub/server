@@ -1,4 +1,4 @@
-export interface Alerts {
+export interface APIAlerts {
 	follow: boolean;
 	favourite: boolean;
 	mention: boolean;
@@ -6,9 +6,9 @@ export interface Alerts {
 	poll: boolean;
 }
 
-export interface PushSubscription {
+export interface APIPushSubscription {
 	id: string;
 	endpoint: string;
 	server_key: string;
-	alerts: Alerts;
+	alerts: APIAlerts;
 }

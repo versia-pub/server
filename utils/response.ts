@@ -6,3 +6,9 @@ export const jsonResponse = (data: object, status = 200) => {
 		status,
 	});
 }
+
+export const errorResponse = (error: string, status = 500) => {
+	return jsonResponse({
+		error: error
+	}, status);
+}
