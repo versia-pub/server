@@ -11,7 +11,6 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	// In the format acct:name@example.com
 	const username = matchedRoute.params.username;
 
 	const user = await User.findOneBy({ username });
@@ -28,9 +27,17 @@ export default async (
 			],
 			id: `${getHost()}/@${user.username}/actor`,
 			type: "Person",
-			preferredUsername: user.username,
+			preferredUsername: user.username, // TODO: Add user display name
+			name: user.username,
 			summary: user.bio,
+			icon: [
+				// TODO: Add user avatar
+			],
 			inbox: `${getHost()}/@${user.username}/inbox`,
+			outbox: `${getHost()}/@${user.username}/outbox`,
+			followers: `${getHost()}/@${user.username}/followers`,
+			following: `${getHost()}/@${user.username}/following`,
+			liked: `${getHost()}/@${user.username}/liked`,
 		})
 	);
 };
