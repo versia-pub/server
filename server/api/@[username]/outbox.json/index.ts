@@ -3,20 +3,15 @@ import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
 import { getHost } from "@config";
 import { NodeObject, compact } from "jsonld";
-import { RawObject } from "~database/entities/RawObject";
+import { RawActivity } from "~database/entities/RawActivity";
 
 /**
- * ActivityPub user inbox endpoint
+ * ActivityPub user outbox endpoint
  */
 export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	// Check if POST request
-	if (req.method !== "POST") {
-		return errorResponse("Method not allowed", 405);
-	}
-
 	const username = matchedRoute.params.username;
 	const page = Boolean(matchedRoute.query.page || "false");
 	const min_id = matchedRoute.query.min_id || false;
@@ -29,7 +24,7 @@ export default async (
 	}
 
 	// Get the user's corresponding ActivityPub notes
-	const count = await RawObject.count({
+	const count = await RawActivity.count({
 		where: {
 			data: {
 				attributedTo: `${getHost()}/@${user.username}`,
@@ -43,7 +38,7 @@ export default async (
 	});
 
 	const lastPost = (
-		await RawObject.find({
+		await RawActivity.find({
 			where: {
 				data: {
 					attributedTo: `${getHost()}/@${user.username}`,
@@ -75,10 +70,10 @@ export default async (
 			})
 		);
 	else {
-		let posts: RawObject[] = [];
+		let posts: RawActivity[] = [];
 
 		if (min_id) {
-			posts = await RawObject.find({
+			posts = await RawActivity.find({
 				where: {
 					data: {
 						attributedTo: `${getHost()}/@${user.username}`,
@@ -93,7 +88,7 @@ export default async (
 				take: 11, // Take one extra to have the ID of the next post
 			});
 		} else if (max_id) {
-			posts = await RawObject.find({
+			posts = await RawActivity.find({
 				where: {
 					data: {
 						attributedTo: `${getHost()}/@${user.username}`,

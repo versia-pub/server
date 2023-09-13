@@ -1,6 +1,6 @@
 import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { RawObject } from "~database/entities/RawObject";
+import { RawActivity } from "~database/entities/RawActivity";
 
 /**
  * Fetch a user
@@ -9,7 +9,7 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const object = await RawObject.findOneBy({
+	const object = await RawActivity.findOneBy({
 		id: matchedRoute.params.id,
 	});
 
