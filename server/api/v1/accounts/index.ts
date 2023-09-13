@@ -1,4 +1,6 @@
 import { getConfig } from "@config";
+import { jsonResponse } from "@response";
+import { tempmailDomains } from "@tempmail";
 import { User } from "~database/entities/User";
 
 /**
@@ -107,10 +109,14 @@ export default async (req: Request): Promise<Response> => {
 		});
 
 	// Check if email is blocked
-	if (config.validation.email_blacklist.includes(body.email))
+	if (
+		config.validation.email_blacklist.includes(body.email) ||
+		(config.validation.blacklist_tempmail &&
+			tempmailDomains.domains.includes(body.email.split("@")[1]))
+	)
 		errors.details.email.push({
 			error: "ERR_BLOCKED",
-			description: `is blocked`,
+			description: `is from a blocked email provider`,
 		});
 
 	// Check if agreement is accepted
@@ -119,6 +125,24 @@ export default async (req: Request): Promise<Response> => {
 			error: "ERR_ACCEPTED",
 			description: `must be accepted`,
 		});
+
+	// If any errors are present, return them
+	if (Object.values(errors.details).some(value => value.length > 0)) {
+		// Error is something like "Validation failed: Password can't be blank, Username must contain only letters, numbers and underscores, Agreement must be accepted"
+
+		const errorsText = Object.entries(errors.details)
+			.map(
+				([name, errors]) =>
+					`${name} ${errors
+						.map(error => error.description)
+						.join(", ")}`
+			)
+			.join(", ");
+		return jsonResponse({
+			error: `Validation failed: ${errorsText}`,
+			details: errors.details,
+		});
+	}
 
 	// TODO: Check if locale is valid
 
