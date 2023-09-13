@@ -27,9 +27,12 @@ export class User extends BaseEntity {
 	username!: string;
 
 	@Column("varchar", {
-		nullable: true,
+		unique: true,
 	})
-	password!: string | null;
+	display_name!: string;
+
+	@Column("varchar")
+	password!: string;
 
 	@Column("varchar", {
 		unique: true,
@@ -46,9 +49,6 @@ export class User extends BaseEntity {
 
 	@UpdateDateColumn()
 	updated_at!: Date;
-
-	@Column("boolean")
-	isRemote!: boolean;
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async toAPI(): Promise<APIAccount> {

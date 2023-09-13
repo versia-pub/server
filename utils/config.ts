@@ -12,6 +12,20 @@ export interface ConfigType {
 		port: number;
 		base_url: string;
 	};
+	validation: {
+		max_displayname_size: number;
+		max_bio_size: number;
+		max_username_size: number;
+		max_note_size: number;
+		max_media_size: number;
+		max_media_attachments: number;
+		max_media_description_size: number;
+
+		username_blacklist: string[];
+		blacklist_tempmail: boolean;
+		email_blacklist: string[];
+		url_scheme_whitelist: string[];
+	};
 	[key: string]: unknown;
 }
 

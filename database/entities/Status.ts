@@ -14,6 +14,7 @@ import { User } from "./User";
 import { Application } from "./Application";
 import { Emoji } from "./Emoji";
 import { Favourite } from "./Favourite";
+import { RawActivity } from "./RawActivity";
 
 const config = getConfig();
 
@@ -67,6 +68,12 @@ export class Status extends BaseEntity {
 
 	@ManyToMany(() => Emoji, emoji => emoji.id)
 	emojis!: Emoji[];
+
+	@ManyToMany(() => RawActivity, activity => activity.id, {})
+	likes: RawActivity[] = [];
+
+	@ManyToMany(() => RawActivity, activity => activity.id, {})
+	announces: RawActivity[] = [];
 
 	async getFavourites(): Promise<Favourite[]> {
 		return Favourite.find({
