@@ -17,6 +17,8 @@ export interface ConfigType {
 		max_bio_size: number;
 		max_username_size: number;
 		max_note_size: number;
+		max_avatar_size: number;
+		max_header_size: number;
 		max_media_size: number;
 		max_media_attachments: number;
 		max_media_description_size: number;
