@@ -10,6 +10,15 @@ export const jsonResponse = (data: object, status = 200) => {
 	});
 };
 
+export const xmlResponse = (data: string, status = 200) => {
+	return new Response(data, {
+		headers: {
+			"Content-Type": "application/xml",
+		},
+		status,
+	});
+};
+
 export const jsonLdResponse = (
 	data: NodeObject | APActivity | APObject,
 	status = 200
