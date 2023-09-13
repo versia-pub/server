@@ -31,8 +31,7 @@ export default async (
 		id,
 	});
 
-	if (!user)
-		return errorResponse("User not found", 404)
+	if (!user) return errorResponse("User not found", 404);
 
 	const statuses = await Status.find({
 		where: {
@@ -47,5 +46,5 @@ export default async (
 		take: limit ?? 20,
 	});
 
-	return jsonResponse(statuses.map((status) => status.toAPI()));
+	return jsonResponse(statuses.map(status => status.toAPI()));
 };
