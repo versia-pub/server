@@ -24,12 +24,21 @@ export class Application extends BaseEntity {
 	})
 	vapid_key!: string | null;
 
+	@Column("varchar")
+	secret!: string;
+
+	@Column("varchar")
+	scopes = "read";
+
+	@Column("varchar")
+	redirect_uris = "urn:ietf:wg:oauth:2.0:oob";
+
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async toAPI(): Promise<APIApplication> {
 		return {
-			name: "",
-			website: null,
-			vapid_key: null,
+			name: this.name,
+			website: this.website,
+			vapid_key: this.vapid_key,
 		};
 	}
 }
