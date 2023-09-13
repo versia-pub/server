@@ -1,7 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import {
-	APObject,
-} from "activitypub-types";
+import { APObject } from "activitypub-types";
 
 /**
  * Stores an ActivityPub object as raw JSON-LD data

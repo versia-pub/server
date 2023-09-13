@@ -25,6 +25,6 @@ export class Emoji extends BaseEntity {
 			url: "",
 			visible_in_picker: false,
 			category: undefined,
-		}
+		};
 	}
 }

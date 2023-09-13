@@ -1,5 +1,12 @@
 import { getConfig, getHost } from "@config";
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	CreateDateColumn,
+	Entity,
+	PrimaryGeneratedColumn,
+	UpdateDateColumn,
+} from "typeorm";
 import { APIAccount } from "~types/entities/account";
 
 const config = getConfig();
@@ -73,6 +80,6 @@ export class User extends BaseEntity {
 			discoverable: undefined,
 			role: undefined,
 			mute_expires_at: undefined,
-		}
+		};
 	}
 }

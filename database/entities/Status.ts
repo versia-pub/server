@@ -27,7 +27,7 @@ export class Status extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@ManyToOne(() => User, (user) => user.id)
+	@ManyToOne(() => User, user => user.id)
 	account!: User;
 
 	@CreateDateColumn()
@@ -36,7 +36,7 @@ export class Status extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at!: Date;
 
-	@ManyToOne(() => Status, (status) => status.id, {
+	@ManyToOne(() => Status, status => status.id, {
 		nullable: true,
 	})
 	reblog?: Status;
@@ -60,31 +60,33 @@ export class Status extends BaseEntity {
 	})
 	spoiler_text!: string;
 
-	@ManyToOne(() => Application, (app) => app.id, {
-		nullable: true
+	@ManyToOne(() => Application, app => app.id, {
+		nullable: true,
 	})
 	application!: Application | null;
 
-	@ManyToMany(() => Emoji, (emoji) => emoji.id)
+	@ManyToMany(() => Emoji, emoji => emoji.id)
 	emojis!: Emoji[];
 
 	async getFavourites(): Promise<Favourite[]> {
 		return Favourite.find({
 			where: {
 				object: {
-					id: this.id
+					id: this.id,
 				},
 			},
 		});
 	}
-	
+
 	async toAPI(): Promise<APIStatus> {
 		return {
 			account: await this.account.toAPI(),
-			application: await this.application?.toAPI() ?? null,
+			application: (await this.application?.toAPI()) ?? null,
 			bookmarked: false,
 			created_at: this.created_at.toISOString(),
-			emojis: await Promise.all(this.emojis.map(async (emoji) => await emoji.toAPI())),
+			emojis: await Promise.all(
+				this.emojis.map(async emoji => await emoji.toAPI())
+			),
 			favourited: false,
 			favourites_count: (await this.getFavourites()).length,
 			id: this.id,
@@ -96,7 +98,7 @@ export class Status extends BaseEntity {
 			muted: false,
 			pinned: false,
 			poll: null,
-			reblog: this.isReblog ? await this.reblog?.toAPI() ?? null : null,
+			reblog: this.isReblog ? (await this.reblog?.toAPI()) ?? null : null,
 			reblogged: false,
 			reblogs_count: 0,
 			replies_count: 0,

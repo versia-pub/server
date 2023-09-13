@@ -10,10 +10,10 @@ export default async (
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
 	const object = await RawObject.findOneBy({
-		id: matchedRoute.params.id
+		id: matchedRoute.params.id,
 	});
 
-	if (!object) return errorResponse("Object not found", 404)
+	if (!object) return errorResponse("Object not found", 404);
 
 	return jsonLdResponse(object);
 };

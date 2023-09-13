@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from "typeorm";
 import { APIInstance } from "~types/entities/instance";
 import { User } from "./User";
 
@@ -9,7 +15,7 @@ export class Instance extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@ManyToOne(() => User, (user) => user.id)
+	@ManyToOne(() => User, user => user.id)
 	contact_account!: User;
 
 	@Column("jsonb", {

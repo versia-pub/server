@@ -15,8 +15,7 @@ export default async (
 		id,
 	});
 
-	if (!user)
-		return errorResponse("User not found", 404)
+	if (!user) return errorResponse("User not found", 404);
 
 	return jsonResponse(user.toAPI());
 };

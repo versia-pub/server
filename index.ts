@@ -4,7 +4,7 @@ import "reflect-metadata";
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
 	dir: process.cwd() + "/server/api",
-})
+});
 
 console.log("[+] Starting FediProject...");
 
@@ -18,7 +18,10 @@ Bun.serve({
 
 		if (matchedRoute) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-			return (await import(matchedRoute.filePath)).default(req, matchedRoute) as Response | Promise<Response>;
+			return (await import(matchedRoute.filePath)).default(
+				req,
+				matchedRoute
+			) as Response | Promise<Response>;
 		} else {
 			return new Response(undefined, {
 				status: 404,
@@ -28,4 +31,4 @@ Bun.serve({
 	},
 });
 
-console.log("[+] FediProject started!")
+console.log("[+] FediProject started!");

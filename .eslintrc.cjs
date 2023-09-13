@@ -3,6 +3,7 @@ module.exports = {
 		"eslint:recommended",
 		"plugin:@typescript-eslint/strict-type-checked",
 		"plugin:@typescript-eslint/stylistic",
+		"plugin:prettier/recommended",
 	],
 	parser: "@typescript-eslint/parser",
 	parserOptions: {

@@ -30,6 +30,6 @@ export class Application extends BaseEntity {
 			name: "",
 			website: null,
 			vapid_key: null,
-		}
+		};
 	}
 }

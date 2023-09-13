@@ -18,10 +18,10 @@ export class Renote extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@ManyToOne(() => User, (user) => user.id)
+	@ManyToOne(() => User, user => user.id)
 	actor!: User;
 
-	@ManyToOne(() => Status, (status) => status.id)
+	@ManyToOne(() => Status, status => status.id)
 	object!: Status;
 
 	@Column("datetime")

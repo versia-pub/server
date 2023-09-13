@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from "typeorm";
 import { User } from "./User";
 import { Status } from "./Status";
 
@@ -12,10 +18,10 @@ export class Favourite extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@ManyToOne(() => User, (user) => user.id)
+	@ManyToOne(() => User, user => user.id)
 	actor!: User;
 
-	@ManyToOne(() => Status, (status) => status.id)
+	@ManyToOne(() => Status, status => status.id)
 	object!: Status;
 
 	@Column("datetime")

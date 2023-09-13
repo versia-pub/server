@@ -42,19 +42,21 @@ export default async (
 		},
 	});
 
-	const lastPost = (await RawObject.find({
-		where: {
-			data: {
-				attributedTo: `${getHost()}/@${user.username}`,
+	const lastPost = (
+		await RawObject.find({
+			where: {
+				data: {
+					attributedTo: `${getHost()}/@${user.username}`,
+				},
 			},
-		},
-		order: {
-			data: {
-				published: "ASC",
+			order: {
+				data: {
+					published: "ASC",
+				},
 			},
-		},
-		take: 1,
-	}))[0];
+			take: 1,
+		})
+	)[0];
 
 	if (!page)
 		return jsonLdResponse(
@@ -73,7 +75,7 @@ export default async (
 			})
 		);
 	else {
-		let posts: RawObject[] = []
+		let posts: RawObject[] = [];
 
 		if (min_id) {
 			posts = await RawObject.find({
@@ -106,8 +108,6 @@ export default async (
 				take: 10,
 			});
 		}
-
-
 
 		return jsonLdResponse(
 			await compact({
@@ -145,7 +145,7 @@ export default async (
 				}&page=true`,
 				orderedItems: posts
 					.slice(0, 10)
-					.map((post) => post.data) as NodeObject[],
+					.map(post => post.data) as NodeObject[],
 			})
 		);
 	}
