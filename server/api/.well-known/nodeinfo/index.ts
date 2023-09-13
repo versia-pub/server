@@ -2,7 +2,7 @@ import { MatchedRoute } from "bun";
 import { getHost } from "@config";
 
 /**
- * ARedirect to /nodeinfo/2.0
+ * Redirect to /nodeinfo/2.0
  */
 export default async (
 	req: Request,
