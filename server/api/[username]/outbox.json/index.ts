@@ -12,7 +12,7 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const username = matchedRoute.params.username;
+	const username = matchedRoute.params.username.split("@")[0];
 	const page = Boolean(matchedRoute.query.page || "false");
 	const min_id = matchedRoute.query.min_id || false;
 	const max_id = matchedRoute.query.max_id || false;

@@ -11,6 +11,6 @@ export class RawObject extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@Column("json")
+	@Column("jsonb")
 	data!: APObject;
 }

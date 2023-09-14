@@ -11,7 +11,7 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const username = matchedRoute.params.username;
+	const username = matchedRoute.params.username.split("@")[0];
 
 	const user = await User.findOneBy({ username });
 

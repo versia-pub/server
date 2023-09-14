@@ -19,6 +19,8 @@ Bun.serve({
 	async fetch(req) {
 		const matchedRoute = router.match(req);
 
+		console.log(req.url);
+
 		if (matchedRoute) {
 			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 			return (await import(matchedRoute.filePath)).default(

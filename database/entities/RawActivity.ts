@@ -2,6 +2,7 @@ import {
 	BaseEntity,
 	Column,
 	Entity,
+	JoinTable,
 	ManyToMany,
 	PrimaryGeneratedColumn,
 } from "typeorm";
@@ -18,10 +19,11 @@ export class RawActivity extends BaseEntity {
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
-	@Column("json")
+	@Column("jsonb")
 	data!: APActivity;
 
 	// Any associated objects (there is typically only one)
 	@ManyToMany(() => RawObject, object => object.id)
+	@JoinTable()
 	objects!: RawObject[];
 }
