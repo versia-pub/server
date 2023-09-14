@@ -12,7 +12,9 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const scopes = matchedRoute.query.scopes.replaceAll("+", " ").split(" ");
+	const scopes = (matchedRoute.query.scopes || "")
+		.replaceAll("+", " ")
+		.split(" ");
 	const redirect_uri = matchedRoute.query.redirect_uri;
 	const response_type = matchedRoute.query.response_type;
 	const client_id = matchedRoute.query.client_id;
@@ -54,10 +56,5 @@ export default async (
 	await token.save();
 
 	// Redirect back to application
-	return new Response(null, {
-		status: 302,
-		headers: {
-			Location: `${redirect_uri}?code=${token.code}`,
-		},
-	});
+	return Response.redirect(`${redirect_uri}?code=${token.code}`);
 };

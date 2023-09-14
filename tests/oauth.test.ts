@@ -76,11 +76,11 @@ describe("POST /auth/login/", () => {
 			{
 				method: "POST",
 				body: formData,
+				redirect: "manual",
 			}
 		);
-
 		expect(response.status).toBe(302);
-		expect(response.headers.get("location")).toMatch(
+		expect(response.headers.get("Location")).toMatch(
 			/https:\/\/example.com\?code=/
 		);
 
@@ -108,13 +108,16 @@ describe("POST /v1/oauth/token/", () => {
 			}
 		);
 
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+		const json = await response.json();
+
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
-		expect(await response.json()).toEqual({
+		expect(json).toEqual({
 			access_token: expect.any(String),
-			token_type: "bearer",
+			token_type: "Bearer",
 			scope: "read write",
-			created_at: expect.any(Number),
+			created_at: expect.any(String),
 		});
 	});
 });
