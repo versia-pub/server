@@ -78,17 +78,26 @@ export default async (
 			// Replace the object in database with the new provided object
 			// TODO: Add authentication
 
-			const object = await RawObject.findOneBy({
-				data: {
-					id: (body.object as RawObject).id,
-				},
-			});
+			const object = await RawObject.createQueryBuilder("object")
+				.where("object.data->>'id' = :id", {
+					id: (body.object as APObject).id,
+				})
+				.getOne();
 
 			if (!object) return errorResponse("Object not found", 404);
 
 			object.data = body.object as APObject;
 
+			// Store the Update event in database
+			const activity = new RawActivity();
+			activity.data = {
+				...body,
+				object: undefined,
+			};
+			activity.objects = [object];
+
 			await object.save();
+			await activity.save();
 			break;
 		}
 		case "Delete" as APDelete: {
