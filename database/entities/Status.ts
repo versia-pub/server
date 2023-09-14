@@ -13,7 +13,6 @@ import { APIStatus } from "~types/entities/status";
 import { User } from "./User";
 import { Application } from "./Application";
 import { Emoji } from "./Emoji";
-import { Favourite } from "./Favourite";
 import { RawActivity } from "./RawActivity";
 
 const config = getConfig();
@@ -70,20 +69,10 @@ export class Status extends BaseEntity {
 	emojis!: Emoji[];
 
 	@ManyToMany(() => RawActivity, activity => activity.id, {})
-	likes: RawActivity[] = [];
+	likes!: RawActivity[];
 
 	@ManyToMany(() => RawActivity, activity => activity.id, {})
-	announces: RawActivity[] = [];
-
-	async getFavourites(): Promise<Favourite[]> {
-		return Favourite.find({
-			where: {
-				object: {
-					id: this.id,
-				},
-			},
-		});
-	}
+	announces!: RawActivity[];
 
 	async toAPI(): Promise<APIStatus> {
 		return {
@@ -95,7 +84,7 @@ export class Status extends BaseEntity {
 				this.emojis.map(async emoji => await emoji.toAPI())
 			),
 			favourited: false,
-			favourites_count: (await this.getFavourites()).length,
+			favourites_count: 0,
 			id: this.id,
 			in_reply_to_account_id: null,
 			in_reply_to_id: null,

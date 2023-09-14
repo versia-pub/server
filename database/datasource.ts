@@ -11,7 +11,7 @@ const AppDataSource = new DataSource({
 	password: config.database.password,
 	database: config.database.database,
 	synchronize: true,
-	entities: ["./entities/*.ts"],
+	entities: [process.cwd() + "/database/entities/*.ts"],
 });
 
 export { AppDataSource };

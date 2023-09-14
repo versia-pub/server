@@ -25,6 +25,9 @@ export class Application extends BaseEntity {
 	vapid_key!: string | null;
 
 	@Column("varchar")
+	client_id!: string;
+
+	@Column("varchar")
 	secret!: string;
 
 	@Column("varchar")

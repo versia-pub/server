@@ -1,5 +1,6 @@
 import { getConfig } from "@config";
 import "reflect-metadata";
+import { AppDataSource } from "~database/datasource";
 
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
@@ -10,9 +11,11 @@ console.log("[+] Starting FediProject...");
 
 const config = getConfig();
 
+if (!AppDataSource.isInitialized) await AppDataSource.initialize();
+
 Bun.serve({
 	port: config.http.port,
-	hostname: "0.0.0.0", // defaults to "0.0.0.0"
+	hostname: config.http.base_url || "0.0.0.0", // defaults to "0.0.0.0"
 	async fetch(req) {
 		const matchedRoute = router.match(req);
 

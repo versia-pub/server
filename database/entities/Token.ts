@@ -10,7 +10,7 @@ import { User } from "./User";
 import { Application } from "./Application";
 
 export enum TokenType {
-	BEARER = "bearer",
+	BEARER = "Bearer",
 }
 
 @Entity({
@@ -21,13 +21,16 @@ export class Token extends BaseEntity {
 	id!: string;
 
 	@Column("varchar")
-	token_type!: TokenType;
+	token_type: TokenType = TokenType.BEARER;
 
 	@Column("varchar")
 	scope!: string;
 
 	@Column("varchar")
 	access_token!: string;
+
+	@Column("varchar")
+	code!: string;
 
 	@CreateDateColumn()
 	created_at!: Date;
