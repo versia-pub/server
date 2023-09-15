@@ -1,31 +1,35 @@
 {
-  "name": "fedi-project",
-  "module": "index.ts",
-  "type": "module",
-  "devDependencies": {
-    "@julr/unocss-preset-forms": "^0.0.5",
-    "@types/jsonld": "^1.5.9",
-    "@typescript-eslint/eslint-plugin": "^6.6.0",
-    "@typescript-eslint/parser": "^6.6.0",
-    "@unocss/cli": "^0.55.7",
-    "activitypub-types": "^1.0.3",
-    "bun-types": "latest",
-    "eslint": "^8.49.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-formatter-pretty": "^5.0.0",
-    "eslint-formatter-summary": "^1.1.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.3",
-    "typescript": "^5.2.2",
-    "unocss": "^0.55.7"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "jsonld": "^8.3.1",
-    "pg": "^8.11.3",
-    "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.3.17"
-  }
+	"name": "fedi-project",
+	"module": "index.ts",
+	"type": "module",
+	"scripts": {
+		"dev": "bun run index.ts",
+		"start": "bun run index.ts"
+	},
+	"devDependencies": {
+		"@julr/unocss-preset-forms": "^0.0.5",
+		"@types/jsonld": "^1.5.9",
+		"@typescript-eslint/eslint-plugin": "^6.6.0",
+		"@typescript-eslint/parser": "^6.6.0",
+		"@unocss/cli": "^0.55.7",
+		"activitypub-types": "^1.0.3",
+		"bun-types": "latest",
+		"eslint": "^8.49.0",
+		"eslint-config-prettier": "^9.0.0",
+		"eslint-formatter-pretty": "^5.0.0",
+		"eslint-formatter-summary": "^1.1.0",
+		"eslint-plugin-prettier": "^5.0.0",
+		"prettier": "^3.0.3",
+		"typescript": "^5.2.2",
+		"unocss": "^0.55.7"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"jsonld": "^8.3.1",
+		"pg": "^8.11.3",
+		"reflect-metadata": "^0.1.13",
+		"typeorm": "^0.3.17"
+	}
 }
