@@ -34,6 +34,20 @@ export interface ConfigType {
 	activitypub: {
 		use_tombstones: boolean;
 	};
+
+	filters: {
+		note_filters: string[];
+		username_filters: string[];
+		displayname_filters: string[];
+		bio_filters: string[];
+		emoji_filters: string[];
+	};
+
+	logging: {
+		log_requests: boolean;
+		log_requests_verbose: boolean;
+		log_filters: boolean;
+	};
 	[key: string]: unknown;
 }
 
@@ -114,6 +128,18 @@ export const configDefaults: ConfigType = {
 	},
 	activitypub: {
 		use_tombstones: true,
+	},
+	filters: {
+		note_filters: [],
+		username_filters: [],
+		displayname_filters: [],
+		bio_filters: [],
+		emoji_filters: [],
+	},
+	logging: {
+		log_requests: false,
+		log_requests_verbose: false,
+		log_filters: true,
 	},
 };
 

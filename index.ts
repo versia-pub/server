@@ -1,4 +1,5 @@
 import { getConfig } from "@config";
+import { appendFile } from "fs/promises";
 import "reflect-metadata";
 import { AppDataSource } from "~database/datasource";
 
@@ -10,6 +11,12 @@ const router = new Bun.FileSystemRouter({
 console.log("[+] Starting FediProject...");
 
 const config = getConfig();
+const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
+
+if (!(await requests_log.exists())) {
+	console.log("[+] requests.log does not exist, creating it...");
+	await Bun.write(process.cwd() + "/logs/requests.log", "");
+}
 
 if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
@@ -17,6 +24,38 @@ Bun.serve({
 	port: config.http.port,
 	hostname: config.http.base_url || "0.0.0.0", // defaults to "0.0.0.0"
 	async fetch(req) {
+		if (config.logging.log_requests_verbose) {
+			await appendFile(
+				`${process.cwd()}/logs/requests.log`,
+				`[${new Date().toISOString()}] ${req.method} ${
+					req.url
+				}\n\tHeaders:\n`
+			);
+
+			// Add headers
+
+			const headers = req.headers.entries();
+
+			for (const [key, value] of headers) {
+				await appendFile(
+					`${process.cwd()}/logs/requests.log`,
+					`\t\t${key}: ${value}\n`
+				);
+			}
+
+			const body = await req.clone().text();
+
+			await appendFile(
+				`${process.cwd()}/logs/requests.log`,
+				`\tBody:\n\t${body}\n`
+			);
+		} else if (config.logging.log_requests) {
+			await appendFile(
+				process.cwd() + "/logs/requests.log",
+				`[${new Date().toISOString()}] ${req.method} ${req.url}\n`
+			);
+		}
+
 		const matchedRoute = router.match(req);
 
 		if (matchedRoute) {
