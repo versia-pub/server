@@ -150,6 +150,62 @@ describe("POST /@test/inbox", () => {
 			published: "2021-01-01T00:00:00.000Z",
 		});
 	});
+
+	test("should delete the Note object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}:${config.http.port}/@test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+				},
+				body: JSON.stringify({
+					"@context": "https://www.w3.org/ns/activitystreams",
+					type: "Delete",
+					id: "https://example.com/notes/1/activity",
+					actor: `${config.http.base_url}:${config.http.port}/@test`,
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
+					published: "2021-01-03T00:00:00.000Z",
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/1",
+						type: "Note",
+						content: "This note has been deleted!",
+						summary: null,
+						inReplyTo: null,
+						published: "2021-01-01T00:00:00.000Z",
+					},
+				}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const activity = await RawActivity.createQueryBuilder("activity")
+			// Where id is part of the jsonb column 'data'
+			.where("activity.data->>'id' = :id", {
+				id: "https://example.com/notes/1/activity",
+			})
+			.leftJoinAndSelect("activity.objects", "objects")
+			// Sort by most recent
+			.orderBy("activity.data->>'published'", "DESC")
+			.getOne();
+
+		expect(activity).not.toBeUndefined();
+		expect(activity?.data).toEqual({
+			"@context": "https://www.w3.org/ns/activitystreams",
+			type: "Delete",
+			id: "https://example.com/notes/1/activity",
+			actor: `${config.http.base_url}:${config.http.port}/@test`,
+			to: ["https://www.w3.org/ns/activitystreams#Public"],
+			cc: [],
+			published: "2021-01-03T00:00:00.000Z",
+		});
+
+		expect(activity?.objects).toHaveLength(0);
+	});
 });
 
 afterAll(async () => {

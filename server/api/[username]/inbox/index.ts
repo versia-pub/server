@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { getConfig } from "@config";
 import { errorResponse, jsonResponse } from "@response";
 import {
 	APAccept,
@@ -8,6 +9,7 @@ import {
 	APFollow,
 	APObject,
 	APReject,
+	APTombstone,
 	APUpdate,
 } from "activitypub-types";
 import { MatchedRoute } from "bun";
@@ -25,6 +27,8 @@ export default async (
 	if (req.method !== "POST") {
 		return errorResponse("Method not allowed", 405);
 	}
+
+	const config = getConfig();
 
 	// Process request body
 	const body: APActivity = await req.json();
@@ -113,7 +117,35 @@ export default async (
 
 			if (!object) return errorResponse("Object not found", 404);
 
-			await object.remove();
+			const activities = await RawActivity.findBy({
+				objects: {
+					id: (body.object as RawObject).id,
+				},
+			});
+
+			if (config.activitypub.use_tombstones) {
+				object.data = {
+					...object.data,
+					type: "Tombstone",
+					deleted: new Date(),
+					formerType: object.data.type,
+				} as APTombstone;
+
+				await object.save();
+			} else {
+				activities.forEach(
+					activity =>
+						(activity.objects = activity.objects.filter(
+							o => o.id !== object.id
+						))
+				);
+
+				await Promise.all(
+					activities.map(async activity => await activity.save())
+				);
+
+				await object.remove();
+			}
 			break;
 		}
 		case "Accept" as APAccept: {

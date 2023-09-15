@@ -1,3 +1,4 @@
+import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { Token } from "~database/entities/Token";
 
@@ -5,14 +6,15 @@ import { Token } from "~database/entities/Token";
  * Allows getting token from OAuth code
  */
 export default async (req: Request): Promise<Response> => {
-	const body = await req.formData();
-
-	const grant_type = body.get("grant_type")?.toString() || null;
-	const code = body.get("code")?.toString() || "";
-	const redirect_uri = body.get("redirect_uri")?.toString() || "";
-	const client_id = body.get("client_id")?.toString() || "";
-	const client_secret = body.get("client_secret")?.toString() || "";
-	const scope = body.get("scope")?.toString() || null;
+	const { grant_type, code, redirect_uri, client_id, client_secret, scope } =
+		await parseRequest<{
+			grant_type: string;
+			code: string;
+			redirect_uri: string;
+			client_id: string;
+			client_secret: string;
+			scope: string;
+		}>(req);
 
 	if (grant_type !== "authorization_code")
 		return errorResponse(

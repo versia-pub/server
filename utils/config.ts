@@ -8,10 +8,12 @@ export interface ConfigType {
 		password: string;
 		database: string;
 	};
+
 	http: {
 		port: number;
 		base_url: string;
 	};
+
 	validation: {
 		max_displayname_size: number;
 		max_bio_size: number;
@@ -28,11 +30,98 @@ export interface ConfigType {
 		email_blacklist: string[];
 		url_scheme_whitelist: string[];
 	};
+
+	activitypub: {
+		use_tombstones: boolean;
+	};
 	[key: string]: unknown;
 }
 
+export const configDefaults: ConfigType = {
+	http: {
+		port: 3000,
+		base_url: "http://0.0.0.0",
+	},
+	database: {
+		host: "localhost",
+		port: 5432,
+		username: "postgres",
+		password: "postgres",
+		database: "fediproject",
+	},
+	validation: {
+		max_displayname_size: 50,
+		max_bio_size: 6000,
+		max_note_size: 5000,
+		max_avatar_size: 5_000_000,
+		max_header_size: 5_000_000,
+		max_media_size: 40_000_000,
+		max_media_attachments: 4,
+		max_media_description_size: 1000,
+		max_username_size: 30,
+
+		username_blacklist: [
+			".well-known",
+			"~",
+			"about",
+			"activities",
+			"api",
+			"auth",
+			"dev",
+			"inbox",
+			"internal",
+			"main",
+			"media",
+			"nodeinfo",
+			"notice",
+			"oauth",
+			"objects",
+			"proxy",
+			"push",
+			"registration",
+			"relay",
+			"settings",
+			"status",
+			"tag",
+			"users",
+			"web",
+			"search",
+			"mfa",
+		],
+
+		blacklist_tempmail: false,
+
+		email_blacklist: [],
+
+		url_scheme_whitelist: [
+			"http",
+			"https",
+			"ftp",
+			"dat",
+			"dweb",
+			"gopher",
+			"hyper",
+			"ipfs",
+			"ipns",
+			"irc",
+			"xmpp",
+			"ircs",
+			"magnet",
+			"mailto",
+			"mumble",
+			"ssb",
+		],
+	},
+	activitypub: {
+		use_tombstones: true,
+	},
+};
+
 export const getConfig = () => {
-	return data as ConfigType;
+	return {
+		...configDefaults,
+		...(data as ConfigType),
+	};
 };
 
 export const getHost = () => {

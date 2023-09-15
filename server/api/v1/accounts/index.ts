@@ -1,4 +1,5 @@
 import { getConfig } from "@config";
+import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
 import { User } from "~database/entities/User";
@@ -9,14 +10,14 @@ import { User } from "~database/entities/User";
 export default async (req: Request): Promise<Response> => {
 	// TODO: Add Authorization check
 
-	const body: {
+	const body = await parseRequest<{
 		username: string;
 		email: string;
 		password: string;
 		agreement: boolean;
 		locale: string;
 		reason: string;
-	} = await req.json();
+	}>(req);
 
 	const config = getConfig();
 
@@ -63,28 +64,28 @@ export default async (req: Request): Promise<Response> => {
 	config.validation.max_username_size;
 
 	// Check if username is valid
-	if (!body.username.match(/^[a-zA-Z0-9_]+$/))
+	if (!body.username?.match(/^[a-zA-Z0-9_]+$/))
 		errors.details.username.push({
 			error: "ERR_INVALID",
 			description: `must only contain letters, numbers, and underscores`,
 		});
 
 	// Check if username is too long
-	if (body.username.length > config.validation.max_username_size)
+	if ((body.username?.length ?? 0) > config.validation.max_username_size)
 		errors.details.username.push({
 			error: "ERR_TOO_LONG",
 			description: `is too long (maximum is ${config.validation.max_username_size} characters)`,
 		});
 
 	// Check if username is too short
-	if (body.username.length < 3)
+	if ((body.username?.length ?? 0) < 3)
 		errors.details.username.push({
 			error: "ERR_TOO_SHORT",
 			description: `is too short (minimum is 3 characters)`,
 		});
 
 	// Check if username is reserved
-	if (config.validation.username_blacklist.includes(body.username))
+	if (config.validation.username_blacklist.includes(body.username ?? ""))
 		errors.details.username.push({
 			error: "ERR_RESERVED",
 			description: `is reserved`,
@@ -99,7 +100,7 @@ export default async (req: Request): Promise<Response> => {
 
 	// Check if email is valid
 	if (
-		!body.email.match(
+		!body.email?.match(
 			/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 		)
 	)
@@ -110,9 +111,9 @@ export default async (req: Request): Promise<Response> => {
 
 	// Check if email is blocked
 	if (
-		config.validation.email_blacklist.includes(body.email) ||
+		config.validation.email_blacklist.includes(body.email ?? "") ||
 		(config.validation.blacklist_tempmail &&
-			tempmailDomains.domains.includes(body.email.split("@")[1]))
+			tempmailDomains.domains.includes((body.email ?? "").split("@")[1]))
 	)
 		errors.details.email.push({
 			error: "ERR_BLOCKED",
@@ -148,9 +149,9 @@ export default async (req: Request): Promise<Response> => {
 
 	const newUser = new User();
 
-	newUser.username = body.username;
-	newUser.email = body.email;
-	newUser.password = await Bun.password.hash(body.password);
+	newUser.username = body.username ?? "";
+	newUser.email = body.email ?? "";
+	newUser.password = await Bun.password.hash(body.password ?? "");
 
 	// TODO: Return access token
 	return new Response();

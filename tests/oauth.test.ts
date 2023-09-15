@@ -89,7 +89,7 @@ describe("POST /auth/login/", () => {
 	});
 });
 
-describe("POST /v1/oauth/token/", () => {
+describe("POST /oauth/token/", () => {
 	test("should get an access token", async () => {
 		const formData = new FormData();
 
@@ -101,7 +101,7 @@ describe("POST /v1/oauth/token/", () => {
 		formData.append("scope", "read write");
 
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/v1/oauth/token/`,
+			`${config.http.base_url}:${config.http.port}/oauth/token/`,
 			{
 				method: "POST",
 				body: formData,

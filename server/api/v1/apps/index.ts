@@ -1,3 +1,4 @@
+import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { randomBytes } from "crypto";
 import { Application } from "~database/entities/Application";
@@ -6,12 +7,12 @@ import { Application } from "~database/entities/Application";
  * Creates a new application to obtain OAuth 2 credentials
  */
 export default async (req: Request): Promise<Response> => {
-	const body = await req.formData();
-
-	const client_name = body.get("client_name")?.toString() || null;
-	const redirect_uris = body.get("redirect_uris")?.toString() || null;
-	const scopes = body.get("scopes")?.toString() || null;
-	const website = body.get("website")?.toString() || null;
+	const { client_name, redirect_uris, scopes, website } = await parseRequest<{
+		client_name: string;
+		redirect_uris: string;
+		scopes: string;
+		website: string;
+	}>(req);
 
 	const application = new Application();
 

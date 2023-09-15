@@ -1,5 +1,6 @@
 import { getUserByToken } from "@auth";
 import { getConfig } from "@config";
+import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 
 /**
@@ -21,16 +22,18 @@ export default async (req: Request): Promise<Response> => {
 	if (!user) return errorResponse("Unauthorized", 401);
 
 	const config = getConfig();
-	const body = await req.formData();
 
-	const display_name = body.get("display_name")?.toString() || null;
-	const note = body.get("note")?.toString() || null;
-	// Avatar is a file element
-	const avatar = (body.get("avatar") as File | null) || null;
-	const header = (body.get("header") as File | null) || null;
-	const locked = body.get("locked")?.toString() || null;
-	const bot = body.get("bot")?.toString() || null;
-	const discoverable = body.get("discoverable")?.toString() || null;
+	const { display_name, note, avatar, header, locked, bot, discoverable } =
+		await parseRequest<{
+			display_name: string;
+			note: string;
+			avatar: File;
+			header: File;
+			locked: string;
+			bot: string;
+			discoverable: string;
+		}>(req);
+
 	// TODO: Implement other options like field or source
 	// const source_privacy = body.get("source[privacy]")?.toString() || null;
 	// const source_sensitive = body.get("source[sensitive]")?.toString() || null;
