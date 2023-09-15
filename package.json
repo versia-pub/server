@@ -2,6 +2,35 @@
 	"name": "fedi-project",
 	"module": "index.ts",
 	"type": "module",
+	"version": "0.0.1",
+	"description": "A project to build a federated social network",
+	"author": {
+		"email": "contact@cpluspatch.com",
+		"name": "CPlusPatch",
+		"url": "https://cpluspatch.com"
+	},
+	"bugs": {
+		"url": "https://github.com/CPlusPatch/fedi-project/issues"
+	},
+	"icon": "https://github.com/CPlusPatch/fedi-project",
+	"license": "AGPL-3.0",
+	"keywords": [
+		"federated",
+		"activitypub",
+		"bun"
+	],
+	"maintainers": [
+		{
+			"email": "contact@cpluspatch.com",
+			"name": "CPlusPatch",
+			"url": "https://cpluspatch.com"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CPlusPatch/fedi-project.git"
+	},
+	"private": true,
 	"scripts": {
 		"dev": "bun run index.ts",
 		"start": "bun run index.ts"
