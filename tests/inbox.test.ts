@@ -171,7 +171,7 @@ describe("POST /@test/inbox", () => {
 						"@context": "https://www.w3.org/ns/activitystreams",
 						id: "https://example.com/notes/1",
 						type: "Note",
-						content: "This note has been deleted!",
+						content: "This note has been edited!",
 						summary: null,
 						inReplyTo: null,
 						published: "2021-01-01T00:00:00.000Z",
@@ -204,7 +204,12 @@ describe("POST /@test/inbox", () => {
 			published: "2021-01-03T00:00:00.000Z",
 		});
 
-		expect(activity?.objects).toHaveLength(0);
+		// Can be 0 or 1 length depending on whether config.activitypub.use_tombstone is true or false
+		if (config.activitypub.use_tombstones) {
+			expect(activity?.objects).toHaveLength(1);
+		} else {
+			expect(activity?.objects).toHaveLength(0);
+		}
 	});
 });
 
