@@ -1,4 +1,4 @@
-# FediProject
+# Lysand
 
 ## What is this?
 
@@ -16,14 +16,14 @@ This project aims to be a fully featured social network, with a focus on privacy
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 
-> **Note**: We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run FediProject.
+> **Note**: We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
 ### Installation
 
 1. Clone this repository
 
 ```bash
-git clone https://github.com/CPlusPatch/fedi-project.git
+git clone https://github.com/CPlusPatch/lysand.git
 ```
 
 2. Install the dependencies
@@ -52,7 +52,7 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 > **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
-FediProject is currently able to federate basic `Note` objects with `Create`, `Update` and `Delete` activities supported.
+Lysand is currently able to federate basic `Note` objects with `Create`, `Update` and `Delete` activities supported.
 
 Planned federation features are:
 - Activities: `Follow`, `Accept`, `Reject`, `Block`, `Undo`, `Announce`, `Like`, `Dislike`, `Flag`, `Ignore` and more
@@ -60,7 +60,7 @@ Planned federation features are:
 
 ## API
 
-FediProject implements the Mastodon API, with some extensions. The API is currently in early alpha, and is not recommended for use in production.
+Lysand implements the Mastodon API, with some extensions. The API is currently in early alpha, and is not recommended for use in production.
 
 Working endpoints are:
 

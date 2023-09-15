@@ -8,7 +8,7 @@ const router = new Bun.FileSystemRouter({
 	dir: process.cwd() + "/server/api",
 });
 
-console.log("[+] Starting FediProject...");
+console.log("[+] Starting Lysand...");
 
 const config = getConfig();
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
@@ -73,4 +73,4 @@ Bun.serve({
 	},
 });
 
-console.log("[+] FediProject started!");
+console.log("[+] Lysand started!");

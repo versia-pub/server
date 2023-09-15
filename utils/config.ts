@@ -61,7 +61,7 @@ export const configDefaults: ConfigType = {
 		port: 5432,
 		username: "postgres",
 		password: "postgres",
-		database: "fediproject",
+		database: "lysand",
 	},
 	validation: {
 		max_displayname_size: 50,

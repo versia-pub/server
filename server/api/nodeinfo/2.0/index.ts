@@ -8,7 +8,7 @@ export default async (): Promise<Response> => {
 	// TODO: Implement this
 	return jsonResponse({
 		version: "2.0",
-		software: { name: "fediproject", version: "0.0.1" },
+		software: { name: "lysand", version: "0.0.1" },
 		protocols: ["activitypub"],
 		services: { outbound: [], inbound: [] },
 		usage: {

@@ -1,5 +1,5 @@
 {
-	"name": "fedi-project",
+	"name": "lysand",
 	"module": "index.ts",
 	"type": "module",
 	"version": "0.0.1",
@@ -10,9 +10,9 @@
 		"url": "https://cpluspatch.com"
 	},
 	"bugs": {
-		"url": "https://github.com/CPlusPatch/fedi-project/issues"
+		"url": "https://github.com/CPlusPatch/lysand/issues"
 	},
-	"icon": "https://github.com/CPlusPatch/fedi-project",
+	"icon": "https://github.com/CPlusPatch/lysand",
 	"license": "AGPL-3.0",
 	"keywords": [
 		"federated",
@@ -28,7 +28,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CPlusPatch/fedi-project.git"
+		"url": "git+https://github.com/CPlusPatch/lysand.git"
 	},
 	"private": true,
 	"scripts": {
