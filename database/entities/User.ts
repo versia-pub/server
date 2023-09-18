@@ -4,10 +4,15 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from "typeorm";
 import { APIAccount } from "~types/entities/account";
+import { RawActor } from "./RawActor";
+import { APActor } from "activitypub-types";
 
 const config = getConfig();
 
@@ -42,7 +47,18 @@ export class User extends BaseEntity {
 	@Column("varchar", {
 		default: "",
 	})
-	bio!: string;
+	note!: string;
+
+	@Column("boolean", {
+		default: false,
+	})
+	is_admin!: boolean;
+
+	@Column("varchar")
+	avatar!: string;
+
+	@Column("varchar")
+	header!: string;
 
 	@CreateDateColumn()
 	created_at!: Date;
@@ -55,6 +71,95 @@ export class User extends BaseEntity {
 
 	@Column("varchar")
 	private_key!: string;
+
+	@ManyToOne(() => RawActor, actor => actor.id)
+	actor!: RawActor;
+
+	@ManyToMany(() => RawActor, actor => actor.id)
+	@JoinTable()
+	following!: RawActor[];
+
+	static async getByActorId(id: string) {
+		return await User.createQueryBuilder("user")
+			// Objects is a many-to-many relationship
+			.leftJoinAndSelect("user.actor", "actor")
+			.leftJoinAndSelect("user.following", "following")
+			.where("actor.data @> :data", {
+				data: JSON.stringify({
+					id,
+				}),
+			})
+			.getOne();
+	}
+
+	static async createNew(data: {
+		username: string;
+		display_name?: string;
+		password: string;
+		email: string;
+		bio?: string;
+		avatar?: string;
+		header?: string;
+	}) {
+		const config = getConfig();
+		const user = new User();
+
+		user.username = data.username;
+		user.display_name = data.display_name ?? data.username;
+		user.password = await Bun.password.hash(data.password);
+		user.email = data.email;
+		user.note = data.bio ?? "";
+		user.avatar = data.avatar ?? config.defaults.avatar;
+		user.header = data.header ?? config.defaults.avatar;
+
+		await user.generateKeys();
+		await user.updateActor();
+
+		await user.save();
+		return user;
+	}
+
+	async updateActor() {
+		// Check if actor exists
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		const actor = this.actor ? this.actor : new RawActor();
+
+		actor.data = {
+			"@context": [
+				"https://www.w3.org/ns/activitystreams",
+				"https://w3id.org/security/v1",
+			],
+			id: `${config.http.base_url}/@${this.username}`,
+			type: "Person",
+			preferredUsername: this.username,
+			name: this.display_name,
+			inbox: `${config.http.base_url}/@${this.username}/inbox`,
+			outbox: `${config.http.base_url}/@${this.username}/outbox`,
+			followers: `${config.http.base_url}/@${this.username}/followers`,
+			following: `${config.http.base_url}/@${this.username}/following`,
+			manuallyApprovesFollowers: false,
+			summary: this.note,
+			icon: {
+				type: "Image",
+				url: this.avatar,
+			},
+			image: {
+				type: "Image",
+				url: this.header,
+			},
+			publicKey: {
+				id: `${config.http.base_url}/@${this.username}/actor#main-key`,
+				owner: `${config.http.base_url}/@${this.username}/actor`,
+				publicKeyPem: this.public_key,
+			},
+		} as APActor;
+
+		await actor.save();
+
+		this.actor = actor;
+		await this.save();
+		return actor;
+	}
 
 	async generateKeys(): Promise<void> {
 		// openssl genrsa -out private.pem 2048
@@ -110,7 +215,7 @@ export class User extends BaseEntity {
 			locked: false,
 			moved: null,
 			noindex: false,
-			note: this.bio,
+			note: this.note,
 			suspended: false,
 			url: `${config.http.base_url}/@${this.username}`,
 			username: this.username,

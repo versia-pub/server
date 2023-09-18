@@ -21,7 +21,7 @@ beforeAll(async () => {
 	user.username = "test";
 	user.password = await Bun.password.hash("test");
 	user.display_name = "";
-	user.bio = "";
+	user.note = "";
 
 	await user.generateKeys();
 

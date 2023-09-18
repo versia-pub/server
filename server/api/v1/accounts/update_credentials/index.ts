@@ -63,7 +63,7 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
-		user.bio = note;
+		user.note = note;
 	}
 
 	if (avatar) {

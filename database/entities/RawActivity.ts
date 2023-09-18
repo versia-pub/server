@@ -10,6 +10,7 @@ import { APActivity, APActor, APObject, APTombstone } from "activitypub-types";
 import { RawObject } from "./RawObject";
 import { RawActor } from "./RawActor";
 import { getConfig } from "@config";
+import { errorResponse } from "@response";
 
 /**
  * Stores an ActivityPub activity as raw JSON-LD data
@@ -81,19 +82,19 @@ export class RawActivity extends BaseEntity {
 
 			// Check if object body contains any filtered terms
 			if (await rawObject.isObjectFiltered())
-				return new Error("Object filtered");
+				return errorResponse("Object filtered", 409);
 
 			await rawObject.save();
 			return rawObject;
 		} else {
-			return new Error("Object does not exist");
+			return errorResponse("Object does not exist", 404);
 		}
 	}
 
 	static async deleteObjectIfExists(object: APObject) {
 		const dbObject = await RawObject.getById(object.id ?? "");
 
-		if (!dbObject) return new Error("Object not found");
+		if (!dbObject) return errorResponse("Object does not exist", 404);
 
 		const config = getConfig();
 
@@ -139,7 +140,7 @@ export class RawActivity extends BaseEntity {
 				activity.actor as APActor
 			);
 
-			if (actor instanceof Error) {
+			if (actor instanceof Response) {
 				return actor;
 			}
 
@@ -147,14 +148,14 @@ export class RawActivity extends BaseEntity {
 				activity.object as APObject
 			);
 
-			if (object instanceof Error) {
+			if (object instanceof Response) {
 				return object;
 			}
 
 			await rawActivity.save();
 			return rawActivity;
 		} else {
-			return new Error("Activity already exists");
+			return errorResponse("Activity already exists", 409);
 		}
 	}
 
@@ -165,7 +166,7 @@ export class RawActivity extends BaseEntity {
 
 			// Check if object body contains any filtered terms
 			if (await rawObject.isObjectFiltered())
-				return new Error("Object filtered");
+				return errorResponse("Object filtered", 409);
 
 			await rawObject.save();
 
@@ -173,7 +174,7 @@ export class RawActivity extends BaseEntity {
 
 			return rawObject;
 		} else {
-			return new Error("Object already exists");
+			return errorResponse("Object already exists", 409);
 		}
 	}
 
@@ -201,7 +202,7 @@ export class RawActivity extends BaseEntity {
 			}
 
 			if (await rawActor.isObjectFiltered()) {
-				return new Error("Actor filtered");
+				return errorResponse("Actor filtered", 409);
 			}
 
 			await rawActor.save();
@@ -210,7 +211,7 @@ export class RawActivity extends BaseEntity {
 
 			return rawActor;
 		} else {
-			return new Error("Actor already exists");
+			return errorResponse("Actor already exists", 409);
 		}
 	}
 }

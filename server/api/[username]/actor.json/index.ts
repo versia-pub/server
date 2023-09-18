@@ -86,7 +86,7 @@ export default async (
 			type: "Person",
 			preferredUsername: user.username, // TODO: Add user display name
 			name: user.username,
-			summary: user.bio,
+			summary: user.note,
 			icon: /*{
 				type: "Image",
 				url: user.avatar,

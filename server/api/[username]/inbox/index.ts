@@ -4,6 +4,7 @@ import { errorResponse, jsonResponse } from "@response";
 import {
 	APAccept,
 	APActivity,
+	APActor,
 	APCreate,
 	APDelete,
 	APFollow,
@@ -14,6 +15,8 @@ import {
 } from "activitypub-types";
 import { MatchedRoute } from "bun";
 import { RawActivity } from "~database/entities/RawActivity";
+import { RawActor } from "~database/entities/RawActor";
+import { User } from "~database/entities/User";
 
 /**
  * ActivityPub user inbox endpoint
@@ -44,8 +47,8 @@ export default async (
 			// Check is Activity already exists
 			const activity = await RawActivity.addIfNotExists(body);
 
-			if (activity instanceof Error) {
-				return errorResponse(activity.message, 409);
+			if (activity instanceof Response) {
+				return activity;
 			}
 			break;
 		}
@@ -58,14 +61,14 @@ export default async (
 				body.object as APObject
 			);
 
-			if (object instanceof Error) {
-				return errorResponse(object.message, 409);
+			if (object instanceof Response) {
+				return object;
 			}
 
 			const activity = await RawActivity.addIfNotExists(body);
 
-			if (activity instanceof Error) {
-				return errorResponse(activity.message, 409);
+			if (activity instanceof Response) {
+				return activity;
 			}
 
 			break;
@@ -78,19 +81,67 @@ export default async (
 			await RawActivity.deleteObjectIfExists(body.object as APObject);
 
 			// Store the Delete event in the database
-			const activity = RawActivity.addIfNotExists(body);
+			const activity = await RawActivity.addIfNotExists(body);
+
+			if (activity instanceof Response) {
+				return activity;
+			}
 			break;
 		}
 		case "Accept" as APAccept: {
 			// Body is an APAccept object
 			// Add the actor to the object actor's followers list
-			// TODO: Add actor to object actor's followers list
+
+			if ((body.object as APFollow).type === "Follow") {
+				const user = await User.getByActorId(
+					((body.object as APFollow).actor as APActor).id ?? ""
+				);
+
+				if (!user) {
+					return errorResponse("User not found", 404);
+				}
+
+				const actor = await RawActor.addIfNotExists(
+					body.actor as APActor
+				);
+
+				if (actor instanceof Response) {
+					return actor;
+				}
+
+				user.following.push(actor);
+
+				await user.save();
+			}
 			break;
 		}
 		case "Reject" as APReject: {
 			// Body is an APReject object
 			// Mark the follow request as not pending
-			// TODO: Implement
+
+			if ((body.object as APFollow).type === "Follow") {
+				const user = await User.getByActorId(
+					((body.object as APFollow).actor as APActor).id ?? ""
+				);
+
+				if (!user) {
+					return errorResponse("User not found", 404);
+				}
+
+				const actor = await RawActor.addIfNotExists(
+					body.actor as APActor
+				);
+
+				if (actor instanceof Response) {
+					return actor;
+				}
+
+				user.following = user.following.filter(
+					following => following.id !== actor.id
+				);
+
+				await user.save();
+			}
 			break;
 		}
 	}

@@ -2,6 +2,7 @@ import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { APActor } from "activitypub-types";
 import { getConfig } from "@config";
 import { appendFile } from "fs/promises";
+import { errorResponse } from "@response";
 
 /**
  * Stores an ActivityPub actor as raw JSON-LD data
@@ -22,6 +23,40 @@ export class RawActor extends BaseEntity {
 				id,
 			})
 			.getOne();
+	}
+
+	static async addIfNotExists(data: APActor) {
+		if (!(await RawActor.exists(data.id ?? ""))) {
+			const actor = new RawActor();
+			actor.data = data;
+
+			const config = getConfig();
+
+			if (
+				config.activitypub.discard_avatars.find(instance =>
+					actor.id.includes(instance)
+				)
+			) {
+				actor.data.icon = undefined;
+			}
+
+			if (
+				config.activitypub.discard_banners.find(instance =>
+					actor.id.includes(instance)
+				)
+			) {
+				actor.data.image = undefined;
+			}
+
+			if (await actor.isObjectFiltered()) {
+				return errorResponse("Actor filtered", 409);
+			}
+
+			await actor.save();
+
+			return actor;
+		}
+		return errorResponse("Actor already exists", 409);
 	}
 
 	async isObjectFiltered() {

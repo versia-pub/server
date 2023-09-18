@@ -31,6 +31,13 @@ export interface ConfigType {
 		url_scheme_whitelist: string[];
 	};
 
+	defaults: {
+		visibility: string;
+		language: string;
+		avatar: string;
+		header: string;
+	};
+
 	activitypub: {
 		use_tombstones: boolean;
 		reject_activities: string[];
@@ -133,6 +140,12 @@ export const configDefaults: ConfigType = {
 			"mumble",
 			"ssb",
 		],
+	},
+	defaults: {
+		visibility: "public",
+		language: "en",
+		avatar: "",
+		header: "",
 	},
 	activitypub: {
 		use_tombstones: true,
