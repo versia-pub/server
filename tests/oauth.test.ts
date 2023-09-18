@@ -23,6 +23,8 @@ beforeAll(async () => {
 	user.display_name = "";
 	user.bio = "";
 
+	await user.generateKeys();
+
 	await user.save();
 });
 

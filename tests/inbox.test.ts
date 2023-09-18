@@ -19,6 +19,8 @@ beforeAll(async () => {
 	user.display_name = "";
 	user.bio = "";
 
+	await user.generateKeys();
+
 	await user.save();
 });
 
@@ -55,13 +57,9 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.createQueryBuilder("activity")
-			// id is part of the jsonb column 'data'
-			.where("activity.data->>'id' = :id", {
-				id: "https://example.com/notes/1/activity",
-			})
-			.leftJoinAndSelect("activity.objects", "objects")
-			.getOne();
+		const activity = await RawActivity.getLatestById(
+			"https://example.com/notes/1/activity"
+		);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({
@@ -118,15 +116,9 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.createQueryBuilder("activity")
-			// Where id is part of the jsonb column 'data'
-			.where("activity.data->>'id' = :id", {
-				id: "https://example.com/notes/1/activity",
-			})
-			.leftJoinAndSelect("activity.objects", "objects")
-			// Sort by most recent
-			.orderBy("activity.data->>'published'", "DESC")
-			.getOne();
+		const activity = await RawActivity.getLatestById(
+			"https://example.com/notes/1/activity"
+		);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({
@@ -183,15 +175,9 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.createQueryBuilder("activity")
-			// Where id is part of the jsonb column 'data'
-			.where("activity.data->>'id' = :id", {
-				id: "https://example.com/notes/1/activity",
-			})
-			.leftJoinAndSelect("activity.objects", "objects")
-			// Sort by most recent
-			.orderBy("activity.data->>'published'", "DESC")
-			.getOne();
+		const activity = await RawActivity.getLatestById(
+			"https://example.com/notes/1/activity"
+		);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({

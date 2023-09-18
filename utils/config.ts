@@ -33,6 +33,14 @@ export interface ConfigType {
 
 	activitypub: {
 		use_tombstones: boolean;
+		reject_activities: string[];
+		force_followers_only: string[];
+		discard_reports: string[];
+		discard_deletes: string[];
+		discard_banners: string[];
+		discard_avatars: string[];
+		force_sensitive: string[];
+		remove_media: string[];
 	};
 
 	filters: {
@@ -128,6 +136,14 @@ export const configDefaults: ConfigType = {
 	},
 	activitypub: {
 		use_tombstones: true,
+		reject_activities: [],
+		force_followers_only: [],
+		discard_reports: [],
+		discard_deletes: [],
+		discard_banners: [],
+		discard_avatars: [],
+		force_sensitive: [],
+		remove_media: [],
 	},
 	filters: {
 		note_filters: [],

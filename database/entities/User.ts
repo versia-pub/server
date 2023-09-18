@@ -50,6 +50,48 @@ export class User extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at!: Date;
 
+	@Column("varchar")
+	public_key!: string;
+
+	@Column("varchar")
+	private_key!: string;
+
+	async generateKeys(): Promise<void> {
+		// openssl genrsa -out private.pem 2048
+		// openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+
+		const keys = await crypto.subtle.generateKey(
+			{
+				name: "RSASSA-PKCS1-v1_5",
+				hash: "SHA-256",
+				modulusLength: 4096,
+				publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+			},
+			true,
+			["sign", "verify"]
+		);
+
+		const privateKey = btoa(
+			String.fromCharCode.apply(null, [
+				...new Uint8Array(
+					await crypto.subtle.exportKey("pkcs8", keys.privateKey)
+				),
+			])
+		);
+		const publicKey = btoa(
+			String.fromCharCode(
+				...new Uint8Array(
+					await crypto.subtle.exportKey("spki", keys.publicKey)
+				)
+			)
+		);
+
+		// Add header, footer and newlines later on
+		// These keys are PEM encrypted
+		this.private_key = privateKey;
+		this.public_key = publicKey;
+	}
+
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async toAPI(): Promise<APIAccount> {
 		return {
