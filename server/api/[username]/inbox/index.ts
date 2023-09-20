@@ -144,6 +144,29 @@ export default async (
 			}
 			break;
 		}
+		case "Follow" as APFollow: {
+			// Body is an APFollow object
+			// Add the actor to the object actor's followers list
+
+			const user = await User.getByActorId(
+				(body.actor as APActor).id ?? ""
+			);
+
+			if (!user) {
+				return errorResponse("User not found", 404);
+			}
+
+			const actor = await RawActor.addIfNotExists(body.actor as APActor);
+
+			if (actor instanceof Response) {
+				return actor;
+			}
+
+			user.followers.push(actor);
+
+			await user.save();
+			break;
+		}
 	}
 
 	return jsonResponse({});

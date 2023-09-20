@@ -147,11 +147,11 @@ export default async (req: Request): Promise<Response> => {
 
 	// TODO: Check if locale is valid
 
-	const newUser = new User();
-
-	newUser.username = body.username ?? "";
-	newUser.email = body.email ?? "";
-	newUser.password = await Bun.password.hash(body.password ?? "");
+	await User.createNew({
+		username: body.username ?? "",
+		password: body.password ?? "",
+		email: body.email ?? "",
+	});
 
 	// TODO: Return access token
 	return new Response();

@@ -1,8 +1,9 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { APActor } from "activitypub-types";
-import { getConfig } from "@config";
+import { APActor, APOrderedCollectionPage, IconField } from "activitypub-types";
+import { getConfig, getHost } from "@config";
 import { appendFile } from "fs/promises";
 import { errorResponse } from "@response";
+import { APIAccount } from "~types/entities/account";
 
 /**
  * Stores an ActivityPub actor as raw JSON-LD data
@@ -17,7 +18,10 @@ export class RawActor extends BaseEntity {
 	@Column("jsonb")
 	data!: APActor;
 
-	static async getById(id: string) {
+	@Column("jsonb")
+	followers!: string[];
+
+	static async getByActorId(id: string) {
 		return await RawActor.createQueryBuilder("actor")
 			.where("actor.data->>'id' = :id", {
 				id,
@@ -57,6 +61,98 @@ export class RawActor extends BaseEntity {
 			return actor;
 		}
 		return errorResponse("Actor already exists", 409);
+	}
+
+	getInstanceDomain() {
+		return new URL(this.data.id ?? "").host;
+	}
+
+	async fetchFollowers() {
+		// Fetch follower list using ActivityPub
+
+		// Loop to fetch all followers until there are no more pages
+		let followers: APOrderedCollectionPage = await fetch(
+			`${this.data.followers?.toString() ?? ""}?page=1`,
+			{
+				headers: {
+					Accept: "application/activity+json",
+				},
+			}
+		);
+
+		let followersList = followers.orderedItems ?? [];
+
+		while (followers.type === "OrderedCollectionPage" && followers.next) {
+			// Fetch next page
+			// eslint-disable-next-line @typescript-eslint/no-base-to-string
+			followers = await fetch(followers.next.toString(), {
+				headers: {
+					Accept: "application/activity+json",
+				},
+			}).then(res => res.json());
+
+			// Add new followers to list
+			followersList = {
+				...followersList,
+				...(followers.orderedItems ?? []),
+			};
+		}
+
+		this.followers = followersList as string[];
+	}
+
+	// eslint-disable-next-line @typescript-eslint/require-await
+	async toAPIAccount(isOwnAccount = false): Promise<APIAccount> {
+		const config = getConfig();
+		return {
+			id: this.id,
+			username: this.data.preferredUsername ?? "",
+			display_name: this.data.name ?? this.data.preferredUsername ?? "",
+			note: this.data.summary ?? "",
+			url: `${config.http.base_url}:${config.http.port}/@${
+				this.data.preferredUsername
+			}@${this.getInstanceDomain()}`,
+			// @ts-expect-error It actually works
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			avatar: (this.data.icon as IconField).url ?? config.defaults.avatar,
+			// @ts-expect-error It actually works
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			header: this.data.image?.url ?? config.defaults.header,
+			locked: false,
+			created_at: new Date(this.data.published ?? 0).toISOString(),
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			followers_count: 0,
+			following_count: 0,
+			statuses_count: 0,
+			emojis: [],
+			fields: [],
+			bot: false,
+			source: isOwnAccount
+				? {
+						privacy: "public",
+						sensitive: false,
+						language: "en",
+						note: "",
+						fields: [],
+				  }
+				: undefined,
+			avatar_static: "",
+			header_static: "",
+			acct:
+				this.getInstanceDomain() == getHost()
+					? `${this.data.preferredUsername}`
+					: `${
+							this.data.preferredUsername
+					  }@${this.getInstanceDomain()}`,
+			limited: false,
+			moved: null,
+			noindex: false,
+			suspended: false,
+			discoverable: undefined,
+			mute_expires_at: undefined,
+			group: false,
+			role: undefined,
+		};
 	}
 
 	async isObjectFiltered() {
@@ -109,6 +205,6 @@ export class RawActor extends BaseEntity {
 	}
 
 	static async exists(id: string) {
-		return !!(await RawActor.getById(id));
+		return !!(await RawActor.getByActorId(id));
 	}
 }

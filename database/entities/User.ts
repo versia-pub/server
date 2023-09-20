@@ -13,6 +13,7 @@ import {
 import { APIAccount } from "~types/entities/account";
 import { RawActor } from "./RawActor";
 import { APActor } from "activitypub-types";
+import { RawObject } from "./RawObject";
 
 const config = getConfig();
 
@@ -79,11 +80,20 @@ export class User extends BaseEntity {
 	@JoinTable()
 	following!: RawActor[];
 
+	@ManyToMany(() => RawActor, actor => actor.id)
+	@JoinTable()
+	followers!: RawActor[];
+
+	@ManyToMany(() => RawObject, object => object.id)
+	@JoinTable()
+	pinned_notes!: RawObject[];
+
 	static async getByActorId(id: string) {
 		return await User.createQueryBuilder("user")
 			// Objects is a many-to-many relationship
 			.leftJoinAndSelect("user.actor", "actor")
 			.leftJoinAndSelect("user.following", "following")
+			.leftJoinAndSelect("user.followers", "followers")
 			.where("actor.data @> :data", {
 				data: JSON.stringify({
 					id,
