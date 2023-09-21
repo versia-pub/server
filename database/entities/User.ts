@@ -122,6 +122,9 @@ export class User extends BaseEntity {
 		user.avatar = data.avatar ?? config.defaults.avatar;
 		user.header = data.header ?? config.defaults.avatar;
 
+		user.followers = [];
+		user.following = [];
+
 		await user.generateKeys();
 		await user.updateActor();
 

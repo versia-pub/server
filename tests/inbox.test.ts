@@ -11,21 +11,18 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	const user = new User();
-
-	user.email = "test@test.com";
-	user.username = "test";
-	user.password = await Bun.password.hash("test");
-	user.display_name = "";
-	user.note = "";
-
-	await user.generateKeys();
-
-	await user.save();
+	await User.createNew({
+		email: "test@test.com",
+		username: "test",
+		password: "test",
+		display_name: "",
+	});
 });
 
 describe("POST /@test/inbox", () => {
 	test("should store a new Note object", async () => {
+		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
+
 		const response = await fetch(
 			`${config.http.base_url}:${config.http.port}/@test/inbox/`,
 			{
@@ -36,8 +33,12 @@ describe("POST /@test/inbox", () => {
 				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
 					type: "Create",
-					id: "https://example.com/notes/1/activity",
-					actor: `${config.http.base_url}:${config.http.port}/@test`,
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}:${config.http.port}/@test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
 					to: ["https://www.w3.org/ns/activitystreams#Public"],
 					cc: [],
 					published: "2021-01-01T00:00:00.000Z",
@@ -57,16 +58,13 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.getLatestById(
-			"https://example.com/notes/1/activity"
-		);
+		const activity = await RawActivity.getLatestById(activityId);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({
 			"@context": "https://www.w3.org/ns/activitystreams",
 			type: "Create",
-			id: "https://example.com/notes/1/activity",
-			actor: `${config.http.base_url}:${config.http.port}/@test`,
+			id: activityId,
 			to: ["https://www.w3.org/ns/activitystreams#Public"],
 			cc: [],
 			published: "2021-01-01T00:00:00.000Z",
@@ -85,6 +83,8 @@ describe("POST /@test/inbox", () => {
 	});
 
 	test("should try to update that Note object", async () => {
+		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
+
 		const response = await fetch(
 			`${config.http.base_url}:${config.http.port}/@test/inbox/`,
 			{
@@ -95,8 +95,12 @@ describe("POST /@test/inbox", () => {
 				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
 					type: "Update",
-					id: "https://example.com/notes/1/activity",
-					actor: `${config.http.base_url}:${config.http.port}/@test`,
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}:${config.http.port}/@test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
 					to: ["https://www.w3.org/ns/activitystreams#Public"],
 					cc: [],
 					published: "2021-01-02T00:00:00.000Z",
@@ -116,16 +120,13 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.getLatestById(
-			"https://example.com/notes/1/activity"
-		);
+		const activity = await RawActivity.getLatestById(activityId);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({
 			"@context": "https://www.w3.org/ns/activitystreams",
 			type: "Update",
-			id: "https://example.com/notes/1/activity",
-			actor: `${config.http.base_url}:${config.http.port}/@test`,
+			id: activityId,
 			to: ["https://www.w3.org/ns/activitystreams#Public"],
 			cc: [],
 			published: "2021-01-02T00:00:00.000Z",
@@ -144,6 +145,7 @@ describe("POST /@test/inbox", () => {
 	});
 
 	test("should delete the Note object", async () => {
+		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 		const response = await fetch(
 			`${config.http.base_url}:${config.http.port}/@test/inbox/`,
 			{
@@ -154,8 +156,12 @@ describe("POST /@test/inbox", () => {
 				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
 					type: "Delete",
-					id: "https://example.com/notes/1/activity",
-					actor: `${config.http.base_url}:${config.http.port}/@test`,
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}:${config.http.port}/@test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
 					to: ["https://www.w3.org/ns/activitystreams#Public"],
 					cc: [],
 					published: "2021-01-03T00:00:00.000Z",
@@ -175,19 +181,23 @@ describe("POST /@test/inbox", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const activity = await RawActivity.getLatestById(
-			"https://example.com/notes/1/activity"
-		);
+		const activity = await RawActivity.getLatestById(activityId);
 
 		expect(activity).not.toBeUndefined();
 		expect(activity?.data).toEqual({
 			"@context": "https://www.w3.org/ns/activitystreams",
 			type: "Delete",
-			id: "https://example.com/notes/1/activity",
-			actor: `${config.http.base_url}:${config.http.port}/@test`,
+			id: activityId,
 			to: ["https://www.w3.org/ns/activitystreams#Public"],
 			cc: [],
 			published: "2021-01-03T00:00:00.000Z",
+		});
+
+		expect(activity?.actors).toHaveLength(1);
+		expect(activity?.actors[0].data).toEqual({
+			preferredUsername: "test",
+			id: `${config.http.base_url}:${config.http.port}/@test`,
+			type: "Person",
 		});
 
 		// Can be 0 or 1 length depending on whether config.activitypub.use_tombstone is true or false
@@ -196,6 +206,41 @@ describe("POST /@test/inbox", () => {
 		} else {
 			expect(activity?.objects).toHaveLength(0);
 		}
+	});
+
+	test("should return a 404 error when trying to delete a non-existent Note object", async () => {
+		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
+
+		const response = await fetch(
+			`${config.http.base_url}:${config.http.port}/@test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+				},
+				body: JSON.stringify({
+					"@context": "https://www.w3.org/ns/activitystreams",
+					type: "Delete",
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}:${config.http.port}/@test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
+					published: "2021-01-03T00:00:00.000Z",
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/2345678909876543",
+						type: "Note",
+					},
+				}),
+			}
+		);
+
+		expect(response.status).toBe(404);
+		expect(response.headers.get("content-type")).toBe("application/json");
 	});
 });
 
@@ -213,10 +258,16 @@ afterAll(async () => {
 	});
 
 	const activities = await RawActivity.createQueryBuilder("activity")
-		.where("activity.data->>'actor' = :actor", {
-			actor: `${config.http.base_url}:${config.http.port}/@test`,
-		})
+		// Join objects
 		.leftJoinAndSelect("activity.objects", "objects")
+		.leftJoinAndSelect("activity.actors", "actors")
+		// activity.actors is a many-to-many relationship with Actor objects (it is an array of Actor objects)
+		// Get the actors of the activity that have data.id as `${config.http.base_url}:${config.http.port}/@test`
+		.where("actors.data @> :data", {
+			data: JSON.stringify({
+				id: `${config.http.base_url}:${config.http.port}/@test`,
+			}),
+		})
 		.getMany();
 
 	// Delete all created objects and activities as part of testing

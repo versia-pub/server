@@ -65,9 +65,10 @@ export default async (
 				return object;
 			}
 
-			const activity = await RawActivity.addIfNotExists(body);
+			const activity = await RawActivity.addIfNotExists(body, object);
 
 			if (activity instanceof Response) {
+				console.log(await activity.text());
 				return activity;
 			}
 
@@ -78,7 +79,13 @@ export default async (
 			// Delete the object from database
 			// TODO: Add authentication
 
-			await RawActivity.deleteObjectIfExists(body.object as APObject);
+			const response = await RawActivity.deleteObjectIfExists(
+				body.object as APObject
+			);
+
+			if (response instanceof Response) {
+				return response;
+			}
 
 			// Store the Delete event in the database
 			const activity = await RawActivity.addIfNotExists(body);

@@ -18,7 +18,9 @@ export class RawActor extends BaseEntity {
 	@Column("jsonb")
 	data!: APActor;
 
-	@Column("jsonb")
+	@Column("jsonb", {
+		default: [],
+	})
 	followers!: string[];
 
 	static async getByActorId(id: string) {
@@ -33,6 +35,7 @@ export class RawActor extends BaseEntity {
 		if (!(await RawActor.exists(data.id ?? ""))) {
 			const actor = new RawActor();
 			actor.data = data;
+			actor.followers = [];
 
 			const config = getConfig();
 

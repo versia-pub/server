@@ -15,17 +15,12 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	const user = new User();
-
-	user.email = "test@test.com";
-	user.username = "test";
-	user.password = await Bun.password.hash("test");
-	user.display_name = "";
-	user.note = "";
-
-	await user.generateKeys();
-
-	await user.save();
+	await User.createNew({
+		email: "test@test.com",
+		username: "test",
+		password: "test",
+		display_name: "",
+	});
 });
 
 describe("POST /v1/apps/", () => {
