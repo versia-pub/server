@@ -112,7 +112,7 @@ export class RawActor extends BaseEntity {
 			username: this.data.preferredUsername ?? "",
 			display_name: this.data.name ?? this.data.preferredUsername ?? "",
 			note: this.data.summary ?? "",
-			url: `${config.http.base_url}:${config.http.port}/@${
+			url: `${config.http.base_url}/@${
 				this.data.preferredUsername
 			}@${this.getInstanceDomain()}`,
 			// @ts-expect-error It actually works

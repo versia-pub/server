@@ -21,8 +21,8 @@ if (!(await requests_log.exists())) {
 if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 Bun.serve({
-	port: config.http.port,
-	hostname: config.http.base_url || "0.0.0.0", // defaults to "0.0.0.0"
+	port: config.http.bind_port,
+	hostname: config.http.bind || "0.0.0.0", // defaults to "0.0.0.0"
 	async fetch(req) {
 		if (config.logging.log_requests_verbose) {
 			await appendFile(

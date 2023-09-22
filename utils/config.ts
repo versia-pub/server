@@ -10,8 +10,9 @@ export interface ConfigType {
 	};
 
 	http: {
-		port: number;
 		base_url: string;
+		bind: string;
+		bind_port: string;
 	};
 
 	validation: {
@@ -68,8 +69,9 @@ export interface ConfigType {
 
 export const configDefaults: ConfigType = {
 	http: {
-		port: 3000,
-		base_url: "http://0.0.0.0",
+		bind: "http://0.0.0.0",
+		bind_port: "8000",
+		base_url: "http://fediproject.localhost:8000",
 	},
 	database: {
 		host: "localhost",

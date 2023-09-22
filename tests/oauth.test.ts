@@ -32,13 +32,10 @@ describe("POST /api/v1/apps/", () => {
 		formData.append("website", "https://example.com");
 		formData.append("redirect_uris", "https://example.com");
 		formData.append("scopes", "read write");
-		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/api/v1/apps/`,
-			{
-				method: "POST",
-				body: formData,
-			}
-		);
+		const response = await fetch(`${config.http.base_url}/api/v1/apps/`, {
+			method: "POST",
+			body: formData,
+		});
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -70,7 +67,7 @@ describe("POST /auth/login/", () => {
 		formData.append("username", "test");
 		formData.append("password", "test");
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scopes=read+write`,
+			`${config.http.base_url}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scopes=read+write`,
 			{
 				method: "POST",
 				body: formData,
@@ -98,13 +95,10 @@ describe("POST /oauth/token/", () => {
 		formData.append("client_secret", client_secret);
 		formData.append("scope", "read write");
 
-		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/oauth/token/`,
-			{
-				method: "POST",
-				body: formData,
-			}
-		);
+		const response = await fetch(`${config.http.base_url}/oauth/token/`, {
+			method: "POST",
+			body: formData,
+		});
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
 		const json = await response.json();
@@ -126,7 +120,7 @@ describe("POST /oauth/token/", () => {
 describe("GET /api/v1/apps/verify_credentials", () => {
 	test("should return the authenticated application's credentials", async () => {
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/api/v1/apps/verify_credentials`,
+			`${config.http.base_url}/api/v1/apps/verify_credentials`,
 			{
 				method: "GET",
 				headers: {

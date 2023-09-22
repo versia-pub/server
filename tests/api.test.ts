@@ -54,7 +54,7 @@ beforeAll(async () => {
 describe("POST /api/v1/accounts/:id", () => {
 	test("should return a 404 error when trying to fetch a non-existent user", async () => {
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/api/v1/accounts/999999`,
+			`${config.http.base_url}/api/v1/accounts/999999`,
 			{
 				method: "GET",
 				headers: {
@@ -72,7 +72,7 @@ describe("POST /api/v1/accounts/:id", () => {
 describe("POST /api/v1/statuses", () => {
 	test("should create a new status and return an APIStatus object", async () => {
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/api/v1/statuses`,
+			`${config.http.base_url}/api/v1/statuses`,
 			{
 				method: "POST",
 				headers: {
@@ -117,7 +117,7 @@ describe("POST /api/v1/statuses", () => {
 describe("PATCH /api/v1/accounts/update_credentials", () => {
 	test("should update the authenticated user's display name", async () => {
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/api/v1/accounts/update_credentials`,
+			`${config.http.base_url}/api/v1/accounts/update_credentials`,
 			{
 				method: "PATCH",
 				headers: {
@@ -139,6 +139,47 @@ describe("PATCH /api/v1/accounts/update_credentials", () => {
 	});
 });
 
+describe("GET /api/v1/accounts/verify_credentials", () => {
+	test("should return the authenticated user's account information", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/verify_credentials`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIAccount = await response.json();
+
+		expect(account.username).toBe(user.username);
+		expect(account.bot).toBe(false);
+		expect(account.locked).toBe(false);
+		expect(account.created_at).toBeDefined();
+		expect(account.followers_count).toBe(0);
+		expect(account.following_count).toBe(0);
+		expect(account.statuses_count).toBe(0);
+		expect(account.note).toBe("");
+		expect(account.url).toBe(`${config.http.base_url}/@${user.username}`);
+		expect(account.avatar).toBeDefined();
+		expect(account.avatar_static).toBeDefined();
+		expect(account.header).toBeDefined();
+		expect(account.header_static).toBeDefined();
+		expect(account.emojis).toEqual([]);
+		expect(account.fields).toEqual([]);
+		expect(account.source?.fields).toEqual([]);
+		expect(account.source?.privacy).toBe("public");
+		expect(account.source?.language).toBeNull();
+		expect(account.source?.note).toBe("");
+		expect(account.source?.sensitive).toBe(false);
+	});
+});
+
 afterAll(async () => {
 	const user = await User.findOneBy({
 		username: "test",
@@ -146,7 +187,7 @@ afterAll(async () => {
 
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {
-			actor: `${config.http.base_url}:${config.http.port}/@test`,
+			actor: `${config.http.base_url}/@test`,
 		})
 		.leftJoinAndSelect("activity.objects", "objects")
 		.getMany();

@@ -5,7 +5,6 @@ import { appendFile } from "fs/promises";
 import { APIStatus } from "~types/entities/status";
 import { RawActor } from "./RawActor";
 import { APIAccount } from "~types/entities/account";
-import { User } from "./User";
 
 /**
  * Stores an ActivityPub object as raw JSON-LD data
@@ -26,10 +25,6 @@ export class RawObject extends BaseEntity {
 				id,
 			})
 			.getOne();
-	}
-
-	async isPinned() {
-		
 	}
 
 	async toAPI(): Promise<APIStatus> {

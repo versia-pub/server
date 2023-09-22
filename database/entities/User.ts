@@ -16,6 +16,7 @@ import { APActor } from "activitypub-types";
 import { RawObject } from "./RawObject";
 import { Token } from "./Token";
 import { Status } from "./Status";
+import { APISource } from "~types/entities/source";
 
 const config = getConfig();
 
@@ -56,6 +57,9 @@ export class User extends BaseEntity {
 		default: false,
 	})
 	is_admin!: boolean;
+
+	@Column("jsonb")
+	source!: APISource;
 
 	@Column("varchar")
 	avatar!: string;
@@ -123,6 +127,14 @@ export class User extends BaseEntity {
 		user.note = data.bio ?? "";
 		user.avatar = data.avatar ?? config.defaults.avatar;
 		user.header = data.header ?? config.defaults.avatar;
+
+		user.source = {
+			language: null,
+			note: "",
+			privacy: "public",
+			sensitive: false,
+			fields: [],
+		};
 
 		user.followers = [];
 		user.following = [];
@@ -257,7 +269,6 @@ export class User extends BaseEntity {
 			emojis: [],
 			fields: [],
 			limited: false,
-			source: undefined,
 			statuses_count: 0,
 			discoverable: undefined,
 			role: undefined,
