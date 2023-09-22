@@ -23,7 +23,7 @@ beforeAll(async () => {
 	});
 });
 
-describe("POST /v1/apps/", () => {
+describe("POST /api/v1/apps/", () => {
 	test("should create an application", async () => {
 		const formData = new FormData();
 
@@ -32,7 +32,7 @@ describe("POST /v1/apps/", () => {
 		formData.append("redirect_uris", "https://example.com");
 		formData.append("scopes", "read write");
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/v1/apps/`,
+			`${config.http.base_url}:${config.http.port}/api/v1/apps/`,
 			{
 				method: "POST",
 				body: formData,
