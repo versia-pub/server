@@ -119,10 +119,7 @@ export default async (req: Request): Promise<Response> => {
 		// user.discoverable = discoverable === "true";
 	}
 
-	return jsonResponse(
-		{
-			error: `Not really implemented yet`,
-		},
-		501
-	);
+	await user.save();
+
+	return jsonResponse(await user.toAPI());
 };

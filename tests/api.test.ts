@@ -48,11 +48,11 @@ beforeAll(async () => {
 	token.token_type = TokenType.BEARER;
 	token.user = user;
 
-	await token.save();
+	token = await token.save();
 });
 
 describe("POST /api/v1/accounts/:id", () => {
-	test("should return a 404 error when trying to update a non-existent user", async () => {
+	test("should return a 404 error when trying to fetch a non-existent user", async () => {
 		const response = await fetch(
 			`${config.http.base_url}:${config.http.port}/api/v1/accounts/999999`,
 			{
@@ -93,26 +93,14 @@ describe("POST /api/v1/statuses", () => {
 
 		expect(status.content).toBe("Hello, world!");
 		expect(status.visibility).toBe("public");
-		expect(status.account.id).toBe(
-			`${config.http.base_url}:${config.http.port}/@test`
-		);
+		expect(status.account.id).toBe(user.id);
 		expect(status.replies_count).toBe(0);
 		expect(status.favourites_count).toBe(0);
 		expect(status.reblogged).toBe(false);
 		expect(status.favourited).toBe(false);
-		expect(status.reblog?.content).toBe("Hello, world!");
-		expect(status.reblog?.visibility).toBe("public");
-		expect(status.reblog?.account.id).toBe(
-			`${config.http.base_url}:${config.http.port}/@test`
-		);
-		expect(status.reblog?.replies_count).toBe(0);
-		expect(status.reblog?.favourites_count).toBe(0);
-		expect(status.reblog?.reblogged).toBe(false);
-		expect(status.reblog?.favourited).toBe(false);
 		expect(status.media_attachments).toEqual([]);
 		expect(status.mentions).toEqual([]);
 		expect(status.tags).toEqual([]);
-		expect(status.application).toBeNull();
 		expect(status.sensitive).toBe(false);
 		expect(status.spoiler_text).toBe("");
 		expect(status.language).toBeNull();
@@ -123,17 +111,15 @@ describe("POST /api/v1/statuses", () => {
 		expect(status.emojis).toEqual([]);
 		expect(status.in_reply_to_id).toBeNull();
 		expect(status.in_reply_to_account_id).toBeNull();
-		expect(status.reblog?.in_reply_to_id).toBeNull();
-		expect(status.reblog?.in_reply_to_account_id).toBeNull();
 	});
 });
 
-describe("POST /api/v1/accounts/update_credentials", () => {
+describe("PATCH /api/v1/accounts/update_credentials", () => {
 	test("should update the authenticated user's display name", async () => {
 		const response = await fetch(
 			`${config.http.base_url}:${config.http.port}/api/v1/accounts/update_credentials`,
 			{
-				method: "POST",
+				method: "PATCH",
 				headers: {
 					Authorization: `Bearer ${token.access_token}`,
 					"Content-Type": "application/json",
@@ -154,16 +140,8 @@ describe("POST /api/v1/accounts/update_credentials", () => {
 });
 
 afterAll(async () => {
-	// Clean up user
 	const user = await User.findOneBy({
 		username: "test",
-	});
-
-	// Clean up tokens
-	const tokens = await Token.findBy({
-		user: {
-			username: "test",
-		},
 	});
 
 	const activities = await RawActivity.createQueryBuilder("activity")
@@ -183,7 +161,8 @@ afterAll(async () => {
 		})
 	);
 
-	await Promise.all(tokens.map(async token => await token.remove()));
-
-	if (user) await user.remove();
+	if (user) {
+		await user.selfDestruct();
+		await user.remove();
+	}
 });

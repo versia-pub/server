@@ -16,9 +16,14 @@ export default async (
 	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
 	const user = await getUserByToken(token);
 
-	const foundUser = await RawActor.findOneBy({
-		id,
-	});
+	let foundUser: RawActor | null;
+	try {
+		foundUser = await RawActor.findOneBy({
+			id,
+		});
+	} catch (e) {
+		return errorResponse("Invalid ID", 404);
+	}
 
 	if (!foundUser) return errorResponse("User not found", 404);
 

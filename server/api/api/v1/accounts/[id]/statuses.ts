@@ -46,5 +46,7 @@ export default async (
 		take: limit ?? 20,
 	});
 
-	return jsonResponse(statuses.map(status => status.toAPI()));
+	return jsonResponse(
+		await Promise.all(statuses.map(async status => await status.toAPI()))
+	);
 };

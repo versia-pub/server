@@ -4,6 +4,7 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	JoinTable,
 	ManyToMany,
 	ManyToOne,
 	PrimaryGeneratedColumn,
@@ -66,13 +67,43 @@ export class Status extends BaseEntity {
 	application!: Application | null;
 
 	@ManyToMany(() => Emoji, emoji => emoji.id)
+	@JoinTable()
 	emojis!: Emoji[];
 
-	@ManyToMany(() => RawActivity, activity => activity.id, {})
+	@ManyToMany(() => RawActivity, activity => activity.id)
+	@JoinTable()
 	likes!: RawActivity[];
 
-	@ManyToMany(() => RawActivity, activity => activity.id, {})
+	@ManyToMany(() => RawActivity, activity => activity.id)
+	@JoinTable()
 	announces!: RawActivity[];
+
+	static async createNew(data: {
+		account: User;
+		application: Application | null;
+		content: string;
+		visibility: APIStatus["visibility"];
+		sensitive: boolean;
+		spoiler_text: string;
+		emojis: Emoji[];
+	}) {
+		const newStatus = new Status();
+
+		newStatus.account = data.account;
+		newStatus.application = data.application ?? null;
+		newStatus.content = data.content;
+		newStatus.visibility = data.visibility;
+		newStatus.sensitive = data.sensitive;
+		newStatus.spoiler_text = data.spoiler_text;
+		newStatus.emojis = data.emojis;
+		newStatus.likes = [];
+		newStatus.announces = [];
+		newStatus.isReblog = false;
+		newStatus.announces = [];
+
+		await newStatus.save();
+		return newStatus;
+	}
 
 	async toAPI(): Promise<APIStatus> {
 		return {
@@ -84,7 +115,7 @@ export class Status extends BaseEntity {
 				this.emojis.map(async emoji => await emoji.toAPI())
 			),
 			favourited: false,
-			favourites_count: 0,
+			favourites_count: this.likes.length,
 			id: this.id,
 			in_reply_to_account_id: null,
 			in_reply_to_id: null,
@@ -96,13 +127,13 @@ export class Status extends BaseEntity {
 			poll: null,
 			reblog: this.isReblog ? (await this.reblog?.toAPI()) ?? null : null,
 			reblogged: false,
-			reblogs_count: 0,
+			reblogs_count: this.announces.length,
 			replies_count: 0,
 			sensitive: false,
 			spoiler_text: "",
 			tags: [],
 			card: null,
-			content: "",
+			content: this.content,
 			uri: `${config.http.base_url}/@${this.account.username}/${this.id}`,
 			url: `${config.http.base_url}/@${this.account.username}/${this.id}`,
 			visibility: "public",

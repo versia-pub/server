@@ -14,6 +14,8 @@ import { APIAccount } from "~types/entities/account";
 import { RawActor } from "./RawActor";
 import { APActor } from "activitypub-types";
 import { RawObject } from "./RawObject";
+import { Token } from "./Token";
+import { Status } from "./Status";
 
 const config = getConfig();
 
@@ -132,6 +134,26 @@ export class User extends BaseEntity {
 		return user;
 	}
 
+	async selfDestruct() {
+		// Clean up tokens
+		const tokens = await Token.findBy({
+			user: {
+				id: this.id,
+			},
+		});
+
+		const statuses = await Status.findBy({
+			account: {
+				id: this.id,
+			},
+		});
+
+		// Delete both
+		await Promise.all(tokens.map(async token => await token.remove()));
+
+		await Promise.all(statuses.map(async status => await status.remove()));
+	}
+
 	async updateActor() {
 		// Check if actor exists
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -218,7 +240,7 @@ export class User extends BaseEntity {
 			avatar_static: "",
 			bot: false,
 			created_at: this.created_at.toISOString(),
-			display_name: "",
+			display_name: this.display_name,
 			followers_count: 0,
 			following_count: 0,
 			group: false,

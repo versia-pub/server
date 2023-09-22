@@ -6,7 +6,6 @@
  * @param request The request to parse
  */
 export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
-	const formData = await request.formData();
 	const query = new URL(request.url).searchParams;
 
 	// if request contains a JSON body
@@ -16,6 +15,8 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 
 	// If request contains FormData
 	if (request.headers.get("Content-Type")?.includes("multipart/form-data")) {
+		const formData = await request.formData();
+
 		if ([...formData.entries()].length > 0) {
 			const data: Record<string, string | File> = {};
 

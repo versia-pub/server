@@ -5,7 +5,6 @@ import { APActor } from "activitypub-types";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { RawActivity } from "~database/entities/RawActivity";
-import { Token } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 
 const config = getConfig();
@@ -22,10 +21,10 @@ beforeAll(async () => {
 	});
 });
 
-describe("POST /@test", () => {
+describe("POST /@test/actor", () => {
 	test("should return a valid ActivityPub Actor when querying an existing user", async () => {
 		const response = await fetch(
-			`${config.http.base_url}:${config.http.port}/@test`,
+			`${config.http.base_url}:${config.http.port}/@test/actor`,
 			{
 				method: "GET",
 				headers: {
@@ -64,6 +63,9 @@ describe("POST /@test", () => {
 			`${config.http.base_url}:${config.http.port}/@test`
 		);
 		expect((actor as any).publicKey.publicKeyPem).toBeDefined();
+		expect((actor as any).publicKey.publicKeyPem).toMatch(
+			/(-----BEGIN PUBLIC KEY-----(\n|\r|\r\n)([0-9a-zA-Z+/=]{64}(\n|\r|\r\n))*([0-9a-zA-Z+/=]{1,63}(\n|\r|\r\n))?-----END PUBLIC KEY-----)|(-----BEGIN PRIVATE KEY-----(\n|\r|\r\n)([0-9a-zA-Z+/=]{64}(\n|\r|\r\n))*([0-9a-zA-Z+/=]{1,63}(\n|\r|\r\n))?-----END PRIVATE KEY-----)/
+		);
 	});
 });
 
@@ -71,13 +73,6 @@ afterAll(async () => {
 	// Clean up user
 	const user = await User.findOneBy({
 		username: "test",
-	});
-
-	// Clean up tokens
-	const tokens = await Token.findBy({
-		user: {
-			username: "test",
-		},
 	});
 
 	const activities = await RawActivity.createQueryBuilder("activity")
@@ -97,7 +92,8 @@ afterAll(async () => {
 		})
 	);
 
-	await Promise.all(tokens.map(async token => await token.remove()));
-
-	if (user) await user.remove();
+	if (user) {
+		await user.selfDestruct();
+		await user.remove();
+	}
 });

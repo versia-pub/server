@@ -98,19 +98,17 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	// Create status
-	const newStatus = new Status();
-	newStatus.account = user;
-	newStatus.application = application;
-	newStatus.content = status;
-	newStatus.spoiler_text = spoiler_text || "";
-	newStatus.sensitive = sensitive || false;
-	newStatus.visibility = visibility || "public";
-	newStatus.likes = [];
-	newStatus.isReblog = false;
+	const newStatus = await Status.createNew({
+		account: user,
+		application,
+		content: status,
+		visibility: visibility || "public",
+		sensitive: sensitive || false,
+		spoiler_text: spoiler_text || "",
+		emojis: [],
+	});
 
 	// TODO: add database jobs to deliver the post
 
-	await newStatus.save();
-
-	return jsonResponse(newStatus);
+	return jsonResponse(await newStatus.toAPI());
 };
