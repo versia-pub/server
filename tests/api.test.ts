@@ -339,6 +339,78 @@ describe("POST /api/v1/accounts/:id/unblock", () => {
 	});
 });
 
+describe("POST /api/v1/accounts/:id/mute with notifications parameter", () => {
+	test("should mute the specified user and return an APIRelationship object with notifications set to false", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/mute`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ notifications: true }),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.muting).toBe(true);
+		expect(account.muting_notifications).toBe(true);
+	});
+
+	test("should mute the specified user and return an APIRelationship object with notifications set to true", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/mute`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ notifications: false }),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.muting).toBe(true);
+		expect(account.muting_notifications).toBe(true);
+	});
+});
+
+describe("POST /api/v1/accounts/:id/unmute", () => {
+	test("should unmute the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/unmute`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.muting).toBe(false);
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {

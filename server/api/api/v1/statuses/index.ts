@@ -102,7 +102,13 @@ export default async (req: Request): Promise<Response> => {
 		account: user,
 		application,
 		content: status,
-		visibility: visibility || "public",
+		visibility:
+			visibility ||
+			(config.defaults.visibility as
+				| "public"
+				| "unlisted"
+				| "private"
+				| "direct"),
 		sensitive: sensitive || false,
 		spoiler_text: spoiler_text || "",
 		emojis: [],

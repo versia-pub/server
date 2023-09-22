@@ -101,6 +101,8 @@ export class Status extends BaseEntity {
 		newStatus.isReblog = false;
 		newStatus.announces = [];
 
+		// TODO: Add default language
+
 		await newStatus.save();
 		return newStatus;
 	}
