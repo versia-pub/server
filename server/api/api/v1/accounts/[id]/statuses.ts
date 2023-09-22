@@ -33,13 +33,15 @@ export default async (
 
 	if (!user) return errorResponse("User not found", 404);
 
+	// TODO: Check if status can be seen by this user
 	const statuses = await Status.find({
 		where: {
 			account: {
 				id: user.id,
 			},
-			isReblog: !exclude_reblogs,
+			isReblog: exclude_reblogs ? true : undefined,
 		},
+		relations: ["account", "emojis", "announces", "likes"],
 		order: {
 			created_at: "DESC",
 		},

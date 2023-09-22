@@ -180,6 +180,35 @@ describe("GET /api/v1/accounts/verify_credentials", () => {
 	});
 });
 
+describe("GET /api/v1/accounts/:id/statuses", () => {
+	test("should return the statuses of the specified user", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user.id}/statuses`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const statuses: APIStatus[] = await response.json();
+
+		expect(statuses.length).toBe(1);
+
+		const status1 = statuses[0];
+
+		// Basic validation
+		expect(status1.content).toBe("Hello, world!");
+		expect(status1.visibility).toBe("public");
+		expect(status1.account.id).toBe(user.id);
+	});
+});
+
 afterAll(async () => {
 	const user = await User.findOneBy({
 		username: "test",

@@ -5,6 +5,7 @@ import { errorResponse, jsonResponse } from "@response";
  * Patches a user
  */
 export default async (req: Request): Promise<Response> => {
+	// TODO: Add checks for disabled or not email verified accounts
 	// Check if request is a PATCH request
 	if (req.method !== "GET")
 		return errorResponse("This method requires a GET request", 405);
@@ -19,7 +20,6 @@ export default async (req: Request): Promise<Response> => {
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	// TODO: Add Source fields
 	return jsonResponse({
 		...(await user.toAPI()),
 		source: user.source,
