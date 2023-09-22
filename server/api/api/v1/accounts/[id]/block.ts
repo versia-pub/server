@@ -1,12 +1,11 @@
 import { getUserByToken } from "@auth";
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Relationship } from "~database/entities/Relationship";
 import { User } from "~database/entities/User";
 
 /**
- * Follow a user
+ * Blocks a user
  */
 export default async (
 	req: Request,
@@ -23,12 +22,6 @@ export default async (
 	const self = await getUserByToken(token);
 
 	if (!self) return errorResponse("Unauthorized", 401);
-
-	const { languages, notify, reblogs } = await parseRequest<{
-		reblogs?: boolean;
-		notify?: boolean;
-		languages?: string[];
-	}>(req);
 
 	const user = await User.findOneBy({
 		id,
@@ -50,17 +43,8 @@ export default async (
 		relationship = newRelationship;
 	}
 
-	if (!relationship.following) {
-		relationship.following = true;
-	}
-	if (reblogs) {
-		relationship.showing_reblogs = true;
-	}
-	if (notify) {
-		relationship.notifying = true;
-	}
-	if (languages) {
-		relationship.languages = languages;
+	if (!relationship.blocking) {
+		relationship.blocking = true;
 	}
 
 	await relationship.save();

@@ -243,6 +243,102 @@ describe("POST /api/v1/accounts/:id/follow", () => {
 	});
 });
 
+describe("POST /api/v1/accounts/:id/unfollow", () => {
+	test("should unfollow the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/unfollow`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.following).toBe(false);
+	});
+});
+
+describe("POST /api/v1/accounts/:id/remove_from_followers", () => {
+	test("should remove the specified user from the authenticated user's followers and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/remove_from_followers`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.followed_by).toBe(false);
+	});
+});
+
+describe("POST /api/v1/accounts/:id/block", () => {
+	test("should block the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/block`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.blocking).toBe(true);
+	});
+});
+
+describe("POST /api/v1/accounts/:id/unblock", () => {
+	test("should unblock the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/unblock`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.blocking).toBe(false);
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {

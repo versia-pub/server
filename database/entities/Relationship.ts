@@ -26,37 +26,37 @@ export class Relationship extends BaseEntity {
 	@ManyToOne(() => User)
 	subject!: User;
 
-	@Column("varchar")
+	@Column("boolean")
 	following!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	showing_reblogs!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	notifying!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	followed_by!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	blocking!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	blocked_by!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	muting!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	muting_notifications!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	requested!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	domain_blocking!: boolean;
 
-	@Column("varchar")
+	@Column("boolean")
 	endorsed!: boolean;
 
 	@Column("jsonb")
