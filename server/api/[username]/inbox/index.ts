@@ -115,7 +115,7 @@ export default async (
 					return actor;
 				}
 
-				user.following.push(actor);
+				// TODO: Add follower
 
 				await user.save();
 			}
@@ -142,9 +142,7 @@ export default async (
 					return actor;
 				}
 
-				user.following = user.following.filter(
-					following => following.id !== actor.id
-				);
+				// TODO: Remove follower
 
 				await user.save();
 			}
@@ -168,7 +166,7 @@ export default async (
 				return actor;
 			}
 
-			user.followers.push(actor);
+			// TODO: Add follower
 
 			await user.save();
 			break;

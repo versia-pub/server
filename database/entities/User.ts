@@ -7,6 +7,7 @@ import {
 	JoinTable,
 	ManyToMany,
 	ManyToOne,
+	OneToMany,
 	PrimaryGeneratedColumn,
 	UpdateDateColumn,
 } from "typeorm";
@@ -17,6 +18,7 @@ import { RawObject } from "./RawObject";
 import { Token } from "./Token";
 import { Status } from "./Status";
 import { APISource } from "~types/entities/source";
+import { Relationship } from "./Relationship";
 
 const config = getConfig();
 
@@ -35,9 +37,7 @@ export class User extends BaseEntity {
 	})
 	username!: string;
 
-	@Column("varchar", {
-		unique: true,
-	})
+	@Column("varchar")
 	display_name!: string;
 
 	@Column("varchar")
@@ -79,16 +79,11 @@ export class User extends BaseEntity {
 	@Column("varchar")
 	private_key!: string;
 
+	@OneToMany(() => Relationship, relationship => relationship.owner)
+	relationships!: Relationship[];
+
 	@ManyToOne(() => RawActor, actor => actor.id)
 	actor!: RawActor;
-
-	@ManyToMany(() => RawActor, actor => actor.id)
-	@JoinTable()
-	following!: RawActor[];
-
-	@ManyToMany(() => RawActor, actor => actor.id)
-	@JoinTable()
-	followers!: RawActor[];
 
 	@ManyToMany(() => RawObject, object => object.id)
 	@JoinTable()
@@ -98,8 +93,7 @@ export class User extends BaseEntity {
 		return await User.createQueryBuilder("user")
 			// Objects is a many-to-many relationship
 			.leftJoinAndSelect("user.actor", "actor")
-			.leftJoinAndSelect("user.following", "following")
-			.leftJoinAndSelect("user.followers", "followers")
+			.leftJoinAndSelect("user.relationships", "relationships")
 			.where("actor.data @> :data", {
 				data: JSON.stringify({
 					id,
@@ -128,6 +122,8 @@ export class User extends BaseEntity {
 		user.avatar = data.avatar ?? config.defaults.avatar;
 		user.header = data.header ?? config.defaults.avatar;
 
+		user.relationships = [];
+
 		user.source = {
 			language: null,
 			note: "",
@@ -136,14 +132,27 @@ export class User extends BaseEntity {
 			fields: [],
 		};
 
-		user.followers = [];
-		user.following = [];
-
 		await user.generateKeys();
 		await user.updateActor();
 
 		await user.save();
 		return user;
+	}
+
+	async getRelationshipToOtherUser(other: User) {
+		const relationship = await Relationship.findOne({
+			where: {
+				owner: {
+					id: this.id,
+				},
+				subject: {
+					id: other.id,
+				},
+			},
+			relations: ["owner", "subject"],
+		});
+
+		return relationship;
 	}
 
 	async selfDestruct() {
@@ -164,6 +173,26 @@ export class User extends BaseEntity {
 		await Promise.all(tokens.map(async token => await token.remove()));
 
 		await Promise.all(statuses.map(async status => await status.remove()));
+
+		// Get relationships
+		const relationships = await this.getRelationships();
+		// Delete them all
+		await Promise.all(
+			relationships.map(async relationship => await relationship.remove())
+		);
+	}
+
+	async getRelationships() {
+		const relationships = await Relationship.find({
+			where: {
+				owner: {
+					id: this.id,
+				},
+			},
+			relations: ["subject"],
+		});
+
+		return relationships;
 	}
 
 	async updateActor() {

@@ -7,7 +7,11 @@ export const getUserByToken = async (access_token: string | null) => {
 		where: {
 			access_token,
 		},
-		relations: ["user"],
+		relations: {
+			user: {
+				relationships: true,
+			},
+		},
 	});
 
 	if (!token) return null;

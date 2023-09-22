@@ -8,12 +8,14 @@ import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
+import { APIRelationship } from "~types/entities/relationship";
 import { APIStatus } from "~types/entities/status";
 
 const config = getConfig();
 
 let token: Token;
 let user: User;
+let user2: User;
 
 beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
@@ -23,6 +25,14 @@ beforeAll(async () => {
 		email: "test@test.com",
 		username: "test",
 		password: "test",
+		display_name: "",
+	});
+
+	// Initialize second test user
+	user2 = await User.createNew({
+		email: "test2@test.com",
+		username: "test2",
+		password: "test2",
 		display_name: "",
 	});
 
@@ -209,11 +219,31 @@ describe("GET /api/v1/accounts/:id/statuses", () => {
 	});
 });
 
-afterAll(async () => {
-	const user = await User.findOneBy({
-		username: "test",
-	});
+describe("POST /api/v1/accounts/:id/follow", () => {
+	test("should follow the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/follow`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
 
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.following).toBe(true);
+	});
+});
+
+afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {
 			actor: `${config.http.base_url}/@test`,
@@ -231,8 +261,9 @@ afterAll(async () => {
 		})
 	);
 
-	if (user) {
-		await user.selfDestruct();
-		await user.remove();
-	}
+	await user.selfDestruct();
+	await user.remove();
+
+	await user2.selfDestruct();
+	await user2.remove();
 });
