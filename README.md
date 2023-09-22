@@ -72,6 +72,8 @@ Working endpoints are:
 - `/api/v1/accounts/:id/unblock`
 - `/api/v1/accounts/:id/mute`
 - `/api/v1/accounts/:id/unmute`
+- `/api/v1/accounts/:id/pin`
+- `/api/v1/accounts/:id/unpin`
 - `/api/v1/accounts/update_credentials`
 - `/api/v1/accounts/verify_credentials`
 - `/api/v1/statuses`

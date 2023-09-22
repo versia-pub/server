@@ -411,6 +411,54 @@ describe("POST /api/v1/accounts/:id/unmute", () => {
 	});
 });
 
+describe("POST /api/v1/accounts/:id/pin", () => {
+	test("should pin the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/pin`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.endorsed).toBe(true);
+	});
+});
+
+describe("POST /api/v1/accounts/:id/unpin", () => {
+	test("should unpin the specified user and return an APIRelationship object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/unpin`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIRelationship = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.endorsed).toBe(false);
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {

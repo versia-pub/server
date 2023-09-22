@@ -6,7 +6,7 @@ import { Relationship } from "~database/entities/Relationship";
 import { User } from "~database/entities/User";
 
 /**
- * Follow a user
+ * Mute a user
  */
 export default async (
 	req: Request,

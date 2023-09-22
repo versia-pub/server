@@ -5,7 +5,7 @@ import { Relationship } from "~database/entities/Relationship";
 import { User } from "~database/entities/User";
 
 /**
- * Unmute a user
+ * Unpin a user
  */
 export default async (
 	req: Request,
@@ -43,11 +43,9 @@ export default async (
 		relationship = newRelationship;
 	}
 
-	if (relationship.muting) {
-		relationship.muting = false;
+	if (relationship.endorsed) {
+		relationship.endorsed = false;
 	}
-
-	// TODO: Implement duration
 
 	await relationship.save();
 	return jsonResponse(await relationship.toAPI());
