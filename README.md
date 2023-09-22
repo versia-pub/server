@@ -52,10 +52,10 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 > **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
-Lysand is currently able to federate basic `Note` objects with `Create`, `Update` and `Delete` activities supported.
+Lysand is currently able to federate basic `Note` objects with `Create`, `Update` and `Delete` activities supported. (as well as `Accept` and `Reject`, but with no tests)
 
 Planned federation features are:
-- Activities: `Follow`, `Accept`, `Reject`, `Block`, `Undo`, `Announce`, `Like`, `Dislike`, `Flag`, `Ignore` and more
+- Activities: `Follow`, `Block`, `Undo`, `Announce`, `Like`, `Dislike`, `Flag`, `Ignore` and more
 - Objects: `Emoji` and more
 
 ## API
@@ -64,10 +64,11 @@ Lysand implements the Mastodon API, with some extensions. The API is currently i
 
 Working endpoints are:
 
-- `/v1/accounts/:id`
-- `/v1/accounts/:id/statuses`
-- `/v1/accounts/update_credentials`
-- `/v1/apps`
+- `/api/v1/accounts/:id`
+- `/api/v1/accounts/:id/statuses`
+- `/api/v1/accounts/update_credentials`
+- `/api/v1/statuses`
+- `/api/v1/apps`
 - `/oauth/authorize`
 - `/oauth/token`
 
