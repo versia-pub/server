@@ -10,6 +10,7 @@ const config = getConfig();
 let client_id: string;
 let client_secret: string;
 let code: string;
+let token: Token;
 
 beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
@@ -116,6 +117,34 @@ describe("POST /oauth/token/", () => {
 			scope: "read write",
 			created_at: expect.any(String),
 		});
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+		token = json;
+	});
+});
+
+describe("GET /api/v1/apps/verify_credentials", () => {
+	test("should return the authenticated application's credentials", async () => {
+		const response = await fetch(
+			`${config.http.base_url}:${config.http.port}/api/v1/apps/verify_credentials`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const credentials: Partial<Application> = await response.json();
+
+		expect(credentials.name).toBe("Test Application");
+		expect(credentials.website).toBe("https://example.com");
+		expect(credentials.redirect_uris).toBe("https://example.com");
+		expect(credentials.scopes).toBe("read write");
 	});
 });
 

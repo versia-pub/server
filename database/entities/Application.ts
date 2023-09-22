@@ -42,6 +42,7 @@ export class Application extends BaseEntity {
 			where: {
 				access_token: token,
 			},
+			relations: ["application"],
 		});
 
 		return dbToken?.application || null;

@@ -68,7 +68,6 @@ export default async (
 			const activity = await RawActivity.addIfNotExists(body, object);
 
 			if (activity instanceof Response) {
-				console.log(await activity.text());
 				return activity;
 			}
 
