@@ -486,16 +486,12 @@ describe("POST /api/v1/accounts/:id/note", () => {
 describe("GET /api/v1/accounts/relationships", () => {
 	test("should return an array of APIRelationship objects for the authenticated user's relationships", async () => {
 		const response = await fetch(
-			`${config.http.base_url}/api/v1/accounts/relationships`,
+			`${config.http.base_url}/api/v1/accounts/relationships?id[]=${user2.id}`,
 			{
-				method: "POST",
+				method: "GET",
 				headers: {
 					Authorization: `Bearer ${token.access_token}`,
-					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({
-					"id[]": [user2.id],
-				}),
 			}
 		);
 

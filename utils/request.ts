@@ -8,6 +8,15 @@
 export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 	const query = new URL(request.url).searchParams;
 
+	// Parse SearchParams arrays into JSON arrays
+	const arrayKeys = [...query.keys()].filter(key => key.endsWith("[]"));
+
+	for (const key of arrayKeys) {
+		const value = query.getAll(key);
+		query.delete(key);
+		query.append(key, JSON.stringify(value));
+	}
+
 	// if request contains a JSON body
 	if (request.headers.get("Content-Type")?.includes("application/json")) {
 		return (await request.json()) as T;
@@ -42,10 +51,14 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 	}
 
 	if ([...query.entries()].length > 0) {
-		const data: Record<string, string> = {};
+		const data: Record<string, string | string[]> = {};
 
 		for (const [key, value] of query.entries()) {
-			data[key] = value.toString();
+			try {
+				data[key] = JSON.parse(value) as string[];
+			} catch {
+				data[key] = value.toString();
+			}
 		}
 
 		return data as T;
