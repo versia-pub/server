@@ -514,6 +514,54 @@ describe("GET /api/v1/accounts/relationships", () => {
 	});
 });
 
+describe("GET /api/v1/accounts/familiar_followers", () => {
+	test("should return an array of objects with id and accounts properties, where id is a string and accounts is an array of APIAccount objects", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/familiar_followers?id[]=${user2.id}`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const familiarFollowers: { id: string; accounts: APIAccount[] }[] =
+			await response.json();
+
+		expect(Array.isArray(familiarFollowers)).toBe(true);
+		expect(familiarFollowers.length).toBeGreaterThan(0);
+		expect(typeof familiarFollowers[0].id).toBe("string");
+		expect(Array.isArray(familiarFollowers[0].accounts)).toBe(true);
+		expect(familiarFollowers[0].accounts.length).toBeGreaterThanOrEqual(0);
+
+		if (familiarFollowers[0].accounts.length === 0) return;
+		expect(familiarFollowers[0].accounts[0].id).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].username).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].acct).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].display_name).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].locked).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].bot).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].discoverable).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].group).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].created_at).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].note).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].url).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].avatar).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].avatar_static).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].header).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].header_static).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].followers_count).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].following_count).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].statuses_count).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].emojis).toBeDefined();
+		expect(familiarFollowers[0].accounts[0].fields).toBeDefined();
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {

@@ -5,7 +5,7 @@ import { Relationship } from "~database/entities/Relationship";
 import { User } from "~database/entities/User";
 
 /**
- * Sets a user note
+ * Find relationships
  */
 export default async (req: Request): Promise<Response> => {
 	// Check auth token

@@ -78,6 +78,7 @@ Working endpoints are:
 - `/api/v1/accounts/relationships`
 - `/api/v1/accounts/update_credentials`
 - `/api/v1/accounts/verify_credentials`
+- `/api/v1/accounts/familiar_followers`
 - `/api/v1/statuses`
 - `/api/v1/apps`
 - `/api/v1/apps/verify_credentials`
