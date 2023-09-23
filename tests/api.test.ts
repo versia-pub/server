@@ -483,6 +483,41 @@ describe("POST /api/v1/accounts/:id/note", () => {
 	});
 });
 
+describe("GET /api/v1/accounts/relationships", () => {
+	test("should return an array of APIRelationship objects for the authenticated user's relationships", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/relationships`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					"id[]": [user2.id],
+				}),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const relationships: APIRelationship[] = await response.json();
+
+		expect(Array.isArray(relationships)).toBe(true);
+		expect(relationships.length).toBeGreaterThan(0);
+		expect(relationships[0].id).toBeDefined();
+		expect(relationships[0].following).toBeDefined();
+		expect(relationships[0].followed_by).toBeDefined();
+		expect(relationships[0].blocking).toBeDefined();
+		expect(relationships[0].muting).toBeDefined();
+		expect(relationships[0].muting_notifications).toBeDefined();
+		expect(relationships[0].requested).toBeDefined();
+		expect(relationships[0].domain_blocking).toBeDefined();
+		expect(relationships[0].notifying).toBeDefined();
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {
