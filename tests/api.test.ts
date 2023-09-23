@@ -459,6 +459,30 @@ describe("POST /api/v1/accounts/:id/unpin", () => {
 	});
 });
 
+describe("POST /api/v1/accounts/:id/note", () => {
+	test("should update the specified account's note and return the updated account object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/accounts/${user2.id}/note`,
+			{
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ comment: "This is a new note" }),
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const account: APIAccount = await response.json();
+
+		expect(account.id).toBe(user2.id);
+		expect(account.note).toBe("This is a new note");
+	});
+});
+
 afterAll(async () => {
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {
