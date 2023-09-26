@@ -1,4 +1,3 @@
-import { getUserByToken } from "@auth";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { Relationship } from "~database/entities/Relationship";
@@ -14,7 +13,7 @@ export default async (req: Request): Promise<Response> => {
 	if (!token)
 		return errorResponse("This method requires an authenticated user", 422);
 
-	const self = await getUserByToken(token);
+	const self = await User.retrieveFromToken(token);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 

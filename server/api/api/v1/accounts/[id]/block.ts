@@ -1,4 +1,3 @@
-import { getUserByToken } from "@auth";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Relationship } from "~database/entities/Relationship";
@@ -19,7 +18,7 @@ export default async (
 	if (!token)
 		return errorResponse("This method requires an authenticated user", 422);
 
-	const self = await getUserByToken(token);
+	const self = await User.retrieveFromToken(token);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 

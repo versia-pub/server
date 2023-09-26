@@ -45,7 +45,7 @@ export default async (
 			// TODO: Add authentication
 
 			// Check is Activity already exists
-			const activity = await RawActivity.addIfNotExists(body);
+			const activity = await RawActivity.createIfNotExists(body);
 
 			if (activity instanceof Response) {
 				return activity;
@@ -65,7 +65,7 @@ export default async (
 				return object;
 			}
 
-			const activity = await RawActivity.addIfNotExists(body, object);
+			const activity = await RawActivity.createIfNotExists(body, object);
 
 			if (activity instanceof Response) {
 				return activity;
@@ -87,7 +87,7 @@ export default async (
 			}
 
 			// Store the Delete event in the database
-			const activity = await RawActivity.addIfNotExists(body);
+			const activity = await RawActivity.createIfNotExists(body);
 
 			if (activity instanceof Response) {
 				return activity;

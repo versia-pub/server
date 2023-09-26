@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { getUserByToken } from "@auth";
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { Application } from "~database/entities/Application";
 import { Status } from "~database/entities/Status";
+import { User } from "~database/entities/User";
 
 /**
  * Post new status
@@ -20,7 +20,7 @@ export default async (req: Request): Promise<Response> => {
 	if (!token)
 		return errorResponse("This method requires an authenticated user", 422);
 
-	const user = await getUserByToken(token);
+	const user = await User.retrieveFromToken(token);
 	const application = await Application.getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);

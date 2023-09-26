@@ -1,8 +1,8 @@
-import { getUserByToken } from "@auth";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
+import { User } from "~database/entities/User";
 
 /**
  * Fetch a user
@@ -15,7 +15,11 @@ export default async (
 
 	// Check auth token
 	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-	const user = await getUserByToken(token);
+
+	if (!token)
+		return errorResponse("This method requires an authenticated user", 422);
+
+	const user = await User.retrieveFromToken(token);
 
 	// TODO: Add checks for user's permissions to view this status
 

@@ -12,6 +12,9 @@ import { RawActor } from "./RawActor";
 import { getConfig } from "@config";
 import { errorResponse } from "@response";
 
+/**
+ * Represents a raw activity entity in the database.
+ */
 @Entity({
 	name: "activities",
 })
@@ -30,6 +33,11 @@ export class RawActivity extends BaseEntity {
 	@JoinTable()
 	actors!: RawActor[];
 
+	/**
+	 * Retrieves all activities that contain an object with the given ID.
+	 * @param id The ID of the object to search for.
+	 * @returns A promise that resolves to an array of matching activities.
+	 */
 	static async getByObjectId(id: string) {
 		return await RawActivity.createQueryBuilder("activity")
 			.leftJoinAndSelect("activity.objects", "objects")
@@ -38,6 +46,11 @@ export class RawActivity extends BaseEntity {
 			.getMany();
 	}
 
+	/**
+	 * Retrieves the activity with the given ID.
+	 * @param id The ID of the activity to retrieve.
+	 * @returns A promise that resolves to the matching activity, or undefined if not found.
+	 */
 	static async getById(id: string) {
 		return await RawActivity.createQueryBuilder("activity")
 			.leftJoinAndSelect("activity.objects", "objects")
@@ -46,6 +59,11 @@ export class RawActivity extends BaseEntity {
 			.getOne();
 	}
 
+	/**
+	 * Retrieves the latest activity with the given ID.
+	 * @param id The ID of the activity to retrieve.
+	 * @returns A promise that resolves to the latest matching activity, or undefined if not found.
+	 */
 	static async getLatestById(id: string) {
 		return await RawActivity.createQueryBuilder("activity")
 			.where("activity.data->>'id' = :id", { id })
@@ -55,10 +73,20 @@ export class RawActivity extends BaseEntity {
 			.getOne();
 	}
 
+	/**
+	 * Checks if an activity with the given ID exists.
+	 * @param id The ID of the activity to check for.
+	 * @returns A promise that resolves to true if the activity exists, false otherwise.
+	 */
 	static async exists(id: string) {
 		return !!(await RawActivity.getById(id));
 	}
 
+	/**
+	 * Updates an object in the database if it exists.
+	 * @param object The object to update.
+	 * @returns A promise that resolves to the updated object, or an error response if the object does not exist or is filtered.
+	 */
 	static async updateObjectIfExists(object: APObject) {
 		const rawObject = await RawObject.getById(object.id ?? "");
 
@@ -76,6 +104,11 @@ export class RawActivity extends BaseEntity {
 		return rawObject;
 	}
 
+	/**
+	 * Deletes an object from the database if it exists.
+	 * @param object The object to delete.
+	 * @returns A promise that resolves to the deleted object, or an error response if the object does not exist.
+	 */
 	static async deleteObjectIfExists(object: APObject) {
 		const dbObject = await RawObject.getById(object.id ?? "");
 
@@ -110,7 +143,16 @@ export class RawActivity extends BaseEntity {
 		return dbObject;
 	}
 
-	static async addIfNotExists(activity: APActivity, addObject?: RawObject) {
+	/**
+	 * Adds an activity to the database if it does not already exist.
+	 * @param activity The activity to add.
+	 * @param addObject An optional object to add to the activity.
+	 * @returns A promise that resolves to the added activity, or an error response if the activity already exists or is filtered.
+	 */
+	static async createIfNotExists(
+		activity: APActivity,
+		addObject?: RawObject
+	) {
 		if (await RawActivity.exists(activity.id ?? "")) {
 			return errorResponse("Activity already exists", 409);
 		}
@@ -144,6 +186,10 @@ export class RawActivity extends BaseEntity {
 		return rawActivity;
 	}
 
+	/**
+	 * Returns the ActivityPub representation of the activity.
+	 * @returns The ActivityPub representation of the activity.
+	 */
 	makeActivityPubRepresentation() {
 		return {
 			...this.data,
@@ -152,6 +198,11 @@ export class RawActivity extends BaseEntity {
 		};
 	}
 
+	/**
+	 * Adds an object to the activity if it does not already exist.
+	 * @param object The object to add.
+	 * @returns A promise that resolves to the added object, or an error response if the object already exists or is filtered.
+	 */
 	async addObjectIfNotExists(object: APObject) {
 		if (this.objects.some(o => o.data.id === object.id)) {
 			return errorResponse("Object already exists", 409);
@@ -169,6 +220,11 @@ export class RawActivity extends BaseEntity {
 		return rawObject;
 	}
 
+	/**
+	 * Adds an actor to the activity if it does not already exist.
+	 * @param actor The actor to add.
+	 * @returns A promise that resolves to the added actor, or an error response if the actor already exists or is filtered.
+	 */
 	async addActorIfNotExists(actor: APActor) {
 		const dbActor = await RawActor.getByActorId(actor.id ?? "");
 

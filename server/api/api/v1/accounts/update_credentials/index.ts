@@ -1,7 +1,7 @@
-import { getUserByToken } from "@auth";
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import { User } from "~database/entities/User";
 
 /**
  * Patches a user
@@ -17,27 +17,35 @@ export default async (req: Request): Promise<Response> => {
 	if (!token)
 		return errorResponse("This method requires an authenticated user", 422);
 
-	const user = await getUserByToken(token);
+	const user = await User.retrieveFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
 	const config = getConfig();
 
-	const { display_name, note, avatar, header, locked, bot, discoverable } =
-		await parseRequest<{
-			display_name: string;
-			note: string;
-			avatar: File;
-			header: File;
-			locked: string;
-			bot: string;
-			discoverable: string;
-		}>(req);
-
-	// TODO: Implement other options like field or source
-	// const source_privacy = body.get("source[privacy]")?.toString() || null;
-	// const source_sensitive = body.get("source[sensitive]")?.toString() || null;
-	// const source_language = body.get("source[language]")?.toString() || null;
+	const {
+		display_name,
+		note,
+		avatar,
+		header,
+		locked,
+		bot,
+		discoverable,
+		"source[privacy]": source_privacy,
+		"source[sensitive]": source_sensitive,
+		"source[language]": source_language,
+	} = await parseRequest<{
+		display_name: string;
+		note: string;
+		avatar: File;
+		header: File;
+		locked: string;
+		bot: string;
+		discoverable: string;
+		"source[privacy]": string;
+		"source[sensitive]": string;
+		"source[language]": string;
+	}>(req);
 
 	if (display_name) {
 		// Check if within allowed display name lengths
@@ -64,6 +72,36 @@ export default async (req: Request): Promise<Response> => {
 		}
 
 		user.note = note;
+	}
+
+	if (source_privacy) {
+		// Check if within allowed privacy values
+		if (
+			!["public", "unlisted", "private", "direct"].includes(
+				source_privacy
+			)
+		) {
+			return errorResponse(
+				"Privacy must be one of public, unlisted, private, or direct",
+				422
+			);
+		}
+
+		user.source.privacy = source_privacy;
+	}
+
+	if (source_sensitive) {
+		// Check if within allowed sensitive values
+		if (source_sensitive !== "true" && source_sensitive !== "false") {
+			return errorResponse("Sensitive must be a boolean", 422);
+		}
+
+		user.source.sensitive = source_sensitive === "true";
+	}
+
+	if (source_language) {
+		// TODO: Check if proper ISO code
+		user.source.language = source_language;
 	}
 
 	if (avatar) {

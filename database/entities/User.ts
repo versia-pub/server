@@ -139,6 +139,25 @@ export class User extends BaseEntity {
 		return user;
 	}
 
+	static async retrieveFromToken(access_token: string) {
+		if (!access_token) return null;
+
+		const token = await Token.findOne({
+			where: {
+				access_token,
+			},
+			relations: {
+				user: {
+					relationships: true,
+				},
+			},
+		});
+
+		if (!token) return null;
+
+		return token.user;
+	}
+
 	async getRelationshipToOtherUser(other: User) {
 		const relationship = await Relationship.findOne({
 			where: {

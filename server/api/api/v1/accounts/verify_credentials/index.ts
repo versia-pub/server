@@ -1,5 +1,5 @@
-import { getUserByToken } from "@auth";
 import { errorResponse, jsonResponse } from "@response";
+import { User } from "~database/entities/User";
 
 /**
  * Patches a user
@@ -16,7 +16,7 @@ export default async (req: Request): Promise<Response> => {
 	if (!token)
 		return errorResponse("This method requires an authenticated user", 422);
 
-	const user = await getUserByToken(token);
+	const user = await User.retrieveFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
