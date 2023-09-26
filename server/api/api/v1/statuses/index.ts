@@ -53,7 +53,11 @@ export default async (req: Request): Promise<Response> => {
 		visibility?: "public" | "unlisted" | "private" | "direct";
 		language?: string;
 		scheduled_at?: string;
+		local_only?: boolean;
+		content_type?: string;
 	}>(req);
+
+	// TODO: Parse Markdown statuses
 
 	// Validate status
 	if (!status) {

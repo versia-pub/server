@@ -1,10 +1,11 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { APActor, APObject, DateTime } from "activitypub-types";
+import { APActor, APImage, APObject, DateTime } from "activitypub-types";
 import { getConfig } from "@config";
 import { appendFile } from "fs/promises";
 import { APIStatus } from "~types/entities/status";
 import { RawActor } from "./RawActor";
 import { APIAccount } from "~types/entities/account";
+import { APIEmoji } from "~types/entities/emoji";
 
 /**
  * Stores an ActivityPub object as raw JSON-LD data
@@ -27,7 +28,38 @@ export class RawObject extends BaseEntity {
 			.getOne();
 	}
 
+	// eslint-disable-next-line @typescript-eslint/require-await
+	async parseEmojis() {
+		const emojis = this.data.tag as {
+			id: string;
+			type: string;
+			name: string;
+			updated: string;
+			icon: {
+				type: "Image";
+				mediaType: string;
+				url: string;
+			};
+		}[];
+
+		return emojis.map(emoji => ({
+			shortcode: emoji.name,
+			static_url: (emoji.icon as APImage).url,
+			url: (emoji.icon as APImage).url,
+			visible_in_picker: true,
+			category: "custom",
+		})) as APIEmoji[];
+	}
+
 	async toAPI(): Promise<APIStatus> {
+		const mentions = (
+			await Promise.all(
+				(this.data.to as string[]).map(
+					async person => await RawActor.getByActorId(person)
+				)
+			)
+		).filter(m => m) as RawActor[];
+
 		return {
 			account:
 				(await (
@@ -41,11 +73,13 @@ export class RawObject extends BaseEntity {
 			application: null,
 			card: null,
 			content: this.data.content as string,
-			emojis: [],
+			emojis: await this.parseEmojis(),
 			favourited: false,
 			favourites_count: 0,
 			media_attachments: [],
-			mentions: [],
+			mentions: await Promise.all(
+				mentions.map(async m => await m.toAPIAccount())
+			),
 			in_reply_to_account_id: null,
 			language: null,
 			muted: false,

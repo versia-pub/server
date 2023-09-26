@@ -12,4 +12,7 @@ module.exports = {
 	ignorePatterns: ["node_modules/", "dist/", ".eslintrc.cjs"],
 	plugins: ["@typescript-eslint"],
 	root: true,
+	rules: {
+		"@typescript-eslint/no-unsafe-assignment": "off",
+	},
 };
