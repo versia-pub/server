@@ -1,8 +1,13 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import { APActor } from "activitypub-types";
 import { Application } from "~database/entities/Application";
+import { RawActor } from "~database/entities/RawActor";
+import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 
@@ -101,6 +106,22 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Invalid visibility", 422);
 	}
 
+	// Get reply account and status if exists
+	let replyObject: RawObject | null = null;
+	let replyActor: RawActor | null = null;
+
+	if (in_reply_to_id) {
+		replyObject = await RawObject.findOne({
+			where: {
+				id: in_reply_to_id,
+			},
+		});
+
+		replyActor = await RawActor.getByActorId(
+			(replyObject?.data.attributedTo as APActor).id ?? ""
+		);
+	}
+
 	// Create status
 	const newStatus = await Status.createNew({
 		account: user,
@@ -116,6 +137,13 @@ export default async (req: Request): Promise<Response> => {
 		sensitive: sensitive || false,
 		spoiler_text: spoiler_text || "",
 		emojis: [],
+		reply:
+			replyObject && replyActor
+				? {
+						actor: replyActor,
+						object: replyObject,
+				  }
+				: undefined,
 	});
 
 	// TODO: add database jobs to deliver the post

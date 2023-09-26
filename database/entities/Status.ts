@@ -7,7 +7,6 @@ import {
 	JoinTable,
 	ManyToMany,
 	ManyToOne,
-	OneToOne,
 	PrimaryGeneratedColumn,
 	RemoveOptions,
 	UpdateDateColumn,
@@ -46,7 +45,10 @@ export class Status extends BaseEntity {
 	})
 	reblog?: Status;
 
-	@OneToOne(() => Status)
+	@ManyToOne(() => RawObject, {
+		nullable: true,
+		onDelete: "SET NULL",
+	})
 	object!: RawObject;
 
 	@Column("boolean")
@@ -63,12 +65,12 @@ export class Status extends BaseEntity {
 	@ManyToOne(() => RawObject, {
 		nullable: true,
 	})
-	in_reply_to_post!: RawObject;
+	in_reply_to_post!: RawObject | null;
 
 	@ManyToOne(() => RawActor, {
 		nullable: true,
 	})
-	in_reply_to_account!: RawActor;
+	in_reply_to_account!: RawActor | null;
 
 	@Column("boolean")
 	sensitive!: boolean;
@@ -99,9 +101,7 @@ export class Status extends BaseEntity {
 		// Delete object
 		await this.object.remove(options);
 
-		await super.remove(options);
-
-		return this;
+		return await super.remove(options);
 	}
 
 	static async createNew(data: {
@@ -225,7 +225,7 @@ export class Status extends BaseEntity {
 		}
 
 		// TODO: Add default language
-
+		await newStatus.object.save();
 		await newStatus.save();
 		return newStatus;
 	}

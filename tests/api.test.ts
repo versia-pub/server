@@ -580,9 +580,6 @@ afterAll(async () => {
 		})
 	);
 
-	await user.selfDestruct();
 	await user.remove();
-
-	await user2.selfDestruct();
 	await user2.remove();
 });

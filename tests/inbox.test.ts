@@ -188,6 +188,30 @@ describe("POST /@test/inbox", () => {
 		expect(activity?.actors[0].data).toEqual({
 			preferredUsername: "test",
 			id: `${config.http.base_url}/@test`,
+			summary: "",
+			publicKey: {
+				id: `${config.http.base_url}/@test/actor#main-key`,
+				owner: `${config.http.base_url}/@test/actor`,
+				publicKeyPem: expect.any(String),
+			},
+			outbox: `${config.http.base_url}/@test/outbox`,
+			manuallyApprovesFollowers: false,
+			followers: `${config.http.base_url}/@test/followers`,
+			following: `${config.http.base_url}/@test/following`,
+			name: "",
+			"@context": [
+				"https://www.w3.org/ns/activitystreams",
+				"https://w3id.org/security/v1",
+			],
+			icon: {
+				type: "Image",
+				url: "",
+			},
+			image: {
+				type: "Image",
+				url: "",
+			},
+			inbox: `${config.http.base_url}/@test/inbox`,
 			type: "Person",
 		});
 

@@ -9,6 +9,7 @@ import {
 	ManyToOne,
 	OneToMany,
 	PrimaryGeneratedColumn,
+	RemoveOptions,
 	UpdateDateColumn,
 } from "typeorm";
 import { APIAccount } from "~types/entities/account";
@@ -174,7 +175,7 @@ export class User extends BaseEntity {
 		return relationship;
 	}
 
-	async selfDestruct() {
+	async remove(options?: RemoveOptions | undefined) {
 		// Clean up tokens
 		const tokens = await Token.findBy({
 			user: {
@@ -182,9 +183,14 @@ export class User extends BaseEntity {
 			},
 		});
 
-		const statuses = await Status.findBy({
-			account: {
-				id: this.id,
+		const statuses = await Status.find({
+			where: {
+				account: {
+					id: this.id,
+				},
+			},
+			relations: {
+				object: true,
 			},
 		});
 
@@ -199,6 +205,8 @@ export class User extends BaseEntity {
 		await Promise.all(
 			relationships.map(async relationship => await relationship.remove())
 		);
+
+		return await super.remove(options);
 	}
 
 	async getRelationships() {

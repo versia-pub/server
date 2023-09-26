@@ -80,7 +80,6 @@ afterAll(async () => {
 	);
 
 	if (user) {
-		await user.selfDestruct();
 		await user.remove();
 	}
 });
