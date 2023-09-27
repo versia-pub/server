@@ -222,6 +222,7 @@ export class RawActor extends BaseEntity {
 	 * @returns Whether an actor with the specified ID exists in the database.
 	 */
 	static async exists(id: string) {
+		console.log(!!(await RawActor.getByActorId(id)));
 		return !!(await RawActor.getByActorId(id));
 	}
 }

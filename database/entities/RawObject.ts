@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { APActor, APImage, APObject, DateTime } from "activitypub-types";
+import { APImage, APObject, DateTime } from "activitypub-types";
 import { getConfig } from "@config";
 import { appendFile } from "fs/promises";
 import { APIStatus } from "~types/entities/status";
@@ -64,7 +64,7 @@ export class RawObject extends BaseEntity {
 			account:
 				(await (
 					await RawActor.getByActorId(
-						(this.data.attributedTo as APActor).id ?? ""
+						this.data.attributedTo as string
 					)
 				)?.toAPIAccount()) ?? (null as unknown as APIAccount),
 			created_at: new Date(this.data.published as DateTime).toISOString(),

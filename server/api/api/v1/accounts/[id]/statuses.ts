@@ -41,7 +41,7 @@ export default async (
 			},
 			isReblog: exclude_reblogs ? true : undefined,
 		},
-		relations: ["account", "emojis", "announces", "likes"],
+		relations: ["account", "emojis", "announces", "likes", "object"],
 		order: {
 			created_at: "DESC",
 		},

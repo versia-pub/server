@@ -16,6 +16,7 @@ const config = getConfig();
 let token: Token;
 let user: User;
 let user2: User;
+let status: APIStatus | null = null;
 
 beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
@@ -99,11 +100,11 @@ describe("POST /api/v1/statuses", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const status: APIStatus = await response.json();
-
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+		status = (await response.json()) as APIStatus;
 		expect(status.content).toBe("Hello, world!");
 		expect(status.visibility).toBe("public");
-		expect(status.account.id).toBe(user.id);
+		expect(status.account.id).toBe(user.actor.id);
 		expect(status.replies_count).toBe(0);
 		expect(status.favourites_count).toBe(0);
 		expect(status.reblogged).toBe(false);
@@ -215,7 +216,7 @@ describe("GET /api/v1/accounts/:id/statuses", () => {
 		// Basic validation
 		expect(status1.content).toBe("Hello, world!");
 		expect(status1.visibility).toBe("public");
-		expect(status1.account.id).toBe(user.id);
+		expect(status1.account.id).toBe(user.actor.id);
 	});
 });
 
@@ -559,6 +560,65 @@ describe("GET /api/v1/accounts/familiar_followers", () => {
 		expect(familiarFollowers[0].accounts[0].statuses_count).toBeDefined();
 		expect(familiarFollowers[0].accounts[0].emojis).toBeDefined();
 		expect(familiarFollowers[0].accounts[0].fields).toBeDefined();
+	});
+});
+
+describe("GET /api/v1/statuses/:id", () => {
+	test("should return the specified status object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/statuses/${status?.id}`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const statusJson = await response.json();
+
+		expect(statusJson.id).toBe(status?.id);
+		expect(statusJson.content).toBeDefined();
+		expect(statusJson.created_at).toBeDefined();
+		expect(statusJson.account).toBeDefined();
+		expect(statusJson.reblog).toBeDefined();
+		expect(statusJson.application).toBeDefined();
+		expect(statusJson.emojis).toBeDefined();
+		expect(statusJson.media_attachments).toBeDefined();
+		expect(statusJson.poll).toBeDefined();
+		expect(statusJson.card).toBeDefined();
+		expect(statusJson.visibility).toBeDefined();
+		expect(statusJson.sensitive).toBeDefined();
+		expect(statusJson.spoiler_text).toBeDefined();
+		expect(statusJson.uri).toBeDefined();
+		expect(statusJson.url).toBeDefined();
+		expect(statusJson.replies_count).toBeDefined();
+		expect(statusJson.reblogs_count).toBeDefined();
+		expect(statusJson.favourites_count).toBeDefined();
+		expect(statusJson.favourited).toBeDefined();
+		expect(statusJson.reblogged).toBeDefined();
+		expect(statusJson.muted).toBeDefined();
+		expect(statusJson.bookmarked).toBeDefined();
+		expect(statusJson.pinned).toBeDefined();
+	});
+});
+
+describe("DELETE /api/v1/statuses/:id", () => {
+	test("should delete the specified status object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/statuses/${status?.id}`,
+			{
+				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
 	});
 });
 

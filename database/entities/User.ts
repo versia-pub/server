@@ -150,6 +150,7 @@ export class User extends BaseEntity {
 			relations: {
 				user: {
 					relationships: true,
+					actor: true,
 				},
 			},
 		});
@@ -224,8 +225,21 @@ export class User extends BaseEntity {
 
 	async updateActor() {
 		// Check if actor exists
+
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		const actor = this.actor ? this.actor : new RawActor();
+
+		// Check is actor already exists
+		const actorExists = await RawActor.getByActorId(
+			`${config.http.base_url}/@${this.username}`
+		);
+
+		let actor: RawActor;
+
+		if (actorExists) {
+			actor = actorExists;
+		} else {
+			actor = new RawActor();
+		}
 
 		actor.data = {
 			"@context": [

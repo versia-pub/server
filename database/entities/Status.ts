@@ -99,7 +99,8 @@ export class Status extends BaseEntity {
 
 	async remove(options?: RemoveOptions | undefined) {
 		// Delete object
-		await this.object.remove(options);
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		if (this.object) await this.object.remove(options);
 
 		return await super.remove(options);
 	}
@@ -146,6 +147,8 @@ export class Status extends BaseEntity {
 			inReplyTo: data.reply?.object
 				? data.reply.object.data.id
 				: undefined,
+			published: new Date().toISOString(),
+			tag: [],
 			attributedTo: `${config.http.base_url}/@${data.account.username}`,
 		};
 
@@ -231,7 +234,8 @@ export class Status extends BaseEntity {
 	}
 
 	async toAPI(): Promise<APIStatus> {
-		return {
+		return await this.object.toAPI();
+		/* return {
 			account: await this.account.toAPI(),
 			application: (await this.application?.toAPI()) ?? null,
 			bookmarked: false,
@@ -241,7 +245,7 @@ export class Status extends BaseEntity {
 			),
 			favourited: false,
 			favourites_count: this.likes.length,
-			id: this.id,
+			id: this.object.id,
 			in_reply_to_account_id: null,
 			in_reply_to_id: null,
 			language: null,
@@ -263,6 +267,6 @@ export class Status extends BaseEntity {
 			url: `${config.http.base_url}/@${this.account.username}/${this.id}`,
 			visibility: "public",
 			quote: null,
-		};
+		}; */
 	}
 }

@@ -37,9 +37,11 @@ export default async (
 	if (req.method === "GET") {
 		return jsonResponse(await foundStatus.toAPI());
 	} else if (req.method === "DELETE") {
-		if ((await foundStatus.toAPI()).account.id !== user?.id) {
+		if ((await foundStatus.toAPI()).account.id !== user?.actor.id) {
 			return errorResponse("Unauthorized", 401);
 		}
+
+		// TODO: Implement delete and redraft functionality
 
 		// Get associated Status object
 		const status = await Status.createQueryBuilder("status")
@@ -54,7 +56,7 @@ export default async (
 		// Delete status and all associated objects
 		await status.object.remove();
 
-		return jsonResponse({});
+		return jsonResponse({}, 200);
 	}
 
 	return jsonResponse({});
