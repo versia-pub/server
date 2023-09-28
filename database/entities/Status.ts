@@ -161,6 +161,26 @@ export class Status extends BaseEntity {
 		return await super.remove(options);
 	}
 
+	async parseEmojis(string: string) {
+		const emojis = [...string.matchAll(/:([a-zA-Z0-9_]+):/g)].map(
+			match => match[1]
+		);
+
+		const emojiObjects = await Promise.all(
+			emojis.map(async emoji => {
+				const emojiObject = await Emoji.findOne({
+					where: {
+						shortcode: emoji,
+					},
+				});
+
+				return emojiObject;
+			})
+		);
+
+		return emojiObjects.filter(emoji => emoji !== null) as Emoji[];
+	}
+
 	/**
 	 * Creates a new status and saves it to the database.
 	 * @param data The data for the new status.

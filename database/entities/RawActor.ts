@@ -5,6 +5,7 @@ import { getConfig, getHost } from "@config";
 import { appendFile } from "fs/promises";
 import { errorResponse } from "@response";
 import { APIAccount } from "~types/entities/account";
+import { RawActivity } from "./RawActivity";
 
 /**
  * Represents a raw actor entity in the database.
@@ -126,6 +127,15 @@ export class RawActor extends BaseEntity {
 		const { preferredUsername, name, summary, published, icon, image } =
 			this.data;
 
+		const statusCount = await RawActivity.createQueryBuilder("activity")
+			.leftJoinAndSelect("activity.actor", "actor")
+			.where("actor.data @> :data", {
+				data: JSON.stringify({
+					id: this.data.id,
+				}),
+			})
+			.getCount();
+
 		return {
 			id: this.id,
 			username: preferredUsername ?? "",
@@ -142,9 +152,9 @@ export class RawActor extends BaseEntity {
 				config.defaults.header,
 			locked: false,
 			created_at: new Date(published ?? 0).toISOString(),
-			followers_count: 0,
+			followers_count: this.followers.length,
 			following_count: 0,
-			statuses_count: 0,
+			statuses_count: statusCount,
 			emojis: [],
 			fields: [],
 			bot: false,

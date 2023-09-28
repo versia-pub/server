@@ -1,4 +1,4 @@
-import { getConfig, getHost } from "@config";
+import { getConfig } from "@config";
 import {
 	BaseEntity,
 	Column,
@@ -20,8 +20,6 @@ import { Token } from "./Token";
 import { Status } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
-
-const config = getConfig();
 
 /**
  * Represents a user in the database.
@@ -382,6 +380,7 @@ export class User extends BaseEntity {
 		const privateKey = btoa(
 			String.fromCharCode.apply(null, [
 				...new Uint8Array(
+					// jesus help me what do these letters mean
 					await crypto.subtle.exportKey("pkcs8", keys.privateKey)
 				),
 			])
@@ -389,6 +388,7 @@ export class User extends BaseEntity {
 		const publicKey = btoa(
 			String.fromCharCode(
 				...new Uint8Array(
+					// why is exporting a key so hard
 					await crypto.subtle.exportKey("spki", keys.publicKey)
 				)
 			)
@@ -402,33 +402,6 @@ export class User extends BaseEntity {
 
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async toAPI(): Promise<APIAccount> {
-		return {
-			acct: `@${this.username}@${getHost()}`,
-			avatar: "",
-			avatar_static: "",
-			bot: false,
-			created_at: this.created_at.toISOString(),
-			display_name: this.display_name,
-			followers_count: 0,
-			following_count: 0,
-			group: false,
-			header: "",
-			header_static: "",
-			id: this.id,
-			locked: false,
-			moved: null,
-			noindex: false,
-			note: this.note,
-			suspended: false,
-			url: `${config.http.base_url}/@${this.username}`,
-			username: this.username,
-			emojis: [],
-			fields: [],
-			limited: false,
-			statuses_count: 0,
-			discoverable: undefined,
-			role: undefined,
-			mute_expires_at: undefined,
-		};
+		return await this.actor.toAPIAccount();
 	}
 }

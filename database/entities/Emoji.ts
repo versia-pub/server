@@ -1,5 +1,12 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from "typeorm";
 import { APIEmoji } from "~types/entities/emoji";
+import { Instance } from "./Instance";
 
 /**
  * Represents an emoji entity in the database.
@@ -19,6 +26,15 @@ export class Emoji extends BaseEntity {
 	 */
 	@Column("varchar")
 	shortcode!: string;
+
+	/**
+	 * The instance that the emoji is from.
+	 * If is null, the emoji is from the server's instance
+	 */
+	@ManyToOne(() => Instance, {
+		nullable: true,
+	})
+	instance!: Instance;
 
 	/**
 	 * The URL for the emoji.
