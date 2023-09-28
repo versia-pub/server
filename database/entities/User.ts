@@ -24,72 +24,129 @@ import { Relationship } from "./Relationship";
 const config = getConfig();
 
 /**
+ * Represents a user in the database.
  * Stores local and remote users
  */
 @Entity({
 	name: "users",
 })
 export class User extends BaseEntity {
+	/**
+	 * The unique identifier for the user.
+	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
+	/**
+	 * The username for the user.
+	 */
 	@Column("varchar", {
 		unique: true,
 	})
 	username!: string;
 
+	/**
+	 * The display name for the user.
+	 */
 	@Column("varchar")
 	display_name!: string;
 
+	/**
+	 * The password for the user.
+	 */
 	@Column("varchar")
 	password!: string;
 
+	/**
+	 * The email address for the user.
+	 */
 	@Column("varchar", {
 		unique: true,
 	})
 	email!: string;
 
+	/**
+	 * The note for the user.
+	 */
 	@Column("varchar", {
 		default: "",
 	})
 	note!: string;
 
+	/**
+	 * Whether the user is an admin or not.
+	 */
 	@Column("boolean", {
 		default: false,
 	})
 	is_admin!: boolean;
 
+	/**
+	 * The source for the user.
+	 */
 	@Column("jsonb")
 	source!: APISource;
 
+	/**
+	 * The avatar for the user.
+	 */
 	@Column("varchar")
 	avatar!: string;
 
+	/**
+	 * The header for the user.
+	 */
 	@Column("varchar")
 	header!: string;
 
+	/**
+	 * The date the user was created.
+	 */
 	@CreateDateColumn()
 	created_at!: Date;
 
+	/**
+	 * The date the user was last updated.
+	 */
 	@UpdateDateColumn()
 	updated_at!: Date;
 
+	/**
+	 * The public key for the user.
+	 */
 	@Column("varchar")
 	public_key!: string;
 
+	/**
+	 * The private key for the user.
+	 */
 	@Column("varchar")
 	private_key!: string;
 
+	/**
+	 * The relationships for the user.
+	 */
 	@OneToMany(() => Relationship, relationship => relationship.owner)
 	relationships!: Relationship[];
 
+	/**
+	 * The actor for the user.
+	 */
 	@ManyToOne(() => RawActor, actor => actor.id)
 	actor!: RawActor;
 
+	/**
+	 * The pinned notes for the user.
+	 */
 	@ManyToMany(() => RawObject, object => object.id)
 	@JoinTable()
 	pinned_notes!: RawObject[];
 
+	/**
+	 * Gets a user by actor ID.
+	 * @param id The actor ID to search for.
+	 * @returns The user with the given actor ID.
+	 */
 	static async getByActorId(id: string) {
 		return await User.createQueryBuilder("user")
 			// Objects is a many-to-many relationship
@@ -103,6 +160,11 @@ export class User extends BaseEntity {
 			.getOne();
 	}
 
+	/**
+	 * Creates a new user.
+	 * @param data The data for the new user.
+	 * @returns The newly created user.
+	 */
 	static async createNew(data: {
 		username: string;
 		display_name?: string;
@@ -140,6 +202,11 @@ export class User extends BaseEntity {
 		return user;
 	}
 
+	/**
+	 * Retrieves a user from a token.
+	 * @param access_token The access token to retrieve the user from.
+	 * @returns The user associated with the given access token.
+	 */
 	static async retrieveFromToken(access_token: string) {
 		if (!access_token) return null;
 
@@ -160,6 +227,11 @@ export class User extends BaseEntity {
 		return token.user;
 	}
 
+	/**
+	 * Gets the relationship to another user.
+	 * @param other The other user to get the relationship to.
+	 * @returns The relationship to the other user.
+	 */
 	async getRelationshipToOtherUser(other: User) {
 		const relationship = await Relationship.findOne({
 			where: {
@@ -176,6 +248,11 @@ export class User extends BaseEntity {
 		return relationship;
 	}
 
+	/**
+	 * Removes the user.
+	 * @param options The options for removing the user.
+	 * @returns The removed user.
+	 */
 	async remove(options?: RemoveOptions | undefined) {
 		// Clean up tokens
 		const tokens = await Token.findBy({
@@ -210,6 +287,10 @@ export class User extends BaseEntity {
 		return await super.remove(options);
 	}
 
+	/**
+	 * Gets the relationships for the user.
+	 * @returns The relationships for the user.
+	 */
 	async getRelationships() {
 		const relationships = await Relationship.find({
 			where: {
@@ -223,12 +304,14 @@ export class User extends BaseEntity {
 		return relationships;
 	}
 
+	/**
+	 * Updates the actor for the user.
+	 * @returns The updated actor.
+	 */
 	async updateActor() {
+		const config = getConfig();
+
 		// Check if actor exists
-
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-
-		// Check is actor already exists
 		const actorExists = await RawActor.getByActorId(
 			`${config.http.base_url}/@${this.username}`
 		);
@@ -278,6 +361,9 @@ export class User extends BaseEntity {
 		return actor;
 	}
 
+	/**
+	 * Generates keys for the user.
+	 */
 	async generateKeys(): Promise<void> {
 		// openssl genrsa -out private.pem 2048
 		// openssl rsa -in private.pem -outform PEM -pubout -out public.pem

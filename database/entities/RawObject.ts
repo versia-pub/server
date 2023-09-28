@@ -8,18 +8,29 @@ import { APIAccount } from "~types/entities/account";
 import { APIEmoji } from "~types/entities/emoji";
 
 /**
- * Stores an ActivityPub object as raw JSON-LD data
+ * Represents a raw ActivityPub object in the database.
  */
 @Entity({
 	name: "objects",
 })
 export class RawObject extends BaseEntity {
+	/**
+	 * The unique identifier of the object.
+	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
+	/**
+	 * The data associated with the object.
+	 */
 	@Column("jsonb")
 	data!: APObject;
 
+	/**
+	 * Retrieves a RawObject instance by its ID.
+	 * @param id The ID of the RawObject to retrieve.
+	 * @returns A Promise that resolves to the RawObject instance, or undefined if not found.
+	 */
 	static async getById(id: string) {
 		return await RawObject.createQueryBuilder("object")
 			.where("object.data->>'id' = :id", {
@@ -28,6 +39,10 @@ export class RawObject extends BaseEntity {
 			.getOne();
 	}
 
+	/**
+	 * Parses the emojis associated with the object.
+	 * @returns A Promise that resolves to an array of APIEmoji objects.
+	 */
 	// eslint-disable-next-line @typescript-eslint/require-await
 	async parseEmojis() {
 		const emojis = this.data.tag as {
@@ -51,6 +66,10 @@ export class RawObject extends BaseEntity {
 		})) as APIEmoji[];
 	}
 
+	/**
+	 * Converts the RawObject instance to an APIStatus object.
+	 * @returns A Promise that resolves to the APIStatus object.
+	 */
 	async toAPI(): Promise<APIStatus> {
 		const mentions = (
 			await Promise.all(
@@ -101,6 +120,10 @@ export class RawObject extends BaseEntity {
 		};
 	}
 
+	/**
+	 * Determines whether the object is filtered based on the note filters in the configuration.
+	 * @returns A Promise that resolves to a boolean indicating whether the object is filtered.
+	 */
 	async isObjectFiltered() {
 		const config = getConfig();
 
@@ -130,6 +153,11 @@ export class RawObject extends BaseEntity {
 		return filter_result.includes(true);
 	}
 
+	/**
+	 * Determines whether a RawObject instance with the given ID exists in the database.
+	 * @param id The ID of the RawObject to check for existence.
+	 * @returns A Promise that resolves to a boolean indicating whether the RawObject exists.
+	 */
 	static async exists(id: string) {
 		return !!(await RawObject.getById(id));
 	}

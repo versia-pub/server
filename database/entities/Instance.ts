@@ -8,16 +8,28 @@ import {
 import { APIInstance } from "~types/entities/instance";
 import { User } from "./User";
 
+/**
+ * Represents an instance in the database.
+ */
 @Entity({
 	name: "instances",
 })
 export class Instance extends BaseEntity {
+	/**
+	 * The unique identifier of the instance.
+	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
+	/**
+	 * The contact account associated with the instance.
+	 */
 	@ManyToOne(() => User, user => user.id)
 	contact_account!: User;
 
+	/**
+	 * The configuration of the instance.
+	 */
 	@Column("jsonb", {
 		default: {
 			media_attachments: {
@@ -43,6 +55,10 @@ export class Instance extends BaseEntity {
 	})
 	configuration!: APIInstance["configuration"];
 
+	/**
+	 * Converts the instance to an API instance.
+	 * @returns The API instance.
+	 */
 	async toAPI(): Promise<APIInstance> {
 		return {
 			uri: "",

@@ -22,81 +22,137 @@ import { RawActor } from "./RawActor";
 const config = getConfig();
 
 /**
- * Stores ActivityPub notes
+ * Represents a status (i.e. a post)
  */
 @Entity({
 	name: "statuses",
 })
 export class Status extends BaseEntity {
+	/**
+	 * The unique identifier for this status.
+	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
 
+	/**
+	 * The user account that created this status.
+	 */
 	@ManyToOne(() => User, user => user.id)
 	account!: User;
 
+	/**
+	 * The date and time when this status was created.
+	 */
 	@CreateDateColumn()
 	created_at!: Date;
 
+	/**
+	 * The date and time when this status was last updated.
+	 */
 	@UpdateDateColumn()
 	updated_at!: Date;
 
+	/**
+	 * The status that this status is a reblog of, if any.
+	 */
 	@ManyToOne(() => Status, status => status.id, {
 		nullable: true,
 	})
 	reblog?: Status;
 
+	/**
+	 * The raw object associated with this status.
+	 */
 	@ManyToOne(() => RawObject, {
 		nullable: true,
 		onDelete: "SET NULL",
 	})
 	object!: RawObject;
 
+	/**
+	 * Whether this status is a reblog.
+	 */
 	@Column("boolean")
 	isReblog!: boolean;
 
+	/**
+	 * The content of this status.
+	 */
 	@Column("varchar", {
 		default: "",
 	})
 	content!: string;
 
+	/**
+	 * The visibility of this status.
+	 */
 	@Column("varchar")
 	visibility!: APIStatus["visibility"];
 
+	/**
+	 * The raw object that this status is a reply to, if any.
+	 */
 	@ManyToOne(() => RawObject, {
 		nullable: true,
 	})
 	in_reply_to_post!: RawObject | null;
 
+	/**
+	 * The raw actor that this status is a reply to, if any.
+	 */
 	@ManyToOne(() => RawActor, {
 		nullable: true,
 	})
 	in_reply_to_account!: RawActor | null;
 
+	/**
+	 * Whether this status is sensitive.
+	 */
 	@Column("boolean")
 	sensitive!: boolean;
 
+	/**
+	 * The spoiler text for this status.
+	 */
 	@Column("varchar", {
 		default: "",
 	})
 	spoiler_text!: string;
 
+	/**
+	 * The application associated with this status, if any.
+	 */
 	@ManyToOne(() => Application, app => app.id, {
 		nullable: true,
 	})
 	application!: Application | null;
 
+	/**
+	 * The emojis associated with this status.
+	 */
 	@ManyToMany(() => Emoji, emoji => emoji.id)
 	@JoinTable()
 	emojis!: Emoji[];
 
+	/**
+	 * The activities that have liked this status.
+	 */
 	@ManyToMany(() => RawActivity, activity => activity.id)
 	@JoinTable()
 	likes!: RawActivity[];
 
+	/**
+	 * The activities that have announced this status.
+	 */
 	@ManyToMany(() => RawActivity, activity => activity.id)
 	@JoinTable()
 	announces!: RawActivity[];
 
+	/**
+	 * Removes this status from the database.
+	 * @param options The options for removing this status.
+	 * @returns A promise that resolves when the status has been removed.
+	 */
 	async remove(options?: RemoveOptions | undefined) {
 		// Delete object
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -105,6 +161,11 @@ export class Status extends BaseEntity {
 		return await super.remove(options);
 	}
 
+	/**
+	 * Creates a new status and saves it to the database.
+	 * @param data The data for the new status.
+	 * @returns A promise that resolves with the new status.
+	 */
 	static async createNew(data: {
 		account: User;
 		application: Application | null;
@@ -233,40 +294,11 @@ export class Status extends BaseEntity {
 		return newStatus;
 	}
 
+	/**
+	 * Converts this status to an API status.
+	 * @returns A promise that resolves with the API status.
+	 */
 	async toAPI(): Promise<APIStatus> {
 		return await this.object.toAPI();
-		/* return {
-			account: await this.account.toAPI(),
-			application: (await this.application?.toAPI()) ?? null,
-			bookmarked: false,
-			created_at: this.created_at.toISOString(),
-			emojis: await Promise.all(
-				this.emojis.map(async emoji => await emoji.toAPI())
-			),
-			favourited: false,
-			favourites_count: this.likes.length,
-			id: this.object.id,
-			in_reply_to_account_id: null,
-			in_reply_to_id: null,
-			language: null,
-			media_attachments: [],
-			mentions: [],
-			muted: false,
-			pinned: false,
-			poll: null,
-			reblog: this.isReblog ? (await this.reblog?.toAPI()) ?? null : null,
-			reblogged: false,
-			reblogs_count: this.announces.length,
-			replies_count: 0,
-			sensitive: false,
-			spoiler_text: "",
-			tags: [],
-			card: null,
-			content: this.content,
-			uri: `${config.http.base_url}/@${this.account.username}/${this.id}`,
-			url: `${config.http.base_url}/@${this.account.username}/${this.id}`,
-			visibility: "public",
-			quote: null,
-		}; */
 	}
 }
