@@ -5,9 +5,6 @@ import { Token } from "./Token";
 /**
  * Represents an application that can authenticate with the API.
  */
-/**
- * Represents an application that can authenticate with the API.
- */
 @Entity({
 	name: "applications",
 })
