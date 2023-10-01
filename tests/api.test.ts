@@ -8,6 +8,7 @@ import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
+import { APIInstance } from "~types/entities/instance";
 import { APIRelationship } from "~types/entities/relationship";
 import { APIStatus } from "~types/entities/status";
 
@@ -619,6 +620,40 @@ describe("DELETE /api/v1/statuses/:id", () => {
 		);
 
 		expect(response.status).toBe(200);
+	});
+});
+
+describe("GET /api/v1/instance", () => {
+	test("should return an APIInstance object", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/instance`,
+			{
+				method: "GET",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const instance: APIInstance = await response.json();
+
+		expect(instance.uri).toBe(new URL(config.http.base_url).hostname);
+		expect(instance.title).toBeDefined();
+		expect(instance.description).toBeDefined();
+		expect(instance.email).toBeDefined();
+		expect(instance.version).toBeDefined();
+		expect(instance.urls).toBeDefined();
+		expect(instance.stats).toBeDefined();
+		expect(instance.thumbnail).toBeDefined();
+		expect(instance.languages).toBeDefined();
+		// Not implemented yet
+		// expect(instance.contact_account).toBeDefined();
+		expect(instance.rules).toBeDefined();
+		expect(instance.approval_required).toBeDefined();
+		expect(instance.max_toot_chars).toBeDefined();
 	});
 });
 

@@ -82,6 +82,7 @@ Working endpoints are:
 - `/api/v1/statuses/:id` (`GET`, `DELETE`)
 - `/api/v1/statuses`
 - `/api/v1/apps`
+- `/api/v1/instance`
 - `/api/v1/apps/verify_credentials`
 - `/oauth/authorize`
 - `/oauth/token`

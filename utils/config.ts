@@ -30,6 +30,8 @@ export interface ConfigType {
 		blacklist_tempmail: boolean;
 		email_blacklist: string[];
 		url_scheme_whitelist: string[];
+
+		allowed_mime_types: string[];
 	};
 
 	defaults: {
@@ -142,6 +144,8 @@ export const configDefaults: ConfigType = {
 			"mumble",
 			"ssb",
 		],
+
+		allowed_mime_types: [],
 	},
 	defaults: {
 		visibility: "public",
