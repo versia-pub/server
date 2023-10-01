@@ -52,6 +52,6 @@ export class Token extends BaseEntity {
 /**
  * The type of token.
  */
-enum TokenType {
-	BEARER = "bearer",
+export enum TokenType {
+	BEARER = "Bearer",
 }

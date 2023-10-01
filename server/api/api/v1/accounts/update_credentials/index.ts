@@ -59,6 +59,7 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
+		user.actor.data.name = display_name;
 		user.display_name = display_name;
 	}
 
@@ -71,6 +72,7 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
+		user.actor.data.summary = note;
 		user.note = note;
 	}
 

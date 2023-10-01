@@ -128,22 +128,24 @@ export class RawActor extends BaseEntity {
 			this.data;
 
 		const statusCount = await RawActivity.createQueryBuilder("activity")
-			.leftJoinAndSelect("activity.actor", "actor")
-			.where("actor.data @> :data", {
+			.leftJoinAndSelect("activity.actors", "actors")
+			.where("actors.data @> :data", {
 				data: JSON.stringify({
 					id: this.data.id,
 				}),
 			})
 			.getCount();
 
+		const isLocalUser = this.getInstanceDomain() == getHost();
+
 		return {
 			id: this.id,
 			username: preferredUsername ?? "",
 			display_name: name ?? preferredUsername ?? "",
 			note: summary ?? "",
-			url: `${
-				config.http.base_url
-			}/@${preferredUsername}@${this.getInstanceDomain()}`,
+			url: `${config.http.base_url}/@${preferredUsername}${
+				isLocalUser ? "" : `@${this.getInstanceDomain()}`
+			}`,
 			avatar:
 				((icon as APImage).url as string | undefined) ??
 				config.defaults.avatar,
