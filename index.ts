@@ -1,4 +1,5 @@
 import { getConfig } from "@config";
+import { jsonResponse } from "@response";
 import { appendFile } from "fs/promises";
 import "reflect-metadata";
 import { AppDataSource } from "~database/datasource";
@@ -54,6 +55,10 @@ Bun.serve({
 				process.cwd() + "/logs/requests.log",
 				`[${new Date().toISOString()}] ${req.method} ${req.url}\n`
 			);
+		}
+
+		if (req.method === "OPTIONS") {
+			return jsonResponse({});
 		}
 
 		const matchedRoute = router.match(req);

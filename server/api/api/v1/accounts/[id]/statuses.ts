@@ -15,6 +15,7 @@ export default async (
 	const {
 		limit,
 		exclude_reblogs,
+		pinned,
 	}: {
 		max_id?: string;
 		since_id?: string;
@@ -23,6 +24,7 @@ export default async (
 		only_media?: boolean;
 		exclude_replies?: boolean;
 		exclude_reblogs?: boolean;
+		// TODO: Add with_muted
 		pinned?: boolean;
 		tagged?: string;
 	} = matchedRoute.query;
@@ -32,6 +34,10 @@ export default async (
 	});
 
 	if (!user) return errorResponse("User not found", 404);
+
+	if (pinned) {
+		// TODO: Add pinned statuses
+	}
 
 	// TODO: Check if status can be seen by this user
 	const statuses = await Status.find({

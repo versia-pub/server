@@ -126,6 +126,27 @@ describe("POST /api/v1/statuses", () => {
 	});
 });
 
+describe("GET /api/v1/timelines/public", () => {
+	test("should return an array of APIStatus objects that includes the created status", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/timelines/public`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const statuses: APIStatus[] = await response.json();
+
+		expect(statuses.some(s => s.id === status?.id)).toBe(true);
+	});
+});
+
 describe("PATCH /api/v1/accounts/update_credentials", () => {
 	test("should update the authenticated user's display name", async () => {
 		const response = await fetch(

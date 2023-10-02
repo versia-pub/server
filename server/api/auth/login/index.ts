@@ -12,7 +12,7 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const scopes = (matchedRoute.query.scopes || "")
+	const scopes = (matchedRoute.query.scope || "")
 		.replaceAll("+", " ")
 		.split(" ");
 	const redirect_uri = matchedRoute.query.redirect_uri;
@@ -21,18 +21,18 @@ export default async (
 
 	const formData = await req.formData();
 
-	const username = formData.get("username")?.toString() || null;
+	const email = formData.get("email")?.toString() || null;
 	const password = formData.get("password")?.toString() || null;
 
 	if (response_type !== "code")
 		return errorResponse("Invalid response type (try 'code')", 400);
 
-	if (!username || !password)
+	if (!email || !password)
 		return errorResponse("Missing username or password", 400);
 
 	// Get user
 	const user = await User.findOneBy({
-		username,
+		email,
 	});
 
 	if (!user || !(await Bun.password.verify(password, user.password)))

@@ -13,7 +13,7 @@ export default async (
 		(await html.text())
 			.replace(
 				"{{URL}}",
-				`/auth/login?redirect_uri=${matchedRoute.query.redirect_uri}&response_type=${matchedRoute.query.response_type}&client_id=${matchedRoute.query.client_id}&scopes=${matchedRoute.query.scopes}`
+				`/auth/login?redirect_uri=${matchedRoute.query.redirect_uri}&response_type=${matchedRoute.query.response_type}&client_id=${matchedRoute.query.client_id}&scope=${matchedRoute.query.scope}`
 			)
 			.replace("{{STYLES}}", `<style>${await css.text()}</style>`),
 		{

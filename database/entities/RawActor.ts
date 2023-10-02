@@ -1,11 +1,19 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	JoinTable,
+	ManyToMany,
+	PrimaryGeneratedColumn,
+} from "typeorm";
 import { APActor, APImage, APOrderedCollectionPage } from "activitypub-types";
 import { getConfig, getHost } from "@config";
 import { appendFile } from "fs/promises";
 import { errorResponse } from "@response";
 import { APIAccount } from "~types/entities/account";
 import { RawActivity } from "./RawActivity";
+import { RawObject } from "./RawObject";
 
 /**
  * Represents a raw actor entity in the database.
@@ -29,6 +37,13 @@ export class RawActor extends BaseEntity {
 	 */
 	@Column("jsonb", { default: [] })
 	followers!: string[];
+
+	/**
+	 * The list of featured objects associated with the actor.
+	 */
+	@ManyToMany(() => RawObject, { nullable: true })
+	@JoinTable()
+	featured!: RawObject[];
 
 	/**
 	 * Retrieves a RawActor entity by actor ID.

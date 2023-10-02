@@ -1,10 +1,24 @@
 import { APActivity, APObject } from "activitypub-types";
 import { NodeObject } from "jsonld";
 
-export const jsonResponse = (data: object, status = 200) => {
+export const jsonResponse = (
+	data: object,
+	status = 200,
+	headers: Record<string, string> = {}
+) => {
 	return new Response(JSON.stringify(data), {
 		headers: {
 			"Content-Type": "application/json",
+			"X-Frame-Options": "DENY",
+			"X-Permitted-Cross-Domain-Policies": "none",
+			"Access-Control-Allow-Credentials": "true",
+			"Access-Control-Allow-Headers":
+				"Authorization,Content-Type,Idempotency-Key",
+			"Access-Control-Allow-Methods": "POST,PUT,DELETE,GET,PATCH,OPTIONS",
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Expose-Headers":
+				"Link,X-RateLimit-Reset,X-RateLimit-Limit,X-RateLimit-Remaining,X-Request-Id,Idempotency-Key",
+			...headers,
 		},
 		status,
 	});
