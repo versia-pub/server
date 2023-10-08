@@ -51,6 +51,7 @@ export interface ConfigType {
 		discard_avatars: string[];
 		force_sensitive: string[];
 		remove_media: string[];
+		fetch_all_colletion_members: boolean;
 	};
 
 	filters: {
@@ -163,6 +164,7 @@ export const configDefaults: ConfigType = {
 		discard_avatars: [],
 		force_sensitive: [],
 		remove_media: [],
+		fetch_all_colletion_members: false,
 	},
 	filters: {
 		note_filters: [],

@@ -34,7 +34,7 @@ export class Emoji extends BaseEntity {
 	@ManyToOne(() => Instance, {
 		nullable: true,
 	})
-	instance!: Instance;
+	instance!: Instance | null;
 
 	/**
 	 * The URL for the emoji.
@@ -56,9 +56,9 @@ export class Emoji extends BaseEntity {
 	async toAPI(): Promise<APIEmoji> {
 		return {
 			shortcode: this.shortcode,
-			static_url: "",
-			url: "",
-			visible_in_picker: false,
+			static_url: this.url, // TODO: Add static version
+			url: this.url,
+			visible_in_picker: this.visible_in_picker,
 			category: undefined,
 		};
 	}

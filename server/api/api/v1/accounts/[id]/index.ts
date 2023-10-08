@@ -1,6 +1,5 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { RawActor } from "~database/entities/RawActor";
 import { User } from "~database/entities/User";
 
 /**
@@ -20,9 +19,9 @@ export default async (
 
 	const user = await User.retrieveFromToken(token);
 
-	let foundUser: RawActor | null;
+	let foundUser: User | null;
 	try {
-		foundUser = await RawActor.findOneBy({
+		foundUser = await User.findOneBy({
 			id,
 		});
 	} catch (e) {
@@ -31,7 +30,5 @@ export default async (
 
 	if (!foundUser) return errorResponse("User not found", 404);
 
-	return jsonResponse(
-		await foundUser.toAPIAccount(user?.id === foundUser.id)
-	);
+	return jsonResponse(await foundUser.toAPI(user?.id === foundUser.id));
 };

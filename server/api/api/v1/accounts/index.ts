@@ -147,7 +147,7 @@ export default async (req: Request): Promise<Response> => {
 
 	// TODO: Check if locale is valid
 
-	await User.createNew({
+	await User.createNewLocal({
 		username: body.username ?? "",
 		password: body.password ?? "",
 		email: body.email ?? "",

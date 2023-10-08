@@ -37,7 +37,7 @@ export default async (
 	if (req.method === "GET") {
 		return jsonResponse(await foundStatus.toAPI());
 	} else if (req.method === "DELETE") {
-		if ((await foundStatus.toAPI()).account.id !== user?.actor.id) {
+		if ((await foundStatus.toAPI()).account.id !== user?.id) {
 			return errorResponse("Unauthorized", 401);
 		}
 

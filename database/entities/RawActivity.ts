@@ -2,6 +2,7 @@ import {
 	BaseEntity,
 	Column,
 	Entity,
+	Index,
 	JoinTable,
 	ManyToMany,
 	PrimaryGeneratedColumn,
@@ -23,6 +24,8 @@ export class RawActivity extends BaseEntity {
 	id!: string;
 
 	@Column("jsonb")
+	// Index ID for faster lookups
+	@Index({ unique: true, where: "(data->>'id') IS NOT NULL" })
 	data!: APActivity;
 
 	@ManyToMany(() => RawObject)
@@ -239,7 +242,6 @@ export class RawActivity extends BaseEntity {
 
 		const rawActor = new RawActor();
 		rawActor.data = actor;
-		rawActor.followers = [];
 
 		const config = getConfig();
 

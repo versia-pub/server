@@ -14,12 +14,13 @@ import {
 } from "typeorm";
 import { APIAccount } from "~types/entities/account";
 import { RawActor } from "./RawActor";
-import { APActor } from "activitypub-types";
+import { APActor, APOrderedCollectionPage } from "activitypub-types";
 import { RawObject } from "./RawObject";
 import { Token } from "./Token";
 import { Status } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
+import { Instance } from "./Instance";
 
 /**
  * Represents a user in the database.
@@ -52,16 +53,19 @@ export class User extends BaseEntity {
 	/**
 	 * The password for the user.
 	 */
-	@Column("varchar")
-	password!: string;
+	@Column("varchar", {
+		nullable: true,
+	})
+	password!: string | null;
 
 	/**
 	 * The email address for the user.
 	 */
 	@Column("varchar", {
 		unique: true,
+		nullable: true,
 	})
-	email!: string;
+	email!: string | null;
 
 	/**
 	 * The note for the user.
@@ -118,14 +122,26 @@ export class User extends BaseEntity {
 	/**
 	 * The private key for the user.
 	 */
-	@Column("varchar")
-	private_key!: string;
+	@Column("varchar", {
+		nullable: true,
+	})
+	private_key!: string | null;
 
 	/**
 	 * The relationships for the user.
 	 */
 	@OneToMany(() => Relationship, relationship => relationship.owner)
 	relationships!: Relationship[];
+
+	/**
+	 * User's instance, null if local user
+	 */
+	@ManyToOne(() => Instance, {
+		nullable: true,
+	})
+	instance!: Instance | null;
+
+	/** */
 
 	/**
 	 * The actor for the user.
@@ -139,6 +155,50 @@ export class User extends BaseEntity {
 	@ManyToMany(() => RawObject, object => object.id)
 	@JoinTable()
 	pinned_notes!: RawObject[];
+
+	/**
+	 * Update this user data from its actor
+	 * @returns The updated user.
+	 */
+	async updateFromActor() {
+		const actor = await this.actor.toAPIAccount();
+
+		this.username = actor.username;
+		this.display_name = actor.display_name;
+		this.note = actor.note;
+		this.avatar = actor.avatar;
+		this.header = actor.header;
+		this.avatar = actor.avatar;
+
+		return await this.save();
+	}
+
+	/**
+	 * Fetches the list of followers associated with the actor and updates the user's followers
+	 */
+	async fetchFollowers() {
+		let followers: APOrderedCollectionPage = await fetch(
+			`${this.actor.data.followers?.toString() ?? ""}?page=1`,
+			{
+				headers: { Accept: "application/activity+json" },
+			}
+		);
+
+		let followersList = followers.orderedItems ?? [];
+
+		while (followers.type === "OrderedCollectionPage" && followers.next) {
+			followers = await fetch((followers.next as string).toString(), {
+				headers: { Accept: "application/activity+json" },
+			}).then(res => res.json());
+
+			followersList = {
+				...followersList,
+				...(followers.orderedItems ?? []),
+			};
+		}
+
+		// TODO: integrate followers
+	}
 
 	/**
 	 * Gets a user by actor ID.
@@ -159,11 +219,11 @@ export class User extends BaseEntity {
 	}
 
 	/**
-	 * Creates a new user.
+	 * Creates a new LOCAL user.
 	 * @param data The data for the new user.
 	 * @returns The newly created user.
 	 */
-	static async createNew(data: {
+	static async createNewLocal(data: {
 		username: string;
 		display_name?: string;
 		password: string;
@@ -184,6 +244,7 @@ export class User extends BaseEntity {
 		user.header = data.header ?? config.defaults.avatar;
 
 		user.relationships = [];
+		user.instance = null;
 
 		user.source = {
 			language: null,
@@ -401,7 +462,32 @@ export class User extends BaseEntity {
 	}
 
 	// eslint-disable-next-line @typescript-eslint/require-await
-	async toAPI(): Promise<APIAccount> {
-		return await this.actor.toAPIAccount();
+	async toAPI(isOwnAccount = false): Promise<APIAccount> {
+		const follower_count = await Relationship.count({
+			where: {
+				subject: {
+					id: this.id,
+				},
+				following: true,
+			},
+			relations: ["subject"],
+		});
+
+		const following_count = await Relationship.count({
+			where: {
+				owner: {
+					id: this.id,
+				},
+				following: true,
+			},
+			relations: ["owner"],
+		});
+
+		return {
+			...(await this.actor.toAPIAccount(isOwnAccount)),
+			id: this.id,
+			followers_count: follower_count,
+			following_count: following_count,
+		};
 	}
 }

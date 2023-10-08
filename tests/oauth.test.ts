@@ -16,7 +16,7 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	await User.createNew({
+	await User.createNewLocal({
 		email: "test@test.com",
 		username: "test",
 		password: "test",
@@ -32,6 +32,7 @@ describe("POST /api/v1/apps/", () => {
 		formData.append("website", "https://example.com");
 		formData.append("redirect_uris", "https://example.com");
 		formData.append("scopes", "read write");
+
 		const response = await fetch(`${config.http.base_url}/api/v1/apps/`, {
 			method: "POST",
 			body: formData,
@@ -64,10 +65,10 @@ describe("POST /auth/login/", () => {
 	test("should get a code", async () => {
 		const formData = new FormData();
 
-		formData.append("username", "test");
+		formData.append("email", "test@test.com");
 		formData.append("password", "test");
 		const response = await fetch(
-			`${config.http.base_url}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scopes=read+write`,
+			`${config.http.base_url}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
 			{
 				method: "POST",
 				body: formData,
@@ -93,7 +94,7 @@ describe("POST /oauth/token/", () => {
 		formData.append("redirect_uri", "https://example.com");
 		formData.append("client_id", client_id);
 		formData.append("client_secret", client_secret);
-		formData.append("scope", "read write");
+		formData.append("scope", "read+write");
 
 		const response = await fetch(`${config.http.base_url}/oauth/token/`, {
 			method: "POST",

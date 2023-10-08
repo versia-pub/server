@@ -4,10 +4,12 @@ import { getConfig } from "@config";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { Application } from "~database/entities/Application";
+import { Emoji } from "~database/entities/Emoji";
 import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
+import { APIEmoji } from "~types/entities/emoji";
 import { APIInstance } from "~types/entities/instance";
 import { APIRelationship } from "~types/entities/relationship";
 import { APIStatus } from "~types/entities/status";
@@ -23,7 +25,7 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	user = await User.createNew({
+	user = await User.createNewLocal({
 		email: "test@test.com",
 		username: "test",
 		password: "test",
@@ -31,7 +33,7 @@ beforeAll(async () => {
 	});
 
 	// Initialize second test user
-	user2 = await User.createNew({
+	user2 = await User.createNewLocal({
 		email: "test2@test.com",
 		username: "test2",
 		password: "test2",
@@ -105,7 +107,7 @@ describe("POST /api/v1/statuses", () => {
 		status = (await response.json()) as APIStatus;
 		expect(status.content).toBe("Hello, world!");
 		expect(status.visibility).toBe("public");
-		expect(status.account.id).toBe(user.actor.id);
+		expect(status.account.id).toBe(user.id);
 		expect(status.replies_count).toBe(0);
 		expect(status.favourites_count).toBe(0);
 		expect(status.reblogged).toBe(false);
@@ -238,7 +240,7 @@ describe("GET /api/v1/accounts/:id/statuses", () => {
 		// Basic validation
 		expect(status1.content).toBe("Hello, world!");
 		expect(status1.visibility).toBe("public");
-		expect(status1.account.id).toBe(user.actor.id);
+		expect(status1.account.id).toBe(user.id);
 	});
 });
 
@@ -675,6 +677,42 @@ describe("GET /api/v1/instance", () => {
 		expect(instance.rules).toBeDefined();
 		expect(instance.approval_required).toBeDefined();
 		expect(instance.max_toot_chars).toBeDefined();
+	});
+});
+
+describe("GET /api/v1/custom_emojis", () => {
+	beforeAll(async () => {
+		const emoji = new Emoji();
+
+		emoji.instance = null;
+		emoji.url = "https://example.com";
+		emoji.shortcode = "test";
+		emoji.visible_in_picker = true;
+
+		await emoji.save();
+	});
+	test("should return an array of at least one custom emoji", async () => {
+		const response = await fetch(
+			`${config.http.base_url}/api/v1/custom_emojis`,
+			{
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token.access_token}`,
+				},
+			}
+		);
+
+		expect(response.status).toBe(200);
+		expect(response.headers.get("content-type")).toBe("application/json");
+
+		const emojis: APIEmoji[] = await response.json();
+
+		expect(emojis.length).toBeGreaterThan(0);
+		expect(emojis[0].shortcode).toBe("test");
+		expect(emojis[0].url).toBe("https://example.com");
+	});
+	afterAll(async () => {
+		await Emoji.delete({ shortcode: "test" });
 	});
 });
 

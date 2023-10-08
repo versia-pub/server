@@ -17,7 +17,6 @@ import { Application } from "./Application";
 import { Emoji } from "./Emoji";
 import { RawActivity } from "./RawActivity";
 import { RawObject } from "./RawObject";
-import { RawActor } from "./RawActor";
 
 const config = getConfig();
 
@@ -100,10 +99,10 @@ export class Status extends BaseEntity {
 	/**
 	 * The raw actor that this status is a reply to, if any.
 	 */
-	@ManyToOne(() => RawActor, {
+	@ManyToOne(() => User, {
 		nullable: true,
 	})
-	in_reply_to_account!: RawActor | null;
+	in_reply_to_account!: User | null;
 
 	/**
 	 * Whether this status is sensitive.
@@ -196,7 +195,7 @@ export class Status extends BaseEntity {
 		emojis: Emoji[];
 		reply?: {
 			object: RawObject;
-			actor: RawActor;
+			user: User;
 		};
 	}) {
 		const newStatus = new Status();
@@ -217,7 +216,7 @@ export class Status extends BaseEntity {
 
 		if (data.reply) {
 			newStatus.in_reply_to_post = data.reply.object;
-			newStatus.in_reply_to_account = data.reply.actor;
+			newStatus.in_reply_to_account = data.reply.user;
 		}
 
 		newStatus.object.data = {
@@ -240,8 +239,8 @@ export class Status extends BaseEntity {
 			return `${config.http.base_url}/@${match[1]}`;
 		});
 
-		// Map this to Actors
-		const mentionedActors = (
+		// Map this to Users
+		const mentionedUsers = (
 			await Promise.all(
 				mentionedPeople.map(async person => {
 					// Check if post is in format @username or @username@instance.com
@@ -252,23 +251,23 @@ export class Status extends BaseEntity {
 							: null;
 
 					if (instanceUrl) {
-						const actor = await RawActor.createQueryBuilder("actor")
-							.where("actor.data->>'id' = :id", {
-								// Where ID contains the instance URL
-								id: `%${instanceUrl}%`,
-							})
-							// Where actor preferredUsername is the username
-							.andWhere(
-								"actor.data->>'preferredUsername' = :username",
-								{
-									username: person.split("@")[1],
-								}
-							)
-							.getOne();
+						const user = await User.findOne({
+							where: {
+								username: person.split("@")[1],
+								// If contains instanceUrl
+								instance: {
+									base_url: instanceUrl,
+								},
+							},
+							relations: {
+								actor: true,
+								instance: true,
+							},
+						});
 
-						return actor?.data.id;
+						return user?.actor.data.id;
 					} else {
-						const actor = await User.findOne({
+						const user = await User.findOne({
 							where: {
 								username: person.split("@")[1],
 							},
@@ -277,13 +276,13 @@ export class Status extends BaseEntity {
 							},
 						});
 
-						return actor?.actor.data.id;
+						return user?.actor.data.id;
 					}
 				})
 			)
-		).map(actor => actor as string);
+		).map(user => user as string);
 
-		newStatus.object.data.to = mentionedActors;
+		newStatus.object.data.to = mentionedUsers;
 
 		if (data.visibility === "private") {
 			newStatus.object.data.cc = [

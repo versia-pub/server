@@ -3,18 +3,15 @@ import {
 	BaseEntity,
 	Column,
 	Entity,
-	JoinTable,
-	ManyToMany,
+	Index,
 	PrimaryGeneratedColumn,
 } from "typeorm";
-import { APActor, APImage, APOrderedCollectionPage } from "activitypub-types";
+import { APActor, APImage } from "activitypub-types";
 import { getConfig, getHost } from "@config";
 import { appendFile } from "fs/promises";
 import { errorResponse } from "@response";
 import { APIAccount } from "~types/entities/account";
 import { RawActivity } from "./RawActivity";
-import { RawObject } from "./RawObject";
-
 /**
  * Represents a raw actor entity in the database.
  */
@@ -30,20 +27,8 @@ export class RawActor extends BaseEntity {
 	 * The ActivityPub actor data associated with the actor.
 	 */
 	@Column("jsonb")
+	@Index({ unique: true, where: "(data->>'id') IS NOT NULL" })
 	data!: APActor;
-
-	/**
-	 * The list of follower IDs associated with the actor.
-	 */
-	@Column("jsonb", { default: [] })
-	followers!: string[];
-
-	/**
-	 * The list of featured objects associated with the actor.
-	 */
-	@ManyToMany(() => RawObject, { nullable: true })
-	@JoinTable()
-	featured!: RawObject[];
 
 	/**
 	 * Retrieves a RawActor entity by actor ID.
@@ -62,13 +47,13 @@ export class RawActor extends BaseEntity {
 	 * @returns The newly created RawActor entity, or an error response if the actor already exists or is filtered.
 	 */
 	static async addIfNotExists(data: APActor) {
+		// TODO: Also add corresponding user
 		if (await RawActor.exists(data.id ?? "")) {
 			return errorResponse("Actor already exists", 409);
 		}
 
 		const actor = new RawActor();
 		actor.data = data;
-		actor.followers = [];
 
 		const config = getConfig();
 
@@ -103,33 +88,6 @@ export class RawActor extends BaseEntity {
 	 */
 	getInstanceDomain() {
 		return new URL(this.data.id ?? "").host;
-	}
-
-	/**
-	 * Fetches the list of followers associated with the actor and updates the `followers` property.
-	 */
-	async fetchFollowers() {
-		let followers: APOrderedCollectionPage = await fetch(
-			`${this.data.followers?.toString() ?? ""}?page=1`,
-			{
-				headers: { Accept: "application/activity+json" },
-			}
-		);
-
-		let followersList = followers.orderedItems ?? [];
-
-		while (followers.type === "OrderedCollectionPage" && followers.next) {
-			followers = await fetch((followers.next as string).toString(), {
-				headers: { Accept: "application/activity+json" },
-			}).then(res => res.json());
-
-			followersList = {
-				...followersList,
-				...(followers.orderedItems ?? []),
-			};
-		}
-
-		this.followers = followersList as string[];
 	}
 
 	/**
@@ -169,7 +127,7 @@ export class RawActor extends BaseEntity {
 				config.defaults.header,
 			locked: false,
 			created_at: new Date(published ?? 0).toISOString(),
-			followers_count: this.followers.length,
+			followers_count: 0,
 			following_count: 0,
 			statuses_count: statusCount,
 			emojis: [],
@@ -249,7 +207,6 @@ export class RawActor extends BaseEntity {
 	 * @returns Whether an actor with the specified ID exists in the database.
 	 */
 	static async exists(id: string) {
-		console.log(!!(await RawActor.getByActorId(id)));
 		return !!(await RawActor.getByActorId(id));
 	}
 }

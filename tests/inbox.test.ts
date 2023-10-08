@@ -11,7 +11,7 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	await User.createNew({
+	await User.createNewLocal({
 		email: "test@test.com",
 		username: "test",
 		password: "test",

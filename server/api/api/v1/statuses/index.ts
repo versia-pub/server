@@ -6,7 +6,6 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { APActor } from "activitypub-types";
 import { Application } from "~database/entities/Application";
-import { RawActor } from "~database/entities/RawActor";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
@@ -108,7 +107,7 @@ export default async (req: Request): Promise<Response> => {
 
 	// Get reply account and status if exists
 	let replyObject: RawObject | null = null;
-	let replyActor: RawActor | null = null;
+	let replyUser: User | null = null;
 
 	if (in_reply_to_id) {
 		replyObject = await RawObject.findOne({
@@ -117,7 +116,7 @@ export default async (req: Request): Promise<Response> => {
 			},
 		});
 
-		replyActor = await RawActor.getByActorId(
+		replyUser = await User.getByActorId(
 			(replyObject?.data.attributedTo as APActor).id ?? ""
 		);
 	}
@@ -138,9 +137,9 @@ export default async (req: Request): Promise<Response> => {
 		spoiler_text: spoiler_text || "",
 		emojis: [],
 		reply:
-			replyObject && replyActor
+			replyObject && replyUser
 				? {
-						actor: replyActor,
+						user: replyUser,
 						object: replyObject,
 				  }
 				: undefined,

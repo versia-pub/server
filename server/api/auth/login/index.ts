@@ -35,7 +35,7 @@ export default async (
 		email,
 	});
 
-	if (!user || !(await Bun.password.verify(password, user.password)))
+	if (!user || !(await Bun.password.verify(password, user.password || "")))
 		return errorResponse("Invalid username or password", 401);
 
 	// Get application

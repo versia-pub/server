@@ -1,4 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+	BaseEntity,
+	Column,
+	Entity,
+	Index,
+	PrimaryGeneratedColumn,
+} from "typeorm";
 import { APImage, APObject, DateTime } from "activitypub-types";
 import { getConfig } from "@config";
 import { appendFile } from "fs/promises";
@@ -6,6 +12,7 @@ import { APIStatus } from "~types/entities/status";
 import { RawActor } from "./RawActor";
 import { APIAccount } from "~types/entities/account";
 import { APIEmoji } from "~types/entities/emoji";
+import { User } from "./User";
 
 /**
  * Represents a raw ActivityPub object in the database.
@@ -24,6 +31,11 @@ export class RawObject extends BaseEntity {
 	 * The data associated with the object.
 	 */
 	@Column("jsonb")
+	// Index ID, attributedTo, to and published for faster lookups
+	@Index({ unique: true, where: "(data->>'id') IS NOT NULL" })
+	@Index({ where: "(data->>'attributedTo') IS NOT NULL" })
+	@Index({ where: "(data->>'to') IS NOT NULL" })
+	@Index({ where: "(data->>'published') IS NOT NULL" })
 	data!: APObject;
 
 	/**
@@ -82,10 +94,8 @@ export class RawObject extends BaseEntity {
 		return {
 			account:
 				(await (
-					await RawActor.getByActorId(
-						this.data.attributedTo as string
-					)
-				)?.toAPIAccount()) ?? (null as unknown as APIAccount),
+					await User.getByActorId(this.data.attributedTo as string)
+				)?.toAPI()) ?? (null as unknown as APIAccount),
 			created_at: new Date(this.data.published as DateTime).toISOString(),
 			id: this.id,
 			in_reply_to_id: null,
