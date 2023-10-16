@@ -1,7 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
-import { getHost } from "@config";
+import { getConfig, getHost } from "@config";
 
 /**
  * ActivityPub WebFinger endpoint
@@ -13,6 +13,8 @@ export default async (
 	// In the format acct:name@example.com
 	const resource = matchedRoute.query.resource;
 	const requestedUser = resource.split("acct:")[1];
+
+	const config = getConfig();
 
 	// Check if user is a local user
 	if (requestedUser.split("@")[1] !== getHost()) {
@@ -32,17 +34,17 @@ export default async (
 			{
 				rel: "self",
 				type: "application/activity+json",
-				href: `https://${getHost()}/@${user.username}/actor`
+				href: `${config.http.base_url}/users/${user.username}/actor`
 			},
 			{
 				rel: "https://webfinger.net/rel/profile-page",
 				type: "text/html",
-				href: `https://${getHost()}/@${user.username}`
+				href: `${config.http.base_url}/users/${user.username}`
 			},
 			{
 				rel: "self",
 				type: "application/activity+json; profile=\"https://www.w3.org/ns/activitystreams\"",
-				href: `https://${getHost()}/@${user.username}/actor`
+				href: `${config.http.base_url}/users/${user.username}/actor`
 			}
 		]
 	})

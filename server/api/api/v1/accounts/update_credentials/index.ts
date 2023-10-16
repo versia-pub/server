@@ -62,6 +62,15 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
+		// Check if display name doesnt match filters
+		if (
+			config.filters.displayname_filters.some(filter =>
+				display_name.match(filter)
+			)
+		) {
+			return errorResponse("Display name contains blocked words", 422);
+		}
+
 		user.actor.data.name = display_name;
 		user.display_name = display_name;
 	}
@@ -73,6 +82,11 @@ export default async (req: Request): Promise<Response> => {
 				`Note must be less than ${config.validation.max_note_size} characters`,
 				422
 			);
+		}
+
+		// Check if bio doesnt match filters
+		if (config.filters.bio_filters.some(filter => note.match(filter))) {
+			return errorResponse("Bio contains blocked words", 422);
 		}
 
 		user.actor.data.summary = note;

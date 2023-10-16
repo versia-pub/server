@@ -23,7 +23,7 @@ describe("POST /@test/inbox", () => {
 	test("should store a new Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/@test/inbox/`, {
+		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/activity+json",
@@ -33,7 +33,7 @@ describe("POST /@test/inbox", () => {
 				type: "Create",
 				id: activityId,
 				actor: {
-					id: `${config.http.base_url}/@test`,
+					id: `${config.http.base_url}/users/test`,
 					type: "Person",
 					preferredUsername: "test",
 				},
@@ -82,7 +82,7 @@ describe("POST /@test/inbox", () => {
 	test("should try to update that Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/@test/inbox/`, {
+		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/activity+json",
@@ -92,7 +92,7 @@ describe("POST /@test/inbox", () => {
 				type: "Update",
 				id: activityId,
 				actor: {
-					id: `${config.http.base_url}/@test`,
+					id: `${config.http.base_url}/users/test`,
 					type: "Person",
 					preferredUsername: "test",
 				},
@@ -140,7 +140,7 @@ describe("POST /@test/inbox", () => {
 
 	test("should delete the Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
-		const response = await fetch(`${config.http.base_url}/@test/inbox/`, {
+		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/activity+json",
@@ -150,7 +150,7 @@ describe("POST /@test/inbox", () => {
 				type: "Delete",
 				id: activityId,
 				actor: {
-					id: `${config.http.base_url}/@test`,
+					id: `${config.http.base_url}/users/test`,
 					type: "Person",
 					preferredUsername: "test",
 				},
@@ -187,17 +187,17 @@ describe("POST /@test/inbox", () => {
 		expect(activity?.actors).toHaveLength(1);
 		expect(activity?.actors[0].data).toEqual({
 			preferredUsername: "test",
-			id: `${config.http.base_url}/@test`,
+			id: `${config.http.base_url}/users/test`,
 			summary: "",
 			publicKey: {
-				id: `${config.http.base_url}/@test/actor#main-key`,
-				owner: `${config.http.base_url}/@test/actor`,
+				id: `${config.http.base_url}/users/test/actor#main-key`,
+				owner: `${config.http.base_url}/users/test/actor`,
 				publicKeyPem: expect.any(String),
 			},
-			outbox: `${config.http.base_url}/@test/outbox`,
+			outbox: `${config.http.base_url}/users/test/outbox`,
 			manuallyApprovesFollowers: false,
-			followers: `${config.http.base_url}/@test/followers`,
-			following: `${config.http.base_url}/@test/following`,
+			followers: `${config.http.base_url}/users/test/followers`,
+			following: `${config.http.base_url}/users/test/following`,
 			name: "",
 			"@context": [
 				"https://www.w3.org/ns/activitystreams",
@@ -211,7 +211,7 @@ describe("POST /@test/inbox", () => {
 				type: "Image",
 				url: "",
 			},
-			inbox: `${config.http.base_url}/@test/inbox`,
+			inbox: `${config.http.base_url}/users/test/inbox`,
 			type: "Person",
 		});
 
@@ -226,7 +226,7 @@ describe("POST /@test/inbox", () => {
 	test("should return a 404 error when trying to delete a non-existent Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/@test/inbox/`, {
+		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/activity+json",
@@ -236,7 +236,7 @@ describe("POST /@test/inbox", () => {
 				type: "Delete",
 				id: activityId,
 				actor: {
-					id: `${config.http.base_url}/@test`,
+					id: `${config.http.base_url}/users/test`,
 					type: "Person",
 					preferredUsername: "test",
 				},
@@ -274,10 +274,10 @@ afterAll(async () => {
 		.leftJoinAndSelect("activity.objects", "objects")
 		.leftJoinAndSelect("activity.actors", "actors")
 		// activity.actors is a many-to-many relationship with Actor objects (it is an array of Actor objects)
-		// Get the actors of the activity that have data.id as `${config.http.base_url}/@test`
+		// Get the actors of the activity that have data.id as `${config.http.base_url}/users/test`
 		.where("actors.data @> :data", {
 			data: JSON.stringify({
-				id: `${config.http.base_url}/@test`,
+				id: `${config.http.base_url}/users/test`,
 			}),
 		})
 		.getMany();

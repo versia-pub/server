@@ -89,7 +89,7 @@ export default async (
 				Hashtag: "as:Hashtag",
 			},
 		],
-		id: `${config.http.base_url}/@${user.username}`,
+		id: `${config.http.base_url}/users/${user.username}`,
 		type: "Person",
 		preferredUsername: user.username, // TODO: Add user display name
 		name: user.username,
@@ -104,21 +104,21 @@ export default async (
 			url: user.header,
 			mediaType: "image/png", // TODO: Set user header mimetype
 		},
-		inbox: `${config.http.base_url}/@${user.username}/inbox`,
-		outbox: `${config.http.base_url}/@${user.username}/outbox`,
-		followers: `${config.http.base_url}/@${user.username}/followers`,
-		following: `${config.http.base_url}/@${user.username}/following`,
-		liked: `${config.http.base_url}/@${user.username}/liked`,
+		inbox: `${config.http.base_url}/users/${user.username}/inbox`,
+		outbox: `${config.http.base_url}/users/${user.username}/outbox`,
+		followers: `${config.http.base_url}/users/${user.username}/followers`,
+		following: `${config.http.base_url}/users/${user.username}/following`,
+		liked: `${config.http.base_url}/users/${user.username}/liked`,
 		discoverable: true,
 		alsoKnownAs: [
 			// TODO: Add accounts from which the user migrated
 		],
 		manuallyApprovesFollowers: false, // TODO: Change
 		publicKey: {
-			id: `${getHost()}${config.http.base_url}/@${
+			id: `${getHost()}${config.http.base_url}/users/${
 				user.username
 			}/actor#main-key`,
-			owner: `${config.http.base_url}/@${user.username}`,
+			owner: `${config.http.base_url}/users/${user.username}`,
 			// Split the public key into PEM format
 			publicKeyPem: `-----BEGIN PUBLIC KEY-----\n${user.public_key
 				.match(/.{1,64}/g)

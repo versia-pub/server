@@ -72,7 +72,7 @@ const timeAfter = performance.now();
 
 const activities = await RawActivity.createQueryBuilder("activity")
 	.where("activity.data->>'actor' = :actor", {
-		actor: `${config.http.base_url}/@test`,
+		actor: `${config.http.base_url}/users/test`,
 	})
 	.leftJoinAndSelect("activity.objects", "objects")
 	.getMany();

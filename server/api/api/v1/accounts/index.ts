@@ -74,14 +74,24 @@ export default async (req: Request): Promise<Response> => {
 		}
 	);
 
-	config.validation.max_username_size;
-
 	// Check if username is valid
 	if (!body.username?.match(/^[a-zA-Z0-9_]+$/))
 		errors.details.username.push({
 			error: "ERR_INVALID",
 			description: `must only contain letters, numbers, and underscores`,
 		});
+
+	// Check if username doesnt match filters
+	if (
+		config.filters.username_filters.some(
+			filter => body.username?.match(filter)
+		)
+	) {
+		errors.details.username.push({
+			error: "ERR_INVALID",
+			description: `contains blocked words`,
+		});
+	}
 
 	// Check if username is too long
 	if ((body.username?.length ?? 0) > config.validation.max_username_size)

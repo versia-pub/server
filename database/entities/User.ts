@@ -379,7 +379,7 @@ export class User extends BaseEntity {
 
 		// Check if actor exists
 		const actorExists = await RawActor.getByActorId(
-			`${config.http.base_url}/@${this.username}`
+			`${config.http.base_url}/users/${this.username}`
 		);
 
 		let actor: RawActor;
@@ -395,14 +395,14 @@ export class User extends BaseEntity {
 				"https://www.w3.org/ns/activitystreams",
 				"https://w3id.org/security/v1",
 			],
-			id: `${config.http.base_url}/@${this.username}`,
+			id: `${config.http.base_url}/users/${this.username}`,
 			type: "Person",
 			preferredUsername: this.username,
 			name: this.display_name,
-			inbox: `${config.http.base_url}/@${this.username}/inbox`,
-			outbox: `${config.http.base_url}/@${this.username}/outbox`,
-			followers: `${config.http.base_url}/@${this.username}/followers`,
-			following: `${config.http.base_url}/@${this.username}/following`,
+			inbox: `${config.http.base_url}/users/${this.username}/inbox`,
+			outbox: `${config.http.base_url}/users/${this.username}/outbox`,
+			followers: `${config.http.base_url}/users/${this.username}/followers`,
+			following: `${config.http.base_url}/users/${this.username}/following`,
 			manuallyApprovesFollowers: false,
 			summary: this.note,
 			icon: {
@@ -414,8 +414,8 @@ export class User extends BaseEntity {
 				url: this.header,
 			},
 			publicKey: {
-				id: `${config.http.base_url}/@${this.username}/actor#main-key`,
-				owner: `${config.http.base_url}/@${this.username}/actor`,
+				id: `${config.http.base_url}/users/${this.username}/actor#main-key`,
+				owner: `${config.http.base_url}/users/${this.username}/actor`,
 				publicKeyPem: this.public_key,
 			},
 		} as APActor;

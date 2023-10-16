@@ -50,6 +50,8 @@ export interface ConfigType {
 		discard_deletes: string[];
 		discard_banners: string[];
 		discard_avatars: string[];
+		discard_updates: string[];
+		discard_follows: string[];
 		force_sensitive: string[];
 		remove_media: string[];
 		fetch_all_colletion_members: boolean;
@@ -178,6 +180,8 @@ export const configDefaults: ConfigType = {
 		discard_banners: [],
 		discard_avatars: [],
 		force_sensitive: [],
+		discard_updates: [],
+		discard_follows: [],
 		remove_media: [],
 		fetch_all_colletion_members: false,
 	},

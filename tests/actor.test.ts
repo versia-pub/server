@@ -23,7 +23,7 @@ beforeAll(async () => {
 
 describe("POST /@test/actor", () => {
 	test("should return a valid ActivityPub Actor when querying an existing user", async () => {
-		const response = await fetch(`${config.http.base_url}/@test/actor`, {
+		const response = await fetch(`${config.http.base_url}/users/test/actor`, {
 			method: "GET",
 			headers: {
 				Accept: "application/activity+json",
@@ -38,16 +38,16 @@ describe("POST /@test/actor", () => {
 		const actor: APActor = await response.json();
 
 		expect(actor.type).toBe("Person");
-		expect(actor.id).toBe(`${config.http.base_url}/@test`);
+		expect(actor.id).toBe(`${config.http.base_url}/users/test`);
 		expect(actor.preferredUsername).toBe("test");
-		expect(actor.inbox).toBe(`${config.http.base_url}/@test/inbox`);
-		expect(actor.outbox).toBe(`${config.http.base_url}/@test/outbox`);
-		expect(actor.followers).toBe(`${config.http.base_url}/@test/followers`);
-		expect(actor.following).toBe(`${config.http.base_url}/@test/following`);
+		expect(actor.inbox).toBe(`${config.http.base_url}/users/test/inbox`);
+		expect(actor.outbox).toBe(`${config.http.base_url}/users/test/outbox`);
+		expect(actor.followers).toBe(`${config.http.base_url}/users/test/followers`);
+		expect(actor.following).toBe(`${config.http.base_url}/users/test/following`);
 		expect((actor as any).publicKey).toBeDefined();
 		expect((actor as any).publicKey.id).toBeDefined();
 		expect((actor as any).publicKey.owner).toBe(
-			`${config.http.base_url}/@test`
+			`${config.http.base_url}/users/test`
 		);
 		expect((actor as any).publicKey.publicKeyPem).toBeDefined();
 		expect((actor as any).publicKey.publicKeyPem).toMatch(
@@ -64,7 +64,7 @@ afterAll(async () => {
 
 	const activities = await RawActivity.createQueryBuilder("activity")
 		.where("activity.data->>'actor' = :actor", {
-			actor: `${config.http.base_url}/@test`,
+			actor: `${config.http.base_url}/users/test`,
 		})
 		.leftJoinAndSelect("activity.objects", "objects")
 		.getMany();

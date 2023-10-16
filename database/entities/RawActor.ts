@@ -116,7 +116,7 @@ export class RawActor extends BaseEntity {
 			username: preferredUsername ?? "",
 			display_name: name ?? preferredUsername ?? "",
 			note: summary ?? "",
-			url: `${config.http.base_url}/@${preferredUsername}${
+			url: `${config.http.base_url}/users/${preferredUsername}${
 				isLocalUser ? "" : `@${this.getInstanceDomain()}`
 			}`,
 			avatar:

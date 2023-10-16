@@ -13,6 +13,25 @@ bind_port = "8080"
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
 
+[smtp]
+# SMTP server to use for sending emails
+server = "smtp.example.com"
+port = 465
+username = "test@example.com"
+password = "password123"
+tls = true
+
+[email]
+# Sends an email to moderators when a report is received
+# NOT IMPLEMENTED
+send_on_report = false
+# Sends an email to moderators when a user is suspended
+# NOT IMPLEMENTED
+send_on_suspend = false
+# Sends an email to moderators when a user is unsuspended
+# NOT IMPLEMENTED
+send_on_unsuspend = false
+
 [validation]
 # Self explanatory
 max_displayname_size = 50
@@ -20,9 +39,9 @@ max_bio_size = 160
 max_note_size = 5000
 max_avatar_size = 5_000_000
 max_header_size = 5_000_000
-max_media_size = 40_000_000
-max_media_attachments = 4
-max_media_description_size = 1000
+max_media_size = 40_000_000 # MEDIA NOT IMPLEMENTED
+max_media_attachments = 4 # MEDIA NOT IMPLEMENTED
+max_media_description_size = 1000 # MEDIA NOT IMPLEMENTED
 max_username_size = 30
 # An array of strings, defaults are from Akkoma
 username_blacklist = [ ".well-known", "~", "about", "activities" , "api",
@@ -36,12 +55,12 @@ email_blacklist = []
 # Valid URL schemes, otherwise the URL is parsed as text
 url_scheme_whitelist = [ "http", "https", "ftp", "dat", "dweb", "gopher", "hyper",
 	"ipfs", "ipns", "irc", "xmpp", "ircs", "magnet", "mailto", "mumble", "ssb",
-	"gemini" ]
+	"gemini" ] # NOT IMPLEMENTED
 allowed_mime_types = [ "image/jpeg", "image/png", "image/gif", "image/heic", "image/heif",
 	"image/webp", "image/avif", "video/webm", "video/mp4", "video/quicktime", "video/ogg",
 	"audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wave", "audio/vnd.wave",
 	"audio/ogg", "audio/vorbis", "audio/mpeg", "audio/mp3", "audio/webm", "audio/flac",
-	"audio/aac", "audio/m4a", "audio/x-m4a", "audio/mp4", "audio/3gpp", "video/x-ms-asf" ]
+	"audio/aac", "audio/m4a", "audio/x-m4a", "audio/mp4", "audio/3gpp", "video/x-ms-asf" ] # MEDIA NOT IMPLEMENTED
 
 [defaults]
 # Default visibility for new notes
@@ -58,25 +77,29 @@ header = ""
 use_tombstones = true
 # Fetch all members of collections (followers, following, etc) when receiving them
 # WARNING: This can be a lot of data, and is not recommended
-fetch_all_collection_members = false
+fetch_all_collection_members = false # NOT IMPLEMENTED
 
 # The following values must be instance domain names without "https" or glob patterns
-# Rejects all activities from these instances, simply doesnt save them at all
+# Rejects all activities from these instances (fediblocking)
 reject_activities = []
 # Force posts from this instance to be followers only
-force_followers_only = []
+force_followers_only = [] # NOT IMPLEMENTED
 # Discard all reports from these instances
-discard_reports = []
+discard_reports = [] # NOT IMPLEMENTED
 # Discard all deletes from these instances
 discard_deletes = []
+# Discard all updates (edits) from these instances
+discard_updates = []
 # Discard all banners from these instances
-discard_banners = []
+discard_banners = [] # NOT IMPLEMENTED
 # Discard all avatars from these instances
-discard_avatars = []
+discard_avatars = [] # NOT IMPLEMENTED
+# Discard all follow requests from these instances
+discard_follows = []
 # Force set these instances' media as sensitive
-force_sensitive = []
+force_sensitive = [] # NOT IMPLEMENTED
 # Remove theses instances' media
-remove_media = []
+remove_media = [] # NOT IMPLEMENTED
 
 
 [filters]
@@ -91,7 +114,7 @@ username_filters = []
 displayname_filters = []
 # Drop users with these regex filters (only applies to new activities)
 bio_filters = []
-emoji_filters = []
+emoji_filters = [] # NOT IMPLEMENTED
 
 [logging]
 # Log all requests (warning: this is a lot of data)

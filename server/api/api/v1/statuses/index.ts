@@ -125,6 +125,11 @@ export default async (req: Request): Promise<Response> => {
 		);
 	}
 
+	// Check if status body doesnt match filters
+	if (config.filters.note_filters.some(filter => status.match(filter))) {
+		return errorResponse("Status contains blocked words", 422);
+	}
+
 	// Create status
 	const newStatus = await Status.createNew({
 		account: user,

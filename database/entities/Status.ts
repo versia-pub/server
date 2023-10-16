@@ -220,7 +220,7 @@ export class Status extends BaseEntity {
 		}
 
 		newStatus.object.data = {
-			id: `${config.http.base_url}/@${data.account.username}/statuses/${newStatus.id}`,
+			id: `${config.http.base_url}/users/${data.account.username}/statuses/${newStatus.id}`,
 			type: "Note",
 			summary: data.spoiler_text,
 			content: data.content, // TODO: Format as HTML
@@ -229,14 +229,14 @@ export class Status extends BaseEntity {
 				: undefined,
 			published: new Date().toISOString(),
 			tag: [],
-			attributedTo: `${config.http.base_url}/@${data.account.username}`,
+			attributedTo: `${config.http.base_url}/users/${data.account.username}`,
 		};
 
 		// Get people mentioned in the content
 		const mentionedPeople = [
 			...data.content.matchAll(/@([a-zA-Z0-9_]+)/g),
 		].map(match => {
-			return `${config.http.base_url}/@${match[1]}`;
+			return `${config.http.base_url}/users/${match[1]}`;
 		});
 
 		// Map this to Users
@@ -286,7 +286,7 @@ export class Status extends BaseEntity {
 
 		if (data.visibility === "private") {
 			newStatus.object.data.cc = [
-				`${config.http.base_url}/@${data.account.username}/followers`,
+				`${config.http.base_url}/users/${data.account.username}/followers`,
 			];
 		} else if (data.visibility === "direct") {
 			// Add nothing else
@@ -296,7 +296,7 @@ export class Status extends BaseEntity {
 				"https://www.w3.org/ns/activitystreams#Public",
 			];
 			newStatus.object.data.cc = [
-				`${config.http.base_url}/@${data.account.username}/followers`,
+				`${config.http.base_url}/users/${data.account.username}/followers`,
 			];
 		}
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
