@@ -13,6 +13,7 @@ export interface ConfigType {
 		base_url: string;
 		bind: string;
 		bind_port: string;
+		banned_ips: string[];
 	};
 
 	validation: {
@@ -67,6 +68,19 @@ export interface ConfigType {
 		log_requests_verbose: boolean;
 		log_filters: boolean;
 	};
+
+	ratelimits: {
+		duration_coeff: number;
+		max_coeff: number;
+	};
+
+	custom_ratelimits: Record<
+		string,
+		{
+			duration: number;
+			max: number;
+		}
+	>;
 	[key: string]: unknown;
 }
 
@@ -75,6 +89,7 @@ export const configDefaults: ConfigType = {
 		bind: "http://0.0.0.0",
 		bind_port: "8000",
 		base_url: "http://fediproject.localhost:8000",
+		banned_ips: [],
 	},
 	database: {
 		host: "localhost",
@@ -178,6 +193,11 @@ export const configDefaults: ConfigType = {
 		log_requests_verbose: false,
 		log_filters: true,
 	},
+	ratelimits: {
+		duration_coeff: 1,
+		max_coeff: 1,
+	},
+	custom_ratelimits: {},
 };
 
 export const getConfig = () => {

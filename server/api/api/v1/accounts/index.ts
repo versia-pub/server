@@ -3,6 +3,19 @@ import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
 import { User } from "~database/entities/User";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	route: "/api/v1/accounts",
+	ratelimits: {
+		max: 2,
+		duration: 60,
+	},
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Creates a new user

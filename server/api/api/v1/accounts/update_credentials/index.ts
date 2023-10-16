@@ -2,22 +2,25 @@ import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { User } from "~database/entities/User";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["PATCH"],
+	route: "/api/v1/accounts/update_credentials",
+	ratelimits: {
+		max: 2,
+		duration: 60,
+	},
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Patches a user
  */
 export default async (req: Request): Promise<Response> => {
-	// Check if request is a PATCH request
-	if (req.method !== "PATCH")
-		return errorResponse("This method requires a PATCH request", 405);
-
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const user = await User.retrieveFromToken(token);
+	const { user } = await User.getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 

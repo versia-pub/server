@@ -193,7 +193,7 @@ export class RawActivity extends BaseEntity {
 	 * Returns the ActivityPub representation of the activity.
 	 * @returns The ActivityPub representation of the activity.
 	 */
-	makeActivityPubRepresentation() {
+	getActivityPubRepresentation() {
 		return {
 			...this.data,
 			object: this.objects[0].data,

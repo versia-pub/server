@@ -1,9 +1,23 @@
+import { applyConfig } from "@api";
 import { errorResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import { Application } from "~database/entities/Application";
 import { Token } from "~database/entities/Token";
 import { User } from "~database/entities/User";
+import { APIRouteMeta } from "~types/api";
+
+export const meta: APIRouteMeta = applyConfig({
+	allowedMethods: ["POST"],
+	ratelimits: {
+		max: 4,
+		duration: 60,
+	},
+	route: "/auth/login",
+	auth: {
+		required: false,
+	},
+});
 
 /**
  * OAuth Code flow

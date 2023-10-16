@@ -1,6 +1,20 @@
+import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { RawObject } from "~database/entities/RawObject";
+import { APIRouteMeta } from "~types/api";
+
+export const meta: APIRouteMeta = applyConfig({
+	allowedMethods: ["GET"],
+	ratelimits: {
+		max: 200,
+		duration: 60,
+	},
+	route: "/api/v1/timelines/home",
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Fetch home timeline statuses

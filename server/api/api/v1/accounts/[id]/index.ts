@@ -1,6 +1,19 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	ratelimits: {
+		max: 30,
+		duration: 60,
+	},
+	route: "/accounts/:id",
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Fetch a user
@@ -11,13 +24,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1];
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const user = await User.retrieveFromToken(token);
+	const { user } = await User.getFromRequest(req);
 
 	let foundUser: User | null;
 	try {

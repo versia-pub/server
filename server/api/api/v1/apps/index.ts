@@ -1,7 +1,20 @@
+import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { randomBytes } from "crypto";
 import { Application } from "~database/entities/Application";
+
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	route: "/api/v1/apps",
+	ratelimits: {
+		max: 2,
+		duration: 60,
+	},
+	auth: {
+		required: false,
+	},
+});
 
 /**
  * Creates a new application to obtain OAuth 2 credentials

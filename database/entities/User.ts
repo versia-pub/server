@@ -156,6 +156,13 @@ export class User extends BaseEntity {
 	@JoinTable()
 	pinned_notes!: RawObject[];
 
+	static async getFromRequest(req: Request) {
+		// Check auth token
+		const token = req.headers.get("Authorization")?.split(" ")[1] || "";
+
+		return { user: await User.retrieveFromToken(token), token };
+	}
+
 	/**
 	 * Update this user data from its actor
 	 * @returns The updated user.

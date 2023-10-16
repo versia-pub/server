@@ -2,6 +2,19 @@ import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	ratelimits: {
+		max: 30,
+		duration: 60,
+	},
+	route: "/accounts/:id/statuses",
+	auth: {
+		required: false,
+	},
+});
 
 /**
  * Fetch all statuses for a user

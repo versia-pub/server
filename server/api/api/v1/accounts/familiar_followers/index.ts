@@ -2,18 +2,25 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { User } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	route: "/api/v1/accounts/familiar_followers",
+	ratelimits: {
+		max: 30,
+		duration: 60,
+	},
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Find familiar followers (followers of a user that you also follow)
  */
 export default async (req: Request): Promise<Response> => {
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const self = await User.retrieveFromToken(token);
+	const { user: self } = await User.getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 

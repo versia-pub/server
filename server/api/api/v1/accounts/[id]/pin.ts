@@ -2,6 +2,19 @@ import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Relationship } from "~database/entities/Relationship";
 import { User } from "~database/entities/User";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	ratelimits: {
+		max: 30,
+		duration: 60,
+	},
+	route: "/accounts/:id/pin",
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Pin a user
@@ -12,13 +25,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const self = await User.retrieveFromToken(token);
+	const { user: self } = await User.getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 

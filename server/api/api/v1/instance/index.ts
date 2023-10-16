@@ -1,7 +1,20 @@
+import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	route: "/api/v1/instance",
+	ratelimits: {
+		max: 300,
+		duration: 60,
+	},
+	auth: {
+		required: false,
+	},
+});
 
 /**
  * Creates a new user

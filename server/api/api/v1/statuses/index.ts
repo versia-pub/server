@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
@@ -9,22 +10,25 @@ import { Application } from "~database/entities/Application";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
+import { APIRouteMeta } from "~types/api";
+
+export const meta: APIRouteMeta = applyConfig({
+	allowedMethods: ["POST"],
+	ratelimits: {
+		max: 300,
+		duration: 60,
+	},
+	route: "/api/v1/statuses",
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Post new status
  */
 export default async (req: Request): Promise<Response> => {
-	// Check if request is a PATCH request
-	if (req.method !== "POST")
-		return errorResponse("This method requires a POST request", 405);
-
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const user = await User.retrieveFromToken(token);
+	const { user, token } = await User.getFromRequest(req);
 	const application = await Application.getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);

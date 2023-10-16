@@ -1,8 +1,23 @@
+import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
+import { APIRouteMeta } from "~types/api";
+
+export const meta: APIRouteMeta = applyConfig({
+	allowedMethods: ["GET", "DELETE"],
+	ratelimits: {
+		max: 100,
+		duration: 60,
+	},
+	route: "/api/v1/statuses/:id",
+	auth: {
+		required: false,
+		requiredOnMethods: ["DELETE"],
+	},
+});
 
 /**
  * Fetch a user
@@ -13,13 +28,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const user = await User.retrieveFromToken(token);
+	const { user } = await User.getFromRequest(req);
 
 	// TODO: Add checks for user's permissions to view this status
 

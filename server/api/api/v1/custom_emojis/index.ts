@@ -1,9 +1,22 @@
+import { applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { IsNull } from "typeorm";
 import { Emoji } from "~database/entities/Emoji";
 
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	route: "/api/v1/custom_emojis",
+	ratelimits: {
+		max: 100,
+		duration: 60,
+	},
+	auth: {
+		required: false,
+	},
+});
+
 /**
- * Creates a new user
+ * S
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 export default async (): Promise<Response> => {

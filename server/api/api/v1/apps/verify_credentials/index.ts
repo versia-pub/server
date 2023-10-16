@@ -1,18 +1,25 @@
+import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { Application } from "~database/entities/Application";
 import { User } from "~database/entities/User";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	route: "/api/v1/apps/verify_credentials",
+	ratelimits: {
+		max: 100,
+		duration: 60,
+	},
+	auth: {
+		required: true,
+	},
+});
 
 /**
  * Returns OAuth2 credentials
  */
 export default async (req: Request): Promise<Response> => {
-	// Check auth token
-	const token = req.headers.get("Authorization")?.split(" ")[1] || null;
-
-	if (!token)
-		return errorResponse("This method requires an authenticated user", 422);
-
-	const user = await User.retrieveFromToken(token);
+	const { user, token } = await User.getFromRequest(req);
 	const application = await Application.getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
