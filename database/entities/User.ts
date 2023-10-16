@@ -262,8 +262,8 @@ export class User extends BaseEntity {
 		};
 
 		await user.generateKeys();
-		await user.updateActor();
 		await user.save();
+		await user.updateActor();
 
 		return user;
 	}
