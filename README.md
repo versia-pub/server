@@ -113,9 +113,23 @@ Configuration can be found inside the `config.toml` file. The following values a
 - `bind`: The hostname or IP address to bind the HTTP server to. Example: `"http://localhost"`
 - `bind_port`: The port number to bind the HTTP server to. Example: `"8080"`
 
-### Security
+#### Security
 
 - `banned_ips`: An array of strings representing banned IPv4 or IPv6 IPs. Wildcards, networks and ranges are supported. Example: `[ "192.168.0.*" ]` (empty array)
+
+### SMTP
+
+- `server`: The SMTP server to use for sending emails. Example: `"smtp.example.com"`
+- `port`: The port number to use for the SMTP server. Example: `465`
+- `username`: The username to use for the SMTP server. Example: `"test@example.com"`
+- `password`: The password to use for the SMTP server. Example: `"password123"`
+- `tls`: Whether to use TLS for the SMTP server. Example: `true`
+
+### Email
+
+- `send_on_report`: Whether to send an email to moderators when a report is received. Example: `false`
+- `send_on_suspend`: Whether to send an email to moderators when a user is suspended. Example: `true`
+- `send_on_unsuspend`: Whether to send an email to moderators when a user is unsuspended. Example: `false`
 
 ### Validation
 
@@ -149,8 +163,10 @@ Configuration can be found inside the `config.toml` file. The following values a
 - `force_followers_only`: An array of instance domain names without "https" or glob patterns. Force posts from this instance to be followers only. Example: `[ "mastodon.social" ]`
 - `discard_reports`: An array of instance domain names without "https" or glob patterns. Discard all reports from these instances. Example: `[ "mastodon.social" ]`
 - `discard_deletes`: An array of instance domain names without "https" or glob patterns. Discard all deletes from these instances. Example: `[ "mastodon.social" ]`
+- `discard_updates`: An array of instance domain names without "https" or glob patterns. Discard all updates (edits) from these instances. Example: `[]`
 - `discard_banners`: An array of instance domain names without "https" or glob patterns. Discard all banners from these instances. Example: `[ "mastodon.social" ]`
 - `discard_avatars`: An array of instance domain names without "https" or glob patterns. Discard all avatars from these instances. Example: `[ "mastodon.social" ]`
+- `discard_follows`: An array of instance domain names without "https" or glob patterns. Discard all follow requests from these instances. Example: `[]`
 - `force_sensitive`: An array of instance domain names without "https" or glob patterns. Force set these instances' media as sensitive. Example: `[ "mastodon.social" ]`
 - `remove_media`: An array of instance domain names without "https" or glob patterns. Remove these instances' media. Example: `[ "mastodon.social" ]`
 
