@@ -55,6 +55,7 @@ export interface ConfigType {
 		force_sensitive: string[];
 		remove_media: string[];
 		fetch_all_colletion_members: boolean;
+		authorized_fetch: boolean;
 	};
 
 	filters: {
@@ -184,6 +185,7 @@ export const configDefaults: ConfigType = {
 		discard_follows: [],
 		remove_media: [],
 		fetch_all_colletion_members: false,
+		authorized_fetch: false,
 	},
 	filters: {
 		note_filters: [],

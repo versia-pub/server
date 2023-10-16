@@ -57,34 +57,49 @@ export default async (
 	const body: APActivity = await req.json();
 
 	// Verify HTTP signature
-	const signature = req.headers.get("Signature") ?? "";
-	const signatureParams = signature
-		.split(",")
-		.reduce<Record<string, string>>((params, param) => {
-			const [key, value] = param.split("=");
-			params[key] = value.replace(/"/g, "");
-			return params;
-		}, {});
+	if (config.activitypub.authorized_fetch) {
+		// Check if date is older than 30 seconds
+		const date = new Date(req.headers.get("Date") ?? "");
 
-	const signedString = `(request-target): post /users/${username}/inbox\nhost: ${
-		config.http.base_url
-	}\ndate: ${req.headers.get("Date")}`;
-	const signatureBuffer = new TextEncoder().encode(signatureParams.signature);
-	const signatureBytes = new Uint8Array(signatureBuffer).buffer;
-	const publicKeyBuffer = (body.actor as any).publicKey.publicKeyPem;
-	const publicKey = await crypto.subtle.importKey(
-		"spki",
-		publicKeyBuffer,
-		{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-		false,
-		["verify"]
-	);
-	const verified = await crypto.subtle.verify(
-		{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-		publicKey,
-		signatureBytes,
-		new TextEncoder().encode(signedString)
-	);
+		if (date.getTime() < Date.now() - 30000) {
+			return errorResponse("Date is too old (max 30 seconds)", 401);
+		}
+
+		const signature = req.headers.get("Signature") ?? "";
+		const signatureParams = signature
+			.split(",")
+			.reduce<Record<string, string>>((params, param) => {
+				const [key, value] = param.split("=");
+				params[key] = value.replace(/"/g, "");
+				return params;
+			}, {});
+
+		const signedString = `(request-target): post /users/${username}/inbox\nhost: ${
+			config.http.base_url
+		}\ndate: ${req.headers.get("Date")}`;
+		const signatureBuffer = new TextEncoder().encode(
+			signatureParams.signature
+		);
+		const signatureBytes = new Uint8Array(signatureBuffer).buffer;
+		const publicKeyBuffer = (body.actor as any).publicKey.publicKeyPem;
+		const publicKey = await crypto.subtle.importKey(
+			"spki",
+			publicKeyBuffer,
+			{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+			false,
+			["verify"]
+		);
+		const verified = await crypto.subtle.verify(
+			{ name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+			publicKey,
+			signatureBytes,
+			new TextEncoder().encode(signedString)
+		);
+
+		if (!verified) {
+			return errorResponse("Invalid signature", 401);
+		}
+	}
 
 	// Get the object's ActivityPub type
 	const type = body.type;

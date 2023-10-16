@@ -101,6 +101,10 @@ force_sensitive = [] # NOT IMPLEMENTED
 # Remove theses instances' media
 remove_media = [] # NOT IMPLEMENTED
 
+# Whether to verify HTTP signatures for every request (warning: can slow down your server
+# significantly depending on processing power)
+authorized_fetch = false
+
 
 [filters]
 # Drop notes with these regex filters (only applies to new activities)
