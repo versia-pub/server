@@ -4,7 +4,7 @@ import { User } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
-	allowedMethods: ["POST"],
+	allowedMethods: ["GET"],
 	ratelimits: {
 		max: 30,
 		duration: 60,

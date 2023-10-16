@@ -23,34 +23,38 @@ describe("POST /@test/inbox", () => {
 	test("should store a new Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/activity+json",
-			},
-			body: JSON.stringify({
-				"@context": "https://www.w3.org/ns/activitystreams",
-				type: "Create",
-				id: activityId,
-				actor: {
-					id: `${config.http.base_url}/users/test`,
-					type: "Person",
-					preferredUsername: "test",
+		const response = await fetch(
+			`${config.http.base_url}/users/test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+					Origin: "http://lysand-test.localhost",
 				},
-				to: ["https://www.w3.org/ns/activitystreams#Public"],
-				cc: [],
-				published: "2021-01-01T00:00:00.000Z",
-				object: {
+				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
-					id: "https://example.com/notes/1",
-					type: "Note",
-					content: "Hello, world!",
-					summary: null,
-					inReplyTo: null,
+					type: "Create",
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}/users/test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
 					published: "2021-01-01T00:00:00.000Z",
-				},
-			}),
-		});
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/1",
+						type: "Note",
+						content: "Hello, world!",
+						summary: null,
+						inReplyTo: null,
+						published: "2021-01-01T00:00:00.000Z",
+					},
+				}),
+			}
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -82,34 +86,38 @@ describe("POST /@test/inbox", () => {
 	test("should try to update that Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/activity+json",
-			},
-			body: JSON.stringify({
-				"@context": "https://www.w3.org/ns/activitystreams",
-				type: "Update",
-				id: activityId,
-				actor: {
-					id: `${config.http.base_url}/users/test`,
-					type: "Person",
-					preferredUsername: "test",
+		const response = await fetch(
+			`${config.http.base_url}/users/test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+					Origin: "http://lysand-test.localhost",
 				},
-				to: ["https://www.w3.org/ns/activitystreams#Public"],
-				cc: [],
-				published: "2021-01-02T00:00:00.000Z",
-				object: {
+				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
-					id: "https://example.com/notes/1",
-					type: "Note",
-					content: "This note has been edited!",
-					summary: null,
-					inReplyTo: null,
-					published: "2021-01-01T00:00:00.000Z",
-				},
-			}),
-		});
+					type: "Update",
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}/users/test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
+					published: "2021-01-02T00:00:00.000Z",
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/1",
+						type: "Note",
+						content: "This note has been edited!",
+						summary: null,
+						inReplyTo: null,
+						published: "2021-01-01T00:00:00.000Z",
+					},
+				}),
+			}
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -140,34 +148,38 @@ describe("POST /@test/inbox", () => {
 
 	test("should delete the Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
-		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/activity+json",
-			},
-			body: JSON.stringify({
-				"@context": "https://www.w3.org/ns/activitystreams",
-				type: "Delete",
-				id: activityId,
-				actor: {
-					id: `${config.http.base_url}/users/test`,
-					type: "Person",
-					preferredUsername: "test",
+		const response = await fetch(
+			`${config.http.base_url}/users/test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+					Origin: "http://lysand-test.localhost",
 				},
-				to: ["https://www.w3.org/ns/activitystreams#Public"],
-				cc: [],
-				published: "2021-01-03T00:00:00.000Z",
-				object: {
+				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
-					id: "https://example.com/notes/1",
-					type: "Note",
-					content: "This note has been edited!",
-					summary: null,
-					inReplyTo: null,
-					published: "2021-01-01T00:00:00.000Z",
-				},
-			}),
-		});
+					type: "Delete",
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}/users/test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
+					published: "2021-01-03T00:00:00.000Z",
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/1",
+						type: "Note",
+						content: "This note has been edited!",
+						summary: null,
+						inReplyTo: null,
+						published: "2021-01-01T00:00:00.000Z",
+					},
+				}),
+			}
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -226,30 +238,34 @@ describe("POST /@test/inbox", () => {
 	test("should return a 404 error when trying to delete a non-existent Note object", async () => {
 		const activityId = `https://example.com/objects/${crypto.randomUUID()}`;
 
-		const response = await fetch(`${config.http.base_url}/users/test/inbox/`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/activity+json",
-			},
-			body: JSON.stringify({
-				"@context": "https://www.w3.org/ns/activitystreams",
-				type: "Delete",
-				id: activityId,
-				actor: {
-					id: `${config.http.base_url}/users/test`,
-					type: "Person",
-					preferredUsername: "test",
+		const response = await fetch(
+			`${config.http.base_url}/users/test/inbox/`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/activity+json",
+					Origin: "http://lysand-test.localhost",
 				},
-				to: ["https://www.w3.org/ns/activitystreams#Public"],
-				cc: [],
-				published: "2021-01-03T00:00:00.000Z",
-				object: {
+				body: JSON.stringify({
 					"@context": "https://www.w3.org/ns/activitystreams",
-					id: "https://example.com/notes/2345678909876543",
-					type: "Note",
-				},
-			}),
-		});
+					type: "Delete",
+					id: activityId,
+					actor: {
+						id: `${config.http.base_url}/users/test`,
+						type: "Person",
+						preferredUsername: "test",
+					},
+					to: ["https://www.w3.org/ns/activitystreams#Public"],
+					cc: [],
+					published: "2021-01-03T00:00:00.000Z",
+					object: {
+						"@context": "https://www.w3.org/ns/activitystreams",
+						id: "https://example.com/notes/2345678909876543",
+						type: "Note",
+					},
+				}),
+			}
+		);
 
 		expect(response.status).toBe(404);
 		expect(response.headers.get("content-type")).toBe("application/json");

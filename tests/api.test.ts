@@ -200,7 +200,9 @@ describe("GET /api/v1/accounts/verify_credentials", () => {
 		expect(account.following_count).toBe(0);
 		expect(account.statuses_count).toBe(0);
 		expect(account.note).toBe("");
-		expect(account.url).toBe(`${config.http.base_url}/users/${user.username}`);
+		expect(account.url).toBe(
+			`${config.http.base_url}/users/${user.username}`
+		);
 		expect(account.avatar).toBeDefined();
 		expect(account.avatar_static).toBeDefined();
 		expect(account.header).toBeDefined();

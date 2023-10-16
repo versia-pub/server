@@ -18,7 +18,7 @@
 		"strictFunctionTypes": true,
 		"forceConsistentCasingInFileNames": true,
 		"allowJs": true,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
 		"types": [
 			"bun-types" // add Bun global
