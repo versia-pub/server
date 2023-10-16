@@ -1,0 +1,113 @@
+[database]
+host = "localhost"
+port = 48654
+username = "lysand"
+password = "password123"
+database = "lysand"
+
+[http]
+base_url = "https://lysand.social"
+bind = "http://localhost"
+bind_port = "8080"
+
+# Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
+banned_ips = []
+
+[validation]
+# Self explanatory
+max_displayname_size = 50
+max_bio_size = 160
+max_note_size = 5000
+max_avatar_size = 5_000_000
+max_header_size = 5_000_000
+max_media_size = 40_000_000
+max_media_attachments = 4
+max_media_description_size = 1000
+max_username_size = 30
+# An array of strings, defaults are from Akkoma
+username_blacklist = [ ".well-known", "~", "about", "activities" , "api",
+	"auth", "dev", "inbox", "internal", "main", "media", "nodeinfo", "notice",
+	"oauth", "objects", "proxy", "push", "registration", "relay", "settings",
+	"status", "tag", "users", "web", "search", "mfa" ]
+# Whether to blacklist known temporary email providers
+blacklist_tempmail = false
+# Additional email providers to blacklist
+email_blacklist = []
+# Valid URL schemes, otherwise the URL is parsed as text
+url_scheme_whitelist = [ "http", "https", "ftp", "dat", "dweb", "gopher", "hyper",
+	"ipfs", "ipns", "irc", "xmpp", "ircs", "magnet", "mailto", "mumble", "ssb",
+	"gemini" ]
+allowed_mime_types = [ "image/jpeg", "image/png", "image/gif", "image/heic", "image/heif",
+	"image/webp", "image/avif", "video/webm", "video/mp4", "video/quicktime", "video/ogg",
+	"audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wave", "audio/vnd.wave",
+	"audio/ogg", "audio/vorbis", "audio/mpeg", "audio/mp3", "audio/webm", "audio/flac",
+	"audio/aac", "audio/m4a", "audio/x-m4a", "audio/mp4", "audio/3gpp", "video/x-ms-asf" ]
+
+[defaults]
+# Default visibility for new notes
+visibility = "public"
+# Default language for new notes
+language = "en"
+# Default avatar, must be a valid URL or ""
+avatar = ""
+# Default header, must be a valid URL or ""
+header = ""
+
+[activitypub]
+# Use ActivityPub Tombstones instead of deleting objects
+use_tombstones = true
+# Fetch all members of collections (followers, following, etc) when receiving them
+# WARNING: This can be a lot of data, and is not recommended
+fetch_all_collection_members = false
+
+# The following values must be instance domain names without "https" or glob patterns
+# Rejects all activities from these instances, simply doesnt save them at all
+reject_activities = []
+# Force posts from this instance to be followers only
+force_followers_only = []
+# Discard all reports from these instances
+discard_reports = []
+# Discard all deletes from these instances
+discard_deletes = []
+# Discard all banners from these instances
+discard_banners = []
+# Discard all avatars from these instances
+discard_avatars = []
+# Force set these instances' media as sensitive
+force_sensitive = []
+# Remove theses instances' media
+remove_media = []
+
+
+[filters]
+# Drop notes with these regex filters (only applies to new activities)
+note_filters = [
+	# "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
+	# "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
+]
+# Drop users with these regex filters (only applies to new activities)
+username_filters = []
+# Drop users with these regex filters (only applies to new activities)
+displayname_filters = []
+# Drop users with these regex filters (only applies to new activities)
+bio_filters = []
+emoji_filters = []
+
+[logging]
+# Log all requests (warning: this is a lot of data)
+log_requests = true
+# Log request and their contents (warning: this is a lot of data)
+log_requests_verbose = false
+
+# Log all filtered objects
+log_filters = true
+
+[ratelimits]
+# Amount to multiply every route's duration by
+duration_coeff = 1.0
+# Amount to multiply every route's max by
+max_coeff = 1.0
+
+[custom_ratelimits]
+# Add in any API route in this style here
+"/api/v1/timelines/public" = { duration = 60, max = 200 }
