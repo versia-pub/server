@@ -263,8 +263,8 @@ export class User extends BaseEntity {
 
 		await user.generateKeys();
 		await user.updateActor();
-
 		await user.save();
+
 		return user;
 	}
 
@@ -403,6 +403,7 @@ export class User extends BaseEntity {
 			outbox: `${config.http.base_url}/users/${this.username}/outbox`,
 			followers: `${config.http.base_url}/users/${this.username}/followers`,
 			following: `${config.http.base_url}/users/${this.username}/following`,
+			published: new Date(this.created_at).toISOString(),
 			manuallyApprovesFollowers: false,
 			summary: this.note,
 			icon: {

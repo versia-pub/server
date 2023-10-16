@@ -57,7 +57,9 @@
   },
   "dependencies": {
     "ip-matching": "^2.1.2",
+    "isomorphic-dompurify": "^1.9.0",
     "jsonld": "^8.3.1",
+    "marked": "^9.1.2",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.3.17"

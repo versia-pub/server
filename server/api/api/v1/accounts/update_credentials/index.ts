@@ -3,6 +3,8 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { User } from "~database/entities/User";
 import { applyConfig } from "@api";
+import { sanitize } from "isomorphic-dompurify";
+import { sanitizeHtml } from "@sanitization";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -50,11 +52,18 @@ export default async (req: Request): Promise<Response> => {
 		"source[language]": string;
 	}>(req);
 
+	const sanitizedNote = await sanitizeHtml(note ?? "");
+
+	const sanitizedDisplayName = sanitize(display_name, {
+		ALLOWED_TAGS: [],
+		ALLOWED_ATTR: [],
+	});
+
 	if (display_name) {
 		// Check if within allowed display name lengths
 		if (
-			display_name.length < 3 ||
-			display_name.length > config.validation.max_displayname_size
+			sanitizedDisplayName.length < 3 ||
+			sanitizedDisplayName.length > config.validation.max_displayname_size
 		) {
 			return errorResponse(
 				`Display name must be between 3 and ${config.validation.max_displayname_size} characters`,
@@ -65,19 +74,19 @@ export default async (req: Request): Promise<Response> => {
 		// Check if display name doesnt match filters
 		if (
 			config.filters.displayname_filters.some(filter =>
-				display_name.match(filter)
+				sanitizedDisplayName.match(filter)
 			)
 		) {
 			return errorResponse("Display name contains blocked words", 422);
 		}
 
-		user.actor.data.name = display_name;
-		user.display_name = display_name;
+		user.actor.data.name = sanitizedDisplayName;
+		user.display_name = sanitizedDisplayName;
 	}
 
 	if (note) {
 		// Check if within allowed note length
-		if (note.length > config.validation.max_note_size) {
+		if (sanitizedNote.length > config.validation.max_note_size) {
 			return errorResponse(
 				`Note must be less than ${config.validation.max_note_size} characters`,
 				422
@@ -85,12 +94,16 @@ export default async (req: Request): Promise<Response> => {
 		}
 
 		// Check if bio doesnt match filters
-		if (config.filters.bio_filters.some(filter => note.match(filter))) {
+		if (
+			config.filters.bio_filters.some(filter =>
+				sanitizedNote.match(filter)
+			)
+		) {
 			return errorResponse("Bio contains blocked words", 422);
 		}
 
-		user.actor.data.summary = note;
-		user.note = note;
+		user.actor.data.summary = sanitizedNote;
+		user.note = sanitizedNote;
 	}
 
 	if (source_privacy) {
@@ -177,6 +190,7 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	await user.save();
+	await user.updateActor();
 
 	return jsonResponse(await user.toAPI());
 };

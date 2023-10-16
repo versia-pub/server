@@ -91,7 +91,7 @@ export const configDefaults: ConfigType = {
 	http: {
 		bind: "http://0.0.0.0",
 		bind_port: "8000",
-		base_url: "http://fediproject.localhost:8000",
+		base_url: "http://lysand.localhost:8000",
 		banned_ips: [],
 	},
 	database: {

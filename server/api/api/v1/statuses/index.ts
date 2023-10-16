@@ -5,7 +5,9 @@ import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import { sanitizeHtml } from "@sanitization";
 import { APActor } from "activitypub-types";
+import { sanitize } from "isomorphic-dompurify";
 import { Application } from "~database/entities/Application";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
@@ -72,7 +74,9 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Status is required", 422);
 	}
 
-	if (status.length > config.validation.max_note_size) {
+	const sanitizedStatus = await sanitizeHtml(status);
+
+	if (sanitizedStatus.length > config.validation.max_note_size) {
 		return errorResponse(
 			`Status must be less than ${config.validation.max_note_size} characters`,
 			400
@@ -134,7 +138,7 @@ export default async (req: Request): Promise<Response> => {
 	const newStatus = await Status.createNew({
 		account: user,
 		application,
-		content: status,
+		content: sanitizedStatus,
 		visibility:
 			visibility ||
 			(config.defaults.visibility as
