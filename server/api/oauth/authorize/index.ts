@@ -1,4 +1,17 @@
+import { applyConfig } from "@api";
 import { MatchedRoute } from "bun";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 20,
+	},
+	route: "/oauth/authorize",
+});
 
 /**
  * Returns an HTML login form

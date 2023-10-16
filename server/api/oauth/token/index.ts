@@ -1,6 +1,19 @@
+import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { Token } from "~database/entities/Token";
+
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 10,
+	},
+	route: "/oauth/token",
+});
 
 /**
  * Allows getting token from OAuth code

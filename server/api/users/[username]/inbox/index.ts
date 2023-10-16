@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { errorResponse, jsonResponse } from "@response";
 import {
@@ -19,6 +20,18 @@ import { RawActivity } from "~database/entities/RawActivity";
 import { RawActor } from "~database/entities/RawActor";
 import { User } from "~database/entities/User";
 
+export const meta = applyConfig({
+	allowedMethods: ["POST"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 500,
+	},
+	route: "/users/:username/inbox",
+});
+
 /**
  * ActivityPub user inbox endpoint
  */
@@ -26,11 +39,6 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	// Check if POST request
-	if (req.method !== "POST") {
-		return errorResponse("Method not allowed", 405);
-	}
-
 	const username = matchedRoute.params.username;
 
 	const config = getConfig();

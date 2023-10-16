@@ -2,6 +2,19 @@ import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 500,
+	},
+	route: "/users/:username/actor",
+});
 
 /**
  * ActivityPub user actor endpoinmt
@@ -19,7 +32,7 @@ export default async (
 
 	const config = getConfig();
 
-	const username = matchedRoute.params.username.replace("@", "");
+	const username = matchedRoute.params.username;
 
 	const user = await User.findOneBy({ username });
 

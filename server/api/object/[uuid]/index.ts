@@ -1,6 +1,19 @@
+import { applyConfig } from "@api";
 import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { RawActivity } from "~database/entities/RawActivity";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 500,
+	},
+	route: "/object/:id",
+});
 
 /**
  * Fetch a user

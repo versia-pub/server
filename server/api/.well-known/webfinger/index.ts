@@ -2,6 +2,19 @@ import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { User } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 60,
+	},
+	route: "/.well-known/webfinger",
+});
 
 /**
  * ActivityPub WebFinger endpoint

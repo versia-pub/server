@@ -4,6 +4,19 @@ import { User } from "~database/entities/User";
 import { getHost } from "@config";
 import { NodeObject, compact } from "jsonld";
 import { RawActivity } from "~database/entities/RawActivity";
+import { applyConfig } from "@api";
+
+export const meta = applyConfig({
+	allowedMethods: ["GET"],
+	auth: {
+		required: false,
+	},
+	ratelimits: {
+		duration: 60,
+		max: 500,
+	},
+	route: "/users/:username/outbox",
+});
 
 /**
  * ActivityPub user outbox endpoint
