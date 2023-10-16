@@ -1,5 +1,7 @@
 # Lysand
 
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)
+
 ## What is this?
 
 This is a project to create a federated social network based on the [ActivityPub](https://www.w3.org/TR/activitypub/) standard. It is currently in early alpha phase, with very basic federation and API support.
@@ -48,6 +50,11 @@ bun start
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.
 
+## Planned Extra Features
+
+- Send notifications to moderators when a report is received
+- Email notifications on certain actions
+
 ## Federation
 
 > **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
@@ -88,8 +95,89 @@ Working endpoints are:
 - `/oauth/authorize`
 - `/oauth/token`
 
+## Configuration Values
+
+Configuration can be found inside the `config.toml` file. The following values are available:
+
+### Database
+
+- `host`: The hostname or IP address of the database server. Example: `"localhost"`
+- `port`: The port number to use for the database connection. Example: `48654`
+- `username`: The username to use for the database connection. Example: `"lysand"`
+- `password`: The password to use for the database connection. Example: `"mycoolpassword"`
+- `database`: The name of the database to use. Example: `"lysand"`
+
+### HTTP
+
+- `base_url`: The base URL for the HTTP server. Example: `"https://lysand.social"`
+- `bind`: The hostname or IP address to bind the HTTP server to. Example: `"http://localhost"`
+- `bind_port`: The port number to bind the HTTP server to. Example: `"8080"`
+
+### Security
+
+- `banned_ips`: An array of strings representing banned IPv4 or IPv6 IPs. Wildcards, networks and ranges are supported. Example: `[ "192.168.0.*" ]` (empty array)
+
+### Validation
+
+- `max_displayname_size`: The maximum size of a user's display name, in characters. Example: `30`
+- `max_bio_size`: The maximum size of a user's bio, in characters. Example: `160`
+- `max_note_size`: The maximum size of a user's note, in characters. Example: `500`
+- `max_avatar_size`: The maximum size of a user's avatar image, in bytes. Example: `1048576` (1 MB)
+- `max_header_size`: The maximum size of a user's header image, in bytes. Example: `2097152` (2 MB)
+- `max_media_size`: The maximum size of a media attachment, in bytes. Example: `5242880` (5 MB)
+- `max_media_attachments`: The maximum number of media attachments allowed per post. Example: `4`
+- `max_media_description_size`: The maximum size of a media attachment's description, in characters. Example: `100`
+- `max_username_size`: The maximum size of a user's username, in characters. Example: `20`
+- `username_blacklist`: An array of strings representing usernames that are not allowed to be used by users. Defaults are from Akkoma. Example: `["admin", "moderator"]`
+- `blacklist_tempmail`: Whether to blacklist known temporary email providers. Example: `true`
+- `email_blacklist`: Additional email providers to blacklist. Example: `["example.com", "test.com"]`
+- `url_scheme_whitelist`: An array of strings representing valid URL schemes. URLs that do not use one of these schemes will be parsed as text. Example: `["http", "https"]`
+- `allowed_mime_types`: An array of strings representing allowed MIME types for media attachments. Example: `["image/jpeg", "image/png", "video/mp4"]`
+
+### Defaults
+
+- `visibility`: The default visibility for new notes. Example: `"public"`
+- `language`: The default language for new notes. Example: `"en"`
+- `avatar`: The default avatar URL. Example: `""` (empty string)
+- `header`: The default header URL. Example: `""` (empty string)
+
+### ActivityPub
+
+- `use_tombstones`: Whether to use ActivityPub Tombstones instead of deleting objects. Example: `true`
+- `fetch_all_collection_members`: Whether to fetch all members of collections (followers, following, etc) when receiving them. Example: `false`
+- `reject_activities`: An array of instance domain names without "https" or glob patterns. Rejects all activities from these instances, simply doesn't save them at all. Example: `[ "mastodon.social" ]`
+- `force_followers_only`: An array of instance domain names without "https" or glob patterns. Force posts from this instance to be followers only. Example: `[ "mastodon.social" ]`
+- `discard_reports`: An array of instance domain names without "https" or glob patterns. Discard all reports from these instances. Example: `[ "mastodon.social" ]`
+- `discard_deletes`: An array of instance domain names without "https" or glob patterns. Discard all deletes from these instances. Example: `[ "mastodon.social" ]`
+- `discard_banners`: An array of instance domain names without "https" or glob patterns. Discard all banners from these instances. Example: `[ "mastodon.social" ]`
+- `discard_avatars`: An array of instance domain names without "https" or glob patterns. Discard all avatars from these instances. Example: `[ "mastodon.social" ]`
+- `force_sensitive`: An array of instance domain names without "https" or glob patterns. Force set these instances' media as sensitive. Example: `[ "mastodon.social" ]`
+- `remove_media`: An array of instance domain names without "https" or glob patterns. Remove these instances' media. Example: `[ "mastodon.social" ]`
+
+### Filters
+
+- `note_filters`: An array of regex filters to drop notes from new activities. Example: `["(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+", "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+"]`
+- `username_filters`: An array of regex filters to drop users from new activities based on their username. Example: `[ "^spammer-[a-z]" ]`
+- `displayname_filters`: An array of regex filters to drop users from new activities based on their display name. Example: `[ "^spammer-[a-z]" ]`
+- `bio_filters`: An array of regex filters to drop users from new activities based on their bio. Example: `[ "badword" ]`
+- `emoji_filters`: An array of regex filters to drop users from new activities based on their emoji usage. Example: `[ ":bademoji:" ]`
+
+### Logging
+
+- `log_requests`: Whether to log all requests. Example: `true`
+- `log_requests_verbose`: Whether to log request and their contents. Example: `false`
+- `log_filters`: Whether to log all filtered objects. Example: `true`
+
+### Ratelimits
+
+- `duration_coeff`: The amount to multiply every route's duration by. Example: `1.0`
+- `max_coeff`: The amount to multiply every route's max by. Example: `1.0`
+
+### Custom Ratelimits
+
+- `"/api/v1/timelines/public"`: An object representing a custom ratelimit for the specified API route. Example: `{ duration = 60, max = 200 }`
+
 
 ## License
 
 This project is licensed under the [AGPL-3.0](LICENSE).
-```
