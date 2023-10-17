@@ -117,6 +117,25 @@ Configuration can be found inside the `config.toml` file. The following values a
 
 - `banned_ips`: An array of strings representing banned IPv4 or IPv6 IPs. Wildcards, networks and ranges are supported. Example: `[ "192.168.0.*" ]` (empty array)
 
+### Media
+
+- `backend`: Specifies the backend to use for media storage. Can be "local" or "s3", "local" uploads the file to the local filesystem.
+- `deduplicate_media`: When set to true, the hash of media is checked when uploading to avoid duplication.
+
+#### Conversion
+
+- `convert_images`: Whether to convert uploaded images to another format. Example: `true`
+- `convert_to`: The format to convert uploaded images to. Example: `"webp"`. Can be "jxl", "webp", "avif", "png", "jpg" or "gif".
+
+### S3
+
+- `endpoint`: The endpoint to use for the S3 server. Example: `"https://s3.example.com"`
+- `access_key`: Access key to use for S3
+- `secret_access_key`: Secret access key to use for S3
+- `bucket_name`: The bucket to use for S3 (can be left empty)
+- `region`: The region to use for S3 (can be left empty)
+- `public_url`: The public URL to access uploaded media. Example: `"https://cdn.example.com"`
+
 ### SMTP
 
 - `server`: The SMTP server to use for sending emails. Example: `"smtp.example.com"`

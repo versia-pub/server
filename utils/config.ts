@@ -16,6 +16,14 @@ export interface ConfigType {
 		banned_ips: string[];
 	};
 
+	smtp: {
+		server: string;
+		port: number;
+		username: string;
+		password: string;
+		tls: boolean;
+	};
+
 	validation: {
 		max_displayname_size: number;
 		max_bio_size: number;
@@ -35,11 +43,35 @@ export interface ConfigType {
 		allowed_mime_types: string[];
 	};
 
+	media: {
+		backend: string;
+		deduplicate_media: boolean;
+		conversion: {
+			convert_images: boolean;
+			convert_to: string;
+		};
+	};
+
+	s3: {
+		endpoint: string;
+		access_key: string;
+		secret_access_key: string;
+		region: string;
+		bucket_name: string;
+		public_url: string;
+	};
+
 	defaults: {
 		visibility: string;
 		language: string;
 		avatar: string;
 		header: string;
+	};
+
+	email: {
+		send_on_report: boolean;
+		send_on_suspend: boolean;
+		send_on_unsuspend: boolean;
 	};
 
 	activitypub: {
@@ -100,6 +132,34 @@ export const configDefaults: ConfigType = {
 		username: "postgres",
 		password: "postgres",
 		database: "lysand",
+	},
+	smtp: {
+		password: "",
+		port: 465,
+		server: "",
+		tls: true,
+		username: "",
+	},
+	media: {
+		backend: "local",
+		deduplicate_media: true,
+		conversion: {
+			convert_images: false,
+			convert_to: "webp",
+		},
+	},
+	email: {
+		send_on_report: false,
+		send_on_suspend: false,
+		send_on_unsuspend: false,
+	},
+	s3: {
+		access_key: "",
+		bucket_name: "",
+		endpoint: "",
+		public_url: "",
+		region: "",
+		secret_access_key: "",
 	},
 	validation: {
 		max_displayname_size: 50,
