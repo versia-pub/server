@@ -5,6 +5,7 @@ import { User } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
+import { uploadFile } from "~classes/media";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -145,7 +146,9 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
-		// TODO: Store the file somewhere and then change the user's actual avatar
+		const hash = await uploadFile(avatar, config);
+
+		user.avatar = hash || "";
 	}
 
 	if (header) {
@@ -156,7 +159,10 @@ export default async (req: Request): Promise<Response> => {
 				422
 			);
 		}
-		// TODO: Store the file somewhere and then change the user's actual header
+
+		const hash = await uploadFile(header, config);
+
+		user.header = hash || "";
 	}
 
 	if (locked) {

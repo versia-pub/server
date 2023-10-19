@@ -210,6 +210,7 @@ describe("POST /@test/inbox", () => {
 			manuallyApprovesFollowers: false,
 			followers: `${config.http.base_url}/users/test/followers`,
 			following: `${config.http.base_url}/users/test/following`,
+			published: expect.any(String),
 			name: "",
 			"@context": [
 				"https://www.w3.org/ns/activitystreams",
@@ -217,11 +218,11 @@ describe("POST /@test/inbox", () => {
 			],
 			icon: {
 				type: "Image",
-				url: "",
+				url: expect.any(String),
 			},
 			image: {
 				type: "Image",
-				url: "",
+				url: expect.any(String),
 			},
 			inbox: `${config.http.base_url}/users/test/inbox`,
 			type: "Person",
@@ -311,4 +312,6 @@ afterAll(async () => {
 	await Promise.all(tokens.map(async token => await token.remove()));
 
 	if (user) await user.remove();
+
+	await AppDataSource.destroy();
 });

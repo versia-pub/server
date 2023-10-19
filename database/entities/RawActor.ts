@@ -120,10 +120,10 @@ export class RawActor extends BaseEntity {
 				isLocalUser ? "" : `@${this.getInstanceDomain()}`
 			}`,
 			avatar:
-				((icon as APImage).url as string | undefined) ??
+				((icon as APImage).url as string | undefined) ||
 				config.defaults.avatar,
 			header:
-				((image as APImage).url as string | undefined) ??
+				((image as APImage).url as string | undefined) ||
 				config.defaults.header,
 			locked: false,
 			created_at: new Date(published ?? 0).toISOString(),

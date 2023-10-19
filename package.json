@@ -35,6 +35,9 @@
     "dev": "bun run index.ts",
     "start": "bun run index.ts"
   },
+  "trustedDependencies": [
+    "sharp"
+  ],
   "devDependencies": {
     "@julr/unocss-preset-forms": "^0.0.5",
     "@types/jsonld": "^1.5.9",

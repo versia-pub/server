@@ -37,4 +37,6 @@ describe("Instance", () => {
 
 afterAll(async () => {
 	await instance.remove();
+
+	await AppDataSource.destroy();
 });

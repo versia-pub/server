@@ -23,27 +23,34 @@ beforeAll(async () => {
 
 describe("POST /@test/actor", () => {
 	test("should return a valid ActivityPub Actor when querying an existing user", async () => {
-		const response = await fetch(`${config.http.base_url}/users/test/actor`, {
-			method: "GET",
-			headers: {
-				Accept: "application/activity+json",
-			},
-		});
+		const response = await fetch(
+			`${config.http.base_url}/users/test/actor`,
+			{
+				method: "GET",
+				headers: {
+					Accept: "application/activity+json",
+				},
+			}
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe(
 			"application/activity+json"
 		);
 
-		const actor: APActor = await response.json();
+		const actor = (await response.json()) as APActor;
 
 		expect(actor.type).toBe("Person");
 		expect(actor.id).toBe(`${config.http.base_url}/users/test`);
 		expect(actor.preferredUsername).toBe("test");
 		expect(actor.inbox).toBe(`${config.http.base_url}/users/test/inbox`);
 		expect(actor.outbox).toBe(`${config.http.base_url}/users/test/outbox`);
-		expect(actor.followers).toBe(`${config.http.base_url}/users/test/followers`);
-		expect(actor.following).toBe(`${config.http.base_url}/users/test/following`);
+		expect(actor.followers).toBe(
+			`${config.http.base_url}/users/test/followers`
+		);
+		expect(actor.following).toBe(
+			`${config.http.base_url}/users/test/following`
+		);
 		expect((actor as any).publicKey).toBeDefined();
 		expect((actor as any).publicKey.id).toBeDefined();
 		expect((actor as any).publicKey.owner).toBe(
@@ -82,4 +89,6 @@ afterAll(async () => {
 	if (user) {
 		await user.remove();
 	}
+
+	await AppDataSource.destroy();
 });

@@ -38,11 +38,11 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 					// If a file, set as a file
 					if (value instanceof File) {
 						data[key] = value;
+					} else {
+						// Otherwise, set as a string
+						// eslint-disable-next-line @typescript-eslint/no-base-to-string
+						data[key] = value.toString();
 					}
-
-					// Otherwise, set as a string
-					// eslint-disable-next-line @typescript-eslint/no-base-to-string
-					data[key] = value.toString();
 				}
 			}
 

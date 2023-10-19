@@ -66,6 +66,28 @@ describe("API Tests", () => {
 		token = await token.save();
 	});
 
+	afterAll(async () => {
+		const activities = await RawActivity.createQueryBuilder("activity")
+			.where("activity.data->>'actor' = :actor", {
+				actor: `${config.http.base_url}/users/test`,
+			})
+			.leftJoinAndSelect("activity.objects", "objects")
+			.getMany();
+
+		// Delete all created objects and activities as part of testing
+		for (const activity of activities) {
+			for (const object of activity.objects) {
+				await object.remove();
+			}
+			await activity.remove();
+		}
+
+		await user.remove();
+		await user2.remove();
+
+		await AppDataSource.destroy();
+	});
+
 	describe("POST /api/v1/accounts/:id", () => {
 		test("should return a 404 error when trying to fetch a non-existent user", async () => {
 			const response = await fetch(
@@ -150,7 +172,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const statuses: APIStatus[] = await response.json();
+			const statuses = (await response.json()) as APIStatus[];
 
 			expect(statuses.some(s => s.id === status?.id)).toBe(true);
 		});
@@ -177,7 +199,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const user: APIAccount = await response.json();
+			const user = (await response.json()) as APIAccount;
 
 			expect(user.display_name).toBe("New Display Name");
 		});
@@ -201,7 +223,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIAccount = await response.json();
+			const account = (await response.json()) as APIAccount;
 
 			expect(account.username).toBe(user.username);
 			expect(account.bot).toBe(false);
@@ -246,7 +268,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const statuses: APIStatus[] = await response.json();
+			const statuses = (await response.json()) as APIStatus[];
 
 			expect(statuses.length).toBe(1);
 
@@ -278,7 +300,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.following).toBe(true);
@@ -304,7 +326,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.following).toBe(false);
@@ -330,7 +352,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.followed_by).toBe(false);
@@ -356,7 +378,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.blocking).toBe(true);
@@ -382,7 +404,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.blocking).toBe(false);
@@ -408,7 +430,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.muting).toBe(true);
@@ -433,7 +455,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.muting).toBe(true);
@@ -460,7 +482,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.muting).toBe(false);
@@ -486,7 +508,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.endorsed).toBe(true);
@@ -512,7 +534,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIRelationship = await response.json();
+			const account = (await response.json()) as APIRelationship;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.endorsed).toBe(false);
@@ -538,7 +560,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const account: APIAccount = await response.json();
+			const account = (await response.json()) as APIAccount;
 
 			expect(account.id).toBe(user2.id);
 			expect(account.note).toBe("This is a new note");
@@ -562,7 +584,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const relationships: APIRelationship[] = await response.json();
+			const relationships = (await response.json()) as APIRelationship[];
 
 			expect(Array.isArray(relationships)).toBe(true);
 			expect(relationships.length).toBeGreaterThan(0);
@@ -595,8 +617,10 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const familiarFollowers: { id: string; accounts: APIAccount[] }[] =
-				await response.json();
+			const familiarFollowers = (await response.json()) as {
+				id: string;
+				accounts: APIAccount[];
+			}[];
 
 			expect(Array.isArray(familiarFollowers)).toBe(true);
 			expect(familiarFollowers.length).toBeGreaterThan(0);
@@ -657,7 +681,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const statusJson = await response.json();
+			const statusJson = (await response.json()) as APIStatus;
 
 			expect(statusJson.id).toBe(status?.id);
 			expect(statusJson.content).toBeDefined();
@@ -718,7 +742,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const instance: APIInstance = await response.json();
+			const instance = (await response.json()) as APIInstance;
 
 			expect(instance.uri).toBe(new URL(config.http.base_url).hostname);
 			expect(instance.title).toBeDefined();
@@ -764,7 +788,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const emojis: APIEmoji[] = await response.json();
+			const emojis = (await response.json()) as APIEmoji[];
 
 			expect(emojis.length).toBeGreaterThan(0);
 			expect(emojis[0].shortcode).toBe("test");
@@ -773,27 +797,5 @@ describe("API Tests", () => {
 		afterAll(async () => {
 			await Emoji.delete({ shortcode: "test" });
 		});
-	});
-
-	afterAll(async () => {
-		const activities = await RawActivity.createQueryBuilder("activity")
-			.where("activity.data->>'actor' = :actor", {
-				actor: `${config.http.base_url}/users/test`,
-			})
-			.leftJoinAndSelect("activity.objects", "objects")
-			.getMany();
-
-		// Delete all created objects and activities as part of testing
-		await Promise.all(
-			activities.map(async activity => {
-				await Promise.all(
-					activity.objects.map(async object => await object.remove())
-				);
-				await activity.remove();
-			})
-		);
-
-		await user.remove();
-		await user2.remove();
 	});
 });

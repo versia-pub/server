@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { ConfigType, getConfig } from "@config";
 import {
 	BaseEntity,
 	Column,
@@ -14,7 +14,11 @@ import {
 } from "typeorm";
 import { APIAccount } from "~types/entities/account";
 import { RawActor } from "./RawActor";
-import { APActor, APOrderedCollectionPage } from "activitypub-types";
+import {
+	APActor,
+	APCollectionPage,
+	APOrderedCollectionPage,
+} from "activitypub-types";
 import { RawObject } from "./RawObject";
 import { Token } from "./Token";
 import { Status } from "./Status";
@@ -90,13 +94,13 @@ export class User extends BaseEntity {
 	source!: APISource;
 
 	/**
-	 * The avatar for the user.
+	 * The avatar for the user (filename, as UUID)
 	 */
 	@Column("varchar")
 	avatar!: string;
 
 	/**
-	 * The header for the user.
+	 * The header for the user (filename, as UUID)
 	 */
 	@Column("varchar")
 	header!: string;
@@ -156,6 +160,32 @@ export class User extends BaseEntity {
 	@JoinTable()
 	pinned_notes!: RawObject[];
 
+	/**
+	 * Get the user's avatar in raw URL format
+	 * @param config The config to use
+	 * @returns The raw URL for the user's avatar
+	 */
+	getAvatarUrl(config: ConfigType) {
+		if (config.media.backend === "local") {
+			return `${config.http.base_url}/media/${this.avatar}`;
+		} else if (config.media.backend === "s3") {
+			return `${config.s3.public_url}/${this.avatar}`;
+		}
+	}
+
+	/**
+	 * Get the user's header in raw URL format
+	 * @param config The config to use
+	 * @returns The raw URL for the user's header
+	 */
+	getHeaderUrl(config: ConfigType) {
+		if (config.media.backend === "local") {
+			return `${config.http.base_url}/media/${this.header}`;
+		} else if (config.media.backend === "s3") {
+			return `${config.s3.public_url}/${this.header}`;
+		}
+	}
+
 	static async getFromRequest(req: Request) {
 		// Check auth token
 		const token = req.headers.get("Authorization")?.split(" ")[1] || "";
@@ -196,7 +226,7 @@ export class User extends BaseEntity {
 		while (followers.type === "OrderedCollectionPage" && followers.next) {
 			followers = await fetch((followers.next as string).toString(), {
 				headers: { Accept: "application/activity+json" },
-			}).then(res => res.json());
+			}).then(res => res.json() as APCollectionPage);
 
 			followersList = {
 				...followersList,
@@ -408,11 +438,11 @@ export class User extends BaseEntity {
 			summary: this.note,
 			icon: {
 				type: "Image",
-				url: this.avatar,
+				url: this.getAvatarUrl(config),
 			},
 			image: {
 				type: "Image",
-				url: this.header,
+				url: this.getHeaderUrl(config),
 			},
 			publicKey: {
 				id: `${config.http.base_url}/users/${this.username}/actor#main-key`,

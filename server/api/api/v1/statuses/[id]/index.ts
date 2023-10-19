@@ -30,8 +30,6 @@ export default async (
 
 	const { user } = await User.getFromRequest(req);
 
-	// TODO: Add checks for user's permissions to view this status
-
 	let foundStatus: RawObject | null;
 	try {
 		foundStatus = await RawObject.findOneBy({
@@ -42,6 +40,14 @@ export default async (
 	}
 
 	if (!foundStatus) return errorResponse("Record not found", 404);
+
+	// Check if user is authorized to view this status (if it's private)
+	if (
+		(await foundStatus.toAPI()).visibility === "private" &&
+		(await foundStatus.toAPI()).account.id !== user?.id
+	) {
+		return errorResponse("Record not found", 404);
+	}
 
 	if (req.method === "GET") {
 		return jsonResponse(await foundStatus.toAPI());

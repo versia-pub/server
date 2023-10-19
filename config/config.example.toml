@@ -23,14 +23,17 @@ tls = true
 
 [media]
 # Can be "s3" or "local", where "local" uploads the file to the local filesystem
-backend = "s3" # NOT IMPLEMENTED
+# If you need to change this value after setting up your instance, you must move all the files
+# from one backend to the other manually
+backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
-deduplicate_media = true # NOT IMPLEMENTED
+deduplicate_media = true
 
 [media.conversion]
-convert_images = false # NOT IMPLEMENTED
-# Can be: "jxl", "webp", "avif", "png", "jpg", "gif"
-convert_to = "webp" # NOT IMPLEMENTED
+convert_images = false
+# Can be: "jxl", "webp", "avif", "png", "jpg", "heif"
+# JXL support will likely not work
+convert_to = "webp"
 
 [s3]
 # Can be left blank if you don't use the S3 media backend

@@ -48,6 +48,12 @@ export default async (): Promise<Response> => {
 				characters_reserved_per_url: 0,
 				max_characters: config.validation.max_note_size,
 				max_media_attachments: config.validation.max_media_attachments,
+				supported_mime_types: [
+					"text/plain",
+					"text/markdown",
+					"text/html",
+					"text/x.misskeymarkdown",
+				],
 			},
 		},
 		description: "A test instance",
@@ -67,7 +73,43 @@ export default async (): Promise<Response> => {
 		urls: {
 			streaming_api: "",
 		},
-		version: "0.0.1",
+		version: "4.2.0+glitch (compatible; Lysand 0.0.1)",
 		max_toot_chars: config.validation.max_note_size,
+		pleroma: {
+			metadata: {
+				// account_activation_required: false,
+				features: [
+					"pleroma_api",
+					"akkoma_api",
+					"mastodon_api",
+					// "mastodon_api_streaming",
+					// "polls",
+					// "v2_suggestions",
+					// "pleroma_explicit_addressing",
+					// "shareable_emoji_packs",
+					// "multifetch",
+					// "pleroma:api/v1/notifications:include_types_filter",
+					"quote_posting",
+					"editing",
+					// "bubble_timeline",
+					// "relay",
+					// "pleroma_emoji_reactions",
+					// "exposable_reactions",
+					// "profile_directory",
+					// "custom_emoji_reactions",
+					// "pleroma:get:main/ostatus",
+				],
+				post_formats: [
+					"text/plain",
+					"text/html",
+					"text/markdown",
+					"text/x.misskeymarkdown",
+				],
+				privileged_staff: false,
+			},
+			stats: {
+				mau: 2,
+			},
+		},
 	});
 };

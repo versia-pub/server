@@ -8,6 +8,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
 import { APActor } from "activitypub-types";
 import { sanitize } from "isomorphic-dompurify";
+import { parse } from "marked";
 import { Application } from "~database/entities/Application";
 import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
@@ -50,6 +51,7 @@ export default async (req: Request): Promise<Response> => {
 		sensitive,
 		spoiler_text,
 		visibility,
+		content_type,
 	} = await parseRequest<{
 		status: string;
 		media_ids?: string[];
@@ -67,14 +69,22 @@ export default async (req: Request): Promise<Response> => {
 		content_type?: string;
 	}>(req);
 
-	// TODO: Parse Markdown statuses
-
 	// Validate status
 	if (!status) {
 		return errorResponse("Status is required", 422);
 	}
 
-	const sanitizedStatus = await sanitizeHtml(status);
+	let sanitizedStatus: string;
+
+	if (content_type === "text/markdown") {
+		sanitizedStatus = await sanitizeHtml(parse(status));
+	} else if (content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+		// TODO: Parse as MFM
+		sanitizedStatus = await sanitizeHtml(parse(status));
+	} else {
+		sanitizedStatus = await sanitizeHtml(status);
+	}
 
 	if (sanitizedStatus.length > config.validation.max_note_size) {
 		return errorResponse(

@@ -33,6 +33,7 @@ describe("POST /api/v1/apps/", () => {
 		formData.append("redirect_uris", "https://example.com");
 		formData.append("scopes", "read write");
 
+		// @ts-expect-error FormData works
 		const response = await fetch(`${config.http.base_url}/api/v1/apps/`, {
 			method: "POST",
 			body: formData,
@@ -42,7 +43,7 @@ describe("POST /api/v1/apps/", () => {
 		expect(response.headers.get("content-type")).toBe("application/json");
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const json = await response.json();
+		const json = (await response.json()) as any;
 
 		expect(json).toEqual({
 			id: expect.any(String),
@@ -67,6 +68,8 @@ describe("POST /auth/login/", () => {
 
 		formData.append("email", "test@test.com");
 		formData.append("password", "test");
+
+		// @ts-expect-error FormData works
 		const response = await fetch(
 			`${config.http.base_url}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
 			{
@@ -96,13 +99,17 @@ describe("POST /oauth/token/", () => {
 		formData.append("client_secret", client_secret);
 		formData.append("scope", "read+write");
 
+		// @ts-expect-error FormData works
 		const response = await fetch(`${config.http.base_url}/oauth/token/`, {
 			method: "POST",
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
 			body: formData,
 		});
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const json = await response.json();
+		const json = (await response.json()) as any;
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -134,7 +141,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const credentials: Partial<Application> = await response.json();
+		const credentials = (await response.json()) as Partial<Application>;
 
 		expect(credentials.name).toBe("Test Application");
 		expect(credentials.website).toBe("https://example.com");
@@ -167,4 +174,6 @@ afterAll(async () => {
 	);
 
 	if (user) await user.remove();
+
+	await AppDataSource.destroy();
 });
