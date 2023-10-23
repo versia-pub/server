@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { RawObject } from "~database/entities/RawObject";
+import { FindManyOptions, IsNull, Not } from "typeorm";
+import { Status } from "~database/entities/Status";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -42,60 +44,94 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Limit must be between 1 and 40", 400);
 	}
 
-	let query = RawObject.createQueryBuilder("object")
-		.where("object.data->>'type' = 'Note'")
-		.andWhere("CAST(object.data->>'to' AS jsonb) @> CAST(:to AS jsonb)", {
-			to: JSON.stringify([
-				"https://www.w3.org/ns/activitystreams#Public",
-			]),
-		})
-		.orderBy("object.data->>'published'", "DESC")
-		.take(limit);
+	if (local && remote) {
+		return errorResponse("Cannot use both local and remote", 400);
+	}
+
+	let query: FindManyOptions<Status> = {
+		where: {
+			visibility: "public",
+		},
+		order: {
+			created_at: "DESC",
+		},
+		take: limit,
+		relations: ["object"],
+	};
 
 	if (max_id) {
-		const maxPost = await RawObject.findOneBy({ id: max_id });
+		const maxPost = await Status.findOneBy({ id: max_id });
 		if (maxPost) {
-			query = query.andWhere("object.data->>'published' < :max_date", {
-				max_date: maxPost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$lt: maxPost.created_at,
+					},
+				},
+			};
 		}
 	}
 
 	if (min_id) {
-		const minPost = await RawObject.findOneBy({ id: min_id });
+		const minPost = await Status.findOneBy({ id: min_id });
 		if (minPost) {
-			query = query.andWhere("object.data->>'published' > :min_date", {
-				min_date: minPost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$gt: minPost.created_at,
+					},
+				},
+			};
 		}
 	}
 
 	if (since_id) {
-		const sincePost = await RawObject.findOneBy({ id: since_id });
+		const sincePost = await Status.findOneBy({ id: since_id });
 		if (sincePost) {
-			query = query.andWhere("object.data->>'published' >= :since_date", {
-				since_date: sincePost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$gte: sincePost.created_at,
+					},
+				},
+			};
 		}
 	}
 
 	if (only_media) {
-		query = query.andWhere("object.data->'attachment' IS NOT NULL");
+		// TODO: add
 	}
 
 	if (local) {
-		query = query.andWhere("object.data->>'actor' LIKE :actor", {
-			actor: `%${new URL(req.url).hostname}%`,
-		});
+		query = {
+			...query,
+			where: {
+				...query.where,
+				instance: IsNull(),
+			},
+		};
 	}
 
 	if (remote) {
-		query = query.andWhere("object.data->>'actor' NOT LIKE :actor", {
-			actor: `%${new URL(req.url).hostname}%`,
-		});
+		query = {
+			...query,
+			where: {
+				...query.where,
+				instance: Not(IsNull()),
+			},
+		};
 	}
 
-	const objects = await query.getMany();
+	const objects = await Status.find(query);
 
 	return jsonResponse(
 		await Promise.all(objects.map(async object => await object.toAPI()))

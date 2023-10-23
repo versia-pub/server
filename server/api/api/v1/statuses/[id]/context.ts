@@ -1,7 +1,6 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
@@ -31,9 +30,9 @@ export default async (
 
 	const { user } = await User.getFromRequest(req);
 
-	let foundStatus: RawObject | null;
+	let foundStatus: Status | null;
 	try {
-		foundStatus = await RawObject.findOneBy({
+		foundStatus = await Status.findOneBy({
 			id,
 		});
 	} catch (e) {
@@ -43,7 +42,13 @@ export default async (
 	if (!foundStatus) return errorResponse("Record not found", 404);
 
 	// Get all ancestors
-	const ancestors = await foundStatus.getAncestors();
+	const ancestors = await foundStatus.getAncestors(user);
+	const descendants = await foundStatus.getDescendants(user);
 
-	return jsonResponse({});
+	return jsonResponse({
+		ancestors: await Promise.all(ancestors.map(status => status.toAPI())),
+		descendants: await Promise.all(
+			descendants.map(status => status.toAPI())
+		),
+	});
 };

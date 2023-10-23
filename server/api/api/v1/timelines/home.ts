@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { RawObject } from "~database/entities/RawObject";
+import { FindManyOptions } from "typeorm";
+import { Status } from "~database/entities/Status";
+import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -32,49 +35,83 @@ export default async (req: Request): Promise<Response> => {
 		limit?: number;
 	}>(req);
 
+	const { user } = await User.getFromRequest(req);
+
 	if (limit < 1 || limit > 40) {
 		return errorResponse("Limit must be between 1 and 40", 400);
 	}
 
-	let query = RawObject.createQueryBuilder("object")
-		.where("object.data->>'type' = 'Note'")
-		// From a user followed by the current user
-		.andWhere("CAST(object.data->>'to' AS jsonb) @> CAST(:to AS jsonb)", {
-			to: JSON.stringify([
-				"https://www.w3.org/ns/activitystreams#Public",
-			]),
-		})
-		.orderBy("object.data->>'published'", "DESC")
-		.take(limit);
+	let query: FindManyOptions<Status> = {
+		where: {
+			visibility: "public",
+			account: [
+				{
+					relationships: {
+						id: user?.id,
+						followed_by: true,
+					},
+				},
+				{
+					id: user?.id,
+				},
+			],
+		},
+		order: {
+			created_at: "DESC",
+		},
+		take: limit,
+		relations: ["object"],
+	};
 
 	if (max_id) {
-		const maxPost = await RawObject.findOneBy({ id: max_id });
+		const maxPost = await Status.findOneBy({ id: max_id });
 		if (maxPost) {
-			query = query.andWhere("object.data->>'published' < :max_date", {
-				max_date: maxPost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$lt: maxPost.created_at,
+					},
+				},
+			};
 		}
 	}
 
 	if (min_id) {
-		const minPost = await RawObject.findOneBy({ id: min_id });
+		const minPost = await Status.findOneBy({ id: min_id });
 		if (minPost) {
-			query = query.andWhere("object.data->>'published' > :min_date", {
-				min_date: minPost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$gt: minPost.created_at,
+					},
+				},
+			};
 		}
 	}
 
 	if (since_id) {
-		const sincePost = await RawObject.findOneBy({ id: since_id });
+		const sincePost = await Status.findOneBy({ id: since_id });
 		if (sincePost) {
-			query = query.andWhere("object.data->>'published' >= :since_date", {
-				since_date: sincePost.data.published,
-			});
+			query = {
+				...query,
+				where: {
+					...query.where,
+					created_at: {
+						...(query.where as any)?.created_at,
+						$gte: sincePost.created_at,
+					},
+				},
+			};
 		}
 	}
 
-	const objects = await query.getMany();
+	const objects = await Status.find(query);
 
 	return jsonResponse(
 		await Promise.all(objects.map(async object => await object.toAPI()))

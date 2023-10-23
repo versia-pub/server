@@ -1,7 +1,6 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { RawObject } from "~database/entities/RawObject";
 import { Status } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
@@ -30,10 +29,13 @@ export default async (
 
 	const { user } = await User.getFromRequest(req);
 
-	let foundStatus: RawObject | null;
+	let foundStatus: Status | null;
 	try {
-		foundStatus = await RawObject.findOneBy({
-			id,
+		foundStatus = await Status.findOne({
+			where: {
+				id,
+			},
+			relations: ["account", "object"],
 		});
 	} catch (e) {
 		return errorResponse("Invalid ID", 404);
@@ -42,38 +44,27 @@ export default async (
 	if (!foundStatus) return errorResponse("Record not found", 404);
 
 	// Check if user is authorized to view this status (if it's private)
-	if (
-		(await foundStatus.toAPI()).visibility === "private" &&
-		(await foundStatus.toAPI()).account.id !== user?.id
-	) {
+	if (!foundStatus.isViewableByUser(user)) {
 		return errorResponse("Record not found", 404);
 	}
 
 	if (req.method === "GET") {
 		return jsonResponse(await foundStatus.toAPI());
 	} else if (req.method === "DELETE") {
-		if ((await foundStatus.toAPI()).account.id !== user?.id) {
+		if (foundStatus.account.id !== user?.id) {
 			return errorResponse("Unauthorized", 401);
 		}
 
 		// TODO: Implement delete and redraft functionality
 
 		// Get associated Status object
-		const status = await Status.createQueryBuilder("status")
-			.leftJoinAndSelect("status.object", "object")
-			.where("object.id = :id", { id: foundStatus.id })
-			.getOne();
-
-		if (!status) {
-			return errorResponse("Status not found", 404);
-		}
 
 		// Delete status and all associated objects
-		await status.object.remove();
+		await foundStatus.remove();
 
 		return jsonResponse(
 			{
-				...(await status.toAPI()),
+				...(await foundStatus.toAPI()),
 				// TODO: Add
 				// text: Add source text
 				// poll: Add source poll

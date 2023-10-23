@@ -17,6 +17,7 @@ import { Application } from "./Application";
 import { Emoji } from "./Emoji";
 import { RawActivity } from "./RawActivity";
 import { RawObject } from "./RawObject";
+import { Instance } from "./Instance";
 
 const config = getConfig();
 
@@ -91,10 +92,18 @@ export class Status extends BaseEntity {
 	/**
 	 * The raw object that this status is a reply to, if any.
 	 */
-	@ManyToOne(() => RawObject, {
+	@ManyToOne(() => Status, {
 		nullable: true,
 	})
-	in_reply_to_post!: RawObject | null;
+	in_reply_to_post!: Status | null;
+
+	/**
+	 * The status' instance
+	 */
+	@ManyToOne(() => Instance, {
+		nullable: true,
+	})
+	instance!: Instance | null;
 
 	/**
 	 * The raw actor that this status is a reply to, if any.
@@ -132,6 +141,13 @@ export class Status extends BaseEntity {
 	@ManyToMany(() => Emoji, emoji => emoji.id)
 	@JoinTable()
 	emojis!: Emoji[];
+
+	/**
+	 * The users mentioned (excluding followers and such)
+	 */
+	@ManyToMany(() => User, user => user.id)
+	@JoinTable()
+	mentions!: User[];
 
 	/**
 	 * The activities that have liked this status.
@@ -181,6 +197,106 @@ export class Status extends BaseEntity {
 	}
 
 	/**
+	 * Returns whether this status is viewable by a user.
+	 * @param user The user to check.
+	 * @returns Whether this status is viewable by the user.
+	 */
+	isViewableByUser(user: User | null) {
+		const relationship = user?.relationships.find(
+			rel => rel.id === this.account.id
+		);
+
+		if (this.visibility === "public") return true;
+		else if (this.visibility === "unlisted") return true;
+		else if (this.visibility === "private") {
+			return !!relationship?.following;
+		} else {
+			return user && this.mentions.includes(user);
+		}
+	}
+
+	/**
+	 * Return all the ancestors of this post,
+	 */
+	async getAncestors(fetcher: User | null) {
+		const max = fetcher ? 4096 : 40;
+		const ancestors = [];
+
+		let id = this.in_reply_to_post?.id;
+
+		while (ancestors.length < max && id) {
+			const currentStatus = await Status.findOne({
+				where: {
+					id: id,
+				},
+				relations: {
+					in_reply_to_post: true,
+				},
+			});
+
+			if (currentStatus) {
+				if (currentStatus.isViewableByUser(fetcher)) {
+					ancestors.push(currentStatus);
+				}
+				id = currentStatus.in_reply_to_post?.id;
+			} else {
+				break;
+			}
+		}
+
+		return ancestors;
+	}
+
+	/**
+	 * Return all the descendants of this post,
+	 */
+	async getDescendants(fetcher: User | null) {
+		const max = fetcher ? 4096 : 60;
+		// Go through all descendants in a tree-like manner
+		const descendants: Status[] = [];
+
+		return await Status._getDescendants(this, fetcher, max, descendants);
+	}
+
+	/**
+	 * Return all the descendants of a post,
+	 * @param status The status to get the descendants of.
+	 * @param isAuthenticated Whether the user is authenticated.
+	 * @param max The maximum number of descendants to get.
+	 * @param descendants The descendants to add to.
+	 * @returns A promise that resolves with the descendants.
+	 * @private
+	 */
+	private static async _getDescendants(
+		status: Status,
+		fetcher: User | null,
+		max: number,
+		descendants: Status[]
+	) {
+		const currentStatus = await Status.find({
+			where: {
+				in_reply_to_post: {
+					id: status.id,
+				},
+			},
+			relations: {
+				in_reply_to_post: true,
+			},
+		});
+
+		for (const status of currentStatus) {
+			if (status.isViewableByUser(fetcher)) {
+				descendants.push(status);
+			}
+			if (descendants.length < max) {
+				await this._getDescendants(status, fetcher, max, descendants);
+			}
+		}
+
+		return descendants;
+	}
+
+	/**
 	 * Creates a new status and saves it to the database.
 	 * @param data The data for the new status.
 	 * @returns A promise that resolves with the new status.
@@ -194,7 +310,7 @@ export class Status extends BaseEntity {
 		spoiler_text: string;
 		emojis: Emoji[];
 		reply?: {
-			object: RawObject;
+			status: Status;
 			user: User;
 		};
 	}) {
@@ -211,11 +327,13 @@ export class Status extends BaseEntity {
 		newStatus.announces = [];
 		newStatus.isReblog = false;
 		newStatus.announces = [];
+		newStatus.mentions = [];
+		newStatus.instance = data.account.instance;
 
 		newStatus.object = new RawObject();
 
 		if (data.reply) {
-			newStatus.in_reply_to_post = data.reply.object;
+			newStatus.in_reply_to_post = data.reply.status;
 			newStatus.in_reply_to_account = data.reply.user;
 		}
 
@@ -224,8 +342,8 @@ export class Status extends BaseEntity {
 			type: "Note",
 			summary: data.spoiler_text,
 			content: data.content,
-			inReplyTo: data.reply?.object
-				? data.reply.object.data.id
+			inReplyTo: data.reply?.status
+				? data.reply.status.object.data.id
 				: undefined,
 			published: new Date().toISOString(),
 			tag: [],
@@ -265,6 +383,8 @@ export class Status extends BaseEntity {
 							},
 						});
 
+						newStatus.mentions.push(user as User);
+
 						return user?.actor.data.id;
 					} else {
 						const user = await User.findOne({
@@ -275,6 +395,8 @@ export class Status extends BaseEntity {
 								actor: true,
 							},
 						});
+
+						newStatus.mentions.push(user as User);
 
 						return user?.actor.data.id;
 					}
@@ -318,6 +440,9 @@ export class Status extends BaseEntity {
 	 * @returns A promise that resolves with the API status.
 	 */
 	async toAPI(): Promise<APIStatus> {
-		return await this.object.toAPI();
+		return {
+			...(await this.object.toAPI()),
+			id: this.id,
+		};
 	}
 }

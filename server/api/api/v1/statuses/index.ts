@@ -124,19 +124,20 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	// Get reply account and status if exists
-	let replyObject: RawObject | null = null;
+	let replyStatus: Status | null = null;
 	let replyUser: User | null = null;
 
 	if (in_reply_to_id) {
-		replyObject = await RawObject.findOne({
+		replyStatus = await Status.findOne({
 			where: {
 				id: in_reply_to_id,
 			},
+			relations: {
+				account: true,
+			},
 		});
 
-		replyUser = await User.getByActorId(
-			(replyObject?.data.attributedTo as APActor).id ?? ""
-		);
+		replyUser = replyStatus?.account || null;
 	}
 
 	// Check if status body doesnt match filters
@@ -160,10 +161,10 @@ export default async (req: Request): Promise<Response> => {
 		spoiler_text: spoiler_text || "",
 		emojis: [],
 		reply:
-			replyObject && replyUser
+			replyStatus && replyUser
 				? {
 						user: replyUser,
-						object: replyObject,
+						status: replyStatus,
 				  }
 				: undefined,
 	});
