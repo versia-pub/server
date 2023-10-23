@@ -1,6 +1,7 @@
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
+import chalk from "chalk";
 import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import "reflect-metadata";
@@ -13,13 +14,13 @@ const router = new Bun.FileSystemRouter({
 	dir: process.cwd() + "/server/api",
 });
 
-console.log("[+] Starting Lysand...");
+console.log(`${chalk.green(`>`)} ${chalk.bold("Starting Lysand...")}`);
 
 const config = getConfig();
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
 
 if (!(await requests_log.exists())) {
-	console.log("[+] requests.log does not exist, creating it...");
+	console.log(`${chalk.green(`✓`)} ${chalk.bold("Creating logs folder...")}`);
 	await Bun.write(process.cwd() + "/logs/requests.log", "");
 }
 
@@ -144,4 +145,13 @@ const logRequest = async (req: Request) => {
 	}
 };
 
-console.log("[+] Lysand started!");
+// Remove previous console.log
+console.clear();
+
+console.log(
+	`${chalk.green(`✓`)} ${chalk.bold(
+		`Lysand started at ${chalk.blue(
+			`${config.http.bind}:${config.http.bind_port}`
+		)}`
+	)}`
+);
