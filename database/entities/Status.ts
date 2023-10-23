@@ -21,6 +21,21 @@ import { Instance } from "./Instance";
 
 const config = getConfig();
 
+export const statusRelations = [
+	"account",
+	"reblog",
+	"object",
+	"in_reply_to_post",
+	"instance",
+	"in_reply_to_account",
+	"in_reply_to_post.account",
+	"application",
+	"emojis",
+	"mentions",
+	"likes",
+	"announces",
+];
+
 /**
  * Represents a status (i.e. a post)
  */
@@ -57,8 +72,9 @@ export class Status extends BaseEntity {
 	 */
 	@ManyToOne(() => Status, status => status.id, {
 		nullable: true,
+		onDelete: "SET NULL",
 	})
-	reblog?: Status;
+	reblog?: Status | null;
 
 	/**
 	 * The raw object associated with this status.
@@ -94,6 +110,7 @@ export class Status extends BaseEntity {
 	 */
 	@ManyToOne(() => Status, {
 		nullable: true,
+		onDelete: "SET NULL",
 	})
 	in_reply_to_post!: Status | null;
 
@@ -229,9 +246,7 @@ export class Status extends BaseEntity {
 				where: {
 					id: id,
 				},
-				relations: {
-					in_reply_to_post: true,
-				},
+				relations: statusRelations,
 			});
 
 			if (currentStatus) {
@@ -279,9 +294,7 @@ export class Status extends BaseEntity {
 					id: status.id,
 				},
 			},
-			relations: {
-				in_reply_to_post: true,
-			},
+			relations: statusRelations,
 		});
 
 		for (const status of currentStatus) {
@@ -443,6 +456,8 @@ export class Status extends BaseEntity {
 		return {
 			...(await this.object.toAPI()),
 			id: this.id,
+			in_reply_to_id: this.in_reply_to_post?.id || null,
+			in_reply_to_account_id: this.in_reply_to_post?.account.id || null,
 		};
 	}
 }

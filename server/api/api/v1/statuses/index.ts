@@ -11,7 +11,7 @@ import { sanitize } from "isomorphic-dompurify";
 import { parse } from "marked";
 import { Application } from "~database/entities/Application";
 import { RawObject } from "~database/entities/RawObject";
-import { Status } from "~database/entities/Status";
+import { Status, statusRelations } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
@@ -132,9 +132,7 @@ export default async (req: Request): Promise<Response> => {
 			where: {
 				id: in_reply_to_id,
 			},
-			relations: {
-				account: true,
-			},
+			relations: statusRelations,
 		});
 
 		replyUser = replyStatus?.account || null;

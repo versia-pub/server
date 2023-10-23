@@ -20,6 +20,7 @@ let token: Token;
 let user: User;
 let user2: User;
 let status: APIStatus | null = null;
+let status2: APIStatus | null = null;
 
 describe("API Tests", () => {
 	beforeAll(async () => {
@@ -153,6 +154,52 @@ describe("API Tests", () => {
 			expect(status.in_reply_to_id).toBeNull();
 			expect(status.in_reply_to_account_id).toBeNull();
 		});
+
+		test("should create a new status in reply to the previous one", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/statuses`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						status: "This is a reply!",
+						visibility: "public",
+						in_reply_to_id: status?.id,
+					}),
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+			status2 = (await response.json()) as APIStatus;
+			expect(status2.content).toBe("This is a reply!");
+			expect(status2.visibility).toBe("public");
+			expect(status2.account.id).toBe(user.id);
+			expect(status2.replies_count).toBe(0);
+			expect(status2.favourites_count).toBe(0);
+			expect(status2.reblogged).toBe(false);
+			expect(status2.favourited).toBe(false);
+			expect(status2.media_attachments).toEqual([]);
+			expect(status2.mentions).toEqual([]);
+			expect(status2.tags).toEqual([]);
+			expect(status2.sensitive).toBe(false);
+			expect(status2.spoiler_text).toBe("");
+			expect(status2.language).toBeNull();
+			expect(status2.pinned).toBe(false);
+			expect(status2.visibility).toBe("public");
+			expect(status2.card).toBeNull();
+			expect(status2.poll).toBeNull();
+			expect(status2.emojis).toEqual([]);
+			expect(status2.in_reply_to_id).toEqual(status?.id);
+			expect(status2.in_reply_to_account_id).toEqual(user.id);
+		});
 	});
 
 	describe("GET /api/v1/timelines/public", () => {
@@ -270,9 +317,9 @@ describe("API Tests", () => {
 
 			const statuses = (await response.json()) as APIStatus[];
 
-			expect(statuses.length).toBe(1);
+			expect(statuses.length).toBe(2);
 
-			const status1 = statuses[0];
+			const status1 = statuses[1];
 
 			// Basic validation
 			expect(status1.content).toBe("Hello, world!");

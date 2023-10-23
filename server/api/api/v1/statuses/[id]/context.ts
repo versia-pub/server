@@ -1,7 +1,7 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status } from "~database/entities/Status";
+import { Status, statusRelations } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
@@ -32,8 +32,11 @@ export default async (
 
 	let foundStatus: Status | null;
 	try {
-		foundStatus = await Status.findOneBy({
-			id,
+		foundStatus = await Status.findOne({
+			where: {
+				id,
+			},
+			relations: statusRelations,
 		});
 	} catch (e) {
 		return errorResponse("Invalid ID", 404);

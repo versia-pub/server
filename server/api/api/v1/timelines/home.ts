@@ -3,7 +3,7 @@ import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { FindManyOptions } from "typeorm";
-import { Status } from "~database/entities/Status";
+import { Status, statusRelations } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
@@ -60,7 +60,7 @@ export default async (req: Request): Promise<Response> => {
 			created_at: "DESC",
 		},
 		take: limit,
-		relations: ["object"],
+		relations: statusRelations,
 	};
 
 	if (max_id) {

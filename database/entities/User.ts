@@ -21,7 +21,7 @@ import {
 } from "activitypub-types";
 import { RawObject } from "./RawObject";
 import { Token } from "./Token";
-import { Status } from "./Status";
+import { Status, statusRelations } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
 import { Instance } from "./Instance";
@@ -368,9 +368,7 @@ export class User extends BaseEntity {
 					id: this.id,
 				},
 			},
-			relations: {
-				object: true,
-			},
+			relations: statusRelations,
 		});
 
 		// Delete both

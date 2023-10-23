@@ -1,6 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status } from "~database/entities/Status";
+import { Status, statusRelations } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { applyConfig } from "@api";
 
@@ -60,7 +60,7 @@ export default async (
 			},
 			isReblog: exclude_reblogs ? true : undefined,
 		},
-		relations: ["account", "emojis", "announces", "likes", "object"],
+		relations: statusRelations,
 		order: {
 			created_at: "DESC",
 		},

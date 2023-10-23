@@ -3,7 +3,7 @@ import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { FindManyOptions, IsNull, Not } from "typeorm";
-import { Status } from "~database/entities/Status";
+import { Status, statusRelations } from "~database/entities/Status";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -56,7 +56,7 @@ export default async (req: Request): Promise<Response> => {
 			created_at: "DESC",
 		},
 		take: limit,
-		relations: ["object"],
+		relations: statusRelations,
 	};
 
 	if (max_id) {
