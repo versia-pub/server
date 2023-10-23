@@ -102,9 +102,7 @@ describe("POST /oauth/token/", () => {
 		// @ts-expect-error FormData works
 		const response = await fetch(`${config.http.base_url}/oauth/token/`, {
 			method: "POST",
-			headers: {
-				"Content-Type": "multipart/form-data",
-			},
+			// Do not set the Content-Type header for some reason
 			body: formData,
 		});
 
