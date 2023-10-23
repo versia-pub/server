@@ -19,12 +19,18 @@ import {
 	APCollectionPage,
 	APOrderedCollectionPage,
 } from "activitypub-types";
-import { RawObject } from "./RawObject";
 import { Token } from "./Token";
 import { Status, statusRelations } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
 import { Instance } from "./Instance";
+
+export const userRelations = [
+	"actor",
+	"relationships",
+	"pinned_notes",
+	"instance",
+];
 
 /**
  * Represents a user in the database.
@@ -156,9 +162,9 @@ export class User extends BaseEntity {
 	/**
 	 * The pinned notes for the user.
 	 */
-	@ManyToMany(() => RawObject, object => object.id)
+	@ManyToMany(() => Status, status => status.id)
 	@JoinTable()
-	pinned_notes!: RawObject[];
+	pinned_notes!: Status[];
 
 	/**
 	 * Get the user's avatar in raw URL format
@@ -296,6 +302,8 @@ export class User extends BaseEntity {
 			fields: [],
 		};
 
+		user.pinned_notes = [];
+
 		await user.generateKeys();
 		await user.save();
 		await user.updateActor();
@@ -315,12 +323,7 @@ export class User extends BaseEntity {
 			where: {
 				access_token,
 			},
-			relations: {
-				user: {
-					relationships: true,
-					actor: true,
-				},
-			},
+			relations: userRelations.map(r => `user.${r}`),
 		});
 
 		if (!token) return null;
@@ -524,11 +527,48 @@ export class User extends BaseEntity {
 			relations: ["owner"],
 		});
 
+		const statusCount = await Status.count({
+			where: {
+				account: {
+					id: this.id,
+				},
+			},
+			relations: ["account"],
+		});
+
+		const config = getConfig();
+
 		return {
-			...(await this.actor.toAPIAccount(isOwnAccount)),
 			id: this.id,
+			username: this.username,
+			display_name: this.display_name,
+			note: this.note,
+			url: `${config.http.base_url}/users/${this.username}`,
+			avatar: this.getAvatarUrl(config) || config.defaults.avatar,
+			header: this.getHeaderUrl(config) || config.defaults.header,
+			locked: false,
+			created_at: new Date(this.created_at).toISOString(),
 			followers_count: follower_count,
 			following_count: following_count,
+			statuses_count: statusCount,
+			emojis: [],
+			fields: [],
+			bot: false,
+			source: isOwnAccount ? this.source : undefined,
+			avatar_static: "",
+			header_static: "",
+			acct:
+				this.instance === null
+					? `${this.username}`
+					: `${this.username}@${this.instance.base_url}`,
+			limited: false,
+			moved: null,
+			noindex: false,
+			suspended: false,
+			discoverable: undefined,
+			mute_expires_at: undefined,
+			group: false,
+			role: undefined,
 		};
 	}
 }

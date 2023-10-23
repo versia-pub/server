@@ -278,7 +278,7 @@ describe("API Tests", () => {
 			expect(account.created_at).toBeDefined();
 			expect(account.followers_count).toBe(0);
 			expect(account.following_count).toBe(0);
-			expect(account.statuses_count).toBe(0);
+			expect(account.statuses_count).toBe(2);
 			expect(account.note).toBe("");
 			expect(account.url).toBe(
 				`${config.http.base_url}/users/${user.username}`

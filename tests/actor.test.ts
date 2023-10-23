@@ -5,7 +5,7 @@ import { APActor } from "activitypub-types";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { RawActivity } from "~database/entities/RawActivity";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -65,8 +65,11 @@ describe("POST /@test/actor", () => {
 
 afterAll(async () => {
 	// Clean up user
-	const user = await User.findOneBy({
-		username: "test",
+	const user = await User.findOne({
+		where: {
+			username: "test",
+		},
+		relations: userRelations,
 	});
 
 	const activities = await RawActivity.createQueryBuilder("activity")

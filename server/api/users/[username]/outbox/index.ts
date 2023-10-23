@@ -1,6 +1,6 @@
 import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { getHost } from "@config";
 import { NodeObject, compact } from "jsonld";
 import { RawActivity } from "~database/entities/RawActivity";
@@ -30,7 +30,10 @@ export default async (
 	const min_id = matchedRoute.query.min_id || false;
 	const max_id = matchedRoute.query.max_id || false;
 
-	const user = await User.findOneBy({ username });
+	const user = await User.findOne({
+		where: { username },
+		relations: userRelations,
+	});
 
 	if (!user) {
 		return errorResponse("User not found", 404);

@@ -1,7 +1,7 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status, statusRelations } from "~database/entities/Status";
+import { Status, statusAndUserRelations } from "~database/entities/Status";
 import { User } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
@@ -35,7 +35,7 @@ export default async (
 			where: {
 				id,
 			},
-			relations: statusRelations,
+			relations: statusAndUserRelations,
 		});
 	} catch (e) {
 		return errorResponse("Invalid ID", 404);

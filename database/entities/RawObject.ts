@@ -6,13 +6,14 @@ import {
 	PrimaryGeneratedColumn,
 } from "typeorm";
 import { APImage, APObject, DateTime } from "activitypub-types";
-import { getConfig } from "@config";
+import { ConfigType, getConfig } from "@config";
 import { appendFile } from "fs/promises";
 import { APIStatus } from "~types/entities/status";
 import { RawActor } from "./RawActor";
 import { APIAccount } from "~types/entities/account";
 import { APIEmoji } from "~types/entities/emoji";
 import { User } from "./User";
+import { Status } from "./Status";
 
 /**
  * Represents a raw ActivityPub object in the database.
@@ -170,5 +171,58 @@ export class RawObject extends BaseEntity {
 	 */
 	static async exists(id: string) {
 		return !!(await RawObject.getById(id));
+	}
+
+	/**
+	 * Creates a RawObject instance from a Status object.
+	 * DOES NOT SAVE THE OBJECT TO THE DATABASE.
+	 * @param status The Status object to create the RawObject from.
+	 * @returns A Promise that resolves to the RawObject instance.
+	 */
+	static createFromStatus(status: Status, config: ConfigType) {
+		const object = new RawObject();
+
+		object.data = {
+			id: `${config.http.base_url}/users/${status.account.username}/statuses/${status.id}`,
+			type: "Note",
+			summary: status.spoiler_text,
+			content: status.content,
+			inReplyTo: status.in_reply_to_post?.object.data.id,
+			published: new Date().toISOString(),
+			tag: [],
+			attributedTo: `${config.http.base_url}/users/${status.account.username}`,
+		};
+
+		// Map status mentions to ActivityPub Actor IDs
+		const mentionedUsers = status.mentions.map(
+			user => user.actor.data.id as string
+		);
+
+		object.data.to = mentionedUsers;
+
+		if (status.visibility === "private") {
+			object.data.cc = [
+				`${config.http.base_url}/users/${status.account.username}/followers`,
+			];
+		} else if (status.visibility === "direct") {
+			// Add nothing else
+		} else if (status.visibility === "public") {
+			object.data.to = [
+				...object.data.to,
+				"https://www.w3.org/ns/activitystreams#Public",
+			];
+			object.data.cc = [
+				`${config.http.base_url}/users/${status.account.username}/followers`,
+			];
+		}
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		else if (status.visibility === "unlisted") {
+			object.data.to = [
+				...object.data.to,
+				"https://www.w3.org/ns/activitystreams#Public",
+			];
+		}
+
+		return object;
 	}
 }

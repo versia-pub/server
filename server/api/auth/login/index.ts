@@ -4,7 +4,7 @@ import { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import { Application } from "~database/entities/Application";
 import { Token } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -45,8 +45,11 @@ export default async (
 		return errorResponse("Missing username or password", 400);
 
 	// Get user
-	const user = await User.findOneBy({
-		email,
+	const user = await User.findOne({
+		where: {
+			email,
+		},
+		relations: userRelations,
 	});
 
 	if (!user || !(await Bun.password.verify(password, user.password || "")))
@@ -70,5 +73,5 @@ export default async (
 	await token.save();
 
 	// Redirect back to application
-	return Response.redirect(`${redirect_uri}?code=${token.code}`);
+	return Response.redirect(`${redirect_uri}?code=${token.code}`, 302);
 };

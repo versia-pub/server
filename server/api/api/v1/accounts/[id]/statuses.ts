@@ -1,7 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status, statusRelations } from "~database/entities/Status";
-import { User } from "~database/entities/User";
+import { Status, statusAndUserRelations } from "~database/entities/Status";
+import { User, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -42,8 +42,11 @@ export default async (
 		tagged?: string;
 	} = matchedRoute.query;
 
-	const user = await User.findOneBy({
-		id,
+	const user = await User.findOne({
+		where: {
+			id,
+		},
+		relations: userRelations,
 	});
 
 	if (!user) return errorResponse("User not found", 404);
@@ -60,7 +63,7 @@ export default async (
 			},
 			isReblog: exclude_reblogs ? true : undefined,
 		},
-		relations: statusRelations,
+		relations: statusAndUserRelations,
 		order: {
 			created_at: "DESC",
 		},

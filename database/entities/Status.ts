@@ -12,7 +12,7 @@ import {
 	UpdateDateColumn,
 } from "typeorm";
 import { APIStatus } from "~types/entities/status";
-import { User } from "./User";
+import { User, userRelations } from "./User";
 import { Application } from "./Application";
 import { Emoji } from "./Emoji";
 import { RawActivity } from "./RawActivity";
@@ -27,13 +27,22 @@ export const statusRelations = [
 	"object",
 	"in_reply_to_post",
 	"instance",
-	"in_reply_to_account",
 	"in_reply_to_post.account",
 	"application",
 	"emojis",
 	"mentions",
 	"likes",
 	"announces",
+];
+
+export const statusAndUserRelations = [
+	...statusRelations,
+	...[
+		"account.actor",
+		"account.relationships",
+		"account.pinned_notes",
+		"account.instance",
+	],
 ];
 
 /**
@@ -121,14 +130,6 @@ export class Status extends BaseEntity {
 		nullable: true,
 	})
 	instance!: Instance | null;
-
-	/**
-	 * The raw actor that this status is a reply to, if any.
-	 */
-	@ManyToOne(() => User, {
-		nullable: true,
-	})
-	in_reply_to_account!: User | null;
 
 	/**
 	 * Whether this status is sensitive.
@@ -343,26 +344,9 @@ export class Status extends BaseEntity {
 		newStatus.mentions = [];
 		newStatus.instance = data.account.instance;
 
-		newStatus.object = new RawObject();
-
 		if (data.reply) {
 			newStatus.in_reply_to_post = data.reply.status;
-			newStatus.in_reply_to_account = data.reply.user;
 		}
-
-		newStatus.object.data = {
-			id: `${config.http.base_url}/users/${data.account.username}/statuses/${newStatus.id}`,
-			type: "Note",
-			summary: data.spoiler_text,
-			content: data.content,
-			inReplyTo: data.reply?.status
-				? data.reply.status.object.data.id
-				: undefined,
-			published: new Date().toISOString(),
-			tag: [],
-			attributedTo: `${config.http.base_url}/users/${data.account.username}`,
-		};
-
 		// Get people mentioned in the content
 		const mentionedPeople = [
 			...data.content.matchAll(/@([a-zA-Z0-9_]+)/g),
@@ -370,79 +354,45 @@ export class Status extends BaseEntity {
 			return `${config.http.base_url}/users/${match[1]}`;
 		});
 
-		// Map this to Users
-		const mentionedUsers = (
-			await Promise.all(
-				mentionedPeople.map(async person => {
-					// Check if post is in format @username or @username@instance.com
-					// If is @username, the user is a local user
-					const instanceUrl =
-						person.split("@").length === 3
-							? person.split("@")[2]
-							: null;
+		// Get list of mentioned users
+		await Promise.all(
+			mentionedPeople.map(async person => {
+				// Check if post is in format @username or @username@instance.com
+				// If is @username, the user is a local user
+				const instanceUrl =
+					person.split("@").length === 3
+						? person.split("@")[2]
+						: null;
 
-					if (instanceUrl) {
-						const user = await User.findOne({
-							where: {
-								username: person.split("@")[1],
-								// If contains instanceUrl
-								instance: {
-									base_url: instanceUrl,
-								},
+				if (instanceUrl) {
+					const user = await User.findOne({
+						where: {
+							username: person.split("@")[1],
+							// If contains instanceUrl
+							instance: {
+								base_url: instanceUrl,
 							},
-							relations: {
-								actor: true,
-								instance: true,
-							},
-						});
+						},
+						relations: userRelations,
+					});
 
-						newStatus.mentions.push(user as User);
+					newStatus.mentions.push(user as User);
+				} else {
+					const user = await User.findOne({
+						where: {
+							username: person.split("@")[1],
+						},
+						relations: userRelations,
+					});
 
-						return user?.actor.data.id;
-					} else {
-						const user = await User.findOne({
-							where: {
-								username: person.split("@")[1],
-							},
-							relations: {
-								actor: true,
-							},
-						});
+					newStatus.mentions.push(user as User);
+				}
+			})
+		);
 
-						newStatus.mentions.push(user as User);
+		const object = RawObject.createFromStatus(newStatus, config);
 
-						return user?.actor.data.id;
-					}
-				})
-			)
-		).map(user => user as string);
-
-		newStatus.object.data.to = mentionedUsers;
-
-		if (data.visibility === "private") {
-			newStatus.object.data.cc = [
-				`${config.http.base_url}/users/${data.account.username}/followers`,
-			];
-		} else if (data.visibility === "direct") {
-			// Add nothing else
-		} else if (data.visibility === "public") {
-			newStatus.object.data.to = [
-				...newStatus.object.data.to,
-				"https://www.w3.org/ns/activitystreams#Public",
-			];
-			newStatus.object.data.cc = [
-				`${config.http.base_url}/users/${data.account.username}/followers`,
-			];
-		}
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		else if (data.visibility === "unlisted") {
-			newStatus.object.data.to = [
-				...newStatus.object.data.to,
-				"https://www.w3.org/ns/activitystreams#Public",
-			];
-		}
-
-		// TODO: Add default language
+		newStatus.object = object;
 		await newStatus.object.save();
 		await newStatus.save();
 		return newStatus;
@@ -453,11 +403,57 @@ export class Status extends BaseEntity {
 	 * @returns A promise that resolves with the API status.
 	 */
 	async toAPI(): Promise<APIStatus> {
+		const reblogCount = await Status.count({
+			where: {
+				reblog: {
+					id: this.id,
+				},
+			},
+			relations: ["reblog"],
+		});
+
+		const repliesCount = await Status.count({
+			where: {
+				in_reply_to_post: {
+					id: this.id,
+				},
+			},
+			relations: ["in_reply_to_post"],
+		});
+
 		return {
-			...(await this.object.toAPI()),
 			id: this.id,
 			in_reply_to_id: this.in_reply_to_post?.id || null,
 			in_reply_to_account_id: this.in_reply_to_post?.account.id || null,
+			account: await this.account.toAPI(),
+			created_at: new Date(this.created_at).toISOString(),
+			application: (await this.application?.toAPI()) || null,
+			card: null,
+			content: this.content,
+			emojis: await Promise.all(this.emojis.map(emoji => emoji.toAPI())),
+			favourited: false,
+			favourites_count: 0,
+			media_attachments: [],
+			mentions: await Promise.all(
+				this.mentions.map(async m => await m.toAPI())
+			),
+			language: null,
+			muted: false,
+			pinned: this.account.pinned_notes.some(note => note.id === this.id),
+			poll: null,
+			reblog: this.reblog ? await this.reblog.toAPI() : null,
+			reblogged: !!this.reblog,
+			reblogs_count: reblogCount,
+			replies_count: repliesCount,
+			sensitive: false,
+			spoiler_text: "",
+			tags: [],
+			uri: `${config.http.base_url}/users/${this.account.username}/statuses/${this.id}`,
+			visibility: "public",
+			url: `${config.http.base_url}/users/${this.account.username}/statuses/${this.id}`,
+			bookmarked: false,
+			quote: null,
+			quote_id: undefined,
 		};
 	}
 }

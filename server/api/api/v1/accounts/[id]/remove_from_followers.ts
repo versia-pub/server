@@ -1,7 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Relationship } from "~database/entities/Relationship";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -29,8 +29,11 @@ export default async (
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const user = await User.findOneBy({
-		id,
+	const user = await User.findOne({
+		where: {
+			id,
+		},
+		relations: userRelations,
 	});
 
 	if (!user) return errorResponse("User not found", 404);

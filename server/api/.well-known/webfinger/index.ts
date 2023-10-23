@@ -1,6 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
 
@@ -34,7 +34,10 @@ export default async (
 		return errorResponse("User is a remote user", 404);
 	}
 
-	const user = await User.findOneBy({ username: requestedUser.split("@")[0] });
+	const user = await User.findOne({
+		where: { username: requestedUser.split("@")[0] },
+		relations: userRelations
+	});
 
 	if (!user) {
 		return errorResponse("User not found", 404);

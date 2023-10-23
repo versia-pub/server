@@ -1,6 +1,6 @@
 import { errorResponse, jsonLdResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
 
@@ -34,7 +34,10 @@ export default async (
 
 	const username = matchedRoute.params.username;
 
-	const user = await User.findOneBy({ username });
+	const user = await User.findOne({
+		where: { username },
+		relations: userRelations,
+	});
 
 	if (!user) {
 		return errorResponse("User not found", 404);

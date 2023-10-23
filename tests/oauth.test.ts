@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { Application } from "~database/entities/Application";
 import { Token } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -150,8 +150,11 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 
 afterAll(async () => {
 	// Clean up user
-	const user = await User.findOneBy({
-		username: "test",
+	const user = await User.findOne({
+		where: {
+			username: "test",
+		},
+		relations: userRelations,
 	});
 
 	// Clean up tokens

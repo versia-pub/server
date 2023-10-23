@@ -1,6 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -28,8 +28,11 @@ export default async (
 
 	let foundUser: User | null;
 	try {
-		foundUser = await User.findOneBy({
-			id,
+		foundUser = await User.findOne({
+			where: {
+				id,
+			},
+			relations: userRelations,
 		});
 	} catch (e) {
 		return errorResponse("Invalid ID", 404);

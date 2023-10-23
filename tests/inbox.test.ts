@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { RawActivity } from "~database/entities/RawActivity";
 import { Token } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { User, userRelations } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -275,8 +275,11 @@ describe("POST /@test/inbox", () => {
 
 afterAll(async () => {
 	// Clean up user
-	const user = await User.findOneBy({
-		username: "test",
+	const user = await User.findOne({
+		where: {
+			username: "test",
+		},
+		relations: userRelations,
 	});
 
 	// Clean up tokens
