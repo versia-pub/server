@@ -71,7 +71,16 @@ export default async (
 		// Delete status and all associated objects
 		await status.object.remove();
 
-		return jsonResponse({}, 200);
+		return jsonResponse(
+			{
+				...(await status.toAPI()),
+				// TODO: Add
+				// text: Add source text
+				// poll: Add source poll
+				// media_attachments
+			},
+			200
+		);
 	}
 
 	return jsonResponse({});

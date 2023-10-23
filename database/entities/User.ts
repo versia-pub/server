@@ -214,6 +214,8 @@ export class User extends BaseEntity {
 	 * Fetches the list of followers associated with the actor and updates the user's followers
 	 */
 	async fetchFollowers() {
+		const config = getConfig();
+
 		let followers: APOrderedCollectionPage = await fetch(
 			`${this.actor.data.followers?.toString() ?? ""}?page=1`,
 			{
@@ -234,7 +236,10 @@ export class User extends BaseEntity {
 			};
 		}
 
-		// TODO: integrate followers
+		if (config.activitypub.fetch_all_collection_members) {
+			// Loop through followers list and retrieve each actor individually
+			// TODO: Implement
+		}
 	}
 
 	/**

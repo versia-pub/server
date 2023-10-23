@@ -223,7 +223,7 @@ export class Status extends BaseEntity {
 			id: `${config.http.base_url}/users/${data.account.username}/statuses/${newStatus.id}`,
 			type: "Note",
 			summary: data.spoiler_text,
-			content: data.content, // TODO: Format as HTML
+			content: data.content,
 			inReplyTo: data.reply?.object
 				? data.reply.object.data.id
 				: undefined,

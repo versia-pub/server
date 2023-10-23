@@ -86,7 +86,7 @@ export interface ConfigType {
 		discard_follows: string[];
 		force_sensitive: string[];
 		remove_media: string[];
-		fetch_all_colletion_members: boolean;
+		fetch_all_collection_members: boolean;
 		authorized_fetch: boolean;
 	};
 
@@ -244,7 +244,7 @@ export const configDefaults: ConfigType = {
 		discard_updates: [],
 		discard_follows: [],
 		remove_media: [],
-		fetch_all_colletion_members: false,
+		fetch_all_collection_members: false,
 		authorized_fetch: false,
 	},
 	filters: {
