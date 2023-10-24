@@ -9,6 +9,7 @@ import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
+import { APIContext } from "~types/entities/context";
 import { APIEmoji } from "~types/entities/emoji";
 import { APIInstance } from "~types/entities/instance";
 import { APIRelationship } from "~types/entities/relationship";
@@ -753,6 +754,34 @@ describe("API Tests", () => {
 			expect(statusJson.muted).toBeDefined();
 			expect(statusJson.bookmarked).toBeDefined();
 			expect(statusJson.pinned).toBeDefined();
+		});
+	});
+
+	describe("GET /api/v1/statuses/:id/context", () => {
+		test("should return the context of the specified status", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/statuses/${status?.id}/context`,
+				{
+					method: "GET",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const context = (await response.json()) as APIContext;
+
+			expect(context.ancestors.length).toBe(0);
+			expect(context.descendants.length).toBe(1);
+
+			// First descendant should be status2
+			expect(context.descendants[0].id).toBe(status2?.id);
 		});
 	});
 

@@ -247,7 +247,7 @@ export class Status extends BaseEntity {
 				where: {
 					id: id,
 				},
-				relations: statusRelations,
+				relations: statusAndUserRelations,
 			});
 
 			if (currentStatus) {
@@ -295,7 +295,7 @@ export class Status extends BaseEntity {
 					id: status.id,
 				},
 			},
-			relations: statusRelations,
+			relations: statusAndUserRelations,
 		});
 
 		for (const status of currentStatus) {
