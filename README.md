@@ -72,6 +72,7 @@ Lysand implements the Mastodon API, with some extensions. The API is currently i
 
 Working endpoints are:
 
+- `/api/v1/accounts`
 - `/api/v1/accounts/:id`
 - `/api/v1/accounts/:id/statuses`
 - `/api/v1/accounts/:id/follow`
@@ -83,16 +84,23 @@ Working endpoints are:
 - `/api/v1/accounts/:id/pin`
 - `/api/v1/accounts/:id/unpin`
 - `/api/v1/accounts/:id/note`
+- `/api/v1/accounts/:id/remove_from_followers`
 - `/api/v1/accounts/relationships`
 - `/api/v1/accounts/update_credentials`
 - `/api/v1/accounts/verify_credentials`
 - `/api/v1/accounts/familiar_followers`
 - `/api/v1/statuses/:id` (`GET`, `DELETE`)
 - `/api/v1/statuses/:id/context`
+- `/api/v1/statuses/:id/favourite`
+- `/api/v1/statuses/:id/unfavourite`
+- `/api/v1/statuses/:id/favourited_by`
+- `/api/v1/statuses/:id/reblogged_by`
 - `/api/v1/statuses`
 - `/api/v1/timelines/public`
+- `/api/v1/timelines/home`
 - `/api/v1/apps`
 - `/api/v1/instance`
+- `/api/v1/custom_emojis`
 - `/api/v1/apps/verify_credentials`
 - `/oauth/authorize`
 - `/oauth/token`
