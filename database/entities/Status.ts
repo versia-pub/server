@@ -9,6 +9,9 @@ import {
 	ManyToOne,
 	PrimaryGeneratedColumn,
 	RemoveOptions,
+	Tree,
+	TreeChildren,
+	TreeParent,
 	UpdateDateColumn,
 } from "typeorm";
 import { APIStatus } from "~types/entities/status";
@@ -18,6 +21,8 @@ import { Emoji } from "./Emoji";
 import { RawActivity } from "./RawActivity";
 import { RawObject } from "./RawObject";
 import { Instance } from "./Instance";
+import { Like } from "./Like";
+import { AppDataSource } from "~database/datasource";
 
 const config = getConfig();
 
@@ -51,6 +56,7 @@ export const statusAndUserRelations = [
 @Entity({
 	name: "statuses",
 })
+@Tree("closure-table")
 export class Status extends BaseEntity {
 	/**
 	 * The unique identifier for this status.
@@ -117,11 +123,13 @@ export class Status extends BaseEntity {
 	/**
 	 * The raw object that this status is a reply to, if any.
 	 */
-	@ManyToOne(() => Status, {
-		nullable: true,
+	@TreeParent({
 		onDelete: "SET NULL",
 	})
 	in_reply_to_post!: Status | null;
+
+	@TreeChildren()
+	replies!: Status[];
 
 	/**
 	 * The status' instance
@@ -190,6 +198,13 @@ export class Status extends BaseEntity {
 		// Delete object
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		if (this.object) await this.object.remove(options);
+
+		// Get all associated Likes and remove them as well
+		await Like.delete({
+			liked: {
+				id: this.id,
+			},
+		});
 
 		return await super.remove(options);
 	}
@@ -268,46 +283,32 @@ export class Status extends BaseEntity {
 	 */
 	async getDescendants(fetcher: User | null) {
 		const max = fetcher ? 4096 : 60;
-		// Go through all descendants in a tree-like manner
-		const descendants: Status[] = [];
 
-		return await Status._getDescendants(this, fetcher, max, descendants);
-	}
-
-	/**
-	 * Return all the descendants of a post,
-	 * @param status The status to get the descendants of.
-	 * @param isAuthenticated Whether the user is authenticated.
-	 * @param max The maximum number of descendants to get.
-	 * @param descendants The descendants to add to.
-	 * @returns A promise that resolves with the descendants.
-	 * @private
-	 */
-	private static async _getDescendants(
-		status: Status,
-		fetcher: User | null,
-		max: number,
-		descendants: Status[]
-	) {
-		const currentStatus = await Status.find({
-			where: {
-				in_reply_to_post: {
-					id: status.id,
-				},
-			},
+		const descendants = await AppDataSource.getTreeRepository(
+			Status
+		).findDescendantsTree(this, {
+			depth: fetcher ? 20 : undefined,
 			relations: statusAndUserRelations,
 		});
 
-		for (const status of currentStatus) {
-			if (status.isViewableByUser(fetcher)) {
-				descendants.push(status);
-			}
-			if (descendants.length < max) {
-				await this._getDescendants(status, fetcher, max, descendants);
-			}
-		}
+		// Go through .replies of each descendant recursively and add them to the list
+		const flatten = (descendants: Status): Status[] => {
+			const flattened = [];
 
-		return descendants;
+			for (const descendant of descendants.replies) {
+				if (descendant.isViewableByUser(fetcher)) {
+					flattened.push(descendant);
+				}
+
+				flattened.push(...flatten(descendant));
+			}
+
+			return flattened;
+		};
+
+		const flattened = flatten(descendants);
+
+		return flattened.slice(0, max);
 	}
 
 	/**
@@ -398,11 +399,27 @@ export class Status extends BaseEntity {
 		return newStatus;
 	}
 
+	async isFavouritedBy(user: User) {
+		const like = await Like.findOne({
+			where: {
+				liker: {
+					id: user.id,
+				},
+				liked: {
+					id: this.id,
+				},
+			},
+			relations: ["liker"],
+		});
+
+		return !!like;
+	}
+
 	/**
 	 * Converts this status to an API status.
 	 * @returns A promise that resolves with the API status.
 	 */
-	async toAPI(): Promise<APIStatus> {
+	async toAPI(user?: User): Promise<APIStatus> {
 		const reblogCount = await Status.count({
 			where: {
 				reblog: {
@@ -421,6 +438,17 @@ export class Status extends BaseEntity {
 			relations: ["in_reply_to_post"],
 		});
 
+		const favourited = user ? await this.isFavouritedBy(user) : false;
+
+		const favourites_count = await Like.count({
+			where: {
+				liked: {
+					id: this.id,
+				},
+			},
+			relations: ["liked"],
+		});
+
 		return {
 			id: this.id,
 			in_reply_to_id: this.in_reply_to_post?.id || null,
@@ -431,8 +459,8 @@ export class Status extends BaseEntity {
 			card: null,
 			content: this.content,
 			emojis: await Promise.all(this.emojis.map(emoji => emoji.toAPI())),
-			favourited: false,
-			favourites_count: 0,
+			favourited,
+			favourites_count: favourites_count,
 			media_attachments: [],
 			mentions: await Promise.all(
 				this.mentions.map(async m => await m.toAPI())
@@ -445,8 +473,8 @@ export class Status extends BaseEntity {
 			reblogged: !!this.reblog,
 			reblogs_count: reblogCount,
 			replies_count: repliesCount,
-			sensitive: false,
-			spoiler_text: "",
+			sensitive: this.sensitive,
+			spoiler_text: this.spoiler_text,
 			tags: [],
 			uri: `${config.http.base_url}/users/${this.account.username}/statuses/${this.id}`,
 			visibility: "public",
