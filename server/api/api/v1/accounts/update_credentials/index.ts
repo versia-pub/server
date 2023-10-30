@@ -81,7 +81,6 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Display name contains blocked words", 422);
 		}
 
-		user.actor.data.name = sanitizedDisplayName;
 		user.display_name = sanitizedDisplayName;
 	}
 
@@ -103,7 +102,6 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Bio contains blocked words", 422);
 		}
 
-		user.actor.data.summary = sanitizedNote;
 		user.note = sanitizedNote;
 	}
 
@@ -196,7 +194,6 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	await user.save();
-	await user.updateActor();
 
 	return jsonResponse(await user.toAPI());
 };

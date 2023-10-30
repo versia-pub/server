@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
 import { Application } from "~database/entities/Application";
 import { Emoji } from "~database/entities/Emoji";
-import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
 import { User } from "~database/entities/User";
 import { APIEmoji } from "~types/entities/emoji";
@@ -63,21 +62,6 @@ describe("API Tests", () => {
 	});
 
 	afterAll(async () => {
-		const activities = await RawActivity.createQueryBuilder("activity")
-			.where("activity.data->>'actor' = :actor", {
-				actor: `${config.http.base_url}/users/test`,
-			})
-			.leftJoinAndSelect("activity.objects", "objects")
-			.getMany();
-
-		// Delete all created objects and activities as part of testing
-		for (const activity of activities) {
-			for (const object of activity.objects) {
-				await object.remove();
-			}
-			await activity.remove();
-		}
-
 		await user.remove();
 		await user2.remove();
 

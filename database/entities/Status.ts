@@ -18,8 +18,6 @@ import { APIStatus } from "~types/entities/status";
 import { User, userRelations } from "./User";
 import { Application } from "./Application";
 import { Emoji } from "./Emoji";
-import { RawActivity } from "./RawActivity";
-import { RawObject } from "./RawObject";
 import { Instance } from "./Instance";
 import { Like } from "./Like";
 import { AppDataSource } from "~database/datasource";
@@ -29,25 +27,17 @@ const config = getConfig();
 export const statusRelations = [
 	"account",
 	"reblog",
-	"object",
 	"in_reply_to_post",
 	"instance",
 	"in_reply_to_post.account",
 	"application",
 	"emojis",
 	"mentions",
-	"likes",
-	"announces",
 ];
 
 export const statusAndUserRelations = [
 	...statusRelations,
-	...[
-		"account.actor",
-		"account.relationships",
-		"account.pinned_notes",
-		"account.instance",
-	],
+	...["account.relationships", "account.pinned_notes", "account.instance"],
 ];
 
 /**
@@ -90,15 +80,6 @@ export class Status extends BaseEntity {
 		onDelete: "SET NULL",
 	})
 	reblog?: Status | null;
-
-	/**
-	 * The raw object associated with this status.
-	 */
-	@ManyToOne(() => RawObject, {
-		nullable: true,
-		onDelete: "SET NULL",
-	})
-	object!: RawObject;
 
 	/**
 	 * Whether this status is a reblog.
@@ -176,28 +157,12 @@ export class Status extends BaseEntity {
 	mentions!: User[];
 
 	/**
-	 * The activities that have liked this status.
-	 */
-	@ManyToMany(() => RawActivity, activity => activity.id)
-	@JoinTable()
-	likes!: RawActivity[];
-
-	/**
-	 * The activities that have announced this status.
-	 */
-	@ManyToMany(() => RawActivity, activity => activity.id)
-	@JoinTable()
-	announces!: RawActivity[];
-
-	/**
 	 * Removes this status from the database.
 	 * @param options The options for removing this status.
 	 * @returns A promise that resolves when the status has been removed.
 	 */
 	async remove(options?: RemoveOptions | undefined) {
 		// Delete object
-		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-		if (this.object) await this.object.remove(options);
 
 		// Get all associated Likes and remove them as well
 		await Like.delete({
@@ -338,10 +303,7 @@ export class Status extends BaseEntity {
 		newStatus.sensitive = data.sensitive;
 		newStatus.spoiler_text = data.spoiler_text;
 		newStatus.emojis = data.emojis;
-		newStatus.likes = [];
-		newStatus.announces = [];
 		newStatus.isReblog = false;
-		newStatus.announces = [];
 		newStatus.mentions = [];
 		newStatus.instance = data.account.instance;
 
@@ -391,10 +353,6 @@ export class Status extends BaseEntity {
 			})
 		);
 
-		const object = RawObject.createFromStatus(newStatus, config);
-
-		newStatus.object = object;
-		await newStatus.object.save();
 		await newStatus.save();
 		return newStatus;
 	}

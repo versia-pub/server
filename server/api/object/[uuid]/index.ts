@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/require-await */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { applyConfig } from "@api";
-import { errorResponse, jsonLdResponse } from "@response";
+import { jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { RawActivity } from "~database/entities/RawActivity";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -22,11 +23,5 @@ export default async (
 	req: Request,
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
-	const object = await RawActivity.findOneBy({
-		id: matchedRoute.params.id,
-	});
-
-	if (!object) return errorResponse("Object not found", 404);
-
-	return jsonLdResponse(object);
+	return jsonResponse({});
 };

@@ -13,24 +13,13 @@ import {
 	UpdateDateColumn,
 } from "typeorm";
 import { APIAccount } from "~types/entities/account";
-import { RawActor } from "./RawActor";
-import {
-	APActor,
-	APCollectionPage,
-	APOrderedCollectionPage,
-} from "activitypub-types";
 import { Token } from "./Token";
 import { Status, statusRelations } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
 import { Instance } from "./Instance";
 
-export const userRelations = [
-	"actor",
-	"relationships",
-	"pinned_notes",
-	"instance",
-];
+export const userRelations = ["relationships", "pinned_notes", "instance"];
 
 /**
  * Represents a user in the database.
@@ -151,14 +140,6 @@ export class User extends BaseEntity {
 	})
 	instance!: Instance | null;
 
-	/** */
-
-	/**
-	 * The actor for the user.
-	 */
-	@ManyToOne(() => RawActor, actor => actor.id)
-	actor!: RawActor;
-
 	/**
 	 * The pinned notes for the user.
 	 */
@@ -200,52 +181,10 @@ export class User extends BaseEntity {
 	}
 
 	/**
-	 * Update this user data from its actor
-	 * @returns The updated user.
-	 */
-	async updateFromActor() {
-		const actor = await this.actor.toAPIAccount();
-
-		this.username = actor.username;
-		this.display_name = actor.display_name;
-		this.note = actor.note;
-		this.avatar = actor.avatar;
-		this.header = actor.header;
-		this.avatar = actor.avatar;
-
-		return await this.save();
-	}
-
-	/**
 	 * Fetches the list of followers associated with the actor and updates the user's followers
 	 */
 	async fetchFollowers() {
-		const config = getConfig();
-
-		let followers: APOrderedCollectionPage = await fetch(
-			`${this.actor.data.followers?.toString() ?? ""}?page=1`,
-			{
-				headers: { Accept: "application/activity+json" },
-			}
-		);
-
-		let followersList = followers.orderedItems ?? [];
-
-		while (followers.type === "OrderedCollectionPage" && followers.next) {
-			followers = await fetch((followers.next as string).toString(), {
-				headers: { Accept: "application/activity+json" },
-			}).then(res => res.json() as APCollectionPage);
-
-			followersList = {
-				...followersList,
-				...(followers.orderedItems ?? []),
-			};
-		}
-
-		if (config.activitypub.fetch_all_collection_members) {
-			// Loop through followers list and retrieve each actor individually
-			// TODO: Implement
-		}
+		//
 	}
 
 	/**
@@ -306,7 +245,6 @@ export class User extends BaseEntity {
 
 		await user.generateKeys();
 		await user.save();
-		await user.updateActor();
 
 		return user;
 	}
@@ -404,64 +342,6 @@ export class User extends BaseEntity {
 		});
 
 		return relationships;
-	}
-
-	/**
-	 * Updates the actor for the user.
-	 * @returns The updated actor.
-	 */
-	async updateActor() {
-		const config = getConfig();
-
-		// Check if actor exists
-		const actorExists = await RawActor.getByActorId(
-			`${config.http.base_url}/users/${this.username}`
-		);
-
-		let actor: RawActor;
-
-		if (actorExists) {
-			actor = actorExists;
-		} else {
-			actor = new RawActor();
-		}
-
-		actor.data = {
-			"@context": [
-				"https://www.w3.org/ns/activitystreams",
-				"https://w3id.org/security/v1",
-			],
-			id: `${config.http.base_url}/users/${this.username}`,
-			type: "Person",
-			preferredUsername: this.username,
-			name: this.display_name,
-			inbox: `${config.http.base_url}/users/${this.username}/inbox`,
-			outbox: `${config.http.base_url}/users/${this.username}/outbox`,
-			followers: `${config.http.base_url}/users/${this.username}/followers`,
-			following: `${config.http.base_url}/users/${this.username}/following`,
-			published: new Date(this.created_at).toISOString(),
-			manuallyApprovesFollowers: false,
-			summary: this.note,
-			icon: {
-				type: "Image",
-				url: this.getAvatarUrl(config),
-			},
-			image: {
-				type: "Image",
-				url: this.getHeaderUrl(config),
-			},
-			publicKey: {
-				id: `${config.http.base_url}/users/${this.username}/actor#main-key`,
-				owner: `${config.http.base_url}/users/${this.username}/actor`,
-				publicKeyPem: this.public_key,
-			},
-		} as APActor;
-
-		await actor.save();
-
-		this.actor = actor;
-		await this.save();
-		return actor;
 	}
 
 	/**
