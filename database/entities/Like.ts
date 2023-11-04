@@ -7,6 +7,8 @@ import {
 } from "typeorm";
 import { User } from "./User";
 import { Status } from "./Status";
+import { Like as LysandLike } from "~types/lysand/Object";
+import { getConfig } from "@config";
 
 /**
  * Represents a Like entity in the database.
@@ -29,4 +31,15 @@ export class Like extends BaseEntity {
 
 	@CreateDateColumn()
 	created_at!: Date;
+
+	toLysand(): LysandLike {
+		return {
+			id: this.id,
+			author: this.liker.uri,
+			type: "Like",
+			created_at: new Date(this.created_at).toISOString(),
+			object: this.liked.toLysand().uri,
+			uri: `${getConfig().http.base_url}/actions/${this.id}`,
+		};
+	}
 }

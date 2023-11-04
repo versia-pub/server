@@ -16,6 +16,13 @@ export interface ConfigType {
 		banned_ips: string[];
 	};
 
+	instance: {
+		name: string;
+		description: string;
+		banner: string;
+		logo: string;
+	};
+
 	smtp: {
 		server: string;
 		port: number;
@@ -132,6 +139,12 @@ export const configDefaults: ConfigType = {
 		username: "postgres",
 		password: "postgres",
 		database: "lysand",
+	},
+	instance: {
+		banner: "",
+		description: "",
+		logo: "",
+		name: "",
 	},
 	smtp: {
 		password: "",

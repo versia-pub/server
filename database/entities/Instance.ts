@@ -1,62 +1,5 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { APIInstance } from "~types/entities/instance";
-import { APIAccount } from "~types/entities/account";
-
-export interface NodeInfo {
-	software: {
-		name: string;
-		version: string;
-	};
-	protocols: string[];
-	version: string;
-	services: {
-		inbound: string[];
-		outbound: string[];
-	};
-	openRegistrations: boolean;
-	usage: {
-		users: {
-			total: number;
-			activeHalfyear: number;
-			activeMonth: number;
-		};
-		localPosts: number;
-		localComments?: number;
-		remotePosts?: number;
-		remoteComments?: number;
-	};
-	metadata: Partial<{
-		nodeName: string;
-		nodeDescription: string;
-		maintainer: {
-			name: string;
-			email: string;
-		};
-		langs: string[];
-		tosUrl: string;
-		repositoryUrl: string;
-		feedbackUrl: string;
-		disableRegistration: boolean;
-		disableLocalTimeline: boolean;
-		disableRecommendedTimeline: boolean;
-		disableGlobalTimeline: boolean;
-		emailRequiredForSignup: boolean;
-		searchFilters: boolean;
-		postEditing: boolean;
-		postImports: boolean;
-		enableHcaptcha: boolean;
-		enableRecaptcha: boolean;
-		maxNoteTextLength: number;
-		maxCaptionTextLength: number;
-		enableTwitterIntegration: boolean;
-		enableGithubIntegration: boolean;
-		enableDiscordIntegration: boolean;
-		enableEmail: boolean;
-		enableServiceWorker: boolean;
-		proxyAccountName: string | null;
-		themeColor: string;
-	}>;
-}
+import { ContentFormat, ServerMetadata } from "~types/lysand/Object";
 
 /**
  * Represents an instance in the database.
@@ -79,18 +22,27 @@ export class Instance extends BaseEntity {
 	base_url!: string;
 
 	/**
-	 * The configuration of the instance.
+	 * The name of the instance.
 	 */
-	@Column("jsonb", {
-		nullable: true,
-	})
-	instance_data?: APIInstance;
+	@Column("varchar")
+	name!: string;
 
 	/**
-	 * Instance nodeinfo data
+	 * The description of the instance.
+	 */
+	@Column("varchar")
+	version!: string;
+
+	/**
+	 * The logo of the instance.
 	 */
 	@Column("jsonb")
-	nodeinfo!: NodeInfo;
+	logo?: ContentFormat[];
+
+	/**
+	 * The banner of the instance.
+	 */
+	banner?: ContentFormat[];
 
 	/**
 	 * Adds an instance to the database if it doesn't already exist.
@@ -114,80 +66,25 @@ export class Instance extends BaseEntity {
 		instance.base_url = hostname;
 
 		// Fetch the instance configuration
-		const nodeinfo: NodeInfo = await fetch(`${origin}/nodeinfo/2.0`).then(
+		const metadata = (await fetch(`${origin}/.well-known/lysand`).then(
 			res => res.json()
-		);
+		)) as Partial<ServerMetadata>;
 
-		// Try to fetch configuration from Mastodon-compatible instances
-		if (
-			["firefish", "iceshrimp", "mastodon", "akkoma", "pleroma"].includes(
-				nodeinfo.software.name
-			)
-		) {
-			const instanceData: APIInstance = await fetch(
-				`${origin}/api/v1/instance`
-			).then(res => res.json());
-
-			instance.instance_data = instanceData;
+		if (metadata.type !== "ServerMetadata") {
+			throw new Error("Invalid instance metadata");
 		}
 
-		instance.nodeinfo = nodeinfo;
+		if (!(metadata.name && metadata.version)) {
+			throw new Error("Invalid instance metadata");
+		}
+
+		instance.name = metadata.name;
+		instance.version = metadata.version;
+		instance.logo = metadata.logo;
+		instance.banner = metadata.banner;
 
 		await instance.save();
 
 		return instance;
-	}
-
-	/**
-	 * Converts the instance to an API instance.
-	 * @returns The API instance.
-	 */
-	// eslint-disable-next-line @typescript-eslint/require-await
-	async toAPI(): Promise<APIInstance> {
-		return {
-			uri: this.instance_data?.uri || this.base_url,
-			approval_required: this.instance_data?.approval_required || false,
-			email: this.instance_data?.email || "",
-			thumbnail: this.instance_data?.thumbnail || "",
-			title: this.instance_data?.title || "",
-			version: this.instance_data?.version || "",
-			configuration: this.instance_data?.configuration || {
-				media_attachments: {
-					image_matrix_limit: 0,
-					image_size_limit: 0,
-					supported_mime_types: [],
-					video_frame_limit: 0,
-					video_matrix_limit: 0,
-					video_size_limit: 0,
-				},
-				polls: {
-					max_characters_per_option: 0,
-					max_expiration: 0,
-					max_options: 0,
-					min_expiration: 0,
-				},
-				statuses: {
-					characters_reserved_per_url: 0,
-					max_characters: 0,
-					max_media_attachments: 0,
-				},
-			},
-			contact_account:
-				this.instance_data?.contact_account || ({} as APIAccount),
-			description: this.instance_data?.description || "",
-			invites_enabled: this.instance_data?.invites_enabled || false,
-			languages: this.instance_data?.languages || [],
-			registrations: this.instance_data?.registrations || false,
-			rules: this.instance_data?.rules || [],
-			stats: {
-				domain_count: this.instance_data?.stats.domain_count || 0,
-				status_count: this.instance_data?.stats.status_count || 0,
-				user_count: this.instance_data?.stats.user_count || 0,
-			},
-			urls: {
-				streaming_api: this.instance_data?.urls.streaming_api || "",
-			},
-			max_toot_chars: this.instance_data?.max_toot_chars || 0,
-		};
 	}
 }

@@ -18,6 +18,9 @@ import { Status, statusRelations } from "./Status";
 import { APISource } from "~types/entities/source";
 import { Relationship } from "./Relationship";
 import { Instance } from "./Instance";
+import { User as LysandUser } from "~types/lysand/Object";
+import { htmlToText } from "html-to-text";
+import { Emoji } from "./Emoji";
 
 export const userRelations = ["relationships", "pinned_notes", "instance"];
 
@@ -34,6 +37,12 @@ export class User extends BaseEntity {
 	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
+
+	/**
+	 * The user URI on the global network
+	 */
+	@Column("varchar")
+	uri!: string;
 
 	/**
 	 * The username for the user.
@@ -81,6 +90,19 @@ export class User extends BaseEntity {
 		default: false,
 	})
 	is_admin!: boolean;
+
+	@Column("jsonb", {
+		nullable: true,
+	})
+	endpoints!: {
+		liked: string;
+		disliked: string;
+		featured: string;
+		followers: string;
+		following: string;
+		inbox: string;
+		outbox: string;
+	} | null;
 
 	/**
 	 * The source for the user.
@@ -148,6 +170,13 @@ export class User extends BaseEntity {
 	pinned_notes!: Status[];
 
 	/**
+	 * The emojis for the user.
+	 */
+	@ManyToMany(() => Emoji, emoji => emoji.id)
+	@JoinTable()
+	emojis!: Emoji[];
+
+	/**
 	 * Get the user's avatar in raw URL format
 	 * @param config The config to use
 	 * @returns The raw URL for the user's avatar
@@ -178,6 +207,76 @@ export class User extends BaseEntity {
 		const token = req.headers.get("Authorization")?.split(" ")[1] || "";
 
 		return { user: await User.retrieveFromToken(token), token };
+	}
+
+	static async fetchRemoteUser(uri: string) {
+		const response = await fetch(uri, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+		});
+
+		const data = (await response.json()) as Partial<LysandUser>;
+
+		const user = new User();
+
+		if (
+			!(
+				data.id &&
+				data.username &&
+				data.uri &&
+				data.created_at &&
+				data.disliked &&
+				data.featured &&
+				data.liked &&
+				data.followers &&
+				data.following &&
+				data.inbox &&
+				data.outbox &&
+				data.public_key
+			)
+		) {
+			throw new Error("Invalid user data");
+		}
+
+		user.id = data.id;
+		user.username = data.username;
+		user.uri = data.uri;
+		user.created_at = new Date(data.created_at);
+		user.endpoints = {
+			disliked: data.disliked,
+			featured: data.featured,
+			liked: data.liked,
+			followers: data.followers,
+			following: data.following,
+			inbox: data.inbox,
+			outbox: data.outbox,
+		};
+
+		user.avatar = (data.avatar && data.avatar[0].content) || "";
+		user.header = (data.header && data.header[0].content) || "";
+		user.display_name = data.display_name ?? "";
+		// TODO: Add bio content types
+		user.note = data.bio?.[0].content ?? "";
+
+		// Parse emojis and add them to database
+		const emojis =
+			data.extensions?.["org.lysand:custom_emojis"]?.emojis ?? [];
+
+		for (const emoji of emojis) {
+			user.emojis.push(await Emoji.addIfNotExists(emoji));
+		}
+
+		user.public_key = data.public_key.public_key;
+
+		const uriData = new URL(data.uri);
+
+		user.instance = await Instance.addIfNotExists(uriData.origin);
+
+		await user.save();
+		return user;
 	}
 
 	/**
@@ -229,6 +328,7 @@ export class User extends BaseEntity {
 		user.note = data.bio ?? "";
 		user.avatar = data.avatar ?? config.defaults.avatar;
 		user.header = data.header ?? config.defaults.avatar;
+		user.uri = `${config.http.base_url}/users/${user.id}`;
 
 		user.relationships = [];
 		user.instance = null;
@@ -348,15 +448,10 @@ export class User extends BaseEntity {
 	 * Generates keys for the user.
 	 */
 	async generateKeys(): Promise<void> {
-		// openssl genrsa -out private.pem 2048
-		// openssl rsa -in private.pem -outform PEM -pubout -out public.pem
-
 		const keys = await crypto.subtle.generateKey(
 			{
-				name: "RSASSA-PKCS1-v1_5",
-				hash: "SHA-256",
-				modulusLength: 4096,
-				publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+				name: "ed25519",
+				namedCurve: "ed25519",
 			},
 			true,
 			["sign", "verify"]
@@ -366,7 +461,7 @@ export class User extends BaseEntity {
 			String.fromCharCode.apply(null, [
 				...new Uint8Array(
 					// jesus help me what do these letters mean
-					await crypto.subtle.exportKey("pkcs8", keys.privateKey)
+					await crypto.subtle.exportKey("raw", keys.privateKey)
 				),
 			])
 		);
@@ -374,7 +469,7 @@ export class User extends BaseEntity {
 			String.fromCharCode(
 				...new Uint8Array(
 					// why is exporting a key so hard
-					await crypto.subtle.exportKey("spki", keys.publicKey)
+					await crypto.subtle.exportKey("raw", keys.publicKey)
 				)
 			)
 		);
@@ -431,7 +526,7 @@ export class User extends BaseEntity {
 			followers_count: follower_count,
 			following_count: following_count,
 			statuses_count: statusCount,
-			emojis: [],
+			emojis: await Promise.all(this.emojis.map(emoji => emoji.toAPI())),
 			fields: [],
 			bot: false,
 			source: isOwnAccount ? this.source : undefined,
@@ -449,6 +544,85 @@ export class User extends BaseEntity {
 			mute_expires_at: undefined,
 			group: false,
 			role: undefined,
+		};
+	}
+
+	/**
+	 * Should only return local users
+	 */
+	toLysand(): LysandUser {
+		if (this.instance !== null) {
+			throw new Error("Cannot convert remote user to Lysand format");
+		}
+
+		return {
+			id: this.id,
+			type: "User",
+			uri: this.uri,
+			bio: [
+				{
+					content: this.note,
+					content_type: "text/html",
+				},
+				{
+					content: htmlToText(this.note),
+					content_type: "text/plain",
+				},
+			],
+			created_at: new Date(this.created_at).toISOString(),
+			disliked: `${this.uri}/disliked`,
+			featured: `${this.uri}/featured`,
+			liked: `${this.uri}/liked`,
+			followers: `${this.uri}/followers`,
+			following: `${this.uri}/following`,
+			inbox: `${this.uri}/inbox`,
+			outbox: `${this.uri}/outbox`,
+			indexable: false,
+			username: this.username,
+			avatar: [
+				{
+					content: this.getAvatarUrl(getConfig()) || "",
+					content_type: `image/${this.avatar.split(".")[1]}`,
+				},
+			],
+			header: [
+				{
+					content: this.getHeaderUrl(getConfig()) || "",
+					content_type: `image/${this.header.split(".")[1]}`,
+				},
+			],
+			display_name: this.display_name,
+			fields: this.source.fields.map(field => ({
+				key: [
+					{
+						content: field.name,
+						content_type: "text/html",
+					},
+					{
+						content: htmlToText(field.name),
+						content_type: "text/plain",
+					},
+				],
+				value: [
+					{
+						content: field.value,
+						content_type: "text/html",
+					},
+					{
+						content: htmlToText(field.value),
+						content_type: "text/plain",
+					},
+				],
+			})),
+			public_key: {
+				actor: `${getConfig().http.base_url}/users/${this.id}`,
+				public_key: this.public_key,
+			},
+			extensions: {
+				"org.lysand:custom_emojis": {
+					emojis: this.emojis.map(emoji => emoji.toLysand()),
+				},
+			},
 		};
 	}
 }

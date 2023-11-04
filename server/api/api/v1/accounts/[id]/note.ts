@@ -59,8 +59,6 @@ export default async (
 
 	relationship.note = comment ?? "";
 
-	// TODO: Implement duration
-
 	await relationship.save();
 	return jsonResponse(await relationship.toAPI());
 };

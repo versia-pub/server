@@ -21,6 +21,8 @@ import { Emoji } from "./Emoji";
 import { Instance } from "./Instance";
 import { Like } from "./Like";
 import { AppDataSource } from "~database/datasource";
+import { Note } from "~types/lysand/Object";
+import { htmlToText } from "html-to-text";
 
 const config = getConfig();
 
@@ -94,6 +96,14 @@ export class Status extends BaseEntity {
 		default: "",
 	})
 	content!: string;
+
+	/**
+	 * The content type of this status.
+	 */
+	@Column("varchar", {
+		default: "text/plain",
+	})
+	content_type!: string;
 
 	/**
 	 * The visibility of this status.
@@ -289,6 +299,8 @@ export class Status extends BaseEntity {
 		sensitive: boolean;
 		spoiler_text: string;
 		emojis: Emoji[];
+		content_type?: string;
+		mentions?: User[];
 		reply?: {
 			status: Status;
 			user: User;
@@ -299,6 +311,7 @@ export class Status extends BaseEntity {
 		newStatus.account = data.account;
 		newStatus.application = data.application ?? null;
 		newStatus.content = data.content;
+		newStatus.content_type = data.content_type ?? "text/plain";
 		newStatus.visibility = data.visibility;
 		newStatus.sensitive = data.sensitive;
 		newStatus.spoiler_text = data.spoiler_text;
@@ -318,40 +331,44 @@ export class Status extends BaseEntity {
 		});
 
 		// Get list of mentioned users
-		await Promise.all(
-			mentionedPeople.map(async person => {
-				// Check if post is in format @username or @username@instance.com
-				// If is @username, the user is a local user
-				const instanceUrl =
-					person.split("@").length === 3
-						? person.split("@")[2]
-						: null;
+		if (!data.mentions) {
+			await Promise.all(
+				mentionedPeople.map(async person => {
+					// Check if post is in format @username or @username@instance.com
+					// If is @username, the user is a local user
+					const instanceUrl =
+						person.split("@").length === 3
+							? person.split("@")[2]
+							: null;
 
-				if (instanceUrl) {
-					const user = await User.findOne({
-						where: {
-							username: person.split("@")[1],
-							// If contains instanceUrl
-							instance: {
-								base_url: instanceUrl,
+					if (instanceUrl) {
+						const user = await User.findOne({
+							where: {
+								username: person.split("@")[1],
+								// If contains instanceUrl
+								instance: {
+									base_url: instanceUrl,
+								},
 							},
-						},
-						relations: userRelations,
-					});
+							relations: userRelations,
+						});
 
-					newStatus.mentions.push(user as User);
-				} else {
-					const user = await User.findOne({
-						where: {
-							username: person.split("@")[1],
-						},
-						relations: userRelations,
-					});
+						newStatus.mentions.push(user as User);
+					} else {
+						const user = await User.findOne({
+							where: {
+								username: person.split("@")[1],
+							},
+							relations: userRelations,
+						});
 
-					newStatus.mentions.push(user as User);
-				}
-			})
-		);
+						newStatus.mentions.push(user as User);
+					}
+				})
+			);
+		} else {
+			newStatus.mentions = data.mentions;
+		}
 
 		await newStatus.save();
 		return newStatus;
@@ -440,6 +457,43 @@ export class Status extends BaseEntity {
 			bookmarked: false,
 			quote: null,
 			quote_id: undefined,
+		};
+	}
+
+	toLysand(): Note {
+		return {
+			type: "Note",
+			created_at: new Date(this.created_at).toISOString(),
+			id: this.id,
+			author: this.account.uri,
+			uri: `${config.http.base_url}/users/${this.account.id}/statuses/${this.id}`,
+			contents: [
+				{
+					content: this.content,
+					content_type: "text/html",
+				},
+				{
+					// Content converted to plaintext
+					content: htmlToText(this.content),
+					content_type: "text/plain",
+				},
+			],
+			// TODO: Add attachments
+			attachments: [],
+			is_sensitive: this.sensitive,
+			mentions: this.mentions.map(mention => mention.id),
+			// TODO: Add quotes
+			quotes: [],
+			replies_to: this.in_reply_to_post?.id
+				? [this.in_reply_to_post.id]
+				: [],
+			subject: this.spoiler_text,
+			extensions: {
+				"org.lysand:custom_emojis": {
+					emojis: this.emojis.map(emoji => emoji.toLysand()),
+				},
+				// TODO: Add polls and reactions
+			},
 		};
 	}
 }

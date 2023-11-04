@@ -128,6 +128,14 @@ remove_media = [] # NOT IMPLEMENTED
 # significantly depending on processing power)
 authorized_fetch = false
 
+[instance]
+name = "Lysand"
+description = "A test instance of Lysand"
+# URL to your instance logo (jpg files should be renamed to jpeg)
+logo = ""
+# URL to your instance banner (jpg files should be renamed to jpeg)
+banner = ""
+
 
 [filters]
 # Drop notes with these regex filters (only applies to new activities)

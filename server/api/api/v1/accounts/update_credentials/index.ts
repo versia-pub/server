@@ -6,6 +6,7 @@ import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
 import { uploadFile } from "~classes/media";
+import { Emoji } from "~database/entities/Emoji";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -81,6 +82,9 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Display name contains blocked words", 422);
 		}
 
+		// Remove emojis
+		user.emojis = [];
+
 		user.display_name = sanitizedDisplayName;
 	}
 
@@ -101,6 +105,9 @@ export default async (req: Request): Promise<Response> => {
 		) {
 			return errorResponse("Bio contains blocked words", 422);
 		}
+
+		// Remove emojis
+		user.emojis = [];
 
 		user.note = sanitizedNote;
 	}
@@ -192,6 +199,18 @@ export default async (req: Request): Promise<Response> => {
 		// TODO: Add a user value for discoverable
 		// user.discoverable = discoverable === "true";
 	}
+
+	// Parse emojis
+
+	const displaynameEmojis = await Emoji.parseEmojis(sanitizedDisplayName);
+	const noteEmojis = await Emoji.parseEmojis(sanitizedNote);
+
+	user.emojis = [...displaynameEmojis, ...noteEmojis];
+
+	// Deduplicate emojis
+	user.emojis = user.emojis.filter(
+		(emoji, index, self) => self.findIndex(e => e.id === emoji.id) === index
+	);
 
 	await user.save();
 
