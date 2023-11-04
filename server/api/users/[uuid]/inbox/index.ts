@@ -2,8 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { applyConfig } from "@api";
 import { getConfig } from "@config";
+import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
+import { Emoji } from "~database/entities/Emoji";
+import { LysandObject } from "~database/entities/Object";
 import { Status } from "~database/entities/Status";
 import { User, userRelations } from "~database/entities/User";
 import {
@@ -11,6 +14,7 @@ import {
 	LysandAction,
 	LysandObjectType,
 	LysandPublication,
+	Patch,
 } from "~types/lysand/Object";
 
 export const meta = applyConfig({
@@ -111,28 +115,23 @@ export default async (
 
 		// author.public_key is base64 encoded raw public key
 		const publicKey = await crypto.subtle.importKey(
-			"raw",
+			"spki",
 			Buffer.from(author.public_key, "base64"),
-			{
-				name: "ed25519",
-			},
+			"Ed25519",
 			false,
 			["verify"]
 		);
 
 		// Check if signed string is valid
 		const isValid = await crypto.subtle.verify(
-			{
-				name: "ed25519",
-				saltLength: 0,
-			},
+			"Ed25519",
 			publicKey,
-			new TextEncoder().encode(signature),
+			Buffer.from(signature, "base64"),
 			new TextEncoder().encode(expectedSignedString)
 		);
 
 		if (!isValid) {
-			throw new Error("Invalid signature");
+			return errorResponse("Invalid signature", 401);
 		}
 	}
 
@@ -141,42 +140,14 @@ export default async (
 
 	switch (type) {
 		case "Note": {
-			let content: ContentFormat | null;
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 
-			// Find the best content and content type
-			if (
-				body.contents.find(
-					c => c.content_type === "text/x.misskeymarkdown"
-				)
-			) {
-				content =
-					body.contents.find(
-						c => c.content_type === "text/x.misskeymarkdown"
-					) || null;
-			} else if (
-				body.contents.find(c => c.content_type === "text/html")
-			) {
-				content =
-					body.contents.find(c => c.content_type === "text/html") ||
-					null;
-			} else if (
-				body.contents.find(c => c.content_type === "text/markdown")
-			) {
-				content =
-					body.contents.find(
-						c => c.content_type === "text/markdown"
-					) || null;
-			} else if (
-				body.contents.find(c => c.content_type === "text/plain")
-			) {
-				content =
-					body.contents.find(c => c.content_type === "text/plain") ||
-					null;
-			} else {
-				content = body.contents[0] || null;
-			}
+			const content = getBestContentType(body.contents);
 
-			const status = await Status.createNew({
+			const emojis = await Emoji.parseEmojis(content?.content || "");
+
+			const newStatus = await Status.createNew({
 				account: author,
 				content: content?.content || "",
 				content_type: content?.content_type,
@@ -185,34 +156,106 @@ export default async (
 				visibility: "public",
 				spoiler_text: body.subject || "",
 				sensitive: body.is_sensitive,
-				// TODO: Add emojis
-				emojis: [],
+				uri: body.uri,
+				emojis: emojis,
+				mentions: await User.parseMentions(body.mentions),
 			});
 
+			// If there is a reply, fetch all the reply parents and add them to the database
+			if (body.replies_to.length > 0) {
+				newStatus.in_reply_to_post = await Status.fetchFromRemote(
+					body.replies_to[0]
+				);
+			}
+
+			// Same for quotes
+			if (body.quotes.length > 0) {
+				newStatus.quoting_post = await Status.fetchFromRemote(
+					body.quotes[0]
+				);
+			}
+
+			await newStatus.save();
 			break;
 		}
 		case "Patch": {
+			const patch = body as Patch;
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(patch);
+
+			// Edit the status
+
+			const content = getBestContentType(patch.contents);
+
+			const emojis = await Emoji.parseEmojis(content?.content || "");
+
+			const status = await Status.findOneBy({
+				id: patch.patched_id,
+			});
+
+			if (!status) {
+				return errorResponse("Status not found", 404);
+			}
+
+			status.content = content?.content || "";
+			status.content_type = content?.content_type || "text/plain";
+			status.spoiler_text = patch.subject || "";
+			status.sensitive = patch.is_sensitive;
+			status.emojis = emojis;
+
+			// If there is a reply, fetch all the reply parents and add them to the database
+			if (body.replies_to.length > 0) {
+				status.in_reply_to_post = await Status.fetchFromRemote(
+					body.replies_to[0]
+				);
+			}
+
+			// Same for quotes
+			if (body.quotes.length > 0) {
+				status.quoting_post = await Status.fetchFromRemote(
+					body.quotes[0]
+				);
+			}
 			break;
 		}
 		case "Like": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "Dislike": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "Follow": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "FollowAccept": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "FollowReject": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "Announce": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		case "Undo": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
+			break;
+		}
+		case "Extension": {
+			// Store the object in the LysandObject table
+			await LysandObject.createFromObject(body);
 			break;
 		}
 		default: {

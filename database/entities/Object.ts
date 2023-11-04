@@ -39,15 +39,15 @@ export class LysandObject extends BaseEntity {
 	uri!: string;
 
 	@Column("timestamp")
-	created_at!: string;
+	created_at!: Date;
 
 	/**
-	 * References an Actor object by URI
+	 * References an Actor object
 	 */
 	@ManyToOne(() => LysandObject, object => object.uri, {
 		nullable: true,
 	})
-	author!: LysandObject;
+	author!: LysandObject | null;
 
 	@Column("jsonb")
 	extra_data!: Omit<
@@ -62,8 +62,63 @@ export class LysandObject extends BaseEntity {
 		const object = new LysandObject();
 		object.type = type;
 		object.uri = uri;
-		object.created_at = new Date().toISOString();
+		object.created_at = new Date();
 		return object;
+	}
+
+	static async createFromObject(object: LysandObjectType) {
+		let newObject: LysandObject;
+
+		const foundObject = await LysandObject.findOne({
+			where: { remote_id: object.id },
+			relations: ["author"],
+		});
+
+		if (foundObject) {
+			newObject = foundObject;
+		} else {
+			newObject = new LysandObject();
+		}
+
+		const author = await LysandObject.findOne({
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+			where: { uri: (object as any).author },
+		});
+
+		newObject.author = author;
+		newObject.created_at = new Date(object.created_at);
+		newObject.extensions = object.extensions || {};
+		newObject.remote_id = object.id;
+		newObject.type = object.type;
+		newObject.uri = object.uri;
+		// Rest of data (remove id, author, created_at, extensions, type, uri)
+		newObject.extra_data = Object.fromEntries(
+			Object.entries(object).filter(
+				([key]) =>
+					![
+						"id",
+						"author",
+						"created_at",
+						"extensions",
+						"type",
+						"uri",
+					].includes(key)
+			)
+		);
+
+		await newObject.save();
+		return newObject;
+	}
+
+	toLysand(): LysandObjectType {
+		return {
+			id: this.remote_id || this.id,
+			created_at: new Date(this.created_at).toISOString(),
+			type: this.type,
+			uri: this.uri,
+			...this.extra_data,
+			extensions: this.extensions,
+		};
 	}
 
 	isPublication(): boolean {

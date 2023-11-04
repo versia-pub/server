@@ -1,7 +1,7 @@
 import { jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { userRelations } from "~database/entities/User";
-import { getHost } from "@config";
+import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
 import { Status } from "~database/entities/Status";
 import { In } from "typeorm";
@@ -27,6 +27,7 @@ export default async (
 ): Promise<Response> => {
 	const uuid = matchedRoute.params.uuid;
 	const pageNumber = Number(matchedRoute.query.page) || 1;
+	const config = getConfig();
 
 	const statuses = await Status.find({
 		where: {
@@ -54,6 +55,8 @@ export default async (
 		first: `${getHost()}/users/${uuid}/outbox?page=1`,
 		last: `${getHost()}/users/${uuid}/outbox?page=1`,
 		total_items: totalStatuses,
+		// Server actor
+		author: `${config.http.base_url}/users/actor`,
 		next:
 			statuses.length === 20
 				? `${getHost()}/users/${uuid}/outbox?page=${pageNumber + 1}`

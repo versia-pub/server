@@ -22,7 +22,12 @@ import { User as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import { Emoji } from "./Emoji";
 
-export const userRelations = ["relationships", "pinned_notes", "instance"];
+export const userRelations = [
+	"relationships",
+	"pinned_notes",
+	"instance",
+	"emojis",
+];
 
 /**
  * Represents a user in the database.
@@ -210,6 +215,15 @@ export class User extends BaseEntity {
 	}
 
 	static async fetchRemoteUser(uri: string) {
+		// Check if user not already in database
+		const foundUser = await User.findOne({
+			where: {
+				uri,
+			},
+		});
+
+		if (foundUser) return foundUser;
+
 		const response = await fetch(uri, {
 			method: "GET",
 			headers: {
@@ -329,6 +343,7 @@ export class User extends BaseEntity {
 		user.avatar = data.avatar ?? config.defaults.avatar;
 		user.header = data.header ?? config.defaults.avatar;
 		user.uri = `${config.http.base_url}/users/${user.id}`;
+		user.emojis = [];
 
 		user.relationships = [];
 		user.instance = null;
@@ -347,6 +362,22 @@ export class User extends BaseEntity {
 		await user.save();
 
 		return user;
+	}
+
+	static async parseMentions(mentions: string[]) {
+		return await Promise.all(
+			mentions.map(async mention => {
+				const user = await User.findOne({
+					where: {
+						uri: mention,
+					},
+					relations: userRelations,
+				});
+
+				if (user) return user;
+				else return await User.fetchRemoteUser(mention);
+			})
+		);
 	}
 
 	/**
@@ -448,20 +479,16 @@ export class User extends BaseEntity {
 	 * Generates keys for the user.
 	 */
 	async generateKeys(): Promise<void> {
-		const keys = await crypto.subtle.generateKey(
-			{
-				name: "ed25519",
-				namedCurve: "ed25519",
-			},
-			true,
-			["sign", "verify"]
-		);
+		const keys = (await crypto.subtle.generateKey("Ed25519", true, [
+			"sign",
+			"verify",
+		])) as CryptoKeyPair;
 
 		const privateKey = btoa(
 			String.fromCharCode.apply(null, [
 				...new Uint8Array(
 					// jesus help me what do these letters mean
-					await crypto.subtle.exportKey("raw", keys.privateKey)
+					await crypto.subtle.exportKey("pkcs8", keys.privateKey)
 				),
 			])
 		);
@@ -469,13 +496,13 @@ export class User extends BaseEntity {
 			String.fromCharCode(
 				...new Uint8Array(
 					// why is exporting a key so hard
-					await crypto.subtle.exportKey("raw", keys.publicKey)
+					await crypto.subtle.exportKey("spki", keys.publicKey)
 				)
 			)
 		);
 
 		// Add header, footer and newlines later on
-		// These keys are PEM encrypted
+		// These keys are base64 encrypted
 		this.private_key = privateKey;
 		this.public_key = publicKey;
 	}

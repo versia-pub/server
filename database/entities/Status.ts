@@ -21,8 +21,9 @@ import { Emoji } from "./Emoji";
 import { Instance } from "./Instance";
 import { Like } from "./Like";
 import { AppDataSource } from "~database/datasource";
-import { Note } from "~types/lysand/Object";
+import { LysandPublication, Note } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
+import { getBestContentType } from "@content_types";
 
 const config = getConfig();
 
@@ -39,7 +40,13 @@ export const statusRelations = [
 
 export const statusAndUserRelations = [
 	...statusRelations,
-	...["account.relationships", "account.pinned_notes", "account.instance"],
+	// Can't directly map to userRelations as variable isnt yet initialized
+	...[
+		"account.relationships",
+		"account.pinned_notes",
+		"account.instance",
+		"account.emojis",
+	],
 ];
 
 /**
@@ -55,6 +62,12 @@ export class Status extends BaseEntity {
 	 */
 	@PrimaryGeneratedColumn("uuid")
 	id!: string;
+
+	/**
+	 * The URI for this status.
+	 */
+	@Column("varchar")
+	uri!: string;
 
 	/**
 	 * The user account that created this status.
@@ -118,6 +131,14 @@ export class Status extends BaseEntity {
 		onDelete: "SET NULL",
 	})
 	in_reply_to_post!: Status | null;
+
+	/**
+	 * The status that this status is quoting, if any
+	 */
+	@ManyToOne(() => Status, status => status.id, {
+		nullable: true,
+	})
+	quoting_post!: Status | null;
 
 	@TreeChildren()
 	replies!: Status[];
@@ -223,6 +244,64 @@ export class Status extends BaseEntity {
 		}
 	}
 
+	static async fetchFromRemote(uri: string) {
+		// Check if already in database
+
+		const existingStatus = await Status.findOne({
+			where: {
+				uri: uri,
+			},
+		});
+
+		if (existingStatus) return existingStatus;
+
+		const status = await fetch(uri);
+
+		if (status.status === 404) return null;
+
+		const body = (await status.json()) as LysandPublication;
+
+		const content = getBestContentType(body.contents);
+
+		const emojis = await Emoji.parseEmojis(content?.content || "");
+
+		const author = await User.fetchRemoteUser(body.author);
+
+		let replyStatus: Status | null = null;
+		let quotingStatus: Status | null = null;
+
+		if (body.replies_to.length > 0) {
+			replyStatus = await Status.fetchFromRemote(body.replies_to[0]);
+		}
+
+		if (body.quotes.length > 0) {
+			quotingStatus = await Status.fetchFromRemote(body.quotes[0]);
+		}
+
+		const newStatus = await Status.createNew({
+			account: author,
+			content: content?.content || "",
+			content_type: content?.content_type,
+			application: null,
+			// TODO: Add visibility
+			visibility: "public",
+			spoiler_text: body.subject || "",
+			uri: body.uri,
+			sensitive: body.is_sensitive,
+			emojis: emojis,
+			mentions: await User.parseMentions(body.mentions),
+			reply: replyStatus
+				? {
+						status: replyStatus,
+						user: replyStatus.account,
+				  }
+				: undefined,
+			quote: quotingStatus || undefined,
+		});
+
+		return await newStatus.save();
+	}
+
 	/**
 	 * Return all the ancestors of this post,
 	 */
@@ -300,11 +379,13 @@ export class Status extends BaseEntity {
 		spoiler_text: string;
 		emojis: Emoji[];
 		content_type?: string;
+		uri?: string;
 		mentions?: User[];
 		reply?: {
 			status: Status;
 			user: User;
 		};
+		quote?: Status;
 	}) {
 		const newStatus = new Status();
 
@@ -319,6 +400,9 @@ export class Status extends BaseEntity {
 		newStatus.isReblog = false;
 		newStatus.mentions = [];
 		newStatus.instance = data.account.instance;
+		newStatus.uri =
+			data.uri || `${config.http.base_url}/statuses/${newStatus.id}`;
+		newStatus.quoting_post = data.quote || null;
 
 		if (data.reply) {
 			newStatus.in_reply_to_post = data.reply.status;

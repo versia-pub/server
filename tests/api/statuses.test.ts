@@ -283,7 +283,7 @@ describe("API Tests", () => {
 			const status1 = statuses[1];
 
 			// Basic validation
-			expect(status1.content).toBe("Hello, world!");
+			expect(status1.content).toBe("This is a reply!");
 			expect(status1.visibility).toBe("public");
 			expect(status1.account.id).toBe(user.id);
 		});

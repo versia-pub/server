@@ -85,7 +85,8 @@ export interface LysandAction extends LysandObjectType {
 		| "FollowAccept"
 		| "FollowReject"
 		| "Announce"
-		| "Undo";
+		| "Undo"
+		| "Extension";
 	author: string;
 }
 

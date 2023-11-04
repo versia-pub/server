@@ -109,7 +109,8 @@ describe("API Tests", () => {
 			const emoji = new Emoji();
 
 			emoji.instance = null;
-			emoji.url = "https://example.com";
+			emoji.url = "https://example.com/test.png";
+			emoji.content_type = "image/png";
 			emoji.shortcode = "test";
 			emoji.visible_in_picker = true;
 
@@ -135,7 +136,7 @@ describe("API Tests", () => {
 
 			expect(emojis.length).toBeGreaterThan(0);
 			expect(emojis[0].shortcode).toBe("test");
-			expect(emojis[0].url).toBe("https://example.com");
+			expect(emojis[0].url).toBe("https://example.com/test.png");
 		});
 		afterAll(async () => {
 			await Emoji.delete({ shortcode: "test" });
