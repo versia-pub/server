@@ -36,7 +36,8 @@
     "start": "bun run index.ts"
   },
   "trustedDependencies": [
-    "sharp"
+    "sharp",
+    "@prisma/client"
   ],
   "devDependencies": {
     "@julr/unocss-preset-forms": "^0.0.5",
@@ -61,6 +62,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.429.0",
+    "@prisma/client": "^5.5.2",
     "chalk": "^5.3.0",
     "html-to-text": "^9.0.5",
     "ip-matching": "^2.1.2",
@@ -68,6 +70,7 @@
     "jsonld": "^8.3.1",
     "marked": "^9.1.2",
     "pg": "^8.11.3",
+    "prisma": "^5.5.2",
     "reflect-metadata": "^0.1.13",
     "typeorm": "^0.3.17"
   }

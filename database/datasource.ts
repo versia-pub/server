@@ -1,5 +1,6 @@
 import { DataSource } from "typeorm";
 import { getConfig } from "../utils/config";
+import { PrismaClient } from "@prisma/client";
 
 const config = getConfig();
 
@@ -14,4 +15,8 @@ const AppDataSource = new DataSource({
 	entities: [process.cwd() + "/database/entities/*.ts"],
 });
 
-export { AppDataSource };
+const client = new PrismaClient({
+	datasourceUrl: `postgresql://${config.database.username}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`,
+});
+
+export { AppDataSource, client };

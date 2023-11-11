@@ -3,25 +3,25 @@
 import { getConfig } from "@config";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
-import { Application } from "~database/entities/Application";
-import { Emoji } from "~database/entities/Emoji";
+import { ApplicationAction } from "~database/entities/Application";
+import { EmojiAction } from "~database/entities/Emoji";
 import { Token, TokenType } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { APIEmoji } from "~types/entities/emoji";
 import { APIInstance } from "~types/entities/instance";
 
 const config = getConfig();
 
 let token: Token;
-let user: User;
-let user2: User;
+let user: UserAction;
+let user2: UserAction;
 
 describe("API Tests", () => {
 	beforeAll(async () => {
 		if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 		// Initialize test user
-		user = await User.createNewLocal({
+		user = await UserAction.createNewLocal({
 			email: "test@test.com",
 			username: "test",
 			password: "test",
@@ -29,14 +29,14 @@ describe("API Tests", () => {
 		});
 
 		// Initialize second test user
-		user2 = await User.createNewLocal({
+		user2 = await UserAction.createNewLocal({
 			email: "test2@test.com",
 			username: "test2",
 			password: "test2",
 			display_name: "",
 		});
 
-		const app = new Application();
+		const app = new ApplicationAction();
 
 		app.name = "Test Application";
 		app.website = "https://example.com";
@@ -106,7 +106,7 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/custom_emojis", () => {
 		beforeAll(async () => {
-			const emoji = new Emoji();
+			const emoji = new EmojiAction();
 
 			emoji.instance = null;
 			emoji.url = "https://example.com/test.png";
@@ -139,7 +139,7 @@ describe("API Tests", () => {
 			expect(emojis[0].url).toBe("https://example.com/test.png");
 		});
 		afterAll(async () => {
-			await Emoji.delete({ shortcode: "test" });
+			await EmojiAction.delete({ shortcode: "test" });
 		});
 	});
 });

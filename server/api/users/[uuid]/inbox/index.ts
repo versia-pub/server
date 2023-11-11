@@ -5,10 +5,10 @@ import { getConfig } from "@config";
 import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Emoji } from "~database/entities/Emoji";
+import { EmojiAction } from "~database/entities/Emoji";
 import { LysandObject } from "~database/entities/Object";
 import { Status } from "~database/entities/Status";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import {
 	ContentFormat,
 	LysandAction,
@@ -61,7 +61,7 @@ export default async (
 	// Process request body
 	const body = (await req.json()) as LysandPublication | LysandAction;
 
-	const author = await User.findOne({
+	const author = await UserAction.findOne({
 		where: {
 			uri: body.author,
 		},
@@ -145,7 +145,7 @@ export default async (
 
 			const content = getBestContentType(body.contents);
 
-			const emojis = await Emoji.parseEmojis(content?.content || "");
+			const emojis = await EmojiAction.parseEmojis(content?.content || "");
 
 			const newStatus = await Status.createNew({
 				account: author,
@@ -158,7 +158,7 @@ export default async (
 				sensitive: body.is_sensitive,
 				uri: body.uri,
 				emojis: emojis,
-				mentions: await User.parseMentions(body.mentions),
+				mentions: await UserAction.parseMentions(body.mentions),
 			});
 
 			// If there is a reply, fetch all the reply parents and add them to the database
@@ -187,7 +187,7 @@ export default async (
 
 			const content = getBestContentType(patch.contents);
 
-			const emojis = await Emoji.parseEmojis(content?.content || "");
+			const emojis = await EmojiAction.parseEmojis(content?.content || "");
 
 			const status = await Status.findOneBy({
 				id: patch.patched_id,

@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConfig } from "@config";
 import { AppDataSource } from "~database/datasource";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 import { RawActivity } from "~database/entities/RawActivity";
 import { Token, TokenType } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -13,14 +13,14 @@ let token: Token;
 if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 // Initialize test user
-const user = await User.createNewLocal({
+const user = await UserAction.createNewLocal({
 	email: "test@test.com",
 	username: "test",
 	password: "test",
 	display_name: "",
 });
 
-const app = new Application();
+const app = new ApplicationAction();
 
 app.name = "Test Application";
 app.website = "https://example.com";

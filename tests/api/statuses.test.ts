@@ -3,17 +3,17 @@
 import { getConfig } from "@config";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 import { Token, TokenType } from "~database/entities/Token";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { APIContext } from "~types/entities/context";
 import { APIStatus } from "~types/entities/status";
 
 const config = getConfig();
 
 let token: Token;
-let user: User;
-let user2: User;
+let user: UserAction;
+let user2: UserAction;
 let status: APIStatus | null = null;
 let status2: APIStatus | null = null;
 
@@ -22,7 +22,7 @@ describe("API Tests", () => {
 		if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 		// Initialize test user
-		user = await User.createNewLocal({
+		user = await UserAction.createNewLocal({
 			email: "test@test.com",
 			username: "test",
 			password: "test",
@@ -30,14 +30,14 @@ describe("API Tests", () => {
 		});
 
 		// Initialize second test user
-		user2 = await User.createNewLocal({
+		user2 = await UserAction.createNewLocal({
 			email: "test2@test.com",
 			username: "test2",
 			password: "test2",
 			display_name: "",
 		});
 
-		const app = new Application();
+		const app = new ApplicationAction();
 
 		app.name = "Test Application";
 		app.website = "https://example.com";
@@ -157,7 +157,7 @@ describe("API Tests", () => {
 			expect(status2.card).toBeNull();
 			expect(status2.poll).toBeNull();
 			expect(status2.emojis).toEqual([]);
-			expect(status2.in_reply_to_id).toEqual(status?.id);
+			expect(status2.in_reply_to_id).toEqual(status?.id || null);
 			expect(status2.in_reply_to_account_id).toEqual(user.id);
 		});
 	});
@@ -181,7 +181,7 @@ describe("API Tests", () => {
 
 			const statusJson = (await response.json()) as APIStatus;
 
-			expect(statusJson.id).toBe(status?.id);
+			expect(statusJson.id).toBe(status?.id || "");
 			expect(statusJson.content).toBeDefined();
 			expect(statusJson.created_at).toBeDefined();
 			expect(statusJson.account).toBeDefined();
@@ -231,7 +231,7 @@ describe("API Tests", () => {
 			expect(context.descendants.length).toBe(1);
 
 			// First descendant should be status2
-			expect(context.descendants[0].id).toBe(status2?.id);
+			expect(context.descendants[0].id).toBe(status2?.id || "");
 		});
 	});
 
@@ -322,7 +322,7 @@ describe("API Tests", () => {
 				"application/json"
 			);
 
-			const users = (await response.json()) as User[];
+			const users = (await response.json()) as UserAction[];
 
 			expect(users.length).toBe(1);
 			expect(users[0].id).toBe(user.id);

@@ -2,7 +2,7 @@ import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { randomBytes } from "crypto";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -27,7 +27,7 @@ export default async (req: Request): Promise<Response> => {
 		website: string;
 	}>(req);
 
-	const application = new Application();
+	const application = new ApplicationAction();
 
 	application.name = client_name || "";
 

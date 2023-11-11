@@ -1,583 +1,456 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getConfig } from "@config";
 import {
-	BaseEntity,
-	Column,
-	CreateDateColumn,
-	Entity,
-	JoinTable,
-	ManyToMany,
-	ManyToOne,
-	PrimaryGeneratedColumn,
-	RemoveOptions,
-	Tree,
-	TreeChildren,
-	TreeParent,
-	UpdateDateColumn,
-} from "typeorm";
-import { APIStatus } from "~types/entities/status";
-import { User, userRelations } from "./User";
-import { Application } from "./Application";
-import { Emoji } from "./Emoji";
-import { Instance } from "./Instance";
-import { Like } from "./Like";
-import { AppDataSource } from "~database/datasource";
+	UserWithRelations,
+	fetchRemoteUser,
+	parseMentionsUris,
+	userRelations,
+	userToAPI,
+} from "./User";
+import { client } from "~database/datasource";
 import { LysandPublication, Note } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import { getBestContentType } from "@content_types";
+import {
+	Application,
+	Emoji,
+	Instance,
+	Like,
+	Relationship,
+	Status,
+	User,
+} from "@prisma/client";
+import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
+import { APIStatus } from "~types/entities/status";
+import { applicationToAPI } from "./Application";
 
 const config = getConfig();
 
-export const statusRelations = [
-	"account",
-	"reblog",
-	"in_reply_to_post",
-	"instance",
-	"in_reply_to_post.account",
-	"application",
-	"emojis",
-	"mentions",
-];
+export const statusAndUserRelations = {
+	author: {
+		include: userRelations,
+	},
+	application: true,
+	emojis: true,
+	inReplyToPost: {
+		include: {
+			author: {
+				include: userRelations,
+			},
+			application: true,
+			emojis: true,
+			inReplyToPost: {
+				include: {
+					author: true,
+				},
+			},
+			instance: true,
+			mentions: true,
+			pinnedBy: true,
+			replies: {
+				include: {
+					_count: true,
+				},
+			},
+		},
+	},
+	instance: true,
+	mentions: true,
+	pinnedBy: true,
+	replies: {
+		include: {
+			_count: true,
+		},
+	},
+	reblog: {
+		include: {
+			author: {
+				include: userRelations,
+			},
+			application: true,
+			emojis: true,
+			inReplyToPost: {
+				include: {
+					author: true,
+				},
+			},
+			instance: true,
+			mentions: true,
+			pinnedBy: true,
+			replies: {
+				include: {
+					_count: true,
+				},
+			},
+		},
+	},
+	quotingPost: {
+		include: {
+			author: {
+				include: userRelations,
+			},
+			application: true,
+			emojis: true,
+			inReplyToPost: {
+				include: {
+					author: true,
+				},
+			},
+			instance: true,
+			mentions: true,
+			pinnedBy: true,
+			replies: {
+				include: {
+					_count: true,
+				},
+			},
+		},
+	},
+	likes: {
+		include: {
+			liker: true,
+		},
+	},
+};
 
-export const statusAndUserRelations = [
-	...statusRelations,
-	// Can't directly map to userRelations as variable isnt yet initialized
-	...[
-		"account.relationships",
-		"account.pinned_notes",
-		"account.instance",
-		"account.emojis",
-	],
-];
+type StatusWithRelations = Status & {
+	author: UserWithRelations;
+	application: Application | null;
+	emojis: Emoji[];
+	inReplyToPost:
+		| (Status & {
+				author: UserWithRelations;
+				application: Application | null;
+				emojis: Emoji[];
+				inReplyToPost: Status | null;
+				instance: Instance | null;
+				mentions: User[];
+				pinnedBy: User[];
+				replies: Status[] & {
+					_count: number;
+				};
+		  })
+		| null;
+	instance: Instance | null;
+	mentions: User[];
+	pinnedBy: User[];
+	replies: Status[] & {
+		_count: number;
+	};
+	reblog:
+		| (Status & {
+				author: UserWithRelations;
+				application: Application | null;
+				emojis: Emoji[];
+				inReplyToPost: Status | null;
+				instance: Instance | null;
+				mentions: User[];
+				pinnedBy: User[];
+				replies: Status[] & {
+					_count: number;
+				};
+		  })
+		| null;
+	quotingPost:
+		| (Status & {
+				author: UserWithRelations;
+				application: Application | null;
+				emojis: Emoji[];
+				inReplyToPost: Status | null;
+				instance: Instance | null;
+				mentions: User[];
+				pinnedBy: User[];
+				replies: Status[] & {
+					_count: number;
+				};
+		  })
+		| null;
+	likes: (Like & {
+		liker: User;
+	})[];
+};
 
 /**
  * Represents a status (i.e. a post)
  */
-@Entity({
-	name: "statuses",
-})
-@Tree("closure-table")
-export class Status extends BaseEntity {
-	/**
-	 * The unique identifier for this status.
-	 */
-	@PrimaryGeneratedColumn("uuid")
-	id!: string;
 
-	/**
-	 * The URI for this status.
-	 */
-	@Column("varchar")
-	uri!: string;
-
-	/**
-	 * The user account that created this status.
-	 */
-	@ManyToOne(() => User, user => user.id)
-	account!: User;
-
-	/**
-	 * The date and time when this status was created.
-	 */
-	@CreateDateColumn()
-	created_at!: Date;
-
-	/**
-	 * The date and time when this status was last updated.
-	 */
-	@UpdateDateColumn()
-	updated_at!: Date;
-
-	/**
-	 * The status that this status is a reblog of, if any.
-	 */
-	@ManyToOne(() => Status, status => status.id, {
-		nullable: true,
-		onDelete: "SET NULL",
-	})
-	reblog?: Status | null;
-
-	/**
-	 * Whether this status is a reblog.
-	 */
-	@Column("boolean")
-	isReblog!: boolean;
-
-	/**
-	 * The content of this status.
-	 */
-	@Column("varchar", {
-		default: "",
-	})
-	content!: string;
-
-	/**
-	 * The content type of this status.
-	 */
-	@Column("varchar", {
-		default: "text/plain",
-	})
-	content_type!: string;
-
-	/**
-	 * The visibility of this status.
-	 */
-	@Column("varchar")
-	visibility!: APIStatus["visibility"];
-
-	/**
-	 * The raw object that this status is a reply to, if any.
-	 */
-	@TreeParent({
-		onDelete: "SET NULL",
-	})
-	in_reply_to_post!: Status | null;
-
-	/**
-	 * The status that this status is quoting, if any
-	 */
-	@ManyToOne(() => Status, status => status.id, {
-		nullable: true,
-	})
-	quoting_post!: Status | null;
-
-	@TreeChildren()
-	replies!: Status[];
-
-	/**
-	 * The status' instance
-	 */
-	@ManyToOne(() => Instance, {
-		nullable: true,
-	})
-	instance!: Instance | null;
-
-	/**
-	 * Whether this status is sensitive.
-	 */
-	@Column("boolean")
-	sensitive!: boolean;
-
-	/**
-	 * The spoiler text for this status.
-	 */
-	@Column("varchar", {
-		default: "",
-	})
-	spoiler_text!: string;
-
-	/**
-	 * The application associated with this status, if any.
-	 */
-	@ManyToOne(() => Application, app => app.id, {
-		nullable: true,
-	})
-	application!: Application | null;
-
-	/**
-	 * The emojis associated with this status.
-	 */
-	@ManyToMany(() => Emoji, emoji => emoji.id)
-	@JoinTable()
-	emojis!: Emoji[];
-
-	/**
-	 * The users mentioned (excluding followers and such)
-	 */
-	@ManyToMany(() => User, user => user.id)
-	@JoinTable()
-	mentions!: User[];
-
-	/**
-	 * Removes this status from the database.
-	 * @param options The options for removing this status.
-	 * @returns A promise that resolves when the status has been removed.
-	 */
-	async remove(options?: RemoveOptions | undefined) {
-		// Delete object
-
-		// Get all associated Likes and remove them as well
-		await Like.delete({
-			liked: {
-				id: this.id,
-			},
-		});
-
-		return await super.remove(options);
-	}
-
-	async parseEmojis(string: string) {
-		const emojis = [...string.matchAll(/:([a-zA-Z0-9_]+):/g)].map(
-			match => match[1]
+/**
+ * Returns whether this status is viewable by a user.
+ * @param user The user to check.
+ * @returns Whether this status is viewable by the user.
+ */
+export const isViewableByUser = (status: Status, user: User | null) => {
+	if (status.visibility === "public") return true;
+	else if (status.visibility === "unlisted") return true;
+	else if (status.visibility === "private") {
+		// @ts-expect-error Prisma TypeScript types dont include relations
+		return !!(user?.relationships as Relationship[]).find(
+			rel => rel.id === status.authorId
 		);
+	} else {
+		// @ts-expect-error Prisma TypeScript types dont include relations
+		return user && (status.mentions as User[]).includes(user);
+	}
+};
 
-		const emojiObjects = await Promise.all(
-			emojis.map(async emoji => {
-				const emojiObject = await Emoji.findOne({
-					where: {
-						shortcode: emoji,
-					},
-				});
+export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
+	// Check if already in database
 
-				return emojiObject;
-			})
-		);
+	const existingStatus = await client.status.findFirst({
+		where: {
+			uri: uri,
+		},
+		include: statusAndUserRelations,
+	});
 
-		return emojiObjects.filter(emoji => emoji !== null) as Emoji[];
+	if (existingStatus) return existingStatus;
+
+	const status = await fetch(uri);
+
+	if (status.status === 404) return null;
+
+	const body = (await status.json()) as LysandPublication;
+
+	const content = getBestContentType(body.contents);
+
+	const emojis = await parseEmojis(content?.content || "");
+
+	const author = await fetchRemoteUser(body.author);
+
+	let replyStatus: Status | null = null;
+	let quotingStatus: Status | null = null;
+
+	if (body.replies_to.length > 0) {
+		replyStatus = await fetchFromRemote(body.replies_to[0]);
 	}
 
-	/**
-	 * Returns whether this status is viewable by a user.
-	 * @param user The user to check.
-	 * @returns Whether this status is viewable by the user.
-	 */
-	isViewableByUser(user: User | null) {
-		const relationship = user?.relationships.find(
-			rel => rel.id === this.account.id
-		);
-
-		if (this.visibility === "public") return true;
-		else if (this.visibility === "unlisted") return true;
-		else if (this.visibility === "private") {
-			return !!relationship?.following;
-		} else {
-			return user && this.mentions.includes(user);
-		}
+	if (body.quotes.length > 0) {
+		quotingStatus = await fetchFromRemote(body.quotes[0]);
 	}
 
-	static async fetchFromRemote(uri: string) {
-		// Check if already in database
+	return await createNew({
+		account: author,
+		content: content?.content || "",
+		content_type: content?.content_type,
+		application: null,
+		// TODO: Add visibility
+		visibility: "public",
+		spoiler_text: body.subject || "",
+		uri: body.uri,
+		sensitive: body.is_sensitive,
+		emojis: emojis,
+		mentions: await parseMentionsUris(body.mentions),
+		reply: replyStatus
+			? {
+					status: replyStatus,
+					user: (replyStatus as any).author,
+			  }
+			: undefined,
+		quote: quotingStatus || undefined,
+	});
+};
 
-		const existingStatus = await Status.findOne({
-			where: {
-				uri: uri,
-			},
-		});
+/**
+ * Return all the ancestors of this post,
+ */
+// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+export const getAncestors = async (fetcher: UserWithRelations | null) => {
+	// TODO: Implement
+	return [];
+};
 
-		if (existingStatus) return existingStatus;
+/**
+ * Return all the descendants of this post,
+ */
+// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+export const getDescendants = async (fetcher: UserWithRelations | null) => {
+	// TODO: Implement
+	return [];
+};
 
-		const status = await fetch(uri);
-
-		if (status.status === 404) return null;
-
-		const body = (await status.json()) as LysandPublication;
-
-		const content = getBestContentType(body.contents);
-
-		const emojis = await Emoji.parseEmojis(content?.content || "");
-
-		const author = await User.fetchRemoteUser(body.author);
-
-		let replyStatus: Status | null = null;
-		let quotingStatus: Status | null = null;
-
-		if (body.replies_to.length > 0) {
-			replyStatus = await Status.fetchFromRemote(body.replies_to[0]);
-		}
-
-		if (body.quotes.length > 0) {
-			quotingStatus = await Status.fetchFromRemote(body.quotes[0]);
-		}
-
-		const newStatus = await Status.createNew({
-			account: author,
-			content: content?.content || "",
-			content_type: content?.content_type,
-			application: null,
-			// TODO: Add visibility
-			visibility: "public",
-			spoiler_text: body.subject || "",
-			uri: body.uri,
-			sensitive: body.is_sensitive,
-			emojis: emojis,
-			mentions: await User.parseMentions(body.mentions),
-			reply: replyStatus
-				? {
-						status: replyStatus,
-						user: replyStatus.account,
-				  }
-				: undefined,
-			quote: quotingStatus || undefined,
-		});
-
-		return await newStatus.save();
-	}
-
-	/**
-	 * Return all the ancestors of this post,
-	 */
-	async getAncestors(fetcher: User | null) {
-		const max = fetcher ? 4096 : 40;
-		const ancestors = [];
-
-		let id = this.in_reply_to_post?.id;
-
-		while (ancestors.length < max && id) {
-			const currentStatus = await Status.findOne({
-				where: {
-					id: id,
-				},
-				relations: statusAndUserRelations,
-			});
-
-			if (currentStatus) {
-				if (currentStatus.isViewableByUser(fetcher)) {
-					ancestors.push(currentStatus);
-				}
-				id = currentStatus.in_reply_to_post?.id;
-			} else {
-				break;
-			}
-		}
-
-		return ancestors;
-	}
-
-	/**
-	 * Return all the descendants of this post,
-	 */
-	async getDescendants(fetcher: User | null) {
-		const max = fetcher ? 4096 : 60;
-
-		const descendants = await AppDataSource.getTreeRepository(
-			Status
-		).findDescendantsTree(this, {
-			depth: fetcher ? 20 : undefined,
-			relations: statusAndUserRelations,
-		});
-
-		// Go through .replies of each descendant recursively and add them to the list
-		const flatten = (descendants: Status): Status[] => {
-			const flattened = [];
-
-			for (const descendant of descendants.replies) {
-				if (descendant.isViewableByUser(fetcher)) {
-					flattened.push(descendant);
-				}
-
-				flattened.push(...flatten(descendant));
-			}
-
-			return flattened;
-		};
-
-		const flattened = flatten(descendants);
-
-		return flattened.slice(0, max);
-	}
-
-	/**
-	 * Creates a new status and saves it to the database.
-	 * @param data The data for the new status.
-	 * @returns A promise that resolves with the new status.
-	 */
-	static async createNew(data: {
-		account: User;
-		application: Application | null;
-		content: string;
-		visibility: APIStatus["visibility"];
-		sensitive: boolean;
-		spoiler_text: string;
-		emojis: Emoji[];
-		content_type?: string;
-		uri?: string;
-		mentions?: User[];
-		reply?: {
-			status: Status;
-			user: User;
-		};
-		quote?: Status;
-	}) {
-		const newStatus = new Status();
-
-		newStatus.account = data.account;
-		newStatus.application = data.application ?? null;
-		newStatus.content = data.content;
-		newStatus.content_type = data.content_type ?? "text/plain";
-		newStatus.visibility = data.visibility;
-		newStatus.sensitive = data.sensitive;
-		newStatus.spoiler_text = data.spoiler_text;
-		newStatus.emojis = data.emojis;
-		newStatus.isReblog = false;
-		newStatus.mentions = [];
-		newStatus.instance = data.account.instance;
-		newStatus.uri =
-			data.uri || `${config.http.base_url}/statuses/${newStatus.id}`;
-		newStatus.quoting_post = data.quote || null;
-
-		if (data.reply) {
-			newStatus.in_reply_to_post = data.reply.status;
-		}
-		// Get people mentioned in the content
-		const mentionedPeople = [
-			...data.content.matchAll(/@([a-zA-Z0-9_]+)/g),
-		].map(match => {
+/**
+ * Creates a new status and saves it to the database.
+ * @param data The data for the new status.
+ * @returns A promise that resolves with the new status.
+ */
+const createNew = async (data: {
+	account: User;
+	application: Application | null;
+	content: string;
+	visibility: APIStatus["visibility"];
+	sensitive: boolean;
+	spoiler_text: string;
+	emojis: Emoji[];
+	content_type?: string;
+	uri?: string;
+	mentions?: User[];
+	reply?: {
+		status: Status;
+		user: User;
+	};
+	quote?: Status;
+}) => {
+	// Get people mentioned in the content
+	const mentionedPeople = [...data.content.matchAll(/@([a-zA-Z0-9_]+)/g)].map(
+		match => {
 			return `${config.http.base_url}/users/${match[1]}`;
-		});
-
-		// Get list of mentioned users
-		if (!data.mentions) {
-			await Promise.all(
-				mentionedPeople.map(async person => {
-					// Check if post is in format @username or @username@instance.com
-					// If is @username, the user is a local user
-					const instanceUrl =
-						person.split("@").length === 3
-							? person.split("@")[2]
-							: null;
-
-					if (instanceUrl) {
-						const user = await User.findOne({
-							where: {
-								username: person.split("@")[1],
-								// If contains instanceUrl
-								instance: {
-									base_url: instanceUrl,
-								},
-							},
-							relations: userRelations,
-						});
-
-						newStatus.mentions.push(user as User);
-					} else {
-						const user = await User.findOne({
-							where: {
-								username: person.split("@")[1],
-							},
-							relations: userRelations,
-						});
-
-						newStatus.mentions.push(user as User);
-					}
-				})
-			);
-		} else {
-			newStatus.mentions = data.mentions;
 		}
+	);
 
-		await newStatus.save();
-		return newStatus;
+	let mentions = data.mentions || [];
+
+	// Get list of mentioned users
+	if (mentions.length === 0) {
+		mentions = await client.user.findMany({
+			where: {
+				OR: mentionedPeople.map(person => ({
+					username: person.split("@")[1],
+					instance: {
+						base_url: person.split("@")[2],
+					},
+				})),
+			},
+			include: userRelations,
+		});
 	}
 
-	async isFavouritedBy(user: User) {
-		const like = await Like.findOne({
+	const status = await client.status.create({
+		data: {
+			authorId: data.account.id,
+			applicationId: data.application?.id,
+			content: data.content,
+			contentType: data.content_type,
+			visibility: data.visibility,
+			sensitive: data.sensitive,
+			spoilerText: data.spoiler_text,
+			emojis: {
+				connect: data.emojis.map(emoji => {
+					return {
+						id: emoji.id,
+					};
+				}),
+			},
+			inReplyToPostId: data.reply?.status.id,
+			quotingPostId: data.quote?.id,
+			instanceId: data.account.instanceId || undefined,
+			isReblog: false,
+			uri: data.uri || `${config.http.base_url}/statuses/xxx`,
+			mentions: {
+				connect: mentions.map(mention => {
+					return {
+						id: mention.id,
+					};
+				}),
+			},
+		},
+		include: statusAndUserRelations,
+	});
+
+	if (!data.uri) status.uri = `${config.http.base_url}/statuses/${status.id}`;
+
+	return status;
+};
+
+export const isFavouritedBy = async (status: Status, user: User) => {
+	return !!(await client.like.findFirst({
+		where: {
+			likerId: user.id,
+			likedId: status.id,
+		},
+	}));
+};
+
+/**
+ * Converts this status to an API status.
+ * @returns A promise that resolves with the API status.
+ */
+export const statusToAPI = async (
+	status: StatusWithRelations,
+	user?: UserWithRelations
+): Promise<APIStatus> => {
+	return {
+		id: status.id,
+		in_reply_to_id: status.inReplyToPostId || null,
+		in_reply_to_account_id: status.inReplyToPost?.authorId || null,
+		account: await userToAPI(status.author),
+		created_at: new Date(status.createdAt).toISOString(),
+		application: status.application
+			? await applicationToAPI(status.application)
+			: null,
+		card: null,
+		content: status.content,
+		emojis: await Promise.all(
+			status.emojis.map(emoji => emojiToAPI(emoji))
+		),
+		favourited: !!status.likes.find(like => like.likerId === user?.id),
+		favourites_count: status.likes.length,
+		media_attachments: [],
+		mentions: [],
+		language: null,
+		muted: user
+			? user.relationships.find(r => r.subjectId == status.authorId)
+					?.muting || false
+			: false,
+		pinned: status.author.pinnedNotes.some(note => note.id === status.id),
+		// TODO: Add pols
+		poll: null,
+		reblog: status.reblog
+			? await statusToAPI(status.reblog as unknown as StatusWithRelations)
+			: null,
+		reblogged: !!(await client.status.findFirst({
 			where: {
-				liker: {
-					id: user.id,
-				},
-				liked: {
-					id: this.id,
-				},
+				authorId: user?.id,
+				reblogId: status.id,
 			},
-			relations: ["liker"],
-		});
-
-		return !!like;
-	}
-
-	/**
-	 * Converts this status to an API status.
-	 * @returns A promise that resolves with the API status.
-	 */
-	async toAPI(user?: User): Promise<APIStatus> {
-		const reblogCount = await Status.count({
+		})),
+		reblogs_count: await client.status.count({
 			where: {
-				reblog: {
-					id: this.id,
-				},
+				reblogId: status.id,
 			},
-			relations: ["reblog"],
-		});
+		}),
+		replies_count: status.replies._count,
+		sensitive: status.sensitive,
+		spoiler_text: status.spoilerText,
+		tags: [],
+		uri: `${config.http.base_url}/statuses/${status.id}`,
+		visibility: "public",
+		url: `${config.http.base_url}/statuses/${status.id}`,
+		bookmarked: false,
+		quote: null,
+		quote_id: undefined,
+	};
+};
 
-		const repliesCount = await Status.count({
-			where: {
-				in_reply_to_post: {
-					id: this.id,
-				},
+export const statusToLysand = (status: StatusWithRelations): Note => {
+	return {
+		type: "Note",
+		created_at: new Date(status.createdAt).toISOString(),
+		id: status.id,
+		author: status.authorId,
+		uri: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
+		contents: [
+			{
+				content: status.content,
+				content_type: "text/html",
 			},
-			relations: ["in_reply_to_post"],
-		});
-
-		const favourited = user ? await this.isFavouritedBy(user) : false;
-
-		const favourites_count = await Like.count({
-			where: {
-				liked: {
-					id: this.id,
-				},
+			{
+				// Content converted to plaintext
+				content: htmlToText(status.content),
+				content_type: "text/plain",
 			},
-			relations: ["liked"],
-		});
-
-		return {
-			id: this.id,
-			in_reply_to_id: this.in_reply_to_post?.id || null,
-			in_reply_to_account_id: this.in_reply_to_post?.account.id || null,
-			account: await this.account.toAPI(),
-			created_at: new Date(this.created_at).toISOString(),
-			application: (await this.application?.toAPI()) || null,
-			card: null,
-			content: this.content,
-			emojis: await Promise.all(this.emojis.map(emoji => emoji.toAPI())),
-			favourited,
-			favourites_count: favourites_count,
-			media_attachments: [],
-			mentions: await Promise.all(
-				this.mentions.map(async m => await m.toAPI())
-			),
-			language: null,
-			muted: false,
-			pinned: this.account.pinned_notes.some(note => note.id === this.id),
-			poll: null,
-			reblog: this.reblog ? await this.reblog.toAPI() : null,
-			reblogged: !!this.reblog,
-			reblogs_count: reblogCount,
-			replies_count: repliesCount,
-			sensitive: this.sensitive,
-			spoiler_text: this.spoiler_text,
-			tags: [],
-			uri: `${config.http.base_url}/users/${this.account.username}/statuses/${this.id}`,
-			visibility: "public",
-			url: `${config.http.base_url}/users/${this.account.username}/statuses/${this.id}`,
-			bookmarked: false,
-			quote: null,
-			quote_id: undefined,
-		};
-	}
-
-	toLysand(): Note {
-		return {
-			type: "Note",
-			created_at: new Date(this.created_at).toISOString(),
-			id: this.id,
-			author: this.account.uri,
-			uri: `${config.http.base_url}/users/${this.account.id}/statuses/${this.id}`,
-			contents: [
-				{
-					content: this.content,
-					content_type: "text/html",
-				},
-				{
-					// Content converted to plaintext
-					content: htmlToText(this.content),
-					content_type: "text/plain",
-				},
-			],
-			// TODO: Add attachments
-			attachments: [],
-			is_sensitive: this.sensitive,
-			mentions: this.mentions.map(mention => mention.id),
-			// TODO: Add quotes
-			quotes: [],
-			replies_to: this.in_reply_to_post?.id
-				? [this.in_reply_to_post.id]
-				: [],
-			subject: this.spoiler_text,
-			extensions: {
-				"org.lysand:custom_emojis": {
-					emojis: this.emojis.map(emoji => emoji.toLysand()),
-				},
-				// TODO: Add polls and reactions
+		],
+		// TODO: Add attachments
+		attachments: [],
+		is_sensitive: status.sensitive,
+		mentions: status.mentions.map(mention => mention.uri),
+		quotes: status.quotingPost ? [status.quotingPost.uri] : [],
+		replies_to: status.inReplyToPostId ? [status.inReplyToPostId] : [],
+		subject: status.spoilerText,
+		extensions: {
+			"org.lysand:custom_emojis": {
+				emojis: status.emojis.map(emoji => emojiToLysand(emoji)),
 			},
-		};
-	}
-}
+			// TODO: Add polls and reactions
+		},
+	};
+};

@@ -1,0 +1,166 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_uuidv7]
+}
+
+model Application {
+  id            String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  name          String
+  website       String?
+  vapid_key     String?
+  client_id     String
+  secret        String
+  scopes        String
+  redirect_uris String
+  statuses      Status[] // One to many relation with Status
+  tokens        Token[] // One to many relation with Token
+}
+
+model Emoji {
+  id                String    @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  shortcode         String
+  url               String
+  visible_in_picker Boolean
+  instance          Instance? @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId        String?   @db.Uuid
+  alt               String?
+  content_type      String
+  users             User[] // Many to many relation with User
+  statuses          Status[] // Many to many relation with Status
+}
+
+model Instance {
+  id       String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  base_url String
+  name     String
+  version  String
+  logo     Json
+  emojis   Emoji[] // One to many relation with Emoji
+  statuses Status[] // One to many relation with Status
+  users    User[] // One to many relation with User
+}
+
+model Like {
+  id        String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  liker     User     @relation("UserLiked", fields: [likerId], references: [id], onDelete: Cascade)
+  likerId   String   @db.Uuid
+  liked     Status   @relation("LikedToStatus", fields: [likedId], references: [id], onDelete: Cascade)
+  likedId   String   @db.Uuid
+  createdAt DateTime @default(now())
+}
+
+model LysandObject {
+  id         String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  remote_id  String         @unique
+  type       String
+  uri        String         @unique
+  created_at DateTime       @default(now())
+  author     LysandObject?  @relation("LysandObjectToAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId   String?        @db.Uuid
+  extra_data Json
+  extensions Json
+  children   LysandObject[] @relation("LysandObjectToAuthor")
+}
+
+model Relationship {
+  id                  String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  owner               User     @relation("OwnerToRelationship", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId             String   @db.Uuid
+  subject             User     @relation("SubjectToRelationship", fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectId           String   @db.Uuid
+  following           Boolean
+  showingReblogs      Boolean
+  notifying           Boolean
+  followedBy          Boolean
+  blocking            Boolean
+  blockedBy           Boolean
+  muting              Boolean
+  mutingNotifications Boolean
+  requested           Boolean
+  domainBlocking      Boolean
+  endorsed            Boolean
+  languages           String[]
+  note                String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model Status {
+  id              String       @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri             String       @unique
+  author          User         @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId        String       @db.Uuid
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  reblog          Status?      @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
+  reblogId        String?      @db.Uuid
+  isReblog        Boolean
+  content         String       @default("")
+  contentType     String       @default("text/plain")
+  visibility      String
+  inReplyToPost   Status?      @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
+  inReplyToPostId String?      @db.Uuid
+  quotingPost     Status?      @relation("StatusToStatusQuote", fields: [quotingPostId], references: [id], onDelete: SetNull)
+  quotingPostId   String?      @db.Uuid
+  instance        Instance?    @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId      String?      @db.Uuid
+  sensitive       Boolean
+  spoilerText     String       @default("")
+  application     Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId   String?      @db.Uuid
+  emojis          Emoji[]      @relation
+  mentions        User[]
+  likes           Like[]       @relation("LikedToStatus")
+  reblogs         Status[]     @relation("StatusToStatus")
+  replies         Status[]     @relation("StatusToStatusReply")
+  quotes          Status[]     @relation("StatusToStatusQuote")
+  pinnedBy        User[]       @relation("UserPinnedNotes")
+}
+
+model Token {
+  id            String       @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  token_type    String
+  scope         String
+  access_token  String
+  code          String
+  created_at    DateTime     @default(now())
+  user          User?        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String?      @db.Uuid
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String?      @db.Uuid
+}
+
+model User {
+  id                   String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri                  String         @unique
+  username             String         @unique
+  displayName          String
+  password             String? // Nullable
+  email                String?        @unique // Nullable
+  note                 String         @default("")
+  isAdmin              Boolean        @default(false)
+  endpoints            Json? // Nullable
+  source               Json
+  avatar               String
+  header               String
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  publicKey            String
+  privateKey           String? // Nullable
+  relationships        Relationship[] @relation("OwnerToRelationship") // One to many relation with Relationship
+  relationshipSubjects Relationship[] @relation("SubjectToRelationship") // One to many relation with Relationship
+  instance             Instance?      @relation(fields: [instanceId], references: [id], onDelete: Cascade) // Many to one relation with Instance
+  instanceId           String?        @db.Uuid
+  pinnedNotes          Status[]       @relation("UserPinnedNotes") // Many to many relation with Status
+  emojis               Emoji[] // Many to many relation with Emoji
+  statuses             Status[]       @relation("UserStatuses") // One to many relation with Status
+  tokens               Token[] // One to many relation with Token
+  likes                Like[]         @relation("UserLiked") // One to many relation with Like
+  statusesMentioned    Status[] // Many to many relation with Status
+}

@@ -1,6 +1,6 @@
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { APIAccount } from "~types/entities/account";
 import { applyConfig } from "@api";
 
@@ -20,7 +20,7 @@ export const meta = applyConfig({
  * Find familiar followers (followers of a user that you also follow)
  */
 export default async (req: Request): Promise<Response> => {
-	const { user: self } = await User.getFromRequest(req);
+	const { user: self } = await UserAction.getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
@@ -39,7 +39,7 @@ export default async (req: Request): Promise<Response> => {
 				// Find followers of user that you also follow
 
 				// Get user
-				const user = await User.findOne({
+				const user = await UserAction.findOne({
 					where: { id },
 					relations: {
 						relationships: {

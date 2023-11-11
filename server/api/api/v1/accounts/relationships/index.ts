@@ -1,7 +1,7 @@
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { Relationship } from "~database/entities/Relationship";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -20,7 +20,7 @@ export const meta = applyConfig({
  * Find relationships
  */
 export default async (req: Request): Promise<Response> => {
-	const { user: self } = await User.getFromRequest(req);
+	const { user: self } = await UserAction.getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
@@ -38,7 +38,7 @@ export default async (req: Request): Promise<Response> => {
 	const relationships = (
 		await Promise.all(
 			ids.map(async id => {
-				const user = await User.findOneBy({ id });
+				const user = await UserAction.findOneBy({ id });
 				if (!user) return null;
 				let relationship = await self.getRelationshipToOtherUser(user);
 

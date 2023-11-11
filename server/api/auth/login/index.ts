@@ -2,9 +2,9 @@ import { applyConfig } from "@api";
 import { errorResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 import { Token } from "~database/entities/Token";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -45,7 +45,7 @@ export default async (
 		return errorResponse("Missing username or password", 400);
 
 	// Get user
-	const user = await User.findOne({
+	const user = await UserAction.findOne({
 		where: {
 			email,
 		},
@@ -56,7 +56,7 @@ export default async (
 		return errorResponse("Invalid username or password", 401);
 
 	// Get application
-	const application = await Application.findOneBy({
+	const application = await ApplicationAction.findOneBy({
 		client_id,
 	});
 

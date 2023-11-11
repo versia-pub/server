@@ -1,12 +1,12 @@
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
 import { uploadFile } from "~classes/media";
-import { Emoji } from "~database/entities/Emoji";
+import { EmojiAction } from "~database/entities/Emoji";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -24,7 +24,7 @@ export const meta = applyConfig({
  * Patches a user
  */
 export default async (req: Request): Promise<Response> => {
-	const { user } = await User.getFromRequest(req);
+	const { user } = await UserAction.getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -202,8 +202,8 @@ export default async (req: Request): Promise<Response> => {
 
 	// Parse emojis
 
-	const displaynameEmojis = await Emoji.parseEmojis(sanitizedDisplayName);
-	const noteEmojis = await Emoji.parseEmojis(sanitizedNote);
+	const displaynameEmojis = await EmojiAction.parseEmojis(sanitizedDisplayName);
+	const noteEmojis = await EmojiAction.parseEmojis(sanitizedNote);
 
 	user.emojis = [...displaynameEmojis, ...noteEmojis];
 

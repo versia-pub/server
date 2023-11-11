@@ -1,7 +1,7 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { Application } from "~database/entities/Application";
-import { User } from "~database/entities/User";
+import { ApplicationAction } from "~database/entities/Application";
+import { UserAction } from "~database/entities/User";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -19,8 +19,8 @@ export const meta = applyConfig({
  * Returns OAuth2 credentials
  */
 export default async (req: Request): Promise<Response> => {
-	const { user, token } = await User.getFromRequest(req);
-	const application = await Application.getFromToken(token);
+	const { user, token } = await UserAction.getFromRequest(req);
+	const application = await ApplicationAction.getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 	if (!application) return errorResponse("Unauthorized", 401);

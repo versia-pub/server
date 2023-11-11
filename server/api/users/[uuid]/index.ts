@@ -4,7 +4,7 @@ import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -29,7 +29,7 @@ export default async (
 
 	const config = getConfig();
 
-	const user = await User.findOne({
+	const user = await UserAction.findOne({
 		where: {
 			id: uuid,
 		},

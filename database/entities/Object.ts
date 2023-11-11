@@ -1,147 +1,87 @@
-import {
-	BaseEntity,
-	Column,
-	Entity,
-	ManyToOne,
-	PrimaryGeneratedColumn,
-} from "typeorm";
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { LysandObject } from "@prisma/client";
+import { client } from "~database/datasource";
 import { LysandObjectType } from "~types/lysand/Object";
 
 /**
  * Represents a Lysand object in the database.
  */
-@Entity({
-	name: "objects",
-})
-export class LysandObject extends BaseEntity {
-	/**
-	 * The unique identifier for the object. If local, same as `remote_id`
-	 */
-	@PrimaryGeneratedColumn("uuid")
-	id!: string;
 
-	/**
-	 * UUID of the object across the network. If the object is local, same as `id`
-	 */
-	remote_id!: string;
+export const createFromObject = async (object: LysandObjectType) => {
+	const foundObject = await client.lysandObject.findFirst({
+		where: { remote_id: object.id },
+		include: {
+			author: true,
+		},
+	});
 
-	/**
-	 * Any valid Lysand type, such as `Note`, `Like`, `Follow`, etc.
-	 */
-	@Column("varchar")
-	type!: string;
-
-	/**
-	 * Remote URI for the object
-	 * Example: `https://example.com/publications/ef235cc6-d68c-4756-b0df-4e6623c4d51c`
-	 */
-	@Column("varchar")
-	uri!: string;
-
-	@Column("timestamp")
-	created_at!: Date;
-
-	/**
-	 * References an Actor object
-	 */
-	@ManyToOne(() => LysandObject, object => object.uri, {
-		nullable: true,
-	})
-	author!: LysandObject | null;
-
-	@Column("jsonb")
-	extra_data!: Omit<
-		Omit<Omit<Omit<LysandObjectType, "created_at">, "id">, "uri">,
-		"type"
-	>;
-
-	@Column("jsonb")
-	extensions!: Record<string, any>;
-
-	static new(type: string, uri: string): LysandObject {
-		const object = new LysandObject();
-		object.type = type;
-		object.uri = uri;
-		object.created_at = new Date();
-		return object;
+	if (foundObject) {
+		return foundObject;
 	}
 
-	static async createFromObject(object: LysandObjectType) {
-		let newObject: LysandObject;
+	const author = await client.lysandObject.findFirst({
+		where: { uri: (object as any).author },
+	});
 
-		const foundObject = await LysandObject.findOne({
-			where: { remote_id: object.id },
-			relations: ["author"],
-		});
+	return await client.lysandObject.create({
+		data: {
+			authorId: author?.id,
+			created_at: new Date(object.created_at),
+			extensions: object.extensions || {},
+			remote_id: object.id,
+			type: object.type,
+			uri: object.uri,
+			// Rest of data (remove id, author, created_at, extensions, type, uri)
+			extra_data: Object.fromEntries(
+				Object.entries(object).filter(
+					([key]) =>
+						![
+							"id",
+							"author",
+							"created_at",
+							"extensions",
+							"type",
+							"uri",
+						].includes(key)
+				)
+			),
+		},
+	});
+};
 
-		if (foundObject) {
-			newObject = foundObject;
-		} else {
-			newObject = new LysandObject();
-		}
+export const toLysand = (lyObject: LysandObject): LysandObjectType => {
+	return {
+		id: lyObject.remote_id || lyObject.id,
+		created_at: new Date(lyObject.created_at).toISOString(),
+		type: lyObject.type,
+		uri: lyObject.uri,
+		// @ts-expect-error This works, I promise
+		...lyObject.extra_data,
+		extensions: lyObject.extensions,
+	};
+};
 
-		const author = await LysandObject.findOne({
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-			where: { uri: (object as any).author },
-		});
+export const isPublication = (lyObject: LysandObject): boolean => {
+	return lyObject.type === "Note" || lyObject.type === "Patch";
+};
 
-		newObject.author = author;
-		newObject.created_at = new Date(object.created_at);
-		newObject.extensions = object.extensions || {};
-		newObject.remote_id = object.id;
-		newObject.type = object.type;
-		newObject.uri = object.uri;
-		// Rest of data (remove id, author, created_at, extensions, type, uri)
-		newObject.extra_data = Object.fromEntries(
-			Object.entries(object).filter(
-				([key]) =>
-					![
-						"id",
-						"author",
-						"created_at",
-						"extensions",
-						"type",
-						"uri",
-					].includes(key)
-			)
-		);
+export const isAction = (lyObject: LysandObject): boolean => {
+	return [
+		"Like",
+		"Follow",
+		"Dislike",
+		"FollowAccept",
+		"FollowReject",
+		"Undo",
+		"Announce",
+	].includes(lyObject.type);
+};
 
-		await newObject.save();
-		return newObject;
-	}
+export const isActor = (lyObject: LysandObject): boolean => {
+	return lyObject.type === "User";
+};
 
-	toLysand(): LysandObjectType {
-		return {
-			id: this.remote_id || this.id,
-			created_at: new Date(this.created_at).toISOString(),
-			type: this.type,
-			uri: this.uri,
-			...this.extra_data,
-			extensions: this.extensions,
-		};
-	}
-
-	isPublication(): boolean {
-		return this.type === "Note" || this.type === "Patch";
-	}
-
-	isAction(): boolean {
-		return [
-			"Like",
-			"Follow",
-			"Dislike",
-			"FollowAccept",
-			"FollowReject",
-			"Undo",
-			"Announce",
-		].includes(this.type);
-	}
-
-	isActor(): boolean {
-		return this.type === "User";
-	}
-
-	isExtension(): boolean {
-		return this.type === "Extension";
-	}
-}
+export const isExtension = (lyObject: LysandObject): boolean => {
+	return lyObject.type === "Extension";
+};

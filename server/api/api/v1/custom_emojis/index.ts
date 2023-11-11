@@ -1,7 +1,7 @@
 import { applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { IsNull } from "typeorm";
-import { Emoji } from "~database/entities/Emoji";
+import { EmojiAction } from "~database/entities/Emoji";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -20,7 +20,7 @@ export const meta = applyConfig({
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 export default async (): Promise<Response> => {
-	const emojis = await Emoji.findBy({
+	const emojis = await EmojiAction.findBy({
 		instance: IsNull(),
 	});
 

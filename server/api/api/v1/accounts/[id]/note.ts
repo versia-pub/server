@@ -2,7 +2,7 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Relationship } from "~database/entities/Relationship";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -26,7 +26,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user: self } = await User.getFromRequest(req);
+	const { user: self } = await UserAction.getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
@@ -34,7 +34,7 @@ export default async (
 		comment: string;
 	}>(req);
 
-	const user = await User.findOne({
+	const user = await UserAction.findOne({
 		where: {
 			id,
 		},

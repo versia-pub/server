@@ -2,7 +2,7 @@ import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -27,7 +27,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await User.getFromRequest(req);
+	const { user } = await UserAction.getFromRequest(req);
 
 	let foundStatus: Status | null;
 	try {

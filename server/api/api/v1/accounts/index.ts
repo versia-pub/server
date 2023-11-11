@@ -2,7 +2,7 @@ import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
-import { User } from "~database/entities/User";
+import { UserAction } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -115,7 +115,7 @@ export default async (req: Request): Promise<Response> => {
 		});
 
 	// Check if username is taken
-	if (await User.findOne({ where: { username: body.username } }))
+	if (await UserAction.findOne({ where: { username: body.username } }))
 		errors.details.username.push({
 			error: "ERR_TAKEN",
 			description: `is already taken`,
@@ -170,7 +170,7 @@ export default async (req: Request): Promise<Response> => {
 
 	// TODO: Check if locale is valid
 
-	await User.createNewLocal({
+	await UserAction.createNewLocal({
 		username: body.username ?? "",
 		password: body.password ?? "",
 		email: body.email ?? "",

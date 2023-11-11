@@ -1,8 +1,8 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User, userRelations } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -34,9 +34,8 @@ export default async (
 		return errorResponse("User is a remote user", 404);
 	}
 
-	const user = await User.findOne({
+	const user = await client.user.findUnique({
 		where: { username: requestedUser.split("@")[0] },
-		relations: userRelations
 	});
 
 	if (!user) {

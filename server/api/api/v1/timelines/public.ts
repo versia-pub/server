@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
@@ -18,9 +17,29 @@ export const meta: APIRouteMeta = applyConfig({
 	},
 });
 
-/**
- * Fetch public timeline statuses
- */
+const updateQuery = async (
+	id: string | undefined,
+	operator: string,
+	query: FindManyOptions<Status>
+) => {
+	if (!id) return query;
+	const post = await Status.findOneBy({ id });
+	if (post) {
+		query = {
+			...query,
+			where: {
+				...query.where,
+				created_at: {
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+					...(query.where as any)?.created_at,
+					[operator]: post.created_at,
+				},
+			},
+		};
+	}
+	return query;
+};
+
 export default async (req: Request): Promise<Response> => {
 	const {
 		local,
@@ -59,53 +78,9 @@ export default async (req: Request): Promise<Response> => {
 		relations: statusAndUserRelations,
 	};
 
-	if (max_id) {
-		const maxPost = await Status.findOneBy({ id: max_id });
-		if (maxPost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$lt: maxPost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (min_id) {
-		const minPost = await Status.findOneBy({ id: min_id });
-		if (minPost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gt: minPost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (since_id) {
-		const sincePost = await Status.findOneBy({ id: since_id });
-		if (sincePost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gte: sincePost.created_at,
-					},
-				},
-			};
-		}
-	}
+	query = await updateQuery(max_id, "$lt", query);
+	query = await updateQuery(min_id, "$gt", query);
+	query = await updateQuery(since_id, "$gte", query);
 
 	if (only_media) {
 		// TODO: add

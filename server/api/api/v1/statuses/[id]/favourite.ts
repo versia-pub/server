@@ -4,7 +4,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Like } from "~database/entities/Like";
 import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -28,7 +28,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await User.getFromRequest(req);
+	const { user } = await UserAction.getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 

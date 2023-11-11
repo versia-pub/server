@@ -1,9 +1,9 @@
 import { getConfig } from "@config";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { AppDataSource } from "~database/datasource";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 import { Token } from "~database/entities/Token";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -16,7 +16,7 @@ beforeAll(async () => {
 	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 	// Initialize test user
-	await User.createNewLocal({
+	await UserAction.createNewLocal({
 		email: "test@test.com",
 		username: "test",
 		password: "test",
@@ -139,7 +139,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const credentials = (await response.json()) as Partial<Application>;
+		const credentials = (await response.json()) as Partial<ApplicationAction>;
 
 		expect(credentials.name).toBe("Test Application");
 		expect(credentials.website).toBe("https://example.com");
@@ -150,7 +150,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 
 afterAll(async () => {
 	// Clean up user
-	const user = await User.findOne({
+	const user = await UserAction.findOne({
 		where: {
 			username: "test",
 		},
@@ -164,7 +164,7 @@ afterAll(async () => {
 		},
 	});
 
-	const applications = await Application.findBy({
+	const applications = await ApplicationAction.findBy({
 		client_id,
 		secret: client_secret,
 	});

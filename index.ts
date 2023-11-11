@@ -6,7 +6,7 @@ import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import "reflect-metadata";
 import { AppDataSource } from "~database/datasource";
-import { User } from "~database/entities/User";
+import { AuthData, UserAction } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 const router = new Bun.FileSystemRouter({
@@ -60,7 +60,8 @@ Bun.serve({
 				meta: APIRouteMeta;
 				default: (
 					req: Request,
-					matchedRoute: MatchedRoute
+					matchedRoute: MatchedRoute,
+					auth: AuthData
 				) => Response | Promise<Response>;
 			} = await import(matchedRoute.filePath);
 
@@ -78,11 +79,11 @@ Bun.serve({
 
 			// TODO: Check for ratelimits
 
+			const auth = await UserAction.getFromRequest(req);
+
 			// Check for authentication if required
 			if (meta.auth.required) {
-				const { user } = await User.getFromRequest(req);
-
-				if (!user) {
+				if (!auth.user) {
 					return new Response(undefined, {
 						status: 401,
 						statusText: "Unauthorized",
@@ -91,9 +92,7 @@ Bun.serve({
 			} else if (
 				(meta.auth.requiredOnMethods ?? []).includes(req.method as any)
 			) {
-				const { user } = await User.getFromRequest(req);
-
-				if (!user) {
+				if (!auth.user) {
 					return new Response(undefined, {
 						status: 401,
 						statusText: "Unauthorized",
@@ -101,7 +100,7 @@ Bun.serve({
 				}
 			}
 
-			return file.default(req, matchedRoute);
+			return file.default(req, matchedRoute, auth);
 		} else {
 			return new Response(undefined, {
 				status: 404,

@@ -1,6 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -24,11 +24,11 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await User.getFromRequest(req);
+	const { user } = await UserAction.getFromRequest(req);
 
-	let foundUser: User | null;
+	let foundUser: UserAction | null;
 	try {
-		foundUser = await User.findOne({
+		foundUser = await UserAction.findOne({
 			where: {
 				id,
 			},

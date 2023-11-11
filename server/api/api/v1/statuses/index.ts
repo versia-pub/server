@@ -6,10 +6,11 @@ import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { MatchedRoute } from "bun";
 import { parse } from "marked";
-import { Application } from "~database/entities/Application";
+import { ApplicationAction } from "~database/entities/Application";
 import { Status, statusRelations } from "~database/entities/Status";
-import { User } from "~database/entities/User";
+import { AuthData, UserAction } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -27,9 +28,13 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Post new status
  */
-export default async (req: Request): Promise<Response> => {
-	const { user, token } = await User.getFromRequest(req);
-	const application = await Application.getFromToken(token);
+export default async (
+	req: Request,
+	matchedRoute: MatchedRoute,
+	authData: AuthData
+): Promise<Response> => {
+	const { user, token } = authData;
+	const application = await ApplicationAction.getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -122,7 +127,7 @@ export default async (req: Request): Promise<Response> => {
 
 	// Get reply account and status if exists
 	let replyStatus: Status | null = null;
-	let replyUser: User | null = null;
+	let replyUser: UserAction | null = null;
 
 	if (in_reply_to_id) {
 		replyStatus = await Status.findOne({

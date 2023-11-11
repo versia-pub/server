@@ -2,9 +2,10 @@
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import { MatchedRoute } from "bun";
 import { FindManyOptions } from "typeorm";
 import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { User } from "~database/entities/User";
+import { AuthData } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -22,7 +23,11 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Fetch home timeline statuses
  */
-export default async (req: Request): Promise<Response> => {
+export default async (
+	req: Request,
+	matchedRoute: MatchedRoute,
+	authData: AuthData
+): Promise<Response> => {
 	const {
 		limit = 20,
 		max_id,
@@ -35,7 +40,7 @@ export default async (req: Request): Promise<Response> => {
 		limit?: number;
 	}>(req);
 
-	const { user } = await User.getFromRequest(req);
+	const { user } = authData;
 
 	if (limit < 1 || limit > 40) {
 		return errorResponse("Limit must be between 1 and 40", 400);

@@ -2,7 +2,7 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { User, userRelations } from "~database/entities/User";
+import { UserAction, userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { FindManyOptions } from "typeorm";
 
@@ -47,7 +47,7 @@ export default async (
 		tagged?: string;
 	} = matchedRoute.query;
 
-	const user = await User.findOne({
+	const user = await UserAction.findOne({
 		where: {
 			id,
 		},
