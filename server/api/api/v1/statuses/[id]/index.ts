@@ -40,7 +40,7 @@ export default async (
 	});
 
 	// Check if user is authorized to view this status (if it's private)
-	if (!status || isViewableByUser(status, user))
+	if (!status || !isViewableByUser(status, user))
 		return errorResponse("Record not found", 404);
 
 	if (req.method === "GET") {

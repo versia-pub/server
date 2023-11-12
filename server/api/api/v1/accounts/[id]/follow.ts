@@ -102,5 +102,5 @@ export default async (
 		},
 	});
 
-	return jsonResponse(relationshipToAPI(relationship));
+	return jsonResponse(await relationshipToAPI(relationship));
 };

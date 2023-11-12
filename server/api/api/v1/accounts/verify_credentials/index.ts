@@ -22,8 +22,7 @@ export default async (req: Request): Promise<Response> => {
 	if (!user) return errorResponse("Unauthorized", 401);
 
 	return jsonResponse({
-		...(await userToAPI(user)),
-		source: user.source,
+		...(await userToAPI(user, true)),
 		// TODO: Add role support
 		role: {
 			id: 0,

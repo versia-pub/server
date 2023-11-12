@@ -6,7 +6,7 @@ import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import "reflect-metadata";
 import { AppDataSource } from "~database/datasource";
-import { AuthData, UserAction } from "~database/entities/User";
+import { AuthData, getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 const router = new Bun.FileSystemRouter({
@@ -79,7 +79,7 @@ Bun.serve({
 
 			// TODO: Check for ratelimits
 
-			const auth = await UserAction.getFromRequest(req);
+			const auth = await getFromRequest(req);
 
 			// Check for authentication if required
 			if (meta.auth.required) {

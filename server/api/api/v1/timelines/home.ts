@@ -62,7 +62,7 @@ export default async (req: Request): Promise<Response> => {
 		include: statusAndUserRelations,
 		take: limit,
 		orderBy: {
-			id: "desc",
+			id: "asc",
 		},
 	});
 

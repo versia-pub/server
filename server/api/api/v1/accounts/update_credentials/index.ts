@@ -238,11 +238,7 @@ export default async (req: Request): Promise<Response> => {
 					id: e.id,
 				})),
 			},
-			source: user.source
-				? {
-						update: user.source,
-				  }
-				: undefined,
+			source: user.source || undefined,
 		},
 	});
 

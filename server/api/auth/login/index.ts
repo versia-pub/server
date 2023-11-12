@@ -3,6 +3,7 @@ import { errorResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
+import { TokenType } from "~database/entities/Token";
 import { userRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
@@ -63,15 +64,17 @@ export default async (
 
 	if (!application) return errorResponse("Invalid client_id", 404);
 
-	const token = await client.application.update({
+	const code = randomBytes(32).toString("hex");
+
+	await client.application.update({
 		where: { id: application.id },
 		data: {
 			tokens: {
 				create: {
 					access_token: randomBytes(64).toString("base64url"),
-					code: randomBytes(32).toString("hex"),
+					code: code,
 					scope: scopes.join(" "),
-					token_type: "bearer",
+					token_type: TokenType.BEARER,
 					user: {
 						connect: {
 							id: user.id,
@@ -83,5 +86,5 @@ export default async (
 	});
 
 	// Redirect back to application
-	return Response.redirect(`${redirect_uri}?code=${token.secret}`, 302);
+	return Response.redirect(`${redirect_uri}?code=${code}`, 302);
 };

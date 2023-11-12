@@ -240,6 +240,15 @@ export const createNewLocalUser = async (data: {
 		},
 		data: {
 			uri: `${config.http.base_url}/users/${user.id}`,
+			endpoints: {
+				disliked: `${config.http.base_url}/users/${user.id}/disliked`,
+				featured: `${config.http.base_url}/users/${user.id}/featured`,
+				liked: `${config.http.base_url}/users/${user.id}/liked`,
+				followers: `${config.http.base_url}/users/${user.id}/followers`,
+				following: `${config.http.base_url}/users/${user.id}/following`,
+				inbox: `${config.http.base_url}/users/${user.id}/inbox`,
+				outbox: `${config.http.base_url}/users/${user.id}/outbox`,
+			},
 		},
 		include: userRelations,
 	});
@@ -349,8 +358,7 @@ export const userToAPI = async (
 		url: user.uri,
 		avatar: getAvatarUrl(user, config),
 		header: getHeaderUrl(user, config),
-		// TODO: Add locked
-		locked: false,
+		locked: user.isLocked,
 		created_at: new Date(user.createdAt).toISOString(),
 		followers_count: user.relationshipSubjects.filter(r => r.following)
 			.length,
@@ -359,8 +367,7 @@ export const userToAPI = async (
 		emojis: await Promise.all(user.emojis.map(emoji => emojiToAPI(emoji))),
 		// TODO: Add fields
 		fields: [],
-		// TODO: Add bot
-		bot: false,
+		bot: user.isBot,
 		source:
 			isOwnAccount && user.source
 				? (user.source as any as APISource)

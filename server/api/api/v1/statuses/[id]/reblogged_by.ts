@@ -87,7 +87,7 @@ export default async (
 		},
 		take: limit,
 		orderBy: {
-			id: "desc",
+			id: "asc",
 		},
 	});
 

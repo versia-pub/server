@@ -85,8 +85,7 @@ export default async (
 
 	if (user.instanceId === null) {
 		// Also remove from followers list
-		await client.relationship.update({
-			// @ts-expect-error Idk why there's this error
+		await client.relationship.updateMany({
 			where: {
 				ownerId: user.id,
 				subjectId: self.id,

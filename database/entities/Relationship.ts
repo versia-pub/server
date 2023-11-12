@@ -52,8 +52,7 @@ export const relationshipToAPI = async (
 		endorsed: rel.endorsed,
 		followed_by: rel.followedBy,
 		following: rel.following,
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		id: (rel as any).subject.id,
+		id: rel.subjectId,
 		muting: rel.muting,
 		muting_notifications: rel.mutingNotifications,
 		notifying: rel.notifying,

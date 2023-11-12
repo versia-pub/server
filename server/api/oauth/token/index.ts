@@ -43,6 +43,7 @@ export default async (req: Request): Promise<Response> => {
 				client_id,
 				secret: client_secret,
 				redirect_uris: redirect_uri,
+				scopes: scope?.replaceAll("+", " "),
 			},
 			scope: scope?.replaceAll("+", " "),
 		},

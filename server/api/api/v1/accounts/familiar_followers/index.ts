@@ -57,7 +57,7 @@ export default async (req: Request): Promise<Response> => {
 				some: {
 					ownerId: self.id,
 					subjectId: {
-						in: followersOfIds.map(u => u.id),
+						in: followersOfIds.map(f => f.id),
 					},
 					following: true,
 				},

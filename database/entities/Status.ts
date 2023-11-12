@@ -182,6 +182,7 @@ export type StatusWithRelations = Status & {
  * @returns Whether this status is viewable by the user.
  */
 export const isViewableByUser = (status: Status, user: User | null) => {
+	if (status.authorId === user?.id) return true;
 	if (status.visibility === "public") return true;
 	else if (status.visibility === "unlisted") return true;
 	else if (status.visibility === "private") {
@@ -378,7 +379,7 @@ export const createNewStatus = async (data: {
 		});
 	}
 
-	const status = await client.status.create({
+	let status = await client.status.create({
 		data: {
 			authorId: data.account.id,
 			applicationId: data.application?.id,
@@ -398,7 +399,9 @@ export const createNewStatus = async (data: {
 			quotingPostId: data.quote?.id,
 			instanceId: data.account.instanceId || undefined,
 			isReblog: false,
-			uri: data.uri || `${config.http.base_url}/statuses/xxx`,
+			uri:
+				data.uri ||
+				`${config.http.base_url}/statuses/FAKE-${crypto.randomUUID()}`,
 			mentions: {
 				connect: mentions.map(mention => {
 					return {
@@ -410,7 +413,16 @@ export const createNewStatus = async (data: {
 		include: statusAndUserRelations,
 	});
 
-	if (!data.uri) status.uri = `${config.http.base_url}/statuses/${status.id}`;
+	// Update URI
+	status = await client.status.update({
+		where: {
+			id: status.id,
+		},
+		data: {
+			uri: data.uri || `${config.http.base_url}/statuses/${status.id}`,
+		},
+		include: statusAndUserRelations,
+	});
 
 	return status;
 };
