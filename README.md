@@ -5,7 +5,7 @@
 
 ## What is this?
 
-This is a project to create a federated social network based on the [ActivityPub](https://www.w3.org/TR/activitypub/) standard. It is currently in early alpha phase, with very basic federation and API support.
+This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and API support.
 
 This project aims to be a fully featured social network, with a focus on privacy and security. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
@@ -15,7 +15,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ### Requirements
 
-- The [Bun Runtime](https://bun.sh), version 0.8 or later (use of the latest version is recommended)
+- The [Bun Runtime](https://bun.sh), version 1.0.5 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 
@@ -60,11 +60,8 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 > **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
-Lysand is currently able to federate basic `Note` objects with `Create`, `Update` and `Delete` activities supported. (as well as `Accept` and `Reject`, but with no tests)
-
-Planned federation features are:
-- Activities: `Follow`, `Block`, `Undo`, `Announce`, `Like`, `Dislike`, `Flag`, `Ignore` and more
-- Objects: `Emoji` and more
+The following extensions are currently supported or being worked on:
+- `org.lysand:custom_emojis`: Custom emojis
 
 ## API
 
@@ -185,6 +182,8 @@ Configuration can be found inside the `config.toml` file. The following values a
 - `header`: The default header URL. Example: `""` (empty string)
 
 ### ActivityPub
+
+> **Note**: These options do nothing and date back to when Lysand had ActivityPub support. They will be removed in a future version.
 
 - `use_tombstones`: Whether to use ActivityPub Tombstones instead of deleting objects. Example: `true`
 - `fetch_all_collection_members`: Whether to fetch all members of collections (followers, following, etc) when receiving them. Example: `false`

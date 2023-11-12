@@ -5,17 +5,16 @@ import { getConfig } from "@config";
 import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { EmojiAction } from "~database/entities/Emoji";
-import { LysandObject } from "~database/entities/Object";
-import { Status } from "~database/entities/Status";
-import { UserAction, userRelations } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { parseEmojis } from "~database/entities/Emoji";
+import { createFromObject } from "~database/entities/Object";
 import {
-	ContentFormat,
-	LysandAction,
-	LysandObjectType,
-	LysandPublication,
-	Patch,
-} from "~types/lysand/Object";
+	createNewStatus,
+	fetchFromRemote,
+	statusAndUserRelations,
+} from "~database/entities/Status";
+import { parseMentionsUris, userRelations } from "~database/entities/User";
+import { LysandAction, LysandPublication, Patch } from "~types/lysand/Object";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -61,11 +60,11 @@ export default async (
 	// Process request body
 	const body = (await req.json()) as LysandPublication | LysandAction;
 
-	const author = await UserAction.findOne({
+	const author = await client.user.findUnique({
 		where: {
-			uri: body.author,
+			username,
 		},
-		relations: userRelations,
+		include: userRelations,
 	});
 
 	if (!author) {
@@ -116,7 +115,7 @@ export default async (
 		// author.public_key is base64 encoded raw public key
 		const publicKey = await crypto.subtle.importKey(
 			"spki",
-			Buffer.from(author.public_key, "base64"),
+			Buffer.from(author.publicKey, "base64"),
 			"Ed25519",
 			false,
 			["verify"]
@@ -141,13 +140,13 @@ export default async (
 	switch (type) {
 		case "Note": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 
 			const content = getBestContentType(body.contents);
 
-			const emojis = await EmojiAction.parseEmojis(content?.content || "");
+			const emojis = await parseEmojis(content?.content || "");
 
-			const newStatus = await Status.createNew({
+			const newStatus = await createNewStatus({
 				account: author,
 				content: content?.content || "",
 				content_type: content?.content_type,
@@ -158,39 +157,49 @@ export default async (
 				sensitive: body.is_sensitive,
 				uri: body.uri,
 				emojis: emojis,
-				mentions: await UserAction.parseMentions(body.mentions),
+				mentions: await parseMentionsUris(body.mentions),
 			});
 
 			// If there is a reply, fetch all the reply parents and add them to the database
 			if (body.replies_to.length > 0) {
-				newStatus.in_reply_to_post = await Status.fetchFromRemote(
-					body.replies_to[0]
-				);
+				newStatus.inReplyToPostId =
+					(await fetchFromRemote(body.replies_to[0]))?.id || null;
 			}
 
 			// Same for quotes
 			if (body.quotes.length > 0) {
-				newStatus.quoting_post = await Status.fetchFromRemote(
-					body.quotes[0]
-				);
+				newStatus.quotingPostId =
+					(await fetchFromRemote(body.quotes[0]))?.id || null;
 			}
 
-			await newStatus.save();
+			await client.status.update({
+				where: {
+					id: newStatus.id,
+				},
+				data: {
+					inReplyToPostId: newStatus.inReplyToPostId,
+					quotingPostId: newStatus.quotingPostId,
+				},
+			});
+
 			break;
 		}
 		case "Patch": {
 			const patch = body as Patch;
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(patch);
+			await createFromObject(patch);
 
 			// Edit the status
 
 			const content = getBestContentType(patch.contents);
 
-			const emojis = await EmojiAction.parseEmojis(content?.content || "");
+			const emojis = await parseEmojis(content?.content || "");
 
-			const status = await Status.findOneBy({
-				id: patch.patched_id,
+			const status = await client.status.findUnique({
+				where: {
+					uri: patch.patched_id,
+				},
+				include: statusAndUserRelations,
 			});
 
 			if (!status) {
@@ -198,64 +207,81 @@ export default async (
 			}
 
 			status.content = content?.content || "";
-			status.content_type = content?.content_type || "text/plain";
-			status.spoiler_text = patch.subject || "";
+			status.contentType = content?.content_type || "text/plain";
+			status.spoilerText = patch.subject || "";
 			status.sensitive = patch.is_sensitive;
 			status.emojis = emojis;
 
 			// If there is a reply, fetch all the reply parents and add them to the database
 			if (body.replies_to.length > 0) {
-				status.in_reply_to_post = await Status.fetchFromRemote(
-					body.replies_to[0]
-				);
+				status.inReplyToPostId =
+					(await fetchFromRemote(body.replies_to[0]))?.id || null;
 			}
 
 			// Same for quotes
 			if (body.quotes.length > 0) {
-				status.quoting_post = await Status.fetchFromRemote(
-					body.quotes[0]
-				);
+				status.quotingPostId =
+					(await fetchFromRemote(body.quotes[0]))?.id || null;
 			}
+
+			await client.status.update({
+				where: {
+					id: status.id,
+				},
+				data: {
+					content: status.content,
+					contentType: status.contentType,
+					spoilerText: status.spoilerText,
+					sensitive: status.sensitive,
+					emojis: {
+						connect: status.emojis.map(emoji => ({
+							id: emoji.id,
+						})),
+					},
+					inReplyToPostId: status.inReplyToPostId,
+					quotingPostId: status.quotingPostId,
+				},
+			});
 			break;
 		}
 		case "Like": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "Dislike": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "Follow": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "FollowAccept": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "FollowReject": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "Announce": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "Undo": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		case "Extension": {
 			// Store the object in the LysandObject table
-			await LysandObject.createFromObject(body);
+			await createFromObject(body);
 			break;
 		}
 		default: {

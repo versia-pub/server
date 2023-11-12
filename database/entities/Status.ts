@@ -47,9 +47,9 @@ export const statusAndUserRelations = {
 			instance: true,
 			mentions: true,
 			pinnedBy: true,
-			replies: {
-				include: {
-					_count: true,
+			_count: {
+				select: {
+					replies: true,
 				},
 			},
 		},
@@ -57,9 +57,10 @@ export const statusAndUserRelations = {
 	instance: true,
 	mentions: true,
 	pinnedBy: true,
-	replies: {
-		include: {
-			_count: true,
+	_count: {
+		select: {
+			replies: true,
+			likes: true,
 		},
 	},
 	reblog: {
@@ -77,9 +78,9 @@ export const statusAndUserRelations = {
 			instance: true,
 			mentions: true,
 			pinnedBy: true,
-			replies: {
-				include: {
-					_count: true,
+			_count: {
+				select: {
+					replies: true,
 				},
 			},
 		},
@@ -99,9 +100,9 @@ export const statusAndUserRelations = {
 			instance: true,
 			mentions: true,
 			pinnedBy: true,
-			replies: {
-				include: {
-					_count: true,
+			_count: {
+				select: {
+					replies: true,
 				},
 			},
 		},
@@ -113,7 +114,7 @@ export const statusAndUserRelations = {
 	},
 };
 
-type StatusWithRelations = Status & {
+export type StatusWithRelations = Status & {
 	author: UserWithRelations;
 	application: Application | null;
 	emojis: Emoji[];
@@ -126,16 +127,17 @@ type StatusWithRelations = Status & {
 				instance: Instance | null;
 				mentions: User[];
 				pinnedBy: User[];
-				replies: Status[] & {
-					_count: number;
+				_count: {
+					replies: number;
 				};
 		  })
 		| null;
 	instance: Instance | null;
 	mentions: User[];
 	pinnedBy: User[];
-	replies: Status[] & {
-		_count: number;
+	_count: {
+		replies: number;
+		likes: number;
 	};
 	reblog:
 		| (Status & {
@@ -146,8 +148,8 @@ type StatusWithRelations = Status & {
 				instance: Instance | null;
 				mentions: User[];
 				pinnedBy: User[];
-				replies: Status[] & {
-					_count: number;
+				_count: {
+					replies: number;
 				};
 		  })
 		| null;
@@ -160,8 +162,8 @@ type StatusWithRelations = Status & {
 				instance: Instance | null;
 				mentions: User[];
 				pinnedBy: User[];
-				replies: Status[] & {
-					_count: number;
+				_count: {
+					replies: number;
 				};
 		  })
 		| null;
@@ -196,12 +198,13 @@ export const isViewableByUser = (status: Status, user: User | null) => {
 export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
 	// Check if already in database
 
-	const existingStatus = await client.status.findFirst({
-		where: {
-			uri: uri,
-		},
-		include: statusAndUserRelations,
-	});
+	const existingStatus: StatusWithRelations | null =
+		await client.status.findFirst({
+			where: {
+				uri: uri,
+			},
+			include: statusAndUserRelations,
+		});
 
 	if (existingStatus) return existingStatus;
 
@@ -228,7 +231,7 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
 		quotingStatus = await fetchFromRemote(body.quotes[0]);
 	}
 
-	return await createNew({
+	return await createNewStatus({
 		account: author,
 		content: content?.content || "",
 		content_type: content?.content_type,
@@ -254,18 +257,79 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
  * Return all the ancestors of this post,
  */
 // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
-export const getAncestors = async (fetcher: UserWithRelations | null) => {
-	// TODO: Implement
-	return [];
+export const getAncestors = async (
+	status: StatusWithRelations,
+	fetcher: UserWithRelations | null
+) => {
+	const ancestors: StatusWithRelations[] = [];
+
+	let currentStatus = status;
+
+	while (currentStatus.inReplyToPostId) {
+		const parent = await client.status.findFirst({
+			where: {
+				id: currentStatus.inReplyToPostId,
+			},
+			include: statusAndUserRelations,
+		});
+
+		if (!parent) break;
+
+		ancestors.push(parent);
+
+		currentStatus = parent;
+	}
+
+	// Filter for posts that are viewable by the user
+
+	const viewableAncestors = ancestors.filter(ancestor =>
+		isViewableByUser(ancestor, fetcher)
+	);
+	return viewableAncestors;
 };
 
 /**
- * Return all the descendants of this post,
+ * Return all the descendants of this post (recursive)
+ * Temporary implementation, will be replaced with a recursive SQL query when Prisma adds support for it
  */
 // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
-export const getDescendants = async (fetcher: UserWithRelations | null) => {
-	// TODO: Implement
-	return [];
+export const getDescendants = async (
+	status: StatusWithRelations,
+	fetcher: UserWithRelations | null,
+	depth = 0
+) => {
+	const descendants: StatusWithRelations[] = [];
+
+	const currentStatus = status;
+
+	// Fetch all children of children of children recursively calling getDescendants
+
+	const children = await client.status.findMany({
+		where: {
+			inReplyToPostId: currentStatus.id,
+		},
+		include: statusAndUserRelations,
+	});
+
+	for (const child of children) {
+		descendants.push(child);
+
+		if (depth < 20) {
+			const childDescendants = await getDescendants(
+				child,
+				fetcher,
+				depth + 1
+			);
+			descendants.push(...childDescendants);
+		}
+	}
+
+	// Filter for posts that are viewable by the user
+
+	const viewableDescendants = descendants.filter(descendant =>
+		isViewableByUser(descendant, fetcher)
+	);
+	return viewableDescendants;
 };
 
 /**
@@ -273,7 +337,7 @@ export const getDescendants = async (fetcher: UserWithRelations | null) => {
  * @param data The data for the new status.
  * @returns A promise that resolves with the new status.
  */
-const createNew = async (data: {
+export const createNewStatus = async (data: {
 	account: User;
 	application: Application | null;
 	content: string;
@@ -408,7 +472,7 @@ export const statusToAPI = async (
 				reblogId: status.id,
 			},
 		}),
-		replies_count: status.replies._count,
+		replies_count: status._count.replies,
 		sensitive: status.sensitive,
 		spoiler_text: status.spoilerText,
 		tags: [],

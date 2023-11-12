@@ -1,7 +1,7 @@
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { Token } from "~database/entities/Token";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -36,14 +36,19 @@ export default async (req: Request): Promise<Response> => {
 		);
 
 	// Get associated token
-	const token = await Token.findOneBy({
-		code,
-		application: {
-			client_id,
-			secret: client_secret,
-			redirect_uris: redirect_uri,
+	const token = await client.token.findFirst({
+		where: {
+			code,
+			application: {
+				client_id,
+				secret: client_secret,
+				redirect_uris: redirect_uri,
+			},
+			scope: scope?.replaceAll("+", " "),
 		},
-		scope: scope?.replaceAll("+", " "),
+		include: {
+			application: true,
+		},
 	});
 
 	if (!token)

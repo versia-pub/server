@@ -1,8 +1,15 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Relationship } from "~database/entities/Relationship";
-import { UserAction, userRelations } from "~database/entities/User";
+import {
+	createNewRelationship,
+	relationshipToAPI,
+} from "~database/entities/Relationship";
+import {
+	getFromRequest,
+	getRelationshipToOtherUser,
+} from "~database/entities/User";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -25,29 +32,42 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user: self } = await UserAction.getFromRequest(req);
+	const { user: self } = await getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const user = await UserAction.findOne({
-		where: {
-			id,
+	const user = await client.user.findUnique({
+		where: { id },
+		include: {
+			relationships: {
+				include: {
+					owner: true,
+					subject: true,
+				},
+			},
 		},
-		relations: userRelations,
 	});
 
 	if (!user) return errorResponse("User not found", 404);
 
 	// Check if already following
-	let relationship = await self.getRelationshipToOtherUser(user);
+	let relationship = await getRelationshipToOtherUser(self, user);
 
 	if (!relationship) {
 		// Create new relationship
 
-		const newRelationship = await Relationship.createNew(self, user);
+		const newRelationship = await createNewRelationship(self, user);
 
-		self.relationships.push(newRelationship);
-		await self.save();
+		await client.user.update({
+			where: { id: self.id },
+			data: {
+				relationships: {
+					connect: {
+						id: newRelationship.id,
+					},
+				},
+			},
+		});
 
 		relationship = newRelationship;
 	}
@@ -56,6 +76,12 @@ export default async (
 		relationship.blocking = false;
 	}
 
-	await relationship.save();
-	return jsonResponse(await relationship.toAPI());
+	await client.relationship.update({
+		where: { id: relationship.id },
+		data: {
+			blocking: false,
+		},
+	});
+
+	return jsonResponse(await relationshipToAPI(relationship));
 };

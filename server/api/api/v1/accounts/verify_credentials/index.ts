@@ -1,5 +1,5 @@
 import { errorResponse, jsonResponse } from "@response";
-import { UserAction } from "~database/entities/User";
+import { getFromRequest, userToAPI } from "~database/entities/User";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({
@@ -17,12 +17,12 @@ export const meta = applyConfig({
 export default async (req: Request): Promise<Response> => {
 	// TODO: Add checks for disabled or not email verified accounts
 
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
 	return jsonResponse({
-		...(await user.toAPI()),
+		...(await userToAPI(user)),
 		source: user.source,
 		// TODO: Add role support
 		role: {

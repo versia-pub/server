@@ -32,9 +32,10 @@ export const userRelations = {
 	relationships: true,
 	relationshipSubjects: true,
 	pinnedNotes: true,
-	statuses: {
+	_count: {
 		select: {
-			_count: true,
+			statuses: true,
+			likes: true,
 		},
 	},
 };
@@ -46,8 +47,9 @@ export type UserWithRelations = User & {
 	relationships: Relationship[];
 	relationshipSubjects: Relationship[];
 	pinnedNotes: Status[];
-	statuses: {
-		length: number;
+	_count: {
+		statuses: number;
+		likes: number;
 	};
 };
 
@@ -353,7 +355,7 @@ export const userToAPI = async (
 		followers_count: user.relationshipSubjects.filter(r => r.following)
 			.length,
 		following_count: user.relationships.filter(r => r.following).length,
-		statuses_count: user.statuses.length,
+		statuses_count: user._count.statuses,
 		emojis: await Promise.all(user.emojis.map(emoji => emojiToAPI(emoji))),
 		// TODO: Add fields
 		fields: [],

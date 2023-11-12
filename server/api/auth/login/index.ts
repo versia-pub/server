@@ -2,9 +2,8 @@ import { applyConfig } from "@api";
 import { errorResponse } from "@response";
 import { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
-import { ApplicationAction } from "~database/entities/Application";
-import { Token } from "~database/entities/Token";
-import { UserAction, userRelations } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { userRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -45,33 +44,44 @@ export default async (
 		return errorResponse("Missing username or password", 400);
 
 	// Get user
-	const user = await UserAction.findOne({
+	const user = await client.user.findFirst({
 		where: {
 			email,
 		},
-		relations: userRelations,
+		include: userRelations,
 	});
 
 	if (!user || !(await Bun.password.verify(password, user.password || "")))
 		return errorResponse("Invalid username or password", 401);
 
 	// Get application
-	const application = await ApplicationAction.findOneBy({
-		client_id,
+	const application = await client.application.findFirst({
+		where: {
+			client_id,
+		},
 	});
 
 	if (!application) return errorResponse("Invalid client_id", 404);
 
-	const token = new Token();
-
-	token.access_token = randomBytes(64).toString("base64url");
-	token.code = randomBytes(32).toString("hex");
-	token.application = application;
-	token.scope = scopes.join(" ");
-	token.user = user;
-
-	await token.save();
+	const token = await client.application.update({
+		where: { id: application.id },
+		data: {
+			tokens: {
+				create: {
+					access_token: randomBytes(64).toString("base64url"),
+					code: randomBytes(32).toString("hex"),
+					scope: scopes.join(" "),
+					token_type: "bearer",
+					user: {
+						connect: {
+							id: user.id,
+						},
+					},
+				},
+			},
+		},
+	});
 
 	// Redirect back to application
-	return Response.redirect(`${redirect_uri}?code=${token.code}`, 302);
+	return Response.redirect(`${redirect_uri}?code=${token.secret}`, 302);
 };

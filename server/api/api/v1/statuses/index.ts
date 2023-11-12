@@ -8,9 +8,15 @@ import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
 import { MatchedRoute } from "bun";
 import { parse } from "marked";
-import { ApplicationAction } from "~database/entities/Application";
-import { Status, statusRelations } from "~database/entities/Status";
-import { AuthData, UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { getFromToken } from "~database/entities/Application";
+import {
+	StatusWithRelations,
+	createNewStatus,
+	statusAndUserRelations,
+	statusToAPI,
+} from "~database/entities/Status";
+import { AuthData, UserWithRelations } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -34,7 +40,7 @@ export default async (
 	authData: AuthData
 ): Promise<Response> => {
 	const { user, token } = authData;
-	const application = await ApplicationAction.getFromToken(token);
+	const application = await getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -126,18 +132,16 @@ export default async (
 	}
 
 	// Get reply account and status if exists
-	let replyStatus: Status | null = null;
-	let replyUser: UserAction | null = null;
+	let replyStatus: StatusWithRelations | null = null;
+	let replyUser: UserWithRelations | null = null;
 
 	if (in_reply_to_id) {
-		replyStatus = await Status.findOne({
-			where: {
-				id: in_reply_to_id,
-			},
-			relations: statusRelations,
+		replyStatus = await client.status.findUnique({
+			where: { id: in_reply_to_id },
+			include: statusAndUserRelations,
 		});
 
-		replyUser = replyStatus?.account || null;
+		replyUser = replyStatus?.author || null;
 	}
 
 	// Check if status body doesnt match filters
@@ -145,8 +149,7 @@ export default async (
 		return errorResponse("Status contains blocked words", 422);
 	}
 
-	// Create status
-	const newStatus = await Status.createNew({
+	const newStatus = await createNewStatus({
 		account: user,
 		application,
 		content: sanitizedStatus,
@@ -171,5 +174,5 @@ export default async (
 
 	// TODO: add database jobs to deliver the post
 
-	return jsonResponse(await newStatus.toAPI());
+	return jsonResponse(await statusToAPI(newStatus, user));
 };

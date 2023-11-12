@@ -3,9 +3,16 @@ import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { FindManyOptions } from "typeorm";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
+import {
+	isViewableByUser,
+	statusAndUserRelations,
+} from "~database/entities/Status";
+import {
+	getFromRequest,
+	userRelations,
+	userToAPI,
+} from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -29,33 +36,25 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
-	let foundStatus: Status | null;
-	try {
-		foundStatus = await Status.findOne({
-			where: {
-				id,
-			},
-			relations: statusAndUserRelations,
-		});
-	} catch (e) {
-		return errorResponse("Invalid ID", 404);
-	}
-
-	if (!foundStatus) return errorResponse("Record not found", 404);
+	const status = await client.status.findUnique({
+		where: { id },
+		include: statusAndUserRelations,
+	});
 
 	// Check if user is authorized to view this status (if it's private)
-	if (!foundStatus.isViewableByUser(user)) {
+	if (!status || !isViewableByUser(status, user))
 		return errorResponse("Record not found", 404);
-	}
 
 	const {
 		max_id = null,
+		min_id = null,
 		since_id = null,
 		limit = 40,
 	} = await parseRequest<{
 		max_id?: string;
+		min_id?: string;
 		since_id?: string;
 		limit?: number;
 	}>(req);
@@ -64,53 +63,33 @@ export default async (
 	if (limit > 80) return errorResponse("Invalid limit (maximum is 80)", 400);
 	if (limit < 1) return errorResponse("Invalid limit", 400);
 
-	// Get list of boosts for this status
-	let query: FindManyOptions<Status> = {
+	const objects = await client.user.findMany({
 		where: {
-			reblog: {
-				id,
+			statuses: {
+				some: {
+					reblogId: status.id,
+				},
+			},
+			id: {
+				lt: max_id ?? undefined,
+				gte: since_id ?? undefined,
+				gt: min_id ?? undefined,
 			},
 		},
-		relations: statusAndUserRelations,
-		take: limit,
-		order: {
-			id: "DESC",
+		include: {
+			...userRelations,
+			statuses: {
+				where: {
+					reblogId: status.id,
+				},
+				include: statusAndUserRelations,
+			},
 		},
-	};
-
-	if (max_id) {
-		const maxPost = await Status.findOneBy({ id: max_id });
-		if (maxPost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$lt: maxPost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (since_id) {
-		const sincePost = await Status.findOneBy({ id: since_id });
-		if (sincePost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gt: sincePost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	const objects = await Status.find(query);
+		take: limit,
+		orderBy: {
+			id: "desc",
+		},
+	});
 
 	// Constuct HTTP Link header (next and prev)
 	const linkHeader = [];
@@ -127,7 +106,7 @@ export default async (
 	}
 
 	return jsonResponse(
-		await Promise.all(objects.map(async object => await object.toAPI())),
+		await Promise.all(objects.map(async user => userToAPI(user))),
 		200,
 		{
 			Link: linkHeader.join(", "),

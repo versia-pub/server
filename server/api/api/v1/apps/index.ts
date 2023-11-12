@@ -2,7 +2,7 @@ import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { randomBytes } from "crypto";
-import { ApplicationAction } from "~database/entities/Application";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -27,10 +27,6 @@ export default async (req: Request): Promise<Response> => {
 		website: string;
 	}>(req);
 
-	const application = new ApplicationAction();
-
-	application.name = client_name || "";
-
 	// Check if redirect URI is a valid URI, and also an absolute URI
 	if (redirect_uris) {
 		try {
@@ -42,20 +38,20 @@ export default async (req: Request): Promise<Response> => {
 					422
 				);
 			}
-
-			application.redirect_uris = redirect_uris;
 		} catch {
 			return errorResponse("Redirect URI must be a valid URI", 422);
 		}
 	}
-
-	application.scopes = scopes || "read";
-	application.website = website || null;
-
-	application.client_id = randomBytes(32).toString("base64url");
-	application.secret = randomBytes(64).toString("base64url");
-
-	await application.save();
+	const application = await client.application.create({
+		data: {
+			name: client_name || "",
+			redirect_uris: redirect_uris || "",
+			scopes: scopes || "read",
+			website: website || null,
+			client_id: randomBytes(32).toString("base64url"),
+			secret: randomBytes(64).toString("base64url"),
+		},
+	});
 
 	return jsonResponse({
 		id: application.id,

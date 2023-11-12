@@ -1,8 +1,7 @@
 import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
-import { Status } from "~database/entities/Status";
-import { UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -23,8 +22,16 @@ export const meta = applyConfig({
 export default async (): Promise<Response> => {
 	const config = getConfig();
 
-	const statusCount = await Status.count();
-	const userCount = await UserAction.count();
+	const statusCount = await client.status.count({
+		where: {
+			instanceId: null,
+		},
+	});
+	const userCount = await client.user.count({
+		where: {
+			instanceId: null,
+		},
+	});
 
 	// TODO: fill in more values
 	return jsonResponse({

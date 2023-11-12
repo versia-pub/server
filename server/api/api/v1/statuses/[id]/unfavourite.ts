@@ -2,10 +2,15 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Like } from "~database/entities/Like";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
+import {
+	isViewableByUser,
+	statusAndUserRelations,
+	statusToAPI,
+} from "~database/entities/Status";
+import { getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
+import { APIStatus } from "~types/entities/status";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["POST"],
@@ -28,37 +33,29 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	let foundStatus: Status | null;
-	try {
-		foundStatus = await Status.findOne({
-			where: {
-				id,
-			},
-			relations: statusAndUserRelations,
-		});
-	} catch (e) {
-		return errorResponse("Invalid ID", 404);
-	}
-
-	if (!foundStatus) return errorResponse("Record not found", 404);
+	const status = await client.status.findUnique({
+		where: { id },
+		include: statusAndUserRelations,
+	});
 
 	// Check if user is authorized to view this status (if it's private)
-	if (!foundStatus.isViewableByUser(user)) {
+	if (!status || !isViewableByUser(status, user))
 		return errorResponse("Record not found", 404);
-	}
 
-	await Like.delete({
-		liked: {
-			id: foundStatus.id,
-		},
-		liker: {
-			id: user.id,
+	await client.like.deleteMany({
+		where: {
+			likedId: status.id,
+			likerId: user.id,
 		},
 	});
 
-	return jsonResponse(await foundStatus.toAPI());
+	return jsonResponse({
+		...(await statusToAPI(status, user)),
+		favourited: false,
+		favourites_count: status._count.likes - 1,
+	} as APIStatus);
 };

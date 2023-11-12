@@ -4,7 +4,8 @@ import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { UserAction, userRelations } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { userRelations, userToLysand } from "~database/entities/User";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -29,16 +30,16 @@ export default async (
 
 	const config = getConfig();
 
-	const user = await UserAction.findOne({
+	const user = await client.user.findUnique({
 		where: {
 			id: uuid,
 		},
-		relations: userRelations,
+		include: userRelations,
 	});
 
 	if (!user) {
 		return errorResponse("User not found", 404);
 	}
 
-	return jsonResponse(user.toLysand());
+	return jsonResponse(userToLysand(user));
 };

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { UserAction, userRelations } from "~database/entities/User";
+import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
+import { userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";
-import { FindManyOptions } from "typeorm";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -47,79 +47,29 @@ export default async (
 		tagged?: string;
 	} = matchedRoute.query;
 
-	const user = await UserAction.findOne({
-		where: {
-			id,
-		},
-		relations: userRelations,
+	const user = await client.user.findUnique({
+		where: { id },
+		include: userRelations,
 	});
 
 	if (!user) return errorResponse("User not found", 404);
 
-	// Get list of boosts for this status
-	let query: FindManyOptions<Status> = {
+	const objects = await client.status.findMany({
 		where: {
-			account: {
-				id: user.id,
-			},
+			authorId: id,
 			isReblog: exclude_reblogs ? true : undefined,
+			id: {
+				lt: max_id,
+				gt: min_id,
+				gte: since_id,
+			},
 		},
-		relations: statusAndUserRelations,
+		include: statusAndUserRelations,
 		take: limit ?? 20,
-		order: {
-			id: "DESC",
+		orderBy: {
+			id: "desc",
 		},
-	};
-
-	if (max_id) {
-		const maxStatus = await Status.findOneBy({ id: max_id });
-		if (maxStatus) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$lt: maxStatus.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (since_id) {
-		const sinceStatus = await Status.findOneBy({ id: since_id });
-		if (sinceStatus) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gt: sinceStatus.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (min_id) {
-		const minStatus = await Status.findOneBy({ id: min_id });
-		if (minStatus) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gte: minStatus.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	const objects = await Status.find(query);
+	});
 
 	// Constuct HTTP Link header (next and prev)
 	const linkHeader = [];
@@ -129,14 +79,13 @@ export default async (
 			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
 		);
 		linkHeader.push(
-			`<${urlWithoutQuery}?since_id=${
-				objects[objects.length - 1].id
-			}&limit=${limit}>; rel="prev"`
+			`<${urlWithoutQuery}?since_id=${objects.at(-1)
+				?.id}&limit=${limit}>; rel="prev"`
 		);
 	}
 
 	return jsonResponse(
-		await Promise.all(objects.map(async status => await status.toAPI())),
+		await Promise.all(objects.map(status => statusToAPI(status))),
 		200,
 		{
 			Link: linkHeader.join(", "),

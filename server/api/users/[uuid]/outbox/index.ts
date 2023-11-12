@@ -1,10 +1,12 @@
 import { jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { userRelations } from "~database/entities/User";
 import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
-import { Status } from "~database/entities/Status";
-import { In } from "typeorm";
+import {
+	statusAndUserRelations,
+	statusToLysand,
+} from "~database/entities/Status";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -29,26 +31,25 @@ export default async (
 	const pageNumber = Number(matchedRoute.query.page) || 1;
 	const config = getConfig();
 
-	const statuses = await Status.find({
+	const statuses = await client.status.findMany({
 		where: {
-			account: {
-				id: uuid,
+			authorId: uuid,
+			visibility: {
+				in: ["public", "unlisted"],
 			},
-			visibility: In(["public", "unlisted"]),
 		},
-		relations: userRelations,
 		take: 20,
 		skip: 20 * (pageNumber - 1),
+		include: statusAndUserRelations,
 	});
 
-	const totalStatuses = await Status.count({
+	const totalStatuses = await client.status.count({
 		where: {
-			account: {
-				id: uuid,
+			authorId: uuid,
+			visibility: {
+				in: ["public", "unlisted"],
 			},
-			visibility: In(["public", "unlisted"]),
 		},
-		relations: userRelations,
 	});
 
 	return jsonResponse({
@@ -65,6 +66,6 @@ export default async (
 			pageNumber > 1
 				? `${getHost()}/users/${uuid}/outbox?page=${pageNumber - 1}`
 				: undefined,
-		items: statuses.map(s => s.toLysand()),
+		items: statuses.map(s => statusToLysand(s)),
 	});
 };

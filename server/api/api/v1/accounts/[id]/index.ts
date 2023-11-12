@@ -1,7 +1,13 @@
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { UserAction, userRelations } from "~database/entities/User";
+import {
+	UserWithRelations,
+	getFromRequest,
+	userRelations,
+	userToAPI,
+} from "~database/entities/User";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -24,15 +30,13 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
-	let foundUser: UserAction | null;
+	let foundUser: UserWithRelations | null;
 	try {
-		foundUser = await UserAction.findOne({
-			where: {
-				id,
-			},
-			relations: userRelations,
+		foundUser = await client.user.findUnique({
+			where: { id },
+			include: userRelations,
 		});
 	} catch (e) {
 		return errorResponse("Invalid ID", 404);
@@ -40,5 +44,5 @@ export default async (
 
 	if (!foundUser) return errorResponse("User not found", 404);
 
-	return jsonResponse(await foundUser.toAPI(user?.id === foundUser.id));
+	return jsonResponse(await userToAPI(foundUser, user?.id === foundUser.id));
 };

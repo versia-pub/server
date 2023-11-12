@@ -1,9 +1,8 @@
 import { getConfig } from "@config";
+import { Application, Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { AppDataSource } from "~database/datasource";
-import { ApplicationAction } from "~database/entities/Application";
-import { Token } from "~database/entities/Token";
-import { UserAction, userRelations } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { createNewLocalUser } from "~database/entities/User";
 
 const config = getConfig();
 
@@ -13,10 +12,8 @@ let code: string;
 let token: Token;
 
 beforeAll(async () => {
-	if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-
-	// Initialize test user
-	await UserAction.createNewLocal({
+	// Init test user
+	await createNewLocalUser({
 		email: "test@test.com",
 		username: "test",
 		password: "test",
@@ -139,7 +136,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
-		const credentials = (await response.json()) as Partial<ApplicationAction>;
+		const credentials = (await response.json()) as Partial<Application>;
 
 		expect(credentials.name).toBe("Test Application");
 		expect(credentials.website).toBe("https://example.com");
@@ -150,31 +147,9 @@ describe("GET /api/v1/apps/verify_credentials", () => {
 
 afterAll(async () => {
 	// Clean up user
-	const user = await UserAction.findOne({
+	await client.user.delete({
 		where: {
 			username: "test",
 		},
-		relations: userRelations,
 	});
-
-	// Clean up tokens
-	const tokens = await Token.findBy({
-		user: {
-			username: "test",
-		},
-	});
-
-	const applications = await ApplicationAction.findBy({
-		client_id,
-		secret: client_secret,
-	});
-
-	await Promise.all(tokens.map(async token => await token.remove()));
-	await Promise.all(
-		applications.map(async application => await application.remove())
-	);
-
-	if (user) await user.remove();
-
-	await AppDataSource.destroy();
 });

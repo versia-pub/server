@@ -21,6 +21,7 @@ export const parseEmojis = async (text: string): Promise<Emoji[]> => {
 			shortcode: {
 				in: matches.map(match => match.replace(/:/g, "")),
 			},
+			instanceId: null,
 		},
 		include: {
 			instance: true,

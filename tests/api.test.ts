@@ -1,71 +1,63 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConfig } from "@config";
+import { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { AppDataSource } from "~database/datasource";
-import { ApplicationAction } from "~database/entities/Application";
-import { EmojiAction } from "~database/entities/Emoji";
-import { Token, TokenType } from "~database/entities/Token";
-import { UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { TokenType } from "~database/entities/Token";
+import { UserWithRelations, createNewLocalUser } from "~database/entities/User";
 import { APIEmoji } from "~types/entities/emoji";
 import { APIInstance } from "~types/entities/instance";
 
 const config = getConfig();
 
 let token: Token;
-let user: UserAction;
-let user2: UserAction;
+let user: UserWithRelations;
 
 describe("API Tests", () => {
 	beforeAll(async () => {
-		if (!AppDataSource.isInitialized) await AppDataSource.initialize();
-
 		// Initialize test user
-		user = await UserAction.createNewLocal({
+		user = await createNewLocalUser({
 			email: "test@test.com",
 			username: "test",
 			password: "test",
 			display_name: "",
 		});
 
-		// Initialize second test user
-		user2 = await UserAction.createNewLocal({
-			email: "test2@test.com",
-			username: "test2",
-			password: "test2",
-			display_name: "",
+		token = await client.token.create({
+			data: {
+				access_token: "test",
+				application: {
+					create: {
+						client_id: "test",
+						name: "Test Application",
+						redirect_uris: "https://example.com",
+						scopes: "read write",
+						secret: "test",
+						website: "https://example.com",
+						vapid_key: null,
+					},
+				},
+				code: "test",
+				scope: "read write",
+				token_type: TokenType.BEARER,
+				user: {
+					connect: {
+						id: user.id,
+					},
+				},
+			},
 		});
-
-		const app = new ApplicationAction();
-
-		app.name = "Test Application";
-		app.website = "https://example.com";
-		app.client_id = "test";
-		app.redirect_uris = "https://example.com";
-		app.scopes = "read write";
-		app.secret = "test";
-		app.vapid_key = null;
-
-		await app.save();
-
-		// Initialize test token
-		token = new Token();
-
-		token.access_token = "test";
-		token.application = app;
-		token.code = "test";
-		token.scope = "read write";
-		token.token_type = TokenType.BEARER;
-		token.user = user;
-
-		token = await token.save();
 	});
 
 	afterAll(async () => {
-		await user.remove();
-		await user2.remove();
-
-		await AppDataSource.destroy();
+		await client.user.deleteMany({
+			where: {
+				username: {
+					in: ["test", "test2"],
+				},
+			},
+		});
 	});
 
 	describe("GET /api/v1/instance", () => {
@@ -106,15 +98,15 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/custom_emojis", () => {
 		beforeAll(async () => {
-			const emoji = new EmojiAction();
-
-			emoji.instance = null;
-			emoji.url = "https://example.com/test.png";
-			emoji.content_type = "image/png";
-			emoji.shortcode = "test";
-			emoji.visible_in_picker = true;
-
-			await emoji.save();
+			await client.emoji.create({
+				data: {
+					instanceId: null,
+					url: "https://example.com/test.png",
+					content_type: "image/png",
+					shortcode: "test",
+					visible_in_picker: true,
+				},
+			});
 		});
 		test("should return an array of at least one custom emoji", async () => {
 			const response = await fetch(
@@ -139,7 +131,11 @@ describe("API Tests", () => {
 			expect(emojis[0].url).toBe("https://example.com/test.png");
 		});
 		afterAll(async () => {
-			await EmojiAction.delete({ shortcode: "test" });
+			await client.emoji.deleteMany({
+				where: {
+					shortcode: "test",
+				},
+			});
 		});
 	});
 });

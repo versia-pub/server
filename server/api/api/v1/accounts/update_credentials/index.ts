@@ -1,12 +1,14 @@
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { UserAction } from "~database/entities/User";
+import { getFromRequest, userToAPI } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
 import { uploadFile } from "~classes/media";
-import { EmojiAction } from "~database/entities/Emoji";
+import ISO6391 from "iso-639-1";
+import { parseEmojis } from "~database/entities/Emoji";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -24,7 +26,7 @@ export const meta = applyConfig({
  * Patches a user
  */
 export default async (req: Request): Promise<Response> => {
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -85,7 +87,7 @@ export default async (req: Request): Promise<Response> => {
 		// Remove emojis
 		user.emojis = [];
 
-		user.display_name = sanitizedDisplayName;
+		user.displayName = sanitizedDisplayName;
 	}
 
 	if (note) {
@@ -112,7 +114,7 @@ export default async (req: Request): Promise<Response> => {
 		user.note = sanitizedNote;
 	}
 
-	if (source_privacy) {
+	if (source_privacy && user.source) {
 		// Check if within allowed privacy values
 		if (
 			!["public", "unlisted", "private", "direct"].includes(
@@ -125,21 +127,30 @@ export default async (req: Request): Promise<Response> => {
 			);
 		}
 
-		user.source.privacy = source_privacy;
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		(user.source as any).privacy = source_privacy;
 	}
 
-	if (source_sensitive) {
+	if (source_sensitive && user.source) {
 		// Check if within allowed sensitive values
 		if (source_sensitive !== "true" && source_sensitive !== "false") {
 			return errorResponse("Sensitive must be a boolean", 422);
 		}
 
-		user.source.sensitive = source_sensitive === "true";
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		(user.source as any).sensitive = source_sensitive === "true";
 	}
 
-	if (source_language) {
-		// TODO: Check if proper ISO code
-		user.source.language = source_language;
+	if (source_language && user.source) {
+		if (!ISO6391.validate(source_language)) {
+			return errorResponse(
+				"Language must be a valid ISO 639-1 code",
+				422
+			);
+		}
+
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		(user.source as any).language = source_language;
 	}
 
 	if (avatar) {
@@ -176,8 +187,7 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Locked must be a boolean", 422);
 		}
 
-		// TODO: Add a user value for Locked
-		// user.locked = locked === "true";
+		user.isLocked = locked === "true";
 	}
 
 	if (bot) {
@@ -186,8 +196,7 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Bot must be a boolean", 422);
 		}
 
-		// TODO: Add a user value for bot
-		// user.bot = bot === "true";
+		user.isBot = bot === "true";
 	}
 
 	if (discoverable) {
@@ -196,14 +205,13 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Discoverable must be a boolean", 422);
 		}
 
-		// TODO: Add a user value for discoverable
-		// user.discoverable = discoverable === "true";
+		user.isDiscoverable = discoverable === "true";
 	}
 
 	// Parse emojis
 
-	const displaynameEmojis = await EmojiAction.parseEmojis(sanitizedDisplayName);
-	const noteEmojis = await EmojiAction.parseEmojis(sanitizedNote);
+	const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
+	const noteEmojis = await parseEmojis(sanitizedNote);
 
 	user.emojis = [...displaynameEmojis, ...noteEmojis];
 
@@ -212,7 +220,31 @@ export default async (req: Request): Promise<Response> => {
 		(emoji, index, self) => self.findIndex(e => e.id === emoji.id) === index
 	);
 
-	await user.save();
+	await client.user.update({
+		where: { id: user.id },
+		data: {
+			displayName: user.displayName,
+			note: user.note,
+			avatar: user.avatar,
+			header: user.header,
+			isLocked: user.isLocked,
+			isBot: user.isBot,
+			isDiscoverable: user.isDiscoverable,
+			emojis: {
+				disconnect: user.emojis.map(e => ({
+					id: e.id,
+				})),
+				connect: user.emojis.map(e => ({
+					id: e.id,
+				})),
+			},
+			source: user.source
+				? {
+						update: user.source,
+				  }
+				: undefined,
+		},
+	});
 
-	return jsonResponse(await user.toAPI());
+	return jsonResponse(await userToAPI(user));
 };

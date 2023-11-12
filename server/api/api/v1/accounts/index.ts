@@ -2,8 +2,10 @@ import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
-import { UserAction } from "~database/entities/User";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
+import { createNewLocalUser } from "~database/entities/User";
+import ISO6391 from "iso-639-1";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -115,7 +117,7 @@ export default async (req: Request): Promise<Response> => {
 		});
 
 	// Check if username is taken
-	if (await UserAction.findOne({ where: { username: body.username } }))
+	if (await client.user.findFirst({ where: { username: body.username } }))
 		errors.details.username.push({
 			error: "ERR_TAKEN",
 			description: `is already taken`,
@@ -150,6 +152,18 @@ export default async (req: Request): Promise<Response> => {
 			description: `must be accepted`,
 		});
 
+	if (!body.locale)
+		errors.details.locale.push({
+			error: "ERR_BLANK",
+			description: `can't be blank`,
+		});
+
+	if (!ISO6391.validate(body.locale ?? ""))
+		errors.details.locale.push({
+			error: "ERR_INVALID",
+			description: `must be a valid ISO 639-1 code`,
+		});
+
 	// If any errors are present, return them
 	if (Object.values(errors.details).some(value => value.length > 0)) {
 		// Error is something like "Validation failed: Password can't be blank, Username must contain only letters, numbers and underscores, Agreement must be accepted"
@@ -168,14 +182,13 @@ export default async (req: Request): Promise<Response> => {
 		});
 	}
 
-	// TODO: Check if locale is valid
-
-	await UserAction.createNewLocal({
+	await createNewLocalUser({
 		username: body.username ?? "",
 		password: body.password ?? "",
 		email: body.email ?? "",
 	});
 
-	// TODO: Return access token
-	return new Response();
+	return new Response("", {
+		status: 200,
+	});
 };

@@ -12,7 +12,7 @@ import { client } from "~database/datasource";
  * @param other The user who is the subject of the relationship.
  * @returns The newly created relationship.
  */
-export const createNew = async (
+export const createNewRelationship = async (
 	owner: User,
 	other: User
 ): Promise<Relationship> => {
@@ -41,8 +41,10 @@ export const createNew = async (
  * Converts the relationship to an API-friendly format.
  * @returns The API-friendly relationship.
  */
-// eslint-disable-next-line @typescript-eslint/require-await
-export const toAPI = async (rel: Relationship): Promise<APIRelationship> => {
+export const relationshipToAPI = async (
+	rel: Relationship
+	// eslint-disable-next-line @typescript-eslint/require-await
+): Promise<APIRelationship> => {
 	return {
 		blocked_by: rel.blockedBy,
 		blocking: rel.blocking,

@@ -1,8 +1,13 @@
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { UserAction } from "~database/entities/User";
+import { client } from "~database/datasource";
+import {
+	isViewableByUser,
+	statusAndUserRelations,
+	statusToAPI,
+} from "~database/entities/Status";
+import { getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -27,31 +32,21 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await UserAction.getFromRequest(req);
+	const { user } = await getFromRequest(req);
 
-	let foundStatus: Status | null;
-	try {
-		foundStatus = await Status.findOne({
-			where: {
-				id,
-			},
-			relations: statusAndUserRelations,
-		});
-	} catch (e) {
-		return errorResponse("Invalid ID", 404);
-	}
-
-	if (!foundStatus) return errorResponse("Record not found", 404);
+	const status = await client.status.findUnique({
+		where: { id },
+		include: statusAndUserRelations,
+	});
 
 	// Check if user is authorized to view this status (if it's private)
-	if (!foundStatus.isViewableByUser(user)) {
+	if (!status || isViewableByUser(status, user))
 		return errorResponse("Record not found", 404);
-	}
 
 	if (req.method === "GET") {
-		return jsonResponse(await foundStatus.toAPI());
+		return jsonResponse(await statusToAPI(status));
 	} else if (req.method === "DELETE") {
-		if (foundStatus.account.id !== user?.id) {
+		if (status.authorId !== user?.id) {
 			return errorResponse("Unauthorized", 401);
 		}
 
@@ -60,11 +55,13 @@ export default async (
 		// Get associated Status object
 
 		// Delete status and all associated objects
-		await foundStatus.remove();
+		await client.status.delete({
+			where: { id },
+		});
 
 		return jsonResponse(
 			{
-				...(await foundStatus.toAPI()),
+				...(await statusToAPI(status)),
 				// TODO: Add
 				// text: Add source text
 				// poll: Add source poll

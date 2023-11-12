@@ -1,9 +1,16 @@
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { Relationship } from "~database/entities/Relationship";
-import { UserAction, userRelations } from "~database/entities/User";
+import {
+	createNewRelationship,
+	relationshipToAPI,
+} from "~database/entities/Relationship";
+import {
+	getFromRequest,
+	getRelationshipToOtherUser,
+} from "~database/entities/User";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -26,7 +33,7 @@ export default async (
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
 
-	const { user: self } = await UserAction.getFromRequest(req);
+	const { user: self } = await getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
@@ -36,25 +43,38 @@ export default async (
 		languages?: string[];
 	}>(req);
 
-	const user = await UserAction.findOne({
-		where: {
-			id,
+	const user = await client.user.findUnique({
+		where: { id },
+		include: {
+			relationships: {
+				include: {
+					owner: true,
+					subject: true,
+				},
+			},
 		},
-		relations: userRelations,
 	});
 
 	if (!user) return errorResponse("User not found", 404);
 
 	// Check if already following
-	let relationship = await self.getRelationshipToOtherUser(user);
+	let relationship = await getRelationshipToOtherUser(self, user);
 
 	if (!relationship) {
 		// Create new relationship
 
-		const newRelationship = await Relationship.createNew(self, user);
+		const newRelationship = await createNewRelationship(self, user);
 
-		self.relationships.push(newRelationship);
-		await self.save();
+		await client.user.update({
+			where: { id: self.id },
+			data: {
+				relationships: {
+					connect: {
+						id: newRelationship.id,
+					},
+				},
+			},
+		});
 
 		relationship = newRelationship;
 	}
@@ -63,7 +83,7 @@ export default async (
 		relationship.following = true;
 	}
 	if (reblogs) {
-		relationship.showing_reblogs = true;
+		relationship.showingReblogs = true;
 	}
 	if (notify) {
 		relationship.notifying = true;
@@ -72,6 +92,15 @@ export default async (
 		relationship.languages = languages;
 	}
 
-	await relationship.save();
-	return jsonResponse(await relationship.toAPI());
+	await client.relationship.update({
+		where: { id: relationship.id },
+		data: {
+			following: true,
+			showingReblogs: reblogs ?? false,
+			notifying: notify ?? false,
+			languages: languages ?? [],
+		},
+	});
+
+	return jsonResponse(relationshipToAPI(relationship));
 };

@@ -2,10 +2,9 @@
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
-import { FindManyOptions } from "typeorm";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
-import { AuthData } from "~database/entities/User";
+import { client } from "~database/datasource";
+import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
+import { getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -23,11 +22,9 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Fetch home timeline statuses
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute,
-	authData: AuthData
-): Promise<Response> => {
+export default async (req: Request): Promise<Response> => {
+	const { user } = await getFromRequest(req);
+
 	const {
 		limit = 20,
 		max_id,
@@ -40,85 +37,54 @@ export default async (
 		limit?: number;
 	}>(req);
 
-	const { user } = authData;
-
 	if (limit < 1 || limit > 40) {
 		return errorResponse("Limit must be between 1 and 40", 400);
 	}
 
-	let query: FindManyOptions<Status> = {
+	if (!user) return errorResponse("Unauthorized", 401);
+
+	const objects = await client.status.findMany({
 		where: {
-			visibility: "public",
-			account: [
-				{
-					relationships: {
-						id: user?.id,
-						followed_by: true,
+			id: {
+				lt: max_id ?? undefined,
+				gte: since_id ?? undefined,
+				gt: min_id ?? undefined,
+			},
+			author: {
+				relationships: {
+					some: {
+						subjectId: user.id,
+						following: true,
 					},
 				},
-				{
-					id: user?.id,
-				},
-			],
+			},
 		},
-		order: {
-			created_at: "DESC",
-		},
+		include: statusAndUserRelations,
 		take: limit,
-		relations: statusAndUserRelations,
-	};
+		orderBy: {
+			id: "desc",
+		},
+	});
 
-	if (max_id) {
-		const maxPost = await Status.findOneBy({ id: max_id });
-		if (maxPost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$lt: maxPost.created_at,
-					},
-				},
-			};
-		}
+	// Constuct HTTP Link header (next and prev)
+	const linkHeader = [];
+	if (objects.length > 0) {
+		const urlWithoutQuery = req.url.split("?")[0];
+		linkHeader.push(
+			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
+		);
+		linkHeader.push(
+			`<${urlWithoutQuery}?since_id=${
+				objects[objects.length - 1].id
+			}&limit=${limit}>; rel="prev"`
+		);
 	}
-
-	if (min_id) {
-		const minPost = await Status.findOneBy({ id: min_id });
-		if (minPost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gt: minPost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	if (since_id) {
-		const sincePost = await Status.findOneBy({ id: since_id });
-		if (sincePost) {
-			query = {
-				...query,
-				where: {
-					...query.where,
-					created_at: {
-						...(query.where as any)?.created_at,
-						$gte: sincePost.created_at,
-					},
-				},
-			};
-		}
-	}
-
-	const objects = await Status.find(query);
 
 	return jsonResponse(
-		await Promise.all(objects.map(async object => await object.toAPI()))
+		await Promise.all(objects.map(async status => statusToAPI(status))),
+		200,
+		{
+			Link: linkHeader.join(", "),
+		}
 	);
 };

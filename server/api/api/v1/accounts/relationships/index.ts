@@ -1,8 +1,12 @@
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { Relationship } from "~database/entities/Relationship";
-import { UserAction } from "~database/entities/User";
+import {
+	createNewRelationship,
+	relationshipToAPI,
+} from "~database/entities/Relationship";
+import { getFromRequest } from "~database/entities/User";
 import { applyConfig } from "@api";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -20,7 +24,7 @@ export const meta = applyConfig({
  * Find relationships
  */
 export default async (req: Request): Promise<Response> => {
-	const { user: self } = await UserAction.getFromRequest(req);
+	const { user: self } = await getFromRequest(req);
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
@@ -33,34 +37,35 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Number of ids must be between 1 and 10", 422);
 	}
 
-	// Check if already following
-	// TODO: Limit ID amount
-	const relationships = (
-		await Promise.all(
-			ids.map(async id => {
-				const user = await UserAction.findOneBy({ id });
-				if (!user) return null;
-				let relationship = await self.getRelationshipToOtherUser(user);
+	const relationships = await client.relationship.findMany({
+		where: {
+			ownerId: self.id,
+			subjectId: {
+				in: ids,
+			},
+		},
+	});
 
-				if (!relationship) {
-					// Create new relationship
+	// Find IDs that dont have a relationship
+	const missingIds = ids.filter(
+		id => !relationships.some(r => r.subjectId === id)
+	);
 
-					const newRelationship = await Relationship.createNew(
-						self,
-						user
-					);
+	// Create the missing relationships
+	for (const id of missingIds) {
+		const relationship = await createNewRelationship(self, { id } as any);
 
-					self.relationships.push(newRelationship);
-					await self.save();
+		relationships.push(relationship);
+	}
 
-					relationship = newRelationship;
-				}
-				return relationship;
-			})
-		)
-	).filter(relationship => relationship !== null) as Relationship[];
+	// Order in the same order as ids
+	relationships.sort(
+		(a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId)
+	);
 
 	return jsonResponse(
-		await Promise.all(relationships.map(async r => await r.toAPI()))
+		await Promise.all(
+			relationships.map(async r => await relationshipToAPI(r))
+		)
 	);
 };

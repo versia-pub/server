@@ -1,8 +1,8 @@
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { FindManyOptions, IsNull, Not } from "typeorm";
-import { Status, statusAndUserRelations } from "~database/entities/Status";
+import { client } from "~database/datasource";
+import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
 import { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -17,36 +17,13 @@ export const meta: APIRouteMeta = applyConfig({
 	},
 });
 
-const updateQuery = async (
-	id: string | undefined,
-	operator: string,
-	query: FindManyOptions<Status>
-) => {
-	if (!id) return query;
-	const post = await Status.findOneBy({ id });
-	if (post) {
-		query = {
-			...query,
-			where: {
-				...query.where,
-				created_at: {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-					...(query.where as any)?.created_at,
-					[operator]: post.created_at,
-				},
-			},
-		};
-	}
-	return query;
-};
-
 export default async (req: Request): Promise<Response> => {
 	const {
 		local,
 		limit = 20,
 		max_id,
 		min_id,
-		only_media,
+		// only_media,
 		remote,
 		since_id,
 	} = await parseRequest<{
@@ -67,48 +44,47 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Cannot use both local and remote", 400);
 	}
 
-	let query: FindManyOptions<Status> = {
+	const objects = await client.status.findMany({
 		where: {
-			visibility: "public",
+			id: {
+				lt: max_id ?? undefined,
+				gte: since_id ?? undefined,
+				gt: min_id ?? undefined,
+			},
+			instanceId: remote
+				? {
+						not: null,
+				  }
+				: local
+				? null
+				: undefined,
 		},
-		order: {
-			created_at: "DESC",
-		},
+		include: statusAndUserRelations,
 		take: limit,
-		relations: statusAndUserRelations,
-	};
+		orderBy: {
+			id: "desc",
+		},
+	});
 
-	query = await updateQuery(max_id, "$lt", query);
-	query = await updateQuery(min_id, "$gt", query);
-	query = await updateQuery(since_id, "$gte", query);
-
-	if (only_media) {
-		// TODO: add
+	// Constuct HTTP Link header (next and prev)
+	const linkHeader = [];
+	if (objects.length > 0) {
+		const urlWithoutQuery = req.url.split("?")[0];
+		linkHeader.push(
+			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
+		);
+		linkHeader.push(
+			`<${urlWithoutQuery}?since_id=${
+				objects[objects.length - 1].id
+			}&limit=${limit}>; rel="prev"`
+		);
 	}
-
-	if (local) {
-		query = {
-			...query,
-			where: {
-				...query.where,
-				instance: IsNull(),
-			},
-		};
-	}
-
-	if (remote) {
-		query = {
-			...query,
-			where: {
-				...query.where,
-				instance: Not(IsNull()),
-			},
-		};
-	}
-
-	const objects = await Status.find(query);
 
 	return jsonResponse(
-		await Promise.all(objects.map(async object => await object.toAPI()))
+		await Promise.all(objects.map(async status => statusToAPI(status))),
+		200,
+		{
+			Link: linkHeader.join(", "),
+		}
 	);
 };
