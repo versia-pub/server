@@ -17,6 +17,11 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 		query.append(key, JSON.stringify(value));
 	}
 
+	// If body is empty
+	if (request.body === null) {
+		return {};
+	}
+
 	// if request contains a JSON body
 	if (request.headers.get("Content-Type")?.includes("application/json")) {
 		return (await request.json()) as T;

@@ -86,12 +86,16 @@ Working endpoints are:
 - `/api/v1/accounts/update_credentials`
 - `/api/v1/accounts/verify_credentials`
 - `/api/v1/accounts/familiar_followers`
+- `/api/v1/profile/avatar` (`DELETE`)
+- `/api/v1/profile/header` (`DELETE`)
 - `/api/v1/statuses/:id` (`GET`, `DELETE`)
 - `/api/v1/statuses/:id/context`
 - `/api/v1/statuses/:id/favourite`
 - `/api/v1/statuses/:id/unfavourite`
 - `/api/v1/statuses/:id/favourited_by`
 - `/api/v1/statuses/:id/reblogged_by`
+- `/api/v1/statuses/:id/reblog`
+- `/api/v1/statuses/:id/unreblog`
 - `/api/v1/statuses`
 - `/api/v1/timelines/public`
 - `/api/v1/timelines/home`
@@ -104,7 +108,6 @@ Working endpoints are:
 
 Endpoints left:
 
-- `/api/v1/search`
 - `/api/v2/media`
 - `/api/v1/media/:id`
 - `/api/v1/reports`
@@ -135,11 +138,7 @@ Endpoints left:
 - `/api/v1/tags/:id`
 - `/api/v1/tags/:id/follow`
 - `/api/v1/tags/:id/unfollow`
-- `/api/v1/profile/avatar` (`DELETE`)
-- `/api/v1/profile/header` (`DELETE`)
 - `/api/v1/statuses/:id/translate`
-- `/api/v1/statuses/:id/reblog`
-- `/api/v1/statuses/:id/unreblog`
 - `/api/v1/statuses/:id/bookmark`
 - `/api/v1/statuses/:id/unbookmark`
 - `/api/v1/statuses/:id/mute`

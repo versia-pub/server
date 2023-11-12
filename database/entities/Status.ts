@@ -61,6 +61,7 @@ export const statusAndUserRelations = {
 		select: {
 			replies: true,
 			likes: true,
+			reblogs: true,
 		},
 	},
 	reblog: {
@@ -138,6 +139,7 @@ export type StatusWithRelations = Status & {
 	_count: {
 		replies: number;
 		likes: number;
+		reblogs: number;
 	};
 	reblog:
 		| (Status & {
@@ -458,8 +460,12 @@ export const statusToAPI = async (
 		emojis: await Promise.all(
 			status.emojis.map(emoji => emojiToAPI(emoji))
 		),
-		favourited: !!status.likes.find(like => like.likerId === user?.id),
-		favourites_count: status.likes.length,
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		favourited: !!(status.likes ?? []).find(
+			like => like.likerId === user?.id
+		),
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		favourites_count: (status.likes ?? []).length,
 		media_attachments: [],
 		mentions: [],
 		language: null,

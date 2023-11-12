@@ -200,6 +200,57 @@ describe("API Tests", () => {
 		});
 	});
 
+	describe("POST /api/v1/statuses/:id/reblog", () => {
+		test("should reblog the specified status and return the reblogged status object", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/statuses/${status?.id}/reblog`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const rebloggedStatus = (await response.json()) as APIStatus;
+
+			expect(rebloggedStatus.id).toBeDefined();
+			expect(rebloggedStatus.reblog?.id).toEqual(status?.id ?? "");
+			expect(rebloggedStatus.reblog?.reblogged).toBe(true);
+		});
+	});
+
+	describe("POST /api/v1/statuses/:id/unreblog", () => {
+		test("should unreblog the specified status and return the original status object", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/statuses/${status?.id}/unreblog`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const unrebloggedStatus = (await response.json()) as APIStatus;
+
+			expect(unrebloggedStatus.id).toBeDefined();
+			expect(unrebloggedStatus.reblogged).toBe(false);
+		});
+	});
+
 	describe("GET /api/v1/statuses/:id/context", () => {
 		test("should return the context of the specified status", async () => {
 			const response = await fetch(

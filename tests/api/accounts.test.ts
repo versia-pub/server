@@ -503,6 +503,56 @@ describe("API Tests", () => {
 		});
 	});
 
+	describe("DELETE /api/v1/profile/avatar", () => {
+		test("should delete the avatar of the authenticated user and return the updated account object", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/profile/avatar`,
+				{
+					method: "DELETE",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const account = (await response.json()) as APIAccount;
+
+			expect(account.id).toBeDefined();
+			expect(account.avatar).toBe("");
+		});
+	});
+
+	describe("DELETE /api/v1/profile/header", () => {
+		test("should delete the header of the authenticated user and return the updated account object", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/profile/header`,
+				{
+					method: "DELETE",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+						"Content-Type": "application/json",
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const account = (await response.json()) as APIAccount;
+
+			expect(account.id).toBeDefined();
+			expect(account.header).toBe("");
+		});
+	});
+
 	describe("GET /api/v1/accounts/familiar_followers", () => {
 		test("should follow the user", async () => {
 			const response = await fetch(
