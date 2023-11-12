@@ -102,6 +102,88 @@ Working endpoints are:
 - `/oauth/authorize`
 - `/oauth/token`
 
+Endpoints left:
+
+- `/api/v1/search`
+- `/api/v2/media`
+- `/api/v1/media/:id`
+- `/api/v1/reports`
+- `/api/v1/accounts/:id/lists`
+- `/api/v1/favourites`
+- `/api/v1/accounts/:id/following`
+- `/api/v1/mutes`
+- `/api/v1/blocks`
+- `/api/v1/follow_requests`
+- `/api/v1/follow_requests/:account_id/authorize`
+- `/api/v1/follow_requests/:account_id/reject`
+- `/api/v1/follow_suggestions`
+- `/api/v1/domain_blocks` (`GET`, `POST`, `DELETE`)
+- `/api/v2/filters` (`GET`, `POST`)
+- `/api/v2/filters/:id` (`GET`, `PUT`, `DELETE`)
+- `/api/v2/filters/:filter_id/keywords` (`GET`, `POST`)
+- `/api/v2/filters/keywords/:id` (`GET`, `PUT`, `DELETE`)
+- `/api/v2/filters/:filter_id/statuses` (`GET`, `POST`)
+- `/api/v2/filters/statuses/:id` (`GET`, `DELETE`)
+- `/api/v1/endorsements`
+- `/api/v1/featured_tags` (`GET`, `POST`)
+- `/api/v1/featured_tags/:id` (`DELETE`)
+- `/api/v1/featured_tags/suggestions`
+- `/api/v1/preferences`
+- `/api/v1/followed_tags`
+- `/api/v2/suggestions`
+- `/api/v1/suggestions/:account_id` (`DELETE`)
+- `/api/v1/tags/:id`
+- `/api/v1/tags/:id/follow`
+- `/api/v1/tags/:id/unfollow`
+- `/api/v1/profile/avatar` (`DELETE`)
+- `/api/v1/profile/header` (`DELETE`)
+- `/api/v1/statuses/:id/translate`
+- `/api/v1/statuses/:id/reblog`
+- `/api/v1/statuses/:id/unreblog`
+- `/api/v1/statuses/:id/bookmark`
+- `/api/v1/statuses/:id/unbookmark`
+- `/api/v1/statuses/:id/mute`
+- `/api/v1/statuses/:id/unmute`
+- `/api/v1/statuses/:id/pin`
+- `/api/v1/statuses/:id/unpin`
+- `/api/v1/statuses/:id` (`PUT`)
+- `/api/v1/statuses/:id/history`
+- `/api/v1/statuses/:id/source`
+- `/api/v1/polls/:id`
+- `/api/v1/polls/:id/votes`
+- `/api/v1/scheduled_statuses`
+- `/api/v1/scheduled_statuses/:id` (`GET`, `PUT`, `DELETE`)
+- `/api/v1/timelines/tag/:hashtag`
+- `/api/v1/timelines/list/:list_id`
+- `/api/v1/conversations`
+- `/api/v1/conversations/:id`
+- `/api/v1/conversations/:id/read`
+- `/api/v1/lists` (`GET`, `POST`)
+- `/api/v1/lists/:id` (`GET`, `PUT`, `DELETE`)
+- `/api/v1/markers` (`GET`, `POST`)
+- `/api/v1/lists/:id/accounts` (`GET`, `POST`, `DELETE`)
+- `/api/v1/notifications`
+- `/api/v1/notifications/:id`
+- `/api/v1/notifications/clear`
+- `/api/v1/notifications/:id/dismiss`
+- `/api/v2/search`
+- `/api/v2/instance`
+- `/api/v1/instance/peers`
+- `/api/v1/instance/activity`
+- `/api/v1/instance/rules`
+- `/api/v1/instance/domain_blocks`
+- `/api/v1/instance/extended_description`
+- `/api/v1/directory`
+- `/api/v1/trends/tags`
+- `/api/v1/trends/statuses`
+- `/api/v1/trends/links`
+- `/api/v1/announcements`
+- `/api/v1/announcements/:id/dismiss`
+- `/api/v1/announcements/:id/reactions/:name` (`PUT`, `DELETE`)
+- Admin API  
+
+WebSocket Streaming API also needed to be added (and push notifications)
+
 ## Configuration Values
 
 Configuration can be found inside the `config.toml` file. The following values are available:
