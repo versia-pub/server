@@ -5,9 +5,9 @@ import chalk from "chalk";
 import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import "reflect-metadata";
-import { AppDataSource } from "~database/datasource";
 import { AuthData, getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
+import { mkdir } from "fs/promises";
 
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
@@ -21,10 +21,9 @@ const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
 
 if (!(await requests_log.exists())) {
 	console.log(`${chalk.green(`✓`)} ${chalk.bold("Creating logs folder...")}`);
+	await mkdir(process.cwd() + "/logs");
 	await Bun.write(process.cwd() + "/logs/requests.log", "");
 }
-
-if (!AppDataSource.isInitialized) await AppDataSource.initialize();
 
 Bun.serve({
 	port: config.http.bind_port,

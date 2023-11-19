@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { ConfigType } from "@config";
 import sharp from "sharp";
+import { exists, mkdir } from "fs/promises";
 class MediaBackend {
 	backend: string;
 
@@ -222,6 +223,10 @@ export class LocalBackend extends MediaBackend {
 		}
 
 		const hash = await super.addMedia(media);
+
+		if (!(await exists(`${process.cwd()}/uploads`))) {
+			await mkdir(`${process.cwd()}/uploads`);
+		}
 
 		await Bun.write(Bun.file(`${process.cwd()}/uploads/${hash}`), media);
 
