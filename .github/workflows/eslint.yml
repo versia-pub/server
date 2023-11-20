@@ -29,14 +29,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Install Bun runtime
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-        
-      - name: Add Bun to PATH
-        run: |
-          source /home/runner/.bashrc 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install NPM packages
         run: |
