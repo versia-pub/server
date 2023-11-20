@@ -343,11 +343,10 @@ export const generateUserKeys = async () => {
 	};
 };
 
-// eslint-disable-next-line @typescript-eslint/require-await
-export const userToAPI = async (
+export const userToAPI = (
 	user: UserWithRelations,
 	isOwnAccount = false
-): Promise<APIAccount> => {
+): APIAccount => {
 	const config = getConfig();
 
 	return {
@@ -364,7 +363,7 @@ export const userToAPI = async (
 			.length,
 		following_count: user.relationships.filter(r => r.following).length,
 		statuses_count: user._count.statuses,
-		emojis: await Promise.all(user.emojis.map(emoji => emojiToAPI(emoji))),
+		emojis: user.emojis.map(emoji => emojiToAPI(emoji)),
 		// TODO: Add fields
 		fields: [],
 		bot: user.isBot,

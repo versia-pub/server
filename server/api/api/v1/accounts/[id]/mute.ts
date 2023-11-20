@@ -96,5 +96,5 @@ export default async (
 
 	// TODO: Implement duration
 
-	return jsonResponse(await relationshipToAPI(relationship));
+	return jsonResponse(relationshipToAPI(relationship));
 };

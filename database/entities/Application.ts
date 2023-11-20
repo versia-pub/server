@@ -30,10 +30,7 @@ export const getFromToken = async (
  * Converts this application to an API application.
  * @returns The API application representation of this application.
  */
-export const applicationToAPI = async (
-	app: Application
-	// eslint-disable-next-line @typescript-eslint/require-await
-): Promise<APIApplication> => {
+export const applicationToAPI = (app: Application): APIApplication => {
 	return {
 		name: app.name,
 		website: app.website,

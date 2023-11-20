@@ -242,5 +242,5 @@ export default async (req: Request): Promise<Response> => {
 		},
 	});
 
-	return jsonResponse(await userToAPI(user));
+	return jsonResponse(userToAPI(user));
 };

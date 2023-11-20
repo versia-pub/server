@@ -450,16 +450,14 @@ export const statusToAPI = async (
 		id: status.id,
 		in_reply_to_id: status.inReplyToPostId || null,
 		in_reply_to_account_id: status.inReplyToPost?.authorId || null,
-		account: await userToAPI(status.author),
+		account: userToAPI(status.author),
 		created_at: new Date(status.createdAt).toISOString(),
 		application: status.application
-			? await applicationToAPI(status.application)
+			? applicationToAPI(status.application)
 			: null,
 		card: null,
 		content: status.content,
-		emojis: await Promise.all(
-			status.emojis.map(emoji => emojiToAPI(emoji))
-		),
+		emojis: status.emojis.map(emoji => emojiToAPI(emoji)),
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		favourited: !!(status.likes ?? []).find(
 			like => like.likerId === user?.id

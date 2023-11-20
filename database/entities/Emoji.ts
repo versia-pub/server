@@ -54,8 +54,7 @@ export const addEmojiIfNotExists = async (emoji: LysandEmoji) => {
  * Converts the emoji to an APIEmoji object.
  * @returns The APIEmoji object.
  */
-// eslint-disable-next-line @typescript-eslint/require-await
-export const emojiToAPI = async (emoji: Emoji): Promise<APIEmoji> => {
+export const emojiToAPI = (emoji: Emoji): APIEmoji => {
 	return {
 		shortcode: emoji.shortcode,
 		static_url: emoji.url, // TODO: Add static version

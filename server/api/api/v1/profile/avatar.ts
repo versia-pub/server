@@ -39,5 +39,5 @@ export default async (req: Request): Promise<Response> => {
 		include: userRelations,
 	});
 
-	return jsonResponse(await userToAPI(newUser));
+	return jsonResponse(userToAPI(newUser));
 };

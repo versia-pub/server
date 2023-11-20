@@ -63,9 +63,5 @@ export default async (req: Request): Promise<Response> => {
 		(a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId)
 	);
 
-	return jsonResponse(
-		await Promise.all(
-			relationships.map(async r => await relationshipToAPI(r))
-		)
-	);
+	return jsonResponse(relationships.map(r => relationshipToAPI(r)));
 };

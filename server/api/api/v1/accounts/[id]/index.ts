@@ -44,5 +44,5 @@ export default async (
 
 	if (!foundUser) return errorResponse("User not found", 404);
 
-	return jsonResponse(await userToAPI(foundUser, user?.id === foundUser.id));
+	return jsonResponse(userToAPI(foundUser, user?.id === foundUser.id));
 };

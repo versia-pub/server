@@ -41,10 +41,7 @@ export const createNewRelationship = async (
  * Converts the relationship to an API-friendly format.
  * @returns The API-friendly relationship.
  */
-export const relationshipToAPI = async (
-	rel: Relationship
-	// eslint-disable-next-line @typescript-eslint/require-await
-): Promise<APIRelationship> => {
+export const relationshipToAPI = (rel: Relationship): APIRelationship => {
 	return {
 		blocked_by: rel.blockedBy,
 		blocking: rel.blocking,
