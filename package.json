@@ -37,7 +37,8 @@
     "migrate-dev": "bunx prisma migrate dev",
     "migrate": "bunx prisma migrate deploy",
     "lint": "eslint --config .eslintrc.cjs --ext .ts .",
-    "generate": "bunx prisma generate"
+    "generate": "bunx prisma generate",
+    "cli": "bun run cli.ts"
   },
   "trustedDependencies": [
     "sharp",

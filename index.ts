@@ -8,6 +8,8 @@ import "reflect-metadata";
 import { AuthData, getFromRequest } from "~database/entities/User";
 import { APIRouteMeta } from "~types/api";
 import { mkdir } from "fs/promises";
+import { client } from "~database/datasource";
+import { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
@@ -23,6 +25,20 @@ if (!(await requests_log.exists())) {
 	console.log(`${chalk.green(`✓`)} ${chalk.bold("Creating logs folder...")}`);
 	await mkdir(process.cwd() + "/logs");
 	await Bun.write(process.cwd() + "/logs/requests.log", "");
+}
+
+// Check if database is reachable
+const postCount = 0;
+try {
+	await client.status.count();
+} catch (e) {
+	const error = e as PrismaClientInitializationError;
+	console.error(
+		`${chalk.red(`✗`)} ${chalk.bold(
+			"Error while connecting to database: "
+		)} ${error.message}`
+	);
+	process.exit(1);
 }
 
 Bun.serve({
@@ -151,5 +167,16 @@ console.log(
 		`Lysand started at ${chalk.blue(
 			`${config.http.bind}:${config.http.bind_port}`
 		)}`
+	)}`
+);
+
+console.log(
+	`${chalk.green(`✓`)} ${chalk.bold(`Database is ${chalk.blue("online")}`)}`
+);
+
+// Print "serving x posts"
+console.log(
+	`${chalk.green(`✓`)} ${chalk.bold(
+		`Serving ${chalk.blue(postCount)} posts`
 	)}`
 );

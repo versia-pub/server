@@ -207,6 +207,7 @@ export const createNewLocalUser = async (data: {
 	bio?: string;
 	avatar?: string;
 	header?: string;
+	admin?: boolean;
 }) => {
 	const config = getConfig();
 
@@ -221,6 +222,7 @@ export const createNewLocalUser = async (data: {
 			note: data.bio ?? "",
 			avatar: data.avatar ?? config.defaults.avatar,
 			header: data.header ?? config.defaults.avatar,
+			isAdmin: data.admin ?? false,
 			uri: "",
 			publicKey: keys.public_key,
 			privateKey: keys.private_key,
