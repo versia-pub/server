@@ -40,11 +40,6 @@ jobs:
         run: |
           bun prisma generate
 
-      - name: Install ESLint
-        run: |
-          bun install -g eslint@8.10.0
-          bun install -g @microsoft/eslint-formatter-sarif@2.1.7
-
       - name: Run ESLint
         run: |
           bunx eslint . --config .eslintrc.cjs --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
