@@ -7,7 +7,7 @@
 # More details at https://github.com/eslint/eslint
 # and https://eslint.org
 
-name: ESLint
+name: ESLint Checks
 
 on:
   push:
@@ -30,17 +30,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install Bun runtime
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+
+      - name: Install NPM packages
+        run: |
+          bun install
+
       - name: Install ESLint
         run: |
-          npm install eslint@8.10.0
-          npm install @microsoft/eslint-formatter-sarif@2.1.7
+          bun install -g eslint@8.10.0
+          bun install -g @microsoft/eslint-formatter-sarif@2.1.7
 
       - name: Run ESLint
-        run: npx eslint .
-          --config .eslintrc.js
-          --ext .js,.jsx,.ts,.tsx
-          --format @microsoft/eslint-formatter-sarif
-          --output-file eslint-results.sarif
+        run: |
+          bunx eslint .
+            --config .eslintrc.js
+            --ext .js,.jsx,.ts,.tsx
+            --format @microsoft/eslint-formatter-sarif
+            --output-file eslint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
