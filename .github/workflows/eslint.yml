@@ -35,6 +35,10 @@ jobs:
       - name: Install NPM packages
         run: |
           bun install
+      
+      - name: Generate Prisma Client
+        run: |
+          bun prisma generate
 
       - name: Install ESLint
         run: |
@@ -43,11 +47,7 @@ jobs:
 
       - name: Run ESLint
         run: |
-          bunx eslint .
-            --config .eslintrc.js
-            --ext .js,.jsx,.ts,.tsx
-            --format @microsoft/eslint-formatter-sarif
-            --output-file eslint-results.sarif
+          bunx eslint . --config .eslintrc.js --ext .js,.jsx,.ts,.tsx --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
