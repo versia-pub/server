@@ -1,5 +1,7 @@
 # Contributing to Lysand
 
+> This document was authored by [@CPlusPatch](https://github.com/CPlusPatch).
+
 Thank you for your interest in contributing to Lysand! We welcome contributions from everyone, regardless of their level of experience or expertise.
 
 # Tech Stack
@@ -118,6 +120,8 @@ TypeScript errors should be ignored with `// @ts-expect-error` comments, as well
 
 We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our commit messages. This allows us to automatically generate the changelog and the version number.
 
+> **Note**: I don't actually enforce this rule, but it would be great if you could follow it.
+
 ### Pull requests
 
 When you are done with your changes, you can open a pull request. Please make sure that your code is compliant with the code style and that the tests pass before opening a pull request.
@@ -133,6 +137,20 @@ To help with the creation of tests, you may find [GitHub Copilot](https://copilo
 ### Writing documentation
 
 Documentation for the Lysand protocol is available on [lysand.org](https://lysand.org/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
+
+This project should not need much documentation, but if you think that something needs to be documented, please add it to the README or contribution guide.
+
+## Reporting bugs
+
+If you find a bug, please open an issue on GitHub. Please make sure to include the following information:
+
+- The steps to reproduce the bug
+- The expected behavior
+- The actual behavior
+- The version of Lysand you are using
+- The version of Bun you are using
+- The version of PostgreSQL you are using
+- Your operating system and version
 
 # License
 
