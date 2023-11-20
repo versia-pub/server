@@ -33,7 +33,9 @@
   "private": true,
   "scripts": {
     "dev": "bun run index.ts",
-    "start": "bun run index.ts"
+    "start": "bun run index.ts",
+    "migrate-dev": "bunx prisma migrate dev",
+    "migrate": "bunx prisma migrate deploy"
   },
   "trustedDependencies": [
     "sharp",

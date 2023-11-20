@@ -1,0 +1,12 @@
+version: '3'
+services:
+  lysand:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    container_name: lysand
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config

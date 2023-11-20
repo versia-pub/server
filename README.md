@@ -1,4 +1,6 @@
-# Lysand
+<p align="center">
+  <a href="https://lysand.org"><img src="https://cdn-web.cpluspatch.com/lysand.webp" alt="Lysand Logo" height=130></a>
+</p>
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
@@ -10,6 +12,20 @@ This is a project to create a federated social network based on the [Lysand](htt
 This project aims to be a fully featured social network, with a focus on privacy and security. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
 > **Note:** This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
+
+## Features
+
+- [x] Inbound federation
+- [x] S3 or local media storage
+- [x] Deduplication of uploaded files
+- [x] Federation limits
+- [x] Configurable defaults
+- [x] Full regex-based filters for posts, users and media
+- [x] Custom emoji support
+- [x] Automatic image conversion to WebP or other formats
+- [ ] Moderation tools
+- [ ] Full Mastodon API support
+- [ ] Outbound federation
 
 ## How do I run it?
 
@@ -26,7 +42,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 1. Clone this repository
 
 ```bash
-git clone https://github.com/CPlusPatch/lysand.git
+git clone https://github.com/lysand-org/lysand.git
 ```
 
 2. Install the dependencies
@@ -35,9 +51,41 @@ git clone https://github.com/CPlusPatch/lysand.git
 bun install
 ```
 
-3. Set up a PostgreSQL database
+3. Set up a PostgreSQL database, using the `pg_uuidv7` extension
+
+You may use the following [Dockerfile](Postgres.Dockerfile) to set it up:
+    
+```Dockerfile
+# Use the latest Postgres Docker image based on Alpine
+FROM postgres:alpine
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Install curl
+RUN apk add --no-cache curl
+
+RUN cd "$(mktemp -d)" \
+        && curl -LO "https://github.com/fboulnois/pg_uuidv7/releases/download/v1.3.0/{pg_uuidv7.tar.gz,SHA256SUMS}" \
+        && tar xf pg_uuidv7.tar.gz \
+        && sha256sum -c SHA256SUMS \
+        && PG_MAJOR=$(pg_config --version | sed 's/^.* \([0-9]\{1,\}\).*$/\1/') \
+        && cp "$PG_MAJOR/pg_uuidv7.so" "$(pg_config --pkglibdir)" \
+        && cp sql/pg_uuidv7--1.3.sql pg_uuidv7.control "$(pg_config --sharedir)/extension"
+# Add a script to run the CREATE EXTENSION command
+RUN echo '#!/bin/sh\npsql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_uuidv7;"' > /docker-entrypoint-initdb.d/init.sh
+
+# Make the entrypoint script executable
+RUN chmod +x /docker-entrypoint-initdb.d/init.sh
+```
 
 4. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
+
+5. Run migrations:
+
+```bash
+bun migrate
+```
 
 ### Running
 
