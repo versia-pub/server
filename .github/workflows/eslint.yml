@@ -33,6 +33,10 @@ jobs:
       - name: Install Bun runtime
         run: |
           curl -fsSL https://bun.sh/install | bash
+        
+      - name: Add Bun to PATH
+        run: |
+          source /home/runner/.bashrc 
 
       - name: Install NPM packages
         run: |
