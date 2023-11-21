@@ -97,7 +97,7 @@ switch (command) {
 				console.log(
 					`${chalk.green(`✓`)} Created user ${chalk.blue(
 						newUser.username
-					)}`
+					)}${admin ? chalk.green(" (admin)") : ""}`
 				);
 				break;
 			}
