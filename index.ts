@@ -10,6 +10,9 @@ import { APIRouteMeta } from "~types/api";
 import { mkdir } from "fs/promises";
 import { client } from "~database/datasource";
 import { PrismaClientInitializationError } from "@prisma/client/runtime/library";
+import { HookTypes, Server } from "~plugins/types";
+
+const server = new Server();
 
 const router = new Bun.FileSystemRouter({
 	style: "nextjs",
@@ -17,6 +20,8 @@ const router = new Bun.FileSystemRouter({
 });
 
 console.log(`${chalk.green(`>`)} ${chalk.bold("Starting Lysand...")}`);
+
+server.emit(HookTypes.PreServe);
 
 const config = getConfig();
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
@@ -180,3 +185,7 @@ console.log(
 		`Serving ${chalk.blue(postCount)} posts`
 	)}`
 );
+
+server.emit(HookTypes.PostServe, {
+	postCount,
+});
