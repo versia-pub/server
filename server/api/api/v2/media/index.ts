@@ -18,11 +18,12 @@ export const meta: APIRouteMeta = applyConfig({
 	route: "/api/v2/media",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:media"],
 	},
 });
 
 /**
- * Fetch a user
+ * Upload new media
  */
 export default async (req: Request): Promise<Response> => {
 	const { user } = await getFromRequest(req);
@@ -96,8 +97,15 @@ export default async (req: Request): Promise<Response> => {
 
 	// TODO: Add job to process videos and other media
 
-	return jsonResponse({
-		...attachmentToAPI(newAttachment),
-		url: undefined,
-	});
+	if (isImage) {
+		return jsonResponse(attachmentToAPI(newAttachment));
+	} else {
+		return jsonResponse(
+			{
+				...attachmentToAPI(newAttachment),
+				url: null,
+			},
+			202
+		);
+	}
 };

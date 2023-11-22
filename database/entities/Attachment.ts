@@ -27,9 +27,28 @@ export const attachmentToAPI = (
 			width: attachment.width || undefined,
 			height: attachment.height || undefined,
 			fps: attachment.fps || undefined,
-			size: attachment.size?.toString() || undefined,
+			size:
+				attachment.width && attachment.height
+					? `${attachment.width}x${attachment.height}`
+					: undefined,
 			duration: attachment.duration || undefined,
 			length: attachment.size?.toString() || undefined,
+			aspect:
+				attachment.width && attachment.height
+					? attachment.width / attachment.height
+					: undefined,
+			original: {
+				width: attachment.width || undefined,
+				height: attachment.height || undefined,
+				size:
+					attachment.width && attachment.height
+						? `${attachment.width}x${attachment.height}`
+						: undefined,
+				aspect:
+					attachment.width && attachment.height
+						? attachment.width / attachment.height
+						: undefined,
+			},
 			// Idk whether size or length is the right value
 		},
 		description: attachment.description,

@@ -8,5 +8,6 @@ export interface APIRouteMeta {
 	auth: {
 		required: boolean;
 		requiredOnMethods?: ("GET" | "POST" | "PUT" | "DELETE" | "PATCH")[];
+		oauthPermissions?: string[];
 	};
 }
