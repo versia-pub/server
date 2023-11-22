@@ -41,6 +41,10 @@ export interface ConfigType {
 		max_media_size: number;
 		max_media_attachments: number;
 		max_media_description_size: number;
+		max_poll_options: number;
+		max_poll_option_size: number;
+		min_poll_duration: number;
+		max_poll_duration: number;
 
 		username_blacklist: string[];
 		blacklist_tempmail: boolean;
@@ -181,8 +185,12 @@ export const configDefaults: ConfigType = {
 		max_avatar_size: 5_000_000,
 		max_header_size: 5_000_000,
 		max_media_size: 40_000_000,
-		max_media_attachments: 4,
+		max_media_attachments: 10,
 		max_media_description_size: 1000,
+		max_poll_options: 20,
+		max_poll_option_size: 500,
+		min_poll_duration: 60,
+		max_poll_duration: 1893456000,
 		max_username_size: 30,
 
 		username_blacklist: [

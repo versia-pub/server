@@ -36,13 +36,36 @@ export default async (req: Request): Promise<Response> => {
 
 	const file = form.get("file") as unknown as File | undefined;
 	const thumbnail = form.get("thumbnail");
-	const description = form.get("description");
+	const description = form.get("description") as string | undefined;
 
 	// Floating point numbers from -1.0 to 1.0, comma delimited
 	// const focus = form.get("focus");
 
 	if (!file) {
 		return errorResponse("No file provided", 400);
+	}
+
+	const config = getConfig();
+
+	if (file.size > config.validation.max_media_size) {
+		return errorResponse(
+			`File too large, max size is ${config.validation.max_media_size} bytes`,
+			413
+		);
+	}
+
+	if (!config.validation.allowed_mime_types.includes(file.type)) {
+		return errorResponse("Invalid file type", 415);
+	}
+
+	if (
+		description &&
+		description.length > config.validation.max_media_description_size
+	) {
+		return errorResponse(
+			`Description too long, max length is ${config.validation.max_media_description_size} characters`,
+			413
+		);
 	}
 
 	const sha256 = new Bun.SHA256();
@@ -65,8 +88,6 @@ export default async (req: Request): Promise<Response> => {
 
 	let url = "";
 
-	const config = getConfig();
-
 	if (isImage) {
 		const hash = await uploadFile(file, config);
 
@@ -87,7 +108,7 @@ export default async (req: Request): Promise<Response> => {
 			thumbnail_url: thumbnailUrl,
 			sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
 			mime_type: file.type,
-			description: (description as string | undefined) ?? "",
+			description: description ?? "",
 			size: file.size,
 			blurhash: blurhash ?? undefined,
 			width: metadata?.width ?? undefined,

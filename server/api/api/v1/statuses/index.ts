@@ -78,26 +78,10 @@ export default async (
 	}>(req);
 
 	// Validate status
-	if (!status) {
-		return errorResponse("Status is required", 422);
-	}
-
-	let sanitizedStatus: string;
-
-	if (content_type === "text/markdown") {
-		sanitizedStatus = await sanitizeHtml(parse(status));
-	} else if (content_type === "text/x.misskeymarkdown") {
-		// Parse as MFM
-		// TODO: Parse as MFM
-		sanitizedStatus = await sanitizeHtml(parse(status));
-	} else {
-		sanitizedStatus = await sanitizeHtml(status);
-	}
-
-	if (sanitizedStatus.length > config.validation.max_note_size) {
+	if (!status && !(media_ids && media_ids.length > 0)) {
 		return errorResponse(
-			`Status must be less than ${config.validation.max_note_size} characters`,
-			400
+			"Status is required unless media is attached",
+			422
 		);
 	}
 
@@ -115,11 +99,71 @@ export default async (
 		return errorResponse("Poll options must be less than 5", 422);
 	}
 
-	// Validate poll expires_in
-	if (expires_in && (expires_in < 60 || expires_in > 604800)) {
+	if (media_ids && media_ids.length > 0) {
+		// Disallow poll
+		if (options) {
+			return errorResponse("Cannot attach poll to media", 422);
+		}
+		if (media_ids.length > 4) {
+			return errorResponse("Media IDs must be less than 5", 422);
+		}
+	}
+
+	if (options && options.length > config.validation.max_poll_options) {
 		return errorResponse(
-			"Poll expires_in must be between 60 and 604800",
+			`Poll options must be less than ${config.validation.max_poll_options}`,
 			422
+		);
+	}
+
+	if (
+		options &&
+		options.some(
+			option => option.length > config.validation.max_poll_option_size
+		)
+	) {
+		return errorResponse(
+			`Poll options must be less than ${config.validation.max_poll_option_size} characters`,
+			422
+		);
+	}
+
+	if (expires_in && expires_in < config.validation.min_poll_duration) {
+		return errorResponse(
+			`Poll duration must be greater than ${config.validation.min_poll_duration} seconds`,
+			422
+		);
+	}
+
+	if (expires_in && expires_in > config.validation.max_poll_duration) {
+		return errorResponse(
+			`Poll duration must be less than ${config.validation.max_poll_duration} seconds`,
+			422
+		);
+	}
+
+	if (scheduled_at) {
+		if (new Date(scheduled_at).getTime() < Date.now()) {
+			return errorResponse("Scheduled time must be in the future", 422);
+		}
+	}
+
+	let sanitizedStatus: string;
+
+	if (content_type === "text/markdown") {
+		sanitizedStatus = await sanitizeHtml(parse(status ?? ""));
+	} else if (content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+		// TODO: Parse as MFM
+		sanitizedStatus = await sanitizeHtml(parse(status ?? ""));
+	} else {
+		sanitizedStatus = await sanitizeHtml(status ?? "");
+	}
+
+	if (sanitizedStatus.length > config.validation.max_note_size) {
+		return errorResponse(
+			`Status must be less than ${config.validation.max_note_size} characters`,
+			400
 		);
 	}
 
@@ -145,8 +189,22 @@ export default async (
 	}
 
 	// Check if status body doesnt match filters
-	if (config.filters.note_filters.some(filter => status.match(filter))) {
+	if (config.filters.note_filters.some(filter => status?.match(filter))) {
 		return errorResponse("Status contains blocked words", 422);
+	}
+
+	// Check if media attachments are all valid
+
+	const foundAttachments = await client.attachment.findMany({
+		where: {
+			id: {
+				in: media_ids ?? [],
+			},
+		},
+	});
+
+	if (foundAttachments.length !== (media_ids ?? []).length) {
+		return errorResponse("Invalid media IDs", 422);
 	}
 
 	const newStatus = await createNewStatus({
@@ -163,6 +221,7 @@ export default async (
 		sensitive: sensitive || false,
 		spoiler_text: spoiler_text || "",
 		emojis: [],
+		media_attachments: media_ids,
 		reply:
 			replyStatus && replyUser
 				? {

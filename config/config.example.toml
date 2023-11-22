@@ -62,28 +62,97 @@ max_bio_size = 160
 max_note_size = 5000
 max_avatar_size = 5_000_000
 max_header_size = 5_000_000
-max_media_size = 40_000_000 # MEDIA NOT IMPLEMENTED
-max_media_attachments = 4 # MEDIA NOT IMPLEMENTED
-max_media_description_size = 1000 # MEDIA NOT IMPLEMENTED
+max_media_size = 40_000_000
+max_media_attachments = 10
+max_media_description_size = 1000
+max_poll_options = 20
+max_poll_option_size = 500
+min_poll_duration = 60
+max_poll_duration = 1893456000
 max_username_size = 30
 # An array of strings, defaults are from Akkoma
-username_blacklist = [ ".well-known", "~", "about", "activities" , "api",
-	"auth", "dev", "inbox", "internal", "main", "media", "nodeinfo", "notice",
-	"oauth", "objects", "proxy", "push", "registration", "relay", "settings",
-	"status", "tag", "users", "web", "search", "mfa" ]
+username_blacklist = [
+	".well-known",
+	"~",
+	"about",
+	"activities",
+	"api",
+	"auth",
+	"dev",
+	"inbox",
+	"internal",
+	"main",
+	"media",
+	"nodeinfo",
+	"notice",
+	"oauth",
+	"objects",
+	"proxy",
+	"push",
+	"registration",
+	"relay",
+	"settings",
+	"status",
+	"tag",
+	"users",
+	"web",
+	"search",
+	"mfa",
+]
 # Whether to blacklist known temporary email providers
 blacklist_tempmail = false
 # Additional email providers to blacklist
 email_blacklist = []
 # Valid URL schemes, otherwise the URL is parsed as text
-url_scheme_whitelist = [ "http", "https", "ftp", "dat", "dweb", "gopher", "hyper",
-	"ipfs", "ipns", "irc", "xmpp", "ircs", "magnet", "mailto", "mumble", "ssb",
-	"gemini" ] # NOT IMPLEMENTED
-allowed_mime_types = [ "image/jpeg", "image/png", "image/gif", "image/heic", "image/heif",
-	"image/webp", "image/avif", "video/webm", "video/mp4", "video/quicktime", "video/ogg",
-	"audio/wave", "audio/wav", "audio/x-wav", "audio/x-pn-wave", "audio/vnd.wave",
-	"audio/ogg", "audio/vorbis", "audio/mpeg", "audio/mp3", "audio/webm", "audio/flac",
-	"audio/aac", "audio/m4a", "audio/x-m4a", "audio/mp4", "audio/3gpp", "video/x-ms-asf" ] # MEDIA NOT IMPLEMENTED
+url_scheme_whitelist = [
+	"http",
+	"https",
+	"ftp",
+	"dat",
+	"dweb",
+	"gopher",
+	"hyper",
+	"ipfs",
+	"ipns",
+	"irc",
+	"xmpp",
+	"ircs",
+	"magnet",
+	"mailto",
+	"mumble",
+	"ssb",
+	"gemini",
+] # NOT IMPLEMENTED
+allowed_mime_types = [
+	"image/jpeg",
+	"image/png",
+	"image/gif",
+	"image/heic",
+	"image/heif",
+	"image/webp",
+	"image/avif",
+	"video/webm",
+	"video/mp4",
+	"video/quicktime",
+	"video/ogg",
+	"audio/wave",
+	"audio/wav",
+	"audio/x-wav",
+	"audio/x-pn-wave",
+	"audio/vnd.wave",
+	"audio/ogg",
+	"audio/vorbis",
+	"audio/mpeg",
+	"audio/mp3",
+	"audio/webm",
+	"audio/flac",
+	"audio/aac",
+	"audio/m4a",
+	"audio/x-m4a",
+	"audio/mp4",
+	"audio/3gpp",
+	"video/x-ms-asf",
+] # MEDIA NOT IMPLEMENTED
 
 [defaults]
 # Default visibility for new notes

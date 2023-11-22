@@ -351,6 +351,7 @@ export const createNewStatus = async (data: {
 	content_type?: string;
 	uri?: string;
 	mentions?: User[];
+	media_attachments?: string[];
 	reply?: {
 		status: Status;
 		user: User;
@@ -397,6 +398,15 @@ export const createNewStatus = async (data: {
 					};
 				}),
 			},
+			attachments: data.media_attachments
+				? {
+						connect: data.media_attachments.map(attachment => {
+							return {
+								id: attachment,
+							};
+						}),
+				  }
+				: undefined,
 			inReplyToPostId: data.reply?.status.id,
 			quotingPostId: data.quote?.id,
 			instanceId: data.account.instanceId || undefined,
