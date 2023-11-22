@@ -54,6 +54,7 @@ export default async (
 		"poll[multiple]": multiple,
 		"poll[options]": options,
 		in_reply_to_id,
+		quote_id,
 		language,
 		scheduled_at,
 		sensitive,
@@ -68,6 +69,7 @@ export default async (
 		"poll[multiple]"?: boolean;
 		"poll[hide_totals]"?: boolean;
 		in_reply_to_id?: string;
+		quote_id?: string;
 		sensitive?: boolean;
 		spoiler_text?: string;
 		visibility?: "public" | "unlisted" | "private" | "direct";
@@ -178,6 +180,7 @@ export default async (
 	// Get reply account and status if exists
 	let replyStatus: StatusWithRelations | null = null;
 	let replyUser: UserWithRelations | null = null;
+	let quote: StatusWithRelations | null = null;
 
 	if (in_reply_to_id) {
 		replyStatus = await client.status.findUnique({
@@ -185,7 +188,22 @@ export default async (
 			include: statusAndUserRelations,
 		});
 
-		replyUser = replyStatus?.author || null;
+		if (!replyStatus) {
+			return errorResponse("Reply status not found", 404);
+		}
+
+		replyUser = replyStatus.author;
+	}
+
+	if (quote_id) {
+		quote = await client.status.findUnique({
+			where: { id: quote_id },
+			include: statusAndUserRelations,
+		});
+
+		if (!quote) {
+			return errorResponse("Quote status not found", 404);
+		}
 	}
 
 	// Check if status body doesnt match filters
@@ -229,6 +247,7 @@ export default async (
 						status: replyStatus,
 				  }
 				: undefined,
+		quote: quote || undefined,
 	});
 
 	// TODO: add database jobs to deliver the post
