@@ -506,8 +506,12 @@ export const statusToAPI = async (
 		visibility: "public",
 		url: `${config.http.base_url}/statuses/${status.id}`,
 		bookmarked: false,
-		quote: null,
-		quote_id: undefined,
+		quote: status.quotingPost
+			? await statusToAPI(
+					status.quotingPost as unknown as StatusWithRelations
+			  )
+			: null,
+		quote_id: status.quotingPost?.id || undefined,
 	};
 };
 
