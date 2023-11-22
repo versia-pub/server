@@ -160,7 +160,7 @@ const logRequest = async (req: Request) => {
 };
 
 // Remove previous console.log
-console.clear();
+// console.clear();
 
 console.log(
 	`${chalk.green(`✓`)} ${chalk.bold(

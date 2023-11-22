@@ -121,6 +121,7 @@ model Status {
   replies         Status[]     @relation("StatusToStatusReply")
   quotes          Status[]     @relation("StatusToStatusQuote")
   pinnedBy        User[]       @relation("UserPinnedNotes")
+  attachments     Attachment[]
 }
 
 model Token {
@@ -134,6 +135,24 @@ model Token {
   userId        String?      @db.Uuid
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String?      @db.Uuid
+}
+
+model Attachment {
+  id          String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  url         String
+  remote_url  String?
+  thumbnail_url String?
+  mime_type   String
+  description String?
+  blurhash    String?
+  sha256      String?
+  fps         Int?
+  duration    Int?
+  width       Int?
+  height      Int?
+  size        Int?
+  status      Status?   @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  statusId    String?   @db.Uuid
 }
 
 model User {

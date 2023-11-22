@@ -161,5 +161,17 @@ export interface ContentFormat {
 	content: string;
 	content_type: string;
 	description?: string;
-	size?: string;
+	size?: number;
+	hash?: {
+		md5?: string;
+		sha1?: string;
+		sha256?: string;
+		sha512?: string;
+		[key: string]: string | undefined;
+	};
+	blurhash?: string;
+	fps?: number;
+	width?: number;
+	height?: number;
+	duration?: number;
 }
