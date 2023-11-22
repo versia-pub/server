@@ -94,7 +94,7 @@ export default async (req: Request): Promise<Response> => {
 		},
 	});
 
-	// Add job to process videos and other media
+	// TODO: Add job to process videos and other media
 
 	return jsonResponse({
 		...attachmentToAPI(newAttachment),
