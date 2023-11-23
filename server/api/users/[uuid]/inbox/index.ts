@@ -7,6 +7,7 @@ import { errorResponse, jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { parseEmojis } from "~database/entities/Emoji";
+import { createLike } from "~database/entities/Like";
 import { createFromObject } from "~database/entities/Object";
 import {
 	createNewStatus,
@@ -16,6 +17,7 @@ import {
 import { parseMentionsUris, userRelations } from "~database/entities/User";
 import type {
 	Announce,
+	Like,
 	LysandAction,
 	LysandPublication,
 	Patch,
@@ -250,8 +252,23 @@ export default async (
 			break;
 		}
 		case "Like": {
+			const like = body as Like;
 			// Store the object in the LysandObject table
 			await createFromObject(body);
+
+			const likedStatus = await client.status.findUnique({
+				where: {
+					uri: like.object,
+				},
+				include: statusAndUserRelations,
+			});
+
+			if (!likedStatus) {
+				return errorResponse("Status not found", 404);
+			}
+
+			await createLike(author, likedStatus);
+
 			break;
 		}
 		case "Dislike": {

@@ -3,6 +3,7 @@ import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
+import { createLike } from "~database/entities/Like";
 import {
 	isViewableByUser,
 	statusAndUserRelations,
@@ -54,12 +55,7 @@ export default async (
 	});
 
 	if (!existingLike) {
-		await client.like.create({
-			data: {
-				likedId: status.id,
-				likerId: user.id,
-			},
-		});
+		await createLike(user, status);
 	}
 
 	return jsonResponse({
