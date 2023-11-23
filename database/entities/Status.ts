@@ -436,6 +436,19 @@ export const createNewStatus = async (data: {
 		include: statusAndUserRelations,
 	});
 
+	// Create notification
+
+	if (status.inReplyToPost) {
+		await client.notification.create({
+			data: {
+				notifiedId: status.inReplyToPost.authorId,
+				accountId: status.authorId,
+				type: "mention",
+				statusId: status.id,
+			},
+		});
+	}
+
 	return status;
 };
 

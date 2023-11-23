@@ -15,6 +15,7 @@ import {
 } from "~database/entities/Status";
 import { parseMentionsUris, userRelations } from "~database/entities/User";
 import type {
+	Announce,
 	LysandAction,
 	LysandPublication,
 	Patch,
@@ -274,8 +275,43 @@ export default async (
 			break;
 		}
 		case "Announce": {
+			const announce = body as Announce;
 			// Store the object in the LysandObject table
 			await createFromObject(body);
+
+			const rebloggedStatus = await client.status.findUnique({
+				where: {
+					uri: announce.object,
+				},
+				include: statusAndUserRelations,
+			});
+
+			if (!rebloggedStatus) {
+				return errorResponse("Status not found", 404);
+			}
+
+			// Create new reblog
+			const newReblog = await client.status.create({
+				data: {
+					authorId: author.id,
+					reblogId: rebloggedStatus.id,
+					isReblog: true,
+					uri: body.uri,
+					visibility: rebloggedStatus.visibility,
+					sensitive: false,
+				},
+				include: statusAndUserRelations,
+			});
+
+			// Create notification
+			await client.notification.create({
+				data: {
+					accountId: author.id,
+					notifiedId: rebloggedStatus.authorId,
+					type: "reblog",
+					statusId: rebloggedStatus.id,
+				},
+			});
 			break;
 		}
 		case "Undo": {

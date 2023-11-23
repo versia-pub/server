@@ -83,6 +83,18 @@ export default async (
 		include: statusAndUserRelations,
 	});
 
+	// Create notification for reblog if reblogged user is on the same instance
+	if (status.reblog?.author.instanceId === user.instanceId) {
+		await client.notification.create({
+			data: {
+				accountId: user.id,
+				notifiedId: status.reblog.authorId,
+				type: "reblog",
+				statusId: status.reblogId,
+			},
+		});
+	}
+
 	return jsonResponse(
 		await statusToAPI(
 			{
