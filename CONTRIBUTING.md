@@ -132,7 +132,7 @@ We use Bun's integrated testing system to write tests. You can find more informa
 
 Tests **must** be written for all API routes and all functions that are not trivial. If you are not sure whether you should write a test for something, you probably should.
 
-To help with the creation of tests, you may find [GitHub Copilot](https://copilot.github.com/) useful (or some of its free alternatives like [Codeium](https://codeium.com/))
+To help with the creation of tests, you may find [GitHub Copilot](https://copilot.github.com/) useful (or some of its free alternatives like [Codeium](https://codeium.com/)). Please do not blindly copy the code that it generates, but use it as a starting point for your own tests.
 
 ### Writing documentation
 
