@@ -1,4 +1,4 @@
-import { Emoji } from "./extensions/org.lysand/custom_emojis";
+import type { Emoji } from "./extensions/org.lysand/custom_emojis";
 
 export interface LysandObjectType {
 	type: string;

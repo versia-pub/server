@@ -1,5 +1,5 @@
-import { APActivity, APObject } from "activitypub-types";
-import { NodeObject } from "jsonld";
+import type { APActivity, APObject } from "activitypub-types";
+import type { NodeObject } from "jsonld";
 
 export const jsonResponse = (
 	data: object,

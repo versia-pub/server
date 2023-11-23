@@ -2,7 +2,7 @@
 import { applyConfig } from "@api";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import {
 	isViewableByUser,
@@ -13,7 +13,7 @@ import {
 	userRelations,
 	userToAPI,
 } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["GET"],

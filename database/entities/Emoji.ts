@@ -1,7 +1,7 @@
-import { APIEmoji } from "~types/entities/emoji";
-import { Emoji as LysandEmoji } from "~types/lysand/extensions/org.lysand/custom_emojis";
+import type { APIEmoji } from "~types/entities/emoji";
+import type { Emoji as LysandEmoji } from "~types/lysand/extensions/org.lysand/custom_emojis";
 import { client } from "~database/datasource";
-import { Emoji } from "@prisma/client";
+import type { Emoji } from "@prisma/client";
 
 /**
  * Represents an emoji entity in the database.

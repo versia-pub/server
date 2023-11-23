@@ -1,4 +1,5 @@
-import { HookTypes, Server } from "./types";
+import type { Server } from "./types";
+import { HookTypes } from "./types";
 
 const registerPlugin = (server: Server) => {
 	server.on(HookTypes.OnPostCreate, (req, newPost, author) => {

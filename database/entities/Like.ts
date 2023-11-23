@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Like as LysandLike } from "~types/lysand/Object";
+import type { Like as LysandLike } from "~types/lysand/Object";
 import { getConfig } from "@config";
-import { Like } from "@prisma/client";
+import type { Like } from "@prisma/client";
 
 /**
  * Represents a Like entity in the database.

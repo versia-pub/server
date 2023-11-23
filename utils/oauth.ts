@@ -1,4 +1,4 @@
-import { Application } from "@prisma/client";
+import type { Application } from "@prisma/client";
 
 /**
  * Check if an OAuth application is valid for a route

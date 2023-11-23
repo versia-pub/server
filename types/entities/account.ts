@@ -1,7 +1,7 @@
-import { APIEmoji } from "./emoji";
-import { APIField } from "./field";
-import { APIRole } from "./role";
-import { APISource } from "./source";
+import type { APIEmoji } from "./emoji";
+import type { APIField } from "./field";
+import type { APIRole } from "./role";
+import type { APISource } from "./source";
 
 export interface APIAccount {
 	id: string;

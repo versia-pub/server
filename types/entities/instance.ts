@@ -1,6 +1,6 @@
-import { APIAccount } from "./account";
-import { APIStats } from "./stats";
-import { APIURLs } from "./urls";
+import type { APIAccount } from "./account";
+import type { APIStats } from "./stats";
+import type { APIURLs } from "./urls";
 
 export interface APIInstance {
 	uri: string;

@@ -1,5 +1,5 @@
 import { getConfig } from "@config";
-import { Application, Token } from "@prisma/client";
+import type { Application, Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";

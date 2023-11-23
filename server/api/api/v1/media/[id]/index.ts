@@ -2,11 +2,11 @@ import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { getFromRequest } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 import { uploadFile } from "~classes/media";
 import { getConfig } from "@config";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { parseRequest } from "@request";
 
 export const meta: APIRouteMeta = applyConfig({

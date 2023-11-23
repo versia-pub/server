@@ -3,7 +3,7 @@
 import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { userRelations, userToLysand } from "~database/entities/User";
 

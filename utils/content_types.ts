@@ -1,4 +1,4 @@
-import { ContentFormat } from "~types/lysand/Object";
+import type { ContentFormat } from "~types/lysand/Object";
 
 export const getBestContentType = (contents: ContentFormat[]) => {
 	// Find the best content and content type

@@ -3,7 +3,7 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["GET"],

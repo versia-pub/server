@@ -1,5 +1,5 @@
-import { APIApplication } from "~types/entities/application";
-import { Application } from "@prisma/client";
+import type { APIApplication } from "~types/entities/application";
+import type { Application } from "@prisma/client";
 import { client } from "~database/datasource";
 
 /**

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { applyConfig } from "@api";
 import { jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

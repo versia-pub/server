@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import {
 	isViewableByUser,
@@ -9,8 +9,8 @@ import {
 	statusToAPI,
 } from "~database/entities/Status";
 import { getFromRequest } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
-import { APIStatus } from "~types/entities/status";
+import type { APIRouteMeta } from "~types/api";
+import type { APIStatus } from "~types/entities/status";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["POST"],

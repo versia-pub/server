@@ -1,4 +1,4 @@
-import { APIMeta } from "./attachment";
+import type { APIMeta } from "./attachment";
 
 export interface APIAsyncAttachment {
 	id: string;

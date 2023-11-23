@@ -1,8 +1,9 @@
-import { ConfigType, getConfig } from "@config";
-import { APIAccount } from "~types/entities/account";
-import { User as LysandUser } from "~types/lysand/Object";
+import type { ConfigType } from "@config";
+import { getConfig } from "@config";
+import type { APIAccount } from "~types/entities/account";
+import type { User as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
-import {
+import type {
 	Emoji,
 	Instance,
 	Like,
@@ -13,7 +14,7 @@ import {
 import { client } from "~database/datasource";
 import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
-import { APISource } from "~types/entities/source";
+import type { APISource } from "~types/entities/source";
 
 export interface AuthData {
 	user: UserWithRelations | null;

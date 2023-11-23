@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getConfig } from "@config";
+import type { UserWithRelations } from "./User";
 import {
-	UserWithRelations,
 	fetchRemoteUser,
 	parseMentionsUris,
 	userRelations,
 	userToAPI,
 } from "./User";
 import { client } from "~database/datasource";
-import { LysandPublication, Note } from "~types/lysand/Object";
+import type { LysandPublication, Note } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import { getBestContentType } from "@content_types";
-import {
+import type {
 	Application,
 	Emoji,
 	Instance,
@@ -21,7 +21,7 @@ import {
 	User,
 } from "@prisma/client";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
-import { APIStatus } from "~types/entities/status";
+import type { APIStatus } from "~types/entities/status";
 import { applicationToAPI } from "./Application";
 
 const config = getConfig();

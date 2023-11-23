@@ -1,5 +1,5 @@
-import { Relationship, User } from "@prisma/client";
-import { APIRelationship } from "~types/entities/relationship";
+import type { Relationship, User } from "@prisma/client";
+import type { APIRelationship } from "~types/entities/relationship";
 import { client } from "~database/datasource";
 
 /**

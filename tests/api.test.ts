@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConfig } from "@config";
-import { Token } from "@prisma/client";
+import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
-import { UserWithRelations, createNewLocalUser } from "~database/entities/User";
-import { APIEmoji } from "~types/entities/emoji";
-import { APIInstance } from "~types/entities/instance";
+import {
+	type UserWithRelations,
+	createNewLocalUser,
+} from "~database/entities/User";
+import type { APIEmoji } from "~types/entities/emoji";
+import type { APIInstance } from "~types/entities/instance";
 
 const config = getConfig();
 

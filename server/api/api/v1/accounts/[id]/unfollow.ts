@@ -1,5 +1,5 @@
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import {
 	createNewRelationship,
 	relationshipToAPI,

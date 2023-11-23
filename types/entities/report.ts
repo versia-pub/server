@@ -1,4 +1,4 @@
-import { APIAccount } from "./account";
+import type { APIAccount } from "./account";
 
 export interface APIReport {
 	id: string;

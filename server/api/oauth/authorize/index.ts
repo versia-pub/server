@@ -1,5 +1,5 @@
 import { applyConfig } from "@api";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

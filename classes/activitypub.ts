@@ -1,4 +1,4 @@
-import { APActivity, APActor } from "activitypub-types";
+import type { APActivity, APActor } from "activitypub-types";
 
 export class RemoteActor {
 	private actorData: APActor | null;

@@ -1,4 +1,4 @@
-import { APIField } from "./field";
+import type { APIField } from "./field";
 
 export interface APISource {
 	privacy: string | null;

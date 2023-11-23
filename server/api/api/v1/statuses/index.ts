@@ -6,18 +6,18 @@ import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { parse } from "marked";
 import { client } from "~database/datasource";
 import { getFromToken } from "~database/entities/Application";
+import type { StatusWithRelations } from "~database/entities/Status";
 import {
-	StatusWithRelations,
 	createNewStatus,
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import { AuthData, UserWithRelations } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { AuthData, UserWithRelations } from "~database/entities/User";
+import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["POST"],

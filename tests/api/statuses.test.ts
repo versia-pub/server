@@ -1,14 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getConfig } from "@config";
-import { Token } from "@prisma/client";
+import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
-import { UserWithRelations, createNewLocalUser } from "~database/entities/User";
-import { APIAccount } from "~types/entities/account";
-import { APIContext } from "~types/entities/context";
-import { APIStatus } from "~types/entities/status";
+import {
+	type UserWithRelations,
+	createNewLocalUser,
+} from "~database/entities/User";
+import type { APIAccount } from "~types/entities/account";
+import type { APIContext } from "~types/entities/context";
+import type { APIStatus } from "~types/entities/status";
 
 const config = getConfig();
 

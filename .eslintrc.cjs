@@ -16,5 +16,7 @@ module.exports = {
 		"@typescript-eslint/no-unsafe-assignment": "off",
 		"@typescript-eslint/no-unsafe-argument": "off",
 		"@typescript-eslint/no-explicit-any": "off",
+		"@typescript-eslint/consistent-type-exports": "error",
+		"@typescript-eslint/consistent-type-imports": "error"
 	},
 };

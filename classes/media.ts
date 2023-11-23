@@ -1,10 +1,10 @@
+import type { GetObjectCommandOutput } from "@aws-sdk/client-s3";
 import {
 	GetObjectCommand,
-	GetObjectCommandOutput,
 	PutObjectCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
-import { ConfigType } from "@config";
+import type { ConfigType } from "@config";
 import sharp from "sharp";
 import { exists, mkdir } from "fs/promises";
 class MediaBackend {

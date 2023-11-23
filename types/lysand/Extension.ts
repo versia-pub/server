@@ -1,4 +1,4 @@
-import { LysandObjectType } from "./Object";
+import type { LysandObjectType } from "./Object";
 
 export interface ExtensionType extends LysandObjectType {
 	type: "Extension";

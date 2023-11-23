@@ -154,16 +154,20 @@ Working endpoints are:
 - `/oauth/authorize`
 - `/oauth/token`
 
-Endpoints left:
+Tests needed but completed:
 
 - `/api/v2/media`
 - `/api/v1/media/:id`
+- `/api/v1/blocks`
+- `/api/v1/mutes`
+
+
+Endpoints left:
+
 - `/api/v1/reports`
 - `/api/v1/accounts/:id/lists`
 - `/api/v1/favourites`
 - `/api/v1/accounts/:id/following`
-- `/api/v1/mutes`
-- `/api/v1/blocks`
 - `/api/v1/follow_requests`
 - `/api/v1/follow_requests/:account_id/authorize`
 - `/api/v1/follow_requests/:account_id/reject`

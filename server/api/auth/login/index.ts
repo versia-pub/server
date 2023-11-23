@@ -1,11 +1,11 @@
 import { applyConfig } from "@api";
 import { errorResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import { userRelations } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["POST"],

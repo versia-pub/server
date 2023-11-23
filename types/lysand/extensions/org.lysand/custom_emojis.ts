@@ -1,4 +1,4 @@
-import { ContentFormat } from "../../Object";
+import type { ContentFormat } from "../../Object";
 
 export interface Emoji {
 	name: string;

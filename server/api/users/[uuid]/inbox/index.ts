@@ -4,7 +4,7 @@ import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { parseEmojis } from "~database/entities/Emoji";
 import { createFromObject } from "~database/entities/Object";
@@ -14,7 +14,11 @@ import {
 	statusAndUserRelations,
 } from "~database/entities/Status";
 import { parseMentionsUris, userRelations } from "~database/entities/User";
-import { LysandAction, LysandPublication, Patch } from "~types/lysand/Object";
+import type {
+	LysandAction,
+	LysandPublication,
+	Patch,
+} from "~types/lysand/Object";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],

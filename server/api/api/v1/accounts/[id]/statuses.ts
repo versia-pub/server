@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
 import { userRelations } from "~database/entities/User";
 import { applyConfig } from "@api";

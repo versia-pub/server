@@ -6,7 +6,7 @@ import {
 	userRelations,
 	userToAPI,
 } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["DELETE"],

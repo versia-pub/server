@@ -1,7 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
+import type { UserWithRelations } from "~database/entities/User";
 import {
-	UserWithRelations,
 	getFromRequest,
 	userRelations,
 	userToAPI,

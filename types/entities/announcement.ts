@@ -1,5 +1,5 @@
-import { APIEmoji } from "./emoji";
-import { APIStatusTag } from "./status";
+import type { APIEmoji } from "./emoji";
+import type { APIStatusTag } from "./status";
 
 export interface APIAnnouncement {
 	id: string;

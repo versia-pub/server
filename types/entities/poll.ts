@@ -1,4 +1,4 @@
-import { APIPollOption } from "./poll_option";
+import type { APIPollOption } from "./poll_option";
 
 export interface APIPoll {
 	id: string;

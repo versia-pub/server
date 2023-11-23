@@ -1,6 +1,6 @@
-import { Instance } from "@prisma/client";
+import type { Instance } from "@prisma/client";
 import { client } from "~database/datasource";
-import { ServerMetadata } from "~types/lysand/Object";
+import type { ServerMetadata } from "~types/lysand/Object";
 
 /**
  * Represents an instance in the database.

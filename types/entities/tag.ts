@@ -1,4 +1,4 @@
-import { APIHistory } from "./history";
+import type { APIHistory } from "./history";
 
 export interface APITag {
 	name: string;

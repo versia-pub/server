@@ -1,5 +1,5 @@
-import { APIAccount } from "./account";
-import { APIStatus } from "./status";
+import type { APIAccount } from "./account";
+import type { APIStatus } from "./status";
 
 export interface APINotification {
 	account: APIAccount;

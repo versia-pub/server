@@ -1,10 +1,10 @@
-import { APIAccount } from "./account";
-import { APIApplication } from "./application";
-import { APIAttachment } from "./attachment";
-import { APICard } from "./card";
-import { APIEmoji } from "./emoji";
-import { APIMention } from "./mention";
-import { APIPoll } from "./poll";
+import type { APIAccount } from "./account";
+import type { APIApplication } from "./application";
+import type { APIAttachment } from "./attachment";
+import type { APICard } from "./card";
+import type { APIEmoji } from "./emoji";
+import type { APIMention } from "./mention";
+import type { APIPoll } from "./poll";
 
 export interface APIStatus {
 	id: string;

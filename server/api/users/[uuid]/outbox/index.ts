@@ -1,5 +1,5 @@
 import { jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import { getConfig, getHost } from "@config";
 import { applyConfig } from "@api";
 import {

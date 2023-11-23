@@ -1,7 +1,7 @@
-import { ConfigType } from "@config";
-import { Attachment } from "@prisma/client";
-import { APIAsyncAttachment } from "~types/entities/async_attachment";
-import { APIAttachment } from "~types/entities/attachment";
+import type { ConfigType } from "@config";
+import type { Attachment } from "@prisma/client";
+import type { APIAsyncAttachment } from "~types/entities/async_attachment";
+import type { APIAttachment } from "~types/entities/attachment";
 
 export const attachmentToAPI = (
 	attachment: Attachment

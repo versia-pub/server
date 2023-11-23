@@ -92,36 +92,37 @@ model Relationship {
 }
 
 model Status {
-  id              String       @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri             String       @unique
-  author          User         @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
-  authorId        String       @db.Uuid
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  reblog          Status?      @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
-  reblogId        String?      @db.Uuid
-  isReblog        Boolean
-  content         String       @default("")
-  contentType     String       @default("text/plain")
-  visibility      String
-  inReplyToPost   Status?      @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
-  inReplyToPostId String?      @db.Uuid
-  quotingPost     Status?      @relation("StatusToStatusQuote", fields: [quotingPostId], references: [id], onDelete: SetNull)
-  quotingPostId   String?      @db.Uuid
-  instance        Instance?    @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  instanceId      String?      @db.Uuid
-  sensitive       Boolean
-  spoilerText     String       @default("")
-  application     Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
-  applicationId   String?      @db.Uuid
-  emojis          Emoji[]      @relation
-  mentions        User[]
-  likes           Like[]       @relation("LikedToStatus")
-  reblogs         Status[]     @relation("StatusToStatus")
-  replies         Status[]     @relation("StatusToStatusReply")
-  quotes          Status[]     @relation("StatusToStatusQuote")
-  pinnedBy        User[]       @relation("UserPinnedNotes")
-  attachments     Attachment[]
+  id                   String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri                  String         @unique
+  author               User           @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId             String         @db.Uuid
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  reblog               Status?        @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
+  reblogId             String?        @db.Uuid
+  isReblog             Boolean
+  content              String         @default("")
+  contentType          String         @default("text/plain")
+  visibility           String
+  inReplyToPost        Status?        @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
+  inReplyToPostId      String?        @db.Uuid
+  quotingPost          Status?        @relation("StatusToStatusQuote", fields: [quotingPostId], references: [id], onDelete: SetNull)
+  quotingPostId        String?        @db.Uuid
+  instance             Instance?      @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId           String?        @db.Uuid
+  sensitive            Boolean
+  spoilerText          String         @default("")
+  application          Application?   @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId        String?        @db.Uuid
+  emojis               Emoji[]        @relation
+  mentions             User[]
+  likes                Like[]         @relation("LikedToStatus")
+  reblogs              Status[]       @relation("StatusToStatus")
+  replies              Status[]       @relation("StatusToStatusReply")
+  quotes               Status[]       @relation("StatusToStatusQuote")
+  pinnedBy             User[]         @relation("UserPinnedNotes")
+  attachments          Attachment[]
+  relatedNotifications Notification[]
 }
 
 model Token {
@@ -138,21 +139,33 @@ model Token {
 }
 
 model Attachment {
-  id          String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  url         String
-  remote_url  String?
+  id            String  @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  url           String
+  remote_url    String?
   thumbnail_url String?
-  mime_type   String
-  description String?
-  blurhash    String?
-  sha256      String?
-  fps         Int?
-  duration    Int?
-  width       Int?
-  height      Int?
-  size        Int?
-  status      Status?   @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  statusId    String?   @db.Uuid
+  mime_type     String
+  description   String?
+  blurhash      String?
+  sha256        String?
+  fps           Int?
+  duration      Int?
+  width         Int?
+  height        Int?
+  size          Int?
+  status        Status? @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  statusId      String? @db.Uuid
+}
+
+model Notification {
+  id         String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  type       String
+  createdAt  DateTime @default(now())
+  notified   User     @relation("NotificationToNotified", fields: [notifiedId], references: [id], onDelete: Cascade)
+  notifiedId String   @db.Uuid
+  account    User     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId  String   @db.Uuid
+  status     Status?  @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  statusId   String?  @db.Uuid
 }
 
 model User {
@@ -186,4 +199,6 @@ model User {
   tokens               Token[] // One to many relation with Token
   likes                Like[]         @relation("UserLiked") // One to many relation with Like
   statusesMentioned    Status[] // Many to many relation with Status
+  notifications        Notification[] // One to many relation with Notification
+  notified             Notification[] @relation("NotificationToNotified") // One to many relation with Notification
 }

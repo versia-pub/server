@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { encode } from "blurhash";
 import { getFromRequest } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 import sharp from "sharp";
 import { uploadFile } from "~classes/media";
 import { getConfig } from "@config";

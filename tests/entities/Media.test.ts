@@ -1,4 +1,4 @@
-import { ConfigType, getConfig } from "@config";
+import { type ConfigType, getConfig } from "@config";
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { LocalBackend, S3Backend } from "~classes/media";
 import { unlink } from "fs/promises";

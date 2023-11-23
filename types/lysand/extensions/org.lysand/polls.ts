@@ -1,4 +1,4 @@
-import { ExtensionType } from "../../Extension";
+import type { ExtensionType } from "../../Extension";
 
 export interface OrgLysandPollsVoteType extends ExtensionType {
 	extension_type: "org.lysand:polls/Vote";

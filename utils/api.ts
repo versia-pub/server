@@ -1,5 +1,5 @@
 import { getConfig } from "@config";
-import { APIRouteMeta } from "~types/api";
+import type { APIRouteMeta } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMeta) => {
 	const config = getConfig();

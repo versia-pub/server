@@ -1,4 +1,4 @@
-import { APIStatus } from "./status";
+import type { APIStatus } from "./status";
 
 export interface APIContext {
 	ancestors: APIStatus[];

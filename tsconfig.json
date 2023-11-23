@@ -20,6 +20,7 @@
 		"allowJs": true,
 		"emitDecoratorMetadata": false,
 		"experimentalDecorators": true,
+		"verbatimModuleSyntax": true,
 		"types": [
 			"bun-types" // add Bun global
 		],

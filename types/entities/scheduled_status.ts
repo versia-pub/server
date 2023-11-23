@@ -1,5 +1,5 @@
-import { APIAttachment } from "./attachment";
-import { APIStatusParams } from "./status_params";
+import type { APIAttachment } from "./attachment";
+import type { APIStatusParams } from "./status_params";
 
 export interface APIScheduledStatus {
 	id: string;

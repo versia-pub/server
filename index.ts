@@ -1,15 +1,16 @@
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
+import type { MatchedRoute } from "bun";
 import chalk from "chalk";
 import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import "reflect-metadata";
-import { AuthData, getFromRequest } from "~database/entities/User";
-import { APIRouteMeta } from "~types/api";
+import type { AuthData } from "~database/entities/User";
+import { getFromRequest } from "~database/entities/User";
+import type { APIRouteMeta } from "~types/api";
 import { mkdir } from "fs/promises";
 import { client } from "~database/datasource";
-import { PrismaClientInitializationError } from "@prisma/client/runtime/library";
+import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { HookTypes, Server } from "~plugins/types";
 
 const server = new Server();

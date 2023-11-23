@@ -1,7 +1,7 @@
 import EventEmitter from "eventemitter3";
-import { StatusWithRelations } from "~database/entities/Status";
-import { UserWithRelations } from "~database/entities/User";
-import { LysandObjectType } from "~types/lysand/Object";
+import type { StatusWithRelations } from "~database/entities/Status";
+import type { UserWithRelations } from "~database/entities/User";
+import type { LysandObjectType } from "~types/lysand/Object";
 
 export enum HookTypes {
 	/**
