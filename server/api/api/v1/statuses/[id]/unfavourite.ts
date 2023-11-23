@@ -3,6 +3,7 @@ import { applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
+import { deleteLike } from "~database/entities/Like";
 import {
 	isViewableByUser,
 	statusAndUserRelations,
@@ -46,12 +47,7 @@ export default async (
 	if (!status || !isViewableByUser(status, user))
 		return errorResponse("Record not found", 404);
 
-	await client.like.deleteMany({
-		where: {
-			likedId: status.id,
-			likerId: user.id,
-		},
-	});
+	await deleteLike(user, status);
 
 	return jsonResponse({
 		...(await statusToAPI(status, user)),

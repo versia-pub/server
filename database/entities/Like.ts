@@ -46,3 +46,30 @@ export const createLike = async (
 		// TODO: Add database jobs for federating this
 	}
 };
+
+export const deleteLike = async (
+	user: UserWithRelations,
+	status: StatusWithRelations
+) => {
+	await client.like.deleteMany({
+		where: {
+			likedId: status.id,
+			likerId: user.id,
+		},
+	});
+
+	// Notify the user that their post has been favourited
+	await client.notification.deleteMany({
+		where: {
+			accountId: user.id,
+			type: "favourite",
+			notifiedId: status.authorId,
+			statusId: status.id,
+		},
+	});
+
+	if (user.instanceId === null) {
+		// User is local, federate the delete
+		// TODO: Federate this
+	}
+};

@@ -7,7 +7,7 @@ import { errorResponse, jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { parseEmojis } from "~database/entities/Emoji";
-import { createLike } from "~database/entities/Like";
+import { createLike, deleteLike } from "~database/entities/Like";
 import { createFromObject } from "~database/entities/Object";
 import {
 	createNewStatus,
@@ -21,6 +21,7 @@ import type {
 	LysandAction,
 	LysandPublication,
 	Patch,
+	Undo,
 } from "~types/lysand/Object";
 
 export const meta = applyConfig({
@@ -274,6 +275,10 @@ export default async (
 		case "Dislike": {
 			// Store the object in the LysandObject table
 			await createFromObject(body);
+
+			return jsonResponse({
+				info: "Dislikes are not supported by this software",
+			});
 			break;
 		}
 		case "Follow": {
@@ -332,8 +337,61 @@ export default async (
 			break;
 		}
 		case "Undo": {
+			const undo = body as Undo;
 			// Store the object in the LysandObject table
 			await createFromObject(body);
+
+			const object = await client.lysandObject.findUnique({
+				where: {
+					uri: undo.object,
+				},
+			});
+
+			if (!object) {
+				return errorResponse("Object not found", 404);
+			}
+
+			switch (object.type) {
+				case "Like": {
+					const status = await client.status.findUnique({
+						where: {
+							uri: undo.object,
+							authorId: author.id,
+						},
+						include: statusAndUserRelations,
+					});
+
+					if (!status) {
+						return errorResponse("Status not found", 404);
+					}
+
+					await deleteLike(author, status);
+					break;
+				}
+				case "Announce": {
+					await client.status.delete({
+						where: {
+							uri: undo.object,
+							authorId: author.id,
+						},
+						include: statusAndUserRelations,
+					});
+					break;
+				}
+				case "Note": {
+					await client.status.delete({
+						where: {
+							uri: undo.object,
+							authorId: author.id,
+						},
+						include: statusAndUserRelations,
+					});
+					break;
+				}
+				default: {
+					return errorResponse("Invalid object type", 400);
+				}
+			}
 			break;
 		}
 		case "Extension": {
