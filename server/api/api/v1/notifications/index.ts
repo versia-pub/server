@@ -49,7 +49,7 @@ export default async (req: Request): Promise<Response> => {
 		return errorResponse("Can't use both types and exclude_types", 400);
 	}
 
-	const notifications = await client.notification.findMany({
+	const objects = await client.notification.findMany({
 		where: {
 			notifiedId: user.id,
 			id: {
@@ -77,7 +77,24 @@ export default async (req: Request): Promise<Response> => {
 		take: limit,
 	});
 
+	// Constuct HTTP Link header (next and prev)
+	const linkHeader = [];
+	if (objects.length > 0) {
+		const urlWithoutQuery = req.url.split("?")[0];
+		linkHeader.push(
+			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
+		);
+		linkHeader.push(
+			`<${urlWithoutQuery}?since_id=${objects.at(-1)
+				?.id}&limit=${limit}>; rel="prev"`
+		);
+	}
+
 	return jsonResponse(
-		await Promise.all(notifications.map(n => notificationToAPI(n)))
+		await Promise.all(objects.map(n => notificationToAPI(n))),
+		200,
+		{
+			Link: linkHeader.join(", "),
+		}
 	);
 };
