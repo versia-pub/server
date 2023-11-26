@@ -3,6 +3,7 @@ import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
+import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -18,6 +19,7 @@ export const meta: APIRouteMeta = applyConfig({
 });
 
 export default async (req: Request): Promise<Response> => {
+	const { user } = await getFromRequest(req);
 	const {
 		local,
 		limit = 20,
@@ -81,7 +83,9 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	return jsonResponse(
-		await Promise.all(objects.map(async status => statusToAPI(status))),
+		await Promise.all(
+			objects.map(async status => statusToAPI(status, user || undefined))
+		),
 		200,
 		{
 			Link: linkHeader.join(", "),

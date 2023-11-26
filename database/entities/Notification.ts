@@ -17,7 +17,7 @@ export const notificationToAPI = async (
 		id: notification.id,
 		type: notification.type,
 		status: notification.status
-			? await statusToAPI(notification.status)
+			? await statusToAPI(notification.status, notification.account)
 			: undefined,
 	};
 };

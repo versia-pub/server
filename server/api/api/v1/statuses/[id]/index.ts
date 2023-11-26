@@ -61,7 +61,7 @@ export default async (
 
 		return jsonResponse(
 			{
-				...(await statusToAPI(status)),
+				...(await statusToAPI(status, user)),
 				// TODO: Add
 				// text: Add source text
 				// poll: Add source poll

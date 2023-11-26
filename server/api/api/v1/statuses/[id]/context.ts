@@ -49,10 +49,10 @@ export default async (
 
 	return jsonResponse({
 		ancestors: await Promise.all(
-			ancestors.map(status => statusToAPI(status))
+			ancestors.map(status => statusToAPI(status, user || undefined))
 		),
 		descendants: await Promise.all(
-			descendants.map(status => statusToAPI(status))
+			descendants.map(status => statusToAPI(status, user || undefined))
 		),
 	});
 };

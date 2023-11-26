@@ -11,11 +11,18 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 
 	// Parse SearchParams arrays into JSON arrays
 	const arrayKeys = [...query.keys()].filter(key => key.endsWith("[]"));
+	const nonArrayKeys = [...query.keys()].filter(key => !key.endsWith("[]"));
 
 	for (const key of arrayKeys) {
 		const value = query.getAll(key);
 		query.delete(key);
 		query.append(key, JSON.stringify(value));
+	}
+
+	// Append non array keys to output
+	for (const key of nonArrayKeys) {
+		// @ts-expect-error Complains about type
+		output[key] = query.get(key);
 	}
 
 	const queryEntries = [...query.entries()];

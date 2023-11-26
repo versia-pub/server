@@ -85,7 +85,7 @@ export default async (
 	}
 
 	return jsonResponse(
-		await Promise.all(objects.map(status => statusToAPI(status))),
+		await Promise.all(objects.map(status => statusToAPI(status, user))),
 		200,
 		{
 			Link: linkHeader.join(", "),
