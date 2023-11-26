@@ -7,6 +7,7 @@
  */
 export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 	const query = new URL(request.url).searchParams;
+	let output: Partial<T> = {};
 
 	// Parse SearchParams arrays into JSON arrays
 	const arrayKeys = [...query.keys()].filter(key => key.endsWith("[]"));
@@ -17,24 +18,46 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 		query.append(key, JSON.stringify(value));
 	}
 
-	// If body is empty
-	if (request.body === null) {
-		return {};
+	const queryEntries = [...query.entries()];
+
+	if (queryEntries.length > 0) {
+		const data: Record<string, string | string[]> = {};
+
+		const arrayKeys = [...query.keys()].filter(key => key.endsWith("[]"));
+
+		for (const key of arrayKeys) {
+			const value = query.getAll(key);
+			query.delete(key);
+			// @ts-expect-error JSON arrays are valid
+			data[key] = JSON.parse(value);
+		}
+
+		output = {
+			...output,
+			...(data as T),
+		};
 	}
 
 	// if request contains a JSON body
 	if (request.headers.get("Content-Type")?.includes("application/json")) {
-		return (await request.json()) as T;
+		try {
+			output = {
+				...output,
+				...((await request.json()) as T),
+			};
+		} catch {
+			// Invalid JSON
+		}
 	}
 
 	// If request contains FormData
 	if (request.headers.get("Content-Type")?.includes("multipart/form-data")) {
-		const formData = await request.formData();
+		const formData = [...(await request.formData()).entries()];
 
-		if ([...formData.entries()].length > 0) {
+		if (formData.length > 0) {
 			const data: Record<string, string | File> = {};
 
-			for (const [key, value] of formData.entries()) {
+			for (const [key, value] of formData) {
 				// If object, parse as JSON
 				try {
 					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-base-to-string
@@ -51,23 +74,12 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 				}
 			}
 
-			return data as T;
+			output = {
+				...output,
+				...(data as T),
+			};
 		}
 	}
 
-	if ([...query.entries()].length > 0) {
-		const data: Record<string, string | string[]> = {};
-
-		for (const [key, value] of query.entries()) {
-			try {
-				data[key] = JSON.parse(value) as string[];
-			} catch {
-				data[key] = value.toString();
-			}
-		}
-
-		return data as T;
-	}
-
-	return {};
+	return output;
 }

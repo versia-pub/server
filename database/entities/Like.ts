@@ -9,7 +9,6 @@ import type { StatusWithRelations } from "./Status";
 /**
  * Represents a Like entity in the database.
  */
-
 export const toLysand = (like: Like): LysandLike => {
 	return {
 		id: like.id,
@@ -21,6 +20,11 @@ export const toLysand = (like: Like): LysandLike => {
 	};
 };
 
+/**
+ * Create a like
+ * @param user User liking the status
+ * @param status Status being liked
+ */
 export const createLike = async (
 	user: UserWithRelations,
 	status: StatusWithRelations
@@ -47,6 +51,11 @@ export const createLike = async (
 	}
 };
 
+/**
+ * Delete a like
+ * @param user User deleting their like
+ * @param status Status being unliked
+ */
 export const deleteLike = async (
 	user: UserWithRelations,
 	status: StatusWithRelations
@@ -68,7 +77,7 @@ export const deleteLike = async (
 		},
 	});
 
-	if (user.instanceId === null) {
+	if (user.instanceId === null && status.author.instanceId !== null) {
 		// User is local, federate the delete
 		// TODO: Federate this
 	}

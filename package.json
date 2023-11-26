@@ -78,10 +78,7 @@
     "isomorphic-dompurify": "^1.9.0",
     "jsonld": "^8.3.1",
     "marked": "^9.1.2",
-    "pg": "^8.11.3",
     "prisma": "latest",
-    "reflect-metadata": "^0.1.13",
-    "sharp": "^0.32.6",
-    "typeorm": "^0.3.17"
+    "sharp": "^0.32.6"
   }
 }

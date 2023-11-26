@@ -4,7 +4,6 @@ import type { MatchedRoute } from "bun";
 import chalk from "chalk";
 import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
-import "reflect-metadata";
 import type { AuthData } from "~database/entities/User";
 import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
@@ -121,7 +120,7 @@ Bun.serve({
 				}
 			}
 
-			return file.default(req, matchedRoute, auth);
+			return await file.default(req.clone(), matchedRoute, auth);
 		} else {
 			return new Response(undefined, {
 				status: 404,
