@@ -67,7 +67,7 @@ export default async (
 		include: statusAndUserRelations,
 		take: limit ?? 20,
 		orderBy: {
-			id: "asc",
+			id: "desc",
 		},
 	});
 

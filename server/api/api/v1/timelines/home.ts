@@ -51,18 +51,25 @@ export default async (req: Request): Promise<Response> => {
 				gt: min_id ?? undefined,
 			},
 			author: {
-				relationships: {
-					some: {
-						subjectId: user.id,
-						following: true,
+				OR: [
+					{
+						relationships: {
+							some: {
+								subjectId: user.id,
+								following: true,
+							},
+						},
 					},
-				},
+					{
+						id: user.id,
+					},
+				],
 			},
 		},
 		include: statusAndUserRelations,
 		take: limit,
 		orderBy: {
-			id: "asc",
+			id: "desc",
 		},
 	});
 

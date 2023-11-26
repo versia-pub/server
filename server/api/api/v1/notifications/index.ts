@@ -72,7 +72,7 @@ export default async (req: Request): Promise<Response> => {
 			},
 		},
 		orderBy: {
-			id: "asc",
+			id: "desc",
 		},
 		take: limit,
 	});
