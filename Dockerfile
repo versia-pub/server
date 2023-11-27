@@ -37,7 +37,6 @@ LABEL org.opencontainers.image.description "Lysand Server docker image"
 # CD to app
 WORKDIR /app
 RUN bunx prisma generate
-RUN rm /usr/local/bin/node
 # CD to app
 WORKDIR /app
 ENTRYPOINT [ "bun", "run", "index.ts" ]
