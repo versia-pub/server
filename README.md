@@ -84,6 +84,9 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 5. Run migrations:
 
 ```bash
+# Replace this with Postgres credentials
+# This env file only needs to be there for migrations, it can be deleted after
+echo "DATABASE_URL=postgres://xxx:xxx@xxx:xxx/xxx" > .env
 bun migrate
 ```
 
