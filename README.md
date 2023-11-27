@@ -144,6 +144,8 @@ Working endpoints are:
 - `/api/v1/statuses/:id/reblogged_by`
 - `/api/v1/statuses/:id/reblog`
 - `/api/v1/statuses/:id/unreblog`
+- `/api/v1/statuses/:id/pin`
+- `/api/v1/statuses/:id/unpin`
 - `/api/v1/statuses`
 - `/api/v1/timelines/public`
 - `/api/v1/timelines/home`
@@ -153,14 +155,13 @@ Working endpoints are:
 - `/api/v1/apps/verify_credentials`
 - `/oauth/authorize`
 - `/oauth/token`
+- `/api/v1/blocks`
+- `/api/v1/mutes`
+- `/api/v2/media`
 
 Tests needed but completed:
 
-- `/api/v2/media`
 - `/api/v1/media/:id`
-- `/api/v1/blocks`
-- `/api/v1/mutes`
-
 
 Endpoints left:
 
@@ -195,8 +196,6 @@ Endpoints left:
 - `/api/v1/statuses/:id/unbookmark`
 - `/api/v1/statuses/:id/mute`
 - `/api/v1/statuses/:id/unmute`
-- `/api/v1/statuses/:id/pin`
-- `/api/v1/statuses/:id/unpin`
 - `/api/v1/statuses/:id` (`PUT`)
 - `/api/v1/statuses/:id/history`
 - `/api/v1/statuses/:id/source`

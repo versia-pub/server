@@ -21,6 +21,14 @@ let user2: UserWithRelations;
 
 describe("API Tests", () => {
 	beforeAll(async () => {
+		await client.user.deleteMany({
+			where: {
+				username: {
+					in: ["test", "test2"],
+				},
+			},
+		});
+
 		user = await createNewLocalUser({
 			email: "test@test.com",
 			username: "test",
@@ -291,6 +299,30 @@ describe("API Tests", () => {
 		});
 	});
 
+	describe("GET /api/v1/blocks", () => {
+		test("should return an array of APIAccount objects for the user's blocked accounts", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/blocks`,
+				{
+					method: "GET",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+			const body = (await response.json()) as APIAccount[];
+
+			expect(Array.isArray(body)).toBe(true);
+			expect(body.length).toBe(1);
+			expect(body[0].id).toBe(user2.id);
+		});
+	});
+
 	describe("POST /api/v1/accounts/:id/unblock", () => {
 		test("should unblock the specified user and return an APIRelationship object", async () => {
 			const response = await fetch(
@@ -366,6 +398,31 @@ describe("API Tests", () => {
 			expect(account.id).toBe(user2.id);
 			expect(account.muting).toBe(true);
 			expect(account.muting_notifications).toBe(true);
+		});
+	});
+
+	describe("GET /api/v1/mutes", () => {
+		test("should return an array of APIAccount objects for the user's muted accounts", async () => {
+			const response = await fetch(
+				`${config.http.base_url}/api/v1/mutes`,
+				{
+					method: "GET",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+					},
+				}
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			const body = (await response.json()) as APIAccount[];
+
+			expect(Array.isArray(body)).toBe(true);
+			expect(body.length).toBe(1);
+			expect(body[0].id).toBe(user2.id);
 		});
 	});
 

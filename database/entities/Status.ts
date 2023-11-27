@@ -11,14 +11,13 @@ import { client } from "~database/datasource";
 import type { LysandPublication, Note } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import { getBestContentType } from "@content_types";
-import type {
-	Application,
-	Emoji,
-	Instance,
-	Like,
-	Relationship,
-	Status,
-	User,
+import {
+	Prisma,
+	type Application,
+	type Emoji,
+	type Relationship,
+	type Status,
+	type User,
 } from "@prisma/client";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { APIStatus } from "~types/entities/status";
@@ -26,7 +25,7 @@ import { applicationToAPI } from "./Application";
 
 const config = getConfig();
 
-export const statusAndUserRelations = {
+export const statusAndUserRelations: Prisma.StatusInclude = {
 	author: {
 		include: userRelations,
 	},
@@ -54,6 +53,7 @@ export const statusAndUserRelations = {
 			},
 		},
 	},
+	attachments: true,
 	instance: true,
 	mentions: true,
 	pinnedBy: true,
@@ -115,64 +115,13 @@ export const statusAndUserRelations = {
 	},
 };
 
-export type StatusWithRelations = Status & {
-	author: UserWithRelations;
-	application: Application | null;
-	emojis: Emoji[];
-	inReplyToPost:
-		| (Status & {
-				author: UserWithRelations;
-				application: Application | null;
-				emojis: Emoji[];
-				inReplyToPost: Status | null;
-				instance: Instance | null;
-				mentions: User[];
-				pinnedBy: User[];
-				_count: {
-					replies: number;
-				};
-		  })
-		| null;
-	instance: Instance | null;
-	mentions: User[];
-	pinnedBy: User[];
-	_count: {
-		replies: number;
-		likes: number;
-		reblogs: number;
-	};
-	reblog:
-		| (Status & {
-				author: UserWithRelations;
-				application: Application | null;
-				emojis: Emoji[];
-				inReplyToPost: Status | null;
-				instance: Instance | null;
-				mentions: User[];
-				pinnedBy: User[];
-				_count: {
-					replies: number;
-				};
-		  })
-		| null;
-	quotingPost:
-		| (Status & {
-				author: UserWithRelations;
-				application: Application | null;
-				emojis: Emoji[];
-				inReplyToPost: Status | null;
-				instance: Instance | null;
-				mentions: User[];
-				pinnedBy: User[];
-				_count: {
-					replies: number;
-				};
-		  })
-		| null;
-	likes: (Like & {
-		liker: User;
-	})[];
-};
+const statusRelations = Prisma.validator<Prisma.StatusDefaultArgs>()({
+	include: statusAndUserRelations,
+});
+
+export type StatusWithRelations = Prisma.StatusGetPayload<
+	typeof statusRelations
+>;
 
 /**
  * Represents a status (i.e. a post)
@@ -494,7 +443,7 @@ export const statusToAPI = async (
 			? user.relationships.find(r => r.subjectId == status.authorId)
 					?.muting || false
 			: false,
-		pinned: status.author.pinnedNotes.some(note => note.id === status.id),
+		pinned: status.pinnedBy.find(u => u.id === user?.id) ? true : false,
 		// TODO: Add pols
 		poll: null,
 		reblog: status.reblog

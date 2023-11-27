@@ -27,7 +27,7 @@ export default async (req: Request): Promise<Response> => {
 	const blocks = await client.user.findMany({
 		where: {
 			relationshipSubjects: {
-				every: {
+				some: {
 					ownerId: user.id,
 					muting: true,
 				},

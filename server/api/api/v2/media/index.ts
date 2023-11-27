@@ -54,7 +54,10 @@ export default async (req: Request): Promise<Response> => {
 		);
 	}
 
-	if (!config.validation.allowed_mime_types.includes(file.type)) {
+	if (
+		config.validation.enforce_mime_types &&
+		!config.validation.allowed_mime_types.includes(file.type)
+	) {
 		return errorResponse("Invalid file type", 415);
 	}
 

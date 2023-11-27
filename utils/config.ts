@@ -51,6 +51,7 @@ export interface ConfigType {
 		email_blacklist: string[];
 		url_scheme_whitelist: string[];
 
+		enforce_mime_types: boolean;
 		allowed_mime_types: string[];
 	};
 
@@ -245,6 +246,7 @@ export const configDefaults: ConfigType = {
 			"ssb",
 		],
 
+		enforce_mime_types: false,
 		allowed_mime_types: [],
 	},
 	defaults: {

@@ -10,6 +10,7 @@ import {
 	createNewLocalUser,
 } from "~database/entities/User";
 import type { APIAccount } from "~types/entities/account";
+import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIContext } from "~types/entities/context";
 import type { APIStatus } from "~types/entities/status";
 
@@ -19,9 +20,18 @@ let token: Token;
 let user: UserWithRelations;
 let status: APIStatus | null = null;
 let status2: APIStatus | null = null;
+let media1: APIAsyncAttachment | null = null;
 
 describe("API Tests", () => {
 	beforeAll(async () => {
+		await client.user.deleteMany({
+			where: {
+				username: {
+					in: ["test", "test2"],
+				},
+			},
+		});
+
 		user = await createNewLocalUser({
 			email: "test@test.com",
 			username: "test",
@@ -65,6 +75,36 @@ describe("API Tests", () => {
 		});
 	});
 
+	describe("POST /api/v2/media", () => {
+		test("should upload a file and return a MediaAttachment object", async () => {
+			const formData = new FormData();
+			formData.append("file", new Blob(["test"], { type: "text/plain" }));
+
+			// @ts-expect-error FormData is not iterable
+			const response = await fetch(
+				`${config.http.base_url}/api/v2/media`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+					},
+					body: formData,
+				}
+			);
+
+			expect(response.status).toBe(202);
+			expect(response.headers.get("content-type")).toBe(
+				"application/json"
+			);
+
+			media1 = (await response.json()) as APIAsyncAttachment;
+
+			expect(media1.id).toBeDefined();
+			expect(media1.type).toBe("unknown");
+			expect(media1.url).toBeDefined();
+		});
+	});
+
 	describe("POST /api/v1/statuses", () => {
 		test("should create a new status and return an APIStatus object", async () => {
 			const response = await fetch(
@@ -78,6 +118,7 @@ describe("API Tests", () => {
 					body: JSON.stringify({
 						status: "Hello, world!",
 						visibility: "public",
+						media_ids: [media1?.id],
 					}),
 				}
 			);
@@ -327,7 +368,7 @@ describe("API Tests", () => {
 
 			expect(statuses.length).toBe(2);
 
-			const status1 = statuses[1];
+			const status1 = statuses[0];
 
 			// Basic validation
 			expect(status1.content).toBe("This is a reply!");

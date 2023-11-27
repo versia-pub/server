@@ -3,14 +3,8 @@ import { getConfig } from "@config";
 import type { APIAccount } from "~types/entities/account";
 import type { User as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
-import type {
-	Emoji,
-	Instance,
-	Like,
-	Relationship,
-	Status,
-	User,
-} from "@prisma/client";
+import type { User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { client } from "~database/datasource";
 import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
@@ -26,7 +20,7 @@ export interface AuthData {
  * Stores local and remote users
  */
 
-export const userRelations = {
+export const userRelations: Prisma.UserInclude = {
 	emojis: true,
 	instance: true,
 	likes: true,
@@ -41,18 +35,11 @@ export const userRelations = {
 	},
 };
 
-export type UserWithRelations = User & {
-	emojis: Emoji[];
-	instance: Instance | null;
-	likes: Like[];
-	relationships: Relationship[];
-	relationshipSubjects: Relationship[];
-	pinnedNotes: Status[];
-	_count: {
-		statuses: number;
-		likes: number;
-	};
-};
+const userRelations2 = Prisma.validator<Prisma.UserDefaultArgs>()({
+	include: userRelations,
+});
+
+export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
 
 /**
  * Get the user's avatar in raw URL format

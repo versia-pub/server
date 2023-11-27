@@ -123,6 +123,8 @@ url_scheme_whitelist = [
 	"ssb",
 	"gemini",
 ] # NOT IMPLEMENTED
+
+enforce_mime_types = false
 allowed_mime_types = [
 	"image/jpeg",
 	"image/png",
@@ -152,7 +154,7 @@ allowed_mime_types = [
 	"audio/mp4",
 	"audio/3gpp",
 	"video/x-ms-asf",
-] # MEDIA NOT IMPLEMENTED
+]
 
 [defaults]
 # Default visibility for new notes

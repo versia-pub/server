@@ -32,13 +32,14 @@ export default async (
 		max_id,
 		min_id,
 		since_id,
-		limit,
+		limit = "20",
 		exclude_reblogs,
+		pinned,
 	}: {
 		max_id?: string;
 		since_id?: string;
 		min_id?: string;
-		limit?: number;
+		limit?: string;
 		only_media?: boolean;
 		exclude_replies?: boolean;
 		exclude_reblogs?: boolean;
@@ -54,6 +55,48 @@ export default async (
 
 	if (!user) return errorResponse("User not found", 404);
 
+	if (pinned) {
+		const objects = await client.status.findMany({
+			where: {
+				authorId: id,
+				isReblog: false,
+				pinnedBy: {
+					some: {
+						id: user.id,
+					},
+				},
+				id: {
+					lt: max_id,
+					gt: min_id,
+					gte: since_id,
+				},
+			},
+			include: statusAndUserRelations,
+			take: Number(limit),
+			orderBy: {
+				id: "desc",
+			},
+		});
+
+		// Constuct HTTP Link header (next and prev)
+		const linkHeader = [];
+		if (objects.length > 0) {
+			const urlWithoutQuery = req.url.split("?")[0];
+			linkHeader.push(
+				`<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
+				`<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`
+			);
+		}
+
+		return jsonResponse(
+			await Promise.all(objects.map(status => statusToAPI(status, user))),
+			200,
+			{
+				Link: linkHeader.join(", "),
+			}
+		);
+	}
+
 	const objects = await client.status.findMany({
 		where: {
 			authorId: id,
@@ -65,7 +108,7 @@ export default async (
 			},
 		},
 		include: statusAndUserRelations,
-		take: limit ?? 20,
+		take: Number(limit),
 		orderBy: {
 			id: "desc",
 		},
@@ -76,11 +119,8 @@ export default async (
 	if (objects.length > 0) {
 		const urlWithoutQuery = req.url.split("?")[0];
 		linkHeader.push(
-			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
-		);
-		linkHeader.push(
-			`<${urlWithoutQuery}?since_id=${objects.at(-1)
-				?.id}&limit=${limit}>; rel="prev"`
+			`<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
+			`<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`
 		);
 	}
 

@@ -58,8 +58,8 @@ export default async (req: Request): Promise<Response> => {
 						not: null,
 				  }
 				: local
-				? null
-				: undefined,
+				  ? null
+				  : undefined,
 		},
 		include: statusAndUserRelations,
 		take: limit,
@@ -73,12 +73,8 @@ export default async (req: Request): Promise<Response> => {
 	if (objects.length > 0) {
 		const urlWithoutQuery = req.url.split("?")[0];
 		linkHeader.push(
-			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
-		);
-		linkHeader.push(
-			`<${urlWithoutQuery}?since_id=${
-				objects[objects.length - 1].id
-			}&limit=${limit}>; rel="prev"`
+			`<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
+			`<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`
 		);
 	}
 
