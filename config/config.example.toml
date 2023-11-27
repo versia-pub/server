@@ -9,7 +9,7 @@ database = "lysand"
 host = "localhost"
 post = 6379
 password = ""
-database = 0
+# database = 0
 
 [http]
 base_url = "https://lysand.social"

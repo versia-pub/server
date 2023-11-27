@@ -114,7 +114,7 @@ export const federationWorker = new Worker(
 			host: config.redis.queue.host,
 			port: config.redis.queue.port,
 			password: config.redis.queue.password,
-			db: config.redis.queue.database,
+			db: config.redis.queue.database || undefined,
 		},
 		removeOnComplete: {
 			count: 400,

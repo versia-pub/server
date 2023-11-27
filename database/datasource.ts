@@ -13,7 +13,7 @@ const federationQueue = new Queue("federation", {
 		host: config.redis.queue.host,
 		port: config.redis.queue.port,
 		password: config.redis.queue.password,
-		db: config.redis.queue.database,
+		db: config.redis.queue.database || undefined,
 	},
 });
 

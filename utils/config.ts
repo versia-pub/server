@@ -14,7 +14,7 @@ export interface ConfigType {
 			host: string;
 			port: number;
 			password: string;
-			database: number;
+			database: number | null;
 		};
 	};
 
@@ -159,7 +159,7 @@ export const configDefaults: ConfigType = {
 			host: "localhost",
 			port: 6379,
 			password: "",
-			database: 0,
+			database: null,
 		},
 	},
 	instance: {
