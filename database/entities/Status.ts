@@ -422,6 +422,7 @@ export const statusToAPI = async (
 		id: status.id,
 		in_reply_to_id: status.inReplyToPostId || null,
 		in_reply_to_account_id: status.inReplyToPost?.authorId || null,
+		// @ts-expect-error Prisma TypeScript types dont include relations
 		account: userToAPI(status.author),
 		created_at: new Date(status.createdAt).toISOString(),
 		application: status.application

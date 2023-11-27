@@ -9,6 +9,15 @@ export interface ConfigType {
 		database: string;
 	};
 
+	redis: {
+		queue: {
+			host: string;
+			port: number;
+			password: string;
+			database: number;
+		};
+	};
+
 	http: {
 		base_url: string;
 		bind: string;
@@ -144,6 +153,14 @@ export const configDefaults: ConfigType = {
 		username: "postgres",
 		password: "postgres",
 		database: "lysand",
+	},
+	redis: {
+		queue: {
+			host: "localhost",
+			port: 6379,
+			password: "",
+			database: 0,
+		},
 	},
 	instance: {
 		banner: "",

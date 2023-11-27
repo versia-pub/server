@@ -1,9 +1,15 @@
 [database]
 host = "localhost"
-port = 48654
+port = 5432
 username = "lysand"
 password = "password123"
 database = "lysand"
+
+[redis.queue]
+host = "localhost"
+post = 6379
+password = ""
+database = 0
 
 [http]
 base_url = "https://lysand.social"
