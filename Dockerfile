@@ -34,13 +34,9 @@ LABEL org.opencontainers.image.licenses "AGPL-3.0"
 LABEL org.opencontainers.image.title "Lysand Server"
 LABEL org.opencontainers.image.description "Lysand Server docker image"
 
-# run the app
-USER bun
 # CD to app
 WORKDIR /app
 RUN bunx prisma generate
-# Remove Node
-USER root
 RUN rm /usr/local/bin/node
 USER bun
 # CD to app
