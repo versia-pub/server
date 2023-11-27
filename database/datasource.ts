@@ -11,8 +11,8 @@ const client = new PrismaClient({
 const federationQueue = new Queue("federation", {
 	connection: {
 		host: config.redis.queue.host,
-		port: config.redis.queue.port,
-		password: config.redis.queue.password,
+		port: Number(config.redis.queue.port),
+		password: config.redis.queue.password || undefined,
 		db: config.redis.queue.database || undefined,
 	},
 });
