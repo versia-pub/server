@@ -36,6 +36,8 @@ LABEL org.opencontainers.image.description "Lysand Server docker image"
 
 # run the app
 USER bun
+# CD to app
+WORKDIR /app
 RUN bunx prisma generate
 # Remove Node
 USER root
