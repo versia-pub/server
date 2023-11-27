@@ -162,12 +162,12 @@ Working endpoints are:
 Tests needed but completed:
 
 - `/api/v1/media/:id`
+- `/api/v1/favourites`
 
 Endpoints left:
 
 - `/api/v1/reports`
 - `/api/v1/accounts/:id/lists`
-- `/api/v1/favourites`
 - `/api/v1/accounts/:id/following`
 - `/api/v1/follow_requests`
 - `/api/v1/follow_requests/:account_id/authorize`
