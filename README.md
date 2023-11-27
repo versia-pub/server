@@ -95,6 +95,30 @@ To run the server, simply run the following command:
 bun start
 ```
 
+### Using the CLI
+
+Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
+
+```bash
+bun cli
+```
+
+You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
+
+## With Docker
+
+> **Note**: Docker would probably work perfectly fine, but it has not been tested, and as such there are no instructions for its usage with Lysand.
+
+You can also run Lysand using Docker. To do so, you will need to build the Docker image:
+
+```bash
+# After cloning the repository
+cd lysand
+sudo docker compose build
+```
+
+The Docker build isn't ready for usage, so you will need to do things like running migrations and setting up the database manually.
+
 ## Contributing
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.
