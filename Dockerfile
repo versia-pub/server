@@ -41,4 +41,6 @@ RUN bunx prisma generate
 USER root
 RUN rm /usr/local/bin/node
 USER bun
+# CD to app
+WORKDIR /app
 ENTRYPOINT [ "bun", "run", "index.ts" ]
