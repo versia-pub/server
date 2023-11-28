@@ -122,7 +122,8 @@ You can also run Lysand using Docker. To do so, you can:
 ```bash
 docker network create lysand-net
 ```
-4. Run the following command:
+4. Fill in the config file and the .env file (see [Installation](#installation))
+5. Run the following command:
 ```bash
 docker-compose up -d
 ```
