@@ -84,9 +84,6 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 5. Run migrations:
 
 ```bash
-# Replace this with Postgres credentials
-# This env file only needs to be there for migrations, it can be deleted after
-echo "DATABASE_URL=postgres://xxx:xxx@xxx:xxx/xxx" > .env
 bun migrate
 ```
 
@@ -108,6 +105,10 @@ bun cli
 
 You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
 
+### Using Database Commands
+
+The `bun prisma` commands allows you to use Prisma commands without needing to add in environment variables for the database config. Just run Prisma commands as you would normally, replacing `bunx prisma` with `bun prisma`.
+
 ## With Docker
 
 > **Note**: Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
@@ -122,8 +123,8 @@ You can also run Lysand using Docker. To do so, you can:
 ```bash
 docker network create lysand-net
 ```
-4. Fill in the config file and the .env file (see [Installation](#installation))
-5. Run the following command:
+1. Fill in the config file (see [Installation](#installation))
+2. Run the following command:
 ```bash
 docker-compose up -d
 ```

@@ -10,9 +10,9 @@
     "url": "https://cpluspatch.com"
   },
   "bugs": {
-    "url": "https://github.com/CPlusPatch/lysand/issues"
+    "url": "https://github.com/lysand-org/lysand/issues"
   },
-  "icon": "https://github.com/CPlusPatch/lysand",
+  "icon": "https://github.com/lysand-org/lysand",
   "license": "AGPL-3.0",
   "keywords": [
     "federated",
@@ -28,16 +28,17 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CPlusPatch/lysand.git"
+    "url": "git+https://github.com/lysand-org/lysand.git"
   },
   "private": true,
   "scripts": {
     "dev": "bun run index.ts",
     "start": "bun run index.ts",
-    "migrate-dev": "bunx prisma migrate dev",
-    "migrate": "bunx prisma migrate deploy",
+    "migrate-dev": "bun prisma migrate dev",
+    "migrate": "bun prisma migrate deploy",
     "lint": "eslint --config .eslintrc.cjs --ext .ts .",
-    "generate": "bunx prisma generate",
+    "prisma": "bun run prisma.ts",
+    "generate": "bun prisma generate",
     "cli": "bun run cli.ts"
   },
   "trustedDependencies": [
