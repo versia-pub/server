@@ -1,27 +1,25 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { applyConfig } from "@api";
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import {
+	getFromRequest,
+	userRelations,
+	userToAPI,
+} from "~database/entities/User";
+import { applyConfig } from "@api";
 import { client } from "~database/datasource";
-import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import { getFromRequest } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
+import { parseRequest } from "@request";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET"],
+	route: "/api/v1/follow_requests",
 	ratelimits: {
-		max: 200,
+		max: 100,
 		duration: 60,
 	},
-	route: "/api/v1/timelines/home",
 	auth: {
 		required: true,
 	},
 });
 
-/**
- * Fetch home timeline statuses
- */
 export default async (req: Request): Promise<Response> => {
 	const { user } = await getFromRequest(req);
 
@@ -43,42 +41,21 @@ export default async (req: Request): Promise<Response> => {
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	const objects = await client.status.findMany({
+	const objects = await client.user.findMany({
 		where: {
 			id: {
 				lt: max_id ?? undefined,
 				gte: since_id ?? undefined,
 				gt: min_id ?? undefined,
 			},
-			OR: [
-				{
-					author: {
-						OR: [
-							{
-								relationshipSubjects: {
-									some: {
-										ownerId: user.id,
-										following: true,
-									},
-								},
-							},
-							{
-								id: user.id,
-							},
-						],
-					},
+			relationships: {
+				some: {
+					subjectId: user.id,
+					requested: true,
 				},
-				{
-					// Include posts where the user is mentioned in addition to posts by followed users
-					mentions: {
-						some: {
-							id: user.id,
-						},
-					},
-				},
-			],
+			},
 		},
-		include: statusAndUserRelations,
+		include: userRelations,
 		take: limit,
 		orderBy: {
 			id: "desc",
@@ -96,9 +73,7 @@ export default async (req: Request): Promise<Response> => {
 	}
 
 	return jsonResponse(
-		await Promise.all(
-			objects.map(async status => statusToAPI(status, user))
-		),
+		objects.map(user => userToAPI(user)),
 		200,
 		{
 			Link: linkHeader.join(", "),
