@@ -79,7 +79,9 @@ export const statusAndUserRelations: Prisma.StatusInclude = {
 				},
 			},
 			instance: true,
-			mentions: true,
+			mentions: {
+				include: userRelations,
+			},
 			pinnedBy: true,
 			_count: {
 				select: {
