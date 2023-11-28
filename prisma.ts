@@ -14,4 +14,4 @@ const { stdout } = Bun.spawn(["bunx", "prisma", ...args], {
 
 // Show stdout
 const text = await new Response(stdout).text();
-console.log(text); // => "hello"
+console.log(text);
