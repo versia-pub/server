@@ -39,4 +39,9 @@ WORKDIR /app
 RUN bunx prisma generate
 # CD to app
 WORKDIR /app
-ENTRYPOINT [ "bun", "run", "index.ts" ]
+ENTRYPOINT [
+    # Run migrations and start the server
+    "bun", "migrate",
+    "&&", "bunx", "prisma", "generate",
+    "&&", "bun", "run", "index.ts"
+]
