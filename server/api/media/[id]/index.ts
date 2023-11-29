@@ -22,11 +22,28 @@ export default async (
 
 	const id = matchedRoute.params.id;
 
+	// parse `Range` header
+	const [start = 0, end = Infinity] = (
+		(req.headers.get("Range") || "")
+			.split("=") // ["Range: bytes", "0-100"]
+			.at(-1) || ""
+	) // "0-100"
+		.split("-") // ["0", "100"]
+		.map(Number); // [0, 100]
+
 	// Serve file from filesystem
 	const file = Bun.file(`./uploads/${id}`);
 
+	const buffer = await file.arrayBuffer();
+
 	if (!(await file.exists())) return errorResponse("File not found", 404);
 
-	// @ts-expect-error Bun allows this
-	return new Response(file);
+	// Can't directly copy file into Response because this crashes Bun for now
+	return new Response(buffer, {
+		headers: {
+			"Content-Type": file.type || "application/octet-stream",
+			"Content-Length": `${file.size - start}`,
+			"Content-Range": `bytes ${start}-${end}/${file.size}`,
+		},
+	});
 };
