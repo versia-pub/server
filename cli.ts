@@ -68,6 +68,11 @@ ${chalk.bold("Commands:")}
 				`bun cli user search admin`
 			)}
     ${alignDots(chalk.blue("note"), 24)} Manage notes
+        ${alignDots(chalk.blue("delete"))} Delete a note
+            ${alignDotsSmall(chalk.green("id"))} ID of the note
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli note delete 018c1838-6e0b-73c4-a157-a91ea4e25d1d`
+			)}
         ${alignDots(chalk.blue("search"))} Search for a status
             ${alignDotsSmall(chalk.green("query"))} Query to search for
             ${alignDotsSmall(
@@ -352,6 +357,37 @@ switch (command) {
 		break;
 	case "note": {
 		switch (args[3]) {
+			case "delete": {
+				const id = args[4];
+
+				if (!id) {
+					console.log(`${chalk.red(`✗`)} Missing ID`);
+					process.exit(1);
+				}
+
+				const note = await client.status.findFirst({
+					where: {
+						id: id,
+					},
+				});
+
+				if (!note) {
+					console.log(`${chalk.red(`✗`)} Note not found`);
+					process.exit(1);
+				}
+
+				await client.status.delete({
+					where: {
+						id: note.id,
+					},
+				});
+
+				console.log(
+					`${chalk.green(`✓`)} Deleted note ${chalk.blue(note.id)}`
+				);
+
+				break;
+			}
 			case "search": {
 				const argsWithoutFlags = args.filter(
 					arg => !arg.startsWith("--")
