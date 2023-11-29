@@ -376,7 +376,10 @@ export const userToAPI = (
 		discoverable: undefined,
 		mute_expires_at: undefined,
 		group: false,
-		role: undefined,
+		pleroma: {
+			is_admin: user.isAdmin,
+			is_moderator: user.isAdmin,
+		},
 	};
 };
 

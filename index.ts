@@ -33,9 +33,9 @@ if (!(await requests_log.exists())) {
 }
 
 // Check if database is reachable
-const postCount = 0;
+let postCount = 0;
 try {
-	await client.status.count();
+	postCount = await client.status.count();
 } catch (e) {
 	const error = e as PrismaClientInitializationError;
 	console.error(

@@ -31,4 +31,5 @@ export interface APIAccount {
 	source?: APISource;
 	role?: APIRole;
 	mute_expires_at?: string;
+	pleroma?: any;
 }
