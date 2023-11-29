@@ -62,6 +62,8 @@ ${chalk.bold("Commands:")}
             ${alignDotsSmall(
 				chalk.yellow("--email")
 			)} Search in emails (optional)
+            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
+            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli user search admin`
 			)}
@@ -201,6 +203,8 @@ switch (command) {
 				const local = args.includes("--local");
 				const remote = args.includes("--remote");
 				const email = args.includes("--email");
+				const json = args.includes("--json");
+				const csv = args.includes("--csv");
 
 				const queries: Prisma.UserWhereInput[] = [];
 
@@ -254,35 +258,73 @@ switch (command) {
 					},
 				});
 
-				console.log(
-					`${chalk.green(`✓`)} Found ${chalk.blue(
-						users.length
-					)} users`
-				);
+				if (json || csv) {
+					if (json) {
+						console.log(JSON.stringify(users, null, 4));
+					}
+					if (csv) {
+						// Convert the outputted JSON to CSV
 
-				const table = new Table({
-					head: [
-						chalk.white(chalk.bold("Username")),
-						chalk.white(chalk.bold("Email")),
-						chalk.white(chalk.bold("Display Name")),
-						chalk.white(chalk.bold("Admin?")),
-						chalk.white(chalk.bold("Instance URL")),
-					],
-				});
+						// Remove all object children from each object
+						const items = users.map(user => {
+							const item = {
+								...user,
+								instance: undefined,
+								endpoints: undefined,
+								source: undefined,
+							};
+							return item;
+						});
+						const replacer = (key: string, value: any): any =>
+							value === null ? "" : value; // Null values are returned as empty strings
+						const header = Object.keys(items[0]);
+						const csv = [
+							header.join(","), // header row first
+							...items.map(row =>
+								header
+									.map(fieldName =>
+										// @ts-expect-error This is fine
+										JSON.stringify(row[fieldName], replacer)
+									)
+									.join(",")
+							),
+						].join("\r\n");
 
-				for (const user of users) {
-					table.push([
-						chalk.yellow(`@${user.username}`),
-						chalk.green(user.email),
-						chalk.blue(user.displayName),
-						chalk.red(user.isAdmin ? "Yes" : "No"),
-						chalk.blue(
-							user.instanceId ? user.instance?.base_url : "Local"
-						),
-					]);
+						console.log(csv);
+					}
+				} else {
+					console.log(
+						`${chalk.green(`✓`)} Found ${chalk.blue(
+							users.length
+						)} users`
+					);
+
+					const table = new Table({
+						head: [
+							chalk.white(chalk.bold("Username")),
+							chalk.white(chalk.bold("Email")),
+							chalk.white(chalk.bold("Display Name")),
+							chalk.white(chalk.bold("Admin?")),
+							chalk.white(chalk.bold("Instance URL")),
+						],
+					});
+
+					for (const user of users) {
+						table.push([
+							chalk.yellow(`@${user.username}`),
+							chalk.green(user.email),
+							chalk.blue(user.displayName),
+							chalk.red(user.isAdmin ? "Yes" : "No"),
+							chalk.blue(
+								user.instanceId
+									? user.instance?.base_url
+									: "Local"
+							),
+						]);
+					}
+
+					console.log(table.toString());
 				}
-
-				console.log(table.toString());
 
 				break;
 			}
