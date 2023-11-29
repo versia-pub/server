@@ -67,6 +67,21 @@ ${chalk.bold("Commands:")}
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli user search admin`
 			)}
+    ${alignDots(chalk.blue("note"), 24)} Manage notes
+        ${alignDots(chalk.blue("search"))} Search for a status
+            ${alignDotsSmall(chalk.green("query"))} Query to search for
+            ${alignDotsSmall(
+				chalk.yellow("--local")
+			)} Search in local statuses (optional)
+            ${alignDotsSmall(
+				chalk.yellow("--remote")
+			)} Search in remote statuses (optional)
+            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
+            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli note search hello`
+			)}
+            
 `;
 
 if (args.length < 3) {
@@ -170,6 +185,7 @@ switch (command) {
 					where: {
 						isAdmin: admins || undefined,
 					},
+					take: 200,
 				});
 
 				console.log(
@@ -256,6 +272,7 @@ switch (command) {
 					include: {
 						instance: true,
 					},
+					take: 40,
 				});
 
 				if (json || csv) {
@@ -333,6 +350,127 @@ switch (command) {
 				break;
 		}
 		break;
+	case "note": {
+		switch (args[3]) {
+			case "search": {
+				const argsWithoutFlags = args.filter(
+					arg => !arg.startsWith("--")
+				);
+				const query = argsWithoutFlags[4];
+
+				if (!query) {
+					console.log(`${chalk.red(`✗`)} Missing query`);
+					process.exit(1);
+				}
+
+				const local = args.includes("--local");
+				const remote = args.includes("--remote");
+				const json = args.includes("--json");
+				const csv = args.includes("--csv");
+
+				const queries: Prisma.StatusWhereInput[] = [];
+
+				if (local) {
+					queries.push({
+						instanceId: null,
+					});
+				}
+
+				if (remote) {
+					queries.push({
+						instanceId: {
+							not: null,
+						},
+					});
+				}
+
+				const statuses = await client.status.findMany({
+					where: {
+						AND: queries,
+						content: {
+							contains: query,
+							mode: "insensitive",
+						},
+					},
+					take: 40,
+					include: {
+						author: true,
+						instance: true,
+					},
+				});
+
+				if (json || csv) {
+					if (json) {
+						console.log(JSON.stringify(statuses, null, 4));
+					}
+					if (csv) {
+						// Convert the outputted JSON to CSV
+
+						// Remove all object children from each object
+						const items = statuses.map(status => {
+							const item = {
+								...status,
+								author: undefined,
+								instance: undefined,
+							};
+							return item;
+						});
+						const replacer = (key: string, value: any): any =>
+							value === null ? "" : value; // Null values are returned as empty strings
+						const header = Object.keys(items[0]);
+						const csv = [
+							header.join(","), // header row first
+							...items.map(row =>
+								header
+									.map(fieldName =>
+										// @ts-expect-error This is fine
+										JSON.stringify(row[fieldName], replacer)
+									)
+									.join(",")
+							),
+						].join("\r\n");
+
+						console.log(csv);
+					}
+				} else {
+					console.log(
+						`${chalk.green(`✓`)} Found ${chalk.blue(
+							statuses.length
+						)} statuses`
+					);
+
+					const table = new Table({
+						head: [
+							chalk.white(chalk.bold("Username")),
+							chalk.white(chalk.bold("Instance URL")),
+							chalk.white(chalk.bold("Content")),
+						],
+					});
+
+					for (const status of statuses) {
+						table.push([
+							chalk.yellow(`@${status.author.username}`),
+							chalk.blue(
+								status.instanceId
+									? status.instance?.base_url
+									: "Local"
+							),
+							chalk.green(status.content.slice(0, 50)),
+						]);
+					}
+
+					console.log(table.toString());
+				}
+
+				break;
+			}
+			default:
+				console.log(`Unknown command ${chalk.blue(command)}`);
+				break;
+		}
+
+		break;
+	}
 	default:
 		console.log(`Unknown command ${chalk.blue(command)}`);
 		break;
