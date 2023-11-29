@@ -95,6 +95,58 @@ To run the server, simply run the following command:
 bun start
 ```
 
+### Using the CLI
+
+Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
+
+```bash
+bun cli
+```
+
+You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
+
+### Using Database Commands
+
+The `bun prisma` commands allows you to use Prisma commands without needing to add in environment variables for the database config. Just run Prisma commands as you would normally, replacing `bunx prisma` with `bun prisma`.
+
+## With Docker
+
+> **Note**: Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
+>
+> These instructions will probably also work with Podman and other container runtimes.
+
+You can also run Lysand using Docker. To do so, you can:
+
+1. Acquire the Postgres Dockerfile from above
+2. Use this repository's [`docker-compose.yml`](docker-compose.yml) file
+3. Create the `lysand-net` docker network:
+```bash
+docker network create lysand-net
+```
+1. Fill in the config file (see [Installation](#installation))
+2. Run the following command:
+```bash
+docker-compose up -d
+```
+
+You may need root privileges to run Docker commands.
+
+### Running CLI commands inside Docker
+
+You can run CLI commands inside Docker using the following command:
+
+```bash
+sudo docker exec -it lysand bun cli ...
+```
+
+### Running migrations inside Docker
+
+You can run migrations inside Docker using the following command (if needed):
+
+```bash
+sudo docker exec -it lysand bun migrate
+```
+
 ## Contributing
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.

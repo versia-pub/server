@@ -37,6 +37,33 @@ export const createNewRelationship = async (
 	});
 };
 
+export const checkForBidirectionalRelationships = async (
+	user1: User,
+	user2: User,
+	createIfNotExists = true
+): Promise<boolean> => {
+	const relationship1 = await client.relationship.findFirst({
+		where: {
+			ownerId: user1.id,
+			subjectId: user2.id,
+		},
+	});
+
+	const relationship2 = await client.relationship.findFirst({
+		where: {
+			ownerId: user2.id,
+			subjectId: user1.id,
+		},
+	});
+
+	if (!relationship1 && !relationship2 && createIfNotExists) {
+		await createNewRelationship(user1, user2);
+		await createNewRelationship(user2, user1);
+	}
+
+	return !!relationship1 && !!relationship2;
+};
+
 /**
  * Converts the relationship to an API-friendly format.
  * @returns The API-friendly relationship.

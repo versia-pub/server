@@ -22,6 +22,8 @@ import {
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { APIStatus } from "~types/entities/status";
 import { applicationToAPI } from "./Application";
+import { attachmentToAPI } from "./Attachment";
+import type { APIAttachment } from "~types/entities/attachment";
 
 const config = getConfig();
 
@@ -53,9 +55,12 @@ export const statusAndUserRelations: Prisma.StatusInclude = {
 			},
 		},
 	},
+	reblogs: true,
 	attachments: true,
 	instance: true,
-	mentions: true,
+	mentions: {
+		include: userRelations,
+	},
 	pinnedBy: true,
 	_count: {
 		select: {
@@ -77,7 +82,9 @@ export const statusAndUserRelations: Prisma.StatusInclude = {
 				},
 			},
 			instance: true,
-			mentions: true,
+			mentions: {
+				include: userRelations,
+			},
 			pinnedBy: true,
 			_count: {
 				select: {
@@ -307,12 +314,9 @@ export const createNewStatus = async (data: {
 	};
 	quote?: Status;
 }) => {
-	// Get people mentioned in the content
-	const mentionedPeople = [...data.content.matchAll(/@([a-zA-Z0-9_]+)/g)].map(
-		match => {
-			return `${config.http.base_url}/users/${match[1]}`;
-		}
-	);
+	// Get people mentioned in the content (match @username or @username@domain.com mentions)
+	const mentionedPeople =
+		data.content.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
 
 	let mentions = data.mentions || [];
 
@@ -437,8 +441,12 @@ export const statusToAPI = async (
 		),
 		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
 		favourites_count: (status.likes ?? []).length,
-		media_attachments: [],
-		mentions: [],
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		media_attachments: (status.attachments ?? []).map(
+			a => attachmentToAPI(a) as APIAttachment
+		),
+		// @ts-expect-error Prisma TypeScript types dont include relations
+		mentions: status.mentions.map(mention => userToAPI(mention)),
 		language: null,
 		muted: user
 			? user.relationships.find(r => r.subjectId == status.authorId)
@@ -456,11 +464,7 @@ export const statusToAPI = async (
 				reblogId: status.id,
 			},
 		})),
-		reblogs_count: await client.status.count({
-			where: {
-				reblogId: status.id,
-			},
-		}),
+		reblogs_count: status._count.reblogs,
 		replies_count: status._count.replies,
 		sensitive: status.sensitive,
 		spoiler_text: status.spoilerText,

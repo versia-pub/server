@@ -10,7 +10,10 @@ import {
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import { getFromRequest } from "~database/entities/User";
+import {
+	getFromRequest,
+	type UserWithRelations,
+} from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -84,10 +87,15 @@ export default async (
 	});
 
 	// Create notification for reblog if reblogged user is on the same instance
-	if (status.reblog?.author.instanceId === user.instanceId) {
+	if (
+		// @ts-expect-error Prisma relations not showing in types
+		(status.reblog?.author as UserWithRelations).instanceId ===
+		user.instanceId
+	) {
 		await client.notification.create({
 			data: {
 				accountId: user.id,
+				// @ts-expect-error Prisma relations not showing in types
 				notifiedId: status.reblog.authorId,
 				type: "reblog",
 				statusId: status.reblogId,

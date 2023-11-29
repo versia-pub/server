@@ -192,6 +192,7 @@ export default async (
 			return errorResponse("Reply status not found", 404);
 		}
 
+		// @ts-expect-error Prisma Typescript doesn't include relations
 		replyUser = replyStatus.author;
 	}
 

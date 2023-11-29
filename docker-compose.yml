@@ -1,12 +1,40 @@
-version: '3'
+---
+# Run `docker network create lysand-net` before running docker-compose up
+version: "3"
 services:
-  lysand:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - 8080:8080
-    container_name: lysand
-    volumes:
-      - ./logs:/app/logs
-      - ./config:/app/config
+    lysand:
+        image: ghcr.io/lysand-org/lysand:main
+        volumes:
+            #- ./logs:/app/logs
+            - ./config:/app/config
+            - ./.env:/app/.env
+        restart: unless-stopped
+        container_name: lysand
+        networks:
+            - lysand-net
+    db:
+        build:
+            context: .
+            dockerfile: Postgres.Dockerfile
+        container_name: lysand-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: lysand
+            POSTGRES_USER: lysand
+            POSTGRES_PASSWORD: lysand
+        networks:
+            - lysand-net
+        volumes:
+            - ./db-data:/var/lib/postgresql/data
+    redis:
+        image: "redis:latest"
+        container_name: lysand-redis
+        volumes:
+            - ./redis-data:/data
+        restart: unless-stopped
+        networks:
+            - lysand-net
+
+networks:
+    lysand-net:
+        external: true
