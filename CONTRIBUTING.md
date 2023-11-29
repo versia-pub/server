@@ -67,8 +67,14 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 ```
 
 4. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
+   
+5. Generate the Prisma client:
 
-5. Run migrations:
+```bash
+bun prisma generate
+```
+
+6. Run migrations:
 
 ```bash
 bun migrate
@@ -130,9 +136,9 @@ When you are done with your changes, you can open a pull request. Please make su
 
 We use Bun's integrated testing system to write tests. You can find more information about it [here](https://bun.sh/docs/cli/test). It uses a Jest-like syntax.
 
-Tests **must** be written for all API routes and all functions that are not trivial. If you are not sure whether you should write a test for something, you probably should.
+Tests **should** be written for all API routes and all functions that are not trivial. If you are not sure whether you should write a test for something, you probably should.
 
-To help with the creation of tests, you may find [GitHub Copilot](https://copilot.github.com/) useful (or some of its free alternatives like [Codeium](https://codeium.com/)). Please do not blindly copy the code that it generates, but use it as a starting point for your own tests.
+To help with the creation of tests, you may find [GitHub Copilot](https://copilot.github.com/) useful (or some of its free alternatives like [Codeium](https://codeium.com/)). Please do not blindly copy the code that it generates, but use it as a starting point for your own tests. I recognize that writing tests is very tedious, which is why LLMs can come in handy.
 
 ### Writing documentation
 

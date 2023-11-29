@@ -105,6 +105,12 @@ bun cli
 
 You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
 
+#### Scripting with the CLI
+
+Some CLI commands that return data as tables can be used in scripts. To do so, you can use the `--json` flag to output the data as JSON instead of a table, or even `--csv` to output the data as CSV. See `bun cli help` for more information.
+
+Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
+
 ### Using Database Commands
 
 The `bun prisma` commands allows you to use Prisma commands without needing to add in environment variables for the database config. Just run Prisma commands as you would normally, replacing `bunx prisma` with `bun prisma`.
