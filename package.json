@@ -48,6 +48,7 @@
   "devDependencies": {
     "@julr/unocss-preset-forms": "^0.1.0",
     "@microsoft/eslint-formatter-sarif": "^3.0.0",
+    "@types/cli-table": "^0.3.4",
     "@types/html-to-text": "^9.0.4",
     "@types/jsonld": "^1.5.13",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
@@ -73,6 +74,7 @@
     "blurhash": "^2.0.5",
     "bullmq": "^4.14.4",
     "chalk": "^5.3.0",
+    "cli-table": "^0.3.11",
     "eventemitter3": "^5.0.1",
     "html-to-text": "^9.0.5",
     "ip-matching": "^2.1.2",

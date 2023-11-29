@@ -1,43 +1,70 @@
+import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
+import Table from "cli-table";
 
 const args = process.argv;
+
+/**
+ * Make the text have a width of 20 characters, padding with gray dots
+ * Text can be a Chalk string, in which case formatting codes should not be counted in text length
+ * @param text The text to align
+ */
+const alignDots = (text: string, length = 20) => {
+	// Remove formatting codes
+	// eslint-disable-next-line no-control-regex
+	const textLength = text.replace(/\u001b\[\d+m/g, "").length;
+	const dots = ".".repeat(length - textLength);
+	return `${text}${chalk.gray(dots)}`;
+};
+
+const alignDotsSmall = (text: string, length = 16) => alignDots(text, length);
 
 const help = `
 ${chalk.bold(`Usage: bun cli <command> ${chalk.blue("[...flags]")} [...args]`)}
 
 ${chalk.bold("Commands:")}
-    ${chalk.blue("help")} ${chalk.gray(
-		"................."
-	)} Show this help message
-    ${chalk.blue("user")} ${chalk.gray(".................")} Manage users
-        ${chalk.blue("create")} ${chalk.gray("...........")} Create a new user
-            ${chalk.green("username")} ${chalk.gray(
-				"....."
-			)} Username of the user
-            ${chalk.green("password")} ${chalk.gray(
-				"....."
-			)} Password of the user
-            ${chalk.green("email")} ${chalk.gray("........")} Email of the user
-            ${chalk.yellow("--admin")} ${chalk.gray(
-				"......"
+    ${alignDots(chalk.blue("help"), 24)} Show this help message
+    ${alignDots(chalk.blue("user"), 24)} Manage users
+        ${alignDots(chalk.blue("create"))} Create a new user
+            ${alignDotsSmall(chalk.green("username"))} Username of the user
+            ${alignDotsSmall(chalk.green("password"))} Password of the user
+            ${alignDotsSmall(chalk.green("email"))} Email of the user
+            ${alignDotsSmall(
+				chalk.yellow("--admin")
 			)} Make the user an admin (optional)
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli user create admin password123 admin@gmail.com --admin`
 			)}
-        ${chalk.blue("delete")} ${chalk.gray("...........")} Delete a user
-            ${chalk.green("username")} ${chalk.gray(
-				"....."
-			)} Username of the user
+        ${alignDots(chalk.blue("delete"))} Delete a user
+            ${alignDotsSmall(chalk.green("username"))} Username of the user
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli user delete admin`
 			)}
-        ${chalk.blue("list")} ${chalk.gray(".............")} List all users
-            ${chalk.yellow("--admins")} ${chalk.gray(
-				"....."
+        ${alignDots(chalk.blue("list"))} List all users
+            ${alignDotsSmall(
+				chalk.yellow("--admins")
 			)} List only admins (optional)
             ${chalk.bold("Example:")} ${chalk.bgGray(`bun cli user list`)}
+        ${alignDots(chalk.blue("search"))} Search for a user
+            ${alignDotsSmall(chalk.green("query"))} Query to search for
+            ${alignDotsSmall(
+				chalk.yellow("--displayname")
+			)} Search by display name (optional)
+            ${alignDotsSmall(chalk.yellow("--bio"))} Search in bio (optional)
+            ${alignDotsSmall(
+				chalk.yellow("--local")
+			)} Search in local users (optional)
+            ${alignDotsSmall(
+				chalk.yellow("--remote")
+			)} Search in remote users (optional)
+            ${alignDotsSmall(
+				chalk.yellow("--email")
+			)} Search in emails (optional)
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli user search admin`
+			)}
 `;
 
 if (args.length < 3) {
@@ -156,6 +183,107 @@ switch (command) {
 						)} ${chalk.green(user.isAdmin ? "Admin" : "User")}`
 					);
 				}
+				break;
+			}
+			case "search": {
+				const argsWithoutFlags = args.filter(
+					arg => !arg.startsWith("--")
+				);
+				const query = argsWithoutFlags[4];
+
+				if (!query) {
+					console.log(`${chalk.red(`✗`)} Missing query`);
+					process.exit(1);
+				}
+
+				const displayname = args.includes("--displayname");
+				const bio = args.includes("--bio");
+				const local = args.includes("--local");
+				const remote = args.includes("--remote");
+				const email = args.includes("--email");
+
+				const queries: Prisma.UserWhereInput[] = [];
+
+				if (displayname) {
+					queries.push({
+						displayName: {
+							contains: query,
+							mode: "insensitive",
+						},
+					});
+				}
+
+				if (bio) {
+					queries.push({
+						note: {
+							contains: query,
+							mode: "insensitive",
+						},
+					});
+				}
+
+				if (local) {
+					queries.push({
+						instanceId: null,
+					});
+				}
+
+				if (remote) {
+					queries.push({
+						instanceId: {
+							not: null,
+						},
+					});
+				}
+
+				if (email) {
+					queries.push({
+						email: {
+							contains: query,
+							mode: "insensitive",
+						},
+					});
+				}
+
+				const users = await client.user.findMany({
+					where: {
+						AND: queries,
+					},
+					include: {
+						instance: true,
+					},
+				});
+
+				console.log(
+					`${chalk.green(`✓`)} Found ${chalk.blue(
+						users.length
+					)} users`
+				);
+
+				const table = new Table({
+					head: [
+						chalk.white(chalk.bold("Username")),
+						chalk.white(chalk.bold("Email")),
+						chalk.white(chalk.bold("Display Name")),
+						chalk.white(chalk.bold("Admin?")),
+						chalk.white(chalk.bold("Instance URL")),
+					],
+				});
+
+				for (const user of users) {
+					table.push([
+						chalk.yellow(`@${user.username}`),
+						chalk.green(user.email),
+						chalk.blue(user.displayName),
+						chalk.red(user.isAdmin ? "Yes" : "No"),
+						chalk.blue(
+							user.instanceId ? user.instance?.base_url : "Local"
+						),
+					]);
+				}
+
+				console.log(table.toString());
+
 				break;
 			}
 			default:
