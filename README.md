@@ -23,9 +23,24 @@ This project aims to be a fully featured social network, with a focus on privacy
 - [x] Full regex-based filters for posts, users and media
 - [x] Custom emoji support
 - [x] Automatic image conversion to WebP or other formats
+- [x] Scripting-compatible CLI with JSON and CSV outputs
 - [ ] Moderation tools
 - [ ] Full Mastodon API support
 - [ ] Outbound federation
+
+## Benchmarks
+
+> **Note**: These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
+
+### Timeline Benchmarks
+
+You may run the following command to benchmark the `/api/v1/timelines/home` endpoint:
+
+```bash
+TOKEN=token_here bun benchmark:timeline <request_count>
+```
+
+The `request_count` variable is optional and defaults to 100. `TOKEN` is your personal user token, used to login to the API.
 
 ## How do I run it?
 

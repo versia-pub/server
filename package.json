@@ -39,6 +39,7 @@
     "lint": "eslint --config .eslintrc.cjs --ext .ts .",
     "prisma": "bun run prisma.ts",
     "generate": "bun prisma generate",
+    "benchmark:timeline": "bun run benchmarks/timelines.ts",
     "cli": "bun run cli.ts"
   },
   "trustedDependencies": [

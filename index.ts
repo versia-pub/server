@@ -12,6 +12,7 @@ import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { HookTypes, Server } from "~plugins/types";
 
+const timeAtStart = performance.now();
 const server = new Server();
 
 const router = new Bun.FileSystemRouter({
@@ -171,7 +172,7 @@ console.log(
 	`${chalk.green(`✓`)} ${chalk.bold(
 		`Lysand started at ${chalk.blue(
 			`${config.http.bind}:${config.http.bind_port}`
-		)}`
+		)} in ${chalk.gray((performance.now() - timeAtStart).toFixed(0))}ms`
 	)}`
 );
 
