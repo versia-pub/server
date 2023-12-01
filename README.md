@@ -9,13 +9,14 @@
 
 This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and API support.
 
-This project aims to be a fully featured social network, with a focus on privacy and security. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
+This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
 > **Note:** This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
 
 ## Features
 
 - [x] Inbound federation
+- [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files
 - [x] Federation limits
@@ -41,6 +42,28 @@ TOKEN=token_here bun benchmark:timeline <request_count>
 ```
 
 The `request_count` variable is optional and defaults to 100. `TOKEN` is your personal user token, used to login to the API.
+
+On a quad-core laptop:
+
+```
+$ bun run benchmarks/timelines.ts 100
+✓ All requests succeeded
+✓ 100 requests fulfilled in 0.12611s
+```
+
+```
+$ bun run benchmarks/timelines.ts 1000
+✓ All requests succeeded
+✓ 1000 requests fulfilled in 0.90925s
+```
+
+```
+$ bun run benchmarks/timelines.ts 10000
+✓ All requests succeeded
+✓ 10000 requests fulfilled in 12.44852s
+```
+
+Lysand is extremely fast and can handle tens of thousands of HTTP requests per second on a good server.
 
 ## How do I run it?
 

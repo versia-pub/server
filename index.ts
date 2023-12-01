@@ -11,6 +11,7 @@ import { mkdir } from "fs/promises";
 import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { HookTypes, Server } from "~plugins/types";
+import { initializeRedisCache } from "@redis";
 
 const timeAtStart = performance.now();
 const server = new Server();
@@ -31,6 +32,12 @@ if (!(await requests_log.exists())) {
 	console.log(`${chalk.green(`✓`)} ${chalk.bold("Creating logs folder...")}`);
 	await mkdir(process.cwd() + "/logs");
 	await Bun.write(process.cwd() + "/logs/requests.log", "");
+}
+
+const redisCache = await initializeRedisCache();
+
+if (redisCache) {
+	client.$use(redisCache);
 }
 
 // Check if database is reachable
