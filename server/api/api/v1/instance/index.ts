@@ -2,6 +2,9 @@ import { applyConfig } from "@api";
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
 import { client } from "~database/datasource";
+import { userRelations, userToAPI } from "~database/entities/User";
+import type { APIInstance } from "~types/entities/instance";
+import manifest from "~package.json";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -22,6 +25,9 @@ export const meta = applyConfig({
 export default async (): Promise<Response> => {
 	const config = getConfig();
 
+	// Get software version from package.json
+	const version = manifest.version;
+
 	const statusCount = await client.status.count({
 		where: {
 			instanceId: null,
@@ -33,12 +39,40 @@ export default async (): Promise<Response> => {
 		},
 	});
 
+	// Get the first created admin user
+	const contactAccount = await client.user.findFirst({
+		where: {
+			instanceId: null,
+			isAdmin: true,
+		},
+		orderBy: {
+			id: "asc",
+		},
+		include: userRelations,
+	});
+
+	// Get user that have posted once in the last 30 days
+	const monthlyActiveUsers = await client.user.count({
+		where: {
+			instanceId: null,
+			statuses: {
+				some: {
+					createdAt: {
+						gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+					},
+				},
+			},
+		},
+	});
+
+	const knownDomainsCount = await client.instance.count();
+
 	// TODO: fill in more values
 	return jsonResponse({
 		approval_required: false,
 		configuration: {
 			media_attachments: {
-				image_matrix_limit: 10,
+				image_matrix_limit: config.validation.max_media_attachments,
 				image_size_limit: config.validation.max_media_size,
 				supported_mime_types: config.validation.allowed_mime_types,
 				video_frame_limit: 60,
@@ -46,9 +80,10 @@ export default async (): Promise<Response> => {
 				video_size_limit: config.validation.max_media_size,
 			},
 			polls: {
-				max_characters_per_option: 100,
-				max_expiration: 60 * 60 * 24 * 365 * 100, // 100 years,
-				max_options: 40,
+				max_characters_per_option:
+					config.validation.max_poll_option_size,
+				max_expiration: config.validation.max_poll_duration,
+				max_options: config.validation.max_poll_options,
 				min_expiration: 60,
 			},
 			statuses: {
@@ -70,7 +105,7 @@ export default async (): Promise<Response> => {
 		languages: ["en"],
 		rules: [],
 		stats: {
-			domain_count: 1,
+			domain_count: knownDomainsCount,
 			status_count: statusCount,
 			user_count: userCount,
 		},
@@ -80,7 +115,7 @@ export default async (): Promise<Response> => {
 		urls: {
 			streaming_api: "",
 		},
-		version: "4.2.0+glitch (compatible; Lysand 0.0.1)",
+		version: `4.2.0+glitch (compatible; Lysand ${version}})`,
 		max_toot_chars: config.validation.max_note_size,
 		pleroma: {
 			metadata: {
@@ -115,8 +150,9 @@ export default async (): Promise<Response> => {
 				privileged_staff: false,
 			},
 			stats: {
-				mau: 2,
+				mau: monthlyActiveUsers,
 			},
 		},
-	});
+		contact_account: contactAccount ? userToAPI(contactAccount) : null,
+	} as APIInstance);
 };

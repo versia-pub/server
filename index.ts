@@ -11,7 +11,9 @@ import { mkdir } from "fs/promises";
 import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { HookTypes, Server } from "~plugins/types";
+import { initializeRedisCache } from "@redis";
 
+const timeAtStart = performance.now();
 const server = new Server();
 
 const router = new Bun.FileSystemRouter({
@@ -32,10 +34,16 @@ if (!(await requests_log.exists())) {
 	await Bun.write(process.cwd() + "/logs/requests.log", "");
 }
 
+const redisCache = await initializeRedisCache();
+
+if (redisCache) {
+	client.$use(redisCache);
+}
+
 // Check if database is reachable
-const postCount = 0;
+let postCount = 0;
 try {
-	await client.status.count();
+	postCount = await client.status.count();
 } catch (e) {
 	const error = e as PrismaClientInitializationError;
 	console.error(
@@ -171,7 +179,7 @@ console.log(
 	`${chalk.green(`✓`)} ${chalk.bold(
 		`Lysand started at ${chalk.blue(
 			`${config.http.bind}:${config.http.bind_port}`
-		)}`
+		)} in ${chalk.gray((performance.now() - timeAtStart).toFixed(0))}ms`
 	)}`
 );
 

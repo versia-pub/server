@@ -8,6 +8,7 @@ services:
             #- ./logs:/app/logs
             - ./config:/app/config
             - ./.env:/app/.env
+            - ./uploads:/app/uploads
         restart: unless-stopped
         container_name: lysand
         networks:

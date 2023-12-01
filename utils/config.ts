@@ -16,6 +16,13 @@ export interface ConfigType {
 			password: string;
 			database: number | null;
 		};
+		cache: {
+			host: string;
+			port: number;
+			password: string;
+			database: number | null;
+			enabled: boolean;
+		};
 	};
 
 	http: {
@@ -159,7 +166,14 @@ export const configDefaults: ConfigType = {
 			host: "localhost",
 			port: 6379,
 			password: "",
-			database: null,
+			database: 0,
+		},
+		cache: {
+			host: "localhost",
+			port: 6379,
+			password: "",
+			database: 1,
+			enabled: false,
 		},
 	},
 	instance: {

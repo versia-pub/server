@@ -23,13 +23,5 @@ export default async (req: Request): Promise<Response> => {
 
 	return jsonResponse({
 		...userToAPI(user, true),
-		// TODO: Add role support
-		role: {
-			id: 0,
-			name: "",
-			permissions: "",
-			color: "",
-			highlighted: false,
-		},
 	});
 };

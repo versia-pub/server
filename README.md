@@ -9,13 +9,14 @@
 
 This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and API support.
 
-This project aims to be a fully featured social network, with a focus on privacy and security. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
+This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
 > **Note:** This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
 
 ## Features
 
 - [x] Inbound federation
+- [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files
 - [x] Federation limits
@@ -23,9 +24,46 @@ This project aims to be a fully featured social network, with a focus on privacy
 - [x] Full regex-based filters for posts, users and media
 - [x] Custom emoji support
 - [x] Automatic image conversion to WebP or other formats
+- [x] Scripting-compatible CLI with JSON and CSV outputs
 - [ ] Moderation tools
 - [ ] Full Mastodon API support
 - [ ] Outbound federation
+
+## Benchmarks
+
+> **Note**: These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
+
+### Timeline Benchmarks
+
+You may run the following command to benchmark the `/api/v1/timelines/home` endpoint:
+
+```bash
+TOKEN=token_here bun benchmark:timeline <request_count>
+```
+
+The `request_count` variable is optional and defaults to 100. `TOKEN` is your personal user token, used to login to the API.
+
+On a quad-core laptop:
+
+```
+$ bun run benchmarks/timelines.ts 100
+✓ All requests succeeded
+✓ 100 requests fulfilled in 0.12611s
+```
+
+```
+$ bun run benchmarks/timelines.ts 1000
+✓ All requests succeeded
+✓ 1000 requests fulfilled in 0.90925s
+```
+
+```
+$ bun run benchmarks/timelines.ts 10000
+✓ All requests succeeded
+✓ 10000 requests fulfilled in 12.44852s
+```
+
+Lysand is extremely fast and can handle tens of thousands of HTTP requests per second on a good server.
 
 ## How do I run it?
 
@@ -104,6 +142,12 @@ bun cli
 ```
 
 You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
+
+#### Scripting with the CLI
+
+Some CLI commands that return data as tables can be used in scripts. To do so, you can use the `--json` flag to output the data as JSON instead of a table, or even `--csv` to output the data as CSV. See `bun cli help` for more information.
+
+Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
 
 ### Using Database Commands
 
