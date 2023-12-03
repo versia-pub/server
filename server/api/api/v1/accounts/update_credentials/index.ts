@@ -1,7 +1,11 @@
 import { getConfig } from "@config";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import { getFromRequest, userToAPI } from "~database/entities/User";
+import {
+	getFromRequest,
+	userRelations,
+	userToAPI,
+} from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
@@ -9,6 +13,7 @@ import { uploadFile } from "~classes/media";
 import ISO6391 from "iso-639-1";
 import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
+import type { APISource } from "~types/entities/source";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -63,6 +68,15 @@ export default async (req: Request): Promise<Response> => {
 		ALLOWED_ATTR: [],
 	});
 
+	if (!user.source) {
+		user.source = {
+			privacy: "public",
+			sensitive: false,
+			language: "en",
+			note: "",
+		};
+	}
+
 	if (display_name) {
 		// Check if within allowed display name lengths
 		if (
@@ -90,7 +104,7 @@ export default async (req: Request): Promise<Response> => {
 		user.displayName = sanitizedDisplayName;
 	}
 
-	if (note) {
+	if (note && user.source) {
 		// Check if within allowed note length
 		if (sanitizedNote.length > config.validation.max_note_size) {
 			return errorResponse(
@@ -111,6 +125,7 @@ export default async (req: Request): Promise<Response> => {
 		// Remove emojis
 		user.emojis = [];
 
+		(user.source as unknown as APISource).note = sanitizedNote;
 		user.note = sanitizedNote;
 	}
 
@@ -220,7 +235,7 @@ export default async (req: Request): Promise<Response> => {
 		(emoji, index, self) => self.findIndex(e => e.id === emoji.id) === index
 	);
 
-	await client.user.update({
+	const output = await client.user.update({
 		where: { id: user.id },
 		data: {
 			displayName: user.displayName,
@@ -240,7 +255,8 @@ export default async (req: Request): Promise<Response> => {
 			},
 			source: user.source || undefined,
 		},
+		include: userRelations,
 	});
 
-	return jsonResponse(userToAPI(user));
+	return jsonResponse(userToAPI(output));
 };

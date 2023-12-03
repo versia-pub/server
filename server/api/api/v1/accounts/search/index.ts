@@ -48,12 +48,18 @@ export default async (req: Request): Promise<Response> => {
 
 	const accounts = await client.user.findMany({
 		where: {
-			displayName: {
-				contains: q,
-			},
-			username: {
-				contains: q,
-			},
+			OR: [
+				{
+					displayName: {
+						contains: q,
+					},
+				},
+				{
+					username: {
+						contains: q,
+					},
+				},
+			],
 			relationshipSubjects: following
 				? {
 						some: {
