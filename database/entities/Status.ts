@@ -325,7 +325,10 @@ export const createNewStatus = async (data: {
 
 	let mentions = data.mentions || [];
 
-	// TODO: Parse emojis
+	// Parse emojis
+	const emojis = await parseEmojis(data.content);
+
+	data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
 
 	// Get list of mentioned users
 	if (mentions.length === 0) {
@@ -371,7 +374,7 @@ export const createNewStatus = async (data: {
 			sensitive: data.sensitive,
 			spoilerText: data.spoiler_text,
 			emojis: {
-				connect: data.emojis?.map(emoji => {
+				connect: data.emojis.map(emoji => {
 					return {
 						id: emoji.id,
 					};
@@ -453,7 +456,10 @@ export const editStatus = async (
 
 	let mentions = data.mentions || [];
 
-	// TODO: Parse emojis
+	// Parse emojis
+	const emojis = await parseEmojis(data.content);
+
+	data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
 
 	// Get list of mentioned users
 	if (mentions.length === 0) {
@@ -500,7 +506,7 @@ export const editStatus = async (
 			sensitive: data.sensitive,
 			spoilerText: data.spoiler_text,
 			emojis: {
-				connect: data.emojis?.map(emoji => {
+				connect: data.emojis.map(emoji => {
 					return {
 						id: emoji.id,
 					};

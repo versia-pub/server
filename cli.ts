@@ -5,6 +5,10 @@ import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
 import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
 import { getConfig } from "@config";
+import { uploadFile } from "~classes/media";
+import { getUrl } from "~database/entities/Attachment";
+import { mkdir, exists } from "fs/promises";
+import extract from "extract-zip";
 
 const args = process.argv;
 
@@ -101,7 +105,39 @@ ${chalk.bold("Commands:")}
 			)} Only rebuild the users index (optional)
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli index rebuild --users 200`
-			)}     
+			)}
+    ${alignDots(chalk.blue("emoji"), 24)} Manage custom emojis
+        ${alignDots(chalk.blue("add"))} Add a custom emoji
+            ${alignDotsSmall(chalk.green("name"))} Name of the emoji
+            ${alignDotsSmall(chalk.green("url"))} URL of the emoji
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli emoji add bun https://bun.com/bun.png`
+			)}
+        ${alignDots(chalk.blue("delete"))} Delete a custom emoji
+            ${alignDotsSmall(chalk.green("name"))} Name of the emoji
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli emoji delete bun`
+			)}
+        ${alignDots(chalk.blue("list"))} List all custom emojis
+            ${chalk.bold("Example:")} ${chalk.bgGray(`bun cli emoji list`)}
+        ${alignDots(chalk.blue("search"))} Search for a custom emoji
+            ${alignDotsSmall(chalk.green("query"))} Query to search for
+            ${alignDotsSmall(
+				chalk.yellow("--local")
+			)} Search in local emojis (optional, default)
+            ${alignDotsSmall(
+				chalk.yellow("--remote")
+			)} Search in remote emojis (optional)
+            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
+            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli emoji search bun`
+			)}
+        ${alignDots(chalk.blue("import"))} Import a Pleroma emoji pack
+            ${alignDotsSmall(chalk.green("url"))} URL of the emoji pack
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli emoji import https://site.com/neofox/manifest.json`
+			)}
 `;
 
 if (args.length < 3) {
@@ -595,6 +631,360 @@ switch (command) {
 				console.log(`Unknown command ${chalk.blue(command)}`);
 				break;
 		}
+		break;
+	}
+	case "emoji": {
+		switch (args[3]) {
+			case "add": {
+				const name = args[4];
+				const url = args[5];
+
+				if (!name || !url) {
+					console.log(`${chalk.red(`✗`)} Missing name or URL`);
+					process.exit(1);
+				}
+
+				const content_type = `image/${url
+					.split(".")
+					.pop()
+					?.replace("jpg", "jpeg")}}`;
+
+				const emoji = await client.emoji.create({
+					data: {
+						shortcode: name,
+						url: url,
+						visible_in_picker: true,
+						content_type: content_type,
+					},
+				});
+
+				console.log(
+					`${chalk.green(`✓`)} Created emoji ${chalk.blue(
+						emoji.shortcode
+					)}`
+				);
+
+				break;
+			}
+			case "delete": {
+				const name = args[4];
+
+				if (!name) {
+					console.log(`${chalk.red(`✗`)} Missing name`);
+					process.exit(1);
+				}
+
+				const emoji = await client.emoji.findFirst({
+					where: {
+						shortcode: name,
+					},
+				});
+
+				if (!emoji) {
+					console.log(`${chalk.red(`✗`)} Emoji not found`);
+					process.exit(1);
+				}
+
+				await client.emoji.delete({
+					where: {
+						id: emoji.id,
+					},
+				});
+
+				console.log(
+					`${chalk.green(`✓`)} Deleted emoji ${chalk.blue(
+						emoji.shortcode
+					)}`
+				);
+
+				break;
+			}
+			case "list": {
+				const emojis = await client.emoji.findMany();
+
+				console.log(
+					`${chalk.green(`✓`)} Found ${chalk.blue(
+						emojis.length
+					)} emojis`
+				);
+
+				for (const emoji of emojis) {
+					console.log(
+						`\t${chalk.blue(emoji.shortcode)} ${chalk.gray(
+							emoji.url
+						)}`
+					);
+				}
+				break;
+			}
+			case "search": {
+				const argsWithoutFlags = args.filter(
+					arg => !arg.startsWith("--")
+				);
+				const query = argsWithoutFlags[4];
+
+				if (!query) {
+					console.log(`${chalk.red(`✗`)} Missing query`);
+					process.exit(1);
+				}
+
+				const local = args.includes("--local");
+				const remote = args.includes("--remote");
+				const json = args.includes("--json");
+				const csv = args.includes("--csv");
+
+				const queries: Prisma.EmojiWhereInput[] = [];
+
+				if (local) {
+					queries.push({
+						instanceId: null,
+					});
+				}
+
+				if (remote) {
+					queries.push({
+						instanceId: {
+							not: null,
+						},
+					});
+				}
+
+				const emojis = await client.emoji.findMany({
+					where: {
+						AND: queries,
+						shortcode: {
+							contains: query,
+							mode: "insensitive",
+						},
+					},
+					take: 40,
+					include: {
+						instance: true,
+					},
+				});
+
+				if (json || csv) {
+					if (json) {
+						console.log(JSON.stringify(emojis, null, 4));
+					}
+					if (csv) {
+						// Convert the outputted JSON to CSV
+
+						// Remove all object children from each object
+						const items = emojis.map(emoji => {
+							const item = {
+								...emoji,
+								instance: undefined,
+							};
+							return item;
+						});
+						const replacer = (key: string, value: any): any =>
+							value === null ? "" : value; // Null values are returned as empty strings
+						const header = Object.keys(items[0]);
+						const csv = [
+							header.join(","), // header row first
+							...items.map(row =>
+								header
+									.map(fieldName =>
+										// @ts-expect-error This is fine
+										JSON.stringify(row[fieldName], replacer)
+									)
+									.join(",")
+							),
+						].join("\r\n");
+
+						console.log(csv);
+					}
+				} else {
+					console.log(
+						`${chalk.green(`✓`)} Found ${chalk.blue(
+							emojis.length
+						)} emojis`
+					);
+
+					const table = new Table({
+						head: [
+							chalk.white(chalk.bold("Shortcode")),
+							chalk.white(chalk.bold("Instance URL")),
+							chalk.white(chalk.bold("URL")),
+						],
+					});
+
+					for (const emoji of emojis) {
+						table.push([
+							chalk.yellow(`:${emoji.shortcode}:`),
+							chalk.blue(
+								emoji.instanceId
+									? emoji.instance?.base_url
+									: "Local"
+							),
+							chalk.gray(emoji.url),
+						]);
+					}
+
+					console.log(table.toString());
+				}
+
+				break;
+			}
+			case "import": {
+				const url = args[4];
+
+				if (!url) {
+					console.log(`${chalk.red(`✗`)} Missing URL`);
+					process.exit(1);
+				}
+
+				const response = await fetch(url);
+
+				if (!response.ok) {
+					console.log(`${chalk.red(`✗`)} Failed to fetch emoji pack`);
+					process.exit(1);
+				}
+
+				const res = (await response.json()) as Record<
+					string,
+					{
+						description: string;
+						files: string;
+						homepage: string;
+						src: string;
+						src_sha256?: string;
+						license?: string;
+					}
+				>;
+
+				const pack = Object.values(res)[0];
+
+				// Fetch emoji list from `files`, can be a relative URL
+
+				if (!pack.files) {
+					console.log(`${chalk.red(`✗`)} Missing files`);
+					process.exit(1);
+				}
+
+				let pack_url = pack.files;
+
+				if (!pack.files.includes("http")) {
+					// Is relative URL to pack manifest URL
+					pack_url =
+						url.split("/").slice(0, -1).join("/") +
+						"/" +
+						pack.files;
+				}
+
+				const zip = new File(
+					[await (await fetch(pack.src)).arrayBuffer()],
+					"emoji.zip",
+					{
+						type: "application/zip",
+					}
+				);
+
+				// Check if the SHA256 hash matches
+				const hasher = new Bun.SHA256();
+
+				hasher.update(await zip.arrayBuffer());
+
+				const hash = hasher.digest("hex");
+
+				if (pack.src_sha256 && pack.src_sha256 !== hash) {
+					console.log(`${chalk.red(`✗`)} SHA256 hash does not match`);
+					console.log(
+						`${chalk.red(`✗`)} Expected ${chalk.blue(
+							pack.src_sha256
+						)}, got ${chalk.blue(hash)}`
+					);
+					process.exit(1);
+				}
+
+				// Store file in /tmp
+				const tempDirectory = `/tmp/lysand-${hash}`;
+
+				if (!(await exists(tempDirectory))) {
+					await mkdir(tempDirectory);
+				}
+
+				await Bun.write(`${tempDirectory}/emojis.zip`, zip);
+
+				// Extract zip
+				await extract(`${tempDirectory}/emojis.zip`, {
+					dir: tempDirectory,
+				});
+
+				// In the format
+				// emoji_name: emoji_url
+				const pack_response = (await (
+					await fetch(pack_url)
+				).json()) as Record<string, string>;
+
+				let emojisCreated = 0;
+
+				for (const [name, path] of Object.entries(pack_response)) {
+					// Get emoji URL, as it can be relative
+
+					const emoji = Bun.file(`${tempDirectory}/${path}`);
+
+					const content_type = emoji.type;
+
+					const hash = await uploadFile(emoji as File, config);
+
+					if (!hash) {
+						console.log(
+							`${chalk.red(`✗`)} Failed to upload emoji ${name}`
+						);
+						process.exit(1);
+					}
+
+					const finalUrl = getUrl(hash, config);
+
+					// Check if emoji already exists
+					const existingEmoji = await client.emoji.findFirst({
+						where: {
+							shortcode: name,
+							instanceId: null,
+						},
+					});
+
+					if (existingEmoji) {
+						console.log(
+							`${chalk.red(`✗`)} Emoji ${chalk.blue(
+								name
+							)} already exists`
+						);
+						continue;
+					}
+
+					// Create emoji
+					await client.emoji.create({
+						data: {
+							shortcode: name,
+							url: finalUrl,
+							visible_in_picker: true,
+							content_type: content_type,
+						},
+					});
+
+					emojisCreated++;
+
+					console.log(
+						`${chalk.green(`✓`)} Created emoji ${chalk.blue(name)}`
+					);
+				}
+
+				console.log(
+					`${chalk.green(`✓`)} Imported ${chalk.blue(
+						emojisCreated
+					)} emojis`
+				);
+
+				break;
+			}
+			default:
+				console.log(`Unknown command ${chalk.blue(command)}`);
+				break;
+		}
+
 		break;
 	}
 	default:
