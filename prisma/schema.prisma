@@ -103,6 +103,7 @@ model Status {
   isReblog             Boolean
   content              String         @default("")
   contentType          String         @default("text/plain")
+  contentSource        String         @default("")
   visibility           String
   inReplyToPost        Status?        @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
   inReplyToPostId      String?        @db.Uuid

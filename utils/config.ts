@@ -25,6 +25,13 @@ export interface ConfigType {
 		};
 	};
 
+	meilisearch: {
+		host: string;
+		port: number;
+		api_key: string;
+		enabled: boolean;
+	};
+
 	http: {
 		base_url: string;
 		bind: string;
@@ -175,6 +182,12 @@ export const configDefaults: ConfigType = {
 			database: 1,
 			enabled: false,
 		},
+	},
+	meilisearch: {
+		host: "localhost",
+		port: 1491,
+		api_key: "",
+		enabled: false,
 	},
 	instance: {
 		banner: "",

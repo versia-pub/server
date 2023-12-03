@@ -24,6 +24,10 @@ import type { APIStatus } from "~types/entities/status";
 import { applicationToAPI } from "./Application";
 import { attachmentToAPI } from "./Attachment";
 import type { APIAttachment } from "~types/entities/attachment";
+import { sanitizeHtml } from "@sanitization";
+import { parse } from "marked";
+import linkifyStr from "linkify-string";
+import linkifyHtml from "linkify-html";
 
 const config = getConfig();
 
@@ -303,7 +307,7 @@ export const createNewStatus = async (data: {
 	visibility: APIStatus["visibility"];
 	sensitive: boolean;
 	spoiler_text: string;
-	emojis: Emoji[];
+	emojis?: Emoji[];
 	content_type?: string;
 	uri?: string;
 	mentions?: User[];
@@ -320,6 +324,8 @@ export const createNewStatus = async (data: {
 
 	let mentions = data.mentions || [];
 
+	// TODO: Parse emojis
+
 	// Get list of mentioned users
 	if (mentions.length === 0) {
 		mentions = await client.user.findMany({
@@ -335,17 +341,36 @@ export const createNewStatus = async (data: {
 		});
 	}
 
+	let formattedContent;
+
+	// Get HTML version of content
+	if (data.content_type === "text/markdown") {
+		formattedContent = linkifyHtml(await sanitizeHtml(parse(data.content)));
+	} else if (data.content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+	} else {
+		// Parse as plaintext
+		formattedContent = linkifyStr(data.content);
+
+		// Split by newline and add <p> tags
+		formattedContent = formattedContent
+			.split("\n")
+			.map(line => `<p>${line}</p>`)
+			.join("\n");
+	}
+
 	let status = await client.status.create({
 		data: {
 			authorId: data.account.id,
 			applicationId: data.application?.id,
-			content: data.content,
+			content: formattedContent,
+			contentSource: data.content,
 			contentType: data.content_type,
 			visibility: data.visibility,
 			sensitive: data.sensitive,
 			spoilerText: data.spoiler_text,
 			emojis: {
-				connect: data.emojis.map(emoji => {
+				connect: data.emojis?.map(emoji => {
 					return {
 						id: emoji.id,
 					};
@@ -403,6 +428,102 @@ export const createNewStatus = async (data: {
 	}
 
 	return status;
+};
+
+export const editStatus = async (
+	status: StatusWithRelations,
+	data: {
+		content: string;
+		visibility?: APIStatus["visibility"];
+		sensitive: boolean;
+		spoiler_text: string;
+		emojis?: Emoji[];
+		content_type?: string;
+		uri?: string;
+		mentions?: User[];
+		media_attachments?: string[];
+	}
+) => {
+	// Get people mentioned in the content (match @username or @username@domain.com mentions
+	const mentionedPeople =
+		data.content.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
+
+	let mentions = data.mentions || [];
+
+	// TODO: Parse emojis
+
+	// Get list of mentioned users
+	if (mentions.length === 0) {
+		mentions = await client.user.findMany({
+			where: {
+				OR: mentionedPeople.map(person => ({
+					username: person.split("@")[1],
+					instance: {
+						base_url: person.split("@")[2],
+					},
+				})),
+			},
+			include: userRelations,
+		});
+	}
+
+	let formattedContent;
+
+	// Get HTML version of content
+	if (data.content_type === "text/markdown") {
+		formattedContent = linkifyHtml(await sanitizeHtml(parse(data.content)));
+	} else if (data.content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+	} else {
+		// Parse as plaintext
+		formattedContent = linkifyStr(data.content);
+
+		// Split by newline and add <p> tags
+		formattedContent = formattedContent
+			.split("\n")
+			.map(line => `<p>${line}</p>`)
+			.join("\n");
+	}
+
+	const newStatus = await client.status.update({
+		where: {
+			id: status.id,
+		},
+		data: {
+			content: formattedContent,
+			contentSource: data.content,
+			contentType: data.content_type,
+			visibility: data.visibility,
+			sensitive: data.sensitive,
+			spoilerText: data.spoiler_text,
+			emojis: {
+				connect: data.emojis?.map(emoji => {
+					return {
+						id: emoji.id,
+					};
+				}),
+			},
+			attachments: data.media_attachments
+				? {
+						connect: data.media_attachments.map(attachment => {
+							return {
+								id: attachment,
+							};
+						}),
+				  }
+				: undefined,
+			mentions: {
+				connect: mentions.map(mention => {
+					return {
+						id: mention.id,
+					};
+				}),
+			},
+		},
+		include: statusAndUserRelations,
+	});
+
+	return newStatus;
 };
 
 export const isFavouritedBy = async (status: Status, user: User) => {

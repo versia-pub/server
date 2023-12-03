@@ -1,8 +1,13 @@
 import { applyConfig } from "@api";
+import { getConfig } from "@config";
+import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
+import { sanitizeHtml } from "@sanitization";
 import type { MatchedRoute } from "bun";
+import { parse } from "marked";
 import { client } from "~database/datasource";
 import {
+	editStatus,
 	isViewableByUser,
 	statusAndUserRelations,
 	statusToAPI,
@@ -11,7 +16,7 @@ import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
-	allowedMethods: ["GET", "DELETE"],
+	allowedMethods: ["GET", "DELETE", "PUT"],
 	ratelimits: {
 		max: 100,
 		duration: 60,
@@ -19,7 +24,7 @@ export const meta: APIRouteMeta = applyConfig({
 	route: "/api/v1/statuses/:id",
 	auth: {
 		required: false,
-		requiredOnMethods: ["DELETE"],
+		requiredOnMethods: ["DELETE", "PUT"],
 	},
 });
 
@@ -38,6 +43,8 @@ export default async (
 		where: { id },
 		include: statusAndUserRelations,
 	});
+
+	const config = getConfig();
 
 	// Check if user is authorized to view this status (if it's private)
 	if (!status || !isViewableByUser(status, user))
@@ -69,6 +76,150 @@ export default async (
 			},
 			200
 		);
+	} else if (req.method == "PUT") {
+		if (status.authorId !== user?.id) {
+			return errorResponse("Unauthorized", 401);
+		}
+
+		const {
+			status: statusText,
+			content_type,
+			"poll[expires_in]": expires_in,
+			"poll[options][]": options,
+			"media_ids[]": media_ids,
+			spoiler_text,
+			sensitive,
+		} = await parseRequest<{
+			status?: string;
+			spoiler_text?: string;
+			sensitive?: boolean;
+			language?: string;
+			content_type?: string;
+			"media_ids[]"?: string[];
+			"poll[options][]"?: string[];
+			"poll[expires_in]"?: number;
+			"poll[multiple]"?: boolean;
+			"poll[hide_totals]"?: boolean;
+		}>(req);
+
+		// TODO: Add Poll support
+		// Validate status
+		if (!statusText && !(media_ids && media_ids.length > 0)) {
+			return errorResponse(
+				"Status is required unless media is attached",
+				422
+			);
+		}
+
+		// Validate media_ids
+		if (media_ids && !Array.isArray(media_ids)) {
+			return errorResponse("Media IDs must be an array", 422);
+		}
+
+		// Validate poll options
+		if (options && !Array.isArray(options)) {
+			return errorResponse("Poll options must be an array", 422);
+		}
+
+		if (options && options.length > 4) {
+			return errorResponse("Poll options must be less than 5", 422);
+		}
+
+		if (media_ids && media_ids.length > 0) {
+			// Disallow poll
+			if (options) {
+				return errorResponse("Cannot attach poll to media", 422);
+			}
+			if (media_ids.length > 4) {
+				return errorResponse("Media IDs must be less than 5", 422);
+			}
+		}
+
+		if (options && options.length > config.validation.max_poll_options) {
+			return errorResponse(
+				`Poll options must be less than ${config.validation.max_poll_options}`,
+				422
+			);
+		}
+
+		if (
+			options &&
+			options.some(
+				option => option.length > config.validation.max_poll_option_size
+			)
+		) {
+			return errorResponse(
+				`Poll options must be less than ${config.validation.max_poll_option_size} characters`,
+				422
+			);
+		}
+
+		if (expires_in && expires_in < config.validation.min_poll_duration) {
+			return errorResponse(
+				`Poll duration must be greater than ${config.validation.min_poll_duration} seconds`,
+				422
+			);
+		}
+
+		if (expires_in && expires_in > config.validation.max_poll_duration) {
+			return errorResponse(
+				`Poll duration must be less than ${config.validation.max_poll_duration} seconds`,
+				422
+			);
+		}
+
+		let sanitizedStatus: string;
+
+		if (content_type === "text/markdown") {
+			sanitizedStatus = await sanitizeHtml(parse(statusText ?? ""));
+		} else if (content_type === "text/x.misskeymarkdown") {
+			// Parse as MFM
+			// TODO: Parse as MFM
+			sanitizedStatus = await sanitizeHtml(parse(statusText ?? ""));
+		} else {
+			sanitizedStatus = await sanitizeHtml(statusText ?? "");
+		}
+
+		if (sanitizedStatus.length > config.validation.max_note_size) {
+			return errorResponse(
+				`Status must be less than ${config.validation.max_note_size} characters`,
+				400
+			);
+		}
+
+		// Check if status body doesnt match filters
+		if (
+			config.filters.note_filters.some(
+				filter => statusText?.match(filter)
+			)
+		) {
+			return errorResponse("Status contains blocked words", 422);
+		}
+
+		// Check if media attachments are all valid
+
+		const foundAttachments = await client.attachment.findMany({
+			where: {
+				id: {
+					in: media_ids ?? [],
+				},
+			},
+		});
+
+		if (foundAttachments.length !== (media_ids ?? []).length) {
+			return errorResponse("Invalid media IDs", 422);
+		}
+
+		// Update status
+		const newStatus = await editStatus(status, {
+			content: sanitizedStatus,
+			content_type,
+			media_attachments: media_ids,
+			spoiler_text: spoiler_text ?? "",
+			sensitive: sensitive ?? false,
+		});
+
+		return jsonResponse(await statusToAPI(newStatus, user));
 	}
 
 	return jsonResponse({});

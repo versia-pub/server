@@ -12,6 +12,7 @@ import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { HookTypes, Server } from "~plugins/types";
 import { initializeRedisCache } from "@redis";
+import { connectMeili } from "@meilisearch";
 
 const timeAtStart = performance.now();
 const server = new Server();
@@ -35,6 +36,10 @@ if (!(await requests_log.exists())) {
 }
 
 const redisCache = await initializeRedisCache();
+
+if (config.meilisearch.enabled) {
+	await connectMeili();
+}
 
 if (redisCache) {
 	client.$use(redisCache);

@@ -3,6 +3,7 @@ import chalk from "chalk";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
+import { rebuildSearchIndexes, SonicIndexType } from "@meilisearch";
 
 const args = process.argv;
 
@@ -86,7 +87,20 @@ ${chalk.bold("Commands:")}
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli note search hello`
 			)}
-            
+    ${alignDots(chalk.blue("index"), 24)} Manage user and status indexes
+        ${alignDots(chalk.blue("rebuild"))} Rebuild the index
+            ${alignDotsSmall(
+				chalk.green("batch-size")
+			)} The number of items to index at once (optional, default 100)
+            ${alignDotsSmall(
+				chalk.yellow("--statuses")
+			)} Only rebuild the statuses index (optional)
+            ${alignDotsSmall(
+				chalk.yellow("--users")
+			)} Only rebuild the users index (optional)
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli index rebuild --users 200`
+			)}     
 `;
 
 if (args.length < 3) {
@@ -504,10 +518,71 @@ switch (command) {
 				console.log(`Unknown command ${chalk.blue(command)}`);
 				break;
 		}
+		break;
+	}
+	case "index": {
+		switch (args[3]) {
+			case "rebuild": {
+				const statuses = args.includes("--statuses");
+				const users = args.includes("--users");
 
+				const argsWithoutFlags = args.filter(
+					arg => !arg.startsWith("--")
+				);
+
+				const batchSize = Number(argsWithoutFlags[4]) || 100;
+
+				const neither = !statuses && !users;
+
+				if (statuses || neither) {
+					console.log(
+						`${chalk.yellow(`⚠`)} ${chalk.bold(
+							`Rebuilding Meilisearch index for statuses`
+						)}`
+					);
+
+					await rebuildSearchIndexes(
+						[SonicIndexType.Statuses],
+						batchSize
+					);
+
+					console.log(
+						`${chalk.green(`✓`)} ${chalk.bold(
+							`Meilisearch index for statuses rebuilt`
+						)}`
+					);
+				}
+
+				if (users || neither) {
+					console.log(
+						`${chalk.yellow(`⚠`)} ${chalk.bold(
+							`Rebuilding Meilisearch index for users`
+						)}`
+					);
+
+					await rebuildSearchIndexes(
+						[SonicIndexType.Accounts],
+						batchSize
+					);
+
+					console.log(
+						`${chalk.green(`✓`)} ${chalk.bold(
+							`Meilisearch index for users rebuilt`
+						)}`
+					);
+				}
+
+				break;
+			}
+			default:
+				console.log(`Unknown command ${chalk.blue(command)}`);
+				break;
+		}
 		break;
 	}
 	default:
 		console.log(`Unknown command ${chalk.blue(command)}`);
 		break;
 }
+
+process.exit(0);

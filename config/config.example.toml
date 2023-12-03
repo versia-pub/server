@@ -18,6 +18,12 @@ password = ""
 database = 1
 enabled = false
 
+[meilisearch]
+host = "localhost"
+port = 40007
+api_key = ""
+enabled = true
+
 [http]
 base_url = "https://lysand.social"
 bind = "http://localhost"
