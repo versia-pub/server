@@ -14,6 +14,22 @@ export const connectMeili = async () => {
 	if (!config.meilisearch.enabled) return;
 
 	if (await meilisearch.isHealthy()) {
+		await meilisearch
+			.index(MeiliIndexType.Accounts)
+			.updateSortableAttributes(["createdAt"]);
+
+		await meilisearch
+			.index(MeiliIndexType.Accounts)
+			.updateSearchableAttributes(["username", "displayName", "note"]);
+
+		await meilisearch
+			.index(MeiliIndexType.Statuses)
+			.updateSortableAttributes(["createdAt"]);
+
+		await meilisearch
+			.index(MeiliIndexType.Statuses)
+			.updateSearchableAttributes(["content"]);
+
 		console.log(
 			`${chalk.green(`✓`)} ${chalk.bold(`Connected to Meilisearch`)}`
 		);
@@ -27,7 +43,7 @@ export const connectMeili = async () => {
 	}
 };
 
-export enum SonicIndexType {
+export enum MeiliIndexType {
 	Accounts = "accounts",
 	Statuses = "statuses",
 }
@@ -35,7 +51,7 @@ export enum SonicIndexType {
 export const getNthDatabaseAccountBatch = (
 	n: number,
 	batchSize = 1000
-): Promise<Record<string, string>[]> => {
+): Promise<Record<string, string | Date>[]> => {
 	return client.user.findMany({
 		skip: n * batchSize,
 		take: batchSize,
@@ -44,6 +60,10 @@ export const getNthDatabaseAccountBatch = (
 			username: true,
 			displayName: true,
 			note: true,
+			createdAt: true,
+		},
+		orderBy: {
+			createdAt: "asc",
 		},
 	});
 };
@@ -51,25 +71,26 @@ export const getNthDatabaseAccountBatch = (
 export const getNthDatabaseStatusBatch = (
 	n: number,
 	batchSize = 1000
-): Promise<Record<string, string>[]> => {
+): Promise<Record<string, string | Date>[]> => {
 	return client.status.findMany({
 		skip: n * batchSize,
 		take: batchSize,
 		select: {
 			id: true,
-			authorId: true,
 			content: true,
+			createdAt: true,
+		},
+		orderBy: {
+			createdAt: "asc",
 		},
 	});
 };
 
 export const rebuildSearchIndexes = async (
-	indexes: SonicIndexType[],
+	indexes: MeiliIndexType[],
 	batchSize = 100
 ) => {
-	if (indexes.includes(SonicIndexType.Accounts)) {
-		// await sonicIngestor.flushc(SonicIndexType.Accounts);
-
+	if (indexes.includes(MeiliIndexType.Accounts)) {
 		const accountCount = await client.user.count();
 
 		for (let i = 0; i < accountCount / batchSize; i++) {
@@ -81,16 +102,22 @@ export const rebuildSearchIndexes = async (
 
 			// Sync with Meilisearch
 			await meilisearch
-				.index(SonicIndexType.Accounts)
+				.index(MeiliIndexType.Accounts)
 				.addDocuments(accounts);
 		}
 
-		console.log(`${chalk.green(`✓`)} ${chalk.bold(`Done!`)}`);
+		const meiliAccountCount = (
+			await meilisearch.index(MeiliIndexType.Accounts).getStats()
+		).numberOfDocuments;
+
+		console.log(
+			`${chalk.green(`✓`)} ${chalk.bold(
+				`Done! ${meiliAccountCount} accounts indexed`
+			)}`
+		);
 	}
 
-	if (indexes.includes(SonicIndexType.Statuses)) {
-		// await sonicIngestor.flushc(SonicIndexType.Statuses);
-
+	if (indexes.includes(MeiliIndexType.Statuses)) {
 		const statusCount = await client.status.count();
 
 		for (let i = 0; i < statusCount / batchSize; i++) {
@@ -102,10 +129,18 @@ export const rebuildSearchIndexes = async (
 
 			// Sync with Meilisearch
 			await meilisearch
-				.index(SonicIndexType.Statuses)
+				.index(MeiliIndexType.Statuses)
 				.addDocuments(statuses);
 		}
 
-		console.log(`${chalk.green(`✓`)} ${chalk.bold(`Done!`)}`);
+		const meiliStatusCount = (
+			await meilisearch.index(MeiliIndexType.Statuses).getStats()
+		).numberOfDocuments;
+
+		console.log(
+			`${chalk.green(`✓`)} ${chalk.bold(
+				`Done! ${meiliStatusCount} statuses indexed`
+			)}`
+		);
 	}
 };

@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
-import { rebuildSearchIndexes, SonicIndexType } from "@meilisearch";
+import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
 
 const args = process.argv;
 
@@ -542,7 +542,7 @@ switch (command) {
 					);
 
 					await rebuildSearchIndexes(
-						[SonicIndexType.Statuses],
+						[MeiliIndexType.Statuses],
 						batchSize
 					);
 
@@ -561,7 +561,7 @@ switch (command) {
 					);
 
 					await rebuildSearchIndexes(
-						[SonicIndexType.Accounts],
+						[MeiliIndexType.Accounts],
 						batchSize
 					);
 
