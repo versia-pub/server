@@ -1,4 +1,5 @@
 import { applyConfig } from "@api";
+import { getConfig } from "@config";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
@@ -51,6 +52,12 @@ export default async (req: Request): Promise<Response> => {
 		limit?: number;
 		offset?: number;
 	}>(req);
+
+	const config = getConfig();
+
+	if (!config.meilisearch.enabled) {
+		return errorResponse("Meilisearch is not enabled", 501);
+	}
 
 	if (!user && (resolve || offset)) {
 		return errorResponse(
