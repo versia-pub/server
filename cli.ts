@@ -921,23 +921,6 @@ switch (command) {
 				let emojisCreated = 0;
 
 				for (const [name, path] of Object.entries(pack_response)) {
-					// Get emoji URL, as it can be relative
-
-					const emoji = Bun.file(`${tempDirectory}/${path}`);
-
-					const content_type = emoji.type;
-
-					const hash = await uploadFile(emoji as File, config);
-
-					if (!hash) {
-						console.log(
-							`${chalk.red(`✗`)} Failed to upload emoji ${name}`
-						);
-						process.exit(1);
-					}
-
-					const finalUrl = getUrl(hash, config);
-
 					// Check if emoji already exists
 					const existingEmoji = await client.emoji.findFirst({
 						where: {
@@ -954,6 +937,23 @@ switch (command) {
 						);
 						continue;
 					}
+
+					// Get emoji URL, as it can be relative
+
+					const emoji = Bun.file(`${tempDirectory}/${path}`);
+
+					const content_type = emoji.type;
+
+					const hash = await uploadFile(emoji as File, config);
+
+					if (!hash) {
+						console.log(
+							`${chalk.red(`✗`)} Failed to upload emoji ${name}`
+						);
+						process.exit(1);
+					}
+
+					const finalUrl = getUrl(hash, config);
 
 					// Create emoji
 					await client.emoji.create({
