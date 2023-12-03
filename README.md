@@ -72,6 +72,7 @@ Lysand is extremely fast and can handle tens of thousands of HTTP requests per s
 - The [Bun Runtime](https://bun.sh), version 1.0.5 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
+- (Optional if you want search) A working Meiliseach instance
 
 > **Note**: We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
@@ -125,6 +126,10 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 bun migrate
 ```
 
+6. (If you want search)
+Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](docker-compose.yml) file.
+
+Set up Meiliseach's API key by passing the `MEILI_MASTER_KEY` environment variable to the server. Then, enale and configure search in the config file.
 ### Running
 
 To run the server, simply run the following command:
@@ -148,6 +153,10 @@ You can use the `help` command to see a list of available commands. These includ
 Some CLI commands that return data as tables can be used in scripts. To do so, you can use the `--json` flag to output the data as JSON instead of a table, or even `--csv` to output the data as CSV. See `bun cli help` for more information.
 
 Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
+
+### Rebuilding the Search Index
+
+You may use the `bun cli index rebuild` command to automatically push all posts and users to Meilisearch, if it is configured. This is useful if you have just set up Meilisearch, or if you accidentally deleted something.
 
 ### Using Database Commands
 
