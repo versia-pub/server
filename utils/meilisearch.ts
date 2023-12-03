@@ -2,6 +2,7 @@ import { getConfig } from "@config";
 import chalk from "chalk";
 import { client } from "~database/datasource";
 import { Meilisearch } from "meilisearch";
+import type { Status, User } from "@prisma/client";
 
 const config = getConfig();
 
@@ -47,6 +48,32 @@ export enum MeiliIndexType {
 	Accounts = "accounts",
 	Statuses = "statuses",
 }
+
+export const addStausToMeilisearch = async (status: Status) => {
+	if (!config.meilisearch.enabled) return;
+
+	await meilisearch.index(MeiliIndexType.Statuses).addDocuments([
+		{
+			id: status.id,
+			content: status.content,
+			createdAt: status.createdAt,
+		},
+	]);
+};
+
+export const addUserToMeilisearch = async (user: User) => {
+	if (!config.meilisearch.enabled) return;
+
+	await meilisearch.index(MeiliIndexType.Accounts).addDocuments([
+		{
+			id: user.id,
+			username: user.username,
+			displayName: user.displayName,
+			note: user.note,
+			createdAt: user.createdAt,
+		},
+	]);
+};
 
 export const getNthDatabaseAccountBatch = (
 	n: number,

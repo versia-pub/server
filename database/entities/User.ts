@@ -9,6 +9,7 @@ import { client } from "~database/datasource";
 import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import type { APISource } from "~types/entities/source";
+import { addUserToMeilisearch } from "@meilisearch";
 
 export interface AuthData {
 	user: UserWithRelations | null;
@@ -151,6 +152,9 @@ export const fetchRemoteUser = async (uri: string) => {
 		},
 	});
 
+	// Add to Meilisearch
+	await addUserToMeilisearch(user);
+
 	const emojis = [];
 
 	for (const emoji of userEmojis) {
@@ -223,6 +227,9 @@ export const createNewLocalUser = async (data: {
 			},
 		},
 	});
+
+	// Add to Meilisearch
+	await addUserToMeilisearch(user);
 
 	return await client.user.update({
 		where: {

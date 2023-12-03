@@ -28,6 +28,7 @@ import { sanitizeHtml } from "@sanitization";
 import { parse } from "marked";
 import linkifyStr from "linkify-string";
 import linkifyHtml from "linkify-html";
+import { addStausToMeilisearch } from "@meilisearch";
 
 const config = getConfig();
 
@@ -415,7 +416,6 @@ export const createNewStatus = async (data: {
 	});
 
 	// Create notification
-
 	if (status.inReplyToPost) {
 		await client.notification.create({
 			data: {
@@ -426,6 +426,9 @@ export const createNewStatus = async (data: {
 			},
 		});
 	}
+
+	// Add to search index
+	await addStausToMeilisearch(status);
 
 	return status;
 };
