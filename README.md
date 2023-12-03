@@ -270,6 +270,7 @@ Tests needed but completed:
 - `/api/v1/favourites`
 - `/api/v1/accounts/:id/followers`
 - `/api/v1/accounts/:id/following`
+- `/api/v2/search`
 
 Endpoints left:
 
@@ -322,7 +323,6 @@ Endpoints left:
 - `/api/v1/notifications/:id`
 - `/api/v1/notifications/clear`
 - `/api/v1/notifications/:id/dismiss`
-- `/api/v2/search`
 - `/api/v2/instance`
 - `/api/v1/instance/peers`
 - `/api/v1/instance/activity`
