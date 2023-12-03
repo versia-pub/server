@@ -4,6 +4,7 @@ import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
 import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
+import { getConfig } from "@config";
 
 const args = process.argv;
 
@@ -109,6 +110,8 @@ if (args.length < 3) {
 }
 
 const command = args[2];
+
+const config = getConfig();
 
 switch (command) {
 	case "help":
@@ -521,6 +524,12 @@ switch (command) {
 		break;
 	}
 	case "index": {
+		if (!config.meilisearch.enabled) {
+			console.log(
+				`${chalk.red(`✗`)} Meilisearch is not enabled in the config`
+			);
+			process.exit(1);
+		}
 		switch (args[3]) {
 			case "rebuild": {
 				const statuses = args.includes("--statuses");
@@ -541,6 +550,8 @@ switch (command) {
 						)}`
 					);
 
+					const timeBefore = performance.now();
+
 					await rebuildSearchIndexes(
 						[MeiliIndexType.Statuses],
 						batchSize
@@ -548,7 +559,9 @@ switch (command) {
 
 					console.log(
 						`${chalk.green(`✓`)} ${chalk.bold(
-							`Meilisearch index for statuses rebuilt`
+							`Meilisearch index for statuses rebuilt in ${chalk.bgGreen(
+								(performance.now() - timeBefore).toFixed(2)
+							)}ms`
 						)}`
 					);
 				}
@@ -560,6 +573,8 @@ switch (command) {
 						)}`
 					);
 
+					const timeBefore = performance.now();
+
 					await rebuildSearchIndexes(
 						[MeiliIndexType.Accounts],
 						batchSize
@@ -567,7 +582,9 @@ switch (command) {
 
 					console.log(
 						`${chalk.green(`✓`)} ${chalk.bold(
-							`Meilisearch index for users rebuilt`
+							`Meilisearch index for users rebuilt in ${chalk.bgGreen(
+								(performance.now() - timeBefore).toFixed(2)
+							)}ms`
 						)}`
 					);
 				}
