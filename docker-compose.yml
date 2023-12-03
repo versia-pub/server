@@ -46,6 +46,7 @@ services:
             - ./meili-data:/meili_data
         image: getmeili/meilisearch:v1.5
         container_name: lysand-meilisearch
+        restart: unless-stopped
 
 networks:
     lysand-net:
