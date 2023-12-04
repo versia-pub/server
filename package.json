@@ -33,6 +33,7 @@
   "private": true,
   "scripts": {
     "dev": "bun run index.ts",
+    "vite:dev": "bunx --bun vite pages",
     "start": "bun run index.ts",
     "migrate-dev": "bun prisma migrate dev",
     "migrate": "bun prisma migrate deploy",
@@ -74,6 +75,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.461.0",
     "@prisma/client": "^5.6.0",
+    "@vitejs/plugin-vue": "^4.5.1",
+    "@vueuse/head": "^2.0.0",
     "blurhash": "^2.0.5",
     "bullmq": "^4.14.4",
     "chalk": "^5.3.0",
@@ -94,6 +97,10 @@
     "prisma": "^5.6.0",
     "prisma-redis-middleware": "^4.8.0",
     "semver": "^7.5.4",
-    "sharp": "^0.33.0-rc.2"
+    "sharp": "^0.33.0-rc.2",
+    "vite": "^5.0.4",
+    "vue": "^3.3.9",
+    "vue-router": "^4.2.5",
+    "vue-tsc": "^1.8.24"
   }
 }

@@ -135,6 +135,15 @@ Bun.serve({
 
 			return await file.default(req.clone(), matchedRoute, auth);
 		} else {
+			// Proxy response from Vite at localhost:5173
+			const proxy = await fetch(
+				req.url.replace(config.http.base_url, "http://localhost:5173")
+			);
+
+			if (proxy.status !== 404) {
+				return proxy;
+			}
+
 			return new Response(undefined, {
 				status: 404,
 				statusText: "Route not found",

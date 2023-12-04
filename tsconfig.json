@@ -31,7 +31,9 @@
 	},
 	"include": [
 		"*.ts",
+		"*.vue",
 		"**/*.ts",
+		"**/*.vue",
 		"server/api/.well-known/**/*.ts"
 	]
 }
