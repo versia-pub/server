@@ -5,8 +5,10 @@ import type { MatchedRoute } from "bun";
 import {
 	calculatePKCECodeChallenge,
 	discoveryRequest,
+	generateRandomCodeVerifier,
 	processDiscoveryResponse,
 } from "oauth4webapi";
+import { client } from "~database/datasource";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -63,7 +65,22 @@ export default async (
 		algorithm: "oidc",
 	}).then(res => processDiscoveryResponse(issuerUrl, res));
 
-	const codeVerifier = "tempString";
+	const codeVerifier = generateRandomCodeVerifier();
+
+	// Store into database
+
+	const newFlow = await client.openIdLoginFlow.create({
+		data: {
+			codeVerifier,
+			application: {
+				connect: {
+					client_id: clientId,
+				},
+			},
+			issuerId,
+		},
+	});
+
 	const codeChallenge = await calculatePKCECodeChallenge(codeVerifier);
 
 	return Response.redirect(
@@ -72,7 +89,7 @@ export default async (
 			new URLSearchParams({
 				client_id: issuer.client_id,
 				redirect_uri:
-					oauthRedirectUri(issuerId) + `?clientId=${clientId}`,
+					oauthRedirectUri(issuerId) + `?flow=${newFlow.id}`,
 				response_type: "code",
 				scope: "openid profile email",
 				// PKCE

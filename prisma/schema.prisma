@@ -10,16 +10,17 @@ datasource db {
 }
 
 model Application {
-  id            String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  name          String
-  website       String?
-  vapid_key     String?
-  client_id     String
-  secret        String
-  scopes        String
-  redirect_uris String
-  statuses      Status[] // One to many relation with Status
-  tokens        Token[] // One to many relation with Token
+  id               String            @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  name             String
+  website          String?
+  vapid_key        String?
+  client_id        String            @unique
+  secret           String
+  scopes           String
+  redirect_uris    String
+  statuses         Status[] // One to many relation with Status
+  tokens           Token[] // One to many relation with Token
+  openIdLoginFlows OpenIdLoginFlow[]
 }
 
 model Emoji {
@@ -140,8 +141,11 @@ model Token {
 }
 
 model OpenIdLoginFlow {
-  id           String @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  codeVerifier String
+  id            String       @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  codeVerifier  String
+  issuerId      String
+  application   Application? @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String?      @db.Uuid
 }
 
 model Attachment {

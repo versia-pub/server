@@ -52,8 +52,18 @@ export default async (
 	// Remove state query parameter from URL
 	currentUrl.searchParams.delete("state");
 	const issuerParam = matchedRoute.params.issuer;
-	// This is the Lysand client's client_id, not the external OAuth provider's client_id
-	const clientId = matchedRoute.query.clientId;
+	const flow = await client.openIdLoginFlow.findFirst({
+		where: {
+			id: matchedRoute.query.flow,
+		},
+		include: {
+			application: true,
+		},
+	});
+
+	if (!flow) {
+		return redirectToLogin("Invalid flow");
+	}
 
 	const config = getConfig();
 
@@ -95,8 +105,8 @@ export default async (
 			client_secret: issuer.client_secret,
 		},
 		parameters,
-		oauthRedirectUri(issuerParam) + `?clientId=${clientId}`,
-		"tempString"
+		oauthRedirectUri(issuerParam) + `?flow=${flow.id}`,
+		flow.codeVerifier
 	);
 
 	const result = await processAuthorizationCodeOpenIDResponse(
@@ -153,24 +163,19 @@ export default async (
 		return redirectToLogin("No user found with that account");
 	}
 
-	const application = await client.application.findFirst({
-		where: {
-			client_id: clientId,
-		},
-	});
-
-	if (!application) return redirectToLogin("Invalid client_id");
+	// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	if (!flow.application) return redirectToLogin("Invalid client_id");
 
 	const code = randomBytes(32).toString("hex");
 
 	await client.application.update({
-		where: { id: application.id },
+		where: { id: flow.application.id },
 		data: {
 			tokens: {
 				create: {
 					access_token: randomBytes(64).toString("base64url"),
 					code: code,
-					scope: application.scopes,
+					scope: flow.application.scopes,
 					token_type: TokenType.BEARER,
 					user: {
 						connect: {
@@ -183,5 +188,8 @@ export default async (
 	});
 
 	// Redirect back to application
-	return Response.redirect(`${application.redirect_uris}?code=${code}`, 302);
+	return Response.redirect(
+		`${flow.application.redirect_uris}?code=${code}`,
+		302
+	);
 };
