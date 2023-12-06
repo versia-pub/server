@@ -14,6 +14,7 @@ import ISO6391 from "iso-639-1";
 import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
+import { convertTextToHtml } from "@formatting";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -122,11 +123,9 @@ export default async (req: Request): Promise<Response> => {
 			return errorResponse("Bio contains blocked words", 422);
 		}
 
-		// Remove emojis
-		user.emojis = [];
-
 		(user.source as unknown as APISource).note = sanitizedNote;
-		user.note = sanitizedNote;
+		// TODO: Convert note to HTML
+		user.note = await convertTextToHtml(sanitizedNote);
 	}
 
 	if (source_privacy && user.source) {
