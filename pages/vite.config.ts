@@ -23,7 +23,7 @@ export default defineConfig({
 	},
 	plugins: [
 		UnoCSS({
-			mode: "vue-scoped",
+			mode: "global",
 		}),
 		vue(),
 	],

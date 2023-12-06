@@ -73,6 +73,19 @@ ${chalk.bold("Commands:")}
             ${chalk.bold("Example:")} ${chalk.bgGray(
 				`bun cli user search admin`
 			)}
+        ${alignDots(
+			chalk.blue("connect-openid")
+		)} Connect an OpenID account to a local account
+            ${alignDotsSmall(
+				chalk.green("username")
+			)} Username of the local account
+            ${alignDotsSmall(chalk.green("issuerId"))} ID of the OpenID issuer
+            ${alignDotsSmall(
+				chalk.green("serverId")
+			)} ID of the user on the OpenID server
+            ${chalk.bold("Example:")} ${chalk.bgGray(
+				`bun cli user connect-openid admin google 123456789`
+			)}
     ${alignDots(chalk.blue("note"), 24)} Manage notes
         ${alignDots(chalk.blue("delete"))} Delete a note
             ${alignDotsSmall(chalk.green("id"))} ID of the note
@@ -400,6 +413,62 @@ switch (command) {
 
 					console.log(table.toString());
 				}
+
+				break;
+			}
+			case "connect-openid": {
+				const username = args[4];
+				const issuerId = args[5];
+				const serverId = args[6];
+
+				if (!username || !issuerId || !serverId) {
+					console.log(
+						`${chalk.red(`✗`)} Missing username, issuer or ID`
+					);
+					process.exit(1);
+				}
+
+				const user = await client.user.findFirst({
+					where: {
+						username: username,
+					},
+				});
+
+				if (!user) {
+					console.log(`${chalk.red(`✗`)} User not found`);
+					process.exit(1);
+				}
+
+				const issuer = config.oidc.providers.find(
+					p => p.id === issuerId
+				);
+
+				if (!issuer) {
+					console.log(`${chalk.red(`✗`)} Issuer not found`);
+					process.exit(1);
+				}
+
+				await client.user.update({
+					where: {
+						id: user.id,
+					},
+					data: {
+						linkedOpenIdAccounts: {
+							create: {
+								issuerId: issuerId,
+								serverId: serverId,
+							},
+						},
+					},
+				});
+
+				console.log(
+					`${chalk.green(
+						`✓`
+					)} Connected OpenID account to user ${chalk.blue(
+						user.username
+					)}`
+				);
 
 				break;
 			}

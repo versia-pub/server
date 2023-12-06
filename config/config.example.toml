@@ -24,6 +24,18 @@ port = 40007
 api_key = ""
 enabled = true
 
+# Delete this section if you don't want to use custom OAuth providers
+# This is an example configuration
+# The provider MUST support OpenID Connect with .well-known discovery
+# Most notably, GitHub does not support this
+[[oidc.providers]]
+name = "CPlusPatch ID"
+id = "cpluspatch-id"
+url = "https://id.cpluspatch.com/application/o/lysand-testing/"
+client_id = "XXXXXXXXXXXXXXXX"
+client_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+icon = "https://cpluspatch.com/images/icons/logo.svg"
+
 [http]
 base_url = "https://lysand.social"
 bind = "http://localhost"

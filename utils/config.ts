@@ -32,6 +32,17 @@ export interface ConfigType {
 		enabled: boolean;
 	};
 
+	oidc: {
+		providers: {
+			name: string;
+			id: string;
+			url: string;
+			client_id: string;
+			client_secret: string;
+			icon: string;
+		}[];
+	};
+
 	http: {
 		base_url: string;
 		bind: string;
@@ -188,6 +199,9 @@ export const configDefaults: ConfigType = {
 		port: 1491,
 		api_key: "",
 		enabled: false,
+	},
+	oidc: {
+		providers: [],
 	},
 	instance: {
 		banner: "",

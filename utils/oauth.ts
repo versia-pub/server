@@ -59,3 +59,5 @@ export const checkIfOauthIsValid = (
 
 	return false;
 };
+
+export const oauthCodeVerifiers: Record<string, string> = {};

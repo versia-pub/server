@@ -139,6 +139,11 @@ model Token {
   applicationId String?      @db.Uuid
 }
 
+model OpenIdLoginFlow {
+  id           String @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  codeVerifier String
+}
+
 model Attachment {
   id            String  @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
   url           String
@@ -170,36 +175,45 @@ model Notification {
 }
 
 model User {
-  id                   String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri                  String         @unique
-  username             String         @unique
+  id                   String          @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri                  String          @unique
+  username             String          @unique
   displayName          String
   password             String? // Nullable
-  email                String?        @unique // Nullable
-  note                 String         @default("")
-  isAdmin              Boolean        @default(false)
+  email                String?         @unique // Nullable
+  note                 String          @default("")
+  isAdmin              Boolean         @default(false)
   endpoints            Json? // Nullable
   source               Json
   avatar               String
   header               String
-  createdAt            DateTime       @default(now())
-  updatedAt            DateTime       @updatedAt
-  isBot                Boolean        @default(false)
-  isLocked             Boolean        @default(false)
-  isDiscoverable       Boolean        @default(false)
-  sanctions            String[]       @default([])
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  isBot                Boolean         @default(false)
+  isLocked             Boolean         @default(false)
+  isDiscoverable       Boolean         @default(false)
+  sanctions            String[]        @default([])
   publicKey            String
   privateKey           String? // Nullable
-  relationships        Relationship[] @relation("OwnerToRelationship") // One to many relation with Relationship
-  relationshipSubjects Relationship[] @relation("SubjectToRelationship") // One to many relation with Relationship
-  instance             Instance?      @relation(fields: [instanceId], references: [id], onDelete: Cascade) // Many to one relation with Instance
-  instanceId           String?        @db.Uuid
-  pinnedNotes          Status[]       @relation("UserPinnedNotes") // Many to many relation with Status
+  relationships        Relationship[]  @relation("OwnerToRelationship") // One to many relation with Relationship
+  relationshipSubjects Relationship[]  @relation("SubjectToRelationship") // One to many relation with Relationship
+  instance             Instance?       @relation(fields: [instanceId], references: [id], onDelete: Cascade) // Many to one relation with Instance
+  instanceId           String?         @db.Uuid
+  pinnedNotes          Status[]        @relation("UserPinnedNotes") // Many to many relation with Status
   emojis               Emoji[] // Many to many relation with Emoji
-  statuses             Status[]       @relation("UserStatuses") // One to many relation with Status
+  statuses             Status[]        @relation("UserStatuses") // One to many relation with Status
   tokens               Token[] // One to many relation with Token
-  likes                Like[]         @relation("UserLiked") // One to many relation with Like
+  likes                Like[]          @relation("UserLiked") // One to many relation with Like
   statusesMentioned    Status[] // Many to many relation with Status
   notifications        Notification[] // One to many relation with Notification
-  notified             Notification[] @relation("NotificationToNotified") // One to many relation with Notification
+  notified             Notification[]  @relation("NotificationToNotified") // One to many relation with Notification
+  linkedOpenIdAccounts OpenIdAccount[] // One to many relation with OpenIdAccount
+}
+
+model OpenIdAccount {
+  id       String  @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  User     User?   @relation(fields: [userId], references: [id])
+  userId   String? @db.Uuid
+  serverId String // ID on the authorization server
+  issuerId String
 }

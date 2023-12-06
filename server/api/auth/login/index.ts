@@ -1,5 +1,4 @@
 import { applyConfig } from "@api";
-import { errorResponse } from "@response";
 import type { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
@@ -38,11 +37,21 @@ export default async (
 	const email = formData.get("email")?.toString() || null;
 	const password = formData.get("password")?.toString() || null;
 
+	const redirectToLogin = (error: string) =>
+		Response.redirect(
+			`/oauth/authorize?` +
+				new URLSearchParams({
+					...matchedRoute.query,
+					error: encodeURIComponent(error),
+				}).toString(),
+			302
+		);
+
 	if (response_type !== "code")
-		return errorResponse("Invalid response type (try 'code')", 400);
+		return redirectToLogin("Invalid response_type");
 
 	if (!email || !password)
-		return errorResponse("Missing username or password", 400);
+		return redirectToLogin("Invalid username or password");
 
 	// Get user
 	const user = await client.user.findFirst({
@@ -53,7 +62,7 @@ export default async (
 	});
 
 	if (!user || !(await Bun.password.verify(password, user.password || "")))
-		return errorResponse("Invalid username or password", 401);
+		return redirectToLogin("Invalid username or password");
 
 	// Get application
 	const application = await client.application.findFirst({
@@ -62,7 +71,7 @@ export default async (
 		},
 	});
 
-	if (!application) return errorResponse("Invalid client_id", 404);
+	if (!application) return redirectToLogin("Invalid client_id");
 
 	const code = randomBytes(32).toString("hex");
 
