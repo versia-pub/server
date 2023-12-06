@@ -2,7 +2,7 @@ import { join } from "path";
 import { exists, mkdir, writeFile, readFile } from "fs/promises";
 
 export const writeToTempDirectory = async (filename: string, data: string) => {
-	const tempDir = join(process.cwd(), "temp");
+	const tempDir = join("/tmp/", "lysand");
 	if (!(await exists(tempDir))) await mkdir(tempDir);
 
 	const tempFile = join(tempDir, filename);
@@ -12,7 +12,7 @@ export const writeToTempDirectory = async (filename: string, data: string) => {
 };
 
 export const readFromTempDirectory = async (filename: string) => {
-	const tempDir = join(process.cwd(), "temp");
+	const tempDir = join("/tmp/", "lysand");
 	if (!(await exists(tempDir))) await mkdir(tempDir);
 
 	const tempFile = join(tempDir, filename);
