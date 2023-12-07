@@ -28,7 +28,7 @@ COPY --from=install /temp/prod/node_modules /app/node_modules
 COPY . /app
 
 # Build Vite in pages
-RUN bun vite:build --mode production
+RUN bunx --bun vite build pages
 
 LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
 LABEL org.opencontainers.image.source "https://github.com/lysand-org/lysand"
