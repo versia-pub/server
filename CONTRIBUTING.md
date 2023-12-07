@@ -89,6 +89,15 @@ bun dev
 
 If your port number is lower than 1024, you may need to run the command as root.
 
+### Running the Vite server
+
+To start the Vite server, run:
+```sh
+bun vite:dev
+```
+
+This should be run in a separate terminal window. The Vite server is used to serve the frontend assets and to provide hot module reloading.
+
 ## Running tests
 
 To run the tests, run:

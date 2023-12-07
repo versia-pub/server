@@ -13,6 +13,7 @@ import type { PrismaClientInitializationError } from "@prisma/client/runtime/lib
 import { HookTypes, Server } from "~plugins/types";
 import { initializeRedisCache } from "@redis";
 import { connectMeili } from "@meilisearch";
+import routes from "~pages/routes";
 
 const timeAtStart = performance.now();
 const server = new Server();
@@ -135,13 +136,30 @@ Bun.serve({
 
 			return await file.default(req.clone(), matchedRoute, auth);
 		} else {
-			// Proxy response from Vite at localhost:5173
-			const proxy = await fetch(
-				req.url.replace(config.http.base_url, "http://localhost:5173")
-			);
+			// Check if path matches Vite routes
+			if (
+				routes.find(route => route.path === new URL(req.url).pathname)
+			) {
+				// Proxy response from Vite at localhost:5173
 
-			if (proxy.status !== 404) {
-				return proxy;
+				const proxy = await fetch(
+					req.url.replace(
+						config.http.base_url,
+						"http://localhost:5173"
+					)
+				);
+
+				if (proxy.status !== 404) {
+					return proxy;
+				}
+			}
+
+			if (new URL(req.url).pathname.startsWith("/assets")) {
+				// Serve from pages/dist/assets
+				return new Response(
+					// @ts-expect-error Custom Bun extension
+					Bun.file(`./pages/dist${new URL(req.url).pathname}`)
+				);
 			}
 
 			return new Response(undefined, {

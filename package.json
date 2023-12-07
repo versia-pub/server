@@ -34,7 +34,8 @@
   "scripts": {
     "dev": "bun run index.ts",
     "vite:dev": "bunx --bun vite pages",
-    "start": "bun run index.ts",
+    "vite:build": "bunx --bun vite build pages",
+    "start": "NODE_ENV=production bun run index.ts & bunx --bun vite preview pages --port 5173",
     "migrate-dev": "bun prisma migrate dev",
     "migrate": "bun prisma migrate deploy",
     "lint": "eslint --config .eslintrc.cjs --ext .ts .",

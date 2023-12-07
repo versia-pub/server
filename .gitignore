@@ -169,3 +169,4 @@ dist
 .pnp.\*
 config/config.toml
 uploads/
+pages/dist

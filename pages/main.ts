@@ -2,19 +2,12 @@ import { createApp } from "vue";
 import "./style.css";
 import "virtual:uno.css";
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "./login.vue";
 import App from "./App.vue";
-
-const Home = { template: "<div>Home</div>" };
-
-const routes = [
-	{ path: "/", component: Home },
-	{ path: "/oauth/authorize", component: Login },
-];
+import routes from "./routes";
 
 const router = createRouter({
 	history: createWebHistory(),
-	routes,
+	routes: routes,
 });
 
 const app = createApp(App);

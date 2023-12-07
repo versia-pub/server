@@ -5,7 +5,7 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
 	base: "/",
 	build: {
-		outDir: "../vite-dist",
+		outDir: "./dist",
 	},
 	// main.ts is in pages/ directory
 	resolve: {
