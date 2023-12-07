@@ -19,6 +19,9 @@ RUN mkdir -p /temp/prod
 COPY package.json bun.lockb /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production.
 
+# Build Vite in pages
+RUN bun vite:build --mode production
+
 # copy production dependencies and source code into final image
 FROM base AS release
 
@@ -41,4 +44,4 @@ RUN bunx prisma generate
 WORKDIR /app
 ENV NODE_ENV=production
 # Run migrations and start the server
-ENTRYPOINT [ "bun", "migrate", "&&", "bun", "run", "index.ts" ]
+ENTRYPOINT [ "bun", "migrate", "&&", "bun start" ]
