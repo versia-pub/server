@@ -19,9 +19,6 @@ RUN mkdir -p /temp/prod
 COPY package.json bun.lockb /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production.
 
-# Build Vite in pages
-RUN bun vite:build --mode production
-
 # copy production dependencies and source code into final image
 FROM base AS release
 
@@ -29,6 +26,9 @@ FROM base AS release
 RUN mkdir -p /app
 COPY --from=install /temp/prod/node_modules /app/node_modules
 COPY . /app
+
+# Build Vite in pages
+RUN bun vite:build --mode production
 
 LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
 LABEL org.opencontainers.image.source "https://github.com/lysand-org/lysand"
