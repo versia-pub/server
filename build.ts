@@ -3,6 +3,6 @@ await Bun.build({
 	outdir: "./dist",
 	target: "bun",
 	splitting: true,
-	minify: false,
+	minify: true,
 	external: ["bullmq", "@prisma/client"],
 });
