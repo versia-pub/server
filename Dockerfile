@@ -20,14 +20,13 @@ COPY . /temp/prod/
 RUN cd /temp/prod && bun install --frozen-lockfile --production.
 
 # Generate Prisma
-RUN bunx prisma generate
+RUN cd /temp/prod && bunx prisma generate
 
 # Build Vite in pages
-WORKDIR /temp/prod
-RUN bunx --bun vite build pages
+RUN cd /temp/prod && bunx --bun vite build pages
 
 # Build the project
-RUN bun run build.ts
+RUN cd /temp/prod && bun run build.ts
 
 # copy production dependencies and source code into final image
 FROM base AS release
