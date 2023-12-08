@@ -1,12 +1,9 @@
 import { getConfig } from "@config";
 import { jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import chalk from "chalk";
 import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
-import type { AuthData } from "~database/entities/User";
 import { getFromRequest } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 import { mkdir } from "fs/promises";
 import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
@@ -14,14 +11,10 @@ import { HookTypes, Server } from "~plugins/types";
 import { initializeRedisCache } from "@redis";
 import { connectMeili } from "@meilisearch";
 import routes from "~pages/routes";
+import { matchRoute } from "~routes";
 
 const timeAtStart = performance.now();
 const server = new Server();
-
-const router = new Bun.FileSystemRouter({
-	style: "nextjs",
-	dir: process.cwd() + "/server/api",
-});
 
 console.log(`${chalk.green(`>`)} ${chalk.bold("Starting Lysand...")}`);
 
@@ -87,19 +80,10 @@ Bun.serve({
 			return jsonResponse({});
 		}
 
-		const matchedRoute = router.match(req);
+		const { file, matchedRoute } = matchRoute(req.url);
 
 		if (matchedRoute) {
-			const file: {
-				meta: APIRouteMeta;
-				default: (
-					req: Request,
-					matchedRoute: MatchedRoute,
-					auth: AuthData
-				) => Response | Promise<Response>;
-			} = await import(matchedRoute.filePath);
-
-			const meta = file.meta;
+			const meta = (await file).meta;
 
 			// Check for allowed requests
 			if (!meta.allowedMethods.includes(req.method as any)) {
@@ -134,7 +118,7 @@ Bun.serve({
 				}
 			}
 
-			return await file.default(req.clone(), matchedRoute, auth);
+			return await (await file).default(req.clone(), matchedRoute, auth);
 		} else {
 			// Check if path matches Vite routes
 			if (
