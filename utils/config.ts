@@ -50,6 +50,12 @@ export interface ConfigType {
 		enabled: boolean;
 	};
 
+	signups: {
+		tos_url: string;
+		rules: string[];
+		registration: boolean;
+	};
+
 	oidc: {
 		providers: {
 			name: string;
@@ -217,6 +223,11 @@ export const configDefaults: ConfigType = {
 		port: 1491,
 		api_key: "",
 		enabled: false,
+	},
+	signups: {
+		tos_url: "",
+		rules: [],
+		registration: false,
 	},
 	oidc: {
 		providers: [],

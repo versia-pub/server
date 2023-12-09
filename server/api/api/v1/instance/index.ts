@@ -101,15 +101,19 @@ export default async (): Promise<Response> => {
 		description: "A test instance",
 		email: "",
 		invites_enabled: false,
-		registrations: true,
+		registrations: config.signups.registration,
 		languages: ["en"],
-		rules: [],
+		rules: config.signups.rules.map((r, index) => ({
+			id: String(index),
+			text: r,
+		})),
 		stats: {
 			domain_count: knownDomainsCount,
 			status_count: statusCount,
 			user_count: userCount,
 		},
 		thumbnail: "",
+		tos_url: config.signups.tos_url,
 		title: "Test Instance",
 		uri: new URL(config.http.base_url).hostname,
 		urls: {

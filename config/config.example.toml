@@ -24,6 +24,18 @@ port = 40007
 api_key = ""
 enabled = true
 
+[signups]
+# URL of your Terms of Service
+tos_url = "https://example.com/tos"
+# Whether to enable registrations or not
+registration = true
+rules = [
+	"Do not harass others",
+	"Be nice to people",
+	"Don't spam",
+	"Don't post illegal content",
+]
+
 # Delete this section if you don't want to use custom OAuth providers
 # This is an example configuration
 # The provider MUST support OpenID Connect with .well-known discovery

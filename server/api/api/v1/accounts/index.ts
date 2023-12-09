@@ -15,7 +15,7 @@ export const meta = applyConfig({
 		duration: 60,
 	},
 	auth: {
-		required: true,
+		required: false,
 	},
 });
 
@@ -176,10 +176,13 @@ export default async (req: Request): Promise<Response> => {
 						.join(", ")}`
 			)
 			.join(", ");
-		return jsonResponse({
-			error: `Validation failed: ${errorsText}`,
-			details: errors.details,
-		});
+		return jsonResponse(
+			{
+				error: `Validation failed: ${errorsText}`,
+				details: errors.details,
+			},
+			422
+		);
 	}
 
 	await createNewLocalUser({

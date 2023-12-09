@@ -3,6 +3,7 @@ import type { APIStats } from "./stats";
 import type { APIURLs } from "./urls";
 
 export interface APIInstance {
+	tos_url: string | undefined;
 	uri: string;
 	title: string;
 	description: string;
