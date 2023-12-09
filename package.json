@@ -2,7 +2,7 @@
   "name": "lysand",
   "module": "index.ts",
   "type": "module",
-  "version": "0.1.2",
+  "version": "0.3.0",
   "description": "A project to build a federated social network",
   "author": {
     "email": "contact@cpluspatch.com",
