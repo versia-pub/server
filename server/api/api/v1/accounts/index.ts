@@ -36,6 +36,15 @@ export default async (req: Request): Promise<Response> => {
 
 	const config = getConfig();
 
+	if (!config.signups.registration) {
+		return jsonResponse(
+			{
+				error: "Registration is disabled",
+			},
+			422
+		);
+	}
+
 	const errors: {
 		details: Record<
 			string,
