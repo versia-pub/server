@@ -13,7 +13,7 @@ set -e
 case "$1" in
   "start")
     # Start the server
-    exec bun run ./dist/index.js
+    exec bun run ./dist/index.js --prod
     ;;
   "cli")
     # Start the CLI
