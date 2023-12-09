@@ -21,6 +21,7 @@ RUN bun install --frozen-lockfile --production.
 RUN bunx --bun vite build pages
 
 # Build the project
+RUN ls -la
 RUN bun run build.ts
 WORKDIR /temp/dist
 
