@@ -124,37 +124,32 @@ Bun.serve({
 
 			return await (await file).default(req.clone(), matchedRoute, auth);
 		} else {
-			// Check if path matches Vite routes
-			if (
-				routes.find(route => route.path === new URL(req.url).pathname)
-			) {
-				// Proxy response from Vite at localhost:5173 if in development mode
-				if (isProd) {
-					// Serve from pages/dist
+			// Proxy response from Vite at localhost:5173 if in development mode
+			if (isProd) {
+				if (new URL(req.url).pathname.startsWith("/assets")) {
+					// Serve from pages/dist/assets
 					return new Response(
 						// @ts-expect-error Custom Bun extension
-						Bun.file(`./pages/dist/index.html`)
+						Bun.file(`./pages/dist${new URL(req.url).pathname}`)
 					);
-				} else {
-					const proxy = await fetch(
-						req.url.replace(
-							config.http.base_url,
-							"http://localhost:5173"
-						)
-					);
-
-					if (proxy.status !== 404) {
-						return proxy;
-					}
 				}
-			}
 
-			if (new URL(req.url).pathname.startsWith("/assets")) {
-				// Serve from pages/dist/assets
+				// Serve from pages/dist
 				return new Response(
 					// @ts-expect-error Custom Bun extension
-					Bun.file(`./pages/dist${new URL(req.url).pathname}`)
+					Bun.file(`./pages/dist/index.html`)
 				);
+			} else {
+				const proxy = await fetch(
+					req.url.replace(
+						config.http.base_url,
+						"http://localhost:5173"
+					)
+				);
+
+				if (proxy.status !== 404) {
+					return proxy;
+				}
 			}
 
 			return new Response(undefined, {

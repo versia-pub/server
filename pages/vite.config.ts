@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import UnoCSS from "unocss/vite";
 import vue from "@vitejs/plugin-vue";
+import pkg from "../package.json";
 
 export default defineConfig({
 	base: "/",
@@ -17,6 +18,10 @@ export default defineConfig({
 		hmr: {
 			clientPort: 5173,
 		},
+	},
+	define: {
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		__VERSION__: JSON.stringify(pkg.version),
 	},
 	ssr: {
 		noExternal: ["@prisma/client"],

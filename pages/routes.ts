@@ -1,6 +1,5 @@
 import Login from "./login.vue";
-
-const Home = { template: "<div>Home</div>" };
+import Home from "./Home.vue";
 
 export default [
 	{ path: "/", component: Home },
