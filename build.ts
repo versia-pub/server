@@ -12,6 +12,7 @@ await rm("./dist", { recursive: true });
 
 await mkdir(process.cwd() + "/dist");
 
+//bun build --entrypoints ./index.ts ./prisma.ts ./cli.ts --outdir dist --target bun --splitting --minify --external bullmq,@prisma/client
 await Bun.build({
 	entrypoints: [
 		process.cwd() + "/index.ts",
@@ -26,9 +27,11 @@ await Bun.build({
 });
 
 // Create pages directory
+// mkdir ./dist/pages
 await mkdir(process.cwd() + "/dist/pages");
 
 // Copy Vite build output to dist
+// cp -r ./pages/dist ./dist/pages
 await cp(process.cwd() + "/pages/dist", process.cwd() + "/dist/pages/", {
 	recursive: true,
 });

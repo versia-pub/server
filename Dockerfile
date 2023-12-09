@@ -21,8 +21,9 @@ RUN bun install --frozen-lockfile --production.
 RUN bunx --bun vite build pages
 
 # Build the project
-RUN ls -la
-RUN bun run build.ts
+RUN bun build --entrypoints ./index.ts ./prisma.ts ./cli.ts --outdir dist --target bun --splitting --minify --external bullmq --external @prisma/client
+RUN mkdir ./dist/pages
+RUN cp -r ./pages/dist ./dist/pages
 WORKDIR /temp/dist
 
 # copy production dependencies and source code into final image
@@ -31,7 +32,6 @@ FROM base AS release
 # Create app directory
 RUN mkdir -p /app
 COPY --from=install /temp/dist /app/dist
-COPY --from=install /temp/pages /app/pages
 COPY entrypoint.sh /app
 
 
