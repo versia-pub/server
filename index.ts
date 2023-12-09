@@ -23,6 +23,10 @@ server.emit(HookTypes.PreServe);
 const config = getConfig();
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
 
+// NODE_ENV seems to be broken and output `development` even when set to production, so use the flag instead
+const isProd =
+	process.env.NODE_ENV === "production" || process.argv.includes("--prod");
+
 if (!(await requests_log.exists())) {
 	console.log(`${chalk.green(`✓`)} ${chalk.bold("Creating logs folder...")}`);
 	await mkdir(process.cwd() + "/logs");
@@ -124,17 +128,24 @@ Bun.serve({
 			if (
 				routes.find(route => route.path === new URL(req.url).pathname)
 			) {
-				// Proxy response from Vite at localhost:5173
+				// Proxy response from Vite at localhost:5173 if in development mode
+				if (isProd) {
+					// Serve from pages/dist
+					return new Response(
+						// @ts-expect-error Custom Bun extension
+						Bun.file(`./pages/dist/index.html`)
+					);
+				} else {
+					const proxy = await fetch(
+						req.url.replace(
+							config.http.base_url,
+							"http://localhost:5173"
+						)
+					);
 
-				const proxy = await fetch(
-					req.url.replace(
-						config.http.base_url,
-						"http://localhost:5173"
-					)
-				);
-
-				if (proxy.status !== 404) {
-					return proxy;
+					if (proxy.status !== 404) {
+						return proxy;
+					}
 				}
 			}
 
