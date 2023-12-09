@@ -130,6 +130,14 @@ bun migrate
 Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](docker-compose.yml) file.
 
 Set up Meiliseach's API key by passing the `MEILI_MASTER_KEY` environment variable to the server. Then, enale and configure search in the config file.
+7. Build everything:
+
+```bash
+bun prod-build
+```
+
+You may now start the server with `bun start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
+In fact, the `bun start` script merely runs `bun run dist/index.js --prod`!
 ### Running
 
 To run the server, simply run the following command:
@@ -189,7 +197,7 @@ You may need root privileges to run Docker commands.
 You can run CLI commands inside Docker using the following command:
 
 ```bash
-sudo docker exec -it lysand bun cli ...
+sudo docker exec -it lysand sh entrypoint.sh cli ...
 ```
 
 ### Running migrations inside Docker
@@ -197,7 +205,7 @@ sudo docker exec -it lysand bun cli ...
 You can run migrations inside Docker using the following command (if needed):
 
 ```bash
-sudo docker exec -it lysand bun migrate
+sudo docker exec -it lysand sh entrypoint.sh prisma migrate deploy
 ```
 
 ## Contributing
