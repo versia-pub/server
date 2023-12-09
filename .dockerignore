@@ -15,3 +15,5 @@ helm-charts
 coverage*
 uploads
 logs
+dist
+pages/dist

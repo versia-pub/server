@@ -12,23 +12,25 @@ COPY --from=node:18-alpine /usr/local/bin/node /usr/local/bin/node
 FROM base AS install
 
 # install with --production (exclude devDependencies)
-RUN mkdir -p /temp/prod
-COPY . /temp/prod/
-RUN cd /temp/prod && bun install --frozen-lockfile --production.
+RUN mkdir -p /temp
+COPY . /temp
+WORKDIR /temp
+RUN bun install --frozen-lockfile --production.
 
 # Build Vite in pages
-RUN cd /temp/prod && bunx --bun vite build pages
+RUN bunx --bun vite build pages
 
 # Build the project
-RUN cd /temp/prod && bun run build.ts
+RUN bun run build.ts
+WORKDIR /temp/dist
 
 # copy production dependencies and source code into final image
 FROM base AS release
 
 # Create app directory
 RUN mkdir -p /app
-COPY --from=install /temp/prod/dist /app/dist
-COPY --from=install /temp/prod/pages /app/pages
+COPY --from=install /temp/dist /app/dist
+COPY --from=install /temp/pages /app/pages
 COPY entrypoint.sh /app
 
 
