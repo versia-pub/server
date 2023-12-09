@@ -154,6 +154,8 @@ Lysand includes a built-in CLI for managing the server. To use it, simply run th
 bun cli
 ```
 
+If you are running a production build, you will need to run `bun run dist/cli.js` or `./entrypoint.sh cli` instead.
+
 You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
 
 #### Scripting with the CLI
