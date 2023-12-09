@@ -18,7 +18,7 @@ await Bun.build({
 });
 
 // Create pages directory
-await mkdir("./dist/pages");
+await mkdir("dist/pages");
 
 // Copy Vite build output to dist
 await cp("./pages/dist", "./dist/pages/", {
