@@ -10,8 +10,14 @@ console.log(`Building at ${process.cwd()}`);
 
 await rm("./dist", { recursive: true });
 
+await mkdir(process.cwd() + "/dist");
+
 await Bun.build({
-	entrypoints: ["./index.ts", "./prisma.ts", "./cli.ts"],
+	entrypoints: [
+		process.cwd() + "/index.ts",
+		process.cwd() + "/prisma.ts",
+		process.cwd() + "./cli.ts",
+	],
 	outdir: process.cwd() + "/dist",
 	target: "bun",
 	splitting: true,
@@ -26,3 +32,5 @@ await mkdir(process.cwd() + "/dist/pages");
 await cp(process.cwd() + "/pages/dist", process.cwd() + "/dist/pages/", {
 	recursive: true,
 });
+
+console.log(`Built!`);
