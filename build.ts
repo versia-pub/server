@@ -6,11 +6,13 @@ if (!(await exists("./pages/dist"))) {
 	process.exit(1);
 }
 
+console.log(`Building at ${process.cwd()}`);
+
 await rm("./dist", { recursive: true });
 
 await Bun.build({
 	entrypoints: ["./index.ts", "./prisma.ts", "./cli.ts"],
-	outdir: "./dist",
+	outdir: process.cwd() + "/dist",
 	target: "bun",
 	splitting: true,
 	minify: true,
