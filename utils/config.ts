@@ -1,4 +1,22 @@
-import data from "../config/config.toml";
+import { parse } from "@iarna/toml";
+import chalk from "chalk";
+
+const scanConfig = async () => {
+	const config = Bun.file(process.cwd() + "/config/config.toml");
+
+	if (!(await config.exists())) {
+		console.error(
+			`${chalk.red(`✗`)} ${chalk.bold(
+				"Error while reading config: "
+			)} Config file not found`
+		);
+		process.exit(1);
+	}
+
+	return parse(await config.text()) as ConfigType;
+};
+
+let config = await scanConfig();
 
 export interface ConfigType {
 	database: {
@@ -350,7 +368,7 @@ export const configDefaults: ConfigType = {
 export const getConfig = () => {
 	return {
 		...configDefaults,
-		...(data as ConfigType),
+		...config,
 	};
 };
 
@@ -359,3 +377,18 @@ export const getHost = () => {
 
 	return url.host;
 };
+
+// Refresh config every 5 seconds
+setInterval(() => {
+	scanConfig()
+		.then(newConfig => {
+			if (newConfig !== config) {
+				config = newConfig;
+			}
+		})
+		.catch(e => {
+			console.error(e);
+		});
+}, 5000);
+
+export { config };

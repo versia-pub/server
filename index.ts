@@ -5,23 +5,20 @@ import { appendFile } from "fs/promises";
 import { matches } from "ip-matching";
 import { getFromRequest } from "~database/entities/User";
 import { mkdir } from "fs/promises";
-import { client } from "~database/datasource";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
-import { HookTypes, Server } from "~plugins/types";
 import { initializeRedisCache } from "@redis";
 import { connectMeili } from "@meilisearch";
-import routes from "~pages/routes";
 import { matchRoute } from "~routes";
 
 const timeAtStart = performance.now();
-const server = new Server();
 
 console.log(`${chalk.green(`>`)} ${chalk.bold("Starting Lysand...")}`);
 
-server.emit(HookTypes.PreServe);
-
 const config = getConfig();
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
+
+// Needs to be imported after config is loaded
+import { client } from "~database/datasource";
 
 // NODE_ENV seems to be broken and output `development` even when set to production, so use the flag instead
 const isProd =
@@ -215,7 +212,3 @@ console.log(
 		`Serving ${chalk.blue(postCount)} posts`
 	)}`
 );
-
-server.emit(HookTypes.PostServe, {
-	postCount,
-});
