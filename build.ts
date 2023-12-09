@@ -18,9 +18,9 @@ await Bun.build({
 });
 
 // Create pages directory
-await mkdir("dist/pages");
+await mkdir(process.cwd() + "/dist/pages");
 
 // Copy Vite build output to dist
-await cp("./pages/dist", "./dist/pages/", {
+await cp(process.cwd() + "/pages/dist", process.cwd() + "/dist/pages/", {
 	recursive: true,
 });
