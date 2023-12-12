@@ -99,7 +99,7 @@
 
 <script setup lang="ts">
 import type { APIInstance } from "~types/entities/instance";
-import LoginInput from "./components/LoginInput.vue"
+import LoginInput from "../../components/LoginInput.vue"
 import { computed, ref, watch } from 'vue';
 
 const instanceInfo = await fetch("/api/v1/instance").then(res => res.json()) as APIInstance & {

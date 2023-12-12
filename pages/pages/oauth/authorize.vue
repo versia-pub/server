@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
-import LoginInput from "./components/LoginInput.vue"
+import LoginInput from "../../components/LoginInput.vue"
 import { onMounted, ref } from 'vue';
 
 const query = useRoute().query;

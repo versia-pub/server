@@ -1,11 +1,11 @@
-import Login from "./login.vue";
-import Home from "./Home.vue";
-import Register from "./Register.vue";
-import RegistrationSuccess from "./RegistrationSuccess.vue";
+import indexVue from "./pages/index.vue";
+import authorizeVue from "./pages/oauth/authorize.vue";
+import registerIndexVue from "./pages/register/index.vue";
+import successVue from "./pages/register/success.vue";
 
 export default [
-	{ path: "/", component: Home },
-	{ path: "/oauth/authorize", component: Login },
-	{ path: "/register", component: Register },
-	{ path: "/register/success", component: RegistrationSuccess },
+	{ path: "/", component: indexVue },
+	{ path: "/oauth/authorize", component: authorizeVue },
+	{ path: "/register", component: registerIndexVue },
+	{ path: "/register/success", component: successVue },
 ];
