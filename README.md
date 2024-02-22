@@ -4,6 +4,8 @@
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
+> [!IMPORTANT]  
+> This project is **not abandoned**, my laptop merely broke and I am waiting for a new one to arrive
 
 ## What is this?
 
@@ -11,7 +13,8 @@ This is a project to create a federated social network based on the [Lysand](htt
 
 This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
-> **Note:** This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
+> [!NOTE]  
+> This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
 
 ## Features
 
@@ -31,7 +34,8 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ## Benchmarks
 
-> **Note**: These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
+> [!NOTE]
+> These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
 
 ### Timeline Benchmarks
 
@@ -174,7 +178,8 @@ The `bun prisma` commands allows you to use Prisma commands without needing to a
 
 ## With Docker
 
-> **Note**: Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
+> [!NOTE]
+> Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
 >
 > These instructions will probably also work with Podman and other container runtimes.
 
@@ -221,7 +226,8 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 ## Federation
 
-> **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
+> [!WARNING]
+> Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
 The following extensions are currently supported or being worked on:
 - `org.lysand:custom_emojis`: Custom emojis
