@@ -67,7 +67,10 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 ```
 
 4. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
-   
+
+> [!WARNING]
+> You should disable Prisma caching while developing, as it can mess up tests
+
 5. Generate the Prisma client:
 
 ```bash
