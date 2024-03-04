@@ -76,3 +76,44 @@ export const emojiToLysand = (emoji: Emoji): LysandEmoji => {
 		alt: emoji.alt || undefined,
 	};
 };
+
+/**
+ * Converts the emoji to an ActivityPub object.
+ * @returns The ActivityPub object.
+ */
+export const emojiToActivityPub = (emoji: Emoji): any => {
+	// replace any with your ActivityPub Emoji type
+	return {
+		type: "Emoji",
+		name: `:${emoji.shortcode}:`,
+		updated: new Date().toISOString(),
+		icon: {
+			type: "Image",
+			url: emoji.url,
+			mediaType: emoji.content_type,
+			alt: emoji.alt || undefined,
+		},
+	};
+};
+
+export const addAPEmojiIfNotExists = async (apEmoji: any) => {
+	// replace any with your ActivityPub Emoji type
+	const existingEmoji = await client.emoji.findFirst({
+		where: {
+			shortcode: apEmoji.name.replace(/:/g, ""),
+			instance: null,
+		},
+	});
+
+	if (existingEmoji) return existingEmoji;
+
+	return await client.emoji.create({
+		data: {
+			shortcode: apEmoji.name.replace(/:/g, ""),
+			url: apEmoji.icon.url,
+			alt: apEmoji.icon.alt || null,
+			content_type: apEmoji.icon.mediaType,
+			visible_in_picker: true,
+		},
+	});
+};
