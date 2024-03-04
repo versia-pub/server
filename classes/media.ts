@@ -41,7 +41,7 @@ class MediaBackend {
 		switch (fileFormatToConvertTo) {
 			case "png":
 				return new File(
-					[(await sharpCommand.png().toBuffer()).buffer],
+					[(await sharpCommand.png().toBuffer()).buffer] as any,
 					// Replace the file extension with PNG
 					name.replace(/\.[^/.]+$/, ".png"),
 					{
@@ -50,7 +50,7 @@ class MediaBackend {
 				);
 			case "webp":
 				return new File(
-					[(await sharpCommand.webp().toBuffer()).buffer],
+					[(await sharpCommand.webp().toBuffer()).buffer] as any,
 					// Replace the file extension with WebP
 					name.replace(/\.[^/.]+$/, ".webp"),
 					{
@@ -59,7 +59,7 @@ class MediaBackend {
 				);
 			case "jpeg":
 				return new File(
-					[(await sharpCommand.jpeg().toBuffer()).buffer],
+					[(await sharpCommand.jpeg().toBuffer()).buffer] as any,
 					// Replace the file extension with JPEG
 					name.replace(/\.[^/.]+$/, ".jpeg"),
 					{
@@ -68,7 +68,7 @@ class MediaBackend {
 				);
 			case "avif":
 				return new File(
-					[(await sharpCommand.avif().toBuffer()).buffer],
+					[(await sharpCommand.avif().toBuffer()).buffer] as any,
 					// Replace the file extension with AVIF
 					name.replace(/\.[^/.]+$/, ".avif"),
 					{
@@ -78,7 +78,7 @@ class MediaBackend {
 			// Needs special build of libvips
 			case "jxl":
 				return new File(
-					[(await sharpCommand.jxl().toBuffer()).buffer],
+					[(await sharpCommand.jxl().toBuffer()).buffer] as any,
 					// Replace the file extension with JXL
 					name.replace(/\.[^/.]+$/, ".jxl"),
 					{
@@ -87,7 +87,7 @@ class MediaBackend {
 				);
 			case "heif":
 				return new File(
-					[(await sharpCommand.heif().toBuffer()).buffer],
+					[(await sharpCommand.heif().toBuffer()).buffer] as any,
 					// Replace the file extension with HEIF
 					name.replace(/\.[^/.]+$/, ".heif"),
 					{
