@@ -6,7 +6,7 @@ import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 import sharp from "sharp";
 import { uploadFile } from "~classes/media";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 
 export const meta: APIRouteMeta = applyConfig({

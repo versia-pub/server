@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { applyConfig } from "@api";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";

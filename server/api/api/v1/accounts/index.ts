@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";

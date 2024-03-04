@@ -1,5 +1,5 @@
-import type { ConfigType } from "@config";
-import { getConfig } from "@config";
+import type { ConfigType } from "~classes/configmanager";
+import { getConfig } from "~classes/configmanager";
 import type { APIAccount } from "~types/entities/account";
 import type { User as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";

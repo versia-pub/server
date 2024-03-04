@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { jsonResponse } from "@response";
 import chalk from "chalk";
 import { appendFile } from "fs/promises";

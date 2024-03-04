@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import {

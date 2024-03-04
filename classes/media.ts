@@ -4,7 +4,7 @@ import {
 	PutObjectCommand,
 	S3Client,
 } from "@aws-sdk/client-s3";
-import type { ConfigType } from "@config";
+import type { ConfigType } from "~classes/configmanager";
 import sharp from "sharp";
 import { exists, mkdir } from "fs/promises";
 class MediaBackend {

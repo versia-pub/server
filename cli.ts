@@ -4,7 +4,7 @@ import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
 import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { uploadFile } from "~classes/media";
 import { getUrl } from "~database/entities/Attachment";
 import { mkdir, exists } from "fs/promises";

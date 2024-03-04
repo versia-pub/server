@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import type { UserWithRelations } from "./User";
 import {
 	fetchRemoteUser,

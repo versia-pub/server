@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { Worker } from "bullmq";
 import { client, federationQueue } from "~database/datasource";
 import {

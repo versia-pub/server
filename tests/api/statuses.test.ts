@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";

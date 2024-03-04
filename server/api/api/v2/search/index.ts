@@ -1,5 +1,5 @@
 import { applyConfig } from "@api";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";

@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
 import Redis from "ioredis";

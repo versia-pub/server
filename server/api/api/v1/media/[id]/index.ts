@@ -4,7 +4,7 @@ import { client } from "~database/datasource";
 import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 import { uploadFile } from "~classes/media";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 import type { MatchedRoute } from "bun";
 import { parseRequest } from "@request";

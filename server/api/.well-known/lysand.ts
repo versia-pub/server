@@ -1,6 +1,6 @@
 import { jsonResponse } from "@response";
 import { MatchedRoute } from "bun";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { applyConfig } from "@api";
 
 export const meta = applyConfig({

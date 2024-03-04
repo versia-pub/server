@@ -2,7 +2,7 @@
  * Usage: TOKEN=your_token_here bun benchmark:timeline <request_count>
  */
 
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import chalk from "chalk";
 
 const config = getConfig();

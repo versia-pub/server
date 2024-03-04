@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import chalk from "chalk";
 import { client } from "~database/datasource";
 import { Meilisearch } from "meilisearch";

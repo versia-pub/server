@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { sanitize } from "isomorphic-dompurify";
 
 export const sanitizeHtml = async (html: string) => {

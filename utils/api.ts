@@ -1,4 +1,4 @@
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import type { APIRouteMeta } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMeta) => {

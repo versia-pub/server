@@ -1,6 +1,6 @@
 import { jsonResponse } from "@response";
 import type { MatchedRoute } from "bun";
-import { getConfig, getHost } from "@config";
+import { getConfig, getHost } from "~classes/configmanager";
 import { applyConfig } from "@api";
 import {
 	statusAndUserRelations,

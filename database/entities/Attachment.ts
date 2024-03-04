@@ -1,4 +1,4 @@
-import type { ConfigType } from "@config";
+import type { ConfigType } from "~classes/configmanager";
 import type { Attachment } from "@prisma/client";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIAttachment } from "~types/entities/attachment";

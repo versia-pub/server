@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { Like as LysandLike } from "~types/lysand/Object";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import type { Like } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { UserWithRelations } from "./User";

@@ -1,5 +1,5 @@
 import { applyConfig } from "@api";
-import { getConfig } from "@config";
+import { getConfig } from "~classes/configmanager";
 import { oauthRedirectUri } from "@constants";
 import type { MatchedRoute } from "bun";
 import {
