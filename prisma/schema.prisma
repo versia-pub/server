@@ -94,62 +94,76 @@ model Relationship {
 }
 
 model Status {
-  id                   String           @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri                  String           @unique
-  author               User             @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
-  authorId             String           @db.Uuid
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
-  reblog               Status?          @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
-  reblogId             String?          @db.Uuid
+  id                   String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri                  String         @unique
+  author               User           @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId             String         @db.Uuid
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  reblog               Status?        @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
+  reblogId             String?        @db.Uuid
   isReblog             Boolean
-  content              String           @default("")
-  contentType          String           @default("text/plain")
-  contentSource        String           @default("")
+  content              String         @default("")
+  contentType          String         @default("text/plain")
+  contentSource        String         @default("")
   visibility           String
-  inReplyToPost        Status?          @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
-  inReplyToPostId      String?          @db.Uuid
-  quotingPost          Status?          @relation("StatusToStatusQuote", fields: [quotingPostId], references: [id], onDelete: SetNull)
-  quotingPostId        String?          @db.Uuid
-  instance             Instance?        @relation(fields: [instanceId], references: [id], onDelete: Cascade)
-  instanceId           String?          @db.Uuid
+  inReplyToPost        Status?        @relation("StatusToStatusReply", fields: [inReplyToPostId], references: [id], onDelete: SetNull)
+  inReplyToPostId      String?        @db.Uuid
+  quotingPost          Status?        @relation("StatusToStatusQuote", fields: [quotingPostId], references: [id], onDelete: SetNull)
+  quotingPostId        String?        @db.Uuid
+  instance             Instance?      @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  instanceId           String?        @db.Uuid
   sensitive            Boolean
-  spoilerText          String           @default("")
-  application          Application?     @relation(fields: [applicationId], references: [id], onDelete: SetNull)
-  applicationId        String?          @db.Uuid
-  emojis               Emoji[]          @relation
+  spoilerText          String         @default("")
+  application          Application?   @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  applicationId        String?        @db.Uuid
+  emojis               Emoji[]        @relation
   mentions             User[]
-  likes                Like[]           @relation("LikedToStatus")
-  reblogs              Status[]         @relation("StatusToStatus")
-  replies              Status[]         @relation("StatusToStatusReply")
-  quotes               Status[]         @relation("StatusToStatusQuote")
-  pinnedBy             User[]           @relation("UserPinnedNotes")
+  likes                Like[]         @relation("LikedToStatus")
+  reblogs              Status[]       @relation("StatusToStatus")
+  replies              Status[]       @relation("StatusToStatusReply")
+  quotes               Status[]       @relation("StatusToStatusQuote")
+  pinnedBy             User[]         @relation("UserPinnedNotes")
   attachments          Attachment[]
   relatedNotifications Notification[]
   flags                Flag[]
-  moderationData       ModerationData[]
+  modNotes             ModNote[]
+  modTags              ModTag[]
 }
 
-model ModerationData {
-  id        String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  status    Status   @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  statusId  String   @db.Uuid
-  creator   User     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  creatorId String   @db.Uuid
-  note      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model ModNote {
+  id            String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  notedStatus   Status?  @relation(fields: [notedStatusId], references: [id], onDelete: Cascade)
+  notedStatusId String?  @db.Uuid
+  notedUser     User?    @relation("ModNoteToUser", fields: [notedUserId], references: [id], onDelete: Cascade)
+  notedUserId   String?  @db.Uuid
+  mod           User     @relation("ModNoteToMod", fields: [modId], references: [id], onDelete: Cascade)
+  modId         String   @db.Uuid
+  note          String
+  createdAt     DateTime @default(now())
 }
 
-// Used for moderation purposes
+model ModTag {
+  id             String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  taggedStatus   Status?  @relation(fields: [taggedStatusId], references: [id], onDelete: Cascade)
+  taggedStatusId String?  @db.Uuid
+  taggedUser     User?    @relation("ModNoteToTaggedUser", fields: [taggedUserId], references: [id], onDelete: Cascade)
+  taggedUserId   String?  @db.Uuid
+  mod            User     @relation("ModTagToMod", fields: [modId], references: [id], onDelete: Cascade)
+  modId          String   @db.Uuid
+  tag            String
+  createdAt      DateTime @default(now())
+}
+
+// Used to tag notes and accounts with automatic moderation infractions
 model Flag {
-  id        String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  status    Status   @relation(fields: [statusId], references: [id], onDelete: Cascade)
-  statusId  String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @db.Uuid
-  flagType  String   @default("other")
-  createdAt DateTime @default(now())
+  id             String   @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  flaggedStatus  Status?  @relation(fields: [flaggeStatusId], references: [id], onDelete: Cascade)
+  flaggeStatusId String?  @db.Uuid
+  flaggedUser    User?    @relation(fields: [flaggedUserId], references: [id], onDelete: Cascade)
+  flaggedUserId  String?  @db.Uuid
+  flagType       String   @default("other")
+  createdAt      DateTime @default(now())
 }
 
 model Token {
@@ -204,42 +218,45 @@ model Notification {
 }
 
 model User {
-  id                    String           @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri                   String           @unique
-  username              String           @unique
+  id                    String          @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
+  uri                   String          @unique
+  username              String          @unique
   displayName           String
   password              String? // Nullable
-  email                 String?          @unique // Nullable
-  note                  String           @default("")
-  isAdmin               Boolean          @default(false)
+  email                 String?         @unique // Nullable
+  note                  String          @default("")
+  isAdmin               Boolean         @default(false)
   endpoints             Json? // Nullable
   source                Json
   avatar                String
   header                String
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  isBot                 Boolean          @default(false)
-  isLocked              Boolean          @default(false)
-  isDiscoverable        Boolean          @default(false)
-  sanctions             String[]         @default([])
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  isBot                 Boolean         @default(false)
+  isLocked              Boolean         @default(false)
+  isDiscoverable        Boolean         @default(false)
+  sanctions             String[]        @default([])
   publicKey             String
   privateKey            String? // Nullable
-  relationships         Relationship[]   @relation("OwnerToRelationship") // One to many relation with Relationship
-  relationshipSubjects  Relationship[]   @relation("SubjectToRelationship") // One to many relation with Relationship
-  instance              Instance?        @relation(fields: [instanceId], references: [id], onDelete: Cascade) // Many to one relation with Instance
-  instanceId            String?          @db.Uuid
-  pinnedNotes           Status[]         @relation("UserPinnedNotes") // Many to many relation with Status
+  relationships         Relationship[]  @relation("OwnerToRelationship") // One to many relation with Relationship
+  relationshipSubjects  Relationship[]  @relation("SubjectToRelationship") // One to many relation with Relationship
+  instance              Instance?       @relation(fields: [instanceId], references: [id], onDelete: Cascade) // Many to one relation with Instance
+  instanceId            String?         @db.Uuid
+  pinnedNotes           Status[]        @relation("UserPinnedNotes") // Many to many relation with Status
   emojis                Emoji[] // Many to many relation with Emoji
-  statuses              Status[]         @relation("UserStatuses") // One to many relation with Status
+  statuses              Status[]        @relation("UserStatuses") // One to many relation with Status
   tokens                Token[] // One to many relation with Token
-  likes                 Like[]           @relation("UserLiked") // One to many relation with Like
+  likes                 Like[]          @relation("UserLiked") // One to many relation with Like
   statusesMentioned     Status[] // Many to many relation with Status
   notifications         Notification[] // One to many relation with Notification
-  notified              Notification[]   @relation("NotificationToNotified") // One to many relation with Notification
+  notified              Notification[]  @relation("NotificationToNotified") // One to many relation with Notification
   linkedOpenIdAccounts  OpenIdAccount[] // One to many relation with OpenIdAccount
-  flags                 Flag[]           @relation
-  moderationData        ModerationData[]
-  disableAutomoderation Boolean          @default(false)
+  flags                 Flag[]
+  modNotes              ModNote[]       @relation("ModNoteToUser")
+  modTags               ModTag[]        @relation("ModNoteToTaggedUser")
+  disableAutomoderation Boolean         @default(false)
+  createdModTags        ModTag[]        @relation("ModTagToMod")
+  createdModNotes       ModNote[]       @relation("ModNoteToMod")
 }
 
 model OpenIdAccount {
