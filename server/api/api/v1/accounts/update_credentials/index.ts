@@ -2,9 +2,9 @@ import { getConfig } from "~classes/configmanager";
 import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import {
-	getFromRequest,
 	userRelations,
 	userToAPI,
+	type AuthData,
 } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
@@ -15,6 +15,7 @@ import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
 import { convertTextToHtml } from "@formatting";
+import type { MatchedRoute } from "bun";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -31,8 +32,12 @@ export const meta = applyConfig({
 /**
  * Patches a user
  */
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default async (
+	req: Request,
+	matchedRoute: MatchedRoute,
+	auth: AuthData
+): Promise<Response> => {
+	const { user } = auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -64,7 +69,7 @@ export default async (req: Request): Promise<Response> => {
 
 	const sanitizedNote = await sanitizeHtml(note ?? "");
 
-	const sanitizedDisplayName = sanitize(display_name, {
+	const sanitizedDisplayName = sanitize(display_name ?? "", {
 		ALLOWED_TAGS: [],
 		ALLOWED_ATTR: [],
 	});

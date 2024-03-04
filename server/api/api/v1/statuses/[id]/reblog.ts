@@ -87,16 +87,11 @@ export default async (
 	});
 
 	// Create notification for reblog if reblogged user is on the same instance
-	if (
-		// @ts-expect-error Prisma relations not showing in types
-		(status.reblog?.author as UserWithRelations).instanceId ===
-		user.instanceId
-	) {
+	if ((status.author as UserWithRelations).instanceId === user.instanceId) {
 		await client.notification.create({
 			data: {
 				accountId: user.id,
-				// @ts-expect-error Prisma relations not showing in types
-				notifiedId: status.reblog.authorId,
+				notifiedId: status.authorId,
 				type: "reblog",
 				statusId: status.reblogId,
 			},

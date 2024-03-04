@@ -310,10 +310,10 @@ export const getRelationshipToOtherUser = async (
  * Generates keys for the user.
  */
 export const generateUserKeys = async () => {
-	const keys = (await crypto.subtle.generateKey("Ed25519", true, [
+	const keys = await crypto.subtle.generateKey("Ed25519", true, [
 		"sign",
 		"verify",
-	])) as CryptoKeyPair;
+	]);
 
 	const privateKey = btoa(
 		String.fromCharCode.apply(null, [

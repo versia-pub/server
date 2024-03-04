@@ -29,6 +29,10 @@ export default async (
 	matchedRoute: MatchedRoute
 ): Promise<Response> => {
 	const id = matchedRoute.params.id;
+	// Check if ID is valid UUID
+	if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+		return errorResponse("Invalid ID", 404);
+	}
 
 	const { user } = await getFromRequest(req);
 

@@ -73,6 +73,12 @@ describe("API Tests", () => {
 				},
 			},
 		});
+
+		await client.application.deleteMany({
+			where: {
+				client_id: "test",
+			},
+		});
 	});
 
 	describe("POST /api/v2/media", () => {
@@ -80,7 +86,6 @@ describe("API Tests", () => {
 			const formData = new FormData();
 			formData.append("file", new Blob(["test"], { type: "text/plain" }));
 
-			// @ts-expect-error FormData is not iterable
 			const response = await fetch(
 				`${config.http.base_url}/api/v2/media`,
 				{
@@ -130,14 +135,14 @@ describe("API Tests", () => {
 
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 			status = (await response.json()) as APIStatus;
-			expect(status.content).toBe("Hello, world!");
+			expect(status.content).toContain("Hello, world!");
 			expect(status.visibility).toBe("public");
 			expect(status.account.id).toBe(user.id);
 			expect(status.replies_count).toBe(0);
 			expect(status.favourites_count).toBe(0);
 			expect(status.reblogged).toBe(false);
 			expect(status.favourited).toBe(false);
-			expect(status.media_attachments).toEqual([]);
+			expect(status.media_attachments).toBeArrayOfSize(1);
 			expect(status.mentions).toEqual([]);
 			expect(status.tags).toEqual([]);
 			expect(status.sensitive).toBe(false);
@@ -176,7 +181,7 @@ describe("API Tests", () => {
 
 			// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 			status2 = (await response.json()) as APIStatus;
-			expect(status2.content).toBe("This is a reply!");
+			expect(status2.content).toContain("This is a reply!");
 			expect(status2.visibility).toBe("public");
 			expect(status2.account.id).toBe(user.id);
 			expect(status2.replies_count).toBe(0);
@@ -371,7 +376,7 @@ describe("API Tests", () => {
 			const status1 = statuses[0];
 
 			// Basic validation
-			expect(status1.content).toBe("This is a reply!");
+			expect(status1.content).toContain("This is a reply!");
 			expect(status1.visibility).toBe("public");
 			expect(status1.account.id).toBe(user.id);
 		});

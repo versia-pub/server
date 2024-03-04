@@ -153,11 +153,11 @@ export default async (
 	let sanitizedStatus: string;
 
 	if (content_type === "text/markdown") {
-		sanitizedStatus = await sanitizeHtml(parse(status ?? ""));
+		sanitizedStatus = await sanitizeHtml(parse(status ?? "") as any);
 	} else if (content_type === "text/x.misskeymarkdown") {
 		// Parse as MFM
 		// TODO: Parse as MFM
-		sanitizedStatus = await sanitizeHtml(parse(status ?? ""));
+		sanitizedStatus = await sanitizeHtml(parse(status ?? "") as any);
 	} else {
 		sanitizedStatus = await sanitizeHtml(status ?? "");
 	}

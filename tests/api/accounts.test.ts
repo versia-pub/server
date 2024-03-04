@@ -19,66 +19,72 @@ let token: Token;
 let user: UserWithRelations;
 let user2: UserWithRelations;
 
+beforeAll(async () => {
+	/* await client.user.deleteMany({
+		where: {
+			username: {
+				in: ["test", "test2"],
+			},
+		},
+	}); */
+
+	user = await createNewLocalUser({
+		email: "test@test.com",
+		username: "test",
+		password: "test",
+		display_name: "",
+	});
+
+	user2 = await createNewLocalUser({
+		email: "test2@test.com",
+		username: "test2",
+		password: "test2",
+		display_name: "",
+	});
+
+	token = await client.token.create({
+		data: {
+			access_token: "test",
+			application: {
+				create: {
+					client_id: "test",
+					name: "Test Application",
+					redirect_uris: "https://example.com",
+					scopes: "read write",
+					secret: "test",
+					website: "https://example.com",
+					vapid_key: null,
+				},
+			},
+			code: "test",
+			scope: "read write",
+			token_type: TokenType.BEARER,
+			user: {
+				connect: {
+					id: user.id,
+				},
+			},
+		},
+	});
+});
+
+afterAll(async () => {
+	await client.user.deleteMany({
+		where: {
+			username: {
+				in: ["test", "test2"],
+			},
+		},
+	});
+
+	await client.application.deleteMany({
+		where: {
+			client_id: "test",
+		},
+	});
+});
+
 describe("API Tests", () => {
-	beforeAll(async () => {
-		await client.user.deleteMany({
-			where: {
-				username: {
-					in: ["test", "test2"],
-				},
-			},
-		});
-
-		user = await createNewLocalUser({
-			email: "test@test.com",
-			username: "test",
-			password: "test",
-			display_name: "",
-		});
-
-		user2 = await createNewLocalUser({
-			email: "test2@test.com",
-			username: "test2",
-			password: "test2",
-			display_name: "",
-		});
-
-		token = await client.token.create({
-			data: {
-				access_token: "test",
-				application: {
-					create: {
-						client_id: "test",
-						name: "Test Application",
-						redirect_uris: "https://example.com",
-						scopes: "read write",
-						secret: "test",
-						website: "https://example.com",
-						vapid_key: null,
-					},
-				},
-				code: "test",
-				scope: "read write",
-				token_type: TokenType.BEARER,
-				user: {
-					connect: {
-						id: user.id,
-					},
-				},
-			},
-		});
-	});
-
-	afterAll(async () => {
-		await client.user.deleteMany({
-			where: {
-				username: {
-					in: ["test", "test2"],
-				},
-			},
-		});
-	});
-
 	describe("POST /api/v1/accounts/:id", () => {
 		test("should return a 404 error when trying to fetch a non-existent user", async () => {
 			const response = await fetch(

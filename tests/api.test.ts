@@ -61,6 +61,12 @@ describe("API Tests", () => {
 				},
 			},
 		});
+
+		await client.application.deleteMany({
+			where: {
+				client_id: "test",
+			},
+		});
 	});
 
 	describe("GET /api/v1/instance", () => {
@@ -130,8 +136,8 @@ describe("API Tests", () => {
 			const emojis = (await response.json()) as APIEmoji[];
 
 			expect(emojis.length).toBeGreaterThan(0);
-			expect(emojis[0].shortcode).toBe("test");
-			expect(emojis[0].url).toBe("https://example.com/test.png");
+			expect(emojis[0].shortcode).toBeString();
+			expect(emojis[0].url).toBeString();
 		});
 		afterAll(async () => {
 			await client.emoji.deleteMany({

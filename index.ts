@@ -97,7 +97,6 @@ Bun.serve({
 			}
 
 			// TODO: Check for ratelimits
-
 			const auth = await getFromRequest(req);
 
 			// Check for authentication if required
@@ -126,16 +125,12 @@ Bun.serve({
 				if (new URL(req.url).pathname.startsWith("/assets")) {
 					// Serve from pages/dist/assets
 					return new Response(
-						// @ts-expect-error Custom Bun extension
 						Bun.file(`./pages/dist${new URL(req.url).pathname}`)
 					);
 				}
 
 				// Serve from pages/dist
-				return new Response(
-					// @ts-expect-error Custom Bun extension
-					Bun.file(`./pages/dist/index.html`)
-				);
+				return new Response(Bun.file(`./pages/dist/index.html`));
 			} else {
 				const proxy = await fetch(
 					req.url.replace(
@@ -167,7 +162,7 @@ const logRequest = async (req: Request) => {
 		);
 
 		// Add headers
-
+		// @ts-expect-error TypeScript is missing entries for some reason
 		const headers = req.headers.entries();
 
 		for (const [key, value] of headers) {

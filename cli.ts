@@ -1013,7 +1013,10 @@ switch (command) {
 
 					const content_type = emoji.type;
 
-					const hash = await uploadFile(emoji as File, config);
+					const hash = await uploadFile(
+						emoji as unknown as File,
+						config
+					);
 
 					if (!hash) {
 						console.log(
