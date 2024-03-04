@@ -59,6 +59,8 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 
 	// If request contains FormData
 	if (request.headers.get("Content-Type")?.includes("multipart/form-data")) {
+		// @ts-expect-error It hates entries() for some reason
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const formData = [...(await request.formData()).entries()];
 
 		if (formData.length > 0) {
@@ -67,15 +69,16 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 			for (const [key, value] of formData) {
 				// If object, parse as JSON
 				try {
-					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-base-to-string
+					// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 					data[key] = JSON.parse(value.toString());
 				} catch {
 					// If a file, set as a file
 					if (value instanceof File) {
+						// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 						data[key] = value;
 					} else {
 						// Otherwise, set as a string
-						// eslint-disable-next-line @typescript-eslint/no-base-to-string
+						// eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
 						data[key] = value.toString();
 					}
 				}
