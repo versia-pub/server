@@ -168,5 +168,6 @@ dist
 .yarn/install-state.gz
 .pnp.\*
 config/config.toml
+config/config.internal.toml
 uploads/
 pages/dist
