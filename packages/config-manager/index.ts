@@ -7,6 +7,7 @@
 
 import { parse, stringify, type JsonMap } from "@iarna/toml";
 import type { ConfigType } from "./config-type.type";
+import { configDefaults } from "./config-type.type";
 import merge from "merge-deep-ts";
 
 export class ConfigManager {
@@ -116,3 +117,6 @@ export class ConfigManager {
 		return merge(configs) as T;
 	}
 }
+
+export type { ConfigType };
+export const defaultConfig = configDefaults;

@@ -71,6 +71,8 @@ tls = true
 backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
+# If media backend is "local", this is the folder where the files will be stored
+local_uploads_folder = "uploads"
 
 [media.conversion]
 convert_images = false

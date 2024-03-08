@@ -101,6 +101,7 @@ export interface ConfigType {
 			convert_images: boolean;
 			convert_to: string;
 		};
+		local_uploads_folder: string;
 	};
 
 	s3: {
@@ -234,6 +235,7 @@ export const configDefaults: ConfigType = {
 			convert_images: false,
 			convert_to: "webp",
 		},
+		local_uploads_folder: "uploads",
 	},
 	email: {
 		send_on_report: false,
