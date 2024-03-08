@@ -167,6 +167,90 @@ export class CliBuilder {
 
 		return tree;
 	}
+
+	/**
+	 * Display help for every command in a tree manner
+	 */
+	displayHelp() {
+		/*
+		user
+		  set
+		    admin: List of admin commands
+			  --prod: Whether to run in production
+			  --dev: Whether to run in development
+			  username: Username of the admin
+			  Example: user set admin --prod --dev --username John
+			delete
+			  ...
+		  verify
+		    ...
+		*/
+		const tree = this.getCommandTree(this.commands);
+		let writeBuffer = "";
+
+		const displayTree = (tree: TreeType, depth = 0) => {
+			for (const [key, value] of Object.entries(tree)) {
+				if (value instanceof CliCommand) {
+					writeBuffer += `${"    ".repeat(depth)}${chalk.blue(key)}|${chalk.underline(value.description)}\n`;
+					const positionedArgs = value.argTypes.filter(
+						arg => arg.positioned
+					);
+					const unpositionedArgs = value.argTypes.filter(
+						arg => !arg.positioned
+					);
+
+					for (const arg of unpositionedArgs) {
+						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.green(
+							arg.name
+						)}|${
+							arg.description ?? "(no description)"
+						} ${arg.optional ? chalk.gray("(optional)") : ""}\n`;
+					}
+					for (const arg of positionedArgs) {
+						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.yellow("--" + arg.name)}|${
+							arg.description ?? "(no description)"
+						} ${arg.optional ? chalk.gray("(optional)") : ""}\n`;
+					}
+
+					if (value.example) {
+						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.bold("Example:")} ${chalk.bgGray(
+							value.example
+						)}\n`;
+					}
+				} else {
+					writeBuffer += `${"    ".repeat(depth)}${chalk.blue(key)}\n`;
+					displayTree(value, depth + 1);
+				}
+			}
+		};
+
+		displayTree(tree);
+
+		// Replace all "|" with enough dots so that the text on the left + the dots = the same length
+		const optimal_length = Number(
+			// @ts-expect-error Slightly hacky but works
+			writeBuffer.split("\n").reduce((prev, current) => {
+				// If previousValue is empty
+				if (!prev)
+					return current.includes("|")
+						? current.split("|")[0].length
+						: 0;
+				if (!current.includes("|")) return prev;
+				const [left] = current.split("|");
+				return Math.max(Number(prev), left.length);
+			})
+		);
+
+		for (const line of writeBuffer.split("\n")) {
+			const [left, right] = line.split("|");
+			if (!right) {
+				console.log(left);
+				continue;
+			}
+			const dots = ".".repeat(optimal_length + 5 - left.length);
+			console.log(`${left}${dots}${right}`);
+		}
+	}
 }
 
 /**
@@ -289,35 +373,3 @@ ${positionedArgs
 		this.execute(args);
 	}
 }
-
-const cliBuilder = new CliBuilder();
-
-const cliCommand = new CliCommand(
-	["category1", "category2"],
-	[
-		{
-			name: "name",
-			type: "string",
-			needsValue: true,
-			description: "Name of new item",
-		},
-		{
-			name: "delete-previous",
-			type: "number",
-			needsValue: false,
-			positioned: true,
-			optional: true,
-			description: "Also delete the previous item",
-		},
-		{ name: "arg3", type: "boolean", needsValue: false },
-		{ name: "arg4", type: "array", needsValue: true },
-	],
-	() => {
-		// Do nothing
-	},
-	"I love sussy sauces",
-	"emoji add --url https://site.com/image.png"
-);
-
-cliBuilder.registerCommand(cliCommand);
-//cliBuilder.displayHelp();

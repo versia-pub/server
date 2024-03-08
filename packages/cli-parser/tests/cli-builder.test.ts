@@ -339,4 +339,68 @@ describe("CliBuilder", () => {
 			});
 		});
 	});
+
+	it("should show help menu", () => {
+		const consoleLogSpy = spyOn(console, "log").mockImplementation(() => {
+			// Do nothing
+		});
+
+		const cliBuilder = new CliBuilder();
+
+		const cliCommand = new CliCommand(
+			["category1", "category2"],
+			[
+				{
+					name: "name",
+					type: "string",
+					needsValue: true,
+					description: "Name of new item",
+				},
+				{
+					name: "delete-previous",
+					type: "number",
+					needsValue: false,
+					positioned: true,
+					optional: true,
+					description: "Also delete the previous item",
+				},
+				{ name: "arg3", type: "boolean", needsValue: false },
+				{ name: "arg4", type: "array", needsValue: true },
+			],
+			() => {
+				// Do nothing
+			},
+			"I love sussy sauces",
+			"emoji add --url https://site.com/image.png"
+		);
+
+		cliBuilder.registerCommand(cliCommand);
+		cliBuilder.displayHelp();
+
+		const loggedString = consoleLogSpy.mock.calls
+			.map(call => stripAnsi(call[0]))
+			.join("\n");
+
+		consoleLogSpy.mockRestore();
+
+		expect(loggedString).toContain("category1");
+		expect(loggedString).toContain(
+			"    category2.................I love sussy sauces"
+		);
+		expect(loggedString).toContain(
+			"    name..................Name of new item"
+		);
+		expect(loggedString).toContain(
+			"    arg3..................(no description)"
+		);
+		expect(loggedString).toContain(
+			"    arg4..................(no description)"
+		);
+		expect(loggedString).toContain(
+			"    --delete-previous.....Also delete the previous item (optional)"
+		);
+		expect(loggedString).toContain(
+			"    Example: emoji add --url https://site.com/image.png"
+		);
+	});
 });
