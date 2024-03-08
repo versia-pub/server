@@ -4,5 +4,7 @@ export interface CliParameter {
 	positioned?: boolean;
 	// Whether the argument needs a value (requires positioned to be false)
 	needsValue?: boolean;
+	optional?: true;
 	type: "string" | "number" | "boolean" | "array";
+	description?: string;
 }

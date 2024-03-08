@@ -1,4 +1,5 @@
 import type { CliParameter } from "./cli-builder.type";
+import chalk from "chalk";
 
 export function startsWithArray(fullArray: any[], startArray: any[]) {
 	if (startArray.length > fullArray.length) {
@@ -7,6 +8,10 @@ export function startsWithArray(fullArray: any[], startArray: any[]) {
 	return fullArray
 		.slice(0, startArray.length)
 		.every((value, index) => value === startArray[index]);
+}
+
+interface TreeType {
+	[key: string]: CliCommand | TreeType;
 }
 
 /**
@@ -115,6 +120,53 @@ export class CliBuilder {
 
 		command.run(argsWithoutCategories);
 	}
+
+	/**
+	 * Recursively urns the commands into a tree where subcategories mark each sub-branch
+	 * @example
+	 * ```txt
+	 * user verify
+	 * user delete
+	 * user new admin
+	 * user new
+	 * ->
+	 * user
+	 *   verify
+	 *   delete
+	 *   new
+	 *     admin
+	 *     ""
+	 * ```
+	 */
+	getCommandTree(commands: CliCommand[]): TreeType {
+		const tree: TreeType = {};
+
+		for (const command of commands) {
+			let currentLevel = tree; // Start at the root
+
+			// Split the command into parts and iterate over them
+			for (const part of command.categories) {
+				// If this part doesn't exist in the current level of the tree, add it
+				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+				if (!currentLevel[part]) {
+					// If this is the last part of the command, add the command itself
+					if (
+						part ===
+						command.categories[command.categories.length - 1]
+					) {
+						currentLevel[part] = command;
+						break;
+					}
+					currentLevel[part] = {};
+				}
+
+				// Move down to the next level of the tree
+				currentLevel = currentLevel[part] as TreeType;
+			}
+		}
+
+		return tree;
+	}
 }
 
 /**
@@ -125,8 +177,44 @@ export class CliCommand {
 	constructor(
 		public categories: string[],
 		public argTypes: CliParameter[],
-		private execute: (args: Record<string, any>) => void
+		private execute: (args: Record<string, any>) => void,
+		public description?: string,
+		public example?: string
 	) {}
+
+	/**
+	 * Display help message for the command
+	 * formatted with Chalk and with emojis
+	 */
+	displayHelp() {
+		const positionedArgs = this.argTypes.filter(arg => arg.positioned);
+		const unpositionedArgs = this.argTypes.filter(arg => !arg.positioned);
+		const helpMessage = `
+${chalk.green("📚 Command:")} ${chalk.yellow(this.categories.join(" "))}
+${this.description ? `${chalk.cyan(this.description)}\n` : ""}
+${chalk.magenta("🔧 Arguments:")}
+${unpositionedArgs
+	.map(
+		arg =>
+			`${chalk.bold(arg.name)}: ${chalk.blue(arg.description ?? "(no description)")} ${
+				arg.optional ? chalk.gray("(optional)") : ""
+			}`
+	)
+	.join("\n")}
+${positionedArgs
+	.map(
+		arg =>
+			`--${chalk.bold(arg.name)}: ${chalk.blue(arg.description ?? "(no description)")} ${
+				arg.optional ? chalk.gray("(optional)") : ""
+			}`
+	)
+	.join(
+		"\n"
+	)}${this.example ? `\n${chalk.magenta("🚀 Example:")}\n${chalk.bgGray(this.example)}` : ""}
+`;
+
+		console.log(helpMessage);
+	}
 
 	/**
 	 * Parses string array arguments into a full JavaScript object
@@ -201,3 +289,35 @@ export class CliCommand {
 		this.execute(args);
 	}
 }
+
+const cliBuilder = new CliBuilder();
+
+const cliCommand = new CliCommand(
+	["category1", "category2"],
+	[
+		{
+			name: "name",
+			type: "string",
+			needsValue: true,
+			description: "Name of new item",
+		},
+		{
+			name: "delete-previous",
+			type: "number",
+			needsValue: false,
+			positioned: true,
+			optional: true,
+			description: "Also delete the previous item",
+		},
+		{ name: "arg3", type: "boolean", needsValue: false },
+		{ name: "arg4", type: "array", needsValue: true },
+	],
+	() => {
+		// Do nothing
+	},
+	"I love sussy sauces",
+	"emoji add --url https://site.com/image.png"
+);
+
+cliBuilder.registerCommand(cliCommand);
+//cliBuilder.displayHelp();

@@ -1,6 +1,7 @@
 // FILEPATH: /home/jessew/Dev/lysand/packages/cli-parser/index.test.ts
 import { CliCommand, CliBuilder, startsWithArray } from "..";
-import { describe, beforeEach, it, expect, jest } from "bun:test";
+import { describe, beforeEach, it, expect, jest, spyOn } from "bun:test";
+import stripAnsi from "strip-ansi";
 
 describe("startsWithArray", () => {
 	it("should return true when fullArray starts with startArray", () => {
@@ -141,6 +142,70 @@ describe("CliCommand", () => {
 			arg5: "value5",
 		});
 	});
+
+	it("should display help message correctly", () => {
+		const consoleLogSpy = spyOn(console, "log").mockImplementation(() => {
+			// Do nothing
+		});
+
+		cliCommand = new CliCommand(
+			["category1", "category2"],
+			[
+				{
+					name: "arg1",
+					type: "string",
+					needsValue: true,
+					description: "Argument 1",
+					optional: true,
+				},
+				{
+					name: "arg2",
+					type: "number",
+					needsValue: true,
+					description: "Argument 2",
+				},
+				{
+					name: "arg3",
+					type: "boolean",
+					needsValue: false,
+					description: "Argument 3",
+					optional: true,
+					positioned: true,
+				},
+				{
+					name: "arg4",
+					type: "array",
+					needsValue: true,
+					description: "Argument 4",
+					positioned: true,
+				},
+			],
+			() => {
+				// Do nothing
+			},
+			"This is a test command",
+			"category1 category2 --arg1 value1 --arg2 42 arg3 --arg4 value1,value2"
+		);
+
+		cliCommand.displayHelp();
+
+		const loggedString = consoleLogSpy.mock.calls.map(call =>
+			stripAnsi(call[0])
+		)[0];
+
+		consoleLogSpy.mockRestore();
+
+		expect(loggedString).toContain("📚 Command: category1 category2");
+		expect(loggedString).toContain("🔧 Arguments:");
+		expect(loggedString).toContain("arg1: Argument 1 (optional)");
+		expect(loggedString).toContain("arg2: Argument 2");
+		expect(loggedString).toContain("--arg3: Argument 3 (optional)");
+		expect(loggedString).toContain("--arg4: Argument 4");
+		expect(loggedString).toContain("🚀 Example:");
+		expect(loggedString).toContain(
+			"category1 category2 --arg1 value1 --arg2 42 arg3 --arg4 value1,value2"
+		);
+	});
 });
 
 describe("CliBuilder", () => {
@@ -212,6 +277,66 @@ describe("CliBuilder", () => {
 		]);
 		expect(mockExecute).toHaveBeenCalledWith({
 			arg1: "value1",
+		});
+	});
+
+	describe("should build command tree", () => {
+		let cliBuilder: CliBuilder;
+		let mockCommand1: CliCommand;
+		let mockCommand2: CliCommand;
+		let mockCommand3: CliCommand;
+		let mockCommand4: CliCommand;
+		let mockCommand5: CliCommand;
+
+		beforeEach(() => {
+			mockCommand1 = new CliCommand(["user", "verify"], [], jest.fn());
+			mockCommand2 = new CliCommand(["user", "delete"], [], jest.fn());
+			mockCommand3 = new CliCommand(
+				["user", "new", "admin"],
+				[],
+				jest.fn()
+			);
+			mockCommand4 = new CliCommand(["user", "new"], [], jest.fn());
+			mockCommand5 = new CliCommand(["admin", "delete"], [], jest.fn());
+			cliBuilder = new CliBuilder([
+				mockCommand1,
+				mockCommand2,
+				mockCommand3,
+				mockCommand4,
+				mockCommand5,
+			]);
+		});
+
+		it("should build the command tree correctly", () => {
+			const tree = cliBuilder.getCommandTree(cliBuilder.commands);
+			expect(tree).toEqual({
+				user: {
+					verify: mockCommand1,
+					delete: mockCommand2,
+					new: {
+						admin: mockCommand3,
+					},
+				},
+				admin: {
+					delete: mockCommand5,
+				},
+			});
+		});
+
+		it("should build the command tree correctly when there are no commands", () => {
+			cliBuilder = new CliBuilder([]);
+			const tree = cliBuilder.getCommandTree(cliBuilder.commands);
+			expect(tree).toEqual({});
+		});
+
+		it("should build the command tree correctly when there is only one command", () => {
+			cliBuilder = new CliBuilder([mockCommand1]);
+			const tree = cliBuilder.getCommandTree(cliBuilder.commands);
+			expect(tree).toEqual({
+				user: {
+					verify: mockCommand1,
+				},
+			});
 		});
 	});
 });
