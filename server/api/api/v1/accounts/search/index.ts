@@ -1,12 +1,8 @@
 import { errorResponse, jsonResponse } from "@response";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
+import { userRelations, userToAPI } from "~database/entities/User";
 import { applyConfig } from "@api";
-import { parseRequest } from "@request";
 import { client } from "~database/datasource";
+import type { RouteHandler } from "~server/api/routes.type";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -20,10 +16,16 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
+const handler: RouteHandler<{
+	q?: string;
+	limit?: number;
+	offset?: number;
+	resolve?: boolean;
+	following?: boolean;
+}> = async (req, matchedRoute, extraData) => {
 	// TODO: Add checks for disabled or not email verified accounts
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -32,13 +34,7 @@ export default async (req: Request): Promise<Response> => {
 		limit = 40,
 		offset,
 		q,
-	} = await parseRequest<{
-		q?: string;
-		limit?: number;
-		offset?: number;
-		resolve?: boolean;
-		following?: boolean;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	if (limit < 1 || limit > 80) {
 		return errorResponse("Limit must be between 1 and 80", 400);
@@ -66,7 +62,7 @@ export default async (req: Request): Promise<Response> => {
 							ownerId: user.id,
 							following,
 						},
-				  }
+					}
 				: undefined,
 		},
 		take: Number(limit),
@@ -76,3 +72,5 @@ export default async (req: Request): Promise<Response> => {
 
 	return jsonResponse(accounts.map(acct => userToAPI(acct)));
 };
+
+export default handler;

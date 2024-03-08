@@ -162,8 +162,6 @@ const logRequest = async (req: Request) => {
 		);
 
 		// Add headers
-		// @ts-expect-error TypeScript is missing entries for some reason
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-call
 		const headers = req.headers.entries();
 
 		for (const [key, value] of headers) {

@@ -5,7 +5,7 @@
  * either FormData, query parameters, or JSON in the request
  * @param request The request to parse
  */
-export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
+/* export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 	const query = new URL(request.url).searchParams;
 	let output: Partial<T> = {};
 
@@ -93,3 +93,4 @@ export async function parseRequest<T>(request: Request): Promise<Partial<T>> {
 
 	return output;
 }
+ */

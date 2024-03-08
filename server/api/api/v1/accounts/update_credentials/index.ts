@@ -1,11 +1,6 @@
 import { getConfig } from "~classes/configmanager";
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import {
-	userRelations,
-	userToAPI,
-	type AuthData,
-} from "~database/entities/User";
+import { userRelations, userToAPI } from "~database/entities/User";
 import { applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
@@ -15,7 +10,7 @@ import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
 import { convertTextToHtml } from "@formatting";
-import type { MatchedRoute } from "bun";
+import type { RouteHandler } from "~server/api/routes.type";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -29,15 +24,19 @@ export const meta = applyConfig({
 	},
 });
 
-/**
- * Patches a user
- */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute,
-	auth: AuthData
-): Promise<Response> => {
-	const { user } = auth;
+const handler: RouteHandler<{
+	display_name: string;
+	note: string;
+	avatar: File;
+	header: File;
+	locked: string;
+	bot: string;
+	discoverable: string;
+	"source[privacy]": string;
+	"source[sensitive]": string;
+	"source[language]": string;
+}> = async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -54,18 +53,7 @@ export default async (
 		"source[privacy]": source_privacy,
 		"source[sensitive]": source_sensitive,
 		"source[language]": source_language,
-	} = await parseRequest<{
-		display_name: string;
-		note: string;
-		avatar: File;
-		header: File;
-		locked: string;
-		bot: string;
-		discoverable: string;
-		"source[privacy]": string;
-		"source[sensitive]": string;
-		"source[language]": string;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	const sanitizedNote = await sanitizeHtml(note ?? "");
 
@@ -147,7 +135,7 @@ export default async (
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).privacy = source_privacy;
+		user.source.privacy = source_privacy;
 	}
 
 	if (source_sensitive && user.source) {
@@ -157,7 +145,7 @@ export default async (
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).sensitive = source_sensitive === "true";
+		user.source.sensitive = source_sensitive === "true";
 	}
 
 	if (source_language && user.source) {
@@ -169,7 +157,7 @@ export default async (
 		}
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).language = source_language;
+		user.source.language = source_language;
 	}
 
 	if (avatar) {
@@ -264,3 +252,5 @@ export default async (
 
 	return jsonResponse(userToAPI(output));
 };
+
+export default handler;
