@@ -2,6 +2,7 @@
  * @file configmanager.ts
  * @summary ConfigManager system to retrieve and modify system configuration
  * @description Can read from a hand-written file, config.toml, or from a machine-saved file, config.internal.toml
+ * @deprecated Use the new ConfigManager class instead
  * Fuses both and provides a way to retrieve individual values
  */
 
