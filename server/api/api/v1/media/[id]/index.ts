@@ -1,13 +1,9 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 import { uploadFile } from "~classes/media";
-import { getConfig } from "~classes/configmanager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
-import type { MatchedRoute } from "bun";
-import { parseRequest } from "@request";
 
 export const meta: APIRouteMeta = applyConfig({
 	allowedMethods: ["GET", "PUT"],
@@ -25,11 +21,12 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Get media information
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	thumbnail?: File;
+	description?: string;
+	focus?: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) {
 		return errorResponse("Unauthorized", 401);
@@ -47,7 +44,7 @@ export default async (
 		return errorResponse("Media not found", 404);
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	switch (req.method) {
 		case "GET": {
@@ -60,11 +57,7 @@ export default async (
 			}
 		}
 		case "PUT": {
-			const { description, thumbnail } = await parseRequest<{
-				thumbnail?: File;
-				description?: string;
-				focus?: string;
-			}>(req);
+			const { description, thumbnail } = extraData.parsedRequest;
 
 			let thumbnailUrl = attachment.thumbnail_url;
 
@@ -101,4 +94,4 @@ export default async (
 	}
 
 	return errorResponse("Method not allowed", 405);
-};
+});

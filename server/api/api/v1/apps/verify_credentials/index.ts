@@ -1,7 +1,6 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { getFromToken } from "~database/entities/Application";
-import { getFromRequest } from "~database/entities/User";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -18,8 +17,8 @@ export const meta = applyConfig({
 /**
  * Returns OAuth2 credentials
  */
-export default async (req: Request): Promise<Response> => {
-	const { user, token } = await getFromRequest(req);
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const { user, token } = extraData.auth;
 	const application = await getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
@@ -32,4 +31,4 @@ export default async (req: Request): Promise<Response> => {
 		redirect_uris: application.redirect_uris,
 		scopes: application.scopes,
 	});
-};
+});

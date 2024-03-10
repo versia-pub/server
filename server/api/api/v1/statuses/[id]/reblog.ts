@@ -1,19 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import {
 	isViewableByUser,
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import {
-	getFromRequest,
-	type UserWithRelations,
-} from "~database/entities/User";
+import { type UserWithRelations } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -31,20 +25,17 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Reblogs a post
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	visibility: "public" | "unlisted" | "private";
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	const { visibility = "public" } = await parseRequest<{
-		visibility: "public" | "unlisted" | "private";
-	}>(req);
+	const { visibility = "public" } = extraData.parsedRequest;
 
 	const status = await client.status.findUnique({
 		where: { id },
@@ -107,4 +98,4 @@ export default async (
 			user
 		)
 	);
-};
+});

@@ -1,18 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { applyConfig } from "@api";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import {
 	isViewableByUser,
 	statusAndUserRelations,
 } from "~database/entities/Status";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
+import { userRelations, userToAPI } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -30,13 +23,15 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Fetch users who reblogged the post
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	max_id?: string;
+	min_id?: string;
+	since_id?: string;
+	limit?: number;
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	const status = await client.status.findUnique({
 		where: { id },
@@ -52,12 +47,7 @@ export default async (
 		min_id = null,
 		since_id = null,
 		limit = 40,
-	} = await parseRequest<{
-		max_id?: string;
-		min_id?: string;
-		since_id?: string;
-		limit?: number;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	// Check for limit limits
 	if (limit > 80) return errorResponse("Invalid limit (maximum is 80)", 400);
@@ -112,4 +102,4 @@ export default async (
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

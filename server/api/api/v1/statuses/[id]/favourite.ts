@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { createLike } from "~database/entities/Like";
 import {
@@ -9,7 +8,6 @@ import {
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 import type { APIStatus } from "~types/entities/status";
 
@@ -28,13 +26,10 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Favourite a post
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -63,4 +58,4 @@ export default async (
 		favourited: true,
 		favourites_count: status._count.likes + 1,
 	} as APIStatus);
-};
+});

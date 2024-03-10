@@ -1,5 +1,4 @@
-import { applyConfig } from "@api";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
@@ -19,13 +18,14 @@ export const meta = applyConfig({
 /**
  * Creates a new application to obtain OAuth 2 credentials
  */
-export default async (req: Request): Promise<Response> => {
-	const { client_name, redirect_uris, scopes, website } = await parseRequest<{
-		client_name: string;
-		redirect_uris: string;
-		scopes: string;
-		website: string;
-	}>(req);
+export default apiRoute<{
+	client_name: string;
+	redirect_uris: string;
+	scopes: string;
+	website: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { client_name, redirect_uris, scopes, website } =
+		extraData.parsedRequest;
 
 	// Check if redirect URI is a valid URI, and also an absolute URI
 	if (redirect_uris) {
@@ -62,4 +62,4 @@ export default async (req: Request): Promise<Response> => {
 		redirect_uri: application.redirect_uris,
 		vapid_link: application.vapid_key,
 	});
-};
+});

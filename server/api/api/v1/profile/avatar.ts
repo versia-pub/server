@@ -1,11 +1,7 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
+import { userRelations, userToAPI } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -23,8 +19,8 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Deletes a user avatar
  */
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -40,4 +36,4 @@ export default async (req: Request): Promise<Response> => {
 	});
 
 	return jsonResponse(userToAPI(newUser));
-};
+});

@@ -1,12 +1,10 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { encode } from "blurhash";
-import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 import sharp from "sharp";
 import { uploadFile } from "~classes/media";
-import { getConfig } from "~classes/configmanager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -25,27 +23,26 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Upload new media
  */
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	file: File;
+	thumbnail: File;
+	description: string;
+	// TODO: Implement focus storage
+	focus: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) {
 		return errorResponse("Unauthorized", 401);
 	}
 
-	const form = await req.formData();
-
-	const file = form.get("file") as unknown as File | undefined;
-	const thumbnail = form.get("thumbnail");
-	const description = form.get("description") as string | undefined;
-
-	// Floating point numbers from -1.0 to 1.0, comma delimited
-	// const focus = form.get("focus");
+	const { file, thumbnail, description } = extraData.parsedRequest;
 
 	if (!file) {
 		return errorResponse("No file provided", 400);
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	if (file.size > config.validation.max_media_size) {
 		return errorResponse(
@@ -86,7 +83,7 @@ export default async (req: Request): Promise<Response> => {
 				metadata?.height ?? 0,
 				4,
 				4
-		  )
+			)
 		: null;
 
 	let url = "";
@@ -132,4 +129,4 @@ export default async (req: Request): Promise<Response> => {
 			202
 		);
 	}
-};
+});

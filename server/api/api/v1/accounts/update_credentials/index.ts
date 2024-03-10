@@ -1,7 +1,6 @@
-import { getConfig } from "~classes/configmanager";
 import { errorResponse, jsonResponse } from "@response";
 import { userRelations, userToAPI } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
 import { uploadFile } from "~classes/media";
@@ -10,7 +9,6 @@ import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
 import { convertTextToHtml } from "@formatting";
-import type { RouteHandler } from "~server/api/routes.type";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -24,7 +22,7 @@ export const meta = applyConfig({
 	},
 });
 
-const handler: RouteHandler<{
+export default apiRoute<{
 	display_name: string;
 	note: string;
 	avatar: File;
@@ -35,12 +33,12 @@ const handler: RouteHandler<{
 	"source[privacy]": string;
 	"source[sensitive]": string;
 	"source[language]": string;
-}> = async (req, matchedRoute, extraData) => {
+}>(async (req, matchedRoute, extraData) => {
 	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	const {
 		display_name,
@@ -134,7 +132,7 @@ const handler: RouteHandler<{
 			);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		// @ts-expect-error Prisma Typescript doesn't include relations
 		user.source.privacy = source_privacy;
 	}
 
@@ -144,7 +142,7 @@ const handler: RouteHandler<{
 			return errorResponse("Sensitive must be a boolean", 422);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		// @ts-expect-error Prisma Typescript doesn't include relations
 		user.source.sensitive = source_sensitive === "true";
 	}
 
@@ -156,7 +154,7 @@ const handler: RouteHandler<{
 			);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		// @ts-expect-error Prisma Typescript doesn't include relations
 		user.source.language = source_language;
 	}
 
@@ -251,6 +249,4 @@ const handler: RouteHandler<{
 	});
 
 	return jsonResponse(userToAPI(output));
-};
-
-export default handler;
+});

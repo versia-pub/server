@@ -1,8 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
-import { getFromRequest } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
-import { parseRequest } from "@request";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
 
 export const meta = applyConfig({
@@ -17,20 +15,15 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	max_id?: string;
+	since_id?: string;
+	min_id?: string;
+	limit?: number;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
-	const {
-		limit = 20,
-		max_id,
-		min_id,
-		since_id,
-	} = await parseRequest<{
-		max_id?: string;
-		since_id?: string;
-		min_id?: string;
-		limit?: number;
-	}>(req);
+	const { limit = 20, max_id, min_id, since_id } = extraData.parsedRequest;
 
 	if (limit < 1 || limit > 40) {
 		return errorResponse("Limit must be between 1 and 40", 400);
@@ -77,4 +70,4 @@ export default async (req: Request): Promise<Response> => {
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

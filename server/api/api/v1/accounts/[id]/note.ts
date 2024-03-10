@@ -1,15 +1,10 @@
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import {
 	createNewRelationship,
 	relationshipToAPI,
 } from "~database/entities/Relationship";
-import {
-	getFromRequest,
-	getRelationshipToOtherUser,
-} from "~database/entities/User";
-import { applyConfig } from "@api";
+import { getRelationshipToOtherUser } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -27,19 +22,16 @@ export const meta = applyConfig({
 /**
  * Sets a user note
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	comment: string;
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
-	const { user: self } = await getFromRequest(req);
+	const { user: self } = extraData.auth;
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const { comment } = await parseRequest<{
-		comment: string;
-	}>(req);
+	const { comment } = extraData.parsedRequest;
 
 	const user = await client.user.findUnique({
 		where: { id },
@@ -87,4 +79,4 @@ export default async (
 	});
 
 	return jsonResponse(relationshipToAPI(relationship));
-};
+});

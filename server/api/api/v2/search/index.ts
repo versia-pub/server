@@ -1,15 +1,9 @@
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
+import { apiRoute, applyConfig } from "@api";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
+import { userRelations, userToAPI } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -28,8 +22,18 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Upload new media
  */
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	q?: string;
+	type?: string;
+	resolve?: boolean;
+	following?: boolean;
+	account_id?: string;
+	max_id?: string;
+	min_id?: string;
+	limit?: number;
+	offset?: number;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	const {
 		q,
@@ -41,19 +45,9 @@ export default async (req: Request): Promise<Response> => {
 		// min_id,
 		limit = 20,
 		offset,
-	} = await parseRequest<{
-		q?: string;
-		type?: string;
-		resolve?: boolean;
-		following?: boolean;
-		account_id?: string;
-		max_id?: string;
-		min_id?: string;
-		limit?: number;
-		offset?: number;
-	}>(req);
+	} = extraData.parsedRequest;
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	if (!config.meilisearch.enabled) {
 		return errorResponse("Meilisearch is not enabled", 501);
@@ -143,4 +137,4 @@ export default async (req: Request): Promise<Response> => {
 		),
 		hashtags: [],
 	});
-};
+});

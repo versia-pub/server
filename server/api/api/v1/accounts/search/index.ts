@@ -1,8 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
 import { userRelations, userToAPI } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
-import type { RouteHandler } from "~server/api/routes.type";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -16,13 +15,13 @@ export const meta = applyConfig({
 	},
 });
 
-const handler: RouteHandler<{
+export default apiRoute<{
 	q?: string;
 	limit?: number;
 	offset?: number;
 	resolve?: boolean;
 	following?: boolean;
-}> = async (req, matchedRoute, extraData) => {
+}>(async (req, matchedRoute, extraData) => {
 	// TODO: Add checks for disabled or not email verified accounts
 
 	const { user } = extraData.auth;
@@ -71,6 +70,4 @@ const handler: RouteHandler<{
 	});
 
 	return jsonResponse(accounts.map(acct => userToAPI(acct)));
-};
-
-export default handler;
+});

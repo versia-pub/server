@@ -1,9 +1,7 @@
-import { applyConfig } from "@api";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import { getFromRequest } from "~database/entities/User";
 import type { APIRouteMeta } from "~types/api";
 
 export const meta: APIRouteMeta = applyConfig({
@@ -18,8 +16,16 @@ export const meta: APIRouteMeta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	local?: boolean;
+	only_media?: boolean;
+	remote?: boolean;
+	max_id?: string;
+	since_id?: string;
+	min_id?: string;
+	limit?: number;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 	const {
 		local,
 		limit = 20,
@@ -28,15 +34,7 @@ export default async (req: Request): Promise<Response> => {
 		// only_media,
 		remote,
 		since_id,
-	} = await parseRequest<{
-		local?: boolean;
-		only_media?: boolean;
-		remote?: boolean;
-		max_id?: string;
-		since_id?: string;
-		min_id?: string;
-		limit?: number;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	if (limit < 1 || limit > 40) {
 		return errorResponse("Limit must be between 1 and 40", 400);
@@ -56,10 +54,10 @@ export default async (req: Request): Promise<Response> => {
 			instanceId: remote
 				? {
 						not: null,
-				  }
+					}
 				: local
-				  ? null
-				  : undefined,
+					? null
+					: undefined,
 		},
 		include: statusAndUserRelations,
 		take: limit,
@@ -87,4 +85,4 @@ export default async (req: Request): Promise<Response> => {
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

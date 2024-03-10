@@ -1,11 +1,9 @@
-import { getConfig } from "~classes/configmanager";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import ISO6391 from "iso-639-1";
-import type { RouteHandler } from "~server/api/routes.type";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
@@ -19,19 +17,19 @@ export const meta = applyConfig({
 	},
 });
 
-const handler: RouteHandler<{
+export default apiRoute<{
 	username: string;
 	email: string;
 	password: string;
 	agreement: boolean;
 	locale: string;
 	reason: string;
-}> = async (req, matchedRoute, extraData) => {
+}>(async (req, matchedRoute, extraData) => {
 	// TODO: Add Authorization check
 
 	const body = extraData.parsedRequest;
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	if (!config.signups.registration) {
 		return jsonResponse(
@@ -200,9 +198,4 @@ const handler: RouteHandler<{
 	return new Response("", {
 		status: 200,
 	});
-};
-
-/**
- * Creates a new user
- */
-export default handler;
+});
