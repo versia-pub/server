@@ -1,5 +1,4 @@
-import { applyConfig } from "@api";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 
@@ -18,16 +17,16 @@ export const meta = applyConfig({
 /**
  * Allows getting token from OAuth code
  */
-export default async (req: Request): Promise<Response> => {
+export default apiRoute<{
+	grant_type: string;
+	code: string;
+	redirect_uri: string;
+	client_id: string;
+	client_secret: string;
+	scope: string;
+}>(async (req, matchedRoute, extraData) => {
 	const { grant_type, code, redirect_uri, client_id, client_secret, scope } =
-		await parseRequest<{
-			grant_type: string;
-			code: string;
-			redirect_uri: string;
-			client_id: string;
-			client_secret: string;
-			scope: string;
-		}>(req);
+		extraData.parsedRequest;
 
 	if (grant_type !== "authorization_code")
 		return errorResponse(
@@ -61,4 +60,4 @@ export default async (req: Request): Promise<Response> => {
 		scope: token.scope,
 		created_at: token.created_at,
 	});
-};
+});

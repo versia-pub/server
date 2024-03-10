@@ -1,7 +1,5 @@
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
+import { apiRoute, applyConfig } from "@api";
 import { oauthRedirectUri } from "@constants";
-import type { MatchedRoute } from "bun";
 import {
 	calculatePKCECodeChallenge,
 	discoveryRequest,
@@ -25,11 +23,7 @@ export const meta = applyConfig({
 /**
  * Redirects the user to the external OAuth provider
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-	// eslint-disable-next-line @typescript-eslint/require-await
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const redirectToLogin = (error: string) =>
 		Response.redirect(
 			`/oauth/authorize?` +
@@ -49,7 +43,7 @@ export default async (
 		return redirectToLogin("Missing client_id");
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	const issuer = config.oidc.providers.find(
 		provider => provider.id === issuerId
@@ -98,4 +92,4 @@ export default async (
 			}).toString(),
 		302
 	);
-};
+});

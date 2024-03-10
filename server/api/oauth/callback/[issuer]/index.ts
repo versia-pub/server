@@ -1,7 +1,5 @@
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
+import { apiRoute, applyConfig } from "@api";
 import { oauthRedirectUri } from "@constants";
-import type { MatchedRoute } from "bun";
 import { randomBytes } from "crypto";
 import {
 	authorizationCodeGrantRequest,
@@ -33,10 +31,7 @@ export const meta = applyConfig({
 /**
  * Redirects the user to the external OAuth provider
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const redirectToLogin = (error: string) =>
 		Response.redirect(
 			`/oauth/authorize?` +
@@ -65,7 +60,7 @@ export default async (
 		return redirectToLogin("Invalid flow");
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	const issuer = config.oidc.providers.find(
 		provider => provider.id === issuerParam
@@ -192,4 +187,4 @@ export default async (
 		`${flow.application.redirect_uris}?code=${code}`,
 		302
 	);
-};
+});

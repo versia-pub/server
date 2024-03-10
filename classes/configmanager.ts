@@ -6,7 +6,7 @@
  * Fuses both and provides a way to retrieve individual values
  */
 
-import { parse, stringify } from "@iarna/toml";
+/* import { parse, stringify } from "@iarna/toml";
 import chalk from "chalk";
 import merge from "merge-deep-ts";
 
@@ -23,10 +23,10 @@ const scanConfig = async () => {
 	}
 
 	return parse(await config.text()) as ConfigType;
-};
+}; */
 
 // Creates the internal config with nothing in it if it doesnt exist
-const scanInternalConfig = async () => {
+/* const scanInternalConfig = async () => {
 	const config = Bun.file(process.cwd() + "/config/config.internal.toml");
 
 	if (!(await config.exists())) {
@@ -397,18 +397,18 @@ export const configDefaults: ConfigType = {
 		max_coeff: 1,
 	},
 	custom_ratelimits: {},
-};
+}; */
 
-export const getConfig = () => {
+/* export const getConfig = () => {
 	// Deeply merge configDefaults, config and internalConfig
 	return merge([configDefaults, config, internalConfig]) as any as ConfigType;
 };
-
+ */
 /**
  * Sets the internal config
  * @param newConfig Any part of ConfigType
  */
-export const setConfig = async (newConfig: Partial<ConfigType>) => {
+/* export const setConfig = async (newConfig: Partial<ConfigType>) => {
 	const newInternalConfig = merge([
 		internalConfig,
 		newConfig,
@@ -421,16 +421,16 @@ export const setConfig = async (newConfig: Partial<ConfigType>) => {
 			newInternalConfig as any
 		)}`
 	);
-};
+}; */
 
-export const getHost = () => {
+/* export const getHost = () => {
 	const url = new URL(getConfig().http.base_url);
 
 	return url.host;
 };
-
+ */
 // Refresh config every 5 seconds
-setInterval(() => {
+/* setInterval(() => {
 	scanConfig()
 		.then(newConfig => {
 			if (newConfig !== config) {
@@ -440,6 +440,7 @@ setInterval(() => {
 		.catch(e => {
 			console.error(e);
 		});
-}, 5000);
+}, 5000); */
 
-export { config };
+/* export { config };
+ */

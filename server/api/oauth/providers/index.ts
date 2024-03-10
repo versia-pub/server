@@ -1,5 +1,4 @@
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
+import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 
 export const meta = applyConfig({
@@ -17,9 +16,8 @@ export const meta = applyConfig({
 /**
  * Lists available OAuth providers
  */
-// eslint-disable-next-line @typescript-eslint/require-await
-export default async (): Promise<Response> => {
-	const config = getConfig();
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const config = await extraData.configManager.getConfig();
 
 	return jsonResponse(
 		config.oidc.providers.map(p => ({
@@ -28,4 +26,4 @@ export default async (): Promise<Response> => {
 			id: p.id,
 		}))
 	);
-};
+});

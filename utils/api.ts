@@ -1,4 +1,5 @@
 import { getConfig } from "~classes/configmanager";
+import type { RouteHandler } from "~server/api/routes.type";
 import type { APIRouteMeta } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMeta) => {
@@ -15,4 +16,8 @@ export const applyConfig = (routeMeta: APIRouteMeta) => {
 	}
 
 	return newMeta;
+};
+
+export const apiRoute = <T>(routeFunction: RouteHandler<T>) => {
+	return routeFunction;
 };
