@@ -5,9 +5,8 @@ import {
 	isViewableByUser,
 	statusAndUserRelations,
 } from "~database/entities/Status";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET"],
 	ratelimits: {
 		max: 100,

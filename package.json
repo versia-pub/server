@@ -111,6 +111,9 @@
     "semver": "^7.5.4",
     "sharp": "^0.33.0-rc.2",
     "request-parser": "file:packages/request-parser",
-    "config-manager": "file:packages/config-manager"
+    "config-manager": "file:packages/config-manager",
+    "cli-parser": "file:packages/cli-parser",
+    "log-manager": "file:packages/log-manager",
+    "media-manager": "file:packages/media-manager"
   }
 }

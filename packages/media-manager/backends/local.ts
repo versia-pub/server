@@ -4,8 +4,8 @@ import { MediaBackend, MediaBackendType, MediaHasher } from "..";
 import type { ConfigType } from "config-manager";
 
 export class LocalMediaBackend extends MediaBackend {
-	constructor(private config: ConfigType) {
-		super(MediaBackendType.LOCAL);
+	constructor(config: ConfigType) {
+		super(config, MediaBackendType.LOCAL);
 	}
 
 	public async addFile(file: File) {

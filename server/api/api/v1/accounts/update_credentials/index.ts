@@ -3,12 +3,16 @@ import { userRelations, userToAPI } from "~database/entities/User";
 import { apiRoute, applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
-import { uploadFile } from "~classes/media";
 import ISO6391 from "iso-639-1";
 import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
 import { convertTextToHtml } from "@formatting";
+import { MediaBackendType } from "media-manager";
+import type { MediaBackend } from "media-manager";
+import { LocalMediaBackend } from "~packages/media-manager/backends/local";
+import { S3MediaBackend } from "~packages/media-manager/backends/s3";
+import { getUrl } from "~database/entities/Attachment";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -67,6 +71,20 @@ export default apiRoute<{
 			language: "en",
 			note: "",
 		};
+	}
+
+	let mediaManager: MediaBackend;
+
+	switch (config.media.backend as MediaBackendType) {
+		case MediaBackendType.LOCAL:
+			mediaManager = new LocalMediaBackend(config);
+			break;
+		case MediaBackendType.S3:
+			mediaManager = new S3MediaBackend(config);
+			break;
+		default:
+			// TODO: Replace with logger
+			throw new Error("Invalid media backend");
 	}
 
 	if (display_name) {
@@ -167,9 +185,9 @@ export default apiRoute<{
 			);
 		}
 
-		const hash = await uploadFile(avatar, config);
+		const { uploadedFile } = await mediaManager.addFile(avatar);
 
-		user.avatar = hash || "";
+		user.avatar = getUrl(uploadedFile.name, config);
 	}
 
 	if (header) {
@@ -181,9 +199,9 @@ export default apiRoute<{
 			);
 		}
 
-		const hash = await uploadFile(header, config);
+		const { uploadedFile } = await mediaManager.addFile(header);
 
-		user.header = hash || "";
+		user.header = getUrl(uploadedFile.name, config);
 	}
 
 	if (locked) {

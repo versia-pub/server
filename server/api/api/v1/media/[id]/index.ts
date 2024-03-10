@@ -1,11 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import type { APIRouteMeta } from "~types/api";
-import { uploadFile } from "~classes/media";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
+import type { MediaBackend } from "media-manager";
+import { MediaBackendType } from "media-manager";
+import { LocalMediaBackend } from "~packages/media-manager/backends/local";
+import { S3MediaBackend } from "~packages/media-manager/backends/s3";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET", "PUT"],
 	ratelimits: {
 		max: 10,
@@ -61,13 +63,23 @@ export default apiRoute<{
 
 			let thumbnailUrl = attachment.thumbnail_url;
 
-			if (thumbnail) {
-				const hash = await uploadFile(
-					thumbnail as unknown as File,
-					config
-				);
+			let mediaManager: MediaBackend;
 
-				thumbnailUrl = hash ? getUrl(hash, config) : "";
+			switch (config.media.backend as MediaBackendType) {
+				case MediaBackendType.LOCAL:
+					mediaManager = new LocalMediaBackend(config);
+					break;
+				case MediaBackendType.S3:
+					mediaManager = new S3MediaBackend(config);
+					break;
+				default:
+					// TODO: Replace with logger
+					throw new Error("Invalid media backend");
+			}
+
+			if (thumbnail) {
+				const { uploadedFile } = await mediaManager.addFile(thumbnail);
+				thumbnailUrl = getUrl(uploadedFile.name, config);
 			}
 
 			const descriptionText = description || attachment.description;

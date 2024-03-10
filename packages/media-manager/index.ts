@@ -27,7 +27,10 @@ export class MediaHasher {
 }
 
 export class MediaBackend {
-	constructor(private backend: MediaBackendType) {}
+	constructor(
+		public config: ConfigType,
+		public backend: MediaBackendType
+	) {}
 
 	public getBackendType() {
 		return this.backend;

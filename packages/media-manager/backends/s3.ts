@@ -6,7 +6,7 @@ import type { ConfigType } from "config-manager";
 
 export class S3MediaBackend extends MediaBackend {
 	constructor(
-		private config: ConfigType,
+		config: ConfigType,
 		private s3Client = new S3Client({
 			endPoint: config.s3.endpoint,
 			useSSL: true,
@@ -16,7 +16,7 @@ export class S3MediaBackend extends MediaBackend {
 			secretKey: config.s3.secret_access_key,
 		})
 	) {
-		super(MediaBackendType.S3);
+		super(config, MediaBackendType.S3);
 	}
 
 	public async addFile(file: File) {

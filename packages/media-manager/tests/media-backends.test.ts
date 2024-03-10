@@ -16,7 +16,6 @@ describe("MediaBackend", () => {
 	let mockConfig: ConfigType;
 
 	beforeEach(() => {
-		mediaBackend = new MediaBackend(MediaBackendType.S3);
 		mockConfig = {
 			media: {
 				conversion: {
@@ -24,6 +23,7 @@ describe("MediaBackend", () => {
 				},
 			},
 		} as ConfigType;
+		mediaBackend = new MediaBackend(mockConfig, MediaBackendType.S3);
 	});
 
 	it("should initialize with correct backend type", () => {

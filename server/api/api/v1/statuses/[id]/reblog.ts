@@ -8,9 +8,8 @@ import {
 	statusToAPI,
 } from "~database/entities/Status";
 import { type UserWithRelations } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["POST"],
 	ratelimits: {
 		max: 100,

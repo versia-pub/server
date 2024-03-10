@@ -4,9 +4,8 @@ import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
 import { userRelations, userToAPI } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET"],
 	ratelimits: {
 		max: 10,

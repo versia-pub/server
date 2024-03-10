@@ -1,9 +1,10 @@
-import { getConfig } from "~classes/configmanager";
+import { ConfigManager } from "config-manager";
 import type { RouteHandler } from "~server/api/routes.type";
 import type { APIRouteMeta } from "~types/api";
 
+const config = await new ConfigManager({}).getConfig();
+
 export const applyConfig = (routeMeta: APIRouteMeta) => {
-	const config = getConfig();
 	const newMeta = routeMeta;
 
 	// Apply ratelimits from config
