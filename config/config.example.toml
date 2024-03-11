@@ -71,6 +71,8 @@ tls = true
 backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
+# If media backend is "local", this is the folder where the files will be stored
+local_uploads_folder = "uploads"
 
 [media.conversion]
 convert_images = false
@@ -270,6 +272,8 @@ emoji_filters = [] # NOT IMPLEMENTED
 log_requests = true
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
+# For GDPR compliance, you can disable logging of IPs
+log_ip = false
 
 # Log all filtered objects
 log_filters = true

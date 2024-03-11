@@ -38,7 +38,7 @@
     "start": "NODE_ENV=production bun run dist/index.js --prod",
     "migrate-dev": "bun prisma migrate dev",
     "migrate": "bun prisma migrate deploy",
-    "lint": "eslint --config .eslintrc.cjs --ext .ts .",
+    "lint": "bunx --bun eslint --config .eslintrc.cjs --ext .ts .",
     "prod-build": "bunx --bun vite build pages && bun run build.ts",
     "prisma": "DATABASE_URL=$(bun run prisma.ts) bunx prisma",
     "generate": "bun prisma generate",
@@ -109,6 +109,11 @@
     "prisma": "^5.6.0",
     "prisma-redis-middleware": "^4.8.0",
     "semver": "^7.5.4",
-    "sharp": "^0.33.0-rc.2"
+    "sharp": "^0.33.0-rc.2",
+    "request-parser": "file:packages/request-parser",
+    "config-manager": "file:packages/config-manager",
+    "cli-parser": "file:packages/cli-parser",
+    "log-manager": "file:packages/log-manager",
+    "media-manager": "file:packages/media-manager"
   }
 }

@@ -1,4 +1,4 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 
 export const meta = applyConfig({
@@ -16,8 +16,7 @@ export const meta = applyConfig({
 /**
  * ActivityPub nodeinfo 2.0 endpoint
  */
-// eslint-disable-next-line @typescript-eslint/require-await
-export default async (): Promise<Response> => {
+export default apiRoute(() => {
 	// TODO: Implement this
 	return jsonResponse({
 		version: "2.0",
@@ -31,4 +30,4 @@ export default async (): Promise<Response> => {
 		openRegistrations: false,
 		metadata: {},
 	});
-};
+});

@@ -1,12 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
-import type { MatchedRoute } from "bun";
 import { parse } from "marked";
 import { client } from "~database/datasource";
 import { getFromToken } from "~database/entities/Application";
@@ -16,10 +10,9 @@ import {
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import type { AuthData, UserWithRelations } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
+import type { UserWithRelations } from "~database/entities/User";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["POST"],
 	ratelimits: {
 		max: 300,
@@ -34,50 +27,46 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Post new status
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute,
-	authData: AuthData
-): Promise<Response> => {
-	const { user, token } = authData;
+export default apiRoute<{
+	status: string;
+	media_ids?: string[];
+	"poll[options]"?: string[];
+	"poll[expires_in]"?: number;
+	"poll[multiple]"?: boolean;
+	"poll[hide_totals]"?: boolean;
+	in_reply_to_id?: string;
+	quote_id?: string;
+	sensitive?: boolean;
+	spoiler_text?: string;
+	visibility?: "public" | "unlisted" | "private" | "direct";
+	language?: string;
+	scheduled_at?: string;
+	local_only?: boolean;
+	content_type?: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user, token } = extraData.auth;
 	const application = await getFromToken(token);
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	const {
 		status,
 		media_ids,
 		"poll[expires_in]": expires_in,
-		"poll[hide_totals]": hide_totals,
-		"poll[multiple]": multiple,
+		// "poll[hide_totals]": hide_totals,
+		// "poll[multiple]": multiple,
 		"poll[options]": options,
 		in_reply_to_id,
 		quote_id,
-		language,
+		// language,
 		scheduled_at,
 		sensitive,
 		spoiler_text,
 		visibility,
 		content_type,
-	} = await parseRequest<{
-		status: string;
-		media_ids?: string[];
-		"poll[options]"?: string[];
-		"poll[expires_in]"?: number;
-		"poll[multiple]"?: boolean;
-		"poll[hide_totals]"?: boolean;
-		in_reply_to_id?: string;
-		quote_id?: string;
-		sensitive?: boolean;
-		spoiler_text?: string;
-		visibility?: "public" | "unlisted" | "private" | "direct";
-		language?: string;
-		scheduled_at?: string;
-		local_only?: boolean;
-		content_type?: string;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	// Validate status
 	if (!status && !(media_ids && media_ids.length > 0)) {
@@ -246,7 +235,7 @@ export default async (
 				? {
 						user: replyUser,
 						status: replyStatus,
-				  }
+					}
 				: undefined,
 		quote: quote || undefined,
 	});
@@ -254,4 +243,4 @@ export default async (
 	// TODO: add database jobs to deliver the post
 
 	return jsonResponse(await statusToAPI(newStatus, user));
-};
+});

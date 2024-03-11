@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
 import { userRelations } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -21,10 +20,18 @@ export const meta = applyConfig({
 /**
  * Fetch all statuses for a user
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	max_id?: string;
+	since_id?: string;
+	min_id?: string;
+	limit?: string;
+	only_media?: boolean;
+	exclude_replies?: boolean;
+	exclude_reblogs?: boolean;
+	// TODO: Add with_muted
+	pinned?: boolean;
+	tagged?: string;
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
 	// TODO: Add pinned
@@ -35,18 +42,7 @@ export default async (
 		limit = "20",
 		exclude_reblogs,
 		pinned,
-	}: {
-		max_id?: string;
-		since_id?: string;
-		min_id?: string;
-		limit?: string;
-		only_media?: boolean;
-		exclude_replies?: boolean;
-		exclude_reblogs?: boolean;
-		// TODO: Add with_muted
-		pinned?: boolean;
-		tagged?: string;
-	} = matchedRoute.query;
+	} = extraData.parsedRequest;
 
 	const user = await client.user.findUnique({
 		where: { id },
@@ -131,4 +127,4 @@ export default async (
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

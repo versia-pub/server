@@ -1,8 +1,8 @@
-import { getConfig } from "~classes/configmanager";
+import { ConfigManager } from "config-manager";
 import { sanitize } from "isomorphic-dompurify";
 
 export const sanitizeHtml = async (html: string) => {
-	const config = getConfig();
+	const config = await new ConfigManager({}).getConfig();
 
 	const sanitizedHtml = sanitize(html, {
 		ALLOWED_TAGS: [

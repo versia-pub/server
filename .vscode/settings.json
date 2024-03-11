@@ -1,3 +1,5 @@
 {
-	"typescript.tsdk": "node_modules/typescript/lib"
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"jest.jestCommandLine": "/home/jessew/.bun/bin/bun test",
+	"jest.rootPath": "."
 }

@@ -1,12 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import type { UserWithRelations } from "~database/entities/User";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userRelations, userToAPI } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -24,17 +19,14 @@ export const meta = applyConfig({
 /**
  * Fetch a user
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 	// Check if ID is valid UUID
 	if (!id.match(/^[0-9a-fA-F]{24}$/)) {
 		return errorResponse("Invalid ID", 404);
 	}
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	let foundUser: UserWithRelations | null;
 	try {
@@ -49,4 +41,4 @@ export default async (
 	if (!foundUser) return errorResponse("User not found", 404);
 
 	return jsonResponse(userToAPI(foundUser, user?.id === foundUser.id));
-};
+});

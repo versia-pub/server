@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getConfig } from "~classes/configmanager";
 import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { ConfigManager } from "config-manager";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import {
@@ -11,8 +9,10 @@ import {
 } from "~database/entities/User";
 import type { APIEmoji } from "~types/entities/emoji";
 import type { APIInstance } from "~types/entities/instance";
+import { sendTestRequest, wrapRelativeUrl } from "./utils";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
+const base_url = config.http.base_url;
 
 let token: Token;
 let user: UserWithRelations;
@@ -71,14 +71,16 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/instance", () => {
 		test("should return an APIInstance object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/instance`,
-				{
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(`${base_url}/api/v1/instance`, base_url),
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -117,15 +119,21 @@ describe("API Tests", () => {
 				},
 			});
 		});
+
 		test("should return an array of at least one custom emoji", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/custom_emojis`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/custom_emojis`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -139,6 +147,7 @@ describe("API Tests", () => {
 			expect(emojis[0].shortcode).toBeString();
 			expect(emojis[0].url).toBeString();
 		});
+
 		afterAll(async () => {
 			await client.emoji.deleteMany({
 				where: {

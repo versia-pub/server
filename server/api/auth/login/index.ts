@@ -1,12 +1,10 @@
-import { applyConfig } from "@api";
-import type { MatchedRoute } from "bun";
+import { apiRoute, applyConfig } from "@api";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import { userRelations } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["POST"],
 	ratelimits: {
 		max: 4,
@@ -21,10 +19,10 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * OAuth Code flow
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	email: string;
+	password: string;
+}>(async (req, matchedRoute, extraData) => {
 	const scopes = (matchedRoute.query.scope || "")
 		.replaceAll("+", " ")
 		.split(" ");
@@ -32,10 +30,7 @@ export default async (
 	const response_type = matchedRoute.query.response_type;
 	const client_id = matchedRoute.query.client_id;
 
-	const formData = await req.formData();
-
-	const email = formData.get("email")?.toString() || null;
-	const password = formData.get("password")?.toString() || null;
+	const { email, password } = extraData.parsedRequest;
 
 	const redirectToLogin = (error: string) =>
 		Response.redirect(
@@ -96,4 +91,4 @@ export default async (
 
 	// Redirect back to application
 	return Response.redirect(`${redirect_uri}?code=${code}`, 302);
-};
+});

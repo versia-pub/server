@@ -1,15 +1,10 @@
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import {
 	createNewRelationship,
 	relationshipToAPI,
 } from "~database/entities/Relationship";
-import {
-	getFromRequest,
-	getRelationshipToOtherUser,
-} from "~database/entities/User";
-import { applyConfig } from "@api";
+import { getRelationshipToOtherUser } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -27,21 +22,18 @@ export const meta = applyConfig({
 /**
  * Follow a user
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	reblogs?: boolean;
+	notify?: boolean;
+	languages?: string[];
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
-	const { user: self } = await getFromRequest(req);
+	const { user: self } = extraData.auth;
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const { languages, notify, reblogs } = await parseRequest<{
-		reblogs?: boolean;
-		notify?: boolean;
-		languages?: string[];
-	}>(req);
+	const { languages, notify, reblogs } = extraData.parsedRequest;
 
 	const user = await client.user.findUnique({
 		where: { id },
@@ -103,4 +95,4 @@ export default async (
 	});
 
 	return jsonResponse(relationshipToAPI(relationship));
-};
+});

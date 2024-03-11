@@ -1,11 +1,9 @@
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
 import {
 	createNewRelationship,
 	relationshipToAPI,
 } from "~database/entities/Relationship";
-import { getFromRequest } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -23,14 +21,14 @@ export const meta = applyConfig({
 /**
  * Find relationships
  */
-export default async (req: Request): Promise<Response> => {
-	const { user: self } = await getFromRequest(req);
+export default apiRoute<{
+	id: string[];
+}>(async (req, matchedRoute, extraData) => {
+	const { user: self } = extraData.auth;
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const { "id[]": ids } = await parseRequest<{
-		"id[]": string[];
-	}>(req);
+	const { id: ids } = extraData.parsedRequest;
 
 	// Minimum id count 1, maximum 10
 	if (!ids || ids.length < 1 || ids.length > 10) {
@@ -64,4 +62,4 @@ export default async (req: Request): Promise<Response> => {
 	);
 
 	return jsonResponse(relationships.map(r => relationshipToAPI(r)));
-};
+});

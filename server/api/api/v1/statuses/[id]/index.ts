@@ -1,9 +1,6 @@
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
-import { parseRequest } from "@request";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
-import type { MatchedRoute } from "bun";
 import { parse } from "marked";
 import { client } from "~database/datasource";
 import {
@@ -12,10 +9,8 @@ import {
 	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
-import { getFromRequest } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET", "DELETE", "PUT"],
 	ratelimits: {
 		max: 100,
@@ -31,20 +26,28 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Fetch a user
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	status?: string;
+	spoiler_text?: string;
+	sensitive?: boolean;
+	language?: string;
+	content_type?: string;
+	media_ids?: string[];
+	"poll[options]"?: string[];
+	"poll[expires_in]"?: number;
+	"poll[multiple]"?: boolean;
+	"poll[hide_totals]"?: boolean;
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	const status = await client.status.findUnique({
 		where: { id },
 		include: statusAndUserRelations,
 	});
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	// Check if user is authorized to view this status (if it's private)
 	if (!status || !isViewableByUser(status, user))
@@ -85,22 +88,11 @@ export default async (
 			status: statusText,
 			content_type,
 			"poll[expires_in]": expires_in,
-			"poll[options][]": options,
-			"media_ids[]": media_ids,
+			"poll[options]": options,
+			media_ids: media_ids,
 			spoiler_text,
 			sensitive,
-		} = await parseRequest<{
-			status?: string;
-			spoiler_text?: string;
-			sensitive?: boolean;
-			language?: string;
-			content_type?: string;
-			"media_ids[]"?: string[];
-			"poll[options][]"?: string[];
-			"poll[expires_in]"?: number;
-			"poll[multiple]"?: boolean;
-			"poll[hide_totals]"?: boolean;
-		}>(req);
+		} = extraData.parsedRequest;
 
 		// TODO: Add Poll support
 		// Validate status
@@ -171,11 +163,11 @@ export default async (
 		let sanitizedStatus: string;
 
 		if (content_type === "text/markdown") {
-			sanitizedStatus = await sanitizeHtml(parse(statusText ?? ""));
+			sanitizedStatus = await sanitizeHtml(await parse(statusText ?? ""));
 		} else if (content_type === "text/x.misskeymarkdown") {
 			// Parse as MFM
 			// TODO: Parse as MFM
-			sanitizedStatus = await sanitizeHtml(parse(statusText ?? ""));
+			sanitizedStatus = await sanitizeHtml(await parse(statusText ?? ""));
 		} else {
 			sanitizedStatus = await sanitizeHtml(statusText ?? "");
 		}
@@ -189,8 +181,8 @@ export default async (
 
 		// Check if status body doesnt match filters
 		if (
-			config.filters.note_filters.some(
-				filter => statusText?.match(filter)
+			config.filters.note_filters.some(filter =>
+				statusText?.match(filter)
 			)
 		) {
 			return errorResponse("Status contains blocked words", 422);
@@ -223,4 +215,4 @@ export default async (
 	}
 
 	return jsonResponse({});
-};
+});

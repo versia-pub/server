@@ -1,10 +1,10 @@
-import { getConfig } from "~classes/configmanager";
 import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
+import { ConfigManager } from "config-manager";
 import Redis from "ioredis";
 import { createPrismaRedisCache } from "prisma-redis-middleware";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 const cacheRedis = config.redis.cache.enabled
 	? new Redis({
@@ -12,7 +12,7 @@ const cacheRedis = config.redis.cache.enabled
 			port: Number(config.redis.cache.port),
 			password: config.redis.cache.password,
 			db: Number(config.redis.cache.database ?? 0),
-	  })
+		})
 	: null;
 
 cacheRedis?.on("error", e => {

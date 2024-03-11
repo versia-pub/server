@@ -1,21 +1,18 @@
-import { getConfig } from "~classes/configmanager";
-import { parseRequest } from "@request";
 import { errorResponse, jsonResponse } from "@response";
-import {
-	userRelations,
-	userToAPI,
-	type AuthData,
-} from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userRelations, userToAPI } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
-import { uploadFile } from "~classes/media";
 import ISO6391 from "iso-639-1";
 import { parseEmojis } from "~database/entities/Emoji";
 import { client } from "~database/datasource";
 import type { APISource } from "~types/entities/source";
 import { convertTextToHtml } from "@formatting";
-import type { MatchedRoute } from "bun";
+import { MediaBackendType } from "media-manager";
+import type { MediaBackend } from "media-manager";
+import { LocalMediaBackend } from "~packages/media-manager/backends/local";
+import { S3MediaBackend } from "~packages/media-manager/backends/s3";
+import { getUrl } from "~database/entities/Attachment";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],
@@ -29,19 +26,23 @@ export const meta = applyConfig({
 	},
 });
 
-/**
- * Patches a user
- */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute,
-	auth: AuthData
-): Promise<Response> => {
-	const { user } = auth;
+export default apiRoute<{
+	display_name: string;
+	note: string;
+	avatar: File;
+	header: File;
+	locked: string;
+	bot: string;
+	discoverable: string;
+	"source[privacy]": string;
+	"source[sensitive]": string;
+	"source[language]": string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	const {
 		display_name,
@@ -54,18 +55,7 @@ export default async (
 		"source[privacy]": source_privacy,
 		"source[sensitive]": source_sensitive,
 		"source[language]": source_language,
-	} = await parseRequest<{
-		display_name: string;
-		note: string;
-		avatar: File;
-		header: File;
-		locked: string;
-		bot: string;
-		discoverable: string;
-		"source[privacy]": string;
-		"source[sensitive]": string;
-		"source[language]": string;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	const sanitizedNote = await sanitizeHtml(note ?? "");
 
@@ -81,6 +71,20 @@ export default async (
 			language: "en",
 			note: "",
 		};
+	}
+
+	let mediaManager: MediaBackend;
+
+	switch (config.media.backend as MediaBackendType) {
+		case MediaBackendType.LOCAL:
+			mediaManager = new LocalMediaBackend(config);
+			break;
+		case MediaBackendType.S3:
+			mediaManager = new S3MediaBackend(config);
+			break;
+		default:
+			// TODO: Replace with logger
+			throw new Error("Invalid media backend");
 	}
 
 	if (display_name) {
@@ -146,8 +150,8 @@ export default async (
 			);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).privacy = source_privacy;
+		// @ts-expect-error Prisma Typescript doesn't include relations
+		user.source.privacy = source_privacy;
 	}
 
 	if (source_sensitive && user.source) {
@@ -156,8 +160,8 @@ export default async (
 			return errorResponse("Sensitive must be a boolean", 422);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).sensitive = source_sensitive === "true";
+		// @ts-expect-error Prisma Typescript doesn't include relations
+		user.source.sensitive = source_sensitive === "true";
 	}
 
 	if (source_language && user.source) {
@@ -168,8 +172,8 @@ export default async (
 			);
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-		(user.source as any).language = source_language;
+		// @ts-expect-error Prisma Typescript doesn't include relations
+		user.source.language = source_language;
 	}
 
 	if (avatar) {
@@ -181,9 +185,9 @@ export default async (
 			);
 		}
 
-		const hash = await uploadFile(avatar, config);
+		const { uploadedFile } = await mediaManager.addFile(avatar);
 
-		user.avatar = hash || "";
+		user.avatar = getUrl(uploadedFile.name, config);
 	}
 
 	if (header) {
@@ -195,9 +199,9 @@ export default async (
 			);
 		}
 
-		const hash = await uploadFile(header, config);
+		const { uploadedFile } = await mediaManager.addFile(header);
 
-		user.header = hash || "";
+		user.header = getUrl(uploadedFile.name, config);
 	}
 
 	if (locked) {
@@ -263,4 +267,4 @@ export default async (
 	});
 
 	return jsonResponse(userToAPI(output));
-};
+});

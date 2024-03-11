@@ -95,25 +95,3 @@ export const emojiToActivityPub = (emoji: Emoji): any => {
 		},
 	};
 };
-
-export const addAPEmojiIfNotExists = async (apEmoji: any) => {
-	// replace any with your ActivityPub Emoji type
-	const existingEmoji = await client.emoji.findFirst({
-		where: {
-			shortcode: apEmoji.name.replace(/:/g, ""),
-			instance: null,
-		},
-	});
-
-	if (existingEmoji) return existingEmoji;
-
-	return await client.emoji.create({
-		data: {
-			shortcode: apEmoji.name.replace(/:/g, ""),
-			url: apEmoji.icon.url,
-			alt: apEmoji.icon.alt || null,
-			content_type: apEmoji.icon.mediaType,
-			visible_in_picker: true,
-		},
-	});
-};

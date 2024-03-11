@@ -1,9 +1,8 @@
 import { errorResponse, jsonResponse } from "@response";
-import { getFromRequest, userRelations } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userRelations } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 import { statusAndUserRelations } from "~database/entities/Status";
-import { parseRequest } from "@request";
 import { notificationToAPI } from "~database/entities/Notification";
 
 export const meta = applyConfig({
@@ -18,8 +17,16 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	max_id?: string;
+	since_id?: string;
+	min_id?: string;
+	limit?: number;
+	exclude_types?: string[];
+	types?: string[];
+	account_id?: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -31,15 +38,7 @@ export default async (req: Request): Promise<Response> => {
 		min_id,
 		since_id,
 		types,
-	} = await parseRequest<{
-		max_id?: string;
-		since_id?: string;
-		min_id?: string;
-		limit?: number;
-		exclude_types?: string[];
-		types?: string[];
-		account_id?: string;
-	}>(req);
+	} = extraData.parsedRequest;
 
 	if (limit > 30) return errorResponse("Limit too high", 400);
 
@@ -85,8 +84,9 @@ export default async (req: Request): Promise<Response> => {
 			`<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`
 		);
 		linkHeader.push(
-			`<${urlWithoutQuery}?since_id=${objects.at(-1)
-				?.id}&limit=${limit}>; rel="prev"`
+			`<${urlWithoutQuery}?since_id=${
+				objects.at(-1)?.id
+			}&limit=${limit}>; rel="prev"`
 		);
 	}
 
@@ -97,4 +97,4 @@ export default async (req: Request): Promise<Response> => {
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { applyConfig } from "@api";
-import { getConfig } from "~classes/configmanager";
+// TODO: Refactor into smaller packages
+import { apiRoute, applyConfig } from "@api";
 import { getBestContentType } from "@content_types";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { parseEmojis } from "~database/entities/Emoji";
 import { createLike, deleteLike } from "~database/entities/Like";
@@ -39,13 +36,10 @@ export const meta = applyConfig({
 /**
  * ActivityPub user inbox endpoint
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const username = matchedRoute.params.username;
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	try {
 		if (
@@ -313,7 +307,7 @@ export default async (
 			}
 
 			// Create new reblog
-			const newReblog = await client.status.create({
+			await client.status.create({
 				data: {
 					authorId: author.id,
 					reblogId: rebloggedStatus.id,
@@ -405,4 +399,4 @@ export default async (
 	}
 
 	return jsonResponse({});
-};
+});

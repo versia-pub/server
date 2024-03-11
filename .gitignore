@@ -171,3 +171,5 @@ config/config.toml
 config/config.internal.toml
 uploads/
 pages/dist
+log.txt
+*.log

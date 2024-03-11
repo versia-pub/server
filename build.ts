@@ -17,13 +17,17 @@ await Bun.build({
 	entrypoints: [
 		process.cwd() + "/index.ts",
 		process.cwd() + "/prisma.ts",
-		process.cwd() + "./cli.ts",
+		// process.cwd() + "/cli.ts",
 	],
 	outdir: process.cwd() + "/dist",
 	target: "bun",
 	splitting: true,
 	minify: true,
-	external: ["bullmq", "@prisma/client"],
+	external: ["bullmq"],
+}).then(output => {
+	if (!output.success) {
+		console.log(output.logs);
+	}
 });
 
 // Create pages directory

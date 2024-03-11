@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { userRelations, userToAPI } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -20,24 +19,16 @@ export const meta = applyConfig({
 /**
  * Fetch all statuses for a user
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	max_id?: string;
+	since_id?: string;
+	min_id?: string;
+	limit?: number;
+}>(async (req, matchedRoute, extraData) => {
 	const id = matchedRoute.params.id;
 
 	// TODO: Add pinned
-	const {
-		max_id,
-		min_id,
-		since_id,
-		limit = 20,
-	}: {
-		max_id?: string;
-		since_id?: string;
-		min_id?: string;
-		limit?: number;
-	} = matchedRoute.query;
+	const { max_id, min_id, since_id, limit = 20 } = extraData.parsedRequest;
 
 	const user = await client.user.findUnique({
 		where: { id },
@@ -86,4 +77,4 @@ export default async (
 			Link: linkHeader.join(", "),
 		}
 	);
-};
+});

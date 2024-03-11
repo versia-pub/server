@@ -1,15 +1,15 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { encode } from "blurhash";
-import { getFromRequest } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 import sharp from "sharp";
-import { uploadFile } from "~classes/media";
-import { getConfig } from "~classes/configmanager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
+import { MediaBackendType } from "media-manager";
+import type { MediaBackend } from "media-manager";
+import { LocalMediaBackend } from "~packages/media-manager/backends/local";
+import { S3MediaBackend } from "~packages/media-manager/backends/s3";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["POST"],
 	ratelimits: {
 		max: 10,
@@ -25,27 +25,26 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Upload new media
  */
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	file: File;
+	thumbnail?: File;
+	description?: string;
+	// TODO: Add focus
+	focus?: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) {
 		return errorResponse("Unauthorized", 401);
 	}
 
-	const form = await req.formData();
-
-	const file = form.get("file") as unknown as File | undefined;
-	const thumbnail = form.get("thumbnail");
-	const description = form.get("description") as string | undefined;
-
-	// Floating point numbers from -1.0 to 1.0, comma delimited
-	// const focus = form.get("focus");
+	const { file, thumbnail, description } = extraData.parsedRequest;
 
 	if (!file) {
 		return errorResponse("No file provided", 400);
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	if (file.size > config.validation.max_media_size) {
 		return errorResponse(
@@ -86,21 +85,35 @@ export default async (req: Request): Promise<Response> => {
 				metadata?.height ?? 0,
 				4,
 				4
-		  )
+			)
 		: null;
 
 	let url = "";
 
-	const hash = await uploadFile(file, config);
+	let mediaManager: MediaBackend;
 
-	url = hash ? getUrl(hash, config) : "";
+	switch (config.media.backend as MediaBackendType) {
+		case MediaBackendType.LOCAL:
+			mediaManager = new LocalMediaBackend(config);
+			break;
+		case MediaBackendType.S3:
+			mediaManager = new S3MediaBackend(config);
+			break;
+		default:
+			// TODO: Replace with logger
+			throw new Error("Invalid media backend");
+	}
+
+	const { uploadedFile } = await mediaManager.addFile(file);
+
+	url = getUrl(uploadedFile.name, config);
 
 	let thumbnailUrl = "";
 
 	if (thumbnail) {
-		const hash = await uploadFile(thumbnail as unknown as File, config);
+		const { uploadedFile } = await mediaManager.addFile(thumbnail);
 
-		thumbnailUrl = hash ? getUrl(hash, config) : "";
+		thumbnailUrl = getUrl(uploadedFile.name, config);
 	}
 
 	const newAttachment = await client.attachment.create({
@@ -120,4 +133,4 @@ export default async (req: Request): Promise<Response> => {
 	// TODO: Add job to process videos and other media
 
 	return jsonResponse(attachmentToAPI(newAttachment));
-};
+});

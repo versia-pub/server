@@ -1,11 +1,10 @@
 # use the official Bun image
 # see all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.0.15-alpine as base
+FROM oven/bun:1.0.30-alpine as base
 WORKDIR /usr/src/app
 
-RUN apk add vips
 # Required for Prisma to work
-COPY --from=node:18-alpine /usr/local/bin/node /usr/local/bin/node
+# COPY --from=node:18-alpine /usr/local/bin/node /usr/local/bin/node
 
 # install dependencies into temp directory
 # this will cache them and speed up future builds
@@ -15,15 +14,13 @@ FROM base AS install
 RUN mkdir -p /temp
 COPY . /temp
 WORKDIR /temp
-RUN bun install --frozen-lockfile --production.
+RUN bun install --frozen-lockfile --production
 
 # Build Vite in pages
 RUN bunx --bun vite build pages
 
 # Build the project
-RUN bun build --entrypoints ./index.ts ./prisma.ts ./cli.ts --outdir dist --target bun --splitting --minify --external bullmq --external @prisma/client
-RUN mkdir ./dist/pages
-RUN cp -r ./pages/dist ./dist/pages
+RUN bun run build.ts
 WORKDIR /temp/dist
 
 # copy production dependencies and source code into final image

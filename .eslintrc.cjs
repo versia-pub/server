@@ -9,7 +9,7 @@ module.exports = {
 	parserOptions: {
 		project: "./tsconfig.json",
 	},
-	ignorePatterns: ["node_modules/", "dist/", ".eslintrc.cjs"],
+	ignorePatterns: ["node_modules/", "dist/", ".eslintrc.cjs", "cli.ts"],
 	plugins: ["@typescript-eslint"],
 	root: true,
 	rules: {

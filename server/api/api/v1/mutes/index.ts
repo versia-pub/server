@@ -1,10 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
-import {
-	getFromRequest,
-	userRelations,
-	userToAPI,
-} from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userRelations, userToAPI } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 
 export const meta = applyConfig({
@@ -19,8 +15,8 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -37,4 +33,4 @@ export default async (req: Request): Promise<Response> => {
 	});
 
 	return jsonResponse(blocks.map(u => userToAPI(u)));
-};
+});
