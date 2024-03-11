@@ -272,6 +272,8 @@ emoji_filters = [] # NOT IMPLEMENTED
 log_requests = true
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
+# For GDPR compliance, you can disable logging of IPs
+log_ip = false
 
 # Log all filtered objects
 log_filters = true

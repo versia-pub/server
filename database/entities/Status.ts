@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { getConfig } from "~classes/configmanager";
 import type { UserWithRelations } from "./User";
 import {
 	fetchRemoteUser,
@@ -29,8 +28,9 @@ import { parse } from "marked";
 import linkifyStr from "linkify-string";
 import linkifyHtml from "linkify-html";
 import { addStausToMeilisearch } from "@meilisearch";
+import { ConfigManager } from "config-manager";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 export const statusAndUserRelations: Prisma.StatusInclude = {
 	author: {
@@ -211,7 +211,7 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
 			? {
 					status: replyStatus,
 					user: (replyStatus as any).author,
-			  }
+				}
 			: undefined,
 		quote: quotingStatus || undefined,
 	});
@@ -349,7 +349,9 @@ export const createNewStatus = async (data: {
 
 	// Get HTML version of content
 	if (data.content_type === "text/markdown") {
-		formattedContent = linkifyHtml(await sanitizeHtml(parse(data.content)));
+		formattedContent = linkifyHtml(
+			await sanitizeHtml(await parse(data.content))
+		);
 	} else if (data.content_type === "text/x.misskeymarkdown") {
 		// Parse as MFM
 	} else {
@@ -387,7 +389,7 @@ export const createNewStatus = async (data: {
 								id: attachment,
 							};
 						}),
-				  }
+					}
 				: undefined,
 			inReplyToPostId: data.reply?.status.id,
 			quotingPostId: data.quote?.id,
@@ -480,7 +482,9 @@ export const editStatus = async (
 
 	// Get HTML version of content
 	if (data.content_type === "text/markdown") {
-		formattedContent = linkifyHtml(await sanitizeHtml(parse(data.content)));
+		formattedContent = linkifyHtml(
+			await sanitizeHtml(await parse(data.content))
+		);
 	} else if (data.content_type === "text/x.misskeymarkdown") {
 		// Parse as MFM
 	} else {
@@ -519,7 +523,7 @@ export const editStatus = async (
 								id: attachment,
 							};
 						}),
-				  }
+					}
 				: undefined,
 			mentions: {
 				connect: mentions.map(mention => {
@@ -606,15 +610,15 @@ export const statusToAPI = async (
 		quote: status.quotingPost
 			? await statusToAPI(
 					status.quotingPost as unknown as StatusWithRelations
-			  )
+				)
 			: null,
 		quote_id: status.quotingPost?.id || undefined,
 	};
 };
 
-export const statusToActivityPub = async (
-	status: StatusWithRelations,
-	user?: UserWithRelations
+/* export const statusToActivityPub = async (
+	status: StatusWithRelations
+	// user?: UserWithRelations
 ): Promise<any> => {
 	// replace any with your ActivityPub type
 	return {
@@ -657,7 +661,7 @@ export const statusToActivityPub = async (
 		visibility: "public", // adjust as needed
 		// add more fields as needed
 	};
-};
+}; */
 
 export const statusToLysand = (status: StatusWithRelations): Note => {
 	return {

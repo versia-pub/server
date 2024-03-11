@@ -1,5 +1,3 @@
-import type { ConfigType } from "~classes/configmanager";
-import { getConfig } from "~classes/configmanager";
 import type { APIAccount } from "~types/entities/account";
 import type { User as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
@@ -10,6 +8,10 @@ import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import type { APISource } from "~types/entities/source";
 import { addUserToMeilisearch } from "@meilisearch";
+import { ConfigManager, type ConfigType } from "config-manager";
+
+const configManager = new ConfigManager({});
+const config = await configManager.getConfig();
 
 export interface AuthData {
 	user: UserWithRelations | null;
@@ -201,7 +203,7 @@ export const createNewLocalUser = async (data: {
 	header?: string;
 	admin?: boolean;
 }) => {
-	const config = getConfig();
+	const config = await configManager.getConfig();
 
 	const keys = await generateUserKeys();
 
@@ -344,8 +346,6 @@ export const userToAPI = (
 	user: UserWithRelations,
 	isOwnAccount = false
 ): APIAccount => {
-	const config = getConfig();
-
 	return {
 		id: user.id,
 		username: user.username,
@@ -373,7 +373,7 @@ export const userToAPI = (
 		header_static: "",
 		acct:
 			user.instance === null
-				? `${user.username}`
+				? user.username
 				: `${user.username}@${user.instance.base_url}`,
 		// TODO: Add these fields
 		limited: false,
@@ -424,13 +424,13 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
 		username: user.username,
 		avatar: [
 			{
-				content: getAvatarUrl(user, getConfig()) || "",
+				content: getAvatarUrl(user, config) || "",
 				content_type: `image/${user.avatar.split(".")[1]}`,
 			},
 		],
 		header: [
 			{
-				content: getHeaderUrl(user, getConfig()) || "",
+				content: getHeaderUrl(user, config) || "",
 				content_type: `image/${user.header.split(".")[1]}`,
 			},
 		],
@@ -458,7 +458,7 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
 			],
 		})),
 		public_key: {
-			actor: `${getConfig().http.base_url}/users/${user.id}`,
+			actor: `${config.http.base_url}/users/${user.id}`,
 			public_key: user.publicKey,
 		},
 		extensions: {

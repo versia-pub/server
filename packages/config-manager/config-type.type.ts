@@ -153,6 +153,7 @@ export interface ConfigType {
 	logging: {
 		log_requests: boolean;
 		log_requests_verbose: boolean;
+		log_ip: boolean;
 		log_filters: boolean;
 	};
 
@@ -351,6 +352,7 @@ export const configDefaults: ConfigType = {
 	logging: {
 		log_requests: false,
 		log_requests_verbose: false,
+		log_ip: false,
 		log_filters: true,
 	},
 	ratelimits: {

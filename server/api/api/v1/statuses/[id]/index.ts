@@ -32,8 +32,8 @@ export default apiRoute<{
 	sensitive?: boolean;
 	language?: string;
 	content_type?: string;
-	"media_ids[]"?: string[];
-	"poll[options][]"?: string[];
+	media_ids?: string[];
+	"poll[options]"?: string[];
 	"poll[expires_in]"?: number;
 	"poll[multiple]"?: boolean;
 	"poll[hide_totals]"?: boolean;
@@ -88,8 +88,8 @@ export default apiRoute<{
 			status: statusText,
 			content_type,
 			"poll[expires_in]": expires_in,
-			"poll[options][]": options,
-			"media_ids[]": media_ids,
+			"poll[options]": options,
+			media_ids: media_ids,
 			spoiler_text,
 			sensitive,
 		} = extraData.parsedRequest;

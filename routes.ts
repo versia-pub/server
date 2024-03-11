@@ -1,5 +1,4 @@
-import type { MatchedRoute } from "bun";
-import type { AuthData } from "~database/entities/User";
+import type { RouteHandler } from "~server/api/routes.type";
 import type { APIRouteMeta } from "~types/api";
 
 const serverPath = process.cwd() + "/server/api";
@@ -8,146 +7,158 @@ const serverPath = process.cwd() + "/server/api";
 // This is to allow for compilation of the routes, so that we can minify them and
 // node_modules in production
 export const rawRoutes = {
-	"/api/v1/accounts": import(serverPath + "/api/v1/accounts/index.ts"),
-	"/api/v1/accounts/familiar_followers": import(
+	"/api/v1/accounts": await import(serverPath + "/api/v1/accounts/index.ts"),
+	"/api/v1/accounts/familiar_followers": await import(
 		serverPath + "/api/v1/accounts/familiar_followers/index.ts"
 	),
-	"/api/v1/accounts/relationships": import(
+	"/api/v1/accounts/relationships": await import(
 		serverPath + "/api/v1/accounts/relationships/index.ts"
 	),
-	"/api/v1/accounts/search": import(
+	"/api/v1/accounts/search": await import(
 		serverPath + "/api/v1/accounts/search/index.ts"
 	),
-	"/api/v1/accounts/update_credentials": import(
+	"/api/v1/accounts/update_credentials": await import(
 		serverPath + "/api/v1/accounts/update_credentials/index.ts"
 	),
-	"/api/v1/accounts/verify_credentials": import(
+	"/api/v1/accounts/verify_credentials": await import(
 		serverPath + "/api/v1/accounts/verify_credentials/index.ts"
 	),
-	"/api/v1/apps": import(serverPath + "/api/v1/apps/index.ts"),
-	"/api/v1/apps/verify_credentials": import(
+	"/api/v1/apps": await import(serverPath + "/api/v1/apps/index.ts"),
+	"/api/v1/apps/verify_credentials": await import(
 		serverPath + "/api/v1/apps/verify_credentials/index.ts"
 	),
-	"/api/v1/blocks": import(serverPath + "/api/v1/blocks/index.ts"),
-	"/api/v1/custom_emojis": import(
+	"/api/v1/blocks": await import(serverPath + "/api/v1/blocks/index.ts"),
+	"/api/v1/custom_emojis": await import(
 		serverPath + "/api/v1/custom_emojis/index.ts"
 	),
-	"/api/v1/favourites": import(serverPath + "/api/v1/favourites/index.ts"),
-	"/api/v1/follow_requests": import(
+	"/api/v1/favourites": await import(
+		serverPath + "/api/v1/favourites/index.ts"
+	),
+	"/api/v1/follow_requests": await import(
 		serverPath + "/api/v1/follow_requests/index.ts"
 	),
-	"/api/v1/instance": import(serverPath + "/api/v1/instance/index.ts"),
-	"/api/v1/media": import(serverPath + "/api/v1/media/index.ts"),
-	"/api/v1/mutes": import(serverPath + "/api/v1/mutes/index.ts"),
-	"/api/v1/notifications": import(
+	"/api/v1/instance": await import(serverPath + "/api/v1/instance/index.ts"),
+	"/api/v1/media": await import(serverPath + "/api/v1/media/index.ts"),
+	"/api/v1/mutes": await import(serverPath + "/api/v1/mutes/index.ts"),
+	"/api/v1/notifications": await import(
 		serverPath + "/api/v1/notifications/index.ts"
 	),
-	"/api/v1/profile/avatar": import(serverPath + "/api/v1/profile/avatar.ts"),
-	"/api/v1/profile/header": import(serverPath + "/api/v1/profile/header.ts"),
-	"/api/v1/statuses": import(serverPath + "/api/v1/statuses/index.ts"),
-	"/api/v1/timelines/home": import(serverPath + "/api/v1/timelines/home.ts"),
-	"/api/v1/timelines/public": import(
+	"/api/v1/profile/avatar": await import(
+		serverPath + "/api/v1/profile/avatar.ts"
+	),
+	"/api/v1/profile/header": await import(
+		serverPath + "/api/v1/profile/header.ts"
+	),
+	"/api/v1/statuses": await import(serverPath + "/api/v1/statuses/index.ts"),
+	"/api/v1/timelines/home": await import(
+		serverPath + "/api/v1/timelines/home.ts"
+	),
+	"/api/v1/timelines/public": await import(
 		serverPath + "/api/v1/timelines/public.ts"
 	),
-	"/api/v2/media": import(serverPath + "/api/v2/media/index.ts"),
-	"/api/v2/search": import(serverPath + "/api/v2/search/index.ts"),
-	"/auth/login": import(serverPath + "/auth/login/index.ts"),
-	"/nodeinfo/2.0": import(serverPath + "/nodeinfo/2.0/index.ts"),
-	"/oauth/authorize-external": import(
+	"/api/v2/media": await import(serverPath + "/api/v2/media/index.ts"),
+	"/api/v2/search": await import(serverPath + "/api/v2/search/index.ts"),
+	"/auth/login": await import(serverPath + "/auth/login/index.ts"),
+	"/nodeinfo/2.0": await import(serverPath + "/nodeinfo/2.0/index.ts"),
+	"/oauth/authorize-external": await import(
 		serverPath + "/oauth/authorize-external/index.ts"
 	),
-	"/oauth/providers": import(serverPath + "/oauth/providers/index.ts"),
-	"/oauth/token": import(serverPath + "/oauth/token/index.ts"),
-	"/api/v1/accounts/[id]": import(
+	"/oauth/providers": await import(serverPath + "/oauth/providers/index.ts"),
+	"/oauth/token": await import(serverPath + "/oauth/token/index.ts"),
+	"/api/v1/accounts/[id]": await import(
 		serverPath + "/api/v1/accounts/[id]/index.ts"
 	),
-	"/api/v1/accounts/[id]/block": import(
+	"/api/v1/accounts/[id]/block": await import(
 		serverPath + "/api/v1/accounts/[id]/block.ts"
 	),
-	"/api/v1/accounts/[id]/follow": import(
+	"/api/v1/accounts/[id]/follow": await import(
 		serverPath + "/api/v1/accounts/[id]/follow.ts"
 	),
-	"/api/v1/accounts/[id]/followers": import(
+	"/api/v1/accounts/[id]/followers": await import(
 		serverPath + "/api/v1/accounts/[id]/followers.ts"
 	),
-	"/api/v1/accounts/[id]/following": import(
+	"/api/v1/accounts/[id]/following": await import(
 		serverPath + "/api/v1/accounts/[id]/following.ts"
 	),
-	"/api/v1/accounts/[id]/mute": import(
+	"/api/v1/accounts/[id]/mute": await import(
 		serverPath + "/api/v1/accounts/[id]/mute.ts"
 	),
-	"/api/v1/accounts/[id]/note": import(
+	"/api/v1/accounts/[id]/note": await import(
 		serverPath + "/api/v1/accounts/[id]/note.ts"
 	),
-	"/api/v1/accounts/[id]/pin": import(
+	"/api/v1/accounts/[id]/pin": await import(
 		serverPath + "/api/v1/accounts/[id]/pin.ts"
 	),
-	"/api/v1/accounts/[id]/remove_from_followers": import(
+	"/api/v1/accounts/[id]/remove_from_followers": await import(
 		serverPath + "/api/v1/accounts/[id]/remove_from_followers.ts"
 	),
-	"/api/v1/accounts/[id]/statuses": import(
+	"/api/v1/accounts/[id]/statuses": await import(
 		serverPath + "/api/v1/accounts/[id]/statuses.ts"
 	),
-	"/api/v1/accounts/[id]/unblock": import(
+	"/api/v1/accounts/[id]/unblock": await import(
 		serverPath + "/api/v1/accounts/[id]/unblock.ts"
 	),
-	"/api/v1/accounts/[id]/unfollow": import(
+	"/api/v1/accounts/[id]/unfollow": await import(
 		serverPath + "/api/v1/accounts/[id]/unfollow.ts"
 	),
-	"/api/v1/accounts/[id]/unmute": import(
+	"/api/v1/accounts/[id]/unmute": await import(
 		serverPath + "/api/v1/accounts/[id]/unmute.ts"
 	),
-	"/api/v1/accounts/[id]/unpin": import(
+	"/api/v1/accounts/[id]/unpin": await import(
 		serverPath + "/api/v1/accounts/[id]/unpin.ts"
 	),
-	"/api/v1/follow_requests/[account_id]/authorize": import(
+	"/api/v1/follow_requests/[account_id]/authorize": await import(
 		serverPath + "/api/v1/follow_requests/[account_id]/authorize.ts"
 	),
-	"/api/v1/follow_requests/[account_id]/reject": import(
+	"/api/v1/follow_requests/[account_id]/reject": await import(
 		serverPath + "/api/v1/follow_requests/[account_id]/reject.ts"
 	),
-	"/api/v1/media/[id]": import(serverPath + "/api/v1/media/[id]/index.ts"),
-	"/api/v1/statuses/[id]": import(
+	"/api/v1/media/[id]": await import(
+		serverPath + "/api/v1/media/[id]/index.ts"
+	),
+	"/api/v1/statuses/[id]": await import(
 		serverPath + "/api/v1/statuses/[id]/index.ts"
 	),
-	"/api/v1/statuses/[id]/context": import(
+	"/api/v1/statuses/[id]/context": await import(
 		serverPath + "/api/v1/statuses/[id]/context.ts"
 	),
-	"/api/v1/statuses/[id]/favourite": import(
+	"/api/v1/statuses/[id]/favourite": await import(
 		serverPath + "/api/v1/statuses/[id]/favourite.ts"
 	),
-	"/api/v1/statuses/[id]/favourited_by": import(
+	"/api/v1/statuses/[id]/favourited_by": await import(
 		serverPath + "/api/v1/statuses/[id]/favourited_by.ts"
 	),
-	"/api/v1/statuses/[id]/pin": import(
+	"/api/v1/statuses/[id]/pin": await import(
 		serverPath + "/api/v1/statuses/[id]/pin.ts"
 	),
-	"/api/v1/statuses/[id]/reblog": import(
+	"/api/v1/statuses/[id]/reblog": await import(
 		serverPath + "/api/v1/statuses/[id]/reblog.ts"
 	),
-	"/api/v1/statuses/[id]/reblogged_by": import(
+	"/api/v1/statuses/[id]/reblogged_by": await import(
 		serverPath + "/api/v1/statuses/[id]/reblogged_by.ts"
 	),
-	"/api/v1/statuses/[id]/source": import(
+	"/api/v1/statuses/[id]/source": await import(
 		serverPath + "/api/v1/statuses/[id]/source.ts"
 	),
-	"/api/v1/statuses/[id]/unfavourite": import(
+	"/api/v1/statuses/[id]/unfavourite": await import(
 		serverPath + "/api/v1/statuses/[id]/unfavourite.ts"
 	),
-	"/api/v1/statuses/[id]/unpin": import(
+	"/api/v1/statuses/[id]/unpin": await import(
 		serverPath + "/api/v1/statuses/[id]/unpin.ts"
 	),
-	"/api/v1/statuses/[id]/unreblog": import(
+	"/api/v1/statuses/[id]/unreblog": await import(
 		serverPath + "/api/v1/statuses/[id]/unreblog.ts"
 	),
-	"/media/[id]": import(serverPath + "/media/[id]/index.ts"),
-	"/oauth/callback/[issuer]": import(
+	"/media/[id]": await import(serverPath + "/media/[id]/index.ts"),
+	"/oauth/callback/[issuer]": await import(
 		serverPath + "/oauth/callback/[issuer]/index.ts"
 	),
-	"/object/[uuid]": import(serverPath + "/object/[uuid]/index.ts"),
-	"/users/[uuid]": import(serverPath + "/users/[uuid]/index.ts"),
-	"/users/[uuid]/inbox": import(serverPath + "/users/[uuid]/inbox/index.ts"),
-	"/users/[uuid]/outbox": import(
+	"/object/[uuid]": await import(serverPath + "/object/[uuid]/index.ts"),
+	"/users/[uuid]": await import(serverPath + "/users/[uuid]/index.ts"),
+	"/users/[uuid]/inbox": await import(
+		serverPath + "/users/[uuid]/inbox/index.ts"
+	),
+	"/users/[uuid]/outbox": await import(
 		serverPath + "/users/[uuid]/outbox/index.ts"
 	),
 };
@@ -158,7 +169,7 @@ export const routeMatcher = new Bun.FileSystemRouter({
 	dir: process.cwd() + "/server/api",
 });
 
-export const matchRoute = (url: string) => {
+export const matchRoute = <T = Record<string, never>>(url: string) => {
 	const route = routeMatcher.match(url);
 	if (!route) return { file: null, matchedRoute: null };
 
@@ -166,11 +177,7 @@ export const matchRoute = (url: string) => {
 		// @ts-expect-error TypeScript parses this as a defined object instead of an arbitrarily editable route file
 		file: rawRoutes[route.name] as Promise<{
 			meta: APIRouteMeta;
-			default: (
-				req: Request,
-				matchedRoute: MatchedRoute,
-				auth: AuthData
-			) => Response | Promise<Response>;
+			default: RouteHandler<T>;
 		}>,
 		matchedRoute: route,
 	};

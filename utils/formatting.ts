@@ -14,7 +14,7 @@ export const convertTextToHtml = async (
 	content_type?: string
 ) => {
 	if (content_type === "text/markdown") {
-		return linkifyHtml(await sanitizeHtml(parse(text)));
+		return linkifyHtml(await sanitizeHtml(await parse(text)));
 	} else if (content_type === "text/x.misskeymarkdown") {
 		// Parse as MFM
 		// TODO: Implement MFM

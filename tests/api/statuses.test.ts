@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { getConfig } from "~classes/configmanager";
 import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";
@@ -13,8 +10,11 @@ import type { APIAccount } from "~types/entities/account";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIContext } from "~types/entities/context";
 import type { APIStatus } from "~types/entities/status";
+import { ConfigManager } from "config-manager";
+import { sendTestRequest, wrapRelativeUrl } from "~tests/utils";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
+const base_url = config.http.base_url;
 
 let token: Token;
 let user: UserWithRelations;
@@ -86,15 +86,17 @@ describe("API Tests", () => {
 			const formData = new FormData();
 			formData.append("file", new Blob(["test"], { type: "text/plain" }));
 
-			const response = await fetch(
-				`${config.http.base_url}/api/v2/media`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-					body: formData,
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(`${base_url}/api/v2/media`, base_url),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+						},
+						body: formData,
+					}
+				)
 			);
 
 			expect(response.status).toBe(202);
@@ -112,20 +114,22 @@ describe("API Tests", () => {
 
 	describe("POST /api/v1/statuses", () => {
 		test("should create a new status and return an APIStatus object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						status: "Hello, world!",
-						visibility: "public",
-						media_ids: [media1?.id],
-					}),
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							status: "Hello, world!",
+							visibility: "public",
+							media_ids: [media1?.id],
+						}),
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -158,20 +162,22 @@ describe("API Tests", () => {
 		});
 
 		test("should create a new status in reply to the previous one", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						status: "This is a reply!",
-						visibility: "public",
-						in_reply_to_id: status?.id,
-					}),
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							status: "This is a reply!",
+							visibility: "public",
+							in_reply_to_id: status?.id,
+						}),
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -206,14 +212,20 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/statuses/:id", () => {
 		test("should return the specified status object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -251,15 +263,20 @@ describe("API Tests", () => {
 
 	describe("POST /api/v1/statuses/:id/reblog", () => {
 		test("should reblog the specified status and return the reblogged status object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/reblog`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/reblog`,
+						base_url
+					),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -277,15 +294,20 @@ describe("API Tests", () => {
 
 	describe("POST /api/v1/statuses/:id/unreblog", () => {
 		test("should unreblog the specified status and return the original status object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/unreblog`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/unreblog`,
+						base_url
+					),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -302,15 +324,20 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/statuses/:id/context", () => {
 		test("should return the context of the specified status", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/context`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/context`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -330,14 +357,20 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/timelines/public", () => {
 		test("should return an array of APIStatus objects that includes the created status", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/timelines/public`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/timelines/public`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -353,15 +386,20 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/accounts/:id/statuses", () => {
 		test("should return the statuses of the specified user", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/accounts/${user.id}/statuses`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-						"Content-Type": "application/json",
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/accounts/${user.id}/statuses`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -384,14 +422,20 @@ describe("API Tests", () => {
 
 	describe("POST /api/v1/statuses/:id/favourite", () => {
 		test("should favourite the specified status object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/favourite`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/favourite`,
+						base_url
+					),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -400,14 +444,20 @@ describe("API Tests", () => {
 
 	describe("GET /api/v1/statuses/:id/favourited_by", () => {
 		test("should return an array of User objects who favourited the specified status", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/favourited_by`,
-				{
-					method: "GET",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/favourited_by`,
+						base_url
+					),
+					{
+						method: "GET",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -425,14 +475,20 @@ describe("API Tests", () => {
 	describe("POST /api/v1/statuses/:id/unfavourite", () => {
 		test("should unfavourite the specified status object", async () => {
 			// Unfavourite the status
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}/unfavourite`,
-				{
-					method: "POST",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}/unfavourite`,
+						base_url
+					),
+					{
+						method: "POST",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+							"Content-Type": "application/json",
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);
@@ -449,14 +505,19 @@ describe("API Tests", () => {
 
 	describe("DELETE /api/v1/statuses/:id", () => {
 		test("should delete the specified status object", async () => {
-			const response = await fetch(
-				`${config.http.base_url}/api/v1/statuses/${status?.id}`,
-				{
-					method: "DELETE",
-					headers: {
-						Authorization: `Bearer ${token.access_token}`,
-					},
-				}
+			const response = await sendTestRequest(
+				new Request(
+					wrapRelativeUrl(
+						`${base_url}/api/v1/statuses/${status?.id}`,
+						base_url
+					),
+					{
+						method: "DELETE",
+						headers: {
+							Authorization: `Bearer ${token.access_token}`,
+						},
+					}
+				)
 			);
 
 			expect(response.status).toBe(200);

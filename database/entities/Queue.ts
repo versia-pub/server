@@ -1,4 +1,3 @@
-import { getConfig } from "~classes/configmanager";
 import { Worker } from "bullmq";
 import { client, federationQueue } from "~database/datasource";
 import {
@@ -7,8 +6,9 @@ import {
 	type StatusWithRelations,
 } from "./Status";
 import type { User } from "@prisma/client";
+import { ConfigManager } from "config-manager";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 export const federationWorker = new Worker(
 	"federation",
@@ -44,7 +44,7 @@ export const federationWorker = new Worker(
 										instanceId: {
 											not: null,
 										},
-								  }
+									}
 								: {},
 							// Mentioned users
 							{

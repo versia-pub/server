@@ -22,13 +22,13 @@ export const meta = applyConfig({
  * Find relationships
  */
 export default apiRoute<{
-	"id[]": string[];
+	id: string[];
 }>(async (req, matchedRoute, extraData) => {
 	const { user: self } = extraData.auth;
 
 	if (!self) return errorResponse("Unauthorized", 401);
 
-	const { "id[]": ids } = extraData.parsedRequest;
+	const { id: ids } = extraData.parsedRequest;
 
 	// Minimum id count 1, maximum 10
 	if (!ids || ids.length < 1 || ids.length > 10) {

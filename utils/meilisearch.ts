@@ -1,17 +1,18 @@
-import { getConfig } from "~classes/configmanager";
 import chalk from "chalk";
 import { client } from "~database/datasource";
 import { Meilisearch } from "meilisearch";
 import type { Status, User } from "@prisma/client";
+import { ConfigManager } from "config-manager";
+import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 export const meilisearch = new Meilisearch({
 	host: `${config.meilisearch.host}:${config.meilisearch.port}`,
 	apiKey: config.meilisearch.api_key,
 });
 
-export const connectMeili = async () => {
+export const connectMeili = async (logger: MultiLogManager | LogManager) => {
 	if (!config.meilisearch.enabled) return;
 
 	if (await meilisearch.isHealthy()) {
@@ -31,14 +32,16 @@ export const connectMeili = async () => {
 			.index(MeiliIndexType.Statuses)
 			.updateSearchableAttributes(["content"]);
 
-		console.log(
-			`${chalk.green(`✓`)} ${chalk.bold(`Connected to Meilisearch`)}`
+		await logger.log(
+			LogLevel.INFO,
+			"Meilisearch",
+			"Connected to Meilisearch"
 		);
 	} else {
-		console.error(
-			`${chalk.red(`✗`)} ${chalk.bold(
-				`Error while connecting to Meilisearch`
-			)}`
+		await logger.log(
+			LogLevel.CRITICAL,
+			"Meilisearch",
+			"Error while connecting to Meilisearch"
 		);
 		process.exit(1);
 	}
