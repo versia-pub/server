@@ -151,7 +151,7 @@ describe("CliCommand", () => {
 			"--arg4",
 			"value1,value2",
 		]);
-		expect(mockExecute).toHaveBeenCalledWith({
+		expect(mockExecute).toHaveBeenCalledWith(cliCommand, {
 			arg1: "value1",
 			arg2: 42,
 			arg3: true,
@@ -205,7 +205,7 @@ describe("CliCommand", () => {
 			"value5",
 		]);
 
-		expect(mockExecute).toHaveBeenCalledWith({
+		expect(mockExecute).toHaveBeenCalledWith(cliCommand, {
 			arg1: "value1",
 			arg2: 42,
 			arg3: true,
@@ -346,7 +346,7 @@ describe("CliBuilder", () => {
 			"--arg1",
 			"value1",
 		]);
-		expect(mockExecute).toHaveBeenCalledWith({
+		expect(mockExecute).toHaveBeenCalledWith(expect.anything(), {
 			arg1: "value1",
 		});
 	});
