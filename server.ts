@@ -137,7 +137,11 @@ export const createServer = (
 					configManager,
 					parsedRequest,
 				});
-			} else if (matchedRoute?.name === "/[...404]") {
+			} else if (matchedRoute?.name === "/[...404]" || !matchedRoute) {
+				if (new URL(req.url).pathname.startsWith("/api")) {
+					return errorResponse("Route not found", 404);
+				}
+
 				// Proxy response from Vite at localhost:5173 if in development mode
 				if (isProd) {
 					if (new URL(req.url).pathname.startsWith("/assets")) {
@@ -164,21 +168,17 @@ export const createServer = (
 							config.http.base_url,
 							"http://localhost:5173"
 						)
-					).catch(async e => {
-						await logger.logError(
-							LogLevel.ERROR,
-							"Server.Proxy",
-							e as Error
-						);
-						return errorResponse("Route not found", 404);
-					});
+					);
 
-					if (proxy.status !== 404) {
+					if (
+						proxy.status !== 404 &&
+						!(await proxy.clone().text()).includes("404 Not Found")
+					) {
 						return proxy;
 					}
-				}
 
-				return errorResponse("Route not found", 404);
+					return errorResponse("Route not found", 404);
+				}
 			} else {
 				return errorResponse("Route not found", 404);
 			}
