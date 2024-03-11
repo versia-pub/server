@@ -1,5 +1,6 @@
 # Contributing to Lysand
 
+> [!NOTE]
 > This document was authored by [@CPlusPatch](https://github.com/CPlusPatch).
 
 Thank you for your interest in contributing to Lysand! We welcome contributions from everyone, regardless of their level of experience or expertise.
@@ -8,7 +9,7 @@ Thank you for your interest in contributing to Lysand! We welcome contributions 
 
 Lysand is built using the following technologies:
 
-- [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but improved
+- [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but faster and with more features
 - [PostgreSQL](https://www.postgresql.org/) - A relational database
   - [`pg_uuidv7`](https://github.com/fboulnois/pg_uuidv7) - A PostgreSQL extension that provides a UUIDv7 data type
 - [UnoCSS](https://unocss.dev) - A utility-first CSS framework, used for the login page
@@ -69,7 +70,7 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 4. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
 
 > [!WARNING]
-> You should disable Prisma caching while developing, as it can mess up tests
+> You should disable Prisma Redis caching while developing, as it can mess up tests
 
 5. Generate the Prisma client:
 
@@ -108,7 +109,7 @@ To run the tests, run:
 bun test
 ```
 
-The tests are located in the `tests/` directory and follow a Jest-like syntax. The server must be started with `bun dev` before running the tests.
+The tests are located in the `tests/` directory and follow a Jest-like syntax. The server does not need to be started before running the tests, as the tests will spawn their own Lysand server instance.
 
 ## Code style
 
