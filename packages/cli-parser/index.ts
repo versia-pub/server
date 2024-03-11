@@ -1,4 +1,4 @@
-import type { CliParameter } from "./cli-builder.type";
+import { CliParameterType, type CliParameter } from "./cli-builder.type";
 import chalk from "chalk";
 
 export function startsWithArray(fullArray: any[], startArray: any[]) {
@@ -193,21 +193,21 @@ export class CliBuilder {
 				if (value instanceof CliCommand) {
 					writeBuffer += `${"    ".repeat(depth)}${chalk.blue(key)}|${chalk.underline(value.description)}\n`;
 					const positionedArgs = value.argTypes.filter(
-						arg => arg.positioned
+						arg => arg.positioned ?? true
 					);
 					const unpositionedArgs = value.argTypes.filter(
-						arg => !arg.positioned
+						arg => !(arg.positioned ?? true)
 					);
 
-					for (const arg of unpositionedArgs) {
+					for (const arg of positionedArgs) {
 						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.green(
 							arg.name
 						)}|${
 							arg.description ?? "(no description)"
 						} ${arg.optional ? chalk.gray("(optional)") : ""}\n`;
 					}
-					for (const arg of positionedArgs) {
-						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.yellow("--" + arg.name)}|${
+					for (const arg of unpositionedArgs) {
+						writeBuffer += `${"    ".repeat(depth + 1)}${chalk.yellow("--" + arg.name)}${arg.shortName ? ", " + chalk.yellow("-" + arg.shortName) : ""}|${
 							arg.description ?? "(no description)"
 						} ${arg.optional ? chalk.gray("(optional)") : ""}\n`;
 					}
@@ -253,15 +253,38 @@ export class CliBuilder {
 	}
 }
 
+/* type CliParametersToType<T extends CliParameter[]> = {
+	[K in T[number]["name"]]: T[number]["type"] extends CliParameterType.STRING
+		? string
+		: T[number]["type"] extends CliParameterType.NUMBER
+			? number
+			: T[number]["type"] extends CliParameterType.BOOLEAN
+				? boolean
+				: T[number]["type"] extends CliParameterType.ARRAY
+					? string[]
+					: T[number]["type"] extends CliParameterType.EMPTY
+						? never
+						: never;
+};
+
+type ExecuteFunction<T extends CliParameter[]> = (
+	args: CliParametersToType<T>
+) => void; */
+
+type ExecuteFunction<T> = (
+	instance: CliCommand,
+	args: Partial<T>
+) => Promise<void> | void;
+
 /**
  * A command that can be executed from the command line
  * @param categories Example: `["user", "create"]` for the command `./cli user create --name John`
  */
-export class CliCommand {
+export class CliCommand<T = any> {
 	constructor(
 		public categories: string[],
 		public argTypes: CliParameter[],
-		private execute: (args: Record<string, any>) => void,
+		private execute: ExecuteFunction<T>,
 		public description?: string,
 		public example?: string
 	) {}
@@ -271,13 +294,17 @@ export class CliCommand {
 	 * formatted with Chalk and with emojis
 	 */
 	displayHelp() {
-		const positionedArgs = this.argTypes.filter(arg => arg.positioned);
-		const unpositionedArgs = this.argTypes.filter(arg => !arg.positioned);
+		const positionedArgs = this.argTypes.filter(
+			arg => arg.positioned ?? true
+		);
+		const unpositionedArgs = this.argTypes.filter(
+			arg => !(arg.positioned ?? true)
+		);
 		const helpMessage = `
 ${chalk.green("📚 Command:")} ${chalk.yellow(this.categories.join(" "))}
 ${this.description ? `${chalk.cyan(this.description)}\n` : ""}
 ${chalk.magenta("🔧 Arguments:")}
-${unpositionedArgs
+${positionedArgs
 	.map(
 		arg =>
 			`${chalk.bold(arg.name)}: ${chalk.blue(arg.description ?? "(no description)")} ${
@@ -285,10 +312,10 @@ ${unpositionedArgs
 			}`
 	)
 	.join("\n")}
-${positionedArgs
+${unpositionedArgs
 	.map(
 		arg =>
-			`--${chalk.bold(arg.name)}: ${chalk.blue(arg.description ?? "(no description)")} ${
+			`--${chalk.bold(arg.name)}${arg.shortName ? `, -${arg.shortName}` : ""}: ${chalk.blue(arg.description ?? "(no description)")} ${
 				arg.optional ? chalk.gray("(optional)") : ""
 			}`
 	)
@@ -328,6 +355,20 @@ ${positionedArgs
 					i++;
 					currentParameter = null;
 				}
+			} else if (arg.startsWith("-")) {
+				const shortName = arg.substring(1);
+				const argType = this.argTypes.find(
+					argType => argType.shortName === shortName
+				);
+				if (argType && !argType.needsValue) {
+					parsedArgs[argType.name] = true;
+				} else if (argType && argType.needsValue) {
+					parsedArgs[argType.name] = this.castArgValue(
+						argsWithoutCategories[i + 1],
+						argType.type
+					);
+					i++;
+				}
 			} else if (currentParameter) {
 				parsedArgs[currentParameter.name] = this.castArgValue(
 					arg,
@@ -352,13 +393,13 @@ ${positionedArgs
 
 	private castArgValue(value: string, type: CliParameter["type"]): any {
 		switch (type) {
-			case "string":
+			case CliParameterType.STRING:
 				return value;
-			case "number":
+			case CliParameterType.NUMBER:
 				return Number(value);
-			case "boolean":
+			case CliParameterType.BOOLEAN:
 				return value === "true";
-			case "array":
+			case CliParameterType.ARRAY:
 				return value.split(",");
 			default:
 				return value;
@@ -370,6 +411,6 @@ ${positionedArgs
 	 */
 	run(argsWithoutCategories: string[]) {
 		const args = this.parseArgs(argsWithoutCategories);
-		this.execute(args);
+		void this.execute(this, args as any);
 	}
 }

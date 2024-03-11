@@ -1,23 +1,139 @@
-import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
-import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
 import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
-import { getConfig } from "~classes/configmanager";
-import { uploadFile } from "~classes/media";
 import { getUrl } from "~database/entities/Attachment";
 import { mkdir, exists } from "fs/promises";
 import extract from "extract-zip";
+import { client } from "~database/datasource";
+import { CliBuilder, CliCommand } from "cli-parser";
+import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
+import { PrismaClient } from "@prisma/client";
+import { ConfigManager } from "~packages/config-manager";
 
 const args = process.argv;
+
+const config = await new ConfigManager({}).getConfig();
+
+console.error("CLI is temporarily broken, please use the Prisma CLI instead");
+process.exit(1);
+
+const cliBuilder = new CliBuilder([
+	new CliCommand(
+		["help"],
+		[],
+		() => {
+			cliBuilder.displayHelp();
+		},
+		"Shows help for the CLI"
+	),
+	new CliCommand<{
+		username: string;
+		password: string;
+		email: string;
+		admin: boolean;
+		help: boolean;
+	}>(
+		["user", "create"],
+		[
+			{
+				name: "username",
+				type: CliParameterType.STRING,
+				description: "Username of the user",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "password",
+				type: CliParameterType.STRING,
+				description: "Password of the user",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "email",
+				type: CliParameterType.STRING,
+				description: "Email of the user",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "admin",
+				type: CliParameterType.BOOLEAN,
+				description: "Make the user an admin",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		(instance: CliCommand, args) => {
+			const { username, password, email, admin, help } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return;
+			}
+
+			// Check if username, password and email are provided
+			if (!username || !password || !email) {
+				console.log(
+					`${chalk.red(`✗`)} Missing username, password or email`
+				);
+				return;
+			}
+
+			// Check if user already exists
+			void client.user
+				.findFirst({
+					where: {
+						OR: [{ username }, { email }],
+					},
+				})
+				.then(user => {
+					if (user) {
+						console.log(`${chalk.red(`✗`)} User already exists`);
+						return;
+					}
+
+					console.log("Sus");
+
+					// Create user
+					/* const newUser = await createNewLocalUser({
+						email: email,
+						password: password,
+						username: username,
+						admin: admin,
+					});
+
+					console.log(
+						`${chalk.green(`✓`)} Created user ${chalk.blue(
+							newUser.username
+						)}${admin ? chalk.green(" (admin)") : ""}`
+					); */
+				});
+		},
+		"Creates a new user",
+		"bun cli user create --username admin --password password123 --email email@email.com"
+	),
+]);
+
+cliBuilder.processArgs(args);
+
+process.exit(0);
 
 /**
  * Make the text have a width of 20 characters, padding with gray dots
  * Text can be a Chalk string, in which case formatting codes should not be counted in text length
  * @param text The text to align
  */
-const alignDots = (text: string, length = 20) => {
+/* const alignDots = (text: string, length = 20) => {
 	// Remove formatting codes
 	// eslint-disable-next-line no-control-regex
 	const textLength = text.replace(/\u001b\[\d+m/g, "").length;
@@ -1065,3 +1181,4 @@ switch (command) {
 }
 
 process.exit(0);
+ */

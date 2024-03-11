@@ -75,7 +75,11 @@ export const createServer = (
 				return errorResponse("Route not found", 500);
 			}
 
-			if (matchedRoute && file != undefined) {
+			if (
+				matchedRoute &&
+				matchedRoute.name !== "/[...404]" &&
+				file != undefined
+			) {
 				const meta = file.meta;
 
 				// Check for allowed requests
@@ -133,35 +137,50 @@ export const createServer = (
 					configManager,
 					parsedRequest,
 				});
-			} else {
+			} else if (matchedRoute?.name === "/[...404]") {
 				// Proxy response from Vite at localhost:5173 if in development mode
 				if (isProd) {
 					if (new URL(req.url).pathname.startsWith("/assets")) {
-						// Serve from pages/dist/assets
-						return new Response(
-							Bun.file(`./pages/dist${new URL(req.url).pathname}`)
+						const file = Bun.file(
+							`./pages/dist${new URL(req.url).pathname}`
 						);
+
+						// Serve from pages/dist/assets
+						if (await file.exists()) {
+							return new Response(file);
+						} else return errorResponse("Asset not found", 404);
+					}
+					if (new URL(req.url).pathname.startsWith("/api")) {
+						return errorResponse("Route not found", 404);
 					}
 
+					const file = Bun.file(`./pages/dist/index.html`);
+
 					// Serve from pages/dist
-					return new Response(Bun.file(`./pages/dist/index.html`));
+					return new Response(file);
 				} else {
 					const proxy = await fetch(
 						req.url.replace(
 							config.http.base_url,
 							"http://localhost:5173"
 						)
-					);
+					).catch(async e => {
+						await logger.logError(
+							LogLevel.ERROR,
+							"Server.Proxy",
+							e as Error
+						);
+						return errorResponse("Route not found", 404);
+					});
 
 					if (proxy.status !== 404) {
 						return proxy;
 					}
 				}
 
-				return new Response(undefined, {
-					status: 404,
-					statusText: "Route not found",
-				});
+				return errorResponse("Route not found", 404);
+			} else {
+				return errorResponse("Route not found", 404);
 			}
 		},
 	});

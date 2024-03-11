@@ -4,14 +4,11 @@
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
-> [!IMPORTANT]  
-> This project is **not abandoned**, my laptop merely broke and I am waiting for a new one to arrive
-
 ## What is this?
 
-This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and API support.
+This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and almost complete Mastodon API support.
 
-This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
+This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It implements the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
 > [!NOTE]  
 > This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
@@ -35,7 +32,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 ## Benchmarks
 
 > [!NOTE]
-> These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
+> These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide. Load, and therefore performance, will vary depending on the server's hardware and software configuration, as well as user activity.
 
 ### Timeline Benchmarks
 
@@ -67,18 +64,21 @@ $ bun run benchmarks/timelines.ts 10000
 ✓ 10000 requests fulfilled in 12.44852s
 ```
 
-Lysand is extremely fast and can handle tens of thousands of HTTP requests per second on a good server.
+Lysand is extremely fast and can handle thousands of HTTP requests per second on a good server.
 
 ## How do I run it?
 
 ### Requirements
 
-- The [Bun Runtime](https://bun.sh), version 1.0.5 or later (usage of the latest version is recommended)
+- The [Bun Runtime](https://bun.sh), version 1.0.30 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 - (Optional if you want search) A working Meiliseach instance
 
-> **Note**: We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
+> [!WARNING]
+> Lysand has not been tested on Windows or MacOS. It is recommended to use a Linux-based operating system to run Lysand.
+> 
+> We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
 ### Installation
 
@@ -151,6 +151,9 @@ bun start
 ```
 
 ### Using the CLI
+
+> [!WARNING]
+> The CLI is currently broken due to unknown bugs that are actively being investigated. The following instructions are for when this is fixed.
 
 Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
 
@@ -279,10 +282,12 @@ Working endpoints are:
 - `/api/v1/blocks`
 - `/api/v1/mutes`
 - `/api/v2/media`
+- `/api/v1/notifications`
 
 Tests needed but completed:
 
 - `/api/v1/media/:id`
+- `/api/v2/media`
 - `/api/v1/favourites`
 - `/api/v1/accounts/:id/followers`
 - `/api/v1/accounts/:id/following`
@@ -335,7 +340,6 @@ Endpoints left:
 - `/api/v1/lists/:id` (`GET`, `PUT`, `DELETE`)
 - `/api/v1/markers` (`GET`, `POST`)
 - `/api/v1/lists/:id/accounts` (`GET`, `POST`, `DELETE`)
-- `/api/v1/notifications`
 - `/api/v1/notifications/:id`
 - `/api/v1/notifications/clear`
 - `/api/v1/notifications/:id/dismiss`

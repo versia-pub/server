@@ -2,6 +2,7 @@
 import { CliCommand, CliBuilder, startsWithArray } from "..";
 import { describe, beforeEach, it, expect, jest, spyOn } from "bun:test";
 import stripAnsi from "strip-ansi";
+import { CliParameterType } from "../cli-builder.type";
 
 describe("startsWithArray", () => {
 	it("should return true when fullArray starts with startArray", () => {
@@ -36,10 +37,27 @@ describe("CliCommand", () => {
 		cliCommand = new CliCommand(
 			["category1", "category2"],
 			[
-				{ name: "arg1", type: "string", needsValue: true },
-				{ name: "arg2", type: "number", needsValue: true },
-				{ name: "arg3", type: "boolean", needsValue: false },
-				{ name: "arg4", type: "array", needsValue: true },
+				{
+					name: "arg1",
+					type: CliParameterType.STRING,
+					needsValue: true,
+				},
+				{
+					name: "arg2",
+					shortName: "a",
+					type: CliParameterType.NUMBER,
+					needsValue: true,
+				},
+				{
+					name: "arg3",
+					type: CliParameterType.BOOLEAN,
+					needsValue: false,
+				},
+				{
+					name: "arg4",
+					type: CliParameterType.ARRAY,
+					needsValue: true,
+				},
 			],
 			() => {
 				// Do nothing
@@ -65,13 +83,34 @@ describe("CliCommand", () => {
 		});
 	});
 
-	it("should cast argument values correctly", () => {
-		expect(cliCommand["castArgValue"]("42", "number")).toBe(42);
-		expect(cliCommand["castArgValue"]("true", "boolean")).toBe(true);
-		expect(cliCommand["castArgValue"]("value1,value2", "array")).toEqual([
+	it("should parse short names for arguments too", () => {
+		const args = cliCommand["parseArgs"]([
+			"--arg1",
 			"value1",
-			"value2",
+			"-a",
+			"42",
+			"--arg3",
+			"--arg4",
+			"value1,value2",
 		]);
+		expect(args).toEqual({
+			arg1: "value1",
+			arg2: 42,
+			arg3: true,
+			arg4: ["value1", "value2"],
+		});
+	});
+
+	it("should cast argument values correctly", () => {
+		expect(cliCommand["castArgValue"]("42", CliParameterType.NUMBER)).toBe(
+			42
+		);
+		expect(
+			cliCommand["castArgValue"]("true", CliParameterType.BOOLEAN)
+		).toBe(true);
+		expect(
+			cliCommand["castArgValue"]("value1,value2", CliParameterType.ARRAY)
+		).toEqual(["value1", "value2"]);
 	});
 
 	it("should run the execute function with the parsed parameters", () => {
@@ -79,10 +118,26 @@ describe("CliCommand", () => {
 		cliCommand = new CliCommand(
 			["category1", "category2"],
 			[
-				{ name: "arg1", type: "string", needsValue: true },
-				{ name: "arg2", type: "number", needsValue: true },
-				{ name: "arg3", type: "boolean", needsValue: false },
-				{ name: "arg4", type: "array", needsValue: true },
+				{
+					name: "arg1",
+					type: CliParameterType.STRING,
+					needsValue: true,
+				},
+				{
+					name: "arg2",
+					type: CliParameterType.NUMBER,
+					needsValue: true,
+				},
+				{
+					name: "arg3",
+					type: CliParameterType.BOOLEAN,
+					needsValue: false,
+				},
+				{
+					name: "arg4",
+					type: CliParameterType.ARRAY,
+					needsValue: true,
+				},
 			],
 			mockExecute
 		);
@@ -109,13 +164,29 @@ describe("CliCommand", () => {
 		cliCommand = new CliCommand(
 			["category1", "category2"],
 			[
-				{ name: "arg1", type: "string", needsValue: true },
-				{ name: "arg2", type: "number", needsValue: true },
-				{ name: "arg3", type: "boolean", needsValue: false },
-				{ name: "arg4", type: "array", needsValue: true },
+				{
+					name: "arg1",
+					type: CliParameterType.STRING,
+					needsValue: true,
+				},
+				{
+					name: "arg2",
+					type: CliParameterType.NUMBER,
+					needsValue: true,
+				},
+				{
+					name: "arg3",
+					type: CliParameterType.BOOLEAN,
+					needsValue: false,
+				},
+				{
+					name: "arg4",
+					type: CliParameterType.ARRAY,
+					needsValue: true,
+				},
 				{
 					name: "arg5",
-					type: "string",
+					type: CliParameterType.STRING,
 					needsValue: true,
 					positioned: true,
 				},
@@ -153,31 +224,31 @@ describe("CliCommand", () => {
 			[
 				{
 					name: "arg1",
-					type: "string",
+					type: CliParameterType.STRING,
 					needsValue: true,
 					description: "Argument 1",
 					optional: true,
 				},
 				{
 					name: "arg2",
-					type: "number",
+					type: CliParameterType.NUMBER,
 					needsValue: true,
 					description: "Argument 2",
 				},
 				{
 					name: "arg3",
-					type: "boolean",
+					type: CliParameterType.BOOLEAN,
 					needsValue: false,
 					description: "Argument 3",
 					optional: true,
-					positioned: true,
+					positioned: false,
 				},
 				{
 					name: "arg4",
-					type: "array",
+					type: CliParameterType.ARRAY,
 					needsValue: true,
 					description: "Argument 4",
-					positioned: true,
+					positioned: false,
 				},
 			],
 			() => {
@@ -260,7 +331,7 @@ describe("CliBuilder", () => {
 			[
 				{
 					name: "arg1",
-					type: "string",
+					type: CliParameterType.STRING,
 					needsValue: true,
 					positioned: false,
 				},
@@ -352,20 +423,28 @@ describe("CliBuilder", () => {
 			[
 				{
 					name: "name",
-					type: "string",
+					type: CliParameterType.STRING,
 					needsValue: true,
 					description: "Name of new item",
 				},
 				{
 					name: "delete-previous",
-					type: "number",
+					type: CliParameterType.NUMBER,
 					needsValue: false,
-					positioned: true,
+					positioned: false,
 					optional: true,
 					description: "Also delete the previous item",
 				},
-				{ name: "arg3", type: "boolean", needsValue: false },
-				{ name: "arg4", type: "array", needsValue: true },
+				{
+					name: "arg3",
+					type: CliParameterType.BOOLEAN,
+					needsValue: false,
+				},
+				{
+					name: "arg4",
+					type: CliParameterType.ARRAY,
+					needsValue: true,
+				},
 			],
 			() => {
 				// Do nothing
