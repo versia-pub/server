@@ -1,4 +1,4 @@
-import { jsonResponse } from "@response";
+import { errorResponse, jsonResponse } from "@response";
 import { matches } from "ip-matching";
 import { getFromRequest } from "~database/entities/User";
 import type { ConfigManager, ConfigType } from "config-manager";
@@ -61,10 +61,22 @@ export const createServer = (
 			// There shouldn't be a performance hit after bundling right?
 			const { matchRoute } = await import("~routes");
 
-			const { file, matchedRoute } = matchRoute(req.url);
+			const { file: filePromise, matchedRoute } = matchRoute(req.url);
 
-			if (matchedRoute) {
-				const meta = (await file).meta;
+			const file = await filePromise;
+
+			if (matchedRoute && file == undefined) {
+				await logger.log(
+					LogLevel.ERROR,
+					"Server",
+					`Route file ${matchedRoute.filePath} not found or not registered in the routes file`
+				);
+
+				return errorResponse("Route not found", 500);
+			}
+
+			if (matchedRoute && file != undefined) {
+				const meta = file.meta;
 
 				// Check for allowed requests
 				if (!meta.allowedMethods.includes(req.method as any)) {
@@ -116,9 +128,7 @@ export const createServer = (
 					});
 				}
 
-				return await (
-					await file
-				).default(req.clone(), matchedRoute, {
+				return await file.default(req.clone(), matchedRoute, {
 					auth,
 					configManager,
 					parsedRequest,

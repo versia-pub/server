@@ -161,6 +161,7 @@ export const rawRoutes = {
 	"/users/[uuid]/outbox": await import(
 		serverPath + "/users/[uuid]/outbox/index.ts"
 	),
+	"/[...404]": await import(serverPath + "/[...404].ts"),
 };
 
 // Returns the route filesystem path when given a URL
@@ -175,10 +176,13 @@ export const matchRoute = <T = Record<string, never>>(url: string) => {
 
 	return {
 		// @ts-expect-error TypeScript parses this as a defined object instead of an arbitrarily editable route file
-		file: rawRoutes[route.name] as Promise<{
-			meta: APIRouteMeta;
-			default: RouteHandler<T>;
-		}>,
+		file: rawRoutes[route.name] as Promise<
+			| {
+					meta: APIRouteMeta;
+					default: RouteHandler<T>;
+			  }
+			| undefined
+		>,
 		matchedRoute: route,
 	};
 };
