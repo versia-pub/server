@@ -1,4 +1,4 @@
-import type { MediaBackendType } from "media-manager";
+import { MediaBackendType } from "media-manager";
 
 export interface ConfigType {
 	database: {
@@ -232,7 +232,7 @@ export const configDefaults: ConfigType = {
 		username: "",
 	},
 	media: {
-		backend: "local",
+		backend: MediaBackendType.LOCAL,
 		deduplicate_media: true,
 		conversion: {
 			convert_images: false,
