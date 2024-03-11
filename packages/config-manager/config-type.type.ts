@@ -1,3 +1,5 @@
+import type { MediaBackendType } from "media-manager";
+
 export interface ConfigType {
 	database: {
 		host: string;
@@ -95,7 +97,7 @@ export interface ConfigType {
 	};
 
 	media: {
-		backend: string;
+		backend: MediaBackendType;
 		deduplicate_media: boolean;
 		conversion: {
 			convert_images: boolean;

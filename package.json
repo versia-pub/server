@@ -38,7 +38,7 @@
     "start": "NODE_ENV=production bun run dist/index.js --prod",
     "migrate-dev": "bun prisma migrate dev",
     "migrate": "bun prisma migrate deploy",
-    "lint": "eslint --config .eslintrc.cjs --ext .ts .",
+    "lint": "bunx --bun eslint --config .eslintrc.cjs --ext .ts .",
     "prod-build": "bunx --bun vite build pages && bun run build.ts",
     "prisma": "DATABASE_URL=$(bun run prisma.ts) bunx prisma",
     "generate": "bun prisma generate",

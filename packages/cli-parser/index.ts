@@ -146,9 +146,9 @@ export class CliBuilder {
 
 			// Split the command into parts and iterate over them
 			for (const part of command.categories) {
-				// If this part doesn't exist in the current level of the tree, add it
+				// If this part doesn't exist in the current level of the tree, add it (__proto__ check to prevent prototype pollution)
 				// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-				if (!currentLevel[part]) {
+				if (!currentLevel[part] && part !== "__proto__") {
 					// If this is the last part of the command, add the command itself
 					if (
 						part ===
@@ -252,24 +252,6 @@ export class CliBuilder {
 		}
 	}
 }
-
-/* type CliParametersToType<T extends CliParameter[]> = {
-	[K in T[number]["name"]]: T[number]["type"] extends CliParameterType.STRING
-		? string
-		: T[number]["type"] extends CliParameterType.NUMBER
-			? number
-			: T[number]["type"] extends CliParameterType.BOOLEAN
-				? boolean
-				: T[number]["type"] extends CliParameterType.ARRAY
-					? string[]
-					: T[number]["type"] extends CliParameterType.EMPTY
-						? never
-						: never;
-};
-
-type ExecuteFunction<T extends CliParameter[]> = (
-	args: CliParametersToType<T>
-) => void; */
 
 type ExecuteFunction<T> = (
 	instance: CliCommand,
