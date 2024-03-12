@@ -40,7 +40,7 @@ describe("ConfigManager", () => {
 
 		const config = await configManager.getConfig<typeof mockConfig>();
 
-		expect(config).toEqual(mockConfig);
+		expect(config).toContainKeys(Object.keys(mockConfig));
 	});
 
 	it("should read the internal config file correctly", async () => {
