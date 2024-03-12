@@ -1,5 +1,6 @@
 import { CliParameterType, type CliParameter } from "./cli-builder.type";
 import chalk from "chalk";
+import strip from "strip-ansi";
 
 export function startsWithArray(fullArray: any[], startArray: any[]) {
 	if (startArray.length > fullArray.length) {
@@ -103,7 +104,7 @@ export class CliBuilder {
 	 * Turn raw system args into a CLI command and run it
 	 * @param args Args directly from process.argv
 	 */
-	processArgs(args: string[]) {
+	async processArgs(args: string[]) {
 		const revelantArgs = this.getRelevantArgs(args);
 		// Find revelant command
 		// Search for a command with as many categories matching args as possible
@@ -116,9 +117,9 @@ export class CliBuilder {
 			prev.categories.length > current.categories.length ? prev : current
 		);
 
-		const argsWithoutCategories = args.slice(command.categories.length - 1);
+		const argsWithoutCategories = revelantArgs.slice(command.categories.length);
 
-		command.run(argsWithoutCategories);
+		return await command.run(argsWithoutCategories);
 	}
 
 	/**
@@ -237,9 +238,12 @@ export class CliBuilder {
 						: 0;
 				if (!current.includes("|")) return prev;
 				const [left] = current.split("|");
-				return Math.max(Number(prev), left.length);
+				// Strip ANSI color codes or they mess up the length
+				return Math.max(Number(prev), strip(left).length);
 			})
 		);
+
+		console.log(optimal_length)
 
 		for (const line of writeBuffer.split("\n")) {
 			const [left, right] = line.split("|");
@@ -247,7 +251,8 @@ export class CliBuilder {
 				console.log(left);
 				continue;
 			}
-			const dots = ".".repeat(optimal_length + 5 - left.length);
+			// Strip ANSI color codes or they mess up the length
+			const dots = ".".repeat(optimal_length + 5 - strip(left).length);
 			console.log(`${left}${dots}${right}`);
 		}
 	}
@@ -256,7 +261,7 @@ export class CliBuilder {
 type ExecuteFunction<T> = (
 	instance: CliCommand,
 	args: Partial<T>
-) => Promise<void> | void;
+) => Promise<number> | Promise<void> | number | void;
 
 /**
  * A command that can be executed from the command line
@@ -391,8 +396,8 @@ ${unpositionedArgs
 	/**
 	 * Runs the execute function with the parsed parameters as an argument
 	 */
-	run(argsWithoutCategories: string[]) {
+	async run(argsWithoutCategories: string[]) {
 		const args = this.parseArgs(argsWithoutCategories);
-		void this.execute(this, args as any);
+		return await this.execute(this, args as any);
 	}
 }
