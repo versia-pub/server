@@ -1,5 +1,6 @@
-import type { ConfigType } from "@config";
 import type { Attachment } from "@prisma/client";
+import type { ConfigType } from "config-manager";
+import { MediaBackendType } from "media-manager";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIAttachment } from "~types/entities/attachment";
 
@@ -56,11 +57,13 @@ export const attachmentToAPI = (
 	};
 };
 
-export const getUrl = (hash: string, config: ConfigType) => {
-	if (config.media.backend === "local") {
-		return `${config.http.base_url}/media/${hash}`;
-	} else if (config.media.backend === "s3") {
-		return `${config.s3.public_url}/${hash}`;
+export const getUrl = (name: string, config: ConfigType) => {
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+	if (config.media.backend === MediaBackendType.LOCAL) {
+		return `${config.http.base_url}/media/${name}`;
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+	} else if (config.media.backend === MediaBackendType.S3) {
+		return `${config.s3.public_url}/${name}`;
 	}
 	return "";
 };

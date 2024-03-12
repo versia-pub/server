@@ -2,10 +2,10 @@
  * Usage: TOKEN=your_token_here bun benchmark:timeline <request_count>
  */
 
-import { getConfig } from "@config";
 import chalk from "chalk";
+import { ConfigManager } from "config-manager";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 const token = process.env.TOKEN;
 const requestCount = Number(process.argv[2]) || 100;

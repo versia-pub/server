@@ -76,3 +76,22 @@ export const emojiToLysand = (emoji: Emoji): LysandEmoji => {
 		alt: emoji.alt || undefined,
 	};
 };
+
+/**
+ * Converts the emoji to an ActivityPub object.
+ * @returns The ActivityPub object.
+ */
+export const emojiToActivityPub = (emoji: Emoji): any => {
+	// replace any with your ActivityPub Emoji type
+	return {
+		type: "Emoji",
+		name: `:${emoji.shortcode}:`,
+		updated: new Date().toISOString(),
+		icon: {
+			type: "Image",
+			url: emoji.url,
+			mediaType: emoji.content_type,
+			alt: emoji.alt || undefined,
+		},
+	};
+};

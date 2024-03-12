@@ -1,5 +1,4 @@
-import { applyConfig } from "@api";
-import { getConfig } from "@config";
+import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { userRelations, userToAPI } from "~database/entities/User";
@@ -18,12 +17,8 @@ export const meta = applyConfig({
 	},
 });
 
-/**
- * Creates a new user
- */
-// eslint-disable-next-line @typescript-eslint/require-await
-export default async (): Promise<Response> => {
-	const config = getConfig();
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const config = await extraData.configManager.getConfig();
 
 	// Get software version from package.json
 	const version = manifest.version;
@@ -101,15 +96,19 @@ export default async (): Promise<Response> => {
 		description: "A test instance",
 		email: "",
 		invites_enabled: false,
-		registrations: true,
+		registrations: config.signups.registration,
 		languages: ["en"],
-		rules: [],
+		rules: config.signups.rules.map((r, index) => ({
+			id: String(index),
+			text: r,
+		})),
 		stats: {
 			domain_count: knownDomainsCount,
 			status_count: statusCount,
 			user_count: userCount,
 		},
 		thumbnail: "",
+		tos_url: config.signups.tos_url,
 		title: "Test Instance",
 		uri: new URL(config.http.base_url).hostname,
 		urls: {
@@ -155,4 +154,4 @@ export default async (): Promise<Response> => {
 		},
 		contact_account: contactAccount ? userToAPI(contactAccount) : null,
 	} as APIInstance);
-};
+});

@@ -4,14 +4,14 @@
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
-
 ## What is this?
 
-This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and API support.
+This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and almost complete Mastodon API support.
 
-This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It will implement the Mastodon API for support with clients that already support Mastodon or Pleroma.
+This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It implements the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
-> **Note:** This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
+> [!NOTE]  
+> This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
 
 ## Features
 
@@ -31,7 +31,8 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ## Benchmarks
 
-> **Note**: These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide.
+> [!NOTE]
+> These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide. Load, and therefore performance, will vary depending on the server's hardware and software configuration, as well as user activity.
 
 ### Timeline Benchmarks
 
@@ -63,17 +64,21 @@ $ bun run benchmarks/timelines.ts 10000
 ✓ 10000 requests fulfilled in 12.44852s
 ```
 
-Lysand is extremely fast and can handle tens of thousands of HTTP requests per second on a good server.
+Lysand is extremely fast and can handle thousands of HTTP requests per second on a good server.
 
 ## How do I run it?
 
 ### Requirements
 
-- The [Bun Runtime](https://bun.sh), version 1.0.5 or later (usage of the latest version is recommended)
+- The [Bun Runtime](https://bun.sh), version 1.0.30 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
+- (Optional if you want search) A working Meiliseach instance
 
-> **Note**: We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
+> [!WARNING]
+> Lysand has not been tested on Windows or MacOS. It is recommended to use a Linux-based operating system to run Lysand.
+> 
+> We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
 ### Installation
 
@@ -125,6 +130,18 @@ RUN chmod +x /docker-entrypoint-initdb.d/init.sh
 bun migrate
 ```
 
+6. (If you want search)
+Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](docker-compose.yml) file.
+
+Set up Meiliseach's API key by passing the `MEILI_MASTER_KEY` environment variable to the server. Then, enale and configure search in the config file.
+7. Build everything:
+
+```bash
+bun prod-build
+```
+
+You may now start the server with `bun start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
+In fact, the `bun start` script merely runs `bun run dist/index.js --prod`!
 ### Running
 
 To run the server, simply run the following command:
@@ -138,16 +155,22 @@ bun start
 Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
 
 ```bash
-bun cli
+bun cli help
 ```
 
-You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
+If you are running a production build, you will need to run `bun run dist/cli.js` or `./entrypoint.sh cli` instead.
+
+You can use the `help` command to see a list of available commands. These include creating users, deleting users and more. Each command also has a `--help,-h` flag that you can use to see more information about the command.
 
 #### Scripting with the CLI
 
-Some CLI commands that return data as tables can be used in scripts. To do so, you can use the `--json` flag to output the data as JSON instead of a table, or even `--csv` to output the data as CSV. See `bun cli help` for more information.
+Some CLI commands that return data as tables can be used in scripts. To convert them to JSON or CSV, some commands allow you to specify a `--format` flag that can be either `"json"` or `"csv"`. See `bun cli help` or `bun cli <command> -h` for more information.
 
 Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
+
+### Rebuilding the Search Index
+
+You may use the `bun cli index rebuild` command to automatically push all posts and users to Meilisearch, if it is configured. This is useful if you have just set up Meilisearch, or if you accidentally deleted something.
 
 ### Using Database Commands
 
@@ -155,7 +178,8 @@ The `bun prisma` commands allows you to use Prisma commands without needing to a
 
 ## With Docker
 
-> **Note**: Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
+> [!NOTE]
+> Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
 >
 > These instructions will probably also work with Podman and other container runtimes.
 
@@ -180,7 +204,7 @@ You may need root privileges to run Docker commands.
 You can run CLI commands inside Docker using the following command:
 
 ```bash
-sudo docker exec -it lysand bun cli ...
+sudo docker exec -it lysand sh entrypoint.sh cli ...
 ```
 
 ### Running migrations inside Docker
@@ -188,7 +212,7 @@ sudo docker exec -it lysand bun cli ...
 You can run migrations inside Docker using the following command (if needed):
 
 ```bash
-sudo docker exec -it lysand bun migrate
+sudo docker exec -it lysand sh entrypoint.sh prisma migrate deploy
 ```
 
 ## Contributing
@@ -202,7 +226,8 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 ## Federation
 
-> **Warning**: Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
+> [!WARNING]
+> Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
 The following extensions are currently supported or being worked on:
 - `org.lysand:custom_emojis`: Custom emojis
@@ -254,17 +279,21 @@ Working endpoints are:
 - `/api/v1/blocks`
 - `/api/v1/mutes`
 - `/api/v2/media`
+- `/api/v1/notifications`
 
 Tests needed but completed:
 
 - `/api/v1/media/:id`
+- `/api/v2/media`
 - `/api/v1/favourites`
+- `/api/v1/accounts/:id/followers`
+- `/api/v1/accounts/:id/following`
+- `/api/v2/search`
 
 Endpoints left:
 
 - `/api/v1/reports`
 - `/api/v1/accounts/:id/lists`
-- `/api/v1/accounts/:id/following`
 - `/api/v1/follow_requests`
 - `/api/v1/follow_requests/:account_id/authorize`
 - `/api/v1/follow_requests/:account_id/reject`
@@ -308,11 +337,9 @@ Endpoints left:
 - `/api/v1/lists/:id` (`GET`, `PUT`, `DELETE`)
 - `/api/v1/markers` (`GET`, `POST`)
 - `/api/v1/lists/:id/accounts` (`GET`, `POST`, `DELETE`)
-- `/api/v1/notifications`
 - `/api/v1/notifications/:id`
 - `/api/v1/notifications/clear`
 - `/api/v1/notifications/:id/dismiss`
-- `/api/v2/search`
 - `/api/v2/instance`
 - `/api/v1/instance/peers`
 - `/api/v1/instance/activity`
@@ -329,126 +356,6 @@ Endpoints left:
 - Admin API  
 
 WebSocket Streaming API also needed to be added (and push notifications)
-
-## Configuration Values
-
-Configuration can be found inside the `config.toml` file. The following values are available:
-
-### Database
-
-- `host`: The hostname or IP address of the database server. Example: `"localhost"`
-- `port`: The port number to use for the database connection. Example: `48654`
-- `username`: The username to use for the database connection. Example: `"lysand"`
-- `password`: The password to use for the database connection. Example: `"mycoolpassword"`
-- `database`: The name of the database to use. Example: `"lysand"`
-
-### HTTP
-
-- `base_url`: The base URL for the HTTP server. Example: `"https://lysand.social"`
-- `bind`: The hostname or IP address to bind the HTTP server to. Example: `"http://localhost"`
-- `bind_port`: The port number to bind the HTTP server to. Example: `"8080"`
-
-#### Security
-
-- `banned_ips`: An array of strings representing banned IPv4 or IPv6 IPs. Wildcards, networks and ranges are supported. Example: `[ "192.168.0.*" ]` (empty array)
-
-### Media
-
-- `backend`: Specifies the backend to use for media storage. Can be "local" or "s3", "local" uploads the file to the local filesystem.
-- `deduplicate_media`: When set to true, the hash of media is checked when uploading to avoid duplication.
-
-#### Conversion
-
-- `convert_images`: Whether to convert uploaded images to another format. Example: `true`
-- `convert_to`: The format to convert uploaded images to. Example: `"webp"`. Can be "jxl", "webp", "avif", "png", "jpg" or "gif".
-
-### S3
-
-- `endpoint`: The endpoint to use for the S3 server. Example: `"https://s3.example.com"`
-- `access_key`: Access key to use for S3
-- `secret_access_key`: Secret access key to use for S3
-- `bucket_name`: The bucket to use for S3 (can be left empty)
-- `region`: The region to use for S3 (can be left empty)
-- `public_url`: The public URL to access uploaded media. Example: `"https://cdn.example.com"`
-
-### SMTP
-
-- `server`: The SMTP server to use for sending emails. Example: `"smtp.example.com"`
-- `port`: The port number to use for the SMTP server. Example: `465`
-- `username`: The username to use for the SMTP server. Example: `"test@example.com"`
-- `password`: The password to use for the SMTP server. Example: `"password123"`
-- `tls`: Whether to use TLS for the SMTP server. Example: `true`
-
-### Email
-
-- `send_on_report`: Whether to send an email to moderators when a report is received. Example: `false`
-- `send_on_suspend`: Whether to send an email to moderators when a user is suspended. Example: `true`
-- `send_on_unsuspend`: Whether to send an email to moderators when a user is unsuspended. Example: `false`
-
-### Validation
-
-- `max_displayname_size`: The maximum size of a user's display name, in characters. Example: `30`
-- `max_bio_size`: The maximum size of a user's bio, in characters. Example: `160`
-- `max_note_size`: The maximum size of a user's note, in characters. Example: `500`
-- `max_avatar_size`: The maximum size of a user's avatar image, in bytes. Example: `1048576` (1 MB)
-- `max_header_size`: The maximum size of a user's header image, in bytes. Example: `2097152` (2 MB)
-- `max_media_size`: The maximum size of a media attachment, in bytes. Example: `5242880` (5 MB)
-- `max_media_attachments`: The maximum number of media attachments allowed per post. Example: `4`
-- `max_media_description_size`: The maximum size of a media attachment's description, in characters. Example: `100`
-- `max_username_size`: The maximum size of a user's username, in characters. Example: `20`
-- `username_blacklist`: An array of strings representing usernames that are not allowed to be used by users. Defaults are from Akkoma. Example: `["admin", "moderator"]`
-- `blacklist_tempmail`: Whether to blacklist known temporary email providers. Example: `true`
-- `email_blacklist`: Additional email providers to blacklist. Example: `["example.com", "test.com"]`
-- `url_scheme_whitelist`: An array of strings representing valid URL schemes. URLs that do not use one of these schemes will be parsed as text. Example: `["http", "https"]`
-- `allowed_mime_types`: An array of strings representing allowed MIME types for media attachments. Example: `["image/jpeg", "image/png", "video/mp4"]`
-
-### Defaults
-
-- `visibility`: The default visibility for new notes. Example: `"public"`
-- `language`: The default language for new notes. Example: `"en"`
-- `avatar`: The default avatar URL. Example: `""` (empty string)
-- `header`: The default header URL. Example: `""` (empty string)
-
-### ActivityPub
-
-> **Note**: These options do nothing and date back to when Lysand had ActivityPub support. They will be removed in a future version.
-
-- `use_tombstones`: Whether to use ActivityPub Tombstones instead of deleting objects. Example: `true`
-- `fetch_all_collection_members`: Whether to fetch all members of collections (followers, following, etc) when receiving them. Example: `false`
-- `reject_activities`: An array of instance domain names without "https" or glob patterns. Rejects all activities from these instances, simply doesn't save them at all. Example: `[ "mastodon.social" ]`
-- `force_followers_only`: An array of instance domain names without "https" or glob patterns. Force posts from this instance to be followers only. Example: `[ "mastodon.social" ]`
-- `discard_reports`: An array of instance domain names without "https" or glob patterns. Discard all reports from these instances. Example: `[ "mastodon.social" ]`
-- `discard_deletes`: An array of instance domain names without "https" or glob patterns. Discard all deletes from these instances. Example: `[ "mastodon.social" ]`
-- `discard_updates`: An array of instance domain names without "https" or glob patterns. Discard all updates (edits) from these instances. Example: `[]`
-- `discard_banners`: An array of instance domain names without "https" or glob patterns. Discard all banners from these instances. Example: `[ "mastodon.social" ]`
-- `discard_avatars`: An array of instance domain names without "https" or glob patterns. Discard all avatars from these instances. Example: `[ "mastodon.social" ]`
-- `discard_follows`: An array of instance domain names without "https" or glob patterns. Discard all follow requests from these instances. Example: `[]`
-- `force_sensitive`: An array of instance domain names without "https" or glob patterns. Force set these instances' media as sensitive. Example: `[ "mastodon.social" ]`
-- `remove_media`: An array of instance domain names without "https" or glob patterns. Remove these instances' media. Example: `[ "mastodon.social" ]`
-
-### Filters
-
-- `note_filters`: An array of regex filters to drop notes from new activities. Example: `["(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+", "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+"]`
-- `username_filters`: An array of regex filters to drop users from new activities based on their username. Example: `[ "^spammer-[a-z]" ]`
-- `displayname_filters`: An array of regex filters to drop users from new activities based on their display name. Example: `[ "^spammer-[a-z]" ]`
-- `bio_filters`: An array of regex filters to drop users from new activities based on their bio. Example: `[ "badword" ]`
-- `emoji_filters`: An array of regex filters to drop users from new activities based on their emoji usage. Example: `[ ":bademoji:" ]`
-
-### Logging
-
-- `log_requests`: Whether to log all requests. Example: `true`
-- `log_requests_verbose`: Whether to log request and their contents. Example: `false`
-- `log_filters`: Whether to log all filtered objects. Example: `true`
-
-### Ratelimits
-
-- `duration_coeff`: The amount to multiply every route's duration by. Example: `1.0`
-- `max_coeff`: The amount to multiply every route's max by. Example: `1.0`
-
-### Custom Ratelimits
-
-- `"/api/v1/timelines/public"`: An object representing a custom ratelimit for the specified API route. Example: `{ duration = 60, max = 200 }`
-
 
 ## License
 

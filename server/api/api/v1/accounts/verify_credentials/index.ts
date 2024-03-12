@@ -1,6 +1,6 @@
 import { errorResponse, jsonResponse } from "@response";
-import { getFromRequest, userToAPI } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userToAPI } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -14,14 +14,14 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (req: Request): Promise<Response> => {
+export default apiRoute((req, matchedRoute, extraData) => {
 	// TODO: Add checks for disabled or not email verified accounts
 
-	const { user } = await getFromRequest(req);
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
 	return jsonResponse({
 		...userToAPI(user, true),
 	});
-};
+});

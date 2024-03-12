@@ -1,15 +1,13 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import { getFromRequest } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
-import { uploadFile } from "~classes/media";
-import { getConfig } from "@config";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
-import type { MatchedRoute } from "bun";
-import { parseRequest } from "@request";
+import type { MediaBackend } from "media-manager";
+import { MediaBackendType } from "media-manager";
+import { LocalMediaBackend } from "~packages/media-manager/backends/local";
+import { S3MediaBackend } from "~packages/media-manager/backends/s3";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["GET", "PUT"],
 	ratelimits: {
 		max: 10,
@@ -25,11 +23,12 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * Get media information
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute<{
+	thumbnail?: File;
+	description?: string;
+	focus?: string;
+}>(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) {
 		return errorResponse("Unauthorized", 401);
@@ -47,7 +46,7 @@ export default async (
 		return errorResponse("Media not found", 404);
 	}
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
 
 	switch (req.method) {
 		case "GET": {
@@ -60,21 +59,27 @@ export default async (
 			}
 		}
 		case "PUT": {
-			const { description, thumbnail } = await parseRequest<{
-				thumbnail?: File;
-				description?: string;
-				focus?: string;
-			}>(req);
+			const { description, thumbnail } = extraData.parsedRequest;
 
 			let thumbnailUrl = attachment.thumbnail_url;
 
-			if (thumbnail) {
-				const hash = await uploadFile(
-					thumbnail as unknown as File,
-					config
-				);
+			let mediaManager: MediaBackend;
 
-				thumbnailUrl = hash ? getUrl(hash, config) : "";
+			switch (config.media.backend as MediaBackendType) {
+				case MediaBackendType.LOCAL:
+					mediaManager = new LocalMediaBackend(config);
+					break;
+				case MediaBackendType.S3:
+					mediaManager = new S3MediaBackend(config);
+					break;
+				default:
+					// TODO: Replace with logger
+					throw new Error("Invalid media backend");
+			}
+
+			if (thumbnail) {
+				const { uploadedFile } = await mediaManager.addFile(thumbnail);
+				thumbnailUrl = getUrl(uploadedFile.name, config);
 			}
 
 			const descriptionText = description || attachment.description;
@@ -101,4 +106,4 @@ export default async (
 	}
 
 	return errorResponse("Method not allowed", 405);
-};
+});

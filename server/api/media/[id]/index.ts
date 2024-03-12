@@ -1,6 +1,5 @@
 import { errorResponse } from "@response";
-import { applyConfig } from "@api";
-import type { MatchedRoute } from "bun";
+import { apiRoute, applyConfig } from "@api";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -14,10 +13,7 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute) => {
 	// TODO: Add checks for disabled or not email verified accounts
 
 	const id = matchedRoute.params.id;
@@ -46,4 +42,4 @@ export default async (
 			"Content-Range": `bytes ${start}-${end}/${file.size}`,
 		},
 	});
-};
+});

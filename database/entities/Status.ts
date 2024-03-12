@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { getConfig } from "@config";
 import type { UserWithRelations } from "./User";
 import {
 	fetchRemoteUser,
@@ -24,8 +23,14 @@ import type { APIStatus } from "~types/entities/status";
 import { applicationToAPI } from "./Application";
 import { attachmentToAPI } from "./Attachment";
 import type { APIAttachment } from "~types/entities/attachment";
+import { sanitizeHtml } from "@sanitization";
+import { parse } from "marked";
+import linkifyStr from "linkify-string";
+import linkifyHtml from "linkify-html";
+import { addStausToMeilisearch } from "@meilisearch";
+import { ConfigManager } from "config-manager";
 
-const config = getConfig();
+const config = await new ConfigManager({}).getConfig();
 
 export const statusAndUserRelations: Prisma.StatusInclude = {
 	author: {
@@ -206,7 +211,7 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
 			? {
 					status: replyStatus,
 					user: (replyStatus as any).author,
-			  }
+				}
 			: undefined,
 		quote: quotingStatus || undefined,
 	});
@@ -303,7 +308,7 @@ export const createNewStatus = async (data: {
 	visibility: APIStatus["visibility"];
 	sensitive: boolean;
 	spoiler_text: string;
-	emojis: Emoji[];
+	emojis?: Emoji[];
 	content_type?: string;
 	uri?: string;
 	mentions?: User[];
@@ -320,6 +325,11 @@ export const createNewStatus = async (data: {
 
 	let mentions = data.mentions || [];
 
+	// Parse emojis
+	const emojis = await parseEmojis(data.content);
+
+	data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
+
 	// Get list of mentioned users
 	if (mentions.length === 0) {
 		mentions = await client.user.findMany({
@@ -335,11 +345,32 @@ export const createNewStatus = async (data: {
 		});
 	}
 
+	let formattedContent;
+
+	// Get HTML version of content
+	if (data.content_type === "text/markdown") {
+		formattedContent = linkifyHtml(
+			await sanitizeHtml(await parse(data.content))
+		);
+	} else if (data.content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+	} else {
+		// Parse as plaintext
+		formattedContent = linkifyStr(data.content);
+
+		// Split by newline and add <p> tags
+		formattedContent = formattedContent
+			.split("\n")
+			.map(line => `<p>${line}</p>`)
+			.join("\n");
+	}
+
 	let status = await client.status.create({
 		data: {
 			authorId: data.account.id,
 			applicationId: data.application?.id,
-			content: data.content,
+			content: formattedContent,
+			contentSource: data.content,
 			contentType: data.content_type,
 			visibility: data.visibility,
 			sensitive: data.sensitive,
@@ -358,7 +389,7 @@ export const createNewStatus = async (data: {
 								id: attachment,
 							};
 						}),
-				  }
+					}
 				: undefined,
 			inReplyToPostId: data.reply?.status.id,
 			quotingPostId: data.quote?.id,
@@ -390,7 +421,6 @@ export const createNewStatus = async (data: {
 	});
 
 	// Create notification
-
 	if (status.inReplyToPost) {
 		await client.notification.create({
 			data: {
@@ -402,7 +432,111 @@ export const createNewStatus = async (data: {
 		});
 	}
 
+	// Add to search index
+	await addStausToMeilisearch(status);
+
 	return status;
+};
+
+export const editStatus = async (
+	status: StatusWithRelations,
+	data: {
+		content: string;
+		visibility?: APIStatus["visibility"];
+		sensitive: boolean;
+		spoiler_text: string;
+		emojis?: Emoji[];
+		content_type?: string;
+		uri?: string;
+		mentions?: User[];
+		media_attachments?: string[];
+	}
+) => {
+	// Get people mentioned in the content (match @username or @username@domain.com mentions
+	const mentionedPeople =
+		data.content.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
+
+	let mentions = data.mentions || [];
+
+	// Parse emojis
+	const emojis = await parseEmojis(data.content);
+
+	data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
+
+	// Get list of mentioned users
+	if (mentions.length === 0) {
+		mentions = await client.user.findMany({
+			where: {
+				OR: mentionedPeople.map(person => ({
+					username: person.split("@")[1],
+					instance: {
+						base_url: person.split("@")[2],
+					},
+				})),
+			},
+			include: userRelations,
+		});
+	}
+
+	let formattedContent;
+
+	// Get HTML version of content
+	if (data.content_type === "text/markdown") {
+		formattedContent = linkifyHtml(
+			await sanitizeHtml(await parse(data.content))
+		);
+	} else if (data.content_type === "text/x.misskeymarkdown") {
+		// Parse as MFM
+	} else {
+		// Parse as plaintext
+		formattedContent = linkifyStr(data.content);
+
+		// Split by newline and add <p> tags
+		formattedContent = formattedContent
+			.split("\n")
+			.map(line => `<p>${line}</p>`)
+			.join("\n");
+	}
+
+	const newStatus = await client.status.update({
+		where: {
+			id: status.id,
+		},
+		data: {
+			content: formattedContent,
+			contentSource: data.content,
+			contentType: data.content_type,
+			visibility: data.visibility,
+			sensitive: data.sensitive,
+			spoilerText: data.spoiler_text,
+			emojis: {
+				connect: data.emojis.map(emoji => {
+					return {
+						id: emoji.id,
+					};
+				}),
+			},
+			attachments: data.media_attachments
+				? {
+						connect: data.media_attachments.map(attachment => {
+							return {
+								id: attachment,
+							};
+						}),
+					}
+				: undefined,
+			mentions: {
+				connect: mentions.map(mention => {
+					return {
+						id: mention.id,
+					};
+				}),
+			},
+		},
+		include: statusAndUserRelations,
+	});
+
+	return newStatus;
 };
 
 export const isFavouritedBy = async (status: Status, user: User) => {
@@ -476,11 +610,58 @@ export const statusToAPI = async (
 		quote: status.quotingPost
 			? await statusToAPI(
 					status.quotingPost as unknown as StatusWithRelations
-			  )
+				)
 			: null,
 		quote_id: status.quotingPost?.id || undefined,
 	};
 };
+
+/* export const statusToActivityPub = async (
+	status: StatusWithRelations
+	// user?: UserWithRelations
+): Promise<any> => {
+	// replace any with your ActivityPub type
+	return {
+		"@context": [
+			"https://www.w3.org/ns/activitystreams",
+			"https://mastodon.social/schemas/litepub-0.1.jsonld",
+		],
+		id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
+		type: "Note",
+		summary: status.spoilerText,
+		content: status.content,
+		published: new Date(status.createdAt).toISOString(),
+		url: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
+		attributedTo: `${config.http.base_url}/users/${status.authorId}`,
+		to: ["https://www.w3.org/ns/activitystreams#Public"],
+		cc: [], // add recipients here
+		sensitive: status.sensitive,
+		attachment: (status.attachments ?? []).map(
+			a => attachmentToActivityPub(a) as ActivityPubAttachment // replace with your function
+		),
+		tag: [], // add tags here
+		replies: {
+			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/replies`,
+			type: "Collection",
+			totalItems: status._count.replies,
+		},
+		likes: {
+			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/likes`,
+			type: "Collection",
+			totalItems: status._count.likes,
+		},
+		shares: {
+			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/shares`,
+			type: "Collection",
+			totalItems: status._count.reblogs,
+		},
+		inReplyTo: status.inReplyToPostId
+			? `${config.http.base_url}/users/${status.inReplyToPost?.authorId}/statuses/${status.inReplyToPostId}`
+			: null,
+		visibility: "public", // adjust as needed
+		// add more fields as needed
+	};
+}; */
 
 export const statusToLysand = (status: StatusWithRelations): Note => {
 	return {

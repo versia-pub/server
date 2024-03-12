@@ -1,17 +1,11 @@
+import { ConfigManager } from "config-manager";
+
 // Proxies all `bunx prisma` commands with an environment variable
+const config = await new ConfigManager({}).getConfig();
 
-import { getConfig } from "@config";
+process.stdout.write(
+	`postgresql://${config.database.username}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}\n`
+);
 
-const args = process.argv.slice(2);
-const config = getConfig();
-
-const { stdout } = Bun.spawn(["bunx", "prisma", ...args], {
-	env: {
-		...process.env,
-		DATABASE_URL: `postgresql://${config.database.username}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`,
-	},
-});
-
-// Show stdout
-const text = await new Response(stdout).text();
-console.log(text);
+// Ends
+process.exit(0);

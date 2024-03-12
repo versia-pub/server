@@ -1,8 +1,6 @@
-import { getConfig } from "@config";
-import { parseRequest } from "@request";
 import { jsonResponse } from "@response";
 import { tempmailDomains } from "@tempmail";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import ISO6391 from "iso-639-1";
@@ -15,26 +13,32 @@ export const meta = applyConfig({
 		duration: 60,
 	},
 	auth: {
-		required: true,
+		required: false,
 	},
 });
 
-/**
- * Creates a new user
- */
-export default async (req: Request): Promise<Response> => {
+export default apiRoute<{
+	username: string;
+	email: string;
+	password: string;
+	agreement: boolean;
+	locale: string;
+	reason: string;
+}>(async (req, matchedRoute, extraData) => {
 	// TODO: Add Authorization check
 
-	const body = await parseRequest<{
-		username: string;
-		email: string;
-		password: string;
-		agreement: boolean;
-		locale: string;
-		reason: string;
-	}>(req);
+	const body = extraData.parsedRequest;
 
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
+
+	if (!config.signups.registration) {
+		return jsonResponse(
+			{
+				error: "Registration is disabled",
+			},
+			422
+		);
+	}
 
 	const errors: {
 		details: Record<
@@ -85,8 +89,8 @@ export default async (req: Request): Promise<Response> => {
 
 	// Check if username doesnt match filters
 	if (
-		config.filters.username_filters.some(
-			filter => body.username?.match(filter)
+		config.filters.username_filters.some(filter =>
+			body.username?.match(filter)
 		)
 	) {
 		errors.details.username.push({
@@ -176,10 +180,13 @@ export default async (req: Request): Promise<Response> => {
 						.join(", ")}`
 			)
 			.join(", ");
-		return jsonResponse({
-			error: `Validation failed: ${errorsText}`,
-			details: errors.details,
-		});
+		return jsonResponse(
+			{
+				error: `Validation failed: ${errorsText}`,
+				details: errors.details,
+			},
+			422
+		);
 	}
 
 	await createNewLocalUser({
@@ -191,4 +198,4 @@ export default async (req: Request): Promise<Response> => {
 	return new Response("", {
 		status: 200,
 	});
-};
+});

@@ -13,7 +13,7 @@ export const notificationToAPI = async (
 ): Promise<APINotification> => {
 	return {
 		account: userToAPI(notification.account),
-		created_at: notification.createdAt.toISOString(),
+		created_at: new Date(notification.createdAt).toISOString(),
 		id: notification.id,
 		type: notification.type,
 		status: notification.status

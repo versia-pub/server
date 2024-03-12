@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"lib": ["ESNext"],
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
 		"module": "esnext",
 		"target": "esnext",
 		"moduleResolution": "bundler",
@@ -26,12 +26,15 @@
 		],
 		"paths": {
 			"@*": ["./utils/*"],
-			"~*": ["./*"]
+			"~*": ["./*"],
+			"+*": ["./server/api/*"],
 		},
 	},
 	"include": [
 		"*.ts",
+		"*.vue",
 		"**/*.ts",
+		"**/*.vue",
 		"server/api/.well-known/**/*.ts"
 	]
 }

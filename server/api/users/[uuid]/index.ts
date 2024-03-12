@@ -1,9 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { applyConfig } from "@api";
-import { getConfig } from "@config";
+import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
 import { client } from "~database/datasource";
 import { userRelations, userToLysand } from "~database/entities/User";
 
@@ -22,13 +18,8 @@ export const meta = applyConfig({
 /**
  * ActivityPub user inbox endpoint
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute) => {
 	const uuid = matchedRoute.params.uuid;
-
-	const config = getConfig();
 
 	const user = await client.user.findUnique({
 		where: {
@@ -42,4 +33,4 @@ export default async (
 	}
 
 	return jsonResponse(userToLysand(user));
-};
+});

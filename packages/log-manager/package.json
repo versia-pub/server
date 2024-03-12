@@ -1,0 +1,6 @@
+{
+    "name": "log-manager",
+    "version": "0.0.0",
+    "main": "index.ts",
+    "dependencies": {  }
+  }

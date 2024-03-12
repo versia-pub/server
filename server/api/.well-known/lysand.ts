@@ -1,7 +1,5 @@
 import { jsonResponse } from "@response";
-import { MatchedRoute } from "bun";
-import { getConfig } from "@config";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -15,14 +13,9 @@ export const meta = applyConfig({
 	route: "/.well-known/lysand",
 });
 
-/**
- * Lysand instance metadata endpoint
- */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-    const config = getConfig();
+export default apiRoute(async (req, matchedRoute, extraData) => {
+    const config = await extraData.configManager.getConfig();
+
 	// In the format acct:name@example.com
     return jsonResponse({
         type: "ServerMetadata",
@@ -47,4 +40,4 @@ export default async (
         website: "https://lysand.org",
         // TODO: Add admins, moderators field
     })
-};
+})

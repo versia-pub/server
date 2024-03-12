@@ -1,7 +1,5 @@
 import { jsonResponse } from "@response";
-import type { MatchedRoute } from "bun";
-import { getConfig, getHost } from "@config";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import {
 	statusAndUserRelations,
 	statusToLysand,
@@ -23,13 +21,11 @@ export const meta = applyConfig({
 /**
  * ActivityPub user outbox endpoint
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute(async (req, matchedRoute, extraData) => {
 	const uuid = matchedRoute.params.uuid;
 	const pageNumber = Number(matchedRoute.query.page) || 1;
-	const config = getConfig();
+	const config = await extraData.configManager.getConfig();
+	const host = new URL(config.http.base_url).hostname;
 
 	const statuses = await client.status.findMany({
 		where: {
@@ -53,19 +49,19 @@ export default async (
 	});
 
 	return jsonResponse({
-		first: `${getHost()}/users/${uuid}/outbox?page=1`,
-		last: `${getHost()}/users/${uuid}/outbox?page=1`,
+		first: `${host}/users/${uuid}/outbox?page=1`,
+		last: `${host}/users/${uuid}/outbox?page=1`,
 		total_items: totalStatuses,
 		// Server actor
 		author: `${config.http.base_url}/users/actor`,
 		next:
 			statuses.length === 20
-				? `${getHost()}/users/${uuid}/outbox?page=${pageNumber + 1}`
+				? `${host}/users/${uuid}/outbox?page=${pageNumber + 1}`
 				: undefined,
 		prev:
 			pageNumber > 1
-				? `${getHost()}/users/${uuid}/outbox?page=${pageNumber - 1}`
+				? `${host}/users/${uuid}/outbox?page=${pageNumber - 1}`
 				: undefined,
 		items: statuses.map(s => statusToLysand(s)),
 	});
-};
+});

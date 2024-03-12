@@ -1,8 +1,7 @@
 import { errorResponse, jsonResponse } from "@response";
-import { getFromRequest, userRelations } from "~database/entities/User";
-import { applyConfig } from "@api";
+import { userRelations } from "~database/entities/User";
+import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
-import type { MatchedRoute } from "bun";
 import {
 	checkForBidirectionalRelationships,
 	relationshipToAPI,
@@ -20,11 +19,8 @@ export const meta = applyConfig({
 	},
 });
 
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-	const { user } = await getFromRequest(req);
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const { user } = extraData.auth;
 
 	if (!user) return errorResponse("Unauthorized", 401);
 
@@ -76,4 +72,4 @@ export default async (
 	if (!relationship) return errorResponse("Relationship not found", 404);
 
 	return jsonResponse(relationshipToAPI(relationship));
-};
+});

@@ -1,6 +1,4 @@
-import { MatchedRoute } from "bun";
-import { getConfig, getHost } from "@config";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -15,14 +13,8 @@ export const meta = applyConfig({
 });
 
 
-/**
- * Redirect to /nodeinfo/2.0
- */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-	const config = getConfig();
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const config = await extraData.configManager.getConfig();
 
 	return new Response("", {
 		status: 301,
@@ -30,4 +22,4 @@ export default async (
 			Location: `${config.http.base_url}/.well-known/nodeinfo/2.0`,
 		},
 	});
-};
+});

@@ -35,6 +35,18 @@ services:
         restart: unless-stopped
         networks:
             - lysand-net
+    meilisearch:
+        stdin_open: true
+        environment:
+            - MEILI_MASTER_KEY=add_your_key_here
+        tty: true
+        networks:
+            - lysand-net
+        volumes:
+            - ./meili-data:/meili_data
+        image: getmeili/meilisearch:v1.5
+        container_name: lysand-meilisearch
+        restart: unless-stopped
 
 networks:
     lysand-net:

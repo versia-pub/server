@@ -1,4 +1,4 @@
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { emojiToAPI } from "~database/entities/Emoji";
@@ -15,11 +15,7 @@ export const meta = applyConfig({
 	},
 });
 
-/**
- * S
- */
-// eslint-disable-next-line @typescript-eslint/require-await
-export default async (): Promise<Response> => {
+export default apiRoute(async () => {
 	const emojis = await client.emoji.findMany({
 		where: {
 			instanceId: null,
@@ -29,4 +25,4 @@ export default async (): Promise<Response> => {
 	return jsonResponse(
 		await Promise.all(emojis.map(emoji => emojiToAPI(emoji)))
 	);
-};
+});

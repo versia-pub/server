@@ -1,10 +1,11 @@
-import { getConfig } from "@config";
 import type { Application, Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
+import { sendTestRequest, wrapRelativeUrl } from "./utils";
 
-const config = getConfig();
+// const config = await new ConfigManager({}).getConfig();
+const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
 
 let client_id: string;
 let client_secret: string;
@@ -30,17 +31,18 @@ describe("POST /api/v1/apps/", () => {
 		formData.append("redirect_uris", "https://example.com");
 		formData.append("scopes", "read write");
 
-		// @ts-expect-error FormData works
-		const response = await fetch(`${config.http.base_url}/api/v1/apps/`, {
-			method: "POST",
-			body: formData,
-		});
+		const response = await sendTestRequest(
+			new Request(wrapRelativeUrl("/api/v1/apps/", base_url), {
+				method: "POST",
+				body: formData,
+			})
+		);
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const json = (await response.json()) as any;
+		const json = await response.json();
 
 		expect(json).toEqual({
 			id: expect.any(String),
@@ -66,15 +68,19 @@ describe("POST /auth/login/", () => {
 		formData.append("email", "test@test.com");
 		formData.append("password", "test");
 
-		// @ts-expect-error FormData works
-		const response = await fetch(
-			`${config.http.base_url}/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-			{
-				method: "POST",
-				body: formData,
-				redirect: "manual",
-			}
+		const response = await sendTestRequest(
+			new Request(
+				wrapRelativeUrl(
+					`/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+					base_url
+				),
+				{
+					method: "POST",
+					body: formData,
+				}
+			)
 		);
+
 		expect(response.status).toBe(302);
 		expect(response.headers.get("Location")).toMatch(
 			/https:\/\/example.com\?code=/
@@ -96,15 +102,15 @@ describe("POST /oauth/token/", () => {
 		formData.append("client_secret", client_secret);
 		formData.append("scope", "read+write");
 
-		// @ts-expect-error FormData works
-		const response = await fetch(`${config.http.base_url}/oauth/token/`, {
-			method: "POST",
-			// Do not set the Content-Type header for some reason
-			body: formData,
-		});
+		const response = await sendTestRequest(
+			new Request(wrapRelativeUrl("/oauth/token/", base_url), {
+				method: "POST",
+				body: formData,
+			})
+		);
 
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-		const json = (await response.json()) as any;
+		const json = await response.json();
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toBe("application/json");
@@ -122,15 +128,15 @@ describe("POST /oauth/token/", () => {
 
 describe("GET /api/v1/apps/verify_credentials", () => {
 	test("should return the authenticated application's credentials", async () => {
-		const response = await fetch(
-			`${config.http.base_url}/api/v1/apps/verify_credentials`,
-			{
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${token.access_token}`,
-					"Content-Type": "application/json",
-				},
-			}
+		const response = await sendTestRequest(
+			new Request(
+				wrapRelativeUrl("/api/v1/apps/verify_credentials", base_url),
+				{
+					headers: {
+						Authorization: `Bearer ${token.access_token}`,
+					},
+				}
+			)
 		);
 
 		expect(response.status).toBe(200);

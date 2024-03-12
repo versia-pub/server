@@ -1,7 +1,5 @@
-import { MatchedRoute } from "bun";
-import { getConfig, getHost } from "@config";
 import { xmlResponse } from "@response";
-import { applyConfig } from "@api";
+import { apiRoute, applyConfig } from "@api";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],
@@ -16,18 +14,13 @@ export const meta = applyConfig({
 });
 
 
-/**
- * Host meta endpoint
- */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
-	const config = getConfig();
+export default apiRoute(async (req, matchedRoute, extraData) => {
+	const config = await extraData.configManager.getConfig();
+	
 	return xmlResponse(`
-	<?xml version="1.0" encoding="UTF-8"?>
-	<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
+<?xml version="1.0" encoding="UTF-8"?>
+<XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
 	<Link rel="lrdd" template="${config.http.base_url}/.well-known/webfinger?resource={uri}"/>
-	</XRD>
+</XRD>
 	`);
-};
+});

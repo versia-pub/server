@@ -1,13 +1,10 @@
-import { applyConfig } from "@api";
-import { errorResponse } from "@response";
-import type { MatchedRoute } from "bun";
+import { apiRoute, applyConfig } from "@api";
 import { randomBytes } from "crypto";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import { userRelations } from "~database/entities/User";
-import type { APIRouteMeta } from "~types/api";
 
-export const meta: APIRouteMeta = applyConfig({
+export const meta = applyConfig({
 	allowedMethods: ["POST"],
 	ratelimits: {
 		max: 4,
@@ -22,10 +19,10 @@ export const meta: APIRouteMeta = applyConfig({
 /**
  * OAuth Code flow
  */
-export default async (
-	req: Request,
-	matchedRoute: MatchedRoute
-): Promise<Response> => {
+export default apiRoute<{
+	email: string;
+	password: string;
+}>(async (req, matchedRoute, extraData) => {
 	const scopes = (matchedRoute.query.scope || "")
 		.replaceAll("+", " ")
 		.split(" ");
@@ -33,16 +30,23 @@ export default async (
 	const response_type = matchedRoute.query.response_type;
 	const client_id = matchedRoute.query.client_id;
 
-	const formData = await req.formData();
+	const { email, password } = extraData.parsedRequest;
 
-	const email = formData.get("email")?.toString() || null;
-	const password = formData.get("password")?.toString() || null;
+	const redirectToLogin = (error: string) =>
+		Response.redirect(
+			`/oauth/authorize?` +
+				new URLSearchParams({
+					...matchedRoute.query,
+					error: encodeURIComponent(error),
+				}).toString(),
+			302
+		);
 
 	if (response_type !== "code")
-		return errorResponse("Invalid response type (try 'code')", 400);
+		return redirectToLogin("Invalid response_type");
 
 	if (!email || !password)
-		return errorResponse("Missing username or password", 400);
+		return redirectToLogin("Invalid username or password");
 
 	// Get user
 	const user = await client.user.findFirst({
@@ -53,7 +57,7 @@ export default async (
 	});
 
 	if (!user || !(await Bun.password.verify(password, user.password || "")))
-		return errorResponse("Invalid username or password", 401);
+		return redirectToLogin("Invalid username or password");
 
 	// Get application
 	const application = await client.application.findFirst({
@@ -62,7 +66,7 @@ export default async (
 		},
 	});
 
-	if (!application) return errorResponse("Invalid client_id", 404);
+	if (!application) return redirectToLogin("Invalid client_id");
 
 	const code = randomBytes(32).toString("hex");
 
@@ -87,4 +91,4 @@ export default async (
 
 	// Redirect back to application
 	return Response.redirect(`${redirect_uri}?code=${code}`, 302);
-};
+});

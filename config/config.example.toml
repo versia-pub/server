@@ -18,6 +18,36 @@ password = ""
 database = 1
 enabled = false
 
+[meilisearch]
+host = "localhost"
+port = 40007
+api_key = ""
+enabled = true
+
+[signups]
+# URL of your Terms of Service
+tos_url = "https://example.com/tos"
+# Whether to enable registrations or not
+registration = true
+rules = [
+	"Do not harass others",
+	"Be nice to people",
+	"Don't spam",
+	"Don't post illegal content",
+]
+
+# Delete this section if you don't want to use custom OAuth providers
+# This is an example configuration
+# The provider MUST support OpenID Connect with .well-known discovery
+# Most notably, GitHub does not support this
+[[oidc.providers]]
+name = "CPlusPatch ID"
+id = "cpluspatch-id"
+url = "https://id.cpluspatch.com/application/o/lysand-testing/"
+client_id = "XXXXXXXXXXXXXXXX"
+client_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+icon = "https://cpluspatch.com/images/icons/logo.svg"
+
 [http]
 base_url = "https://lysand.social"
 bind = "http://localhost"
@@ -41,6 +71,8 @@ tls = true
 backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
+# If media backend is "local", this is the folder where the files will be stored
+local_uploads_folder = "uploads"
 
 [media.conversion]
 convert_images = false
@@ -240,6 +272,8 @@ emoji_filters = [] # NOT IMPLEMENTED
 log_requests = true
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
+# For GDPR compliance, you can disable logging of IPs
+log_ip = false
 
 # Log all filtered objects
 log_filters = true
