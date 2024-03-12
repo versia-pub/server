@@ -113,7 +113,7 @@ describe("CliCommand", () => {
 		).toEqual(["value1", "value2"]);
 	});
 
-	it("should run the execute function with the parsed parameters", () => {
+	it("should run the execute function with the parsed parameters", async () => {
 		const mockExecute = jest.fn();
 		cliCommand = new CliCommand(
 			["category1", "category2"],
@@ -142,7 +142,7 @@ describe("CliCommand", () => {
 			mockExecute
 		);
 
-		cliCommand.run([
+		await cliCommand.run([
 			"--arg1",
 			"value1",
 			"--arg2",
@@ -159,7 +159,7 @@ describe("CliCommand", () => {
 		});
 	});
 
-	it("should work with a mix of positioned and non-positioned arguments", () => {
+	it("should work with a mix of positioned and non-positioned arguments", async () => {
 		const mockExecute = jest.fn();
 		cliCommand = new CliCommand(
 			["category1", "category2"],
@@ -194,7 +194,7 @@ describe("CliCommand", () => {
 			mockExecute
 		);
 
-		cliCommand.run([
+		await cliCommand.run([
 			"--arg1",
 			"value1",
 			"--arg2",
@@ -324,7 +324,7 @@ describe("CliBuilder", () => {
 		expect(cliBuilder.commands).not.toContain(mockCommand2);
 	});
 
-	it("should process args correctly", () => {
+	it("should process args correctly", async () => {
 		const mockExecute = jest.fn();
 		const mockCommand = new CliCommand(
 			["category1", "sub1"],
@@ -339,7 +339,7 @@ describe("CliBuilder", () => {
 			mockExecute
 		);
 		cliBuilder.registerCommand(mockCommand);
-		cliBuilder.processArgs([
+		await cliBuilder.processArgs([
 			"./cli.ts",
 			"category1",
 			"sub1",

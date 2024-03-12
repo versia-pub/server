@@ -117,7 +117,9 @@ export class CliBuilder {
 			prev.categories.length > current.categories.length ? prev : current
 		);
 
-		const argsWithoutCategories = revelantArgs.slice(command.categories.length);
+		const argsWithoutCategories = revelantArgs.slice(
+			command.categories.length
+		);
 
 		return await command.run(argsWithoutCategories);
 	}
@@ -243,8 +245,6 @@ export class CliBuilder {
 			})
 		);
 
-		console.log(optimal_length)
-
 		for (const line of writeBuffer.split("\n")) {
 			const [left, right] = line.split("|");
 			if (!right) {
@@ -261,6 +261,7 @@ export class CliBuilder {
 type ExecuteFunction<T> = (
 	instance: CliCommand,
 	args: Partial<T>
+	// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 ) => Promise<number> | Promise<void> | number | void;
 
 /**
@@ -364,7 +365,7 @@ ${unpositionedArgs
 				currentParameter = null;
 			} else {
 				const positionedArgType = this.argTypes.find(
-					argType => argType.positioned
+					argType => argType.positioned && !parsedArgs[argType.name]
 				);
 				if (positionedArgType) {
 					parsedArgs[positionedArgType.name] = this.castArgValue(

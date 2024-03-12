@@ -3,20 +3,21 @@ import { createNewLocalUser } from "~database/entities/User";
 import Table from "cli-table";
 import { rebuildSearchIndexes, MeiliIndexType } from "@meilisearch";
 import { getUrl } from "~database/entities/Attachment";
-import { mkdir, exists } from "fs/promises";
 import extract from "extract-zip";
 import { client } from "~database/datasource";
 import { CliBuilder, CliCommand } from "cli-parser";
 import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
-import { PrismaClient } from "@prisma/client";
 import { ConfigManager } from "~packages/config-manager";
+import { Parser } from "@json2csv/plainjs";
+import type { Prisma } from "@prisma/client";
+import { MediaBackend } from "media-manager";
+import { mkdtemp } from "fs/promises";
+import { join } from "path";
+import { tmpdir } from "os";
 
 const args = process.argv;
 
 const config = await new ConfigManager({}).getConfig();
-
-console.error("CLI is temporarily broken, please use the Prisma CLI instead");
-process.exit(1);
 
 const cliBuilder = new CliBuilder([
 	new CliCommand(
@@ -73,12 +74,12 @@ const cliBuilder = new CliBuilder([
 				positioned: false,
 			},
 		],
-		(instance: CliCommand, args) => {
+		async (instance: CliCommand, args) => {
 			const { username, password, email, admin, help } = args;
 
 			if (help) {
 				instance.displayHelp();
-				return;
+				return 0;
 			}
 
 			// Check if username, password and email are provided
@@ -86,1099 +87,1673 @@ const cliBuilder = new CliBuilder([
 				console.log(
 					`${chalk.red(`✗`)} Missing username, password or email`
 				);
-				return;
+				return 1;
 			}
 
 			// Check if user already exists
-			void client.user
-				.findFirst({
-					where: {
-						OR: [{ username }, { email }],
-					},
-				})
-				.then(user => {
-					if (user) {
-						console.log(`${chalk.red(`✗`)} User already exists`);
-						return;
-					}
+			const user = await client.user.findFirst({
+				where: {
+					OR: [{ username }, { email }],
+				},
+			});
 
-					console.log("Sus");
-
-					// Create user
-					/* const newUser = await createNewLocalUser({
-						email: email,
-						password: password,
-						username: username,
-						admin: admin,
-					});
-
+			if (user) {
+				if (user.username === username) {
 					console.log(
-						`${chalk.green(`✓`)} Created user ${chalk.blue(
-							newUser.username
-						)}${admin ? chalk.green(" (admin)") : ""}`
-					); */
-				});
+						`${chalk.red(`✗`)} User with username ${chalk.blue(username)} already exists`
+					);
+				} else {
+					console.log(
+						`${chalk.red(`✗`)} User with email ${chalk.blue(email)} already exists`
+					);
+				}
+				return 1;
+			}
+
+			// Create user
+			const newUser = await createNewLocalUser({
+				email: email,
+				password: password,
+				username: username,
+				admin: admin,
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Created user ${chalk.blue(
+					newUser.username
+				)}${admin ? chalk.green(" (admin)") : ""}`
+			);
+
+			return 0;
 		},
 		"Creates a new user",
 		"bun cli user create --username admin --password password123 --email email@email.com"
 	),
+	new CliCommand<{
+		username: string;
+		help: boolean;
+		noconfirm: boolean;
+	}>(
+		["user", "delete"],
+		[
+			{
+				name: "username",
+				type: CliParameterType.STRING,
+				description: "Username of the user",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "noconfirm",
+				shortName: "y",
+				type: CliParameterType.EMPTY,
+				description: "Skip confirmation",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { username, help } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!username) {
+				console.log(`${chalk.red(`✗`)} Missing username`);
+				return 1;
+			}
+
+			const user = await client.user.findFirst({
+				where: {
+					username: username,
+				},
+			});
+
+			if (!user) {
+				console.log(`${chalk.red(`✗`)} User not found`);
+				return 1;
+			}
+
+			if (!args.noconfirm) {
+				process.stdout.write(
+					`Are you sure you want to delete user ${chalk.blue(
+						user.username
+					)}?\n${chalk.red(chalk.bold("This is a destructive action and cannot be undone!"))} [y/N] `
+				);
+
+				for await (const line of console) {
+					if (line.trim().toLowerCase() === "y") {
+						break;
+					} else {
+						console.log(`${chalk.red(`✗`)} Deletion cancelled`);
+						return 0;
+					}
+				}
+			}
+
+			await client.user.delete({
+				where: {
+					id: user.id,
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Deleted user ${chalk.blue(user.username)}`
+			);
+
+			return 0;
+		},
+		"Deletes a user",
+		"bun cli user delete --username admin"
+	),
+	new CliCommand<{
+		admins: boolean;
+		help: boolean;
+		format: string;
+		limit: number;
+		redact: boolean;
+		fields: string[];
+	}>(
+		["user", "list"],
+		[
+			{
+				name: "admins",
+				type: CliParameterType.BOOLEAN,
+				description: "List only admins",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "format",
+				type: CliParameterType.STRING,
+				description: "Output format (can be json or csv)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "limit",
+				type: CliParameterType.NUMBER,
+				description:
+					"Limit the number of users to list (defaults to 200)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "redact",
+				type: CliParameterType.BOOLEAN,
+				description:
+					"Redact sensitive information (such as password hashes, emails or keys)",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "fields",
+				type: CliParameterType.ARRAY,
+				description:
+					"If provided, restricts output to these fields (comma-separated)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { admins, help } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (args.format && !["json", "csv"].includes(args.format)) {
+				console.log(`${chalk.red(`✗`)} Invalid format`);
+				return 1;
+			}
+
+			const users = await client.user.findMany({
+				where: {
+					isAdmin: admins || undefined,
+				},
+				take: args.limit ?? 200,
+				include: {
+					instance: true,
+				},
+			});
+
+			if (args.redact) {
+				for (const user of users) {
+					user.email = "[REDACTED]";
+					user.password = "[REDACTED]";
+					user.publicKey = "[REDACTED]";
+					user.privateKey = "[REDACTED]";
+				}
+			}
+
+			if (args.fields) {
+				for (const user of users) {
+					const keys = Object.keys(user);
+					for (const key of keys) {
+						if (!args.fields.includes(key)) {
+							// @ts-expect-error Shouldn't cause issues in this case
+							// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+							delete user[key];
+						}
+					}
+				}
+			}
+
+			if (args.format === "json") {
+				console.log(JSON.stringify(users, null, 4));
+				return 0;
+			} else if (args.format == "csv") {
+				const parser = new Parser({});
+				console.log(parser.parse(users));
+				return 0;
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Found ${chalk.blue(users.length)} users (limit ${args.limit ?? 200})`
+			);
+
+			const tableHead = {
+				username: chalk.white(chalk.bold("Username")),
+				email: chalk.white(chalk.bold("Email")),
+				displayName: chalk.white(chalk.bold("Display Name")),
+				isAdmin: chalk.white(chalk.bold("Admin?")),
+				instance: chalk.white(chalk.bold("Instance URL")),
+				createdAt: chalk.white(chalk.bold("Created At")),
+				id: chalk.white(chalk.bold("Internal UUID")),
+			};
+
+			// Only keep the fields specified if --fields is provided
+			if (args.fields) {
+				const keys = Object.keys(tableHead);
+				for (const key of keys) {
+					if (!args.fields.includes(key)) {
+						// @ts-expect-error This is fine
+						// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+						delete tableHead[key];
+					}
+				}
+			}
+
+			const table = new Table({
+				head: Object.values(tableHead),
+			});
+
+			for (const user of users) {
+				// Print table of users
+				const data = {
+					username: () => chalk.yellow(`@${user.username}`),
+					email: () => chalk.green(user.email),
+					displayName: () => chalk.blue(user.displayName),
+					isAdmin: () => chalk.red(user.isAdmin ? "Yes" : "No"),
+					instance: () =>
+						chalk.blue(
+							user.instance ? user.instance.base_url : "Local"
+						),
+					createdAt: () => chalk.blue(user.createdAt.toISOString()),
+					id: () => chalk.blue(user.id),
+				};
+
+				// Only keep the fields specified if --fields is provided
+				if (args.fields) {
+					const keys = Object.keys(data);
+					for (const key of keys) {
+						if (!args.fields.includes(key)) {
+							// @ts-expect-error This is fine
+							// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+							delete data[key];
+						}
+					}
+				}
+
+				table.push(Object.values(data).map(fn => fn()));
+			}
+
+			console.log(table.toString());
+
+			return 0;
+		},
+		"Lists all users",
+		"bun cli user list"
+	),
+	new CliCommand<{
+		query: string;
+		fields: string[];
+		format: string;
+		help: boolean;
+		"case-sensitive": boolean;
+		limit: number;
+		redact: boolean;
+	}>(
+		["user", "search"],
+		[
+			{
+				name: "query",
+				type: CliParameterType.STRING,
+				description: "Query to search for",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "fields",
+				type: CliParameterType.ARRAY,
+				description: "Fields to search in",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "format",
+				type: CliParameterType.STRING,
+				description: "Output format (can be json or csv)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "case-sensitive",
+				shortName: "c",
+				type: CliParameterType.EMPTY,
+				description: "Case-sensitive search",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "limit",
+				type: CliParameterType.NUMBER,
+				description: "Limit the number of users to list (default 20)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "redact",
+				type: CliParameterType.BOOLEAN,
+				description:
+					"Redact sensitive information (such as password hashes, emails or keys)",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const {
+				query,
+				fields = [],
+				help,
+				limit = 20,
+				"case-sensitive": caseSensitive = false,
+				redact,
+			} = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!query) {
+				console.log(`${chalk.red(`✗`)} Missing query parameter`);
+				return 1;
+			}
+
+			if (fields.length === 0) {
+				console.log(`${chalk.red(`✗`)} Missing fields parameter`);
+				return 1;
+			}
+
+			const queries: Prisma.UserWhereInput[] = [];
+
+			for (const field of fields) {
+				queries.push({
+					[field]: {
+						contains: query,
+						mode: caseSensitive ? "default" : "insensitive",
+					},
+				});
+			}
+
+			const users = await client.user.findMany({
+				where: {
+					OR: queries,
+				},
+				include: {
+					instance: true,
+				},
+				take: limit,
+			});
+
+			if (redact) {
+				for (const user of users) {
+					user.email = "[REDACTED]";
+					user.password = "[REDACTED]";
+					user.publicKey = "[REDACTED]";
+					user.privateKey = "[REDACTED]";
+				}
+			}
+
+			if (args.format === "json") {
+				console.log(JSON.stringify(users, null, 4));
+				return 0;
+			} else if (args.format === "csv") {
+				const parser = new Parser({});
+				console.log(parser.parse(users));
+				return 0;
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Found ${chalk.blue(users.length)} users (limit ${limit})`
+			);
+
+			const table = new Table({
+				head: [
+					chalk.white(chalk.bold("Username")),
+					chalk.white(chalk.bold("Email")),
+					chalk.white(chalk.bold("Display Name")),
+					chalk.white(chalk.bold("Admin?")),
+					chalk.white(chalk.bold("Instance URL")),
+				],
+			});
+
+			for (const user of users) {
+				table.push([
+					chalk.yellow(`@${user.username}`),
+					chalk.green(user.email),
+					chalk.blue(user.displayName),
+					chalk.red(user.isAdmin ? "Yes" : "No"),
+					chalk.blue(
+						user.instanceId ? user.instance?.base_url : "Local"
+					),
+				]);
+			}
+
+			console.log(table.toString());
+
+			return 0;
+		},
+		"Searches for a user",
+		"bun cli user search bob --fields email,username"
+	),
+
+	new CliCommand<{
+		username: string;
+		"issuer-id": string;
+		"server-id": string;
+		help: boolean;
+	}>(
+		["user", "oidc", "connect"],
+		[
+			{
+				name: "username",
+				type: CliParameterType.STRING,
+				description: "Username of the local account",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "issuer-id",
+				type: CliParameterType.STRING,
+				description: "ID of the OpenID Connect issuer in config",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "server-id",
+				type: CliParameterType.STRING,
+				description: "ID of the user on the OpenID Connect server",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const {
+				username,
+				"issuer-id": issuerId,
+				"server-id": serverId,
+				help,
+			} = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!username || !issuerId || !serverId) {
+				console.log(`${chalk.red(`✗`)} Missing username, issuer or ID`);
+				return 1;
+			}
+
+			// Check if issuerId is valid
+			if (!config.oidc.providers.find(p => p.id === issuerId)) {
+				console.log(`${chalk.red(`✗`)} Invalid issuer ID`);
+				return 1;
+			}
+
+			const user = await client.user.findFirst({
+				where: {
+					username: username,
+				},
+				include: {
+					linkedOpenIdAccounts: true,
+				},
+			});
+
+			if (!user) {
+				console.log(`${chalk.red(`✗`)} User not found`);
+				return 1;
+			}
+
+			if (user.linkedOpenIdAccounts.find(a => a.issuerId === issuerId)) {
+				console.log(
+					`${chalk.red(`✗`)} User ${chalk.blue(
+						user.username
+					)} is already connected to this OpenID Connect issuer with another account`
+				);
+				return 1;
+			}
+
+			// Connect the OpenID account
+			await client.user.update({
+				where: {
+					id: user.id,
+				},
+				data: {
+					linkedOpenIdAccounts: {
+						create: {
+							issuerId: issuerId,
+							serverId: serverId,
+						},
+					},
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Connected OpenID Connect account to user ${chalk.blue(
+					user.username
+				)}`
+			);
+
+			return 0;
+		},
+		"Connects an OpenID Connect account to a local account",
+		"bun cli user oidc connect admin google 123456789"
+	),
+	new CliCommand<{
+		"server-id": string;
+		help: boolean;
+	}>(
+		["user", "oidc", "disconnect"],
+		[
+			{
+				name: "server-id",
+				type: CliParameterType.STRING,
+				description: "Server ID of the OpenID Connect account",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { "server-id": id, help } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!id) {
+				console.log(`${chalk.red(`✗`)} Missing ID`);
+				return 1;
+			}
+
+			const account = await client.openIdAccount.findFirst({
+				where: {
+					serverId: id,
+				},
+				include: {
+					User: true,
+				},
+			});
+
+			if (!account) {
+				console.log(`${chalk.red(`✗`)} Account not found`);
+				return 1;
+			}
+
+			await client.openIdAccount.delete({
+				where: {
+					id: account.id,
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Disconnected OpenID account from user ${chalk.blue(account.User?.username)}`
+			);
+
+			return 0;
+		},
+		"Disconnects an OpenID Connect account from a local account",
+		"bun cli user oidc disconnect 123456789"
+	),
+	new CliCommand<{
+		id: string;
+		help: boolean;
+		noconfirm: boolean;
+	}>(
+		["note", "delete"],
+		[
+			{
+				name: "id",
+				type: CliParameterType.STRING,
+				description: "ID of the note",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "noconfirm",
+				shortName: "y",
+				type: CliParameterType.EMPTY,
+				description: "Skip confirmation",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { id, help } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!id) {
+				console.log(`${chalk.red(`✗`)} Missing ID`);
+				return 1;
+			}
+
+			const note = await client.status.findFirst({
+				where: {
+					id: id,
+				},
+			});
+
+			if (!note) {
+				console.log(`${chalk.red(`✗`)} Note not found`);
+				return 1;
+			}
+
+			if (!args.noconfirm) {
+				process.stdout.write(
+					`Are you sure you want to delete note ${chalk.blue(
+						note.id
+					)}?\n${chalk.red(chalk.bold("This is a destructive action and cannot be undone!"))} [y/N] `
+				);
+
+				for await (const line of console) {
+					if (line.trim().toLowerCase() === "y") {
+						break;
+					} else {
+						console.log(`${chalk.red(`✗`)} Deletion cancelled`);
+						return 0;
+					}
+				}
+			}
+
+			await client.status.delete({
+				where: {
+					id: note.id,
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Deleted note ${chalk.blue(note.id)}`
+			);
+
+			return 0;
+		},
+		"Deletes a note",
+		"bun cli note delete 018c1838-6e0b-73c4-a157-a91ea4e25d1d"
+	),
+	new CliCommand<{
+		query: string;
+		fields: string[];
+		local: boolean;
+		remote: boolean;
+		format: string;
+		help: boolean;
+		"case-sensitive": boolean;
+		limit: number;
+		redact: boolean;
+	}>(
+		["note", "search"],
+		[
+			{
+				name: "query",
+				type: CliParameterType.STRING,
+				description: "Query to search for",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "fields",
+				type: CliParameterType.ARRAY,
+				description: "Fields to search in",
+				needsValue: true,
+				positioned: false,
+			},
+			{
+				name: "local",
+				type: CliParameterType.BOOLEAN,
+				description: "Only search in local statuses",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "remote",
+				type: CliParameterType.BOOLEAN,
+				description: "Only search in remote statuses",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "format",
+				type: CliParameterType.STRING,
+				description: "Output format (can be json or csv)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "case-sensitive",
+				shortName: "c",
+				type: CliParameterType.EMPTY,
+				description: "Case-sensitive search",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "limit",
+				type: CliParameterType.NUMBER,
+				description: "Limit the number of notes to list (default 20)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "redact",
+				type: CliParameterType.BOOLEAN,
+				description:
+					"Redact sensitive information (such as password hashes, emails or keys)",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const {
+				query,
+				local,
+				remote,
+				format,
+				help,
+				limit = 20,
+				fields = [],
+				"case-sensitive": caseSensitive = false,
+				redact,
+			} = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!query) {
+				console.log(`${chalk.red(`✗`)} Missing query parameter`);
+				return 1;
+			}
+
+			if (fields.length === 0) {
+				console.log(`${chalk.red(`✗`)} Missing fields parameter`);
+				return 1;
+			}
+
+			const queries: Prisma.StatusWhereInput[] = [];
+
+			for (const field of fields) {
+				queries.push({
+					[field]: {
+						contains: query,
+						mode: caseSensitive ? "default" : "insensitive",
+					},
+				});
+			}
+
+			let instanceIdQuery;
+
+			if (local && remote) {
+				instanceIdQuery = undefined;
+			} else if (local) {
+				instanceIdQuery = null;
+			} else if (remote) {
+				instanceIdQuery = {
+					not: null,
+				};
+			} else {
+				instanceIdQuery = undefined;
+			}
+
+			const notes = await client.status.findMany({
+				where: {
+					OR: queries,
+					instanceId: instanceIdQuery,
+				},
+				include: {
+					author: true,
+					instance: true,
+				},
+				take: limit,
+			});
+
+			if (redact) {
+				for (const note of notes) {
+					note.author.email = "[REDACTED]";
+					note.author.password = "[REDACTED]";
+					note.author.publicKey = "[REDACTED]";
+					note.author.privateKey = "[REDACTED]";
+				}
+			}
+
+			if (format === "json") {
+				console.log(JSON.stringify(notes, null, 4));
+				return 0;
+			} else if (format === "csv") {
+				const parser = new Parser({});
+				console.log(parser.parse(notes));
+				return 0;
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Found ${chalk.blue(notes.length)} notes (limit ${limit})`
+			);
+
+			const table = new Table({
+				head: [
+					chalk.white(chalk.bold("ID")),
+					chalk.white(chalk.bold("Content")),
+					chalk.white(chalk.bold("Author")),
+					chalk.white(chalk.bold("Instance")),
+					chalk.white(chalk.bold("Created At")),
+				],
+			});
+
+			for (const note of notes) {
+				table.push([
+					chalk.yellow(note.id),
+					chalk.green(note.content),
+					chalk.blue(note.author.username),
+					chalk.red(
+						note.instanceId ? note.instance?.base_url : "Yes"
+					),
+					chalk.blue(note.createdAt.toISOString()),
+				]);
+			}
+
+			console.log(table.toString());
+
+			return 0;
+		},
+		"Searches for a status",
+		"bun cli note search hello --fields content --local"
+	),
+	new CliCommand<{
+		help: boolean;
+		type: string[];
+	}>(
+		["index", "rebuild"],
+		[
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+			},
+			{
+				name: "type",
+				type: CliParameterType.ARRAY,
+				description:
+					"Type(s) of index(es) to rebuild (can be accounts or statuses)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { help, type = [] } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			// Check if Meilisearch is enabled
+			if (!config.meilisearch.enabled) {
+				console.log(`${chalk.red(`✗`)} Meilisearch is not enabled`);
+				return 1;
+			}
+
+			// Check type validity
+			for (const _type of type) {
+				if (
+					!Object.values(MeiliIndexType).includes(
+						_type as MeiliIndexType
+					)
+				) {
+					console.log(
+						`${chalk.red(`✗`)} Invalid index type ${chalk.blue(_type)}`
+					);
+					return 1;
+				}
+			}
+
+			if (type.length === 0) {
+				// Rebuild all indexes
+				await rebuildSearchIndexes(Object.values(MeiliIndexType));
+			} else {
+				await rebuildSearchIndexes(type as MeiliIndexType[]);
+			}
+
+			console.log(`${chalk.green(`✓`)} Rebuilt search indexes`);
+
+			return 0;
+		},
+		"Rebuilds the Meilisearch indexes",
+		"bun cli index rebuild"
+	),
+	new CliCommand<{
+		help: boolean;
+		shortcode: string;
+		url: string;
+		"keep-url": boolean;
+	}>(
+		["emoji", "add"],
+		[
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "shortcode",
+				type: CliParameterType.STRING,
+				description: "Shortcode of the new emoji",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "url",
+				type: CliParameterType.STRING,
+				description: "URL of the new emoji",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "keep-url",
+				type: CliParameterType.BOOLEAN,
+				description:
+					"Keep the URL of the emoji instead of uploading the file to object storage",
+				needsValue: false,
+				positioned: false,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { help, shortcode, url } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!shortcode) {
+				console.log(`${chalk.red(`✗`)} Missing shortcode`);
+				return 1;
+			}
+			if (!url) {
+				console.log(`${chalk.red(`✗`)} Missing URL`);
+				return 1;
+			}
+
+			// Check if shortcode is valid
+			if (!shortcode.match(/^[a-zA-Z0-9-_]+$/)) {
+				console.log(
+					`${chalk.red(`✗`)} Invalid shortcode (must be alphanumeric with dashes and underscores allowed)`
+				);
+				return 1;
+			}
+
+			// Check if URL is valid
+			if (!URL.canParse(url)) {
+				console.log(
+					`${chalk.red(`✗`)} Invalid URL (must be a valid full URL, including protocol)`
+				);
+				return 1;
+			}
+
+			// Check if emoji already exists
+			const existingEmoji = await client.emoji.findFirst({
+				where: {
+					shortcode: shortcode,
+					instanceId: null,
+				},
+			});
+
+			if (existingEmoji) {
+				console.log(
+					`${chalk.red(`✗`)} Emoji with shortcode ${chalk.blue(
+						shortcode
+					)} already exists`
+				);
+				return 1;
+			}
+
+			let newUrl = url;
+
+			if (!args["keep-url"]) {
+				// Upload the emoji to object storage
+				const mediaBackend = await MediaBackend.fromBackendType(
+					config.media.backend,
+					config
+				);
+
+				console.log(
+					`${chalk.blue(`⏳`)} Downloading emoji from ${chalk.underline(chalk.blue(url))}`
+				);
+
+				const downloadedFile = await fetch(url).then(
+					async r =>
+						new File(
+							[await r.blob()],
+							url.split("/").pop() ??
+								`${crypto.randomUUID()}-emoji.png`
+						)
+				);
+
+				const metadata = await mediaBackend
+					.addFile(downloadedFile)
+					.catch(() => null);
+
+				if (!metadata) {
+					console.log(
+						`${chalk.red(`✗`)} Failed to upload emoji to object storage (is your URL accessible?)`
+					);
+					return 1;
+				}
+
+				newUrl = getUrl(metadata.uploadedFile.name, config);
+
+				console.log(
+					`${chalk.green(`✓`)} Uploaded emoji to object storage`
+				);
+			}
+
+			// Add the emoji
+			const content_type = `image/${url
+				.split(".")
+				.pop()
+				?.replace("jpg", "jpeg")}}`;
+
+			const emoji = await client.emoji.create({
+				data: {
+					shortcode: shortcode,
+					url: newUrl,
+					visible_in_picker: true,
+					content_type: content_type,
+					instanceId: null,
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Created emoji ${chalk.blue(
+					emoji.shortcode
+				)}`
+			);
+
+			return 0;
+		},
+		"Adds a custom emoji",
+		"bun cli emoji add bun https://bun.com/bun.png"
+	),
+	new CliCommand<{
+		help: boolean;
+		shortcode: string;
+		noconfirm: boolean;
+	}>(
+		["emoji", "delete"],
+		[
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "shortcode",
+				type: CliParameterType.STRING,
+				description:
+					"Shortcode of the emoji to delete (can add up to two wildcards *)",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "noconfirm",
+				type: CliParameterType.BOOLEAN,
+				description: "Skip confirmation",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { help, shortcode, noconfirm } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!shortcode) {
+				console.log(`${chalk.red(`✗`)} Missing shortcode`);
+				return 1;
+			}
+
+			// Check if shortcode is valid
+			if (!shortcode.match(/^[a-zA-Z0-9-_*]+$/)) {
+				console.log(
+					`${chalk.red(`✗`)} Invalid shortcode (must be alphanumeric with dashes and underscores allowed + optional wildcards)`
+				);
+				return 1;
+			}
+
+			// Validate up to one wildcard
+			if (shortcode.split("*").length > 3) {
+				console.log(
+					`${chalk.red(`✗`)} Invalid shortcode (can only have up to two wildcards)`
+				);
+				return 1;
+			}
+
+			const hasWildcard = shortcode.includes("*");
+			const hasTwoWildcards = shortcode.split("*").length === 3;
+
+			const emojis = await client.emoji.findMany({
+				where: {
+					shortcode: {
+						startsWith: hasWildcard
+							? shortcode.split("*")[0]
+							: undefined,
+						endsWith: hasWildcard
+							? shortcode.split("*").at(-1)
+							: undefined,
+						contains: hasTwoWildcards
+							? shortcode.split("*")[1]
+							: undefined,
+						equals: hasWildcard ? undefined : shortcode,
+					},
+					instanceId: null,
+				},
+			});
+
+			if (emojis.length === 0) {
+				console.log(
+					`${chalk.red(`✗`)} No emoji with shortcode ${chalk.blue(
+						shortcode
+					)} found`
+				);
+				return 1;
+			}
+
+			// List emojis and ask for confirmation
+			for (const emoji of emojis) {
+				console.log(
+					`${chalk.blue(emoji.shortcode)}: ${chalk.underline(
+						emoji.url
+					)}`
+				);
+			}
+
+			if (!noconfirm) {
+				process.stdout.write(
+					`Are you sure you want to delete these emojis?\n${chalk.red(chalk.bold("This is a destructive action and cannot be undone!"))} [y/N] `
+				);
+
+				for await (const line of console) {
+					if (line.trim().toLowerCase() === "y") {
+						break;
+					} else {
+						console.log(`${chalk.red(`✗`)} Deletion cancelled`);
+						return 0;
+					}
+				}
+			}
+
+			await client.emoji.deleteMany({
+				where: {
+					id: {
+						in: emojis.map(e => e.id),
+					},
+				},
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Deleted emojis matching shortcode ${chalk.blue(
+					shortcode
+				)}`
+			);
+
+			return 0;
+		},
+		"Deletes custom emojis",
+		"bun cli emoji delete bun"
+	),
+	new CliCommand<{
+		help: boolean;
+		format: string;
+		limit: number;
+	}>(
+		["emoji", "list"],
+		[
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "format",
+				type: CliParameterType.STRING,
+				description: "Output format (can be json or csv)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "limit",
+				type: CliParameterType.NUMBER,
+				description: "Limit the number of emojis to list (default 20)",
+				needsValue: true,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { help, format, limit = 20 } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			const emojis = await client.emoji.findMany({
+				where: {
+					instanceId: null,
+				},
+				take: limit,
+			});
+
+			if (format === "json") {
+				console.log(JSON.stringify(emojis, null, 4));
+				return 0;
+			} else if (format === "csv") {
+				const parser = new Parser({});
+				console.log(parser.parse(emojis));
+				return 0;
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Found ${chalk.blue(emojis.length)} emojis (limit ${limit})`
+			);
+
+			const table = new Table({
+				head: [
+					chalk.white(chalk.bold("Shortcode")),
+					chalk.white(chalk.bold("URL")),
+				],
+			});
+
+			for (const emoji of emojis) {
+				table.push([
+					chalk.blue(emoji.shortcode),
+					chalk.underline(emoji.url),
+				]);
+			}
+
+			console.log(table.toString());
+
+			return 0;
+		},
+		"Lists all custom emojis",
+		"bun cli emoji list"
+	),
+	new CliCommand<{
+		help: boolean;
+		url: string;
+		noconfirm: boolean;
+	}>(
+		["emoji", "import"],
+		[
+			{
+				name: "help",
+				shortName: "h",
+				type: CliParameterType.EMPTY,
+				description: "Show help message",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+			{
+				name: "url",
+				type: CliParameterType.STRING,
+				description: "URL of the emoji pack manifest",
+				needsValue: true,
+				positioned: true,
+			},
+			{
+				name: "noconfirm",
+				type: CliParameterType.BOOLEAN,
+				description: "Skip confirmation",
+				needsValue: false,
+				positioned: false,
+				optional: true,
+			},
+		],
+		async (instance: CliCommand, args) => {
+			const { help, url, noconfirm } = args;
+
+			if (help) {
+				instance.displayHelp();
+				return 0;
+			}
+
+			if (!url) {
+				console.log(`${chalk.red(`✗`)} Missing URL`);
+				return 1;
+			}
+
+			// Check if URL is valid
+			if (!URL.canParse(url)) {
+				console.log(
+					`${chalk.red(`✗`)} Invalid URL (must be a valid full URL, including protocol)`
+				);
+				return 1;
+			}
+
+			// Fetch the emoji pack manifest
+			const manifest = await fetch(url)
+				.then(
+					r =>
+						r.json() as Promise<
+							Record<
+								string,
+								{
+									files: string;
+									homepage: string;
+									src: string;
+									src_sha256?: string;
+								}
+							>
+						>
+				)
+				.catch(() => null);
+
+			if (!manifest) {
+				console.log(
+					`${chalk.red(`✗`)} Failed to fetch emoji pack manifest from ${chalk.underline(
+						url
+					)}`
+				);
+				return 1;
+			}
+
+			const homepage = Object.values(manifest)[0].homepage;
+			// If URL is not a valid URL, assume it's a relative path to homepage
+			const srcUrl = URL.canParse(Object.values(manifest)[0].src)
+				? Object.values(manifest)[0].src
+				: new URL(Object.values(manifest)[0].src, homepage).toString();
+			const filesUrl = URL.canParse(Object.values(manifest)[0].files)
+				? Object.values(manifest)[0].files
+				: new URL(
+						Object.values(manifest)[0].files,
+						homepage
+					).toString();
+
+			console.log(
+				`${chalk.blue(`⏳`)} Fetching emoji pack from ${chalk.underline(
+					srcUrl
+				)}`
+			);
+
+			// Fetch actual pack (should be a zip file)
+			const pack = await fetch(srcUrl)
+				.then(
+					async r =>
+						new File(
+							[await r.blob()],
+							srcUrl.split("/").pop() ?? "pack.zip"
+						)
+				)
+				.catch(() => null);
+
+			// Check if pack is valid
+			if (!pack) {
+				console.log(
+					`${chalk.red(`✗`)} Failed to fetch emoji pack from ${chalk.underline(
+						srcUrl
+					)}`
+				);
+				return 1;
+			}
+
+			// Validate sha256 if available
+			if (Object.values(manifest)[0].src_sha256) {
+				const sha256 = new Bun.SHA256()
+					.update(await pack.arrayBuffer())
+					.digest("hex");
+				if (sha256 !== Object.values(manifest)[0].src_sha256) {
+					console.log(
+						`${chalk.red(`✗`)} SHA256 of pack (${chalk.blue(
+							sha256
+						)}) does not match manifest ${chalk.blue(
+							Object.values(manifest)[0].src_sha256
+						)}`
+					);
+					return 1;
+				} else {
+					console.log(
+						`${chalk.green(`✓`)} SHA256 of pack matches manifest`
+					);
+				}
+			} else {
+				console.log(
+					`${chalk.yellow(`⚠`)} No SHA256 in manifest, skipping validation`
+				);
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Fetched emoji pack from ${chalk.underline(srcUrl)}, unzipping to tempdir`
+			);
+
+			// Unzip the pack to temp dir
+			const tempDir = await mkdtemp(join(tmpdir(), "bun-emoji-import-"));
+
+			console.log(join(tempDir, pack.name));
+
+			// Put the pack as a file
+			await Bun.write(join(tempDir, pack.name), pack);
+
+			await extract(join(tempDir, pack.name), {
+				dir: tempDir,
+			});
+
+			console.log(
+				`${chalk.green(`✓`)} Unzipped emoji pack to ${chalk.blue(tempDir)}`
+			);
+
+			console.log(
+				`${chalk.blue(`⏳`)} Fetching emoji pack file metadata from ${chalk.underline(
+					filesUrl
+				)}`
+			);
+
+			// Fetch files URL
+			const packFiles = await fetch(filesUrl)
+				.then(r => r.json() as Promise<Record<string, string>>)
+				.catch(() => null);
+
+			if (!packFiles) {
+				console.log(
+					`${chalk.red(`✗`)} Failed to fetch emoji pack file metadata from ${chalk.underline(
+						filesUrl
+					)}`
+				);
+				return 1;
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Fetched emoji pack file metadata from ${chalk.underline(
+					filesUrl
+				)}`
+			);
+
+			if (Object.keys(packFiles).length === 0) {
+				console.log(`${chalk.red(`✗`)} Empty emoji pack`);
+				return 1;
+			}
+
+			if (!noconfirm) {
+				process.stdout.write(
+					`Are you sure you want to import ${chalk.blue(
+						Object.keys(packFiles).length
+					)} emojis from ${chalk.underline(chalk.blue(url))}? [y/N] `
+				);
+
+				for await (const line of console) {
+					if (line.trim().toLowerCase() === "y") {
+						break;
+					} else {
+						console.log(`${chalk.red(`✗`)} Import cancelled`);
+						return 0;
+					}
+				}
+			}
+
+			const successfullyImported: string[] = [];
+
+			// Add emojis
+			for (const [shortcode, url] of Object.entries(packFiles)) {
+				// If emoji URL is not a valid URL, assume it's a relative path to homepage
+				const fileUrl = Bun.pathToFileURL(
+					join(tempDir, url)
+				).toString();
+
+				// Check if emoji already exists
+				const existingEmoji = await client.emoji.findFirst({
+					where: {
+						shortcode: shortcode,
+						instanceId: null,
+					},
+				});
+
+				if (existingEmoji) {
+					console.log(
+						`${chalk.red(`✗`)} Emoji with shortcode ${chalk.blue(
+							shortcode
+						)} already exists`
+					);
+					continue;
+				}
+
+				// Add the emoji by calling the add command
+				const returnCode = await cliBuilder.processArgs([
+					"emoji",
+					"add",
+					shortcode,
+					fileUrl,
+					"--noconfirm",
+				]);
+
+				if (returnCode === 0) successfullyImported.push(shortcode);
+			}
+
+			console.log(
+				`${chalk.green(`✓`)} Imported ${successfullyImported.length} emojis from ${chalk.underline(
+					url
+				)}`
+			);
+
+			// List imported
+			if (successfullyImported.length > 0) {
+				console.log(
+					`${chalk.green(`✓`)} Successfully imported ${successfullyImported.length} emojis: ${successfullyImported.join(
+						", "
+					)}`
+				);
+			}
+
+			// List unimported
+			if (successfullyImported.length < Object.keys(packFiles).length) {
+				const unimported = Object.keys(packFiles).filter(
+					key => !successfullyImported.includes(key)
+				);
+				console.log(
+					`${chalk.red(`✗`)} Failed to import ${unimported.length} emojis: ${unimported.join(
+						", "
+					)}`
+				);
+			}
+
+			return 0;
+		},
+		"Imports a Pleroma emoji pack",
+		"bun cli emoji import https://site.com/neofox/manifest.json"
+	),
 ]);
 
-cliBuilder.processArgs(args);
-
-process.exit(0);
-
-/**
- * Make the text have a width of 20 characters, padding with gray dots
- * Text can be a Chalk string, in which case formatting codes should not be counted in text length
- * @param text The text to align
- */
-/* const alignDots = (text: string, length = 20) => {
-	// Remove formatting codes
-	// eslint-disable-next-line no-control-regex
-	const textLength = text.replace(/\u001b\[\d+m/g, "").length;
-	const dots = ".".repeat(length - textLength);
-	return `${text}${chalk.gray(dots)}`;
-};
-
-const alignDotsSmall = (text: string, length = 16) => alignDots(text, length);
-
-const help = `
-${chalk.bold(`Usage: bun cli <command> ${chalk.blue("[...flags]")} [...args]`)}
-
-${chalk.bold("Commands:")}
-    ${alignDots(chalk.blue("help"), 24)} Show this help message
-    ${alignDots(chalk.blue("user"), 24)} Manage users
-        ${alignDots(chalk.blue("create"))} Create a new user
-            ${alignDotsSmall(chalk.green("username"))} Username of the user
-            ${alignDotsSmall(chalk.green("password"))} Password of the user
-            ${alignDotsSmall(chalk.green("email"))} Email of the user
-            ${alignDotsSmall(
-				chalk.yellow("--admin")
-			)} Make the user an admin (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli user create admin password123 admin@gmail.com --admin`
-			)}
-        ${alignDots(chalk.blue("delete"))} Delete a user
-            ${alignDotsSmall(chalk.green("username"))} Username of the user
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli user delete admin`
-			)}
-        ${alignDots(chalk.blue("list"))} List all users
-            ${alignDotsSmall(
-				chalk.yellow("--admins")
-			)} List only admins (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(`bun cli user list`)}
-        ${alignDots(chalk.blue("search"))} Search for a user
-            ${alignDotsSmall(chalk.green("query"))} Query to search for
-            ${alignDotsSmall(
-				chalk.yellow("--displayname")
-			)} Search by display name (optional)
-            ${alignDotsSmall(chalk.yellow("--bio"))} Search in bio (optional)
-            ${alignDotsSmall(
-				chalk.yellow("--local")
-			)} Search in local users (optional)
-            ${alignDotsSmall(
-				chalk.yellow("--remote")
-			)} Search in remote users (optional)
-            ${alignDotsSmall(
-				chalk.yellow("--email")
-			)} Search in emails (optional)
-            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
-            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli user search admin`
-			)}
-        ${alignDots(
-			chalk.blue("connect-openid")
-		)} Connect an OpenID account to a local account
-            ${alignDotsSmall(
-				chalk.green("username")
-			)} Username of the local account
-            ${alignDotsSmall(chalk.green("issuerId"))} ID of the OpenID issuer
-            ${alignDotsSmall(
-				chalk.green("serverId")
-			)} ID of the user on the OpenID server
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli user connect-openid admin google 123456789`
-			)}
-    ${alignDots(chalk.blue("note"), 24)} Manage notes
-        ${alignDots(chalk.blue("delete"))} Delete a note
-            ${alignDotsSmall(chalk.green("id"))} ID of the note
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli note delete 018c1838-6e0b-73c4-a157-a91ea4e25d1d`
-			)}
-        ${alignDots(chalk.blue("search"))} Search for a status
-            ${alignDotsSmall(chalk.green("query"))} Query to search for
-            ${alignDotsSmall(
-				chalk.yellow("--local")
-			)} Search in local statuses (optional)
-            ${alignDotsSmall(
-				chalk.yellow("--remote")
-			)} Search in remote statuses (optional)
-            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
-            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli note search hello`
-			)}
-    ${alignDots(chalk.blue("index"), 24)} Manage user and status indexes
-        ${alignDots(chalk.blue("rebuild"))} Rebuild the index
-            ${alignDotsSmall(
-				chalk.green("batch-size")
-			)} The number of items to index at once (optional, default 100)
-            ${alignDotsSmall(
-				chalk.yellow("--statuses")
-			)} Only rebuild the statuses index (optional)
-            ${alignDotsSmall(
-				chalk.yellow("--users")
-			)} Only rebuild the users index (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli index rebuild --users 200`
-			)}
-    ${alignDots(chalk.blue("emoji"), 24)} Manage custom emojis
-        ${alignDots(chalk.blue("add"))} Add a custom emoji
-            ${alignDotsSmall(chalk.green("name"))} Name of the emoji
-            ${alignDotsSmall(chalk.green("url"))} URL of the emoji
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli emoji add bun https://bun.com/bun.png`
-			)}
-        ${alignDots(chalk.blue("delete"))} Delete a custom emoji
-            ${alignDotsSmall(chalk.green("name"))} Name of the emoji
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli emoji delete bun`
-			)}
-        ${alignDots(chalk.blue("list"))} List all custom emojis
-            ${chalk.bold("Example:")} ${chalk.bgGray(`bun cli emoji list`)}
-        ${alignDots(chalk.blue("search"))} Search for a custom emoji
-            ${alignDotsSmall(chalk.green("query"))} Query to search for
-            ${alignDotsSmall(
-				chalk.yellow("--local")
-			)} Search in local emojis (optional, default)
-            ${alignDotsSmall(
-				chalk.yellow("--remote")
-			)} Search in remote emojis (optional)
-            ${alignDotsSmall(chalk.yellow("--json"))} Output as JSON (optional)
-            ${alignDotsSmall(chalk.yellow("--csv"))} Output as CSV (optional)
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli emoji search bun`
-			)}
-        ${alignDots(chalk.blue("import"))} Import a Pleroma emoji pack
-            ${alignDotsSmall(chalk.green("url"))} URL of the emoji pack
-            ${chalk.bold("Example:")} ${chalk.bgGray(
-				`bun cli emoji import https://site.com/neofox/manifest.json`
-			)}
-`;
-
-if (args.length < 3) {
-	console.log(help);
-	process.exit(0);
-}
-
-const command = args[2];
-
-const config = getConfig();
-
-switch (command) {
-	case "help":
-		console.log(help);
-		break;
-	case "user":
-		switch (args[3]) {
-			case "create": {
-				// Check if --admin flag is provided
-				const argsWithFlags = args.filter(arg => arg.startsWith("--"));
-				const argsWithoutFlags = args.filter(
-					arg => !arg.startsWith("--")
-				);
-
-				const username = argsWithoutFlags[4];
-				const password = argsWithoutFlags[5];
-				const email = argsWithoutFlags[6];
-
-				const admin = argsWithFlags.includes("--admin");
-
-				// Check if username, password and email are provided
-				if (!username || !password || !email) {
-					console.log(
-						`${chalk.red(`✗`)} Missing username, password or email`
-					);
-					process.exit(1);
-				}
-
-				// Check if user already exists
-				const user = await client.user.findFirst({
-					where: {
-						OR: [{ username }, { email }],
-					},
-				});
-
-				if (user) {
-					console.log(`${chalk.red(`✗`)} User already exists`);
-					process.exit(1);
-				}
-
-				// Create user
-				const newUser = await createNewLocalUser({
-					email: email,
-					password: password,
-					username: username,
-					admin: admin,
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Created user ${chalk.blue(
-						newUser.username
-					)}${admin ? chalk.green(" (admin)") : ""}`
-				);
-				break;
-			}
-			case "delete": {
-				const username = args[4];
-
-				if (!username) {
-					console.log(`${chalk.red(`✗`)} Missing username`);
-					process.exit(1);
-				}
-
-				const user = await client.user.findFirst({
-					where: {
-						username: username,
-					},
-				});
-
-				if (!user) {
-					console.log(`${chalk.red(`✗`)} User not found`);
-					process.exit(1);
-				}
-
-				await client.user.delete({
-					where: {
-						id: user.id,
-					},
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Deleted user ${chalk.blue(
-						user.username
-					)}`
-				);
-
-				break;
-			}
-			case "list": {
-				const admins = args.includes("--admins");
-
-				const users = await client.user.findMany({
-					where: {
-						isAdmin: admins || undefined,
-					},
-					take: 200,
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Found ${chalk.blue(
-						users.length
-					)} users`
-				);
-
-				for (const user of users) {
-					console.log(
-						`\t${chalk.blue(user.username)} ${chalk.gray(
-							user.email
-						)} ${chalk.green(user.isAdmin ? "Admin" : "User")}`
-					);
-				}
-				break;
-			}
-			case "search": {
-				const argsWithoutFlags = args.filter(
-					arg => !arg.startsWith("--")
-				);
-				const query = argsWithoutFlags[4];
-
-				if (!query) {
-					console.log(`${chalk.red(`✗`)} Missing query`);
-					process.exit(1);
-				}
-
-				const displayname = args.includes("--displayname");
-				const bio = args.includes("--bio");
-				const local = args.includes("--local");
-				const remote = args.includes("--remote");
-				const email = args.includes("--email");
-				const json = args.includes("--json");
-				const csv = args.includes("--csv");
-
-				const queries: Prisma.UserWhereInput[] = [];
-
-				if (displayname) {
-					queries.push({
-						displayName: {
-							contains: query,
-							mode: "insensitive",
-						},
-					});
-				}
-
-				if (bio) {
-					queries.push({
-						note: {
-							contains: query,
-							mode: "insensitive",
-						},
-					});
-				}
-
-				if (local) {
-					queries.push({
-						instanceId: null,
-					});
-				}
-
-				if (remote) {
-					queries.push({
-						instanceId: {
-							not: null,
-						},
-					});
-				}
-
-				if (email) {
-					queries.push({
-						email: {
-							contains: query,
-							mode: "insensitive",
-						},
-					});
-				}
-
-				const users = await client.user.findMany({
-					where: {
-						AND: queries,
-					},
-					include: {
-						instance: true,
-					},
-					take: 40,
-				});
-
-				if (json || csv) {
-					if (json) {
-						console.log(JSON.stringify(users, null, 4));
-					}
-					if (csv) {
-						// Convert the outputted JSON to CSV
-
-						// Remove all object children from each object
-						const items = users.map(user => {
-							const item = {
-								...user,
-								instance: undefined,
-								endpoints: undefined,
-								source: undefined,
-							};
-							return item;
-						});
-						const replacer = (key: string, value: any): any =>
-							value === null ? "" : value; // Null values are returned as empty strings
-						const header = Object.keys(items[0]);
-						const csv = [
-							header.join(","), // header row first
-							...items.map(row =>
-								header
-									.map(fieldName =>
-										// @ts-expect-error This is fine
-										JSON.stringify(row[fieldName], replacer)
-									)
-									.join(",")
-							),
-						].join("\r\n");
-
-						console.log(csv);
-					}
-				} else {
-					console.log(
-						`${chalk.green(`✓`)} Found ${chalk.blue(
-							users.length
-						)} users`
-					);
-
-					const table = new Table({
-						head: [
-							chalk.white(chalk.bold("Username")),
-							chalk.white(chalk.bold("Email")),
-							chalk.white(chalk.bold("Display Name")),
-							chalk.white(chalk.bold("Admin?")),
-							chalk.white(chalk.bold("Instance URL")),
-						],
-					});
-
-					for (const user of users) {
-						table.push([
-							chalk.yellow(`@${user.username}`),
-							chalk.green(user.email),
-							chalk.blue(user.displayName),
-							chalk.red(user.isAdmin ? "Yes" : "No"),
-							chalk.blue(
-								user.instanceId
-									? user.instance?.base_url
-									: "Local"
-							),
-						]);
-					}
-
-					console.log(table.toString());
-				}
-
-				break;
-			}
-			case "connect-openid": {
-				const username = args[4];
-				const issuerId = args[5];
-				const serverId = args[6];
-
-				if (!username || !issuerId || !serverId) {
-					console.log(
-						`${chalk.red(`✗`)} Missing username, issuer or ID`
-					);
-					process.exit(1);
-				}
-
-				const user = await client.user.findFirst({
-					where: {
-						username: username,
-					},
-				});
-
-				if (!user) {
-					console.log(`${chalk.red(`✗`)} User not found`);
-					process.exit(1);
-				}
-
-				const issuer = config.oidc.providers.find(
-					p => p.id === issuerId
-				);
-
-				if (!issuer) {
-					console.log(`${chalk.red(`✗`)} Issuer not found`);
-					process.exit(1);
-				}
-
-				await client.user.update({
-					where: {
-						id: user.id,
-					},
-					data: {
-						linkedOpenIdAccounts: {
-							create: {
-								issuerId: issuerId,
-								serverId: serverId,
-							},
-						},
-					},
-				});
-
-				console.log(
-					`${chalk.green(
-						`✓`
-					)} Connected OpenID account to user ${chalk.blue(
-						user.username
-					)}`
-				);
-
-				break;
-			}
-			default:
-				console.log(`Unknown command ${chalk.blue(command)}`);
-				break;
-		}
-		break;
-	case "note": {
-		switch (args[3]) {
-			case "delete": {
-				const id = args[4];
-
-				if (!id) {
-					console.log(`${chalk.red(`✗`)} Missing ID`);
-					process.exit(1);
-				}
-
-				const note = await client.status.findFirst({
-					where: {
-						id: id,
-					},
-				});
-
-				if (!note) {
-					console.log(`${chalk.red(`✗`)} Note not found`);
-					process.exit(1);
-				}
-
-				await client.status.delete({
-					where: {
-						id: note.id,
-					},
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Deleted note ${chalk.blue(note.id)}`
-				);
-
-				break;
-			}
-			case "search": {
-				const argsWithoutFlags = args.filter(
-					arg => !arg.startsWith("--")
-				);
-				const query = argsWithoutFlags[4];
-
-				if (!query) {
-					console.log(`${chalk.red(`✗`)} Missing query`);
-					process.exit(1);
-				}
-
-				const local = args.includes("--local");
-				const remote = args.includes("--remote");
-				const json = args.includes("--json");
-				const csv = args.includes("--csv");
-
-				const queries: Prisma.StatusWhereInput[] = [];
-
-				if (local) {
-					queries.push({
-						instanceId: null,
-					});
-				}
-
-				if (remote) {
-					queries.push({
-						instanceId: {
-							not: null,
-						},
-					});
-				}
-
-				const statuses = await client.status.findMany({
-					where: {
-						AND: queries,
-						content: {
-							contains: query,
-							mode: "insensitive",
-						},
-					},
-					take: 40,
-					include: {
-						author: true,
-						instance: true,
-					},
-				});
-
-				if (json || csv) {
-					if (json) {
-						console.log(JSON.stringify(statuses, null, 4));
-					}
-					if (csv) {
-						// Convert the outputted JSON to CSV
-
-						// Remove all object children from each object
-						const items = statuses.map(status => {
-							const item = {
-								...status,
-								author: undefined,
-								instance: undefined,
-							};
-							return item;
-						});
-						const replacer = (key: string, value: any): any =>
-							value === null ? "" : value; // Null values are returned as empty strings
-						const header = Object.keys(items[0]);
-						const csv = [
-							header.join(","), // header row first
-							...items.map(row =>
-								header
-									.map(fieldName =>
-										// @ts-expect-error This is fine
-										JSON.stringify(row[fieldName], replacer)
-									)
-									.join(",")
-							),
-						].join("\r\n");
-
-						console.log(csv);
-					}
-				} else {
-					console.log(
-						`${chalk.green(`✓`)} Found ${chalk.blue(
-							statuses.length
-						)} statuses`
-					);
-
-					const table = new Table({
-						head: [
-							chalk.white(chalk.bold("Username")),
-							chalk.white(chalk.bold("Instance URL")),
-							chalk.white(chalk.bold("Content")),
-						],
-					});
-
-					for (const status of statuses) {
-						table.push([
-							chalk.yellow(`@${status.author.username}`),
-							chalk.blue(
-								status.instanceId
-									? status.instance?.base_url
-									: "Local"
-							),
-							chalk.green(status.content.slice(0, 50)),
-						]);
-					}
-
-					console.log(table.toString());
-				}
-
-				break;
-			}
-			default:
-				console.log(`Unknown command ${chalk.blue(command)}`);
-				break;
-		}
-		break;
-	}
-	case "index": {
-		if (!config.meilisearch.enabled) {
-			console.log(
-				`${chalk.red(`✗`)} Meilisearch is not enabled in the config`
-			);
-			process.exit(1);
-		}
-		switch (args[3]) {
-			case "rebuild": {
-				const statuses = args.includes("--statuses");
-				const users = args.includes("--users");
-
-				const argsWithoutFlags = args.filter(
-					arg => !arg.startsWith("--")
-				);
-
-				const batchSize = Number(argsWithoutFlags[4]) || 100;
-
-				const neither = !statuses && !users;
-
-				if (statuses || neither) {
-					console.log(
-						`${chalk.yellow(`⚠`)} ${chalk.bold(
-							`Rebuilding Meilisearch index for statuses`
-						)}`
-					);
-
-					const timeBefore = performance.now();
-
-					await rebuildSearchIndexes(
-						[MeiliIndexType.Statuses],
-						batchSize
-					);
-
-					console.log(
-						`${chalk.green(`✓`)} ${chalk.bold(
-							`Meilisearch index for statuses rebuilt in ${chalk.bgGreen(
-								(performance.now() - timeBefore).toFixed(2)
-							)}ms`
-						)}`
-					);
-				}
-
-				if (users || neither) {
-					console.log(
-						`${chalk.yellow(`⚠`)} ${chalk.bold(
-							`Rebuilding Meilisearch index for users`
-						)}`
-					);
-
-					const timeBefore = performance.now();
-
-					await rebuildSearchIndexes(
-						[MeiliIndexType.Accounts],
-						batchSize
-					);
-
-					console.log(
-						`${chalk.green(`✓`)} ${chalk.bold(
-							`Meilisearch index for users rebuilt in ${chalk.bgGreen(
-								(performance.now() - timeBefore).toFixed(2)
-							)}ms`
-						)}`
-					);
-				}
-
-				break;
-			}
-			default:
-				console.log(`Unknown command ${chalk.blue(command)}`);
-				break;
-		}
-		break;
-	}
-	case "emoji": {
-		switch (args[3]) {
-			case "add": {
-				const name = args[4];
-				const url = args[5];
-
-				if (!name || !url) {
-					console.log(`${chalk.red(`✗`)} Missing name or URL`);
-					process.exit(1);
-				}
-
-				const content_type = `image/${url
-					.split(".")
-					.pop()
-					?.replace("jpg", "jpeg")}}`;
-
-				const emoji = await client.emoji.create({
-					data: {
-						shortcode: name,
-						url: url,
-						visible_in_picker: true,
-						content_type: content_type,
-					},
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Created emoji ${chalk.blue(
-						emoji.shortcode
-					)}`
-				);
-
-				break;
-			}
-			case "delete": {
-				const name = args[4];
-
-				if (!name) {
-					console.log(`${chalk.red(`✗`)} Missing name`);
-					process.exit(1);
-				}
-
-				const emoji = await client.emoji.findFirst({
-					where: {
-						shortcode: name,
-					},
-				});
-
-				if (!emoji) {
-					console.log(`${chalk.red(`✗`)} Emoji not found`);
-					process.exit(1);
-				}
-
-				await client.emoji.delete({
-					where: {
-						id: emoji.id,
-					},
-				});
-
-				console.log(
-					`${chalk.green(`✓`)} Deleted emoji ${chalk.blue(
-						emoji.shortcode
-					)}`
-				);
-
-				break;
-			}
-			case "list": {
-				const emojis = await client.emoji.findMany();
-
-				console.log(
-					`${chalk.green(`✓`)} Found ${chalk.blue(
-						emojis.length
-					)} emojis`
-				);
-
-				for (const emoji of emojis) {
-					console.log(
-						`\t${chalk.blue(emoji.shortcode)} ${chalk.gray(
-							emoji.url
-						)}`
-					);
-				}
-				break;
-			}
-			case "search": {
-				const argsWithoutFlags = args.filter(
-					arg => !arg.startsWith("--")
-				);
-				const query = argsWithoutFlags[4];
-
-				if (!query) {
-					console.log(`${chalk.red(`✗`)} Missing query`);
-					process.exit(1);
-				}
-
-				const local = args.includes("--local");
-				const remote = args.includes("--remote");
-				const json = args.includes("--json");
-				const csv = args.includes("--csv");
-
-				const queries: Prisma.EmojiWhereInput[] = [];
-
-				if (local) {
-					queries.push({
-						instanceId: null,
-					});
-				}
-
-				if (remote) {
-					queries.push({
-						instanceId: {
-							not: null,
-						},
-					});
-				}
-
-				const emojis = await client.emoji.findMany({
-					where: {
-						AND: queries,
-						shortcode: {
-							contains: query,
-							mode: "insensitive",
-						},
-					},
-					take: 40,
-					include: {
-						instance: true,
-					},
-				});
-
-				if (json || csv) {
-					if (json) {
-						console.log(JSON.stringify(emojis, null, 4));
-					}
-					if (csv) {
-						// Convert the outputted JSON to CSV
-
-						// Remove all object children from each object
-						const items = emojis.map(emoji => {
-							const item = {
-								...emoji,
-								instance: undefined,
-							};
-							return item;
-						});
-						const replacer = (key: string, value: any): any =>
-							value === null ? "" : value; // Null values are returned as empty strings
-						const header = Object.keys(items[0]);
-						const csv = [
-							header.join(","), // header row first
-							...items.map(row =>
-								header
-									.map(fieldName =>
-										// @ts-expect-error This is fine
-										JSON.stringify(row[fieldName], replacer)
-									)
-									.join(",")
-							),
-						].join("\r\n");
-
-						console.log(csv);
-					}
-				} else {
-					console.log(
-						`${chalk.green(`✓`)} Found ${chalk.blue(
-							emojis.length
-						)} emojis`
-					);
-
-					const table = new Table({
-						head: [
-							chalk.white(chalk.bold("Shortcode")),
-							chalk.white(chalk.bold("Instance URL")),
-							chalk.white(chalk.bold("URL")),
-						],
-					});
-
-					for (const emoji of emojis) {
-						table.push([
-							chalk.yellow(`:${emoji.shortcode}:`),
-							chalk.blue(
-								emoji.instanceId
-									? emoji.instance?.base_url
-									: "Local"
-							),
-							chalk.gray(emoji.url),
-						]);
-					}
-
-					console.log(table.toString());
-				}
-
-				break;
-			}
-			case "import": {
-				const url = args[4];
-
-				if (!url) {
-					console.log(`${chalk.red(`✗`)} Missing URL`);
-					process.exit(1);
-				}
-
-				const response = await fetch(url);
-
-				if (!response.ok) {
-					console.log(`${chalk.red(`✗`)} Failed to fetch emoji pack`);
-					process.exit(1);
-				}
-
-				const res = (await response.json()) as Record<
-					string,
-					{
-						description: string;
-						files: string;
-						homepage: string;
-						src: string;
-						src_sha256?: string;
-						license?: string;
-					}
-				>;
-
-				const pack = Object.values(res)[0];
-
-				// Fetch emoji list from `files`, can be a relative URL
-
-				if (!pack.files) {
-					console.log(`${chalk.red(`✗`)} Missing files`);
-					process.exit(1);
-				}
-
-				let pack_url = pack.files;
-
-				if (!pack.files.includes("http")) {
-					// Is relative URL to pack manifest URL
-					pack_url =
-						url.split("/").slice(0, -1).join("/") +
-						"/" +
-						pack.files;
-				}
-
-				const zip = new File(
-					[await (await fetch(pack.src)).arrayBuffer()],
-					"emoji.zip",
-					{
-						type: "application/zip",
-					}
-				);
-
-				// Check if the SHA256 hash matches
-				const hasher = new Bun.SHA256();
-
-				hasher.update(await zip.arrayBuffer());
-
-				const hash = hasher.digest("hex");
-
-				if (pack.src_sha256 && pack.src_sha256 !== hash) {
-					console.log(`${chalk.red(`✗`)} SHA256 hash does not match`);
-					console.log(
-						`${chalk.red(`✗`)} Expected ${chalk.blue(
-							pack.src_sha256
-						)}, got ${chalk.blue(hash)}`
-					);
-					process.exit(1);
-				}
-
-				// Store file in /tmp
-				const tempDirectory = `/tmp/lysand-${hash}`;
-
-				if (!(await exists(tempDirectory))) {
-					await mkdir(tempDirectory);
-				}
-
-				await Bun.write(`${tempDirectory}/emojis.zip`, zip);
-
-				// Extract zip
-				await extract(`${tempDirectory}/emojis.zip`, {
-					dir: tempDirectory,
-				});
-
-				// In the format
-				// emoji_name: emoji_url
-				const pack_response = (await (
-					await fetch(pack_url)
-				).json()) as Record<string, string>;
-
-				let emojisCreated = 0;
-
-				for (const [name, path] of Object.entries(pack_response)) {
-					// Check if emoji already exists
-					const existingEmoji = await client.emoji.findFirst({
-						where: {
-							shortcode: name,
-							instanceId: null,
-						},
-					});
-
-					if (existingEmoji) {
-						console.log(
-							`${chalk.red(`✗`)} Emoji ${chalk.blue(
-								name
-							)} already exists`
-						);
-						continue;
-					}
-
-					// Get emoji URL, as it can be relative
-
-					const emoji = Bun.file(`${tempDirectory}/${path}`);
-
-					const content_type = emoji.type;
-
-					const hash = await uploadFile(
-						emoji as unknown as File,
-						config
-					);
-
-					if (!hash) {
-						console.log(
-							`${chalk.red(`✗`)} Failed to upload emoji ${name}`
-						);
-						process.exit(1);
-					}
-
-					const finalUrl = getUrl(hash, config);
-
-					// Create emoji
-					await client.emoji.create({
-						data: {
-							shortcode: name,
-							url: finalUrl,
-							visible_in_picker: true,
-							content_type: content_type,
-						},
-					});
-
-					emojisCreated++;
-
-					console.log(
-						`${chalk.green(`✓`)} Created emoji ${chalk.blue(name)}`
-					);
-				}
-
-				console.log(
-					`${chalk.green(`✓`)} Imported ${chalk.blue(
-						emojisCreated
-					)} emojis`
-				);
-
-				break;
-			}
-			default:
-				console.log(`Unknown command ${chalk.blue(command)}`);
-				break;
-		}
-
-		break;
-	}
-	default:
-		console.log(`Unknown command ${chalk.blue(command)}`);
-		break;
-}
-
-process.exit(0);
- */
+// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+const exitCode = await cliBuilder.processArgs(args);
+
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+process.exit(Number(exitCode ?? 0));

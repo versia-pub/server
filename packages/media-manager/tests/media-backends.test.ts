@@ -30,6 +30,39 @@ describe("MediaBackend", () => {
 		expect(mediaBackend.getBackendType()).toEqual(MediaBackendType.S3);
 	});
 
+	describe("fromBackendType", () => {
+		it("should return a LocalMediaBackend instance for LOCAL backend type", async () => {
+			const backend = await MediaBackend.fromBackendType(
+				MediaBackendType.LOCAL,
+				mockConfig
+			);
+			expect(backend).toBeInstanceOf(LocalMediaBackend);
+		});
+
+		it("should return a S3MediaBackend instance for S3 backend type", async () => {
+			const backend = await MediaBackend.fromBackendType(
+				MediaBackendType.S3,
+				{
+					s3: {
+						endpoint: "localhost:4566",
+						region: "us-east-1",
+						bucket_name: "test-bucket",
+						access_key: "test-access",
+						public_url: "test",
+						secret_access_key: "test-secret",
+					},
+				} as ConfigType
+			);
+			expect(backend).toBeInstanceOf(S3MediaBackend);
+		});
+
+		it("should throw an error for unknown backend type", () => {
+			expect(
+				MediaBackend.fromBackendType("unknown" as any, mockConfig)
+			).rejects.toThrow("Unknown backend type: unknown");
+		});
+	});
+
 	it("should check if images should be converted", () => {
 		expect(mediaBackend.shouldConvertImages(mockConfig)).toBe(true);
 		mockConfig.media.conversion.convert_images = false;

@@ -152,22 +152,19 @@ bun start
 
 ### Using the CLI
 
-> [!WARNING]
-> The CLI is currently broken due to unknown bugs that are actively being investigated. The following instructions are for when this is fixed.
-
 Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
 
 ```bash
-bun cli
+bun cli help
 ```
 
 If you are running a production build, you will need to run `bun run dist/cli.js` or `./entrypoint.sh cli` instead.
 
-You can use the `help` command to see a list of available commands. These include creating users, deleting users and more.
+You can use the `help` command to see a list of available commands. These include creating users, deleting users and more. Each command also has a `--help,-h` flag that you can use to see more information about the command.
 
 #### Scripting with the CLI
 
-Some CLI commands that return data as tables can be used in scripts. To do so, you can use the `--json` flag to output the data as JSON instead of a table, or even `--csv` to output the data as CSV. See `bun cli help` for more information.
+Some CLI commands that return data as tables can be used in scripts. To convert them to JSON or CSV, some commands allow you to specify a `--format` flag that can be either `"json"` or `"csv"`. See `bun cli help` or `bun cli <command> -h` for more information.
 
 Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
 

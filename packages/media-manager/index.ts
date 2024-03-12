@@ -32,6 +32,24 @@ export class MediaBackend {
 		public backend: MediaBackendType
 	) {}
 
+	static async fromBackendType(
+		backend: MediaBackendType,
+		config: ConfigType
+	): Promise<MediaBackend> {
+		switch (backend) {
+			case MediaBackendType.LOCAL:
+				return new (await import("./backends/local")).LocalMediaBackend(
+					config
+				);
+			case MediaBackendType.S3:
+				return new (await import("./backends/s3")).S3MediaBackend(
+					config
+				);
+			default:
+				throw new Error(`Unknown backend type: ${backend as any}`);
+		}
+	}
+
 	public getBackendType() {
 		return this.backend;
 	}
