@@ -1,0 +1,53 @@
+name: Tests
+
+on:
+    push:
+        branches: ["*"]
+    pull_request:
+        # The branches below must be a subset of the branches above
+        branches: ["main"]
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: ghcr.io/lysand-org/postgres:main
+                ports:
+                    - 5432:5432
+                options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+                env:
+                    POSTGRES_DB: lysand
+                    POSTGRES_USER: lysand
+                    POSTGRES_PASSWORD: lysand
+                volumes:
+                    - lysand-data:/var/lib/postgresql/data
+        permissions:
+            contents: read
+            security-events: write
+            actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+
+            - name: Install NPM packages
+              run: |
+                  bun install
+
+            - name: Move workflow config to config folder
+              run: |
+                  mv .github/config.workflow.toml config/config.toml
+
+            - name: Generate Prisma Client
+              run: |
+                  bunx prisma generate
+
+            - name: Migrate database
+              run: bun migrate
+
+            - name: Run tests
+              run: |
+                  bun test
