@@ -1,5 +1,12 @@
 // Delete dist directory
+import chalk from "chalk";
 import { rm, cp, mkdir, exists } from "fs/promises";
+
+console.log(
+	chalk.red(
+		"Warning: Build is currently broken due to a bug in Bun causing it not to parse dynamic imports"
+	)
+);
 
 if (!(await exists("./pages/dist"))) {
 	console.log("Please build the Vite server first, or use `bun prod-build`");
@@ -22,7 +29,7 @@ await Bun.build({
 	outdir: process.cwd() + "/dist",
 	target: "bun",
 	splitting: true,
-	minify: true,
+	minify: false,
 	external: ["bullmq"],
 }).then(output => {
 	if (!output.success) {

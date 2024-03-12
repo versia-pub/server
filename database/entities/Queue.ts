@@ -1,5 +1,5 @@
-import { Worker } from "bullmq";
-import { client, federationQueue } from "~database/datasource";
+// import { Worker } from "bullmq";
+import { client /* federationQueue */ } from "~database/datasource";
 import {
 	statusAndUserRelations,
 	statusToLysand,
@@ -10,7 +10,7 @@ import { ConfigManager } from "config-manager";
 
 const config = await new ConfigManager({}).getConfig();
 
-export const federationWorker = new Worker(
+/* export const federationWorker = new Worker(
 	"federation",
 	async job => {
 		await job.updateProgress(0);
@@ -123,7 +123,7 @@ export const federationWorker = new Worker(
 			count: 3000,
 		},
 	}
-);
+); */
 
 /**
  * Convert a string into an ArrayBuffer
@@ -191,7 +191,7 @@ export const federateStatusTo = async (
 };
 
 export const addStatusFederationJob = async (statusId: string) => {
-	await federationQueue.add("federation", {
+	/* await federationQueue.add("federation", {
 		id: statusId,
-	});
+	}); */
 };
