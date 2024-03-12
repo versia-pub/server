@@ -17,7 +17,7 @@ await Bun.build({
 	entrypoints: [
 		process.cwd() + "/index.ts",
 		process.cwd() + "/prisma.ts",
-		// process.cwd() + "/cli.ts",
+		process.cwd() + "/cli.ts",
 	],
 	outdir: process.cwd() + "/dist",
 	target: "bun",

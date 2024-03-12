@@ -43,7 +43,7 @@
     "prisma": "DATABASE_URL=$(bun run prisma.ts) bunx prisma",
     "generate": "bun prisma generate",
     "benchmark:timeline": "bun run benchmarks/timelines.ts",
-    "cloc": "cloc . --exclude-dir node_modules",
+    "cloc": "cloc . --exclude-dir node_modules,dist",
     "cli": "bun run cli.ts"
   },
   "trustedDependencies": [
