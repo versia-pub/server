@@ -106,11 +106,27 @@ export class CliBuilder {
 	 */
 	async processArgs(args: string[]) {
 		const revelantArgs = this.getRelevantArgs(args);
+
+		// Handle "-h", "--help" and "help" commands as special cases
+		if (revelantArgs.length === 1) {
+			if (["-h", "--help", "help"].includes(revelantArgs[0])) {
+				this.displayHelp();
+				return;
+			}
+		}
+
 		// Find revelant command
 		// Search for a command with as many categories matching args as possible
 		const matchingCommands = this.commands.filter(command =>
 			startsWithArray(revelantArgs, command.categories)
 		);
+
+		if (matchingCommands.length === 0) {
+			console.log(
+				`Invalid command "${revelantArgs.join(" ")}". Please use the ${chalk.bold("help")} command to see a list of commands`
+			);
+			return 0;
+		}
 
 		// Get command with largest category size
 		const command = matchingCommands.reduce((prev, current) =>

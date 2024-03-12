@@ -20,14 +20,6 @@ const args = process.argv;
 const config = await new ConfigManager({}).getConfig();
 
 const cliBuilder = new CliBuilder([
-	new CliCommand(
-		["help"],
-		[],
-		() => {
-			cliBuilder.displayHelp();
-		},
-		"Shows help for the CLI"
-	),
 	new CliCommand<{
 		username: string;
 		password: string;
