@@ -1,12 +1,6 @@
 // Delete dist directory
-import chalk from "chalk";
 import { rm, cp, mkdir, exists } from "fs/promises";
-
-console.log(
-	chalk.red(
-		"Warning: Build is currently broken due to a bug in Bun causing it not to parse dynamic imports"
-	)
-);
+import { rawRoutes } from "~routes";
 
 if (!(await exists("./pages/dist"))) {
 	console.log("Please build the Vite server first, or use `bun prod-build`");
@@ -25,6 +19,8 @@ await Bun.build({
 		process.cwd() + "/index.ts",
 		process.cwd() + "/prisma.ts",
 		process.cwd() + "/cli.ts",
+		// Force Bun to include endpoints
+		...Object.values(rawRoutes),
 	],
 	outdir: process.cwd() + "/dist",
 	target: "bun",
@@ -46,5 +42,8 @@ await mkdir(process.cwd() + "/dist/pages");
 await cp(process.cwd() + "/pages/dist", process.cwd() + "/dist/pages/", {
 	recursive: true,
 });
+
+// Copy the Bee Movie script from pages
+await cp(process.cwd() + "/pages/beemovie.txt", process.cwd() + "/dist/pages/");
 
 console.log(`Built!`);

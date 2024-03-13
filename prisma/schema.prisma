@@ -4,6 +4,10 @@ generator client {
   binaryTargets   = ["native", "debian-openssl-3.0.x"]
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
@@ -42,6 +46,7 @@ model Instance {
   base_url              String
   name                  String
   version               String
+  /// [InstanceLogo]
   logo                  Json
   emojis                Emoji[] // One to many relation with Emoji
   statuses              Status[] // One to many relation with Status
@@ -66,7 +71,9 @@ model LysandObject {
   created_at DateTime       @default(now())
   author     LysandObject?  @relation("LysandObjectToAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   authorId   String?        @db.Uuid
+  /// [ObjectData]
   extra_data Json
+  /// [ObjectExtensions]
   extensions Json
   children   LysandObject[] @relation("LysandObjectToAuthor")
 }
@@ -227,7 +234,9 @@ model User {
   email                 String?         @unique // Nullable
   note                  String          @default("")
   isAdmin               Boolean         @default(false)
+  /// [UserEndpoints]
   endpoints             Json? // Nullable
+  /// [UserSource]
   source                Json
   avatar                String
   header                String

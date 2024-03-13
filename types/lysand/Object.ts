@@ -41,7 +41,7 @@ export interface Collection<T> {
 	items: T[];
 }
 
-export interface User extends LysandObjectType {
+export interface LysandUser extends LysandObjectType {
 	type: "User";
 	bio: ContentFormat[];
 

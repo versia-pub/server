@@ -5,6 +5,7 @@ import type { ConfigManager, ConfigType } from "config-manager";
 import type { LogManager, MultiLogManager } from "log-manager";
 import { LogLevel } from "log-manager";
 import { RequestParser } from "request-parser";
+import { matchRoute } from "~routes";
 
 export const createServer = (
 	config: ConfigType,
@@ -45,6 +46,55 @@ export const createServer = (
 				}
 			}
 
+			if (config.http.bait.enabled) {
+				// Check for bait IPs
+				for (const ip of config.http.bait.bait_ips) {
+					try {
+						if (matches(ip, request_ip)) {
+							const file = Bun.file(
+								config.http.bait.send_file ||
+									"./pages/beemovie.txt"
+							);
+
+							if (await file.exists()) {
+								return new Response(file);
+							} else {
+								await logger.log(
+									LogLevel.ERROR,
+									"Server.Bait",
+									`Bait file not found: ${config.http.bait.send_file}`
+								);
+							}
+						}
+					} catch (e) {
+						console.error(
+							`[-] Error while parsing bait IP "${ip}" `
+						);
+						throw e;
+					}
+				}
+
+				// Check for bait user agents (regex)
+				for (const agent of config.http.bait.bait_user_agents) {
+					console.log(agent);
+					if (new RegExp(agent).test(ua)) {
+						const file = Bun.file(
+							config.http.bait.send_file || "./pages/beemovie.txt"
+						);
+
+						if (await file.exists()) {
+							return new Response(file);
+						} else {
+							await logger.log(
+								LogLevel.ERROR,
+								"Server.Bait",
+								`Bait file not found: ${config.http.bait.send_file}`
+							);
+						}
+					}
+				}
+			}
+
 			if (config.logging.log_requests) {
 				await logger.logRequest(
 					req,
@@ -57,13 +107,11 @@ export const createServer = (
 				return jsonResponse({});
 			}
 
-			// If it isn't dynamically imported, it causes trouble with imports
-			// There shouldn't be a performance hit after bundling right?
-			const { matchRoute } = await import("~routes");
+			const { file: filePromise, matchedRoute } = await matchRoute(
+				req.url
+			);
 
-			const { file: filePromise, matchedRoute } = matchRoute(req.url);
-
-			const file = await filePromise;
+			const file = filePromise;
 
 			if (matchedRoute && file == undefined) {
 				await logger.log(

@@ -64,14 +64,14 @@ export default apiRoute<{
 		ALLOWED_ATTR: [],
 	});
 
-	if (!user.source) {
+	/* if (!user.source) {
 		user.source = {
 			privacy: "public",
 			sensitive: false,
 			language: "en",
 			note: "",
 		};
-	}
+	} */
 
 	let mediaManager: MediaBackend;
 
@@ -132,7 +132,7 @@ export default apiRoute<{
 			return errorResponse("Bio contains blocked words", 422);
 		}
 
-		(user.source as unknown as APISource).note = sanitizedNote;
+		(user.source as APISource).note = sanitizedNote;
 		// TODO: Convert note to HTML
 		user.note = await convertTextToHtml(sanitizedNote);
 	}
@@ -150,8 +150,7 @@ export default apiRoute<{
 			);
 		}
 
-		// @ts-expect-error Prisma Typescript doesn't include relations
-		user.source.privacy = source_privacy;
+		(user.source as APISource).privacy = source_privacy;
 	}
 
 	if (source_sensitive && user.source) {
@@ -160,8 +159,7 @@ export default apiRoute<{
 			return errorResponse("Sensitive must be a boolean", 422);
 		}
 
-		// @ts-expect-error Prisma Typescript doesn't include relations
-		user.source.sensitive = source_sensitive === "true";
+		(user.source as APISource).sensitive = source_sensitive === "true";
 	}
 
 	if (source_language && user.source) {
@@ -172,8 +170,7 @@ export default apiRoute<{
 			);
 		}
 
-		// @ts-expect-error Prisma Typescript doesn't include relations
-		user.source.language = source_language;
+		(user.source as APISource).language = source_language;
 	}
 
 	if (avatar) {

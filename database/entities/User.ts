@@ -1,5 +1,5 @@
 import type { APIAccount } from "~types/entities/account";
-import type { User as LysandUser } from "~types/lysand/Object";
+import type { LysandUser as LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import type { User } from "@prisma/client";
 import { Prisma } from "@prisma/client";

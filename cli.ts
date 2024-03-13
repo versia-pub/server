@@ -19,6 +19,28 @@ const args = process.argv;
 
 const config = await new ConfigManager({}).getConfig();
 
+const filterObjects = <T extends object>(output: T[], fields: string[]) => {
+	if (fields.length === 0) return output;
+
+	return output.map(element => {
+		// If fields is specified, only include provided fields
+		// This is a bit of a mess
+		if (fields.length > 0) {
+			const keys = Object.keys(element);
+			const filteredKeys = keys.filter(key => fields.includes(key));
+			return Object.entries(element)
+				.filter(([key]) => filteredKeys.includes(key))
+				.reduce((acc, [key, value]) => {
+					// @ts-expect-error This is fine
+					acc[key] = value;
+					return acc;
+				}, {}) as Partial<T>;
+		} else {
+			return element;
+		}
+	});
+};
+
 const cliBuilder = new CliBuilder([
 	new CliCommand<{
 		username: string;
@@ -270,7 +292,7 @@ const cliBuilder = new CliBuilder([
 			},
 		],
 		async (instance: CliCommand, args) => {
-			const { admins, help } = args;
+			const { admins, help, fields = [] } = args;
 
 			if (help) {
 				instance.displayHelp();
@@ -281,16 +303,21 @@ const cliBuilder = new CliBuilder([
 				console.log(`${chalk.red(`✗`)} Invalid format`);
 				return 1;
 			}
-
-			const users = await client.user.findMany({
-				where: {
-					isAdmin: admins || undefined,
-				},
-				take: args.limit ?? 200,
-				include: {
-					instance: true,
-				},
-			});
+			const users = filterObjects(
+				await client.user.findMany({
+					where: {
+						isAdmin: admins || undefined,
+					},
+					take: args.limit ?? 200,
+					include: {
+						instance:
+							fields.length == 0
+								? true
+								: fields.includes("instance"),
+					},
+				}),
+				fields
+			);
 
 			if (args.redact) {
 				for (const user of users) {
@@ -298,19 +325,6 @@ const cliBuilder = new CliBuilder([
 					user.password = "[REDACTED]";
 					user.publicKey = "[REDACTED]";
 					user.privateKey = "[REDACTED]";
-				}
-			}
-
-			if (args.fields) {
-				for (const user of users) {
-					const keys = Object.keys(user);
-					for (const key of keys) {
-						if (!args.fields.includes(key)) {
-							// @ts-expect-error Shouldn't cause issues in this case
-							// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-							delete user[key];
-						}
-					}
 				}
 			}
 
@@ -327,27 +341,20 @@ const cliBuilder = new CliBuilder([
 				`${chalk.green(`✓`)} Found ${chalk.blue(users.length)} users (limit ${args.limit ?? 200})`
 			);
 
-			const tableHead = {
-				username: chalk.white(chalk.bold("Username")),
-				email: chalk.white(chalk.bold("Email")),
-				displayName: chalk.white(chalk.bold("Display Name")),
-				isAdmin: chalk.white(chalk.bold("Admin?")),
-				instance: chalk.white(chalk.bold("Instance URL")),
-				createdAt: chalk.white(chalk.bold("Created At")),
-				id: chalk.white(chalk.bold("Internal UUID")),
-			};
-
-			// Only keep the fields specified if --fields is provided
-			if (args.fields) {
-				const keys = Object.keys(tableHead);
-				for (const key of keys) {
-					if (!args.fields.includes(key)) {
-						// @ts-expect-error This is fine
-						// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-						delete tableHead[key];
-					}
-				}
-			}
+			const tableHead = filterObjects(
+				[
+					{
+						username: chalk.white(chalk.bold("Username")),
+						email: chalk.white(chalk.bold("Email")),
+						displayName: chalk.white(chalk.bold("Display Name")),
+						isAdmin: chalk.white(chalk.bold("Admin?")),
+						instance: chalk.white(chalk.bold("Instance URL")),
+						createdAt: chalk.white(chalk.bold("Created At")),
+						id: chalk.white(chalk.bold("Internal UUID")),
+					},
+				],
+				fields
+			)[0];
 
 			const table = new Table({
 				head: Object.values(tableHead),
@@ -364,7 +371,7 @@ const cliBuilder = new CliBuilder([
 						chalk.blue(
 							user.instance ? user.instance.base_url : "Local"
 						),
-					createdAt: () => chalk.blue(user.createdAt.toISOString()),
+					createdAt: () => chalk.blue(user.createdAt?.toISOString()),
 					id: () => chalk.blue(user.id),
 				};
 
@@ -1744,8 +1751,6 @@ const cliBuilder = new CliBuilder([
 	),
 ]);
 
-// eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
 const exitCode = await cliBuilder.processArgs(args);
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-process.exit(Number(exitCode ?? 0));
+process.exit(Number(exitCode == undefined ? 0 : exitCode));

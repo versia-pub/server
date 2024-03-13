@@ -55,6 +55,12 @@ export interface ConfigType {
 		bind_port: string;
 		banned_ips: string[];
 		banned_user_agents: string[];
+		bait: {
+			enabled: boolean;
+			send_file?: string;
+			bait_ips: string[];
+			bait_user_agents: string[];
+		};
 	};
 
 	instance: {
@@ -181,6 +187,12 @@ export const configDefaults: ConfigType = {
 		base_url: "http://lysand.localhost:8000",
 		banned_ips: [],
 		banned_user_agents: [],
+		bait: {
+			enabled: false,
+			send_file: "",
+			bait_ips: [],
+			bait_user_agents: [],
+		},
 	},
 	database: {
 		host: "localhost",

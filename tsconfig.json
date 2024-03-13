@@ -22,7 +22,7 @@
 		"experimentalDecorators": true,
 		"verbatimModuleSyntax": true,
 		"types": [
-			"bun-types" // add Bun global
+			"bun-types", // add Bun global
 		],
 		"paths": {
 			"@*": ["./utils/*"],
@@ -32,9 +32,11 @@
 	},
 	"include": [
 		"*.ts",
+		"*.d.ts",
 		"*.vue",
 		"**/*.ts",
+		"**/*.d.ts",
 		"**/*.vue",
-		"server/api/.well-known/**/*.ts"
+		"server/api/.well-known/**/*.ts",
 	]
 }
