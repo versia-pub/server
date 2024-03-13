@@ -6,6 +6,7 @@ import { client } from "~database/datasource";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
 import { moduleIsEntry } from "@module";
 import { createServer } from "~server";
+import { exists, mkdir } from "fs/promises";
 
 const timeAtStart = performance.now();
 
@@ -20,6 +21,16 @@ const consoleLogger = new LogManager(
 	isEntry ? Bun.stdout : Bun.file(`/dev/null`)
 );
 const dualLogger = new MultiLogManager([logger, consoleLogger]);
+
+if (!(await exists(process.cwd() + "/logs/"))) {
+	await consoleLogger.log(
+		LogLevel.WARNING,
+		"Lysand",
+		`Creating logs directory at ${process.cwd()}/logs/`
+	);
+
+	await mkdir(process.cwd() + "/logs/");
+}
 
 await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 
