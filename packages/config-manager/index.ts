@@ -26,7 +26,7 @@ export class ConfigManager {
 		const config = await this.readConfig<T>();
 		const internalConfig = await this.readInternalConfig<T>();
 
-		return this.mergeConfigs<T>(configDefaults, config, internalConfig);
+		return this.mergeConfigs<T>(configDefaults as T, config, internalConfig);
 	}
 
 	getConfigPath() {
