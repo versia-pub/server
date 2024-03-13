@@ -25,7 +25,7 @@ await Bun.build({
 	outdir: process.cwd() + "/dist",
 	target: "bun",
 	splitting: true,
-	minify: false,
+	minify: true,
 	external: ["bullmq"],
 }).then(output => {
 	if (!output.success) {
