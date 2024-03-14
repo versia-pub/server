@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
-import { userRelations } from "~database/entities/User";
+import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],

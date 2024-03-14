@@ -2,12 +2,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import {
-	isViewableByUser,
-	statusAndUserRelations,
-	statusToAPI,
-} from "~database/entities/Status";
+import { isViewableByUser, statusToAPI } from "~database/entities/Status";
 import { type UserWithRelations } from "~database/entities/User";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],

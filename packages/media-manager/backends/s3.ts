@@ -1,4 +1,4 @@
-import { S3Client } from "@bradenmacdonald/s3-lite-client";
+import { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { ConvertableMediaFormats } from "../media-converter";
 import { MediaConverter } from "../media-converter";
 import { MediaBackend, MediaBackendType, MediaHasher } from "..";

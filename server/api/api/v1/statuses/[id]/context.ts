@@ -4,9 +4,9 @@ import { client } from "~database/datasource";
 import {
 	getAncestors,
 	getDescendants,
-	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

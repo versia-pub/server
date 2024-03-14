@@ -1,11 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
+import { isViewableByUser } from "~database/entities/Status";
+import { userToAPI } from "~database/entities/User";
 import {
-	isViewableByUser,
 	statusAndUserRelations,
-} from "~database/entities/Status";
-import { userRelations, userToAPI } from "~database/entities/User";
+	userRelations,
+} from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

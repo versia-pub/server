@@ -1,7 +1,8 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
+import { statusToAPI } from "~database/entities/Status";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],

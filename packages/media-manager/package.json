@@ -2,5 +2,8 @@
   "name": "media-manager",
   "version": "0.0.0",
   "main": "index.ts",
-  "dependencies": {}
+  "dependencies": {
+    "@jsr/bradenmacdonald__s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
+    "config-manager": "workspace:*"
+  }
 }

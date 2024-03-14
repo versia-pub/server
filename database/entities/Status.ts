@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { UserWithRelations } from "./User";
-import {
-	fetchRemoteUser,
-	parseMentionsUris,
-	userRelations,
-	userToAPI,
-} from "./User";
+import { fetchRemoteUser, parseMentionsUris, userToAPI } from "./User";
 import { client } from "~database/datasource";
 import type { LysandPublication, Note } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
@@ -29,103 +24,9 @@ import linkifyStr from "linkify-string";
 import linkifyHtml from "linkify-html";
 import { addStausToMeilisearch } from "@meilisearch";
 import { ConfigManager } from "config-manager";
+import { statusAndUserRelations, userRelations } from "./relations";
 
 const config = await new ConfigManager({}).getConfig();
-
-export const statusAndUserRelations: Prisma.StatusInclude = {
-	author: {
-		include: userRelations,
-	},
-	application: true,
-	emojis: true,
-	inReplyToPost: {
-		include: {
-			author: {
-				include: userRelations,
-			},
-			application: true,
-			emojis: true,
-			inReplyToPost: {
-				include: {
-					author: true,
-				},
-			},
-			instance: true,
-			mentions: true,
-			pinnedBy: true,
-			_count: {
-				select: {
-					replies: true,
-				},
-			},
-		},
-	},
-	reblogs: true,
-	attachments: true,
-	instance: true,
-	mentions: {
-		include: userRelations,
-	},
-	pinnedBy: true,
-	_count: {
-		select: {
-			replies: true,
-			likes: true,
-			reblogs: true,
-		},
-	},
-	reblog: {
-		include: {
-			author: {
-				include: userRelations,
-			},
-			application: true,
-			emojis: true,
-			inReplyToPost: {
-				include: {
-					author: true,
-				},
-			},
-			instance: true,
-			mentions: {
-				include: userRelations,
-			},
-			pinnedBy: true,
-			_count: {
-				select: {
-					replies: true,
-				},
-			},
-		},
-	},
-	quotingPost: {
-		include: {
-			author: {
-				include: userRelations,
-			},
-			application: true,
-			emojis: true,
-			inReplyToPost: {
-				include: {
-					author: true,
-				},
-			},
-			instance: true,
-			mentions: true,
-			pinnedBy: true,
-			_count: {
-				select: {
-					replies: true,
-				},
-			},
-		},
-	},
-	likes: {
-		include: {
-			liker: true,
-		},
-	},
-};
 
 const statusRelations = Prisma.validator<Prisma.StatusDefaultArgs>()({
 	include: statusAndUserRelations,

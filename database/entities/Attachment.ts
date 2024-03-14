@@ -61,7 +61,7 @@ export const getUrl = (name: string, config: ConfigType) => {
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
 	if (config.media.backend === MediaBackendType.LOCAL) {
 		return `${config.http.base_url}/media/${name}`;
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison, @typescript-eslint/no-unnecessary-condition
 	} else if (config.media.backend === MediaBackendType.S3) {
 		return `${config.s3.public_url}/${name}`;
 	}

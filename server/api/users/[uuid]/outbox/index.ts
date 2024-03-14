@@ -1,10 +1,8 @@
 import { jsonResponse } from "@response";
 import { apiRoute, applyConfig } from "@api";
-import {
-	statusAndUserRelations,
-	statusToLysand,
-} from "~database/entities/Status";
+import { statusToLysand } from "~database/entities/Status";
 import { client } from "~database/datasource";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

@@ -1,9 +1,11 @@
 import { errorResponse, jsonResponse } from "@response";
-import { userRelations } from "~database/entities/User";
 import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
-import { statusAndUserRelations } from "~database/entities/Status";
 import { notificationToAPI } from "~database/entities/Notification";
+import {
+	userRelations,
+	statusAndUserRelations,
+} from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

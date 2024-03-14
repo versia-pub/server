@@ -6,12 +6,12 @@ import { client } from "~database/datasource";
 import { parseEmojis } from "~database/entities/Emoji";
 import { createLike, deleteLike } from "~database/entities/Like";
 import { createFromObject } from "~database/entities/Object";
+import { createNewStatus, fetchFromRemote } from "~database/entities/Status";
+import { parseMentionsUris } from "~database/entities/User";
 import {
-	createNewStatus,
-	fetchFromRemote,
+	userRelations,
 	statusAndUserRelations,
-} from "~database/entities/Status";
-import { parseMentionsUris, userRelations } from "~database/entities/User";
+} from "~database/entities/relations";
 import type {
 	Announce,
 	Like,

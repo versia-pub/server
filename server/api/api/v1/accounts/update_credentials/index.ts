@@ -1,5 +1,5 @@
 import { errorResponse, jsonResponse } from "@response";
-import { userRelations, userToAPI } from "~database/entities/User";
+import { userToAPI } from "~database/entities/User";
 import { apiRoute, applyConfig } from "@api";
 import { sanitize } from "isomorphic-dompurify";
 import { sanitizeHtml } from "@sanitization";
@@ -13,6 +13,7 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend } from "~packages/media-manager/backends/local";
 import { S3MediaBackend } from "~packages/media-manager/backends/s3";
 import { getUrl } from "~database/entities/Attachment";
+import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["PATCH"],

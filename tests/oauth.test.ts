@@ -83,11 +83,14 @@ describe("POST /auth/login/", () => {
 
 		expect(response.status).toBe(302);
 		expect(response.headers.get("Location")).toMatch(
-			/https:\/\/example.com\?code=/
+			/^\/oauth\/redirect\?redirect_uri=https%3A%2F%2Fexample.com&code=[a-f0-9]+&client_id=[a-zA-Z0-9_-]+&application=Test\+Application&website=https%3A%2F%2Fexample.com&scope=read\+write$/
 		);
 
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-		code = response.headers.get("location")?.split("=")[1] || "";
+		code =
+			new URL(
+				response.headers.get("Location") ?? "",
+				"http://lysand.localhost:8080"
+			).searchParams.get("code") ?? "";
 	});
 });
 

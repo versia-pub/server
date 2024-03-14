@@ -1,10 +1,5 @@
 // import { Worker } from "bullmq";
-import { client /* federationQueue */ } from "~database/datasource";
-import {
-	statusAndUserRelations,
-	statusToLysand,
-	type StatusWithRelations,
-} from "./Status";
+import { statusToLysand, type StatusWithRelations } from "./Status";
 import type { User } from "@prisma/client";
 import { ConfigManager } from "config-manager";
 
@@ -157,7 +152,7 @@ export const federateStatusTo = async (
 	);
 
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-	const userInbox = new URL((user.endpoints as any).inbox);
+	const userInbox = new URL(user.endpoints.inbox);
 
 	const date = new Date();
 

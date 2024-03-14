@@ -9,6 +9,8 @@ import { addInstanceIfNotExists } from "./Instance";
 import type { APISource } from "~types/entities/source";
 import { addUserToMeilisearch } from "@meilisearch";
 import { ConfigManager, type ConfigType } from "config-manager";
+import { userRelations } from "./relations";
+import { MediaBackendType } from "~packages/media-manager";
 
 const configManager = new ConfigManager({});
 const config = await configManager.getConfig();
@@ -23,21 +25,6 @@ export interface AuthData {
  * Stores local and remote users
  */
 
-export const userRelations: Prisma.UserInclude = {
-	emojis: true,
-	instance: true,
-	likes: true,
-	relationships: true,
-	relationshipSubjects: true,
-	pinnedNotes: true,
-	_count: {
-		select: {
-			statuses: true,
-			likes: true,
-		},
-	},
-};
-
 const userRelations2 = Prisma.validator<Prisma.UserDefaultArgs>()({
 	include: userRelations,
 });
@@ -51,9 +38,10 @@ export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
  */
 export const getAvatarUrl = (user: User, config: ConfigType) => {
 	if (!user.avatar) return config.defaults.avatar;
-	if (config.media.backend === "local") {
+	if (config.media.backend === MediaBackendType.LOCAL) {
 		return `${config.http.base_url}/media/${user.avatar}`;
-	} else if (config.media.backend === "s3") {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	} else if (config.media.backend === MediaBackendType.S3) {
 		return `${config.s3.public_url}/${user.avatar}`;
 	}
 	return "";
@@ -66,9 +54,10 @@ export const getAvatarUrl = (user: User, config: ConfigType) => {
  */
 export const getHeaderUrl = (user: User, config: ConfigType) => {
 	if (!user.header) return config.defaults.header;
-	if (config.media.backend === "local") {
+	if (config.media.backend === MediaBackendType.LOCAL) {
 		return `${config.http.base_url}/media/${user.header}`;
-	} else if (config.media.backend === "s3") {
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+	} else if (config.media.backend === MediaBackendType.S3) {
 		return `${config.s3.public_url}/${user.header}`;
 	}
 	return "";
@@ -366,7 +355,7 @@ export const userToAPI = (
 		bot: user.isBot,
 		source:
 			isOwnAccount && user.source
-				? (user.source as any as APISource)
+				? (user.source as APISource)
 				: undefined,
 		// TODO: Add static avatar and header
 		avatar_static: "",

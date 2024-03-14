@@ -2,8 +2,12 @@ import { apiRoute, applyConfig } from "@api";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import { userRelations, userToAPI } from "~database/entities/User";
+import { statusToAPI } from "~database/entities/Status";
+import { userToAPI } from "~database/entities/User";
+import {
+	statusAndUserRelations,
+	userRelations,
+} from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

@@ -1,7 +1,8 @@
 import { errorResponse, jsonResponse } from "@response";
-import { userRelations, userToAPI } from "~database/entities/User";
+import { userToAPI } from "~database/entities/User";
 import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
+import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

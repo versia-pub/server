@@ -6,9 +6,9 @@ import { client } from "~database/datasource";
 import {
 	editStatus,
 	isViewableByUser,
-	statusAndUserRelations,
 	statusToAPI,
 } from "~database/entities/Status";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET", "DELETE", "PUT"],

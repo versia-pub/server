@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
-import { statusAndUserRelations, statusToAPI } from "~database/entities/Status";
-import { userRelations } from "~database/entities/User";
+import { statusToAPI } from "~database/entities/Status";
 import { apiRoute, applyConfig } from "@api";
 import { client } from "~database/datasource";
+import {
+	userRelations,
+	statusAndUserRelations,
+} from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["GET"],

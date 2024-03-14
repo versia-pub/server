@@ -44,6 +44,9 @@ await cp(process.cwd() + "/pages/dist", process.cwd() + "/dist/pages/", {
 });
 
 // Copy the Bee Movie script from pages
-await cp(process.cwd() + "/pages/beemovie.txt", process.cwd() + "/dist/pages/");
+await cp(
+	process.cwd() + "/pages/beemovie.txt",
+	process.cwd() + "/dist/pages/beemovie.txt"
+);
 
 console.log(`Built!`);

@@ -1,11 +1,8 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import {
-	isViewableByUser,
-	statusAndUserRelations,
-	statusToAPI,
-} from "~database/entities/Status";
+import { isViewableByUser, statusToAPI } from "~database/entities/Status";
+import { statusAndUserRelations } from "~database/entities/relations";
 import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({

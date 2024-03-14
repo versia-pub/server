@@ -5,12 +5,9 @@ import { parse } from "marked";
 import { client } from "~database/datasource";
 import { getFromToken } from "~database/entities/Application";
 import type { StatusWithRelations } from "~database/entities/Status";
-import {
-	createNewStatus,
-	statusAndUserRelations,
-	statusToAPI,
-} from "~database/entities/Status";
+import { createNewStatus, statusToAPI } from "~database/entities/Status";
 import type { UserWithRelations } from "~database/entities/User";
+import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
 	allowedMethods: ["POST"],
