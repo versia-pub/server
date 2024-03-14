@@ -16,6 +16,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/block",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:blocks"],
 	},
 });
 

@@ -13,6 +13,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/followers",
 	auth: {
 		required: false,
+		oauthPermissions: [],
 	},
 });
 

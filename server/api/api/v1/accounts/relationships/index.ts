@@ -15,6 +15,7 @@ export const meta = applyConfig({
 	},
 	auth: {
 		required: true,
+		oauthPermissions: ["read:follows"],
 	},
 });
 

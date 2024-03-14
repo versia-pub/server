@@ -16,6 +16,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/remove_from_followers",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:follows"],
 	},
 });
 

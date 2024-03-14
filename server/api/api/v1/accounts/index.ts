@@ -14,6 +14,7 @@ export const meta = applyConfig({
 	},
 	auth: {
 		required: false,
+		oauthPermissions: ["write:accounts"],
 	},
 });
 

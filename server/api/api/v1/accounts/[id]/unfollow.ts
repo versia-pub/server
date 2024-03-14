@@ -16,6 +16,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/unfollow",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:follows"],
 	},
 });
 

@@ -16,6 +16,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/mute",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:mutes"],
 	},
 });
 

@@ -16,6 +16,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/note",
 	auth: {
 		required: true,
+		oauthPermissions: ["write:accounts"],
 	},
 });
 

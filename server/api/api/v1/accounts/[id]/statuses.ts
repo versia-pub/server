@@ -14,6 +14,7 @@ export const meta = applyConfig({
 	route: "/accounts/:id/statuses",
 	auth: {
 		required: false,
+		oauthPermissions: ["read:statuses"],
 	},
 });
 
