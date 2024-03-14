@@ -34,6 +34,7 @@ export const rawRoutes = {
 	"/api/v2/media": "./server/api/api/v2/media/index",
 	"/api/v2/search": "./server/api/api/v2/search/index",
 	"/auth/login": "./server/api/auth/login/index",
+	"/auth/redirect": "./server/api/auth/redirect/index",
 	"/nodeinfo/2.0": "./server/api/nodeinfo/2.0/index",
 	"/oauth/authorize-external": "./server/api/oauth/authorize-external/index",
 	"/oauth/providers": "./server/api/oauth/providers/index",

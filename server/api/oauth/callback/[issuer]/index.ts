@@ -184,7 +184,15 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
 	// Redirect back to application
 	return Response.redirect(
-		`${flow.application.redirect_uris}?code=${code}`,
+		`/oauth/redirect?` +
+			new URLSearchParams({
+				redirect_uri: flow.application.redirect_uris,
+				code,
+				client_id: flow.application.client_id,
+				application: flow.application.name,
+				website: flow.application.website ?? "",
+				scope: flow.application.scopes,
+			}).toString(),
 		302
 	);
 });

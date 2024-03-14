@@ -89,6 +89,17 @@ export default apiRoute<{
 		},
 	});
 
-	// Redirect back to application
-	return Response.redirect(`${redirect_uri}?code=${code}`, 302);
+	// Redirect to OAuth confirmation screen
+	return Response.redirect(
+		`/oauth/redirect?` +
+			new URLSearchParams({
+				redirect_uri,
+				code,
+				client_id,
+				application: application.name,
+				website: application.website ?? "",
+				scope: scopes.join(" "),
+			}).toString(),
+		302
+	);
 });
