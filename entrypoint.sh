@@ -15,12 +15,14 @@ cd /app/dist
 case "$1" in
   "start")
     # Migrate the database
-    exec /bin/bash /app/entrypoint.sh prisma migrate deploy && bun run ./index.js --prod
+    /bin/bash /app/entrypoint.sh prisma migrate deploy
+    # Run
+    bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI
     shift 1
-    exec bun run ./cli.js "$@"
+    bun run ./cli.js "$@"
     ;;
   "prisma")
     # Proxy all Prisma commands
@@ -29,7 +31,7 @@ case "$1" in
     # Set DATABASE_URL env variable to the output of bun run ./dist/prisma.js
     export DATABASE_URL=$(bun run ./prisma.js)
     # Execute the Prisma binary
-    exec bun run ./node_modules/.bin/prisma "$@"
+    bun run ./node_modules/.bin/prisma "$@"
     ;;
   *)
     # Run custom commands
