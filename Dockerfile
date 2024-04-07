@@ -33,6 +33,8 @@ FROM oven/bun:1.1.2-slim
 # Create app directory
 RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
+# Sharp
+COPY --from=build /temp/build /app/build
 COPY entrypoint.sh /app
 
 LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
