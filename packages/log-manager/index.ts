@@ -42,10 +42,13 @@ export class LogManager {
 		if (this.output == Bun.stdout) {
 			await Bun.write(Bun.stdout, text + "\n");
 		} else {
-			if (!this.output.name) {
-				throw new Error(`Output file doesnt exist (and isnt stdout)`);
+			if (!(await this.output.exists())) {
+				// Create file if it doesn't exist
+				await Bun.write(this.output, "", {
+					createPath: true,
+				});
 			}
-			await appendFile(this.output.name, text + "\n");
+			await appendFile(this.output.name ?? "", text + "\n");
 		}
 	}
 
