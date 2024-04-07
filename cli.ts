@@ -515,7 +515,7 @@ const cliBuilder = new CliBuilder([
                 include: {
                     instance: true,
                 },
-                take: limit,
+                take: Number(limit),
             });
 
             if (redact) {
@@ -994,7 +994,7 @@ const cliBuilder = new CliBuilder([
                     author: true,
                     instance: true,
                 },
-                take: limit,
+                take: Number(limit),
             });
 
             if (redact) {
@@ -1473,7 +1473,7 @@ const cliBuilder = new CliBuilder([
                 where: {
                     instanceId: null,
                 },
-                take: limit,
+                take: Number(limit),
             });
 
             if (format === "json") {

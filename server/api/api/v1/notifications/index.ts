@@ -75,7 +75,7 @@ export default apiRoute<{
         orderBy: {
             id: "desc",
         },
-        take: limit,
+        take: Number(limit),
     });
 
     // Constuct HTTP Link header (next and prev)

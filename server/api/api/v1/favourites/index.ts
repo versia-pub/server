@@ -46,7 +46,7 @@ export default apiRoute<{
             },
         },
         include: statusAndUserRelations,
-        take: limit,
+        take: Number(limit),
         orderBy: {
             id: "desc",
         },

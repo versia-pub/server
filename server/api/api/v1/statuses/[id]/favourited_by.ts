@@ -74,7 +74,7 @@ export default apiRoute<{
                 },
             },
         },
-        take: limit,
+        take: Number(limit),
         orderBy: {
             id: "desc",
         },
