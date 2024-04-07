@@ -1,6 +1,6 @@
 // Delete dist directory
 import { $ } from "bun";
-import { cp, exists, mkdir, rm } from "node:fs/promises";
+import { exists, mkdir, rm } from "node:fs/promises";
 import { rawRoutes } from "~routes";
 
 if (!(await exists("./pages/dist"))) {
@@ -46,19 +46,12 @@ await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Create pages directory
-// mkdir ./dist/pages
-await mkdir(`${process.cwd()}/dist/pages`);
+await $`mkdir -p dist/pages/dist`;
 
 // Copy Vite build output to dist
-// cp -r ./pages/dist ./dist/pages
-await cp(`${process.cwd()}/pages/dist`, `${process.cwd()}/dist/pages/`, {
-    recursive: true,
-});
+await $`cp -r ${process.cwd()}/pages/dist dist/pages/`;
 
 // Copy the Bee Movie script from pages
-await cp(
-    `${process.cwd()}/pages/beemovie.txt`,
-    `${process.cwd()}/dist/pages/beemovie.txt`,
-);
+await $`cp ${process.cwd()}/pages/beemovie.txt dist/pages/beemovie.txt`;
 
 console.log("Built!");
