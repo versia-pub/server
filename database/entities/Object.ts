@@ -28,7 +28,7 @@ export const createFromObject = async (object: LysandObjectType) => {
     return await client.lysandObject.create({
         data: {
             authorId: author?.id,
-            created_at: new Date(object.created_at),
+            created_at: new Date(object.created_at).toISOString(),
             extensions: object.extensions || {},
             remote_id: object.id,
             type: object.type,
