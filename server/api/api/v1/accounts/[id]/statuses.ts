@@ -93,7 +93,7 @@ export default apiRoute<{
                         },
                     },
                     id: {
-                        lt: objects[0].id,
+                        gt: objects[0].id,
                     },
                 },
                 take: 1,
@@ -118,7 +118,7 @@ export default apiRoute<{
                         },
                     },
                     id: {
-                        gt: objects.at(-1)?.id,
+                        lt: objects.at(-1)?.id,
                     },
                 },
                 take: 1,
@@ -172,7 +172,7 @@ export default apiRoute<{
                 authorId: id,
                 isReblog: exclude_reblogs ? true : undefined,
                 id: {
-                    lt: objects[0].id,
+                    gt: objects[0].id,
                 },
             },
             take: 1,
@@ -192,7 +192,7 @@ export default apiRoute<{
                 authorId: id,
                 isReblog: exclude_reblogs ? true : undefined,
                 id: {
-                    gt: objects.at(-1)?.id,
+                    lt: objects.at(-1)?.id,
                 },
             },
             take: 1,
