@@ -25,7 +25,8 @@ RUN bunx --bun prisma generate
 RUN bun run prod-build
 
 # copy production dependencies and source code into final image
-FROM oven/bun:1.1.2-alpine
+# Alpine (musl) causes errors with Bun :(
+FROM oven/bun:1.1.2-slim
 
 # Create app directory
 RUN mkdir -p /app
@@ -42,6 +43,6 @@ LABEL org.opencontainers.image.description "Lysand Server docker image"
 # CD to app
 WORKDIR /app
 ENV NODE_ENV=production
-ENTRYPOINT [ "/bin/sh", "/app/entrypoint.sh" ]
+ENTRYPOINT [ "/bin/bash", "/app/entrypoint.sh" ]
 # Run migrations and start the server
 CMD [ "start" ]
