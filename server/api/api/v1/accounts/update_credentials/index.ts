@@ -11,8 +11,7 @@ import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
 import { userToAPI } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
-import { LocalMediaBackend } from "~packages/media-manager/backends/local";
-import { S3MediaBackend } from "~packages/media-manager/backends/s3";
+import { S3MediaBackend, LocalMediaBackend } from "media-manager";
 import type { APISource } from "~types/entities/source";
 
 export const meta = applyConfig({

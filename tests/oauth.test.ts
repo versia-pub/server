@@ -120,7 +120,7 @@ describe("POST /oauth/token/", () => {
             access_token: expect.any(String),
             token_type: "Bearer",
             scope: "read write",
-            created_at: expect.any(String),
+            created_at: expect.any(Number),
         });
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access

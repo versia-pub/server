@@ -2,9 +2,13 @@ import { beforeEach, describe, expect, it, jest, spyOn } from "bun:test";
 import type { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
 // FILEPATH: /home/jessew/Dev/lysand/packages/media-manager/backends/s3.test.ts
-import { MediaBackend, MediaBackendType, MediaHasher } from "..";
-import { LocalMediaBackend } from "../backends/local";
-import { S3MediaBackend } from "../backends/s3";
+import {
+    MediaBackend,
+    MediaBackendType,
+    MediaHasher,
+    LocalMediaBackend,
+    S3MediaBackend,
+} from "..";
 import { ConvertableMediaFormats, MediaConverter } from "../media-converter";
 
 type DeepPartial<T> = {
