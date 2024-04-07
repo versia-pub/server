@@ -6,8 +6,7 @@ import type { MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { client } from "~database/datasource";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
-import { LocalMediaBackend } from "~packages/media-manager/backends/local";
-import { S3MediaBackend } from "~packages/media-manager/backends/s3";
+import { LocalMediaBackend, S3MediaBackend } from "~packages/media-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
