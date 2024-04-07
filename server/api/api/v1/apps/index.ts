@@ -32,7 +32,7 @@ export default apiRoute<{
         try {
             const redirect_uri = new URL(redirect_uris);
 
-            if (!redirect_uri.protocol.startsWith("http")) {
+            if (redirect_uri.origin === "null") {
                 return errorResponse(
                     "Redirect URI must be an absolute URI",
                     422,

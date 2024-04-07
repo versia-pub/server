@@ -95,7 +95,7 @@ export const createServer = (
 
             if (config.logging.log_requests) {
                 await logger.logRequest(
-                    req,
+                    req.clone(),
                     config.logging.log_ip ? request_ip : undefined,
                     config.logging.log_requests_verbose,
                 );
