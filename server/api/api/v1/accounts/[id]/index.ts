@@ -23,8 +23,12 @@ export const meta = applyConfig({
  */
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const id = matchedRoute.params.id;
-    // Check if ID is valid UUID
-    if (!id.match(/^[0-9a-fA-F]{36}$/)) {
+    // Check if ID is valid UUIDv7
+    if (
+        !id.match(
+            /^[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
+        )
+    ) {
         return errorResponse("Invalid ID", 404);
     }
 
