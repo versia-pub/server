@@ -9,15 +9,13 @@
 # Exit immediately if a command exits with a non-zero status.
 set -euo pipefail
 
-cd /app/dist
+# cd /app/dist
 
 # Parse first argument
 case "$1" in
   "start")
-    # Migrate the database
-    /bin/bash /app/entrypoint.sh prisma migrate deploy
-    # Run
-    bun run ./index.js --prod
+    # Migrate the database and run
+    /bin/bash /app/entrypoint.sh prisma migrate deploy && bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI
@@ -38,4 +36,3 @@ case "$1" in
     exec "$@"
     ;;
 esac
-```
