@@ -45,6 +45,10 @@ await $`mkdir -p dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
+// Copy Sharp to dist
+await $`cp -r ${process.cwd()}/node_modules/@img dist/node_modules/`;
+await $`cp -r ${process.cwd()}/node_modules/sharp dist/node_modules/`;
+
 // Create pages directory
 await $`mkdir -p dist/pages/dist`;
 
