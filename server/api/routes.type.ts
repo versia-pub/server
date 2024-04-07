@@ -1,5 +1,5 @@
 import type { MatchedRoute } from "bun";
-import type { ConfigManager } from "config-manager";
+import type { Config } from "config-manager";
 import type { AuthData } from "~database/entities/User";
 
 export type RouteHandler<T> = (
@@ -8,6 +8,8 @@ export type RouteHandler<T> = (
 	extraData: {
 		auth: AuthData;
 		parsedRequest: Partial<T>;
-		configManager: ConfigManager;
+		configManager: {
+			getConfig: () => Promise<Config>;
+		};
 	}
 ) => Response | Promise<Response>;

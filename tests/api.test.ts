@@ -1,6 +1,6 @@
 import type { Token } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { ConfigManager } from "config-manager";
+import { config } from "config-manager";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import {
@@ -11,7 +11,6 @@ import type { APIEmoji } from "~types/entities/emoji";
 import type { APIInstance } from "~types/entities/instance";
 import { sendTestRequest, wrapRelativeUrl } from "./utils";
 
-const config = await new ConfigManager({}).getConfig();
 const base_url = config.http.base_url;
 
 let token: Token;

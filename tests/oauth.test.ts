@@ -4,7 +4,6 @@ import { client } from "~database/datasource";
 import { createNewLocalUser } from "~database/entities/User";
 import { sendTestRequest, wrapRelativeUrl } from "./utils";
 
-// const config = await new ConfigManager({}).getConfig();
 const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
 
 let client_id: string;

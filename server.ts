@@ -1,15 +1,14 @@
 import { errorResponse, jsonResponse } from "@response";
 import { matches } from "ip-matching";
 import { getFromRequest } from "~database/entities/User";
-import type { ConfigManager, ConfigType } from "config-manager";
+import { type Config } from "config-manager";
 import type { LogManager, MultiLogManager } from "log-manager";
 import { LogLevel } from "log-manager";
 import { RequestParser } from "request-parser";
 import { matchRoute } from "~routes";
 
 export const createServer = (
-	config: ConfigType,
-	configManager: ConfigManager,
+	config: Config,
 	logger: LogManager | MultiLogManager,
 	isProd: boolean
 ) =>
@@ -182,8 +181,11 @@ export const createServer = (
 
 				return await file.default(req.clone(), matchedRoute, {
 					auth,
-					configManager,
 					parsedRequest,
+					// To avoid having to rewrite each route
+					configManager: {
+						getConfig: () => Promise.resolve(config),
+					},
 				});
 			} else if (matchedRoute?.name === "/[...404]" || !matchedRoute) {
 				if (new URL(req.url).pathname.startsWith("/api")) {

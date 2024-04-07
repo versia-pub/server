@@ -1,5 +1,5 @@
 import type { APIAccount } from "~types/entities/account";
-import type { LysandUser as LysandUser } from "~types/lysand/Object";
+import type { LysandUser } from "~types/lysand/Object";
 import { htmlToText } from "html-to-text";
 import type { User } from "@prisma/client";
 import { Prisma } from "@prisma/client";
@@ -8,12 +8,9 @@ import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import type { APISource } from "~types/entities/source";
 import { addUserToMeilisearch } from "@meilisearch";
-import { ConfigManager, type ConfigType } from "config-manager";
+import { config, type Config } from "config-manager";
 import { userRelations } from "./relations";
 import { MediaBackendType } from "~packages/media-manager";
-
-const configManager = new ConfigManager({});
-const config = await configManager.getConfig();
 
 export interface AuthData {
 	user: UserWithRelations | null;
@@ -36,7 +33,7 @@ export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
  * @param config The config to use
  * @returns The raw URL for the user's avatar
  */
-export const getAvatarUrl = (user: User, config: ConfigType) => {
+export const getAvatarUrl = (user: User, config: Config) => {
 	if (!user.avatar) return config.defaults.avatar;
 	if (config.media.backend === MediaBackendType.LOCAL) {
 		return `${config.http.base_url}/media/${user.avatar}`;
@@ -52,7 +49,7 @@ export const getAvatarUrl = (user: User, config: ConfigType) => {
  * @param config The config to use
  * @returns The raw URL for the user's header
  */
-export const getHeaderUrl = (user: User, config: ConfigType) => {
+export const getHeaderUrl = (user: User, config: Config) => {
 	if (!user.header) return config.defaults.header;
 	if (config.media.backend === MediaBackendType.LOCAL) {
 		return `${config.http.base_url}/media/${user.header}`;
@@ -192,8 +189,6 @@ export const createNewLocalUser = async (data: {
 	header?: string;
 	admin?: boolean;
 }) => {
-	const config = await configManager.getConfig();
-
 	const keys = await generateUserKeys();
 
 	const user = await client.user.create({

@@ -1,9 +1,7 @@
 // import { Worker } from "bullmq";
 import { statusToLysand, type StatusWithRelations } from "./Status";
 import type { User } from "@prisma/client";
-import { ConfigManager } from "config-manager";
-
-const config = await new ConfigManager({}).getConfig();
+import { config } from "config-manager";
 
 /* export const federationWorker = new Worker(
 	"federation",

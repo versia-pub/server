@@ -7,7 +7,7 @@ import extract from "extract-zip";
 import { client } from "~database/datasource";
 import { CliBuilder, CliCommand } from "cli-parser";
 import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
-import { ConfigManager } from "~packages/config-manager";
+import { config } from "~packages/config-manager";
 import { Parser } from "@json2csv/plainjs";
 import type { Prisma } from "@prisma/client";
 import { MediaBackend } from "media-manager";
@@ -16,8 +16,6 @@ import { join } from "path";
 import { tmpdir } from "os";
 
 const args = process.argv;
-
-const config = await new ConfigManager({}).getConfig();
 
 const filterObjects = <T extends object>(output: T[], fields: string[]) => {
 	if (fields.length === 0) return output;

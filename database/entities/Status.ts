@@ -23,10 +23,8 @@ import { parse } from "marked";
 import linkifyStr from "linkify-string";
 import linkifyHtml from "linkify-html";
 import { addStausToMeilisearch } from "@meilisearch";
-import { ConfigManager } from "config-manager";
+import { config } from "config-manager";
 import { statusAndUserRelations, userRelations } from "./relations";
-
-const config = await new ConfigManager({}).getConfig();
 
 const statusRelations = Prisma.validator<Prisma.StatusDefaultArgs>()({
 	include: statusAndUserRelations,

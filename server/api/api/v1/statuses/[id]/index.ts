@@ -89,7 +89,7 @@ export default apiRoute<{
 			content_type,
 			"poll[expires_in]": expires_in,
 			"poll[options]": options,
-			media_ids: media_ids,
+			media_ids,
 			spoiler_text,
 			sensitive,
 		} = extraData.parsedRequest;
@@ -181,7 +181,7 @@ export default apiRoute<{
 
 		// Check if status body doesnt match filters
 		if (
-			config.filters.note_filters.some(filter =>
+			config.filters.note_content.some(filter =>
 				statusText?.match(filter)
 			)
 		) {

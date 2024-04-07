@@ -103,7 +103,7 @@ export default apiRoute<{
 
 		// Check if display name doesnt match filters
 		if (
-			config.filters.displayname_filters.some(filter =>
+			config.filters.displayname.some(filter =>
 				sanitizedDisplayName.match(filter)
 			)
 		) {
@@ -126,11 +126,7 @@ export default apiRoute<{
 		}
 
 		// Check if bio doesnt match filters
-		if (
-			config.filters.bio_filters.some(filter =>
-				sanitizedNote.match(filter)
-			)
-		) {
+		if (config.filters.bio.some(filter => sanitizedNote.match(filter))) {
 			return errorResponse("Bio contains blocked words", 422);
 		}
 

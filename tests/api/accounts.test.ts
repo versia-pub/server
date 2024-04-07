@@ -9,10 +9,9 @@ import {
 import type { APIAccount } from "~types/entities/account";
 import type { APIRelationship } from "~types/entities/relationship";
 import type { APIStatus } from "~types/entities/status";
-import { ConfigManager } from "config-manager";
+import { config } from "config-manager";
 import { sendTestRequest, wrapRelativeUrl } from "~tests/utils";
 
-const config = await new ConfigManager({}).getConfig();
 const base_url = config.http.base_url;
 
 let token: Token;

@@ -1,7 +1,7 @@
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { initializeRedisCache } from "@redis";
 import { connectMeili } from "@meilisearch";
-import { ConfigManager } from "config-manager";
+import { config } from "config-manager";
 import { client } from "~database/datasource";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
 import { moduleIsEntry } from "@module";
@@ -9,9 +9,6 @@ import { createServer } from "~server";
 import { exists, mkdir } from "fs/promises";
 
 const timeAtStart = performance.now();
-
-const configManager = new ConfigManager({});
-const config = await configManager.getConfig();
 
 const requests_log = Bun.file(process.cwd() + "/logs/requests.log");
 const isEntry = moduleIsEntry(import.meta.url);
@@ -22,7 +19,7 @@ const consoleLogger = new LogManager(
 );
 const dualLogger = new MultiLogManager([logger, consoleLogger]);
 
-if (!(await exists(process.cwd() + "/logs/"))) {
+if (!(await exists(config.logging.storage.requests))) {
 	await consoleLogger.log(
 		LogLevel.WARNING,
 		"Lysand",
@@ -59,7 +56,7 @@ try {
 	process.exit(1);
 }
 
-const server = createServer(config, configManager, dualLogger, isProd);
+const server = createServer(config, dualLogger, isProd);
 
 await dualLogger.log(
 	LogLevel.INFO,

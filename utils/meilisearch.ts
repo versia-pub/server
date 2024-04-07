@@ -2,10 +2,8 @@ import chalk from "chalk";
 import { client } from "~database/datasource";
 import { Meilisearch } from "meilisearch";
 import type { Status, User } from "@prisma/client";
-import { ConfigManager } from "config-manager";
+import { config } from "config-manager";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
-
-const config = await new ConfigManager({}).getConfig();
 
 export const meilisearch = new Meilisearch({
 	host: `${config.meilisearch.host}:${config.meilisearch.port}`,

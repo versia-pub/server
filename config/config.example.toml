@@ -1,17 +1,28 @@
+# Lysand Config
+# All of these values can be changed via the CLI (they will be saved in a file named config.internal.toml
+# in the same directory as this one)
+# Changing this file does not require a restart, but might take a few seconds to apply
+# This file will be merged with the CLI configuration, taking precedence over it
+
 [database]
+# Main PostgreSQL database connection
 host = "localhost"
 port = 5432
 username = "lysand"
-password = "password123"
+password = "lysand"
 database = "lysand"
 
 [redis.queue]
+# Redis instance for storing the federation queue
+# Required for federation
 host = "localhost"
 port = 6379
 password = ""
 database = 0
 
 [redis.cache]
+# Redis instance to be used as a timeline cache
+# Optional, can be the same as the queue instance
 host = "localhost"
 port = 6379
 password = ""
@@ -19,14 +30,15 @@ database = 1
 enabled = false
 
 [meilisearch]
+# If Meilisearch is not configured, search will not be enabled
 host = "localhost"
-port = 40007
-api_key = ""
-enabled = true
+port = 7700
+api_key = "______________________________"
+enabled = false
 
 [signups]
 # URL of your Terms of Service
-tos_url = "https://example.com/tos"
+tos_url = "https://my-site.com/tos"
 # Whether to enable registrations or not
 registration = true
 rules = [
@@ -41,40 +53,64 @@ rules = [
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this
 [[oidc.providers]]
+# Test with custom Authentik instance
 name = "CPlusPatch ID"
 id = "cpluspatch-id"
 url = "https://id.cpluspatch.com/application/o/lysand-testing/"
-client_id = "XXXXXXXXXXXXXXXX"
-client_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+client_id = "______________________________"
+client_secret = "__________________________________"
 icon = "https://cpluspatch.com/images/icons/logo.svg"
 
 [http]
+# The full URL Lysand will be reachable by (paths are not supported)
 base_url = "https://lysand.social"
-bind = "http://localhost"
+# Address to bind to
+bind = "0.0.0.0"
 bind_port = "8080"
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
+# Banned user agents, regex format
+banned_user_agents = [
+	# "curl\/7.68.0",
+	# "wget\/1.20.3",
+]
+
+[http.bait]
+# Enable the bait feature (sends fake data to those who are flagged)
+enabled = false
+# Path to file of bait data (if not provided, Lysand will send the entire Bee Movie script)
+send_file = ""
+# IPs to send bait data to (wildcards, networks and ranges are supported)
+bait_ips = ["127.0.0.1", "::1"]
+# User agents to send bait data to (regex format)
+bait_user_agents = ["curl", "wget"]
 
 [smtp]
 # SMTP server to use for sending emails
 server = "smtp.example.com"
 port = 465
 username = "test@example.com"
-password = "password123"
+password = "____________"
 tls = true
+# Disable all email functions (this will allow people to sign up without verifying
+# their email)
+enabled = false
 
 [media]
 # Can be "s3" or "local", where "local" uploads the file to the local filesystem
 # If you need to change this value after setting up your instance, you must move all the files
-# from one backend to the other manually
-backend = "s3"
+# from one backend to the other manually (the CLI will have an option to do this later)
+# TODO: Add CLI command to move files
+backend = "local"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
 # If media backend is "local", this is the folder where the files will be stored
+# Can be any path
 local_uploads_folder = "uploads"
 
 [media.conversion]
+# Whether to automatically convert images to another format on upload
 convert_images = false
 # Can be: "jxl", "webp", "avif", "png", "jpg", "heif"
 # JXL support will likely not work
@@ -82,26 +118,26 @@ convert_to = "webp"
 
 [s3]
 # Can be left blank if you don't use the S3 media backend
-endpoint = "https://s3-us-west-2.amazonaws.com"
-access_key = ""
-secret_access_key = ""
-region = "us-west-2"
+endpoint = "myhostname.banana.com"
+access_key = "_____________"
+secret_access_key = "_________________"
+region = ""
 bucket_name = "lysand"
-public_url = "https://cdn.example.com"
+public_url = "https://cdn.test.com"
 
 [email]
 # Sends an email to moderators when a report is received
-# NOT IMPLEMENTED
 send_on_report = false
 # Sends an email to moderators when a user is suspended
-# NOT IMPLEMENTED
 send_on_suspend = false
 # Sends an email to moderators when a user is unsuspended
-# NOT IMPLEMENTED
 send_on_unsuspend = false
+# Verify user emails when signing up (except via OIDC)
+verify_email = false
 
 [validation]
-# Self explanatory
+# Checks user data
+# Does not retroactively apply to previously entered data
 max_displayname_size = 50
 max_bio_size = 160
 max_note_size = 5000
@@ -115,7 +151,7 @@ max_poll_option_size = 500
 min_poll_duration = 60
 max_poll_duration = 1893456000
 max_username_size = 30
-# An array of strings, defaults are from Akkoma
+# Forbidden usernames, defaults are from Akkoma
 username_blacklist = [
 	".well-known",
 	"~",
@@ -146,7 +182,7 @@ username_blacklist = [
 ]
 # Whether to blacklist known temporary email providers
 blacklist_tempmail = false
-# Additional email providers to blacklist
+# Additional email providers to blacklist (list of domains)
 email_blacklist = []
 # Valid URL schemes, otherwise the URL is parsed as text
 url_scheme_whitelist = [
@@ -167,8 +203,10 @@ url_scheme_whitelist = [
 	"mumble",
 	"ssb",
 	"gemini",
-] # NOT IMPLEMENTED
-
+]
+# Only allow those MIME types of data to be uploaded
+# This can easily be spoofed, but if it is spoofed it will appear broken
+# to normal clients until despoofed
 enforce_mime_types = false
 allowed_mime_types = [
 	"image/jpeg",
@@ -203,46 +241,38 @@ allowed_mime_types = [
 
 [defaults]
 # Default visibility for new notes
+# Can be public, unlisted, private or direct
+# Private only sends to followers, unlisted doesn't show up in timelines
 visibility = "public"
-# Default language for new notes
+# Default language for new notes (ISO code)
 language = "en"
-# Default avatar, must be a valid URL or ""
+# Default avatar, must be a valid URL or "" for none
 avatar = ""
-# Default header, must be a valid URL or ""
+# Default header, must be a valid URL or "" for none
 header = ""
 
-[activitypub]
-# Use ActivityPub Tombstones instead of deleting objects
-use_tombstones = true
-# Fetch all members of collections (followers, following, etc) when receiving them
-# WARNING: This can be a lot of data, and is not recommended
-fetch_all_collection_members = false # NOT IMPLEMENTED
+[federation]
+# This is a list of domain names, such as "mastodon.social" or "pleroma.site"
+# These changes will not retroactively apply to existing data before they were changed
+# For that, please use the CLI
 
-# The following values must be instance domain names without "https" or glob patterns
-# Rejects all activities from these instances (fediblocking)
-reject_activities = []
-# Force posts from this instance to be followers only
-force_followers_only = [] # NOT IMPLEMENTED
-# Discard all reports from these instances
-discard_reports = [] # NOT IMPLEMENTED
-# Discard all deletes from these instances
-discard_deletes = []
-# Discard all updates (edits) from these instances
-discard_updates = []
-# Discard all banners from these instances
-discard_banners = [] # NOT IMPLEMENTED
-# Discard all avatars from these instances
-discard_avatars = [] # NOT IMPLEMENTED
-# Discard all follow requests from these instances
-discard_follows = []
-# Force set these instances' media as sensitive
-force_sensitive = [] # NOT IMPLEMENTED
-# Remove theses instances' media
-remove_media = [] # NOT IMPLEMENTED
+# These instances will not be federated with
+blocked = []
+# These instances' data will only be shown to followers, not in public timelines
+followers_only = []
 
-# Whether to verify HTTP signatures for every request (warning: can slow down your server
-# significantly depending on processing power)
-authorized_fetch = false
+[federation.discard]
+# These objects will be discarded when received from these instances
+reports = []
+deletes = []
+updates = []
+media = []
+follows = []
+# If instance reactions are blocked, likes will also be discarded
+likes = []
+reactions = []
+banners = []
+avatars = []
 
 [instance]
 name = "Lysand"
@@ -254,22 +284,23 @@ banner = ""
 
 
 [filters]
-# Drop notes with these regex filters (only applies to new activities)
-note_filters = [
+# Regex filters for federated and local data
+# Does not apply retroactively (try the CLI for that)
+
+# Note contents
+note_content = [
 	# "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
 	# "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
 ]
-# Drop users with these regex filters (only applies to new activities)
-username_filters = []
-# Drop users with these regex filters (only applies to new activities)
-displayname_filters = []
-# Drop users with these regex filters (only applies to new activities)
-bio_filters = []
-emoji_filters = [] # NOT IMPLEMENTED
+emoji = []
+# These will drop users matching the filters
+username = []
+displayname = []
+bio = []
 
 [logging]
 # Log all requests (warning: this is a lot of data)
-log_requests = true
+log_requests = false
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
 # For GDPR compliance, you can disable logging of IPs
@@ -278,12 +309,19 @@ log_ip = false
 # Log all filtered objects
 log_filters = true
 
+[logging.storage]
+# Path to logfile for requests
+requests = "logs/requests.log"
+
 [ratelimits]
+# These settings apply to every route at once
 # Amount to multiply every route's duration by
 duration_coeff = 1.0
-# Amount to multiply every route's max by
+# Amount to multiply every route's max requests per [duration] by
 max_coeff = 1.0
 
 [custom_ratelimits]
 # Add in any API route in this style here
+# Applies before the global ratelimit changes
+"/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
 "/api/v1/timelines/public" = { duration = 60, max = 200 }

@@ -194,7 +194,7 @@ export default apiRoute<{
 	}
 
 	// Check if status body doesnt match filters
-	if (config.filters.note_filters.some(filter => status?.match(filter))) {
+	if (config.filters.note_content.some(filter => status?.match(filter))) {
 		return errorResponse("Status contains blocked words", 422);
 	}
 

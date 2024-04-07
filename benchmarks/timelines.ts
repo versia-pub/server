@@ -3,9 +3,7 @@
  */
 
 import chalk from "chalk";
-import { ConfigManager } from "config-manager";
-
-const config = await new ConfigManager({}).getConfig();
+import { config } from "config-manager";
 
 const token = process.env.TOKEN;
 const requestCount = Number(process.argv[2]) || 100;

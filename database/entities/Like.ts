@@ -4,9 +4,7 @@ import type { Like } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { UserWithRelations } from "./User";
 import type { StatusWithRelations } from "./Status";
-import { ConfigManager } from "config-manager";
-
-const config = await new ConfigManager({}).getConfig();
+import { config } from "config-manager";
 
 /**
  * Represents a Like entity in the database.
