@@ -4,10 +4,7 @@
             "type": "node",
             "name": "vscode-jest-tests.v2.lysand",
             "request": "launch",
-            "args": [
-                "test",
-                "${jest.testFile}"
-            ],
+            "args": ["test", "${jest.testFile}"],
             "cwd": "/home/jessew/Dev/lysand",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",

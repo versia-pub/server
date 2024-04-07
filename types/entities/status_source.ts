@@ -1,5 +1,5 @@
 export interface APIStatusSource {
-	id: string;
-	text: string;
-	spoiler_text: string;
+    id: string;
+    text: string;
+    spoiler_text: string;
 }

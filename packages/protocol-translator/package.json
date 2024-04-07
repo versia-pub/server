@@ -1,9 +1,9 @@
 {
-  "name": "protocol-translator",
-  "version": "0.0.0",
-  "main": "index.ts",
-  "dependencies": {},
-  "devDependencies": {
-    "activitypub-types": "^1.1.0"
-  }
+    "name": "protocol-translator",
+    "version": "0.0.0",
+    "main": "index.ts",
+    "dependencies": {},
+    "devDependencies": {
+        "activitypub-types": "^1.1.0"
+    }
 }

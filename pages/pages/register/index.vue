@@ -98,12 +98,14 @@
 </template>
 
 <script setup lang="ts">
+import { computed, ref, watch } from "vue";
 import type { APIInstance } from "~types/entities/instance";
-import LoginInput from "../../components/LoginInput.vue"
-import { computed, ref, watch } from 'vue';
+import LoginInput from "../../components/LoginInput.vue";
 
-const instanceInfo = await fetch("/api/v1/instance").then(res => res.json()) as APIInstance & {
-    tos_url: string
+const instanceInfo = (await fetch("/api/v1/instance").then((res) =>
+    res.json(),
+)) as APIInstance & {
+    tos_url: string;
 };
 
 const errors = ref<{
@@ -124,26 +126,40 @@ const registerUser = (e: Event) => {
     e.preventDefault();
     const formData = new FormData();
 
-    formData.append("email", (e.target as any).email.value);
-    formData.append("password", (e.target as any).password.value);
-    formData.append("username", (e.target as any).username.value);
+    const target = e.target as unknown as Record<string, HTMLInputElement>;
+
+    formData.append("email", target.email.value);
+    formData.append("password", target.password.value);
+    formData.append("username", target.username.value);
     formData.append("reason", reason.value);
-    formData.append("locale", "en")
+    formData.append("locale", "en");
     formData.append("agreement", "true");
     // @ts-ignore
     fetch("/api/v1/accounts", {
         method: "POST",
         body: formData,
-    }).then(async res => {
-        if (res.status === 422) {
-            errors.value = (await res.json() as any).details;
-            console.log(errors.value)
-        } else {
-            // @ts-ignore
-            window.location.href = "/register/success";
-        }
-    }).catch(async err => {
-        console.error(err);
     })
-}
+        .then(async (res) => {
+            if (res.status === 422) {
+                errors.value = (
+                    (await res.json()) as Record<
+                        string,
+                        {
+                            [key: string]: {
+                                error: string;
+                                description: string;
+                            }[];
+                        }
+                    >
+                ).details;
+                console.log(errors.value);
+            } else {
+                // @ts-ignore
+                window.location.href = "/register/success";
+            }
+        })
+        .catch(async (err) => {
+            console.error(err);
+        });
+};
 </script>

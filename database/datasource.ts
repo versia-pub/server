@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { config } from "config-manager";
 
 const client = new PrismaClient({
-	datasourceUrl: `postgresql://${config.database.username}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`,
+    datasourceUrl: `postgresql://${config.database.username}:${config.database.password}@${config.database.host}:${config.database.port}/${config.database.database}`,
 });
 
 /* const federationQueue = new Queue("federation", {

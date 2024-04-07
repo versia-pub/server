@@ -7,57 +7,57 @@ import type { Application } from "@prisma/client";
  * @returns Whether the OAuth application is valid for the route
  */
 export const checkIfOauthIsValid = (
-	application: Application,
-	routeScopes: string[]
+    application: Application,
+    routeScopes: string[],
 ) => {
-	if (routeScopes.length === 0) {
-		return true;
-	}
+    if (routeScopes.length === 0) {
+        return true;
+    }
 
-	const hasAllWriteScopes =
-		application.scopes.split(" ").includes("write:*") ||
-		application.scopes.split(" ").includes("write");
+    const hasAllWriteScopes =
+        application.scopes.split(" ").includes("write:*") ||
+        application.scopes.split(" ").includes("write");
 
-	const hasAllReadScopes =
-		application.scopes.split(" ").includes("read:*") ||
-		application.scopes.split(" ").includes("read");
+    const hasAllReadScopes =
+        application.scopes.split(" ").includes("read:*") ||
+        application.scopes.split(" ").includes("read");
 
-	if (hasAllWriteScopes && hasAllReadScopes) {
-		return true;
-	}
+    if (hasAllWriteScopes && hasAllReadScopes) {
+        return true;
+    }
 
-	let nonMatchedScopes = routeScopes;
+    let nonMatchedScopes = routeScopes;
 
-	if (hasAllWriteScopes) {
-		// Filter out all write scopes as valid
-		nonMatchedScopes = routeScopes.filter(
-			scope => !scope.startsWith("write:")
-		);
-	}
+    if (hasAllWriteScopes) {
+        // Filter out all write scopes as valid
+        nonMatchedScopes = routeScopes.filter(
+            (scope) => !scope.startsWith("write:"),
+        );
+    }
 
-	if (hasAllReadScopes) {
-		// Filter out all read scopes as valid
-		nonMatchedScopes = routeScopes.filter(
-			scope => !scope.startsWith("read:")
-		);
-	}
+    if (hasAllReadScopes) {
+        // Filter out all read scopes as valid
+        nonMatchedScopes = routeScopes.filter(
+            (scope) => !scope.startsWith("read:"),
+        );
+    }
 
-	// If there are still scopes left, check if they match
-	// If there are no scopes left, return true
-	if (nonMatchedScopes.length === 0) {
-		return true;
-	}
+    // If there are still scopes left, check if they match
+    // If there are no scopes left, return true
+    if (nonMatchedScopes.length === 0) {
+        return true;
+    }
 
-	// If there are scopes left, check if they match
-	if (
-		nonMatchedScopes.every(scope =>
-			application.scopes.split(" ").includes(scope)
-		)
-	) {
-		return true;
-	}
+    // If there are scopes left, check if they match
+    if (
+        nonMatchedScopes.every((scope) =>
+            application.scopes.split(" ").includes(scope),
+        )
+    ) {
+        return true;
+    }
 
-	return false;
+    return false;
 };
 
 export const oauthCodeVerifiers: Record<string, string> = {};

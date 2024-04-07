@@ -6,9 +6,9 @@ import registerIndexVue from "./pages/register/index.vue";
 import successVue from "./pages/register/success.vue";
 
 export default [
-	{ path: "/", component: indexVue },
-	{ path: "/oauth/authorize", component: authorizeVue },
-	{ path: "/oauth/redirect", component: redirectVue },
-	{ path: "/register", component: registerIndexVue },
-	{ path: "/register/success", component: successVue },
+    { path: "/", component: indexVue },
+    { path: "/oauth/authorize", component: authorizeVue },
+    { path: "/oauth/redirect", component: redirectVue },
+    { path: "/register", component: registerIndexVue },
+    { path: "/register/success", component: successVue },
 ] as RouteRecordRaw[];

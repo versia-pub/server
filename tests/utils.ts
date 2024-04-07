@@ -7,9 +7,9 @@ import { server } from "~index";
  * @returns Response from the server
  */
 export async function sendTestRequest(req: Request) {
-	return server.fetch(req);
+    return server.fetch(req);
 }
 
 export function wrapRelativeUrl(url: string, base_url: string) {
-	return new URL(url, base_url);
+    return new URL(url, base_url);
 }

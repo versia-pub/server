@@ -5,33 +5,33 @@ import { userToLysand } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
-	allowedMethods: ["POST"],
-	auth: {
-		required: false,
-	},
-	ratelimits: {
-		duration: 60,
-		max: 500,
-	},
-	route: "/users/:uuid",
+    allowedMethods: ["POST"],
+    auth: {
+        required: false,
+    },
+    ratelimits: {
+        duration: 60,
+        max: 500,
+    },
+    route: "/users/:uuid",
 });
 
 /**
  * ActivityPub user inbox endpoint
  */
 export default apiRoute(async (req, matchedRoute) => {
-	const uuid = matchedRoute.params.uuid;
+    const uuid = matchedRoute.params.uuid;
 
-	const user = await client.user.findUnique({
-		where: {
-			id: uuid,
-		},
-		include: userRelations,
-	});
+    const user = await client.user.findUnique({
+        where: {
+            id: uuid,
+        },
+        include: userRelations,
+    });
 
-	if (!user) {
-		return errorResponse("User not found", 404);
-	}
+    if (!user) {
+        return errorResponse("User not found", 404);
+    }
 
-	return jsonResponse(userToLysand(user));
+    return jsonResponse(userToLysand(user));
 });

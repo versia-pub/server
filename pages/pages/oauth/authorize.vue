@@ -52,9 +52,9 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import LoginInput from "../../components/LoginInput.vue"
-import { onMounted, ref } from 'vue';
+import { onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import LoginInput from "../../components/LoginInput.vue";
 
 const query = useRoute().query;
 
@@ -64,18 +64,21 @@ const client_id = query.client_id;
 const scope = query.scope;
 const error = decodeURIComponent(query.error as string);
 
-const oauthProviders = ref<{
-	name: string;
-	icon: string;
-	id: string
-}[] | null>(null);
+const oauthProviders = ref<
+    | {
+          name: string;
+          icon: string;
+          id: string;
+      }[]
+    | null
+>(null);
 
 const getOauthProviders = async () => {
-	const response = await fetch('/oauth/providers');
-	return await response.json() as any;
-}
+    const response = await fetch("/oauth/providers");
+    return await response.json();
+};
 
 onMounted(async () => {
-	oauthProviders.value = await getOauthProviders();
-})
+    oauthProviders.value = await getOauthProviders();
+});
 </script>

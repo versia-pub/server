@@ -37,7 +37,7 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const location = window.location;
 const version = __VERSION__;

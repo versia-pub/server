@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
+import { useRoute } from "vue-router";
 
 const query = useRoute().query;
 
@@ -61,7 +61,7 @@ const application = query.application;
 const website = decodeURIComponent(query.website as string);
 const redirect_uri = query.redirect_uri as string;
 const client_id = query.client_id;
-const scope = decodeURIComponent(query.scope as string || "");
+const scope = decodeURIComponent((query.scope as string) || "");
 const code = query.code;
 
 const oauthScopeText: Record<string, string> = {
@@ -79,7 +79,7 @@ const oauthScopeText: Record<string, string> = {
     "w:conversations": "Edit your conversations",
     "w:media": "Upload media",
     "w:reports": "Report users",
-}
+};
 
 const scopes = scope.split(" ");
 
@@ -89,30 +89,56 @@ const scopes = scope.split(" ");
 // Return an array of strings to display
 // "read write:accounts" returns all the fields with $VERB as read, plus the accounts field with $VERB as write
 const getScopeText = (fullScopes: string[]) => {
-    let scopeTexts = [];
+    const scopeTexts = [];
 
-    const readScopes = fullScopes.filter(scope => scope.includes("read"));
-    const writeScopes = fullScopes.filter(scope => scope.includes("write"));
+    const readScopes = fullScopes.filter((scope) => scope.includes("read"));
+    const writeScopes = fullScopes.filter((scope) => scope.includes("write"));
 
     for (const possibleScope of Object.keys(oauthScopeText)) {
-        const [scopeAction, scopeName] = possibleScope.split(':');
+        const [scopeAction, scopeName] = possibleScope.split(":");
 
-        if (scopeAction.includes("rw") && (readScopes.includes(`read:${scopeName}`) || readScopes.find(scope => scope === "read")) && (writeScopes.includes(`write:${scopeName}`) || writeScopes.find(scope => scope === "write"))) {
-            if (oauthScopeText[possibleScope].includes("$VERB")) scopeTexts.push(["Read and write", oauthScopeText[possibleScope].replace("$VERB", "")]);
+        if (
+            scopeAction.includes("rw") &&
+            (readScopes.includes(`read:${scopeName}`) ||
+                readScopes.find((scope) => scope === "read")) &&
+            (writeScopes.includes(`write:${scopeName}`) ||
+                writeScopes.find((scope) => scope === "write"))
+        ) {
+            if (oauthScopeText[possibleScope].includes("$VERB"))
+                scopeTexts.push([
+                    "Read and write",
+                    oauthScopeText[possibleScope].replace("$VERB", ""),
+                ]);
             else scopeTexts.push(["", oauthScopeText[possibleScope]]);
             continue;
         }
 
-        if (scopeAction.includes('r') && (readScopes.includes(`read:${scopeName}`) || readScopes.find(scope => scope === "read"))) {
-            if (oauthScopeText[possibleScope].includes("$VERB")) scopeTexts.push(["Read", oauthScopeText[possibleScope].replace("$VERB", "")]);
+        if (
+            scopeAction.includes("r") &&
+            (readScopes.includes(`read:${scopeName}`) ||
+                readScopes.find((scope) => scope === "read"))
+        ) {
+            if (oauthScopeText[possibleScope].includes("$VERB"))
+                scopeTexts.push([
+                    "Read",
+                    oauthScopeText[possibleScope].replace("$VERB", ""),
+                ]);
             else scopeTexts.push(["", oauthScopeText[possibleScope]]);
         }
 
-        if (scopeAction.includes('w') && (writeScopes.includes(`write:${scopeName}`) || writeScopes.find(scope => scope === "write"))) {
-            if (oauthScopeText[possibleScope].includes("$VERB")) scopeTexts.push(["Write", oauthScopeText[possibleScope].replace("$VERB", "")]);
+        if (
+            scopeAction.includes("w") &&
+            (writeScopes.includes(`write:${scopeName}`) ||
+                writeScopes.find((scope) => scope === "write"))
+        ) {
+            if (oauthScopeText[possibleScope].includes("$VERB"))
+                scopeTexts.push([
+                    "Write",
+                    oauthScopeText[possibleScope].replace("$VERB", ""),
+                ]);
             else scopeTexts.push(["", oauthScopeText[possibleScope]]);
         }
     }
     return scopeTexts;
-}
+};
 </script>

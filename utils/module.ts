@@ -1,4 +1,4 @@
-import { fileURLToPath } from "url";
+import { fileURLToPath } from "node:url";
 
 /**
  * Determines whether a module is the entry point for the running node process.
@@ -19,13 +19,13 @@ import { fileURLToPath } from "url";
  * ```
  */
 export const moduleIsEntry = (moduleOrImportMetaUrl: NodeModule | string) => {
-	if (typeof moduleOrImportMetaUrl === "string") {
-		return process.argv[1] === fileURLToPath(moduleOrImportMetaUrl);
-	}
+    if (typeof moduleOrImportMetaUrl === "string") {
+        return process.argv[1] === fileURLToPath(moduleOrImportMetaUrl);
+    }
 
-	if (typeof require !== "undefined" && "exports" in moduleOrImportMetaUrl) {
-		return require.main === moduleOrImportMetaUrl;
-	}
+    if (typeof require !== "undefined" && "exports" in moduleOrImportMetaUrl) {
+        return require.main === moduleOrImportMetaUrl;
+    }
 
-	return false;
+    return false;
 };

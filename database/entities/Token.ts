@@ -2,5 +2,5 @@
  * The type of token.
  */
 export enum TokenType {
-	BEARER = "Bearer",
+    BEARER = "Bearer",
 }

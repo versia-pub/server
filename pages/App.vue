@@ -1,6 +1,6 @@
 <script setup>
 // Import Tailwind style reset
-import '@unocss/reset/tailwind-compat.css'
+import "@unocss/reset/tailwind-compat.css";
 </script>
 
 <template>

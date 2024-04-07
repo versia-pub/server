@@ -1,42 +1,42 @@
 {
-	"compilerOptions": {
-		"lib": ["ESNext", "DOM", "DOM.Iterable"],
-		"module": "esnext",
-		"target": "esnext",
-		"moduleResolution": "bundler",
-		"moduleDetection": "force",
-		"allowImportingTsExtensions": true,
-		"noEmit": true,
-		"composite": true,
-		"strict": true,
-		"downlevelIteration": true,
-		"skipLibCheck": true,
-		"noImplicitAny": true,
-		"jsx": "preserve",
-		"allowSyntheticDefaultImports": true,
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"forceConsistentCasingInFileNames": true,
-		"allowJs": true,
-		"emitDecoratorMetadata": false,
-		"experimentalDecorators": true,
-		"verbatimModuleSyntax": true,
-		"types": [
-			"bun-types", // add Bun global
-		],
-		"paths": {
-			"@*": ["./utils/*"],
-			"~*": ["./*"],
-			"+*": ["./server/api/*"],
-		},
-	},
-	"include": [
-		"*.ts",
-		"*.d.ts",
-		"*.vue",
-		"**/*.ts",
-		"**/*.d.ts",
-		"**/*.vue",
-		"server/api/.well-known/**/*.ts",
-	]
+    "compilerOptions": {
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "module": "esnext",
+        "target": "esnext",
+        "moduleResolution": "bundler",
+        "moduleDetection": "force",
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+        "composite": true,
+        "strict": true,
+        "downlevelIteration": true,
+        "skipLibCheck": true,
+        "noImplicitAny": true,
+        "jsx": "preserve",
+        "allowSyntheticDefaultImports": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowJs": true,
+        "emitDecoratorMetadata": false,
+        "experimentalDecorators": true,
+        "verbatimModuleSyntax": true,
+        "types": [
+            "bun-types" // add Bun global
+        ],
+        "paths": {
+            "@*": ["./utils/*"],
+            "~*": ["./*"],
+            "+*": ["./server/api/*"]
+        }
+    },
+    "include": [
+        "*.ts",
+        "*.d.ts",
+        "*.vue",
+        "**/*.ts",
+        "**/*.d.ts",
+        "**/*.vue",
+        "server/api/.well-known/**/*.ts"
+    ]
 }

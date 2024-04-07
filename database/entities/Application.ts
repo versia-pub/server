@@ -1,6 +1,6 @@
-import type { APIApplication } from "~types/entities/application";
 import type { Application } from "@prisma/client";
 import { client } from "~database/datasource";
+import type { APIApplication } from "~types/entities/application";
 
 /**
  * Represents an application that can authenticate with the API.
@@ -12,18 +12,18 @@ import { client } from "~database/datasource";
  * @returns The application associated with the given access token, or null if no such application exists.
  */
 export const getFromToken = async (
-	token: string
+    token: string,
 ): Promise<Application | null> => {
-	const dbToken = await client.token.findFirst({
-		where: {
-			access_token: token,
-		},
-		include: {
-			application: true,
-		},
-	});
+    const dbToken = await client.token.findFirst({
+        where: {
+            access_token: token,
+        },
+        include: {
+            application: true,
+        },
+    });
 
-	return dbToken?.application || null;
+    return dbToken?.application || null;
 };
 
 /**
@@ -31,9 +31,9 @@ export const getFromToken = async (
  * @returns The API application representation of this application.
  */
 export const applicationToAPI = (app: Application): APIApplication => {
-	return {
-		name: app.name,
-		website: app.website,
-		vapid_key: app.vapid_key,
-	};
+    return {
+        name: app.name,
+        website: app.website,
+        vapid_key: app.vapid_key,
+    };
 };

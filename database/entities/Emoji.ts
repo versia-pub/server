@@ -1,7 +1,7 @@
+import type { Emoji } from "@prisma/client";
+import { client } from "~database/datasource";
 import type { APIEmoji } from "~types/entities/emoji";
 import type { Emoji as LysandEmoji } from "~types/lysand/extensions/org.lysand/custom_emojis";
-import { client } from "~database/datasource";
-import type { Emoji } from "@prisma/client";
 
 /**
  * Represents an emoji entity in the database.
@@ -13,41 +13,41 @@ import type { Emoji } from "@prisma/client";
  * @returns An array of emojis
  */
 export const parseEmojis = async (text: string): Promise<Emoji[]> => {
-	const regex = /:[a-zA-Z0-9_]+:/g;
-	const matches = text.match(regex);
-	if (!matches) return [];
-	return await client.emoji.findMany({
-		where: {
-			shortcode: {
-				in: matches.map(match => match.replace(/:/g, "")),
-			},
-			instanceId: null,
-		},
-		include: {
-			instance: true,
-		},
-	});
+    const regex = /:[a-zA-Z0-9_]+:/g;
+    const matches = text.match(regex);
+    if (!matches) return [];
+    return await client.emoji.findMany({
+        where: {
+            shortcode: {
+                in: matches.map((match) => match.replace(/:/g, "")),
+            },
+            instanceId: null,
+        },
+        include: {
+            instance: true,
+        },
+    });
 };
 
 export const addEmojiIfNotExists = async (emoji: LysandEmoji) => {
-	const existingEmoji = await client.emoji.findFirst({
-		where: {
-			shortcode: emoji.name,
-			instance: null,
-		},
-	});
+    const existingEmoji = await client.emoji.findFirst({
+        where: {
+            shortcode: emoji.name,
+            instance: null,
+        },
+    });
 
-	if (existingEmoji) return existingEmoji;
+    if (existingEmoji) return existingEmoji;
 
-	return await client.emoji.create({
-		data: {
-			shortcode: emoji.name,
-			url: emoji.url[0].content,
-			alt: emoji.alt || null,
-			content_type: emoji.url[0].content_type,
-			visible_in_picker: true,
-		},
-	});
+    return await client.emoji.create({
+        data: {
+            shortcode: emoji.name,
+            url: emoji.url[0].content,
+            alt: emoji.alt || null,
+            content_type: emoji.url[0].content_type,
+            visible_in_picker: true,
+        },
+    });
 };
 
 /**
@@ -55,43 +55,43 @@ export const addEmojiIfNotExists = async (emoji: LysandEmoji) => {
  * @returns The APIEmoji object.
  */
 export const emojiToAPI = (emoji: Emoji): APIEmoji => {
-	return {
-		shortcode: emoji.shortcode,
-		static_url: emoji.url, // TODO: Add static version
-		url: emoji.url,
-		visible_in_picker: emoji.visible_in_picker,
-		category: undefined,
-	};
+    return {
+        shortcode: emoji.shortcode,
+        static_url: emoji.url, // TODO: Add static version
+        url: emoji.url,
+        visible_in_picker: emoji.visible_in_picker,
+        category: undefined,
+    };
 };
 
 export const emojiToLysand = (emoji: Emoji): LysandEmoji => {
-	return {
-		name: emoji.shortcode,
-		url: [
-			{
-				content: emoji.url,
-				content_type: emoji.content_type,
-			},
-		],
-		alt: emoji.alt || undefined,
-	};
+    return {
+        name: emoji.shortcode,
+        url: [
+            {
+                content: emoji.url,
+                content_type: emoji.content_type,
+            },
+        ],
+        alt: emoji.alt || undefined,
+    };
 };
 
 /**
  * Converts the emoji to an ActivityPub object.
  * @returns The ActivityPub object.
  */
-export const emojiToActivityPub = (emoji: Emoji): any => {
-	// replace any with your ActivityPub Emoji type
-	return {
-		type: "Emoji",
-		name: `:${emoji.shortcode}:`,
-		updated: new Date().toISOString(),
-		icon: {
-			type: "Image",
-			url: emoji.url,
-			mediaType: emoji.content_type,
-			alt: emoji.alt || undefined,
-		},
-	};
+export const emojiToActivityPub = (emoji: Emoji): object => {
+    // replace any with your ActivityPub Emoji type
+    return {
+        type: "Emoji",
+        name: `:${emoji.shortcode}:`,
+        updated: new Date().toISOString(),
+        icon: {
+            type: "Image",
+            url: emoji.url,
+            mediaType: emoji.content_type,
+            alt: emoji.alt || undefined,
+        },
+    };
 };

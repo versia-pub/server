@@ -1,23 +1,25 @@
+import type { Like, Prisma } from "@prisma/client";
+import { config } from "config-manager";
+import { client } from "~database/datasource";
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { Like as LysandLike } from "~types/lysand/Object";
-import type { Like } from "@prisma/client";
-import { client } from "~database/datasource";
-import type { UserWithRelations } from "./User";
 import type { StatusWithRelations } from "./Status";
-import { config } from "config-manager";
+import type { UserWithRelations } from "./User";
 
 /**
  * Represents a Like entity in the database.
  */
 export const toLysand = (like: Like): LysandLike => {
-	return {
-		id: like.id,
-		author: (like as any).liker?.uri,
-		type: "Like",
-		created_at: new Date(like.createdAt).toISOString(),
-		object: (like as any).liked?.uri,
-		uri: `${config.http.base_url}/actions/${like.id}`,
-	};
+    return {
+        id: like.id,
+        // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
+        author: (like as any).liker?.uri,
+        type: "Like",
+        created_at: new Date(like.createdAt).toISOString(),
+        // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
+        object: (like as any).liked?.uri,
+        uri: `${config.http.base_url}/actions/${like.id}`,
+    };
 };
 
 /**
@@ -26,29 +28,29 @@ export const toLysand = (like: Like): LysandLike => {
  * @param status Status being liked
  */
 export const createLike = async (
-	user: UserWithRelations,
-	status: StatusWithRelations
+    user: UserWithRelations,
+    status: StatusWithRelations,
 ) => {
-	await client.like.create({
-		data: {
-			likedId: status.id,
-			likerId: user.id,
-		},
-	});
+    await client.like.create({
+        data: {
+            likedId: status.id,
+            likerId: user.id,
+        },
+    });
 
-	if (status.author.instanceId === user.instanceId) {
-		// Notify the user that their post has been favourited
-		await client.notification.create({
-			data: {
-				accountId: user.id,
-				type: "favourite",
-				notifiedId: status.authorId,
-				statusId: status.id,
-			},
-		});
-	} else {
-		// TODO: Add database jobs for federating this
-	}
+    if (status.author.instanceId === user.instanceId) {
+        // Notify the user that their post has been favourited
+        await client.notification.create({
+            data: {
+                accountId: user.id,
+                type: "favourite",
+                notifiedId: status.authorId,
+                statusId: status.id,
+            },
+        });
+    } else {
+        // TODO: Add database jobs for federating this
+    }
 };
 
 /**
@@ -57,28 +59,28 @@ export const createLike = async (
  * @param status Status being unliked
  */
 export const deleteLike = async (
-	user: UserWithRelations,
-	status: StatusWithRelations
+    user: UserWithRelations,
+    status: StatusWithRelations,
 ) => {
-	await client.like.deleteMany({
-		where: {
-			likedId: status.id,
-			likerId: user.id,
-		},
-	});
+    await client.like.deleteMany({
+        where: {
+            likedId: status.id,
+            likerId: user.id,
+        },
+    });
 
-	// Notify the user that their post has been favourited
-	await client.notification.deleteMany({
-		where: {
-			accountId: user.id,
-			type: "favourite",
-			notifiedId: status.authorId,
-			statusId: status.id,
-		},
-	});
+    // Notify the user that their post has been favourited
+    await client.notification.deleteMany({
+        where: {
+            accountId: user.id,
+            type: "favourite",
+            notifiedId: status.authorId,
+            statusId: status.id,
+        },
+    });
 
-	if (user.instanceId === null && status.author.instanceId !== null) {
-		// User is local, federate the delete
-		// TODO: Federate this
-	}
+    if (user.instanceId === null && status.author.instanceId !== null) {
+        // User is local, federate the delete
+        // TODO: Federate this
+    }
 };

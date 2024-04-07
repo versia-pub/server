@@ -10,20 +10,20 @@ import { parse } from "marked";
  * @returns HTML
  */
 export const convertTextToHtml = async (
-	text: string,
-	content_type?: string
+    text: string,
+    content_type?: string,
 ) => {
-	if (content_type === "text/markdown") {
-		return linkifyHtml(await sanitizeHtml(await parse(text)));
-	} else if (content_type === "text/x.misskeymarkdown") {
-		// Parse as MFM
-		// TODO: Implement MFM
-		return text;
-	} else {
-		// Parse as plaintext
-		return linkifyStr(text)
-			.split("\n")
-			.map(line => `<p>${line}</p>`)
-			.join("\n");
-	}
+    if (content_type === "text/markdown") {
+        return linkifyHtml(await sanitizeHtml(await parse(text)));
+    }
+    if (content_type === "text/x.misskeymarkdown") {
+        // Parse as MFM
+        // TODO: Implement MFM
+        return text;
+    }
+    // Parse as plaintext
+    return linkifyStr(text)
+        .split("\n")
+        .map((line) => `<p>${line}</p>`)
+        .join("\n");
 };

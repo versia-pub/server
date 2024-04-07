@@ -1,8 +1,8 @@
 import type { APIHistory } from "./history";
 
 export interface APITag {
-	name: string;
-	url: string;
-	history: APIHistory[];
-	following?: boolean;
+    name: string;
+    url: string;
+    history: APIHistory[];
+    following?: boolean;
 }

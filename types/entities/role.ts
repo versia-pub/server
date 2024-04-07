@@ -1,3 +1,3 @@
 export interface APIRole {
-	name: string;
+    name: string;
 }
