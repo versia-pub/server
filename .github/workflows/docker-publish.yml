@@ -71,7 +71,7 @@ jobs:
               with:
                   context: .
                   file: Dockerfile
-                  labels: latest #${{ steps.meta.outputs.labels }}
+                  labels: ${{ steps.meta.outputs.labels }}
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
                   platforms: ${{ matrix.platform }}

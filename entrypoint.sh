@@ -7,9 +7,9 @@
 # - `prisma`: Execute a Prisma command, sends 
 
 # Exit immediately if a command exits with a non-zero status.
-set -e
+set -euxo pipefail
 
-cd ./dist
+cd /app/dist
 
 # Parse first argument
 case "$1" in

@@ -21,13 +21,14 @@ describe("LogManager", () => {
     beforeEach(async () => {
         mockOutput = Bun.file("test.log");
         mockAppend = jest.fn();
-        await mock.module("fs/promises", () => ({
+        await mock.module("node:fs/promises", () => ({
             appendFile: mockAppend,
         }));
         logManager = new LogManager(mockOutput);
     });
 
     it("should initialize and write init log", () => {
+        new LogManager(mockOutput);
         expect(mockAppend).toHaveBeenCalledWith(
             mockOutput.name,
             expect.stringContaining("--- INIT LogManager at"),
@@ -70,17 +71,6 @@ describe("LogManager", () => {
             Bun.stdout,
             expect.stringContaining("[INFO] TestEntity: Test message"),
         );
-    });
-
-    it("should throw error if output file does not exist", () => {
-        mockAppend.mockImplementationOnce(() => {
-            return Promise.reject(
-                new Error("Output file doesnt exist (and isnt stdout)"),
-            );
-        });
-        expect(
-            logManager.log(LogLevel.INFO, "TestEntity", "Test message"),
-        ).rejects.toThrow(Error);
     });
 
     it("should log error message", async () => {

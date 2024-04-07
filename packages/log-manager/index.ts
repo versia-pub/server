@@ -1,4 +1,4 @@
-import { appendFile, writeFile, mkdir, exists } from "node:fs/promises";
+import { appendFile, mkdir, exists } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { BunFile } from "bun";
 
@@ -42,6 +42,7 @@ export class LogManager {
     }
 
     private async write(text: string) {
+        Bun.stdout.name;
         if (this.output === Bun.stdout) {
             await Bun.write(Bun.stdout, `${text}\n`);
         } else {
@@ -51,7 +52,6 @@ export class LogManager {
                     await mkdir(dirname(this.output.name ?? ""), {
                         recursive: true,
                     });
-                    await writeFile(this.output.name ?? "", "");
                     this.output = Bun.file(this.output.name ?? "");
                 } catch {
                     //
