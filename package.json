@@ -48,6 +48,7 @@
     "cli": "bun run cli.ts"
   },
   "trustedDependencies": [
+    "@biomejs/biome",
     "@prisma/client",
     "@prisma/engines",
     "esbuild",
@@ -55,6 +56,7 @@
     "sharp"
   ],
   "devDependencies": {
+    "@biomejs/biome": "1.6.4",
     "@julr/unocss-preset-forms": "^0.1.0",
     "@microsoft/eslint-formatter-sarif": "^3.0.0",
     "@types/cli-table": "^0.3.4",
