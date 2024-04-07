@@ -26,7 +26,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "@prisma/client"],
+    external: ["bullmq", "@prisma/client", "sharp"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);

@@ -24,6 +24,9 @@ WORKDIR /temp
 RUN bunx --bun prisma generate
 RUN bun run prod-build
 COPY prisma /temp/dist
+WORKDIR /temp/dist
+# Add sharp
+RUN bun add sharp
 
 # copy production dependencies and source code into final image
 # Alpine (musl) causes errors with Bun :(
