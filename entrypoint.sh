@@ -7,7 +7,7 @@
 # - `prisma`: Execute a Prisma command, sends 
 
 # Exit immediately if a command exits with a non-zero status.
-set -euxo pipefail
+set -euo pipefail
 
 cd /app/dist
 
@@ -15,9 +15,7 @@ cd /app/dist
 case "$1" in
   "start")
     # Migrate the database
-    exec /bin/bash /app/entrypoint.sh prisma migrate deploy
-    # Start the server
-    exec bun run ./index.js --prod
+    exec /bin/bash /app/entrypoint.sh prisma migrate deploy && bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI
