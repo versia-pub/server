@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/unfollow",
+    route: "/api/v1/accounts/:id/unfollow",
     auth: {
         required: true,
         oauthPermissions: ["write:follows"],

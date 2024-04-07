@@ -11,7 +11,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id",
+    route: "/api/v1/accounts/:id",
     auth: {
         required: true,
         oauthPermissions: [],
@@ -24,7 +24,7 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const id = matchedRoute.params.id;
     // Check if ID is valid UUID
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!id.match(/^[0-9a-fA-F]{36}$/)) {
         return errorResponse("Invalid ID", 404);
     }
 

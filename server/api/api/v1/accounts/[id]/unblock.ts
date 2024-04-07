@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/unblock",
+    route: "/api/v1/accounts/:id/unblock",
     auth: {
         required: true,
         oauthPermissions: ["write:blocks"],

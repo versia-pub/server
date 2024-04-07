@@ -11,7 +11,7 @@ export const meta = applyConfig({
         max: 60,
         duration: 60,
     },
-    route: "/accounts/:id/following",
+    route: "/api/v1/accounts/:id/following",
     auth: {
         required: false,
         oauthPermissions: [],

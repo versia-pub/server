@@ -14,7 +14,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/statuses",
+    route: "/api/v1/accounts/:id/statuses",
     auth: {
         required: false,
         oauthPermissions: ["read:statuses"],

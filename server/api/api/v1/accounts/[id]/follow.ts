@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/follow",
+    route: "/api/v1/accounts/:id/follow",
     auth: {
         required: true,
         oauthPermissions: ["write:follows"],

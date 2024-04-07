@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/remove_from_followers",
+    route: "/api/v1/accounts/:id/remove_from_followers",
     auth: {
         required: true,
         oauthPermissions: ["write:follows"],

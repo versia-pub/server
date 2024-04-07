@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 30,
         duration: 60,
     },
-    route: "/accounts/:id/note",
+    route: "/api/v1/accounts/:id/note",
     auth: {
         required: true,
         oauthPermissions: ["write:accounts"],
