@@ -228,3 +228,5 @@ export class S3MediaBackend extends MediaBackend {
         });
     }
 }
+
+export { MediaConverter };
