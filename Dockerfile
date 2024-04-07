@@ -1,6 +1,6 @@
 # Use the official Bun image (Bun doesn't run well on Musl but this seems to work)
 # See all versions at https://hub.docker.com/r/oven/bun/tags
-FROM oven/bun:1.1.2-alpine as base
+FROM imbios/bun-node:1.1.2-current-alpine as base
 
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
@@ -14,9 +14,6 @@ RUN bun install --frozen-lockfile
 
 FROM base as build
 
-# Required for Prisma to work
-# COPY --from=node:18-alpine /usr/local/bin/node /usr/local/bin/node
-
 # Copy the project
 RUN mkdir -p /temp
 COPY . /temp
@@ -24,10 +21,11 @@ COPY . /temp
 COPY --from=install /temp/node_modules /temp/node_modules
 # Build the project
 WORKDIR /temp
+RUN bunx --bun prisma generate
 RUN bun run prod-build
 
 # copy production dependencies and source code into final image
-FROM base AS release
+FROM oven/bun:1.1.2-alpine
 
 # Create app directory
 RUN mkdir -p /app
@@ -44,5 +42,6 @@ LABEL org.opencontainers.image.description "Lysand Server docker image"
 # CD to app
 WORKDIR /app
 ENV NODE_ENV=production
+ENTRYPOINT [ "/bin/sh", "entrypoint.sh" ]
 # Run migrations and start the server
-CMD [ "./entrypoint.sh" "start" ]
+CMD [ "start" ]

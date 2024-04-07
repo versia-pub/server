@@ -9,23 +9,25 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+cd ./dist
+
 # Parse first argument
 case "$1" in
   "start")
     # Start the server
-    exec bun run ./dist/index.js --prod
+    exec bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI
     shift 1
-    exec bun run ./dist/cli.js "$@"
+    exec bun run ./cli.js "$@"
     ;;
   "prisma")
     # Proxy all Prisma commands
     # Use output of dist/prisma.js to get the env variable
     shift 1
     # Set DATABASE_URL env variable to the output of bun run ./dist/prisma.js
-    export DATABASE_URL=$(bun run ./dist/prisma.js)
+    export DATABASE_URL=$(bun run ./prisma.js)
     # Execute the Prisma binary
     exec bunx prisma "$@"
     ;;

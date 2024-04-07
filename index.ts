@@ -1,4 +1,5 @@
-import { exists, mkdir } from "node:fs/promises";
+import { exists, mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { connectMeili } from "@meilisearch";
 import { moduleIsEntry } from "@module";
 import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
@@ -10,7 +11,18 @@ import { createServer } from "~server";
 
 const timeAtStart = performance.now();
 
-const requests_log = Bun.file(`${process.cwd()}/logs/requests.log`);
+// Create requests file if it doesnt exist
+if (
+    !(await exists(
+        `${process.cwd()}/${dirname(config.logging.storage.requests)}`,
+    ))
+) {
+    await mkdir(`${process.cwd()}/${dirname(config.logging.storage.requests)}`);
+    await writeFile(`${process.cwd()}/${config.logging.storage.requests}`, "");
+}
+const requests_log = Bun.file(
+    `${process.cwd()}/${config.logging.storage.requests}`,
+);
 const isEntry = moduleIsEntry(import.meta.url);
 // If imported as a module, redirect logs to /dev/null to not pollute console (e.g. in tests)
 const logger = new LogManager(isEntry ? requests_log : Bun.file("/dev/null"));
@@ -18,16 +30,6 @@ const consoleLogger = new LogManager(
     isEntry ? Bun.stdout : Bun.file("/dev/null"),
 );
 const dualLogger = new MultiLogManager([logger, consoleLogger]);
-
-if (!(await exists(config.logging.storage.requests))) {
-    await consoleLogger.log(
-        LogLevel.WARNING,
-        "Lysand",
-        `Creating logs directory at ${process.cwd()}/logs/`,
-    );
-
-    await mkdir(`${process.cwd()}/logs/`);
-}
 
 await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 

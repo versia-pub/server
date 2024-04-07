@@ -1,4 +1,5 @@
 // Delete dist directory
+import { $ } from "bun";
 import { cp, exists, mkdir, rm } from "node:fs/promises";
 import { rawRoutes } from "~routes";
 
@@ -13,7 +14,6 @@ await rm("./dist", { recursive: true });
 
 await mkdir(`${process.cwd()}/dist`);
 
-//bun build --entrypoints ./index.ts ./prisma.ts ./cli.ts --outdir dist --target bun --splitting --minify --external bullmq,@prisma/client
 await Bun.build({
     entrypoints: [
         `${process.cwd()}/index.ts`,
@@ -25,13 +25,17 @@ await Bun.build({
     outdir: `${process.cwd()}/dist`,
     target: "bun",
     splitting: true,
-    minify: true,
+    minify: false,
     external: ["bullmq"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
     }
 });
+
+// Fix for wrong Bun file resolution, replaces node_modules with ./node_modules inside all dynamic imports
+// I apologize for this
+await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
 
 // Create pages directory
 // mkdir ./dist/pages

@@ -1,4 +1,5 @@
-import { appendFile } from "node:fs/promises";
+import { appendFile, writeFile, mkdir, exists } from "node:fs/promises";
+import { dirname } from "node:path";
 import type { BunFile } from "bun";
 
 export enum LogLevel {
@@ -44,11 +45,17 @@ export class LogManager {
         if (this.output === Bun.stdout) {
             await Bun.write(Bun.stdout, `${text}\n`);
         } else {
-            if (!(await this.output.exists())) {
+            if (!(await exists(this.output.name ?? ""))) {
                 // Create file if it doesn't exist
-                await Bun.write(this.output, "", {
-                    createPath: true,
-                });
+                try {
+                    await mkdir(dirname(this.output.name ?? ""), {
+                        recursive: true,
+                    });
+                    await writeFile(this.output.name ?? "", "");
+                    this.output = Bun.file(this.output.name ?? "");
+                } catch {
+                    //
+                }
             }
             await appendFile(this.output.name ?? "", `${text}\n`);
         }
