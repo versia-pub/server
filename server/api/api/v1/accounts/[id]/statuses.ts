@@ -78,14 +78,61 @@ export default apiRoute<{
             },
         });
 
-        // Constuct HTTP Link header (next and prev)
+        // Constuct HTTP Link header (next and prev) only if there are more statuses
         const linkHeader = [];
+
         if (objects.length > 0) {
-            const urlWithoutQuery = req.url.split("?")[0];
-            linkHeader.push(
-                `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-                `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-            );
+            // Check if there are statuses before the first one
+            const objectsBefore = await client.status.findMany({
+                where: {
+                    authorId: id,
+                    isReblog: false,
+                    pinnedBy: {
+                        some: {
+                            id: user.id,
+                        },
+                    },
+                    id: {
+                        lt: objects[0].id,
+                    },
+                },
+                take: 1,
+            });
+
+            if (objectsBefore.length > 0) {
+                const urlWithoutQuery = req.url.split("?")[0];
+                // Add prev link
+                linkHeader.push(
+                    `<${urlWithoutQuery}?max_id=${objects[0].id}>; rel="prev"`,
+                );
+            }
+
+            // Check if there are statuses after the last one
+            const objectsAfter = await client.status.findMany({
+                where: {
+                    authorId: id,
+                    isReblog: false,
+                    pinnedBy: {
+                        some: {
+                            id: user.id,
+                        },
+                    },
+                    id: {
+                        gt: objects.at(-1)?.id,
+                    },
+                },
+                take: 1,
+            });
+
+            if (objectsAfter.length > 0) {
+                const urlWithoutQuery = req.url.split("?")[0];
+                // Add next link
+                linkHeader.push(
+                    `<${urlWithoutQuery}?min_id=${
+                        objects.at(-1)?.id
+                    }>; rel="next"`,
+                );
+            }
         }
 
         return jsonResponse(
@@ -116,14 +163,48 @@ export default apiRoute<{
         },
     });
 
-    // Constuct HTTP Link header (next and prev)
+    // Constuct HTTP Link header (next and prev) only if there are more statuses
     const linkHeader = [];
     if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-            `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-        );
+        // Check if there are statuses before the first one
+        const objectsBefore = await client.status.findMany({
+            where: {
+                authorId: id,
+                isReblog: exclude_reblogs ? true : undefined,
+                id: {
+                    lt: objects[0].id,
+                },
+            },
+            take: 1,
+        });
+
+        if (objectsBefore.length > 0) {
+            const urlWithoutQuery = req.url.split("?")[0];
+            // Add prev link
+            linkHeader.push(
+                `<${urlWithoutQuery}?max_id=${objects[0].id}>; rel="prev"`,
+            );
+        }
+
+        // Check if there are statuses after the last one
+        const objectsAfter = await client.status.findMany({
+            where: {
+                authorId: id,
+                isReblog: exclude_reblogs ? true : undefined,
+                id: {
+                    gt: objects.at(-1)?.id,
+                },
+            },
+            take: 1,
+        });
+
+        if (objectsAfter.length > 0) {
+            const urlWithoutQuery = req.url.split("?")[0];
+            // Add next link
+            linkHeader.push(
+                `<${urlWithoutQuery}?min_id=${objects.at(-1)?.id}>; rel="next"`,
+            );
+        }
     }
 
     return jsonResponse(
