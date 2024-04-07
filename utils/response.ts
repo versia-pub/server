@@ -18,6 +18,9 @@ export const jsonResponse = (
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Expose-Headers":
                 "Link,X-RateLimit-Reset,X-RateLimit-Limit,X-RateLimit-Remaining,X-Request-Id,Idempotency-Key",
+            // CSP should follow  Content Security Policy directive: "connect-src 'self' blob: https: wss:".
+            "Content-Security-Policy":
+                "default-src 'self'; connect-src 'self' blob: https: wss:; frame-ancestors 'none';",
             ...headers,
         },
         status,
