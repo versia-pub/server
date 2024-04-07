@@ -29,16 +29,7 @@ export default apiRoute<{
 
     // Check if redirect URI is a valid URI, and also an absolute URI
     if (redirect_uris) {
-        try {
-            const redirect_uri = new URL(redirect_uris);
-
-            if (redirect_uri.origin === "null") {
-                return errorResponse(
-                    "Redirect URI must be an absolute URI",
-                    422,
-                );
-            }
-        } catch {
+        if (!URL.canParse(redirect_uris)) {
             return errorResponse("Redirect URI must be a valid URI", 422);
         }
     }
