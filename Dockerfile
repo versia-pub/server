@@ -30,6 +30,9 @@ WORKDIR /temp/dist
 # Alpine (musl) causes errors with Bun :(
 FROM oven/bun:1.1.2-slim
 
+# Install libvips
+RUN apt-get update && apt-get install -y libvips
+
 # Create app directory
 RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
