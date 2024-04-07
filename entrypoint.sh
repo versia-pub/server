@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script is a wrapper for the main server, CLI and Prisma binaries.
 # Commands:
