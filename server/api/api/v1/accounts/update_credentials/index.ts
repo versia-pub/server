@@ -3,7 +3,6 @@ import { convertTextToHtml } from "@formatting";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
 import ISO6391 from "iso-639-1";
-import { sanitize } from "isomorphic-dompurify";
 import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
 import { client } from "~database/datasource";
@@ -60,11 +59,11 @@ export default apiRoute<{
 
     const sanitizedNote = await sanitizeHtml(note ?? "");
 
-    const sanitizedDisplayName = sanitize(display_name ?? "", {
+    const sanitizedDisplayName = display_name ?? ""; /*  sanitize(display_name ?? "", {
         ALLOWED_TAGS: [],
         ALLOWED_ATTR: [],
     });
-
+ */
     /* if (!user.source) {
 		user.source = {
 			privacy: "public",

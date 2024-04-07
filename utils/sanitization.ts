@@ -1,8 +1,10 @@
 import { config } from "config-manager";
-import { sanitize } from "isomorphic-dompurify";
+// import { sanitize } from "isomorphic-dompurify";
 
 export const sanitizeHtml = async (html: string) => {
-    const sanitizedHtml = sanitize(html, {
+    // TEMP: Allow all tags and attributes
+    return html;
+    /*     const sanitizedHtml = sanitize(html, {
         ALLOWED_TAGS: [
             "a",
             "p",
@@ -70,5 +72,5 @@ export const sanitizeHtml = async (html: string) => {
             },
         })
         .transform(new Response(sanitizedHtml))
-        .text();
+        .text(); */
 };
