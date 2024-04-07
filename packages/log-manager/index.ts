@@ -95,13 +95,17 @@ export class LogManager {
             const content_type = req.headers.get("Content-Type");
 
             if (content_type?.includes("application/json")) {
-                const json = await req.json();
-                const stringified = JSON.stringify(json, null, 4)
-                    .split("\n")
-                    .map((line) => `    ${line}`)
-                    .join("\n");
+                try {
+                    const json = await req.json();
+                    const stringified = JSON.stringify(json, null, 4)
+                        .split("\n")
+                        .map((line) => `    ${line}`)
+                        .join("\n");
 
-                string += `${stringified}\n`;
+                    string += `${stringified}\n`;
+                } catch {
+                    string += "    [Invalid JSON]\n";
+                }
             } else if (
                 content_type &&
                 (content_type.includes("application/x-www-form-urlencoded") ||
