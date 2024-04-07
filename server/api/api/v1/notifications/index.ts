@@ -42,7 +42,7 @@ export default apiRoute<{
         types,
     } = extraData.parsedRequest;
 
-    if (limit > 30) return errorResponse("Limit too high", 400);
+    if (limit > 80) return errorResponse("Limit too high", 400);
 
     if (limit <= 0) return errorResponse("Limit too low", 400);
 
