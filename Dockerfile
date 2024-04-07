@@ -45,4 +45,4 @@ LABEL org.opencontainers.image.description "Lysand Server docker image"
 WORKDIR /app
 ENV NODE_ENV=production
 # Run migrations and start the server
-ENTRYPOINT [ "./entrypoint.sh" "start" ]
+CMD [ "./entrypoint.sh" "start" ]
