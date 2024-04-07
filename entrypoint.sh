@@ -9,7 +9,7 @@
 # Exit immediately if a command exits with a non-zero status.
 set -euo pipefail
 
-# cd /app/dist
+cd /app/dist
 
 # Parse first argument
 case "$1" in
