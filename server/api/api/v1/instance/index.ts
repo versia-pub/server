@@ -117,7 +117,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         },
         version: `4.2.0+glitch (compatible; Lysand ${version}})`,
         max_toot_chars: config.validation.max_note_size,
-        pleroma: {
+        /* pleroma: {
             metadata: {
                 // account_activation_required: false,
                 features: [
@@ -152,7 +152,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             stats: {
                 mau: monthlyActiveUsers,
             },
-        },
+        }, */
         contact_account: contactAccount ? userToAPI(contactAccount) : null,
     } as APIInstance);
 });
