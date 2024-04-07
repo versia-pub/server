@@ -26,7 +26,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq"],
+    external: ["bullmq", "@prisma/client"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
@@ -36,6 +36,11 @@ await Bun.build({
 // Fix for wrong Bun file resolution, replaces node_modules with ./node_modules inside all dynamic imports
 // I apologize for this
 await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
+
+// Copy generated Prisma client to dist
+await $`mkdir -p dist/node_modules/@prisma/client`;
+await $`cp -r ${process.cwd()}/node_modules/@prisma/client dist/node_modules/@prisma`;
+await $`cp -r ${process.cwd()}/node_modules/.prisma dist/node_modules`;
 
 // Create pages directory
 // mkdir ./dist/pages
