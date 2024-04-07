@@ -23,6 +23,7 @@ COPY --from=install /temp/node_modules /temp/node_modules
 WORKDIR /temp
 RUN bunx --bun prisma generate
 RUN bun run prod-build
+COPY prisma /temp
 
 # copy production dependencies and source code into final image
 # Alpine (musl) causes errors with Bun :(
