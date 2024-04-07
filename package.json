@@ -48,8 +48,11 @@
     "cli": "bun run cli.ts"
   },
   "trustedDependencies": [
-    "sharp",
-    "@prisma/client"
+    "@prisma/client",
+    "@prisma/engines",
+    "esbuild",
+    "prisma",
+    "sharp"
   ],
   "devDependencies": {
     "@julr/unocss-preset-forms": "^0.1.0",
@@ -109,7 +112,7 @@
     "log-manager": "workspace:*",
     "marked": "latest",
     "media-manager": "workspace:*",
-    "megalodon": "^9.1.1",
+    "megalodon": "^10.0.0",
     "meilisearch": "latest",
     "merge-deep-ts": "^1.2.6",
     "next-route-matcher": "^1.0.1",
