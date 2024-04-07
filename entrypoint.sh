@@ -14,6 +14,8 @@ cd /app/dist
 # Parse first argument
 case "$1" in
   "start")
+    # Migrate the database
+    exec /bin/bash /app/entrypoint.sh prisma migrate deploy
     # Start the server
     exec bun run ./index.js --prod
     ;;
