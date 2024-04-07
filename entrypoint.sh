@@ -31,7 +31,7 @@ case "$1" in
     # Set DATABASE_URL env variable to the output of bun run ./dist/prisma.js
     export DATABASE_URL=$(bun run ./prisma.js)
     # Execute the Prisma binary
-    exec ./node_modules/.bin/prisma "$@"
+    exec bun run ./node_modules/.bin/prisma "$@"
     ;;
   *)
     # Run custom commands

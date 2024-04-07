@@ -41,6 +41,9 @@ await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
 await $`mkdir -p dist/node_modules/@prisma/client`;
 await $`cp -r ${process.cwd()}/node_modules/@prisma/client dist/node_modules/@prisma`;
 await $`cp -r ${process.cwd()}/node_modules/.prisma dist/node_modules`;
+await $`mkdir -p dist/node_modules/.bin`;
+await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
+await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Create pages directory
 // mkdir ./dist/pages
