@@ -58,6 +58,6 @@ export default apiRoute<{
         access_token: token.access_token,
         token_type: token.token_type,
         scope: token.scope,
-        created_at: new Date(token.created_at).toISOString(),
+        created_at: Number(token.created_at),
     });
 });
