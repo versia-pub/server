@@ -173,3 +173,4 @@ uploads/
 pages/dist
 log.txt
 *.log
+build

@@ -26,7 +26,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "@prisma/client", "sharp"],
+    external: ["bullmq", "@prisma/client"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
@@ -46,8 +46,7 @@ await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Copy Sharp to dist
-// await $`cp -r ${process.cwd()}/node_modules/@img dist/node_modules/`;
-await $`cp -r ${process.cwd()}/node_modules/sharp dist/node_modules/`;
+await $`cp -r ${process.cwd()}/node_modules/sharp/build/ .`;
 
 // Create pages directory
 await $`mkdir -p dist/pages/dist`;

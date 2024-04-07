@@ -112,7 +112,6 @@
         "prisma-redis-middleware": "^4.8.0",
         "request-parser": "workspace:*",
         "semver": "^7.5.4",
-        "sharp": "^0.32.6",
         "strip-ansi": "^7.1.0"
     }
 }
