@@ -111,7 +111,7 @@ export class LogManager {
                 (content_type.includes("application/x-www-form-urlencoded") ||
                     content_type.includes("multipart/form-data"))
             ) {
-                const formData = await req.formData();
+                const formData = await req.clone().formData();
                 for (const [key, value] of formData.entries()) {
                     if (value.toString().length < 300) {
                         string += `    ${key}: ${value.toString()}\n`;

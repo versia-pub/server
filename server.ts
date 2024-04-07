@@ -74,7 +74,6 @@ export const createServer = (
 
                 // Check for bait user agents (regex)
                 for (const agent of config.http.bait.bait_user_agents) {
-                    console.log(agent);
                     if (new RegExp(agent).test(ua)) {
                         const file = Bun.file(
                             config.http.bait.send_file ||
