@@ -1,22 +1,17 @@
 ---
-# Run `docker network create lysand-net` before running docker-compose up
-version: "3"
 services:
     lysand:
         image: ghcr.io/lysand-org/lysand:main
         volumes:
-            #- ./logs:/app/logs
+            - ./logs:/app/logs
             - ./config:/app/config
-            - ./.env:/app/.env
             - ./uploads:/app/uploads
         restart: unless-stopped
         container_name: lysand
         networks:
             - lysand-net
     db:
-        build:
-            context: .
-            dockerfile: Postgres.Dockerfile
+        image: ghcr.io/lysand-org/postgres:main
         container_name: lysand-db
         restart: unless-stopped
         environment:
@@ -28,7 +23,7 @@ services:
         volumes:
             - ./db-data:/var/lib/postgresql/data
     redis:
-        image: "redis:latest"
+        image: redis:latest
         container_name: lysand-redis
         volumes:
             - ./redis-data:/data
@@ -50,4 +45,4 @@ services:
 
 networks:
     lysand-net:
-        external: true
+        internal: true
