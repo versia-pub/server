@@ -103,7 +103,7 @@ export default apiRoute<{
                 const urlWithoutQuery = req.url.split("?")[0];
                 // Add prev link
                 linkHeader.push(
-                    `<${urlWithoutQuery}?max_id=${objects[0].id}>; rel="prev"`,
+                    `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
                 );
             }
 
@@ -128,7 +128,7 @@ export default apiRoute<{
                 const urlWithoutQuery = req.url.split("?")[0];
                 // Add next link
                 linkHeader.push(
-                    `<${urlWithoutQuery}?min_id=${
+                    `<${urlWithoutQuery}?max_id=${
                         objects.at(-1)?.id
                     }>; rel="next"`,
                 );
@@ -182,7 +182,7 @@ export default apiRoute<{
             const urlWithoutQuery = req.url.split("?")[0];
             // Add prev link
             linkHeader.push(
-                `<${urlWithoutQuery}?max_id=${objects[0].id}>; rel="prev"`,
+                `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
             );
         }
 
@@ -202,7 +202,7 @@ export default apiRoute<{
             const urlWithoutQuery = req.url.split("?")[0];
             // Add next link
             linkHeader.push(
-                `<${urlWithoutQuery}?min_id=${objects.at(-1)?.id}>; rel="next"`,
+                `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
             );
         }
     }
