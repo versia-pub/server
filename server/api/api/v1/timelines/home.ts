@@ -1,7 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
+import {
+    type StatusWithRelations,
+    statusToAPI,
+} from "~database/entities/Status";
 import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
@@ -29,63 +33,57 @@ export default apiRoute<{
 
     const { limit = 20, max_id, min_id, since_id } = extraData.parsedRequest;
 
-    if (limit < 1 || limit > 40) {
+    if (limit < 1 || limit > 80) {
         return errorResponse("Limit must be between 1 and 40", 400);
     }
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const objects = await client.status.findMany({
-        where: {
-            id: {
-                lt: max_id ?? undefined,
-                gte: since_id ?? undefined,
-                gt: min_id ?? undefined,
-            },
-            OR: [
-                {
-                    author: {
-                        OR: [
-                            {
-                                relationshipSubjects: {
-                                    some: {
-                                        ownerId: user.id,
-                                        following: true,
+    const { objects, link } = await fetchTimeline<StatusWithRelations>(
+        client.status,
+        {
+            where: {
+                id: {
+                    lt: max_id ?? undefined,
+                    gte: since_id ?? undefined,
+                    gt: min_id ?? undefined,
+                },
+                OR: [
+                    {
+                        author: {
+                            OR: [
+                                {
+                                    relationshipSubjects: {
+                                        some: {
+                                            ownerId: user.id,
+                                            following: true,
+                                        },
                                     },
                                 },
-                            },
-                            {
-                                id: user.id,
-                            },
-                        ],
-                    },
-                },
-                {
-                    // Include posts where the user is mentioned in addition to posts by followed users
-                    mentions: {
-                        some: {
-                            id: user.id,
+                                {
+                                    id: user.id,
+                                },
+                            ],
                         },
                     },
-                },
-            ],
+                    {
+                        // Include posts where the user is mentioned in addition to posts by followed users
+                        mentions: {
+                            some: {
+                                id: user.id,
+                            },
+                        },
+                    },
+                ],
+            },
+            include: statusAndUserRelations,
+            take: Number(limit),
+            orderBy: {
+                id: "desc",
+            },
         },
-        include: statusAndUserRelations,
-        take: Number(limit),
-        orderBy: {
-            id: "desc",
-        },
-    });
-
-    // Constuct HTTP Link header (next and prev)
-    const linkHeader = [];
-    if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-            `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-        );
-    }
+        req,
+    );
 
     return jsonResponse(
         await Promise.all(
@@ -93,7 +91,7 @@ export default apiRoute<{
         ),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });

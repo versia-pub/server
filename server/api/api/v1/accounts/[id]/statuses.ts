@@ -1,8 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
+import type { Prisma, Status, User } from "@prisma/client";
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
+import {
+    statusToAPI,
+    type StatusWithRelations,
+} from "~database/entities/Status";
 import {
     statusAndUserRelations,
     userRelations,
@@ -56,15 +61,49 @@ export default apiRoute<{
     if (!user) return errorResponse("User not found", 404);
 
     if (pinned) {
-        const objects = await client.status.findMany({
-            where: {
-                authorId: id,
-                isReblog: false,
-                pinnedBy: {
-                    some: {
-                        id: user.id,
+        const { objects, link } = await fetchTimeline<StatusWithRelations>(
+            client.status,
+            {
+                where: {
+                    authorId: id,
+                    isReblog: false,
+                    pinnedBy: {
+                        some: {
+                            id: user.id,
+                        },
+                    },
+                    id: {
+                        lt: max_id,
+                        gt: min_id,
+                        gte: since_id,
                     },
                 },
+                include: statusAndUserRelations,
+                take: Number(limit),
+                orderBy: {
+                    id: "desc",
+                },
+            },
+            req,
+        );
+
+        return jsonResponse(
+            await Promise.all(
+                objects.map((status) => statusToAPI(status, user)),
+            ),
+            200,
+            {
+                Link: link,
+            },
+        );
+    }
+
+    const { objects, link } = await fetchTimeline<StatusWithRelations>(
+        client.status,
+        {
+            where: {
+                authorId: id,
+                isReblog: exclude_reblogs ? true : undefined,
                 id: {
                     lt: max_id,
                     gt: min_id,
@@ -76,142 +115,15 @@ export default apiRoute<{
             orderBy: {
                 id: "desc",
             },
-        });
-
-        // Constuct HTTP Link header (next and prev) only if there are more statuses
-        const linkHeader = [];
-
-        if (objects.length > 0) {
-            // Check if there are statuses before the first one
-            const objectsBefore = await client.status.findMany({
-                where: {
-                    authorId: id,
-                    isReblog: false,
-                    pinnedBy: {
-                        some: {
-                            id: user.id,
-                        },
-                    },
-                    id: {
-                        gt: objects[0].id,
-                    },
-                },
-                take: 1,
-            });
-
-            if (objectsBefore.length > 0) {
-                const urlWithoutQuery = req.url.split("?")[0];
-                // Add prev link
-                linkHeader.push(
-                    `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-                );
-            }
-
-            // Check if there are statuses after the last one
-            const objectsAfter = await client.status.findMany({
-                where: {
-                    authorId: id,
-                    isReblog: false,
-                    pinnedBy: {
-                        some: {
-                            id: user.id,
-                        },
-                    },
-                    id: {
-                        lt: objects.at(-1)?.id,
-                    },
-                },
-                take: 1,
-            });
-
-            if (objectsAfter.length > 0) {
-                const urlWithoutQuery = req.url.split("?")[0];
-                // Add next link
-                linkHeader.push(
-                    `<${urlWithoutQuery}?max_id=${
-                        objects.at(-1)?.id
-                    }>; rel="next"`,
-                );
-            }
-        }
-
-        return jsonResponse(
-            await Promise.all(
-                objects.map((status) => statusToAPI(status, user)),
-            ),
-            200,
-            {
-                Link: linkHeader.join(", "),
-            },
-        );
-    }
-
-    const objects = await client.status.findMany({
-        where: {
-            authorId: id,
-            isReblog: exclude_reblogs ? true : undefined,
-            id: {
-                lt: max_id,
-                gt: min_id,
-                gte: since_id,
-            },
         },
-        include: statusAndUserRelations,
-        take: Number(limit),
-        orderBy: {
-            id: "desc",
-        },
-    });
-
-    // Constuct HTTP Link header (next and prev) only if there are more statuses
-    const linkHeader = [];
-    if (objects.length > 0) {
-        // Check if there are statuses before the first one
-        const objectsBefore = await client.status.findMany({
-            where: {
-                authorId: id,
-                isReblog: exclude_reblogs ? true : undefined,
-                id: {
-                    gt: objects[0].id,
-                },
-            },
-            take: 1,
-        });
-
-        if (objectsBefore.length > 0) {
-            const urlWithoutQuery = req.url.split("?")[0];
-            // Add prev link
-            linkHeader.push(
-                `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-            );
-        }
-
-        // Check if there are statuses after the last one
-        const objectsAfter = await client.status.findMany({
-            where: {
-                authorId: id,
-                isReblog: exclude_reblogs ? true : undefined,
-                id: {
-                    lt: objects.at(-1)?.id,
-                },
-            },
-            take: 1,
-        });
-
-        if (objectsAfter.length > 0) {
-            const urlWithoutQuery = req.url.split("?")[0];
-            // Add next link
-            linkHeader.push(
-                `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-            );
-        }
-    }
+        req,
+    );
 
     return jsonResponse(
         await Promise.all(objects.map((status) => statusToAPI(status, user))),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });
