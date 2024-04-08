@@ -34,7 +34,11 @@ export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
  * @returns The raw URL for the user's avatar
  */
 export const getAvatarUrl = (user: User, config: Config) => {
-    if (!user.avatar) return config.defaults.avatar;
+    if (!user.avatar)
+        return (
+            config.defaults.avatar ||
+            `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${user.username}`
+        );
     return getUrl(user.avatar, config);
 };
 

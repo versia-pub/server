@@ -260,6 +260,9 @@ export interface Config {
 
         /** @default "" */
         header: string;
+
+        /** @default "thumbs" */
+        placeholder_style: string;
     };
 
     federation: {
@@ -540,6 +543,7 @@ export const defaultConfig: Config = {
         language: "en",
         avatar: "",
         header: "",
+        placeholder_style: "thumbs",
     },
     federation: {
         blocked: [],

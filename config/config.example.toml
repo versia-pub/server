@@ -246,10 +246,12 @@ allowed_mime_types = [
 visibility = "public"
 # Default language for new notes (ISO code)
 language = "en"
-# Default avatar, must be a valid URL or "" for none
+# Default avatar, must be a valid URL or "" for a placeholder avatar
 avatar = ""
 # Default header, must be a valid URL or "" for none
 header = ""
+# A style name from https://www.dicebear.com/styles
+placeholder_style = "thumbs"
 
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
