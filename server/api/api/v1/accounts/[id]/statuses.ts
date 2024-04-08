@@ -1,6 +1,4 @@
 import { apiRoute, applyConfig } from "@api";
-import type { Prisma, Status, User } from "@prisma/client";
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";

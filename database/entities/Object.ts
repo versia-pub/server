@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { LysandObject } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { LysandObjectType } from "~types/lysand/Object";

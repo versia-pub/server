@@ -1,7 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
+import {
+    statusToAPI,
+    type StatusWithRelations,
+} from "~database/entities/Status";
 import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
@@ -32,35 +36,29 @@ export default apiRoute<{
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const objects = await client.status.findMany({
-        where: {
-            id: {
-                lt: max_id ?? undefined,
-                gte: since_id ?? undefined,
-                gt: min_id ?? undefined,
-            },
-            likes: {
-                some: {
-                    likerId: user.id,
+    const { objects, link } = await fetchTimeline<StatusWithRelations>(
+        client.status,
+        {
+            where: {
+                id: {
+                    lt: max_id ?? undefined,
+                    gte: since_id ?? undefined,
+                    gt: min_id ?? undefined,
+                },
+                likes: {
+                    some: {
+                        likerId: user.id,
+                    },
                 },
             },
+            include: statusAndUserRelations,
+            take: Number(limit),
+            orderBy: {
+                id: "desc",
+            },
         },
-        include: statusAndUserRelations,
-        take: Number(limit),
-        orderBy: {
-            id: "desc",
-        },
-    });
-
-    // Constuct HTTP Link header (next and prev)
-    const linkHeader = [];
-    if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-            `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-        );
-    }
+        req,
+    );
 
     return jsonResponse(
         await Promise.all(
@@ -68,7 +66,7 @@ export default apiRoute<{
         ),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });

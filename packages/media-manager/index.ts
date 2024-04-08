@@ -64,9 +64,7 @@ export class MediaBackend {
      * @returns The file as a File object
      */
     public getFileByHash(
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         file: string,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         databaseHashFetcher: (sha256: string) => Promise<string>,
     ): Promise<File | null> {
         return Promise.reject(
@@ -79,7 +77,6 @@ export class MediaBackend {
      * @param filename File name
      * @returns The file as a File object
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getFile(filename: string): Promise<File | null> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),
@@ -91,7 +88,6 @@ export class MediaBackend {
      * @param file File to add
      * @returns Metadata about the uploaded file
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public addFile(file: File): Promise<UploadedFileMetadata> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),

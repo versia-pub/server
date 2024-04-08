@@ -1,5 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
+import type { Prisma } from "@prisma/client";
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
 import { notificationToAPI } from "~database/entities/Notification";
 import {
@@ -50,53 +52,49 @@ export default apiRoute<{
         return errorResponse("Can't use both types and exclude_types", 400);
     }
 
-    const objects = await client.notification.findMany({
-        where: {
-            notifiedId: user.id,
-            id: {
-                lt: max_id,
-                gt: min_id,
-                gte: since_id,
+    const { objects, link } = await fetchTimeline<
+        Prisma.NotificationGetPayload<{
+            include: {
+                account: {
+                    include: typeof userRelations;
+                };
+                status: {
+                    include: typeof statusAndUserRelations;
+                };
+            };
+        }>
+    >(
+        client.notification,
+        {
+            where: {
+                id: {
+                    lt: max_id ?? undefined,
+                    gte: since_id ?? undefined,
+                    gt: min_id ?? undefined,
+                },
+                accountId: account_id,
             },
-            type: {
-                in: types,
-                notIn: exclude_types,
+            include: {
+                account: {
+                    include: userRelations,
+                },
+                status: {
+                    include: statusAndUserRelations,
+                },
             },
-            accountId: account_id,
+            orderBy: {
+                id: "desc",
+            },
+            take: Number(limit),
         },
-        include: {
-            account: {
-                include: userRelations,
-            },
-            status: {
-                include: statusAndUserRelations,
-            },
-        },
-        orderBy: {
-            id: "desc",
-        },
-        take: Number(limit),
-    });
-
-    // Constuct HTTP Link header (next and prev)
-    const linkHeader = [];
-    if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`,
-        );
-        linkHeader.push(
-            `<${urlWithoutQuery}?since_id=${
-                objects.at(-1)?.id
-            }&limit=${limit}>; rel="prev"`,
-        );
-    }
+        req,
+    );
 
     return jsonResponse(
         await Promise.all(objects.map((n) => notificationToAPI(n))),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });

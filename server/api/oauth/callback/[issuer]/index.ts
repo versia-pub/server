@@ -157,7 +157,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         return redirectToLogin("No user found with that account");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!flow.application) return redirectToLogin("Invalid client_id");
 
     const code = randomBytes(32).toString("hex");

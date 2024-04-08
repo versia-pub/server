@@ -1,8 +1,14 @@
-import type { Status, User, Prisma } from "@prisma/client";
+import type { Status, User, Prisma, Notification } from "@prisma/client";
 
-export async function fetchTimeline<T extends User | Status>(
-    model: Prisma.StatusDelegate | Prisma.UserDelegate,
-    args: Prisma.StatusFindManyArgs | Prisma.UserFindManyArgs,
+export async function fetchTimeline<T extends User | Status | Notification>(
+    model:
+        | Prisma.StatusDelegate
+        | Prisma.UserDelegate
+        | Prisma.NotificationDelegate,
+    args:
+        | Prisma.StatusFindManyArgs
+        | Prisma.UserFindManyArgs
+        | Prisma.NotificationFindManyArgs,
     req: Request,
 ) {
     // BEFORE: Before in a top-to-bottom order, so the most recent posts

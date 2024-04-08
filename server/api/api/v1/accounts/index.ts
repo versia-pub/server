@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
-import { jsonResponse } from "@response";
+import { jsonResponse, response } from "@response";
 import { tempmailDomains } from "@tempmail";
 import ISO6391 from "iso-639-1";
 import { client } from "~database/datasource";
@@ -200,7 +200,5 @@ export default apiRoute<{
         email: body.email ?? "",
     });
 
-    return new Response("", {
-        status: 200,
-    });
+    return response(null, 200);
 });

@@ -149,7 +149,6 @@ export const federateStatusTo = async (
         new TextEncoder().encode("request_body"),
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const userInbox = new URL(user.endpoints.inbox);
 
     const date = new Date();

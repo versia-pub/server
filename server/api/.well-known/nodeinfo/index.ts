@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
+import { redirect } from "@response";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -15,10 +16,8 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const config = await extraData.configManager.getConfig();
 
-    return new Response("", {
-        status: 301,
-        headers: {
-            Location: `${config.http.base_url}/.well-known/nodeinfo/2.0`,
-        },
-    });
+    return redirect(
+        new URL("/.well-known/nodeinfo/2.0", config.http.base_url),
+        301,
+    );
 });

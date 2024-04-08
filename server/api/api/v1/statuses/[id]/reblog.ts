@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
@@ -58,7 +57,10 @@ export default apiRoute<{
             authorId: user.id,
             reblogId: status.id,
             isReblog: true,
-            uri: `${config.http.base_url}/statuses/FAKE-${crypto.randomUUID()}`,
+            uri: new URL(
+                `/statuses/FAKE-${crypto.randomUUID()}`,
+                config.http.base_url,
+            ).toString(),
             visibility,
             sensitive: false,
         },
@@ -68,7 +70,10 @@ export default apiRoute<{
     await client.status.update({
         where: { id: newReblog.id },
         data: {
-            uri: `${config.http.base_url}/statuses/${newReblog.id}`,
+            uri: new URL(
+                `/statuses/${newReblog.id}`,
+                config.http.base_url,
+            ).toString(),
         },
         include: statusAndUserRelations,
     });
@@ -89,7 +94,10 @@ export default apiRoute<{
         await statusToAPI(
             {
                 ...newReblog,
-                uri: `${config.http.base_url}/statuses/${newReblog.id}`,
+                uri: new URL(
+                    `/statuses/${newReblog.id}`,
+                    config.http.base_url,
+                ).toString(),
             },
             user,
         ),

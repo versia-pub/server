@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { errorResponse, jsonResponse, response } from "@response";
 import type { MediaBackend } from "media-manager";
 import { MediaBackendType } from "media-manager";
 import { client } from "~database/datasource";
@@ -52,9 +52,7 @@ export default apiRoute<{
             if (attachment.url) {
                 return jsonResponse(attachmentToAPI(attachment));
             }
-            return new Response(null, {
-                status: 206,
-            });
+            return response(null, 206);
         }
         case "PUT": {
             const { description, thumbnail } = extraData.parsedRequest;

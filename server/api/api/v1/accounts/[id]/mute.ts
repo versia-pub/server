@@ -33,7 +33,6 @@ export default apiRoute<{
 
     if (!self) return errorResponse("Unauthorized", 401);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { notifications, duration } = extraData.parsedRequest;
 
     const user = await client.user.findUnique({

@@ -41,18 +41,11 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         links: [
             {
                 rel: "self",
-                type: "application/activity+json",
-                href: `${config.http.base_url}/users/${user.username}/actor`,
-            },
-            {
-                rel: "https://webfinger.net/rel/profile-page",
-                type: "text/html",
-                href: `${config.http.base_url}/users/${user.username}`,
-            },
-            {
-                rel: "self",
-                type: 'application/activity+json; profile="https://www.w3.org/ns/activitystreams"',
-                href: `${config.http.base_url}/users/${user.username}/actor`,
+                type: "application/json",
+                href: new URL(
+                    `/users/${user.id}`,
+                    config.http.base_url,
+                ).toString(),
             },
         ],
     });

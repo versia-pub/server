@@ -1,9 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
-import { errorResponse } from "@response";
+import { errorResponse, response } from "@response";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/media/:id",
+    route: "/api/v1/media/:id",
     ratelimits: {
         max: 100,
         duration: 60,
@@ -35,11 +35,9 @@ export default apiRoute(async (req, matchedRoute) => {
     if (!(await file.exists())) return errorResponse("File not found", 404);
 
     // Can't directly copy file into Response because this crashes Bun for now
-    return new Response(buffer, {
-        headers: {
-            "Content-Type": file.type || "application/octet-stream",
-            "Content-Length": `${file.size - start}`,
-            "Content-Range": `bytes ${start}-${end}/${file.size}`,
-        },
+    return response(buffer, 200, {
+        "Content-Type": file.type || "application/octet-stream",
+        "Content-Length": `${file.size - start}`,
+        "Content-Range": `bytes ${start}-${end}/${file.size}`,
     });
 });

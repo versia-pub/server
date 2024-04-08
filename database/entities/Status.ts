@@ -21,7 +21,6 @@ import type { LysandPublication, Note } from "~types/lysand/Object";
 import { applicationToAPI } from "./Application";
 import { attachmentToAPI } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { UserWithRelations } from "./User";
 import { fetchRemoteUser, parseMentionsUris, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
@@ -118,7 +117,6 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
 /**
  * Return all the ancestors of this post,
  */
-// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
 export const getAncestors = async (
     status: StatusWithRelations,
     fetcher: UserWithRelations | null,
@@ -154,7 +152,6 @@ export const getAncestors = async (
  * Return all the descendants of this post (recursive)
  * Temporary implementation, will be replaced with a recursive SQL query when Prisma adds support for it
  */
-// eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
 export const getDescendants = async (
     status: StatusWithRelations,
     fetcher: UserWithRelations | null,
@@ -295,7 +292,10 @@ export const createNewStatus = async (data: {
             isReblog: false,
             uri:
                 data.uri ||
-                `${config.http.base_url}/statuses/FAKE-${crypto.randomUUID()}`,
+                new URL(
+                    `/statuses/FAKE-${crypto.randomUUID()}`,
+                    config.http.base_url,
+                ).toString(),
             mentions: {
                 connect: mentions.map((mention) => {
                     return {
@@ -313,7 +313,12 @@ export const createNewStatus = async (data: {
             id: status.id,
         },
         data: {
-            uri: data.uri || `${config.http.base_url}/statuses/${status.id}`,
+            uri:
+                data.uri ||
+                new URL(
+                    `/statuses/${status.id}`,
+                    config.http.base_url,
+                ).toString(),
         },
         include: statusAndUserRelations,
     });
@@ -467,13 +472,10 @@ export const statusToAPI = async (
         card: null,
         content: status.content,
         emojis: status.emojis.map((emoji) => emojiToAPI(emoji)),
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         favourited: !!(status.likes ?? []).find(
             (like) => like.likerId === user?.id,
         ),
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         favourites_count: (status.likes ?? []).length,
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         media_attachments: (status.attachments ?? []).map(
             (a) => attachmentToAPI(a) as APIAttachment,
         ),
@@ -485,7 +487,7 @@ export const statusToAPI = async (
                   ?.muting || false
             : false,
         pinned: status.pinnedBy.find((u) => u.id === user?.id) ? true : false,
-        // TODO: Add pols
+        // TODO: Add polls
         poll: null,
         reblog: status.reblog
             ? await statusToAPI(status.reblog as unknown as StatusWithRelations)
@@ -501,9 +503,9 @@ export const statusToAPI = async (
         sensitive: status.sensitive,
         spoiler_text: status.spoilerText,
         tags: [],
-        uri: `${config.http.base_url}/statuses/${status.id}`,
+        uri: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
         visibility: "public",
-        url: `${config.http.base_url}/statuses/${status.id}`,
+        url: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
         bookmarked: false,
         quote: status.quotingPost
             ? await statusToAPI(
@@ -567,7 +569,7 @@ export const statusToLysand = (status: StatusWithRelations): Note => {
         created_at: new Date(status.createdAt).toISOString(),
         id: status.id,
         author: status.authorId,
-        uri: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
+        uri: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
         contents: [
             {
                 content: status.content,

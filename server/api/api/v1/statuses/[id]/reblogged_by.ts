@@ -1,8 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
 import { isViewableByUser } from "~database/entities/Status";
-import { userToAPI } from "~database/entities/User";
+import { type UserWithRelations, userToAPI } from "~database/entities/User";
 import {
     statusAndUserRelations,
     userRelations,
@@ -53,53 +54,43 @@ export default apiRoute<{
     if (limit > 80) return errorResponse("Invalid limit (maximum is 80)", 400);
     if (limit < 1) return errorResponse("Invalid limit", 400);
 
-    const objects = await client.user.findMany({
-        where: {
-            statuses: {
-                some: {
-                    reblogId: status.id,
+    const { objects, link } = await fetchTimeline<UserWithRelations>(
+        client.user,
+        {
+            where: {
+                statuses: {
+                    some: {
+                        reblogId: status.id,
+                    },
+                },
+                id: {
+                    lt: max_id ?? undefined,
+                    gte: since_id ?? undefined,
+                    gt: min_id ?? undefined,
                 },
             },
-            id: {
-                lt: max_id ?? undefined,
-                gte: since_id ?? undefined,
-                gt: min_id ?? undefined,
-            },
-        },
-        include: {
-            ...userRelations,
-            statuses: {
-                where: {
-                    reblogId: status.id,
+            include: {
+                ...userRelations,
+                statuses: {
+                    where: {
+                        reblogId: status.id,
+                    },
+                    include: statusAndUserRelations,
                 },
-                include: statusAndUserRelations,
+            },
+            take: Number(limit),
+            orderBy: {
+                id: "desc",
             },
         },
-        take: Number(limit),
-        orderBy: {
-            id: "desc",
-        },
-    });
-
-    // Constuct HTTP Link header (next and prev)
-    const linkHeader = [];
-    if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects[0].id}&limit=${limit}>; rel="next"`,
-        );
-        linkHeader.push(
-            `<${urlWithoutQuery}?since_id=${
-                objects[objects.length - 1].id
-            }&limit=${limit}>; rel="prev"`,
-        );
-    }
+        req,
+    );
 
     return jsonResponse(
         objects.map((user) => userToAPI(user)),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });

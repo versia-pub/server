@@ -20,7 +20,6 @@ export default defineConfig({
         },
     },
     define: {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         __VERSION__: JSON.stringify(pkg.version),
     },
     ssr: {

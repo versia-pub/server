@@ -1,7 +1,6 @@
-import type { Like, Prisma } from "@prisma/client";
+import type { Like } from "@prisma/client";
 import { config } from "config-manager";
 import { client } from "~database/datasource";
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { Like as LysandLike } from "~types/lysand/Object";
 import type { StatusWithRelations } from "./Status";
 import type { UserWithRelations } from "./User";
@@ -18,7 +17,7 @@ export const toLysand = (like: Like): LysandLike => {
         created_at: new Date(like.createdAt).toISOString(),
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
         object: (like as any).liked?.uri,
-        uri: `${config.http.base_url}/actions/${like.id}`,
+        uri: new URL(`/actions/${like.id}`, config.http.base_url).toString(),
     };
 };
 

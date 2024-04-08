@@ -4,13 +4,13 @@ import { Prisma } from "@prisma/client";
 import { type Config, config } from "config-manager";
 import { htmlToText } from "html-to-text";
 import { client } from "~database/datasource";
-import { MediaBackendType } from "~packages/media-manager";
 import type { APIAccount } from "~types/entities/account";
 import type { APISource } from "~types/entities/source";
 import type { LysandUser } from "~types/lysand/Object";
 import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
+import { getUrl } from "./Attachment";
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -35,14 +35,7 @@ export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
  */
 export const getAvatarUrl = (user: User, config: Config) => {
     if (!user.avatar) return config.defaults.avatar;
-    if (config.media.backend === MediaBackendType.LOCAL) {
-        return `${config.http.base_url}/media/${user.avatar}`;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    }
-    if (config.media.backend === MediaBackendType.S3) {
-        return `${config.s3.public_url}/${user.avatar}`;
-    }
-    return "";
+    return getUrl(user.avatar, config);
 };
 
 /**
@@ -52,14 +45,7 @@ export const getAvatarUrl = (user: User, config: Config) => {
  */
 export const getHeaderUrl = (user: User, config: Config) => {
     if (!user.header) return config.defaults.header;
-    if (config.media.backend === MediaBackendType.LOCAL) {
-        return `${config.http.base_url}/media/${user.header}`;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    }
-    if (config.media.backend === MediaBackendType.S3) {
-        return `${config.s3.public_url}/${user.header}`;
-    }
-    return "";
+    return getUrl(user.header, config);
 };
 
 export const getFromRequest = async (req: Request): Promise<AuthData> => {
@@ -224,16 +210,7 @@ export const createNewLocalUser = async (data: {
             id: user.id,
         },
         data: {
-            uri: `${config.http.base_url}/users/${user.id}`,
-            endpoints: {
-                disliked: `${config.http.base_url}/users/${user.id}/disliked`,
-                featured: `${config.http.base_url}/users/${user.id}/featured`,
-                liked: `${config.http.base_url}/users/${user.id}/liked`,
-                followers: `${config.http.base_url}/users/${user.id}/followers`,
-                following: `${config.http.base_url}/users/${user.id}/following`,
-                inbox: `${config.http.base_url}/users/${user.id}/inbox`,
-                outbox: `${config.http.base_url}/users/${user.id}/outbox`,
-            },
+            uri: new URL(`/users/${user.id}`, config.http.base_url).toString(),
         },
         include: userRelations,
     });
@@ -399,13 +376,35 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
             },
         ],
         created_at: new Date(user.createdAt).toISOString(),
-        disliked: `${user.uri}/disliked`,
-        featured: `${user.uri}/featured`,
-        liked: `${user.uri}/liked`,
-        followers: `${user.uri}/followers`,
-        following: `${user.uri}/following`,
-        inbox: `${user.uri}/inbox`,
-        outbox: `${user.uri}/outbox`,
+
+        disliked: new URL(
+            `/users/${user.id}/disliked`,
+            config.http.base_url,
+        ).toString(),
+        featured: new URL(
+            `/users/${user.id}/featured`,
+            config.http.base_url,
+        ).toString(),
+        liked: new URL(
+            `/users/${user.id}/liked`,
+            config.http.base_url,
+        ).toString(),
+        followers: new URL(
+            `/users/${user.id}/followers`,
+            config.http.base_url,
+        ).toString(),
+        following: new URL(
+            `/users/${user.id}/following`,
+            config.http.base_url,
+        ).toString(),
+        inbox: new URL(
+            `/users/${user.id}/inbox`,
+            config.http.base_url,
+        ).toString(),
+        outbox: new URL(
+            `/users/${user.id}/outbox`,
+            config.http.base_url,
+        ).toString(),
         indexable: false,
         username: user.username,
         avatar: [
@@ -444,7 +443,10 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
             ],
         })),
         public_key: {
-            actor: `${config.http.base_url}/users/${user.id}`,
+            actor: new URL(
+                `/users/${user.id}`,
+                config.http.base_url,
+            ).toString(),
             public_key: user.publicKey,
         },
         extensions: {

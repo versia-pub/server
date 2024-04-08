@@ -1,4 +1,9 @@
-import { errorResponse, jsonResponse } from "@response";
+import {
+    clientResponse,
+    errorResponse,
+    jsonResponse,
+    response,
+} from "@response";
 import type { Config } from "config-manager";
 import { matches } from "ip-matching";
 import type { LogManager, MultiLogManager } from "log-manager";
@@ -22,10 +27,7 @@ export const createServer = (
             for (const ip of config.http.banned_ips) {
                 try {
                     if (matches(ip, request_ip)) {
-                        return new Response(undefined, {
-                            status: 403,
-                            statusText: "Forbidden",
-                        });
+                        return errorResponse("Forbidden", 403);
                     }
                 } catch (e) {
                     console.error(`[-] Error while parsing banned IP "${ip}" `);
@@ -38,10 +40,7 @@ export const createServer = (
 
             for (const agent of config.http.banned_user_agents) {
                 if (new RegExp(agent).test(ua)) {
-                    return new Response(undefined, {
-                        status: 403,
-                        statusText: "Forbidden",
-                    });
+                    return errorResponse("Forbidden", 403);
                 }
             }
 
@@ -56,7 +55,7 @@ export const createServer = (
                             );
 
                             if (await file.exists()) {
-                                return new Response(file);
+                                return response(file);
                             }
                             await logger.log(
                                 LogLevel.ERROR,
@@ -81,7 +80,7 @@ export const createServer = (
                         );
 
                         if (await file.exists()) {
-                            return new Response(file);
+                            return response(file);
                         }
                         await logger.log(
                             LogLevel.ERROR,
@@ -126,12 +125,12 @@ export const createServer = (
                 // Check for allowed requests
                 // @ts-expect-error Stupid error
                 if (!meta.allowedMethods.includes(req.method as string)) {
-                    return new Response(undefined, {
-                        status: 405,
-                        statusText: `Method not allowed: allowed methods are: ${meta.allowedMethods.join(
+                    return errorResponse(
+                        `Method not allowed: allowed methods are: ${meta.allowedMethods.join(
                             ", ",
                         )}`,
-                    });
+                        405,
+                    );
                 }
 
                 // TODO: Check for ratelimits
@@ -140,20 +139,14 @@ export const createServer = (
                 // Check for authentication if required
                 if (meta.auth.required) {
                     if (!auth.user) {
-                        return new Response(undefined, {
-                            status: 401,
-                            statusText: "Unauthorized",
-                        });
+                        return errorResponse("Unauthorized", 401);
                     }
                 } else if (
                     // @ts-expect-error Stupid error
                     (meta.auth.requiredOnMethods ?? []).includes(req.method)
                 ) {
                     if (!auth.user) {
-                        return new Response(undefined, {
-                            status: 401,
-                            statusText: "Unauthorized",
-                        });
+                        return errorResponse("Unauthorized", 401);
                     }
                 }
 
@@ -167,10 +160,7 @@ export const createServer = (
                         "Server.RouteRequestParser",
                         e as Error,
                     );
-                    return new Response(undefined, {
-                        status: 400,
-                        statusText: "Bad request",
-                    });
+                    return errorResponse("Bad request", 400);
                 }
 
                 return await file.default(req.clone(), matchedRoute, {
@@ -196,7 +186,7 @@ export const createServer = (
 
                         // Serve from pages/dist/assets
                         if (await file.exists()) {
-                            return new Response(file);
+                            return clientResponse(file);
                         }
                         return errorResponse("Asset not found", 404);
                     }
@@ -207,7 +197,7 @@ export const createServer = (
                     const file = Bun.file("./pages/dist/index.html");
 
                     // Serve from pages/dist
-                    return new Response(file);
+                    return clientResponse(file);
                 }
                 const proxy = await fetch(
                     req.url.replace(

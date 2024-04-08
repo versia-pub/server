@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@api";
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { userToAPI } from "~database/entities/User";

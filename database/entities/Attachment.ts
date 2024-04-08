@@ -58,13 +58,11 @@ export const attachmentToAPI = (
 };
 
 export const getUrl = (name: string, config: Config) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
     if (config.media.backend === MediaBackendType.LOCAL) {
-        return `${config.http.base_url}/media/${name}`;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison, @typescript-eslint/no-unnecessary-condition
+        return new URL(`/media/${name}`, config.http.base_url).toString();
     }
     if (config.media.backend === MediaBackendType.S3) {
-        return `${config.s3.public_url}/${name}`;
+        return new URL(`/${name}`, config.s3.public_url).toString();
     }
     return "";
 };

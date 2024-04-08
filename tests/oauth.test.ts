@@ -40,7 +40,6 @@ describe("POST /api/v1/apps/", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const json = await response.json();
 
         expect(json).toEqual({
@@ -53,9 +52,7 @@ describe("POST /api/v1/apps/", () => {
             vapid_link: null,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         client_id = json.client_id;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         client_secret = json.client_secret;
     });
 });
@@ -111,7 +108,6 @@ describe("POST /oauth/token/", () => {
             }),
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const json = await response.json();
 
         expect(response.status).toBe(200);
@@ -123,7 +119,6 @@ describe("POST /oauth/token/", () => {
             created_at: expect.any(Number),
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         token = json;
     });
 });

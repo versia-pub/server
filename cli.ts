@@ -388,7 +388,6 @@ const cliBuilder = new CliBuilder([
                     for (const key of keys) {
                         if (!args.fields.includes(key)) {
                             // @ts-expect-error This is fine
-                            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
                             delete data[key];
                         }
                     }

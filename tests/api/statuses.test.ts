@@ -136,7 +136,6 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             status = (await response.json()) as APIStatus;
             expect(status.content).toContain("Hello, world!");
             expect(status.visibility).toBe("public");
@@ -184,7 +183,6 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             status2 = (await response.json()) as APIStatus;
             expect(status2.content).toContain("This is a reply!");
             expect(status2.visibility).toBe("public");

@@ -19,7 +19,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     return xmlResponse(`
 <?xml version="1.0" encoding="UTF-8"?>
 <XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0">
-	<Link rel="lrdd" template="${config.http.base_url}/.well-known/webfinger?resource={uri}"/>
+	<Link rel="lrdd" template="${new URL(
+        "/.well-known/webfinger",
+        config.http.base_url,
+    ).toString()}?resource={uri}"/>
 </XRD>
 	`);
 });

@@ -51,14 +51,11 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         last: `${host}/users/${uuid}/outbox?page=1`,
         total_items: totalStatuses,
         // Server actor
-        author: `${config.http.base_url}/users/actor`,
-        next:
-            statuses.length === 20
-                ? `${host}/users/${uuid}/outbox?page=${pageNumber + 1}`
-                : undefined,
-        prev:
-            pageNumber > 1
-                ? `${host}/users/${uuid}/outbox?page=${pageNumber - 1}`
+        author: new URL("/users/actor", config.http.base_url).toString(),
+        next: statuses.length === 20
+                ? new URL(`/users/${uuid}/outbox?page=${pageNumber + 1}`, config.http.base_url).toString(),
+        prev: pageNumber > 1
+                ? new URL(`/users/${uuid}/outbox?page=${pageNumber - 1}`, config.http.base_url).toString()
                 : undefined,
         items: statuses.map((s) => statusToLysand(s)),
     });

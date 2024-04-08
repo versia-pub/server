@@ -174,7 +174,6 @@ export class CliBuilder {
             // Split the command into parts and iterate over them
             for (const part of command.categories) {
                 // If this part doesn't exist in the current level of the tree, add it (__proto__ check to prevent prototype pollution)
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 if (!currentLevel[part] && part !== "__proto__") {
                     // If this is the last part of the command, add the command itself
                     if (
@@ -297,7 +296,6 @@ export class CliBuilder {
 type ExecuteFunction<T> = (
     instance: CliCommand,
     args: Partial<T>,
-    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 ) => Promise<number> | Promise<void> | number | void;
 
 /**

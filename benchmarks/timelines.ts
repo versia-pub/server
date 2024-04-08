@@ -18,7 +18,7 @@ if (!token) {
 }
 
 const fetchTimeline = () =>
-    fetch(`${config.http.base_url}/api/v1/timelines/home`, {
+    fetch(new URL("/api/v1/timelines/home", config.http.base_url), {
         headers: {
             Authorization: `Bearer ${token}`,
         },
