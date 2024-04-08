@@ -35,7 +35,7 @@ export const clientResponse = (
     return response(data, status, {
         ...headers,
         "Content-Security-Policy":
-            "default-src 'none'; frame-ancestors 'none'; form-action 'none'; connect-src 'self' blob: https: wss:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; prefetch-src 'self'; base-uri 'none';",
+            "default-src 'none'; frame-ancestors 'none'; form-action 'self'; connect-src 'self' blob: https: wss:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; prefetch-src 'self'; base-uri 'none';",
     });
 };
 
