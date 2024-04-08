@@ -17,11 +17,12 @@ export async function fetchTimeline<T extends User | Status>(
         // Check if there are statuses before the first one
         // @ts-expect-error This is a hack to get around the fact that Prisma doesn't have a common base type for all models
         const objectsBefore = await model.findMany({
+            ...args,
             where: {
+                ...args.where,
                 id: {
                     gt: objects[0].id,
                 },
-                ...args.where,
             },
             take: 1,
         });
@@ -38,11 +39,12 @@ export async function fetchTimeline<T extends User | Status>(
             // Check if there are statuses after the last one
             // @ts-expect-error This is a hack to get around the fact that Prisma doesn't have a common base type for all models
             const objectsAfter = await model.findMany({
+                ...args,
                 where: {
+                    ...args.where,
                     id: {
                         lt: objects.at(-1)?.id,
                     },
-                    ...args.where,
                 },
                 take: 1,
             });
