@@ -5,6 +5,8 @@ export async function fetchTimeline<T extends User | Status>(
     args: Prisma.StatusFindManyArgs | Prisma.UserFindManyArgs,
     req: Request,
 ) {
+    // BEFORE: Before in a top-to-bottom order, so the most recent posts
+    // AFTER: After in a top-to-bottom order, so the oldest posts
     // @ts-expect-error This is a hack to get around the fact that Prisma doesn't have a common base type for all models
     const objects = (await model.findMany(args)) as T[];
 
@@ -49,9 +51,7 @@ export async function fetchTimeline<T extends User | Status>(
                 const urlWithoutQuery = req.url.split("?")[0];
                 // Add next link
                 linkHeader.push(
-                    `<${urlWithoutQuery}?max_id=${
-                        objects.at(-1)?.id
-                    }>; rel="next"`,
+                    `<${urlWithoutQuery}?max_id=${objectsAfter[0].id}>; rel="next"`,
                 );
             }
         }
