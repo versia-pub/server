@@ -39,7 +39,7 @@ export const getAvatarUrl = (user: User, config: Config) => {
             config.defaults.avatar ||
             `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${user.username}`
         );
-    return getUrl(user.avatar, config);
+    return user.avatar;
 };
 
 /**
@@ -49,7 +49,7 @@ export const getAvatarUrl = (user: User, config: Config) => {
  */
 export const getHeaderUrl = (user: User, config: Config) => {
     if (!user.header) return config.defaults.header;
-    return getUrl(user.header, config);
+    return user.header;
 };
 
 export const getFromRequest = async (req: Request): Promise<AuthData> => {
