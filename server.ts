@@ -186,7 +186,9 @@ export const createServer = (
 
                         // Serve from pages/dist/assets
                         if (await file.exists()) {
-                            return clientResponse(file);
+                            return clientResponse(file, 200, {
+                                "Content-Type": file.type,
+                            });
                         }
                         return errorResponse("Asset not found", 404);
                     }
@@ -197,7 +199,9 @@ export const createServer = (
                     const file = Bun.file("./pages/dist/index.html");
 
                     // Serve from pages/dist
-                    return clientResponse(file);
+                    return clientResponse(file, 200, {
+                        "Content-Type": file.type,
+                    });
                 }
                 const proxy = await fetch(
                     req.url.replace(
