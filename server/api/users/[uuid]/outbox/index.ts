@@ -52,10 +52,19 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         total_items: totalStatuses,
         // Server actor
         author: new URL("/users/actor", config.http.base_url).toString(),
-        next: statuses.length === 20
-                ? new URL(`/users/${uuid}/outbox?page=${pageNumber + 1}`, config.http.base_url).toString(),
-        prev: pageNumber > 1
-                ? new URL(`/users/${uuid}/outbox?page=${pageNumber - 1}`, config.http.base_url).toString()
+        next:
+            statuses.length === 20
+                ? new URL(
+                      `/users/${uuid}/outbox?page=${pageNumber + 1}`,
+                      config.http.base_url,
+                  ).toString()
+                : undefined,
+        prev:
+            pageNumber > 1
+                ? new URL(
+                      `/users/${uuid}/outbox?page=${pageNumber - 1}`,
+                      config.http.base_url,
+                  ).toString()
                 : undefined,
         items: statuses.map((s) => statusToLysand(s)),
     });
