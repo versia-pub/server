@@ -50,8 +50,7 @@ export const createServer = (
                     try {
                         if (matches(ip, request_ip)) {
                             const file = Bun.file(
-                                config.http.bait.send_file ||
-                                    "./pages/beemovie.txt",
+                                config.http.bait.send_file || "./beemovie.txt",
                             );
 
                             if (await file.exists()) {
@@ -75,8 +74,7 @@ export const createServer = (
                 for (const agent of config.http.bait.bait_user_agents) {
                     if (new RegExp(agent).test(ua)) {
                         const file = Bun.file(
-                            config.http.bait.send_file ||
-                                "./pages/beemovie.txt",
+                            config.http.bait.send_file || "./beemovie.txt",
                         );
 
                         if (await file.exists()) {
@@ -176,7 +174,7 @@ export const createServer = (
             }
 
             // Proxy response from Vite at localhost:5173 if in development mode
-            if (isProd) {
+            if (false) {
                 let file = Bun.file("./pages/dist/index.html");
                 if (new URL(req.url).pathname.startsWith("/assets")) {
                     file = Bun.file(`./pages/dist${new URL(req.url).pathname}`);

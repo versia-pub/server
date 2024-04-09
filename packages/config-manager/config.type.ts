@@ -1,4 +1,7 @@
-import { MediaBackendType } from "~packages/media-manager";
+export enum MediaBackendType {
+    LOCAL = "local",
+    S3 = "s3",
+}
 
 export interface Config {
     database: {

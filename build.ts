@@ -3,16 +3,13 @@ import { $ } from "bun";
 import { exists, mkdir, rm } from "node:fs/promises";
 import { rawRoutes } from "~routes";
 
-if (!(await exists("./pages/dist"))) {
-    console.log("Please build the Vite server first, or use `bun prod-build`");
-    process.exit(1);
-}
+console.log("Building frontend...");
+
+await $`bun fe:build`;
 
 console.log(`Building at ${process.cwd()}`);
 
-await rm("./dist", { recursive: true });
-
-await mkdir(`${process.cwd()}/dist`);
+await $`rm -rf dist && mkdir dist`;
 
 await Bun.build({
     entrypoints: [
@@ -26,7 +23,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "@prisma/client"],
+    external: ["bullmq", "@prisma/client", "frontend"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
@@ -48,13 +45,10 @@ await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 // Copy Sharp to dist
 await $`cp -r ${process.cwd()}/node_modules/sharp/build/ .`;
 
-// Create pages directory
-await $`mkdir -p dist/pages/dist`;
-
 // Copy Vite build output to dist
-await $`cp -r ${process.cwd()}/pages/dist dist/pages/`;
+await $`cp -r packages/frontend/.output dist/frontend`;
 
 // Copy the Bee Movie script from pages
-await $`cp ${process.cwd()}/pages/beemovie.txt dist/pages/beemovie.txt`;
+await $`cp ${process.cwd()}/pages/beemovie.txt dist/beemovie.txt`;
 
 console.log("Built!");
