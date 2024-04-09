@@ -50,10 +50,6 @@ export default defineNuxtConfig({
             titleSeparator: "·",
             siteName: "Lysand",
             trailingSlash: true,
-            // @ts-ignore
-
-            url2: async () => await Promise.resolve("cheese"),
-            //url: `${config?.http.bind}:${config?.http.bind_port}`,
         },
     },
     site: {
