@@ -173,22 +173,6 @@ export const createServer = (
                 return errorResponse("Route not found", 404);
             }
 
-            // Proxy response from Vite at localhost:5173 if in development mode
-            if (false) {
-                let file = Bun.file("./pages/dist/index.html");
-                if (new URL(req.url).pathname.startsWith("/assets")) {
-                    file = Bun.file(`./pages/dist${new URL(req.url).pathname}`);
-                }
-
-                // Serve from pages/dist/assets
-                if (await file.exists()) {
-                    return clientResponse(file, 200, {
-                        "Content-Type": file.type,
-                    });
-                }
-                return errorResponse("Asset not found", 404);
-            }
-
             const proxy = await fetch(
                 req.url.replace(config.http.base_url, "http://localhost:5173"),
             ).catch(async (e) => {

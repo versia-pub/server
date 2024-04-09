@@ -8,7 +8,8 @@ FROM base AS install
 
 # Install with --production (exclude devDependencies)
 RUN mkdir -p /temp
-COPY . /temp
+COPY package.json /temp
+COPY bun.lockb /temp
 WORKDIR /temp
 RUN bun install --frozen-lockfile
 
