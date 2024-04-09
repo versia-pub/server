@@ -173,9 +173,16 @@ export const createServer = (
                 return errorResponse("Route not found", 404);
             }
 
-            const proxy = await fetch(
-                req.url.replace(config.http.base_url, "http://localhost:5173"),
-            ).catch(async (e) => {
+            const base_url_with_http = config.http.base_url.replace(
+                "https://",
+                "http://",
+            );
+
+            const replacedUrl = req.url
+                .replace(config.http.base_url, "http://localhost:5173")
+                .replace(base_url_with_http, "http://localhost:5173");
+
+            const proxy = await fetch(replacedUrl).catch(async (e) => {
                 await logger.logError(
                     LogLevel.ERROR,
                     "Server.Proxy",
@@ -184,10 +191,7 @@ export const createServer = (
                 await logger.log(
                     LogLevel.ERROR,
                     "Server.Proxy",
-                    `The development Vite server is not running or the route is not found: ${req.url.replace(
-                        config.http.base_url,
-                        "http://localhost:5173",
-                    )}`,
+                    `The development Vite server is not running or the route is not found: ${replacedUrl}`,
                 );
                 return errorResponse("Route not found", 404);
             });
