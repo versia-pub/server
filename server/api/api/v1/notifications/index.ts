@@ -72,7 +72,8 @@ export default apiRoute<{
                     gte: since_id ?? undefined,
                     gt: min_id ?? undefined,
                 },
-                accountId: account_id,
+                notifiedId: user.id,
+                accountId: account_id || undefined,
             },
             include: {
                 account: {
