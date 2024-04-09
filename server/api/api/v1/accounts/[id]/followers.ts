@@ -1,7 +1,8 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
-import { userToAPI } from "~database/entities/User";
+import { type UserWithRelations, userToAPI } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
@@ -40,42 +41,36 @@ export default apiRoute<{
 
     if (!user) return errorResponse("User not found", 404);
 
-    const objects = await client.user.findMany({
-        where: {
-            relationships: {
-                some: {
-                    subjectId: user.id,
-                    following: true,
+    const { objects, link } = await fetchTimeline<UserWithRelations>(
+        client.user,
+        {
+            where: {
+                relationships: {
+                    some: {
+                        subjectId: user.id,
+                        following: true,
+                    },
+                },
+                id: {
+                    lt: max_id,
+                    gt: min_id,
+                    gte: since_id,
                 },
             },
-            id: {
-                lt: max_id,
-                gt: min_id,
-                gte: since_id,
+            include: userRelations,
+            take: Number(limit),
+            orderBy: {
+                id: "desc",
             },
         },
-        include: userRelations,
-        take: Number(limit),
-        orderBy: {
-            id: "desc",
-        },
-    });
-
-    // Constuct HTTP Link header (next and prev)
-    const linkHeader = [];
-    if (objects.length > 0) {
-        const urlWithoutQuery = req.url.split("?")[0];
-        linkHeader.push(
-            `<${urlWithoutQuery}?max_id=${objects.at(-1)?.id}>; rel="next"`,
-            `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
-        );
-    }
+        req,
+    );
 
     return jsonResponse(
         await Promise.all(objects.map((object) => userToAPI(object))),
         200,
         {
-            Link: linkHeader.join(", "),
+            Link: link,
         },
     );
 });

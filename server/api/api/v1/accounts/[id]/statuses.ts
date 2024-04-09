@@ -48,6 +48,7 @@ export default apiRoute<{
         since_id,
         limit = "20",
         exclude_reblogs,
+        only_media = false,
         pinned,
     } = extraData.parsedRequest;
 
@@ -70,6 +71,8 @@ export default apiRoute<{
                             id: user.id,
                         },
                     },
+                    // If only_media is true, only return statuses with attachments
+                    attachments: only_media ? { some: {} } : undefined,
                     id: {
                         lt: max_id,
                         gt: min_id,
