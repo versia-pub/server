@@ -20,12 +20,10 @@ if (!config) {
     throw new Error("Config not found");
 }
 
-const url = `${config.http.bind}:${config.http.bind_port}`;
-
 const route = useRoute();
 
 const data = await fetch(
-    new URL(`/api/v1/statuses/${route.params.uuid}`, url),
+    new URL(`/api/v1/statuses/${route.params.uuid}`, config.http.url),
     {
         headers: {
             Accept: "application/json",

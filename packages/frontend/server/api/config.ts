@@ -13,6 +13,9 @@ export default defineEventHandler(async () => {
             bind: config?.http.bind,
             bind_port: config?.http.bind_port,
             base_url: config?.http.base_url,
+            url: config?.http.bind.includes("http")
+                ? `${config?.http.bind}:${config?.http.bind_port}`
+                : `http://${config?.http.bind}:${config?.http.bind_port}`,
         },
     };
 });
