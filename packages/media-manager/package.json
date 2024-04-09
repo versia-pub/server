@@ -4,7 +4,6 @@
     "main": "index.ts",
     "dependencies": {
         "@jsr/bradenmacdonald__s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
-        "config-manager": "workspace:*",
-        "sharp": "0.32.6"
+        "config-manager": "workspace:*"
     }
 }

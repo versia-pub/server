@@ -1,6 +1,5 @@
 // Delete dist directory
 import { $ } from "bun";
-import { exists, mkdir, rm } from "node:fs/promises";
 import { rawRoutes } from "~routes";
 
 console.log("Building frontend...");
@@ -43,7 +42,9 @@ await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Copy Sharp to dist
-await $`cp -r ${process.cwd()}/node_modules/sharp/build/ .`;
+await $`mkdir -p dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-libvips-linux-x64 dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-linux-x64 dist/node_modules/@img`;
 
 // Copy Vite build output to dist
 await $`cp -r packages/frontend/.output dist/frontend`;
