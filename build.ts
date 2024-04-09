@@ -43,8 +43,8 @@ await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Copy Sharp to dist
 await $`mkdir -p dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-libvips-linux-x64 dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-linux-x64 dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-libvips-linux-* dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
 
 // Copy Vite build output to dist
 await $`cp -r packages/frontend/.output dist/frontend`;
