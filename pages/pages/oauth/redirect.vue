@@ -7,7 +7,7 @@
         </div>
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
             <form class="space-y-6" method="POST"
-                :action="`/auth/redirect?redirect_uri=${encodeURIComponent(redirect_uri)}&client_id=${client_id}&code=${code}`">
+                :action="`/api/auth/redirect?redirect_uri=${encodeURIComponent(redirect_uri)}&client_id=${client_id}&code=${code}`">
                 <div class="flex flex-col items-center gap-y-5">
                     <h1 class="font-bold text-2xl text-center tracking-tight">Allow this application to access your
                         account?</h1>

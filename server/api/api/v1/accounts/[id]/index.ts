@@ -13,7 +13,7 @@ export const meta = applyConfig({
     },
     route: "/api/v1/accounts/:id",
     auth: {
-        required: true,
+        required: false,
         oauthPermissions: [],
     },
 });

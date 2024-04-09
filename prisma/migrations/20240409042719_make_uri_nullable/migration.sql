@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Status" ALTER COLUMN "uri" DROP NOT NULL;
+
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "uri" DROP NOT NULL;

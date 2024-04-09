@@ -12,7 +12,7 @@ export const meta = applyConfig({
         duration: 60,
     },
     auth: {
-        required: true,
+        required: false,
         oauthPermissions: ["read:accounts"],
     },
 });
@@ -25,17 +25,16 @@ export default apiRoute<{
     following?: boolean;
 }>(async (req, matchedRoute, extraData) => {
     // TODO: Add checks for disabled or not email verified accounts
-
-    const { user } = extraData.auth;
-
-    if (!user) return errorResponse("Unauthorized", 401);
-
     const {
         following = false,
         limit = 40,
         offset,
         q,
     } = extraData.parsedRequest;
+
+    const { user } = extraData.auth;
+
+    if (!user && following) return errorResponse("Unauthorized", 401);
 
     if (limit < 1 || limit > 80) {
         return errorResponse("Limit must be between 1 and 80", 400);
@@ -60,7 +59,7 @@ export default apiRoute<{
             relationshipSubjects: following
                 ? {
                       some: {
-                          ownerId: user.id,
+                          ownerId: user?.id,
                           following,
                       },
                   }

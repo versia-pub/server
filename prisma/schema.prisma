@@ -104,7 +104,7 @@ model Relationship {
 
 model Status {
   id                   String         @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri                  String         @unique
+  uri                  String?        @unique
   author               User           @relation("UserStatuses", fields: [authorId], references: [id], onDelete: Cascade)
   authorId             String         @db.Uuid
   createdAt            DateTime       @default(now())
@@ -228,7 +228,7 @@ model Notification {
 
 model User {
   id                    String          @id @default(dbgenerated("uuid_generate_v7()")) @db.Uuid
-  uri                   String          @unique
+  uri                   String?         @unique
   username              String          @unique
   displayName           String
   password              String? // Nullable

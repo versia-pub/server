@@ -57,7 +57,7 @@ describe("POST /api/v1/apps/", () => {
     });
 });
 
-describe("POST /auth/login/", () => {
+describe("POST /api/auth/login/", () => {
     test("should get a code", async () => {
         const formData = new FormData();
 
@@ -67,7 +67,7 @@ describe("POST /auth/login/", () => {
         const response = await sendTestRequest(
             new Request(
                 wrapRelativeUrl(
-                    `/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                    `/api/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
                     base_url,
                 ),
                 {

@@ -7,7 +7,7 @@
 		</div>
 		<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
 			<form class="space-y-6" method="POST"
-				:action="`/auth/login?redirect_uri=${redirect_uri}&response_type=${response_type}&client_id=${client_id}&scope=${scope}`">
+				:action="`/api/auth/login?redirect_uri=${redirect_uri}&response_type=${response_type}&client_id=${client_id}&scope=${scope}`">
 				<div>
 					<h1 class="font-bold text-2xl text-center tracking-tight">Login to your account</h1>
 				</div>

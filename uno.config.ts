@@ -1,4 +1,6 @@
 import { presetForms } from "@julr/unocss-preset-forms";
+import transformerDirectives from "@unocss/transformer-directives";
+
 import {
     defineConfig,
     presetTypography,
@@ -19,4 +21,5 @@ export default defineConfig({
         presetWebFonts(),
         presetForms(),
     ],
+    transformers: [transformerDirectives()],
 });

@@ -260,7 +260,7 @@ export const createNewStatus = async (data: {
             .join("\n");
     }
 
-    let status = await client.status.create({
+    const status = await client.status.create({
         data: {
             authorId: data.account.id,
             applicationId: data.application?.id,
@@ -290,12 +290,7 @@ export const createNewStatus = async (data: {
             quotingPostId: data.quote?.id,
             instanceId: data.account.instanceId || undefined,
             isReblog: false,
-            uri:
-                data.uri ||
-                new URL(
-                    `/statuses/FAKE-${crypto.randomUUID()}`,
-                    config.http.base_url,
-                ).toString(),
+            uri: data.uri || null,
             mentions: {
                 connect: mentions.map((mention) => {
                     return {
@@ -303,22 +298,6 @@ export const createNewStatus = async (data: {
                     };
                 }),
             },
-        },
-        include: statusAndUserRelations,
-    });
-
-    // Update URI
-    status = await client.status.update({
-        where: {
-            id: status.id,
-        },
-        data: {
-            uri:
-                data.uri ||
-                new URL(
-                    `/statuses/${status.id}`,
-                    config.http.base_url,
-                ).toString(),
         },
         include: statusAndUserRelations,
     });
@@ -503,9 +482,19 @@ export const statusToAPI = async (
         sensitive: status.sensitive,
         spoiler_text: status.spoilerText,
         tags: [],
-        uri: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
+        uri:
+            status.uri ||
+            new URL(
+                `/@${status.author.username}/${status.id}`,
+                config.http.base_url,
+            ).toString(),
         visibility: "public",
-        url: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
+        url:
+            status.uri ||
+            new URL(
+                `/@${status.author.username}/${status.id}`,
+                config.http.base_url,
+            ).toString(),
         bookmarked: false,
         quote: status.quotingPost
             ? await statusToAPI(
@@ -584,8 +573,8 @@ export const statusToLysand = (status: StatusWithRelations): Note => {
         // TODO: Add attachments
         attachments: [],
         is_sensitive: status.sensitive,
-        mentions: status.mentions.map((mention) => mention.uri),
-        quotes: status.quotingPost ? [status.quotingPost.uri] : [],
+        mentions: status.mentions.map((mention) => mention.uri || ""),
+        quotes: status.quotingPost ? [status.quotingPost.uri || ""] : [],
         replies_to: status.inReplyToPostId ? [status.inReplyToPostId] : [],
         subject: status.spoilerText,
         extensions: {

@@ -10,7 +10,7 @@ export const meta = applyConfig({
         max: 4,
         duration: 60,
     },
-    route: "/auth/login",
+    route: "/api/auth/login",
     auth: {
         required: false,
     },

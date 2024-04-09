@@ -172,7 +172,7 @@ describe("API Tests", () => {
             expect(account.statuses_count).toBe(0);
             expect(account.note).toBe("");
             expect(account.url).toBe(
-                new URL(`/users/${user.id}`, config.http.base_url).toString(),
+                new URL(`/@${user.username}`, config.http.base_url).toString(),
             );
             expect(account.avatar).toBeDefined();
             expect(account.avatar_static).toBeDefined();

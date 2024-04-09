@@ -124,7 +124,7 @@ export const createServer = (
 
                 // Check for allowed requests
                 // @ts-expect-error Stupid error
-                if (!meta.allowedMethods.includes(req.method as string)) {
+                if (!meta.allowedMethods.includes(req.method)) {
                     return errorResponse(
                         `Method not allowed: allowed methods are: ${meta.allowedMethods.join(
                             ", ",
@@ -137,17 +137,15 @@ export const createServer = (
                 const auth = await getFromRequest(req);
 
                 // Check for authentication if required
-                if (meta.auth.required) {
-                    if (!auth.user) {
-                        return errorResponse("Unauthorized", 401);
-                    }
-                } else if (
-                    // @ts-expect-error Stupid error
-                    (meta.auth.requiredOnMethods ?? []).includes(req.method)
+                if (
+                    (meta.auth.required ||
+                        (meta.auth.requiredOnMethods ?? []).includes(
+                            // @ts-expect-error Stupid error
+                            req.method,
+                        )) &&
+                    !auth.user
                 ) {
-                    if (!auth.user) {
-                        return errorResponse("Unauthorized", 401);
-                    }
+                    return errorResponse("Unauthorized", 401);
                 }
 
                 let parsedRequest = {};
@@ -172,68 +170,53 @@ export const createServer = (
                     },
                 });
             }
-            if (matchedRoute?.name === "/[...404]" || !matchedRoute) {
-                if (new URL(req.url).pathname.startsWith("/api")) {
-                    return errorResponse("Route not found", 404);
+
+            if (new URL(req.url).pathname.startsWith("/api")) {
+                return errorResponse("Route not found", 404);
+            }
+
+            // Proxy response from Vite at localhost:5173 if in development mode
+            if (isProd) {
+                let file = Bun.file("./pages/dist/index.html");
+                if (new URL(req.url).pathname.startsWith("/assets")) {
+                    file = Bun.file(`./pages/dist${new URL(req.url).pathname}`);
                 }
 
-                // Proxy response from Vite at localhost:5173 if in development mode
-                if (isProd) {
-                    if (new URL(req.url).pathname.startsWith("/assets")) {
-                        const file = Bun.file(
-                            `./pages/dist${new URL(req.url).pathname}`,
-                        );
-
-                        // Serve from pages/dist/assets
-                        if (await file.exists()) {
-                            return clientResponse(file, 200, {
-                                "Content-Type": file.type,
-                            });
-                        }
-                        return errorResponse("Asset not found", 404);
-                    }
-                    if (new URL(req.url).pathname.startsWith("/api")) {
-                        return errorResponse("Route not found", 404);
-                    }
-
-                    const file = Bun.file("./pages/dist/index.html");
-
-                    // Serve from pages/dist
+                // Serve from pages/dist/assets
+                if (await file.exists()) {
                     return clientResponse(file, 200, {
                         "Content-Type": file.type,
                     });
                 }
-                const proxy = await fetch(
-                    req.url.replace(
+                return errorResponse("Asset not found", 404);
+            }
+
+            const proxy = await fetch(
+                req.url.replace(config.http.base_url, "http://localhost:5173"),
+            ).catch(async (e) => {
+                await logger.logError(
+                    LogLevel.ERROR,
+                    "Server.Proxy",
+                    e as Error,
+                );
+                await logger.log(
+                    LogLevel.ERROR,
+                    "Server.Proxy",
+                    `The development Vite server is not running or the route is not found: ${req.url.replace(
                         config.http.base_url,
                         "http://localhost:5173",
-                    ),
-                ).catch(async (e) => {
-                    await logger.logError(
-                        LogLevel.ERROR,
-                        "Server.Proxy",
-                        e as Error,
-                    );
-                    await logger.log(
-                        LogLevel.ERROR,
-                        "Server.Proxy",
-                        `The development Vite server is not running or the route is not found: ${req.url.replace(
-                            config.http.base_url,
-                            "http://localhost:5173",
-                        )}`,
-                    );
-                    return errorResponse("Route not found", 404);
-                });
-
-                if (
-                    proxy.status !== 404 &&
-                    !(await proxy.clone().text()).includes("404 Not Found")
-                ) {
-                    return proxy;
-                }
-
+                    )}`,
+                );
                 return errorResponse("Route not found", 404);
+            });
+
+            if (
+                proxy.status !== 404 &&
+                !(await proxy.clone().text()).includes("404 Not Found")
+            ) {
+                return proxy;
             }
+
             return errorResponse("Route not found", 404);
         },
     });

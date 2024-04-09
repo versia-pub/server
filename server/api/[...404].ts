@@ -17,5 +17,5 @@ export const meta = applyConfig({
  * Default catch-all route, returns a 404 error.
  */
 export default apiRoute(() => {
-    return errorResponse("This API route does not exist", 404);
+    return errorResponse("Route not found", 404);
 });

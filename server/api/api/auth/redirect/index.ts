@@ -8,7 +8,7 @@ export const meta = applyConfig({
         max: 4,
         duration: 60,
     },
-    route: "/auth/redirect",
+    route: "/api/auth/redirect",
     auth: {
         required: false,
     },

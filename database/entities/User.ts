@@ -262,7 +262,6 @@ export const createNewLocalUser = async (data: {
             avatar: data.avatar ?? config.defaults.avatar,
             header: data.header ?? config.defaults.avatar,
             isAdmin: data.admin ?? false,
-            uri: "",
             publicKey: keys.public_key,
             privateKey: keys.private_key,
             source: {
@@ -273,20 +272,13 @@ export const createNewLocalUser = async (data: {
                 fields: [],
             },
         },
+        include: userRelations,
     });
 
     // Add to Meilisearch
     await addUserToMeilisearch(user);
 
-    return await client.user.update({
-        where: {
-            id: user.id,
-        },
-        data: {
-            uri: new URL(`/users/${user.id}`, config.http.base_url).toString(),
-        },
-        include: userRelations,
-    });
+    return user;
 };
 
 /**
@@ -408,7 +400,9 @@ export const userToAPI = (
         username: user.username,
         display_name: user.displayName,
         note: user.note,
-        url: user.uri,
+        url:
+            user.uri ||
+            new URL(`/@${user.username}`, config.http.base_url).toString(),
         avatar: getAvatarUrl(user, config),
         header: getHeaderUrl(user, config),
         locked: user.isLocked,
@@ -458,7 +452,7 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
     return {
         id: user.id,
         type: "User",
-        uri: user.uri,
+        uri: user.uri || "",
         bio: [
             {
                 content: user.note,
