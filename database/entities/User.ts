@@ -11,6 +11,7 @@ import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
 import { getUrl } from "./Attachment";
+import { createNewRelationship } from "./Relationship";
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -57,6 +58,72 @@ export const getFromRequest = async (req: Request): Promise<AuthData> => {
     const token = req.headers.get("Authorization")?.split(" ")[1] || "";
 
     return { user: await retrieveUserFromToken(token), token };
+};
+
+export const followUser = async (
+    follower: User,
+    followee: User,
+    reblogs = false,
+    notify = false,
+    languages: string[] = [],
+) => {
+    const relationship = await client.relationship.update({
+        where: { id: follower.id },
+        data: {
+            following: true,
+            showingReblogs: reblogs,
+            notifying: notify,
+            languages: languages,
+        },
+    });
+
+    if (follower.instanceId === followee.instanceId) {
+        // Notify the user that their post has been favourited
+        await client.notification.create({
+            data: {
+                accountId: follower.id,
+                type: "follow",
+                notifiedId: followee.id,
+            },
+        });
+    } else {
+        // TODO: Add database jobs for federating this
+    }
+
+    return relationship;
+};
+
+export const followRequestUser = async (
+    follower: User,
+    followee: User,
+    reblogs = false,
+    notify = false,
+    languages: string[] = [],
+) => {
+    const relationship = await client.relationship.update({
+        where: { id: follower.id },
+        data: {
+            requested: true,
+            showingReblogs: reblogs,
+            notifying: notify,
+            languages: languages,
+        },
+    });
+
+    if (follower.instanceId === followee.instanceId) {
+        // Notify the user that their post has been favourited
+        await client.notification.create({
+            data: {
+                accountId: follower.id,
+                type: "follow_request",
+                notifiedId: followee.id,
+            },
+        });
+    } else {
+        // TODO: Add database jobs for federating this
+    }
+
+    return relationship;
 };
 
 export const fetchRemoteUser = async (uri: string) => {
@@ -267,12 +334,33 @@ export const getRelationshipToOtherUser = async (
     user: UserWithRelations,
     other: User,
 ) => {
-    return await client.relationship.findFirst({
+    const relationship = await client.relationship.findFirst({
         where: {
             ownerId: user.id,
             subjectId: other.id,
         },
     });
+
+    if (!relationship) {
+        // Create new relationship
+
+        const newRelationship = await createNewRelationship(user, other);
+
+        await client.user.update({
+            where: { id: user.id },
+            data: {
+                relationships: {
+                    connect: {
+                        id: newRelationship.id,
+                    },
+                },
+            },
+        });
+
+        return newRelationship;
+    }
+
+    return relationship;
 };
 
 /**

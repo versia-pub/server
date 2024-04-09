@@ -5,7 +5,11 @@ import {
     createNewRelationship,
     relationshipToAPI,
 } from "~database/entities/Relationship";
-import { getRelationshipToOtherUser } from "~database/entities/User";
+import {
+    followRequestUser,
+    followUser,
+    getRelationshipToOtherUser,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -53,47 +57,25 @@ export default apiRoute<{
     // Check if already following
     let relationship = await getRelationshipToOtherUser(self, user);
 
-    if (!relationship) {
-        // Create new relationship
-
-        const newRelationship = await createNewRelationship(self, user);
-
-        await client.user.update({
-            where: { id: self.id },
-            data: {
-                relationships: {
-                    connect: {
-                        id: newRelationship.id,
-                    },
-                },
-            },
-        });
-
-        relationship = newRelationship;
-    }
-
     if (!relationship.following) {
-        relationship.following = true;
+        if (user.isLocked) {
+            relationship = await followRequestUser(
+                self,
+                user,
+                reblogs,
+                notify,
+                languages,
+            );
+        } else {
+            relationship = await followUser(
+                self,
+                user,
+                reblogs,
+                notify,
+                languages,
+            );
+        }
     }
-    if (reblogs) {
-        relationship.showingReblogs = true;
-    }
-    if (notify) {
-        relationship.notifying = true;
-    }
-    if (languages) {
-        relationship.languages = languages;
-    }
-
-    await client.relationship.update({
-        where: { id: relationship.id },
-        data: {
-            following: true,
-            showingReblogs: reblogs ?? false,
-            notifying: notify ?? false,
-            languages: languages ?? [],
-        },
-    });
 
     return jsonResponse(relationshipToAPI(relationship));
 });
