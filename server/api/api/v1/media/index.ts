@@ -77,15 +77,16 @@ export default apiRoute<{
         ? await sharp(await file.arrayBuffer()).metadata()
         : null;
 
-    const blurhash = isImage
-        ? encode(
-              new Uint8ClampedArray(await file.arrayBuffer()),
-              metadata?.width ?? 0,
-              metadata?.height ?? 0,
-              4,
-              4,
-          )
-        : null;
+    const blurhash =
+        isImage && metadata?.width && metadata?.height
+            ? encode(
+                  new Uint8ClampedArray(await file.arrayBuffer()),
+                  metadata?.width ?? 0,
+                  metadata?.height ?? 0,
+                  4,
+                  4,
+              )
+            : null;
 
     let url = "";
 
