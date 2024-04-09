@@ -36,7 +36,7 @@ await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
 // Copy generated Prisma client to dist
 await $`mkdir -p dist/node_modules/@prisma`;
 await $`cp -r ${process.cwd()}/node_modules/@prisma dist/node_modules/`;
-await $`cp -r ${process.cwd()}/node_modules/.prisma dist/node_modules`;
+//await $`cp -r ${process.cwd()}/node_modules/.prisma dist/node_modules`;
 await $`mkdir -p dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
 await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;

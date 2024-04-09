@@ -44,9 +44,19 @@ export interface Entity {
     created_at: string;
     uri: string;
     type: string;
+    extensions?: {
+        "org.lysand:custom_emojis"?: {
+            emojis: Emoji[];
+        };
+        [key: string]: object | undefined;
+    };
 }
 
-export interface Publication {
+export interface InlineCustomEmojis {
+    [key: string]: Emoji;
+}
+
+export interface Publication extends Entity {
     type: "Note" | "Patch";
     author: string;
     content?: ContentFormat;
@@ -57,6 +67,19 @@ export interface Publication {
     subject?: string;
     is_sensitive?: boolean;
     visibility: Visibility;
+    extensions?: Entity["extensions"] & {
+        "org.lysand:reactions"?: {
+            reactions: string;
+        };
+        "org.lysand:polls"?: {
+            poll: {
+                options: ContentFormat[];
+                votes: number[];
+                multiple_choice?: boolean;
+                expires_at: string;
+            };
+        };
+    };
 }
 
 export enum Visibility {
@@ -96,6 +119,9 @@ export interface User extends Entity {
     dislikes: string;
     inbox: string;
     outbox: string;
+    extensions?: Entity["extensions"] & {
+        "org.lysand:vanity"?: VanityExtension;
+    };
 }
 
 export interface Field {

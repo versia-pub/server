@@ -18,8 +18,9 @@ import { client } from "~database/datasource";
 import type { APIAttachment } from "~types/entities/attachment";
 import type { APIStatus } from "~types/entities/status";
 import type { LysandPublication, Note } from "~types/lysand/Object";
+import type * as Lysand from "lysand-types";
 import { applicationToAPI } from "./Application";
-import { attachmentToAPI } from "./Attachment";
+import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
 import { fetchRemoteUser, parseMentionsUris, userToAPI } from "./User";
@@ -533,78 +534,33 @@ export const statusToAPI = async (
     };
 };
 
-/* export const statusToActivityPub = async (
-	status: StatusWithRelations
-	// user?: UserWithRelations
-): Promise<any> => {
-	// replace any with your ActivityPub type
-	return {
-		"@context": [
-			"https://www.w3.org/ns/activitystreams",
-			"https://mastodon.social/schemas/litepub-0.1.jsonld",
-		],
-		id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
-		type: "Note",
-		summary: status.spoilerText,
-		content: status.content,
-		published: new Date(status.createdAt).toISOString(),
-		url: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}`,
-		attributedTo: `${config.http.base_url}/users/${status.authorId}`,
-		to: ["https://www.w3.org/ns/activitystreams#Public"],
-		cc: [], // add recipients here
-		sensitive: status.sensitive,
-		attachment: (status.attachments ?? []).map(
-			a => attachmentToActivityPub(a) as ActivityPubAttachment // replace with your function
-		),
-		tag: [], // add tags here
-		replies: {
-			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/replies`,
-			type: "Collection",
-			totalItems: status._count.replies,
-		},
-		likes: {
-			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/likes`,
-			type: "Collection",
-			totalItems: status._count.likes,
-		},
-		shares: {
-			id: `${config.http.base_url}/users/${status.authorId}/statuses/${status.id}/shares`,
-			type: "Collection",
-			totalItems: status._count.reblogs,
-		},
-		inReplyTo: status.inReplyToPostId
-			? `${config.http.base_url}/users/${status.inReplyToPost?.authorId}/statuses/${status.inReplyToPostId}`
-			: null,
-		visibility: "public", // adjust as needed
-		// add more fields as needed
-	};
-}; */
-
-export const statusToLysand = (status: StatusWithRelations): Note => {
+export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
     return {
         type: "Note",
         created_at: new Date(status.createdAt).toISOString(),
         id: status.id,
         author: status.authorId,
-        uri: new URL(`/statuses/${status.id}`, config.http.base_url).toString(),
-        contents: [
-            {
+        uri: new URL(
+            `/objects/note/${status.id}`,
+            config.http.base_url,
+        ).toString(),
+        content: {
+            "text/html": {
                 content: status.content,
-                content_type: "text/html",
             },
-            {
-                // Content converted to plaintext
+            "text/plain": {
                 content: htmlToText(status.content),
-                content_type: "text/plain",
             },
-        ],
-        // TODO: Add attachments
-        attachments: [],
+        },
+        attachments: status.attachments.map((attachment) =>
+            attachmentToLysand(attachment),
+        ),
         is_sensitive: status.sensitive,
         mentions: status.mentions.map((mention) => mention.uri || ""),
-        quotes: status.quotingPost ? [status.quotingPost.uri || ""] : [],
-        replies_to: status.inReplyToPostId ? [status.inReplyToPostId] : [],
+        quotes: status.quotingPost?.uri ?? undefined,
+        replies_to: status.inReplyToPost?.uri ?? undefined,
         subject: status.spoilerText,
+        visibility: status.visibility as Lysand.Visibility,
         extensions: {
             "org.lysand:custom_emojis": {
                 emojis: status.emojis.map((emoji) => emojiToLysand(emoji)),

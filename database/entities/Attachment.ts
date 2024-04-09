@@ -3,6 +3,7 @@ import type { Config } from "config-manager";
 import { MediaBackendType } from "media-manager";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIAttachment } from "~types/entities/attachment";
+import type * as Lysand from "lysand-types";
 
 export const attachmentToAPI = (
     attachment: Attachment,
@@ -54,6 +55,28 @@ export const attachmentToAPI = (
         },
         description: attachment.description,
         blurhash: attachment.blurhash,
+    };
+};
+
+export const attachmentToLysand = (
+    attachment: Attachment,
+): Lysand.ContentFormat => {
+    return {
+        [attachment.mime_type]: {
+            content: attachment.url,
+            blurhash: attachment.blurhash ?? undefined,
+            description: attachment.description ?? undefined,
+            duration: attachment.duration ?? undefined,
+            fps: attachment.fps ?? undefined,
+            height: attachment.height ?? undefined,
+            size: attachment.size ?? undefined,
+            hash: attachment.sha256
+                ? {
+                      sha256: attachment.sha256,
+                  }
+                : undefined,
+            width: attachment.width ?? undefined,
+        },
     };
 };
 

@@ -1,7 +1,7 @@
 import type { Emoji } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { APIEmoji } from "~types/entities/emoji";
-import type { Emoji as LysandEmoji } from "~types/lysand/extensions/org.lysand/custom_emojis";
+import type * as Lysand from "lysand-types";
 
 /**
  * Represents an emoji entity in the database.
@@ -29,7 +29,7 @@ export const parseEmojis = async (text: string): Promise<Emoji[]> => {
     });
 };
 
-export const addEmojiIfNotExists = async (emoji: LysandEmoji) => {
+export const addEmojiIfNotExists = async (emoji: Lysand.Emoji) => {
     const existingEmoji = await client.emoji.findFirst({
         where: {
             shortcode: emoji.name,
@@ -43,8 +43,8 @@ export const addEmojiIfNotExists = async (emoji: LysandEmoji) => {
         data: {
             shortcode: emoji.name,
             url: emoji.url[0].content,
-            alt: emoji.alt || null,
-            content_type: emoji.url[0].content_type,
+            alt: emoji.alt || emoji.url[0].description || undefined,
+            content_type: Object.keys(emoji.url)[0],
             visible_in_picker: true,
         },
     });
@@ -64,34 +64,15 @@ export const emojiToAPI = (emoji: Emoji): APIEmoji => {
     };
 };
 
-export const emojiToLysand = (emoji: Emoji): LysandEmoji => {
+export const emojiToLysand = (emoji: Emoji): Lysand.Emoji => {
     return {
         name: emoji.shortcode,
-        url: [
-            {
+        url: {
+            [emoji.content_type]: {
                 content: emoji.url,
-                content_type: emoji.content_type,
+                description: emoji.alt || undefined,
             },
-        ],
-        alt: emoji.alt || undefined,
-    };
-};
-
-/**
- * Converts the emoji to an ActivityPub object.
- * @returns The ActivityPub object.
- */
-export const emojiToActivityPub = (emoji: Emoji): object => {
-    // replace any with your ActivityPub Emoji type
-    return {
-        type: "Emoji",
-        name: `:${emoji.shortcode}:`,
-        updated: new Date().toISOString(),
-        icon: {
-            type: "Image",
-            url: emoji.url,
-            mediaType: emoji.content_type,
-            alt: emoji.alt || undefined,
         },
+        alt: emoji.alt || undefined,
     };
 };

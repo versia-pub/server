@@ -1,14 +1,14 @@
 import type { Like } from "@prisma/client";
 import { config } from "config-manager";
 import { client } from "~database/datasource";
-import type { Like as LysandLike } from "~types/lysand/Object";
 import type { StatusWithRelations } from "./Status";
 import type { UserWithRelations } from "./User";
+import type * as Lysand from "lysand-types";
 
 /**
  * Represents a Like entity in the database.
  */
-export const toLysand = (like: Like): LysandLike => {
+export const toLysand = (like: Like): Lysand.Like => {
     return {
         id: like.id,
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
@@ -17,7 +17,10 @@ export const toLysand = (like: Like): LysandLike => {
         created_at: new Date(like.createdAt).toISOString(),
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
         object: (like as any).liked?.uri,
-        uri: new URL(`/actions/${like.id}`, config.http.base_url).toString(),
+        uri: new URL(
+            `/objects/like/${like.id}`,
+            config.http.base_url,
+        ).toString(),
     };
 };
 

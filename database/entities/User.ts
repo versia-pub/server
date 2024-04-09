@@ -6,11 +6,10 @@ import { htmlToText } from "html-to-text";
 import { client } from "~database/datasource";
 import type { APIAccount } from "~types/entities/account";
 import type { APISource } from "~types/entities/source";
-import type { LysandUser } from "~types/lysand/Object";
+import type * as Lysand from "lysand-types";
 import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
-import { getUrl } from "./Attachment";
 import { createNewRelationship } from "./Relationship";
 
 export interface AuthData {
@@ -147,7 +146,7 @@ export const fetchRemoteUser = async (uri: string) => {
         },
     });
 
-    const data = (await response.json()) as Partial<LysandUser>;
+    const data = (await response.json()) as Partial<Lysand.User>;
 
     if (
         !(
@@ -155,9 +154,9 @@ export const fetchRemoteUser = async (uri: string) => {
             data.username &&
             data.uri &&
             data.created_at &&
-            data.disliked &&
+            data.dislikes &&
             data.featured &&
-            data.liked &&
+            data.likes &&
             data.followers &&
             data.following &&
             data.inbox &&
@@ -178,9 +177,9 @@ export const fetchRemoteUser = async (uri: string) => {
             uri: data.uri,
             createdAt: new Date(data.created_at),
             endpoints: {
-                disliked: data.disliked,
+                dislikes: data.dislikes,
                 featured: data.featured,
-                liked: data.liked,
+                likes: data.likes,
                 followers: data.followers,
                 following: data.following,
                 inbox: data.inbox,
@@ -444,7 +443,7 @@ export const userToAPI = (
 /**
  * Should only return local users
  */
-export const userToLysand = (user: UserWithRelations): LysandUser => {
+export const userToLysand = (user: UserWithRelations): Lysand.User => {
     if (user.instanceId !== null) {
         throw new Error("Cannot convert remote user to Lysand format");
     }
@@ -452,29 +451,28 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
     return {
         id: user.id,
         type: "User",
-        uri: user.uri || "",
-        bio: [
-            {
+        uri:
+            user.uri ||
+            new URL(`/users/${user.id}`, config.http.base_url).toString(),
+        bio: {
+            "text/html": {
                 content: user.note,
-                content_type: "text/html",
             },
-            {
+            "text/plain": {
                 content: htmlToText(user.note),
-                content_type: "text/plain",
             },
-        ],
+        },
         created_at: new Date(user.createdAt).toISOString(),
-
-        disliked: new URL(
-            `/users/${user.id}/disliked`,
+        dislikes: new URL(
+            `/users/${user.id}/dislikes`,
             config.http.base_url,
         ).toString(),
         featured: new URL(
             `/users/${user.id}/featured`,
             config.http.base_url,
         ).toString(),
-        liked: new URL(
-            `/users/${user.id}/liked`,
+        likes: new URL(
+            `/users/${user.id}/likes`,
             config.http.base_url,
         ).toString(),
         followers: new URL(
@@ -495,40 +493,35 @@ export const userToLysand = (user: UserWithRelations): LysandUser => {
         ).toString(),
         indexable: false,
         username: user.username,
-        avatar: [
-            {
-                content: getAvatarUrl(user, config) || "",
-                content_type: `image/${user.avatar.split(".")[1]}`,
+        avatar: {
+            [user.avatar.split(".")[1]]: {
+                content: getAvatarUrl(user, config),
             },
-        ],
-        header: [
-            {
-                content: getHeaderUrl(user, config) || "",
-                content_type: `image/${user.header.split(".")[1]}`,
+        },
+        header: {
+            [user.header.split(".")[1]]: {
+                content: getHeaderUrl(user, config),
             },
-        ],
+        },
         display_name: user.displayName,
+
         fields: (user.source as APISource).fields.map((field) => ({
-            key: [
-                {
+            key: {
+                "text/html": {
                     content: field.name,
-                    content_type: "text/html",
                 },
-                {
+                "text/plain": {
                     content: htmlToText(field.name),
-                    content_type: "text/plain",
                 },
-            ],
-            value: [
-                {
+            },
+            value: {
+                "text/html": {
                     content: field.value,
-                    content_type: "text/html",
                 },
-                {
+                "text/plain": {
                     content: htmlToText(field.value),
-                    content_type: "text/plain",
                 },
-            ],
+            },
         })),
         public_key: {
             actor: new URL(
