@@ -16,7 +16,7 @@ case "$1" in
   "start")
     # Migrate the database and run
     /bin/bash /app/entrypoint.sh prisma migrate deploy
-    NITRO_PORT=5173 bun run dist/frontend/server/index.mjs & NODE_ENV=production bun run dist/index.js --prod
+    NITRO_PORT=5173 bun run ./frontend/server/index.mjs & NODE_ENV=production bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI
