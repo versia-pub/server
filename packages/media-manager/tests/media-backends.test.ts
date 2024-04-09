@@ -148,7 +148,7 @@ describe("S3MediaBackend", () => {
         expect(result.uploadedFile).toEqual(mockFile);
         expect(result.hash).toHaveLength(64);
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
-            mockFile.name,
+            expect.stringContaining(mockFile.name),
             expect.any(ReadableStream),
             { size: mockFile.size },
         );
@@ -236,7 +236,7 @@ describe("LocalMediaBackend", () => {
         const result = await localMediaBackend.addFile(mockFile);
 
         expect(result.uploadedFile).toEqual(mockFile);
-        expect(result.path).toEqual("./uploads/megamind.png");
+        expect(result.path).toEqual(expect.stringContaining("megamind.png"));
         expect(result.hash).toHaveLength(64);
     });
 

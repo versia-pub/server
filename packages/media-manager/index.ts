@@ -10,7 +10,7 @@ export enum MediaBackendType {
 
 interface UploadedFileMetadata {
     uploadedFile: File;
-    path?: string;
+    path: string;
     hash: string;
 }
 
@@ -115,7 +115,7 @@ export class LocalMediaBackend extends MediaBackend {
         const hash = await new MediaHasher().getMediaHash(convertedFile);
 
         const newFile = Bun.file(
-            `${this.config.media.local_uploads_folder}/${hash}`,
+            `${this.config.media.local_uploads_folder}/${hash}/${convertedFile.name}`,
         );
 
         if (await newFile.exists()) {
@@ -126,7 +126,7 @@ export class LocalMediaBackend extends MediaBackend {
 
         return {
             uploadedFile: convertedFile,
-            path: `./uploads/${convertedFile.name}`,
+            path: `${hash}/${convertedFile.name}`,
             hash: hash,
         };
     }
@@ -186,7 +186,7 @@ export class S3MediaBackend extends MediaBackend {
         const hash = await new MediaHasher().getMediaHash(convertedFile);
 
         await this.s3Client.putObject(
-            convertedFile.name,
+            `${hash}/${convertedFile.name}`,
             convertedFile.stream(),
             {
                 size: convertedFile.size,
@@ -195,6 +195,7 @@ export class S3MediaBackend extends MediaBackend {
 
         return {
             uploadedFile: convertedFile,
+            path: `${hash}/${convertedFile.name}`,
             hash: hash,
         };
     }

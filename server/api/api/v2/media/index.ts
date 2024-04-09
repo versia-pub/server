@@ -88,15 +88,19 @@ export default apiRoute<{
                         return;
                     }
 
-                    resolve(
-                        encode(
-                            new Uint8ClampedArray(buffer),
-                            metadata?.width ?? 0,
-                            metadata?.height ?? 0,
-                            4,
-                            4,
-                        ) as string,
-                    );
+                    try {
+                        resolve(
+                            encode(
+                                new Uint8ClampedArray(buffer),
+                                metadata?.width ?? 0,
+                                metadata?.height ?? 0,
+                                4,
+                                4,
+                            ) as string,
+                        );
+                    } catch {
+                        resolve(null);
+                    }
                 }))();
     });
 
