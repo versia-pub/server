@@ -88,10 +88,11 @@ export default apiRoute<{
     }
 
     // Check if username is valid
-    if (!body.username?.match(/^[a-zA-Z0-9_]+$/))
+    if (!body.username?.match(/^[a-z0-9_]+$/))
         errors.details.username.push({
             error: "ERR_INVALID",
-            description: "must only contain letters, numbers, and underscores",
+            description:
+                "must only contain lowercase letters, numbers, and underscores",
         });
 
     // Check if username doesnt match filters
