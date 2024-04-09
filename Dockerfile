@@ -10,6 +10,7 @@ FROM base AS install
 RUN mkdir -p /temp
 COPY package.json /temp
 COPY bun.lockb /temp
+COPY packages /temp
 WORKDIR /temp
 RUN bun install --frozen-lockfile
 
