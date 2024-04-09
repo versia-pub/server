@@ -107,11 +107,9 @@ if (!config) {
     throw new Error("Config not found");
 }
 
-const url = `${config.http.bind}:${config.http.bind_port}`;
-
-const instanceInfo = (await fetch(new URL("/api/v1/instance", url)).then(
-    (data) => data.json(),
-)) as APIInstance & {
+const instanceInfo = (await fetch(
+    new URL("/api/v1/instance", config.http.url),
+).then((data) => data.json())) as APIInstance & {
     tos_url: string;
 };
 

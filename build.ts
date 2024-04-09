@@ -49,6 +49,6 @@ await $`cp -r ${process.cwd()}/node_modules/sharp/build/ .`;
 await $`cp -r packages/frontend/.output dist/frontend`;
 
 // Copy the Bee Movie script from pages
-await $`cp ${process.cwd()}/pages/beemovie.txt dist/beemovie.txt`;
+await $`cp beemovie.txt dist/beemovie.txt`;
 
 console.log("Built!");
