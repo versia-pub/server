@@ -206,7 +206,7 @@ export const createNewStatus = async (data: {
     emojis?: Emoji[];
     content_type?: string;
     uri?: string;
-    mentions?: User[];
+    mentions?: UserWithRelations[];
     media_attachments?: string[];
     reply?: {
         status: Status;
@@ -258,6 +258,34 @@ export const createNewStatus = async (data: {
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");
+    }
+
+    // Turn each @username or @username@instance mention into an anchor link
+    for (const mention of mentions) {
+        const matches = data.content.match(
+            new RegExp(
+                `@${mention.username}(@${mention.instance?.base_url})?`,
+                "g",
+            ),
+        );
+
+        if (!matches) continue;
+
+        for (const match of matches) {
+            formattedContent = formattedContent.replace(
+                new RegExp(
+                    `@${mention.username}(@${mention.instance?.base_url})?`,
+                    "g",
+                ),
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${
+                    mention.uri ||
+                    new URL(
+                        `/@${mention.username}`,
+                        config.http.base_url,
+                    ).toString()
+                }">${match}</a>`,
+            );
+        }
     }
 
     const status = await client.status.create({
