@@ -36,8 +36,6 @@ RUN apt-get update && apt-get install -y libvips
 # Create app directory
 RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
-# Sharp
-COPY --from=build /temp/build /app/build
 COPY entrypoint.sh /app
 
 LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
