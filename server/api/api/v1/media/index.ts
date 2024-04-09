@@ -77,16 +77,28 @@ export default apiRoute<{
         ? await sharp(await file.arrayBuffer()).metadata()
         : null;
 
-    const blurhash =
-        isImage && metadata?.width && metadata?.height
-            ? encode(
-                  new Uint8ClampedArray(await file.arrayBuffer()),
-                  metadata?.width ?? 0,
-                  metadata?.height ?? 0,
-                  4,
-                  4,
-              )
-            : null;
+    const blurhash = await new Promise<string | null>((resolve) => {
+        (async () =>
+            sharp(await file.arrayBuffer())
+                .raw()
+                .ensureAlpha()
+                .toBuffer((err, buffer) => {
+                    if (err) {
+                        resolve(null);
+                        return;
+                    }
+
+                    resolve(
+                        encode(
+                            new Uint8ClampedArray(buffer),
+                            metadata?.width ?? 0,
+                            metadata?.height ?? 0,
+                            4,
+                            4,
+                        ) as string,
+                    );
+                }))();
+    });
 
     let url = "";
 
