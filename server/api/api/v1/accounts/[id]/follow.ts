@@ -62,6 +62,7 @@ export default apiRoute<{
             relationship = await followRequestUser(
                 self,
                 user,
+                relationship.id,
                 reblogs,
                 notify,
                 languages,
@@ -70,6 +71,7 @@ export default apiRoute<{
             relationship = await followUser(
                 self,
                 user,
+                relationship.id,
                 reblogs,
                 notify,
                 languages,

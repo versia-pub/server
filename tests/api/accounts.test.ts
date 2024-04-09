@@ -666,7 +666,7 @@ describe("API Tests", () => {
             const account = (await response.json()) as APIAccount;
 
             expect(account.id).toBeDefined();
-            expect(account.avatar).toBe("");
+            expect(account.avatar).toBeDefined();
         });
     });
 

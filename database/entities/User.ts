@@ -63,12 +63,13 @@ export const getFromRequest = async (req: Request): Promise<AuthData> => {
 export const followUser = async (
     follower: User,
     followee: User,
+    relationshipId: string,
     reblogs = false,
     notify = false,
     languages: string[] = [],
 ) => {
     const relationship = await client.relationship.update({
-        where: { id: follower.id },
+        where: { id: relationshipId },
         data: {
             following: true,
             showingReblogs: reblogs,
@@ -96,12 +97,13 @@ export const followUser = async (
 export const followRequestUser = async (
     follower: User,
     followee: User,
+    relationshipId: string,
     reblogs = false,
     notify = false,
     languages: string[] = [],
 ) => {
     const relationship = await client.relationship.update({
-        where: { id: follower.id },
+        where: { id: relationshipId },
         data: {
             requested: true,
             showingReblogs: reblogs,
