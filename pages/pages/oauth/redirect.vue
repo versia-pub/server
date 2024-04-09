@@ -13,7 +13,7 @@
                         account?</h1>
                     <div class="rounded-sm ring-2 ring-black/10 px-4 py-2 w-full">
                         <h2 class="font-bold">{{ application }}</h2>
-                        <a class="underline text-purple-700">{{ website }}</a>
+                        <a :href="website" class="underline text-purple-700">{{ website }}</a>
                     </div>
                 </div>
 

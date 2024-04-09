@@ -6,7 +6,7 @@
                 <div class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
                     style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)" />
             </div>
-            <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+            <div class="mx-auto max-w-lg py-32 sm:py-48 lg:py-56">
                 <div class="hidden sm:mb-8 sm:flex sm:justify-center">
                     <div
                         class="relative rounded px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
@@ -25,6 +25,26 @@
                             class="rounded-md w-full ring-indigo-600 ring-2 bg-white px-3.5 py-2.5 text-sm font-semibold text-indigo-500 shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">About
                             the Lysand Protocol</a>
                     </div>
+
+                    <p class="mt-6 text-lg leading-8 text-gray-600">Here are some recommended clients:</p>
+                    <ul class="w-full flex flex-col gap-3 mt-4">
+                        <li v-for="client of recommendedClients" :key="client.name" class="w-full">
+                            <a :href="client.link" class="rounded-sm ring-2 ring-black/10 px-4 py-2 w-full flex flex-row gap-3 items-center">
+                                <img :src="client.icon" :alt="client.name" class="h-10 w-10" />
+                                <div class="flex flex-col justify-between items-start">
+                                    <h2 class="font-bold">{{ client.name }}</h2>
+                                    <a :href="client.link" class="underline text-purple-700">{{ client.link }}</a>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                    <p class="mt-6 text-lg leading-8 text-gray-600">
+                        Many other clients exist, but <strong class="font-bold">they have not been tested for compatibility</strong>. Bug reports are nevertheless welcome.
+                    </p>
+
+                    <p class="mt-6 text-lg leading-8 text-gray-600">
+                        Found a problem? Report it on <a href="https://github.com/lysand-org/lysand/issues/new/choose" class="underline text-purple-700">the issue tracker</a>.
+                    </p>
                 </div>
             </div>
             <div class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
@@ -37,8 +57,19 @@
 </template>
   
 <script setup>
-import { ref } from "vue";
-
 const location = window.location;
 const version = __VERSION__;
+
+const recommendedClients = [
+    {
+        name: "Soapbox",
+        icon: "https://soapbox.pub/assets/logo.svg",
+        link: "https://fe.soapbox.pub/",
+    },
+    {
+        name: "Megalodon",
+        icon: "https://sk22.github.io/megalodon/mastodon/src/main/res/mipmap-xhdpi/ic_launcher_round.png",
+        link: "https://sk22.github.io/megalodon/",
+    },
+];
 </script>
