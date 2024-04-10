@@ -95,6 +95,7 @@ export const followRequestUser = async (
         const response = await fetch(request);
 
         if (!response.ok) {
+            console.error(response.text());
             throw new Error(
                 `Failed to federate follow request from ${follower.id} to ${followee.uri}`,
             );

@@ -206,6 +206,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 const response = await fetch(request);
 
                 if (!response.ok) {
+                    console.error(response.text());
                     throw new Error(
                         `Failed to federate follow accept from ${user.id} to ${account.uri}`,
                     );
