@@ -52,8 +52,21 @@ export default apiRoute<{
         return errorResponse("Account not found", 404);
     }
 
-    return errorResponse(
-        "Acct parameter is not of format username@domain.com or @username@domain.com",
-        400,
-    );
+    let username = acct;
+    if (username.startsWith("@")) {
+        username = username.slice(1);
+    }
+
+    const account = await client.user.findFirst({
+        where: {
+            username,
+        },
+        include: userRelations,
+    });
+
+    if (account) {
+        return jsonResponse(userToAPI(account));
+    }
+
+    return errorResponse(`Account with username ${username} not found"`, 404);
 });
