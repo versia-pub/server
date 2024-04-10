@@ -59,6 +59,7 @@ export const rawRoutes = {
         "./server/api/api/v1/accounts/[id]/unfollow",
     "/api/v1/accounts/[id]/unmute": "./server/api/api/v1/accounts/[id]/unmute",
     "/api/v1/accounts/[id]/unpin": "./server/api/api/v1/accounts/[id]/unpin",
+    "/api/v1/accounts/lookup": "./server/api/api/v1/accounts/lookup/index",
     "/api/v1/follow_requests/[account_id]/authorize":
         "./server/api/api/v1/follow_requests/[account_id]/authorize",
     "/api/v1/follow_requests/[account_id]/reject":
