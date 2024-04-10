@@ -14,6 +14,7 @@ import { getUrl } from "~database/entities/Attachment";
 import { createNewLocalUser } from "~database/entities/User";
 import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
 import { config } from "~packages/config-manager";
+import { lookup } from "mime-types";
 
 const args = process.argv;
 
@@ -1259,10 +1260,7 @@ const cliBuilder = new CliBuilder([
             }
 
             // Add the emoji
-            const content_type = `image/${url
-                .split(".")
-                .pop()
-                ?.replace("jpg", "jpeg")}}`;
+            const content_type = lookup(newUrl) || "application/octet-stream";
 
             const emoji = await client.emoji.create({
                 data: {
