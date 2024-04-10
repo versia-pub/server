@@ -47,6 +47,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         include: userRelations,
     });
 
+    if (!contactAccount) {
+        throw new Error("No admin user found");
+    }
+
     // Get user that have posted once in the last 30 days
     const monthlyActiveUsers = await client.user.count({
         where: {
@@ -90,7 +94,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                     "text/plain",
                     "text/markdown",
                     "text/html",
-                    "text/x.misskeymarkdown",
                 ],
             },
         },
@@ -108,18 +111,18 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             status_count: statusCount,
             user_count: userCount,
         },
-        thumbnail: "",
+        thumbnail: config.instance.logo,
         tos_url: config.signups.tos_url,
-        title: "Test Instance",
-        uri: new URL(config.http.base_url).hostname,
+        title: config.instance.name,
+        uri: config.http.base_url,
         urls: {
             streaming_api: "",
         },
-        version: `4.2.0+glitch (compatible; Lysand ${version}})`,
+        version: `4.3.0+glitch (compatible; Lysand ${version}})`,
         max_toot_chars: config.validation.max_note_size,
-        /* pleroma: {
+        pleroma: {
             metadata: {
-                // account_activation_required: false,
+                account_activation_required: false,
                 features: [
                     "pleroma_api",
                     "akkoma_api",
@@ -138,9 +141,41 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                     // "pleroma_emoji_reactions",
                     // "exposable_reactions",
                     // "profile_directory",
-                    // "custom_emoji_reactions",
+                    "custom_emoji_reactions",
                     // "pleroma:get:main/ostatus",
                 ],
+                federation: {
+                    enabled: true,
+                    exclusions: false,
+                    mrf_policies: [],
+                    mrf_simple: {
+                        accept: [],
+                        avatar_removal: [],
+                        background_removal: [],
+                        banner_removal: [],
+                        federated_timeline_removal: [],
+                        followers_only: [],
+                        media_nsfw: [],
+                        media_removal: [],
+                        reject: [],
+                        reject_deletes: [],
+                        report_removal: [],
+                    },
+                    mrf_simple_info: {
+                        media_nsfw: {},
+                        reject: {},
+                    },
+                    quarantined_instances: [],
+                    quarantined_instances_info: {
+                        quarantined_instances: {},
+                    },
+                },
+                fields_limits: {
+                    max_fields: config.validation.max_field_count,
+                    max_remote_fields: 9999,
+                    name_length: config.validation.max_field_name_size,
+                    value_length: config.validation.max_field_value_size,
+                },
                 post_formats: [
                     "text/plain",
                     "text/html",
@@ -152,7 +187,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             stats: {
                 mau: monthlyActiveUsers,
             },
-        }, */
-        contact_account: contactAccount ? userToAPI(contactAccount) : null,
-    } as APIInstance);
+            vapid_public_key: "",
+        },
+        contact_account: userToAPI(contactAccount),
+    } satisfies APIInstance & {
+        pleroma: object;
+    });
 });

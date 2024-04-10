@@ -233,6 +233,15 @@ export interface Config {
         /** @default 30 */
         max_username_size: number;
 
+        /** @default 10 */
+        max_field_count: number;
+
+        /** @default 1000 */
+        max_field_name_size: number;
+
+        /** @default 1000 */
+        max_field_value_size: number;
+
         /** @default [".well-known","~","about","activities","api","auth","dev","inbox","internal","main","media","nodeinfo","notice","oauth","objects","proxy","push","registration","relay","settings","status","tag","users","web","search","mfa"] */
         username_blacklist: string[];
 
@@ -460,6 +469,9 @@ export const defaultConfig: Config = {
         min_poll_duration: 60,
         max_poll_duration: 1893456000,
         max_username_size: 30,
+        max_field_count: 10,
+        max_field_name_size: 1000,
+        max_field_value_size: 1000,
         username_blacklist: [
             ".well-known",
             "~",

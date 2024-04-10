@@ -151,6 +151,9 @@ max_poll_option_size = 500
 min_poll_duration = 60
 max_poll_duration = 1893456000
 max_username_size = 30
+max_field_count = 10
+max_field_name_size = 1000
+max_field_value_size = 1000
 # Forbidden usernames, defaults are from Akkoma
 username_blacklist = [
 	".well-known",

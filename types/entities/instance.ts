@@ -22,6 +22,7 @@ export interface APIInstance {
             max_characters: number;
             max_media_attachments: number;
             characters_reserved_per_url: number;
+            supported_mime_types: string[];
         };
         media_attachments: {
             supported_mime_types: string[];
