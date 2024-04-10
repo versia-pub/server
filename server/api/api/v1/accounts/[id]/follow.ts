@@ -7,7 +7,6 @@ import {
 } from "~database/entities/Relationship";
 import {
     followRequestUser,
-    followUser,
     getRelationshipToOtherUser,
 } from "~database/entities/User";
 
@@ -58,25 +57,14 @@ export default apiRoute<{
     let relationship = await getRelationshipToOtherUser(self, user);
 
     if (!relationship.following) {
-        if (user.isLocked) {
-            relationship = await followRequestUser(
-                self,
-                user,
-                relationship.id,
-                reblogs,
-                notify,
-                languages,
-            );
-        } else {
-            relationship = await followUser(
-                self,
-                user,
-                relationship.id,
-                reblogs,
-                notify,
-                languages,
-            );
-        }
+        relationship = await followRequestUser(
+            self,
+            user,
+            relationship.id,
+            reblogs,
+            notify,
+            languages,
+        );
     }
 
     return jsonResponse(relationshipToAPI(relationship));

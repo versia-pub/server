@@ -12,6 +12,7 @@ import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
 import { createNewRelationship } from "./Relationship";
 import { getBestContentType, urlToContentFormat } from "@content_types";
+import { objectToInboxRequest } from "./Federation";
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -60,40 +61,6 @@ export const getFromRequest = async (req: Request): Promise<AuthData> => {
     return { user: await retrieveUserFromToken(token), token };
 };
 
-export const followUser = async (
-    follower: User,
-    followee: User,
-    relationshipId: string,
-    reblogs = false,
-    notify = false,
-    languages: string[] = [],
-) => {
-    const relationship = await client.relationship.update({
-        where: { id: relationshipId },
-        data: {
-            following: true,
-            showingReblogs: reblogs,
-            notifying: notify,
-            languages: languages,
-        },
-    });
-
-    if (follower.instanceId === followee.instanceId) {
-        // Notify the user that their post has been favourited
-        await client.notification.create({
-            data: {
-                accountId: follower.id,
-                type: "follow",
-                notifiedId: followee.id,
-            },
-        });
-    } else {
-        // TODO: Add database jobs for federating this
-    }
-
-    return relationship;
-};
-
 export const followRequestUser = async (
     follower: User,
     followee: User,
@@ -102,27 +69,54 @@ export const followRequestUser = async (
     notify = false,
     languages: string[] = [],
 ) => {
+    const isRemote = follower.instanceId !== followee.instanceId;
+
     const relationship = await client.relationship.update({
         where: { id: relationshipId },
         data: {
-            requested: true,
+            following: isRemote ? false : !followee.isLocked,
+            requested: isRemote ? true : followee.isLocked,
             showingReblogs: reblogs,
             notifying: notify,
             languages: languages,
         },
     });
 
-    if (follower.instanceId === followee.instanceId) {
-        // Notify the user that their post has been favourited
-        await client.notification.create({
-            data: {
-                accountId: follower.id,
-                type: "follow_request",
-                notifiedId: followee.id,
-            },
-        });
+    if (isRemote) {
+        // Federate
+        // TODO: Make database job
+        const request = await objectToInboxRequest(
+            followRequestToLysand(follower, followee),
+            follower,
+            followee,
+        );
+
+        // Send request
+        const response = await fetch(request);
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to federate follow request from ${follower.id} to ${followee.uri}`,
+            );
+        }
     } else {
-        // TODO: Add database jobs for federating this
+        if (followee.isLocked) {
+            await client.notification.create({
+                data: {
+                    accountId: follower.id,
+                    type: "follow_request",
+                    notifiedId: followee.id,
+                },
+            });
+        } else {
+            await client.notification.create({
+                data: {
+                    accountId: follower.id,
+                    type: "follow",
+                    notifiedId: followee.id,
+                },
+            });
+        }
     }
 
     return relationship;
@@ -586,5 +580,70 @@ export const userToLysand = (user: UserWithRelations): Lysand.User => {
                 emojis: user.emojis.map((emoji) => emojiToLysand(emoji)),
             },
         },
+    };
+};
+
+export const followRequestToLysand = (
+    follower: User,
+    followee: User,
+): Lysand.Follow => {
+    if (follower.instanceId) {
+        throw new Error("Follower must be a local user");
+    }
+
+    if (!followee.instanceId) {
+        throw new Error("Followee must be a remote user");
+    }
+
+    if (!followee.uri) {
+        throw new Error("Followee must have a URI in database");
+    }
+
+    const id = crypto.randomUUID();
+
+    return {
+        type: "Follow",
+        id: id,
+        author: new URL(
+            `/users/${follower.id}`,
+            config.http.base_url,
+        ).toString(),
+        followee: followee.uri,
+        created_at: new Date().toISOString(),
+        uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
+    };
+};
+
+export const followAcceptToLysand = (
+    follower: User,
+    followee: User,
+): Lysand.FollowAccept => {
+    if (follower.instanceId) {
+        throw new Error("Follower must be a local user");
+    }
+
+    if (!followee.instanceId) {
+        throw new Error("Followee must be a remote user");
+    }
+
+    if (!followee.uri) {
+        throw new Error("Followee must have a URI in database");
+    }
+
+    const id = crypto.randomUUID();
+
+    return {
+        type: "FollowAccept",
+        id: id,
+        author: new URL(
+            `/users/${followee.id}`,
+            config.http.base_url,
+        ).toString(),
+        created_at: new Date().toISOString(),
+        follower: new URL(
+            `/users/${follower.id}`,
+            config.http.base_url,
+        ).toString(),
+        uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
     };
 };

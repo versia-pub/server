@@ -25,6 +25,7 @@ import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
 import { resolveUser, parseMentionsUris, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
+import { objectToInboxRequest } from "./Federation";
 
 const statusRelations = Prisma.validator<Prisma.StatusDefaultArgs>()({
     include: statusAndUserRelations,
@@ -262,7 +263,11 @@ export const federateStatus = async (status: StatusWithRelations) => {
 
     for (const user of toFederateTo) {
         // TODO: Add queue system
-        const request = await statusToInboxRequest(status, user);
+        const request = await objectToInboxRequest(
+            statusToLysand(status),
+            status.author,
+            user,
+        );
 
         // Send request
         const response = await fetch(request);
@@ -273,64 +278,6 @@ export const federateStatus = async (status: StatusWithRelations) => {
             );
         }
     }
-};
-
-export const statusToInboxRequest = async (
-    status: StatusWithRelations,
-    user: User,
-): Promise<Request> => {
-    const output = statusToLysand(status);
-
-    if (!user.instanceId || !user.endpoints.inbox) {
-        throw new Error("User has no inbox or is a local user");
-    }
-
-    const privateKey = await crypto.subtle.importKey(
-        "pkcs8",
-        Uint8Array.from(atob(status.author.privateKey ?? ""), (c) =>
-            c.charCodeAt(0),
-        ),
-        "Ed25519",
-        false,
-        ["sign"],
-    );
-
-    const digest = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(JSON.stringify(output)),
-    );
-
-    const userInbox = new URL(user.endpoints.inbox);
-
-    const date = new Date();
-
-    const signature = await crypto.subtle.sign(
-        "Ed25519",
-        privateKey,
-        new TextEncoder().encode(
-            `(request-target): post ${userInbox.pathname}\n` +
-                `host: ${userInbox.host}\n` +
-                `date: ${date.toISOString()}\n` +
-                `digest: SHA-256=${btoa(
-                    String.fromCharCode(...new Uint8Array(digest)),
-                )}\n`,
-        ),
-    );
-
-    const signatureBase64 = btoa(
-        String.fromCharCode(...new Uint8Array(signature)),
-    );
-
-    return new Request(userInbox, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Date: date.toISOString(),
-            Origin: config.http.base_url,
-            Signature: `keyId="${status.author.uri}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
-        },
-        body: JSON.stringify(output),
-    });
 };
 
 export const getUsersToFederateTo = async (status: StatusWithRelations) => {

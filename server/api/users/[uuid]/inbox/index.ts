@@ -5,6 +5,12 @@ import { userRelations } from "~database/entities/relations";
 import type * as Lysand from "lysand-types";
 import { createNewStatus } from "~database/entities/Status";
 import type { APIStatus } from "~types/entities/status";
+import {
+    followAcceptToLysand,
+    getRelationshipToOtherUser,
+    resolveUser,
+} from "~database/entities/User";
+import { objectToInboxRequest } from "~database/entities/Federation";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -120,11 +126,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         case "Note": {
             const note = body as Lysand.Note;
 
-            const account = await client.user.findUnique({
-                where: {
-                    uri: note.author,
-                },
-            });
+            const account = await resolveUser(note.author);
 
             if (!account) {
                 return errorResponse("Author not found", 400);
@@ -152,6 +154,65 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             );
 
             return response("Note created", 201);
+        }
+        case "Follow": {
+            const follow = body as Lysand.Follow;
+
+            const account = await resolveUser(follow.author);
+
+            if (!account) {
+                return errorResponse("Author not found", 400);
+            }
+
+            const relationship = await getRelationshipToOtherUser(
+                account,
+                user,
+            );
+
+            // Check if already following
+            if (relationship.following) {
+                return response("Already following", 200);
+            }
+
+            await client.relationship.update({
+                where: { id: relationship.id },
+                data: {
+                    following: !user.isLocked,
+                    requested: user.isLocked,
+                    showingReblogs: true,
+                    notifying: true,
+                    languages: [],
+                },
+            });
+
+            await client.notification.create({
+                data: {
+                    accountId: account.id,
+                    type: user.isLocked ? "follow_request" : "follow",
+                    notifiedId: user.id,
+                },
+            });
+
+            if (!user.isLocked) {
+                // Federate FollowAccept
+                // TODO: Make database job
+                const request = await objectToInboxRequest(
+                    followAcceptToLysand(account, user),
+                    user,
+                    account,
+                );
+
+                // Send request
+                const response = await fetch(request);
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to federate follow accept from ${user.id} to ${account.uri}`,
+                    );
+                }
+            }
+
+            return response("Follow request sent", 200);
         }
         default: {
             return errorResponse("Unknown object type", 400);
