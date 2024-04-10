@@ -293,13 +293,15 @@ export const createNewStatus = async (
             await sanitizeHtml(await parse(content["text/markdown"].content)),
         );
     } else if (content["text/plain"]) {
-        htmlContent = linkifyStr(content["text/plain"].content);
-
         // Split by newline and add <p> tags
-        htmlContent = htmlContent
+        htmlContent = content["text/plain"].content
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");
+
+        htmlContent = linkifyHtml(
+            await replaceTextMentions(htmlContent, mentions ?? []),
+        );
     } else {
         htmlContent = "";
     }
