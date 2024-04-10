@@ -1672,8 +1672,6 @@ const cliBuilder = new CliBuilder([
             // Unzip the pack to temp dir
             const tempDir = await mkdtemp(join(tmpdir(), "bun-emoji-import-"));
 
-            console.log(join(tempDir, pack.name));
-
             // Put the pack as a file
             await Bun.write(join(tempDir, pack.name), pack);
 
