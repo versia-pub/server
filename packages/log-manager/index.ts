@@ -96,7 +96,7 @@ export class LogManager {
 
             if (content_type?.includes("application/json")) {
                 try {
-                    const json = await req.json();
+                    const json = await req.clone().json();
                     const stringified = JSON.stringify(json, null, 4)
                         .split("\n")
                         .map((line) => `    ${line}`)
@@ -104,7 +104,7 @@ export class LogManager {
 
                     string += `${stringified}\n`;
                 } catch {
-                    string += "    [Invalid JSON]\n";
+                    string += `    [Invalid JSON] (raw: ${await req.text()})\n`;
                 }
             } else if (
                 content_type &&
