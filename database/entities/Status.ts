@@ -160,6 +160,10 @@ export const parseTextMentions = async (text: string) => {
     });
 };
 
+/**
+ * Creates a new status and saves it to the database.
+ * @returns A promise that resolves with the new status.
+ */
 export const createNewStatus = async (
     author: User,
     content: Lysand.ContentFormat,
@@ -253,161 +257,111 @@ export const createNewStatus = async (
     return status;
 };
 
-/**
- * Creates a new status and saves it to the database.
- * @param data The data for the new status.
- * @returns A promise that resolves with the new status.
- */
-export const createNewStatus2 = async (data: {
-    account: User;
-    application: Application | null;
-    content: string;
-    visibility: APIStatus["visibility"];
-    sensitive: boolean;
-    spoiler_text: string;
-    emojis?: Emoji[];
-    content_type?: string;
-    uri?: string;
-    mentions?: UserWithRelations[];
-    media_attachments?: string[];
-    reply?: {
-        status: Status;
-        user: User;
-    };
-    quote?: Status;
-}) => {
-    // Get people mentioned in the content (match @username or @username@domain.com mentions)
-    const mentionedPeople =
-        data.content.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
+export const federateStatus = async (status: StatusWithRelations) => {
+    const toFederateTo = await getUsersToFederateTo(status);
 
-    let mentions = data.mentions || [];
+    for (const user of toFederateTo) {
+        // TODO: Add queue system
+        const request = await statusToInboxRequest(status, user);
 
-    // Parse emojis
-    const emojis = await parseEmojis(data.content);
+        // Send request
+        const response = await fetch(request);
 
-    data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
-
-    // Get list of mentioned users
-    if (mentions.length === 0) {
-        mentions = await client.user.findMany({
-            where: {
-                OR: mentionedPeople.map((person) => ({
-                    username: person.split("@")[1],
-                    instance: {
-                        base_url: person.split("@")[2],
-                    },
-                })),
-            },
-            include: userRelations,
-        });
-    }
-
-    let formattedContent = "";
-
-    // Get HTML version of content
-    if (data.content_type === "text/markdown") {
-        formattedContent = linkifyHtml(
-            await sanitizeHtml(await parse(data.content)),
-        );
-    } else if (data.content_type === "text/x.misskeymarkdown") {
-        // Parse as MFM
-    } else {
-        // Parse as plaintext
-        formattedContent = linkifyStr(data.content);
-
-        // Split by newline and add <p> tags
-        formattedContent = formattedContent
-            .split("\n")
-            .map((line) => `<p>${line}</p>`)
-            .join("\n");
-    }
-
-    // Turn each @username or @username@instance mention into an anchor link
-    for (const mention of mentions) {
-        const matches = data.content.match(
-            new RegExp(
-                `@${mention.username}(@${mention.instance?.base_url})?`,
-                "g",
-            ),
-        );
-
-        if (!matches) continue;
-
-        for (const match of matches) {
-            formattedContent = formattedContent.replace(
-                new RegExp(
-                    `@${mention.username}(@${mention.instance?.base_url})?`,
-                    "g",
-                ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${
-                    mention.uri ||
-                    new URL(
-                        `/@${mention.username}`,
-                        config.http.base_url,
-                    ).toString()
-                }">${match}</a>`,
+        if (!response.ok) {
+            throw new Error(
+                `Failed to federate status ${status.id} to ${user.uri}`,
             );
         }
     }
+};
 
-    const status = await client.status.create({
-        data: {
-            authorId: data.account.id,
-            applicationId: data.application?.id,
-            content: formattedContent,
-            contentSource: data.content,
-            contentType: data.content_type,
-            visibility: data.visibility,
-            sensitive: data.sensitive,
-            spoilerText: data.spoiler_text,
-            emojis: {
-                connect: data.emojis.map((emoji) => {
-                    return {
-                        id: emoji.id,
-                    };
-                }),
-            },
-            attachments: data.media_attachments
-                ? {
-                      connect: data.media_attachments.map((attachment) => {
-                          return {
-                              id: attachment,
-                          };
-                      }),
-                  }
-                : undefined,
-            inReplyToPostId: data.reply?.status.id,
-            quotingPostId: data.quote?.id,
-            instanceId: data.account.instanceId || undefined,
-            isReblog: false,
-            uri: data.uri || null,
-            mentions: {
-                connect: mentions.map((mention) => {
-                    return {
-                        id: mention.id,
-                    };
-                }),
-            },
-        },
-        include: statusAndUserRelations,
-    });
+export const statusToInboxRequest = async (
+    status: StatusWithRelations,
+    user: User,
+): Promise<Request> => {
+    const output = statusToLysand(status);
 
-    // Create notification
-    if (status.inReplyToPost) {
-        await client.notification.create({
-            data: {
-                notifiedId: status.inReplyToPost.authorId,
-                accountId: status.authorId,
-                type: "mention",
-                statusId: status.id,
-            },
-        });
+    if (!user.instanceId || !user.endpoints.inbox) {
+        throw new Error("User has no inbox or is a local user");
     }
 
-    // Add to search index
-    await addStausToMeilisearch(status);
+    const privateKey = await crypto.subtle.importKey(
+        "pkcs8",
+        Uint8Array.from(atob(status.author.privateKey ?? ""), (c) =>
+            c.charCodeAt(0),
+        ),
+        "Ed25519",
+        false,
+        ["sign"],
+    );
 
-    return status;
+    const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(JSON.stringify(output)),
+    );
+
+    const userInbox = new URL(user.endpoints.inbox);
+
+    const date = new Date();
+
+    const signature = await crypto.subtle.sign(
+        "Ed25519",
+        privateKey,
+        new TextEncoder().encode(
+            `(request-target): post ${userInbox.pathname}\n` +
+                `host: ${userInbox.host}\n` +
+                `date: ${date.toISOString()}\n` +
+                `digest: SHA-256=${btoa(
+                    String.fromCharCode(...new Uint8Array(digest)),
+                )}\n`,
+        ),
+    );
+
+    const signatureBase64 = btoa(
+        String.fromCharCode(...new Uint8Array(signature)),
+    );
+
+    return new Request(userInbox, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Date: date.toISOString(),
+            Origin: config.http.base_url,
+            Signature: `keyId="${status.author.uri}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
+        },
+        body: JSON.stringify(output),
+    });
+};
+
+export const getUsersToFederateTo = async (status: StatusWithRelations) => {
+    return await client.user.findMany({
+        where: {
+            OR: [
+                ["public", "unlisted", "private"].includes(status.visibility)
+                    ? {
+                          relationships: {
+                              some: {
+                                  subjectId: status.authorId,
+                                  following: true,
+                              },
+                          },
+                          instanceId: {
+                              not: null,
+                          },
+                      }
+                    : {},
+                // Mentioned users
+                {
+                    id: {
+                        in: status.mentions.map((m) => m.id),
+                    },
+                    instanceId: {
+                        not: null,
+                    },
+                },
+            ],
+        },
+    });
 };
 
 export const editStatus = async (

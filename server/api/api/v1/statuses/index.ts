@@ -5,7 +5,11 @@ import { parse } from "marked";
 import { client } from "~database/datasource";
 import { getFromToken } from "~database/entities/Application";
 import type { StatusWithRelations } from "~database/entities/Status";
-import { createNewStatus, statusToAPI } from "~database/entities/Status";
+import {
+    createNewStatus,
+    federateStatus,
+    statusToAPI,
+} from "~database/entities/Status";
 import type { UserWithRelations } from "~database/entities/User";
 import { statusAndUserRelations } from "~database/entities/relations";
 import type { APIStatus } from "~types/entities/status";
@@ -233,7 +237,7 @@ export default apiRoute<{
         quote ?? undefined,
     );
 
-    // TODO: add database jobs to deliver the post
+    await federateStatus(newStatus);
 
     return jsonResponse(await statusToAPI(newStatus, user));
 });
