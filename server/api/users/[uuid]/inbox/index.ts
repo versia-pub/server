@@ -217,16 +217,22 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         case "FollowAccept": {
             const followAccept = body as Lysand.FollowAccept;
 
+            console.log(followAccept);
+
             const account = await resolveUser(followAccept.author);
 
             if (!account) {
                 return errorResponse("Author not found", 400);
             }
 
+            console.log(account);
+
             const relationship = await getRelationshipToOtherUser(
                 user,
                 account,
             );
+
+            console.log(relationship);
 
             if (!relationship.requested) {
                 return response("There is no follow request to accept", 200);
