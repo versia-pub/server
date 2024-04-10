@@ -134,6 +134,10 @@ export const resolveUser = async (uri: string) => {
 
     if (foundUser) return foundUser;
 
+    if (!URL.canParse(uri)) {
+        throw new Error(`Invalid URI to parse ${uri}`);
+    }
+
     const response = await fetch(uri, {
         method: "GET",
         headers: {

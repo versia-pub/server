@@ -17,13 +17,13 @@ import { parse } from "marked";
 import { client } from "~database/datasource";
 import type { APIAttachment } from "~types/entities/attachment";
 import type { APIStatus } from "~types/entities/status";
-import type { LysandPublication, Note } from "~types/lysand/Object";
+import type { Note } from "~types/lysand/Object";
 import type * as Lysand from "lysand-types";
 import { applicationToAPI } from "./Application";
 import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
-import { resolveUser, parseMentionsUris, userToAPI } from "./User";
+import { resolveUser, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
 import { objectToInboxRequest } from "./Federation";
 
