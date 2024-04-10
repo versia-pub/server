@@ -21,7 +21,7 @@ await Bun.build({
     outdir: `${process.cwd()}/dist`,
     target: "bun",
     splitting: true,
-    minify: false,
+    minify: true,
     external: ["bullmq", "@prisma/client", "frontend"],
 }).then((output) => {
     if (!output.success) {
