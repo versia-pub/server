@@ -74,6 +74,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         where: { id: relationship.id },
         data: {
             following: false,
+            requested: false,
         },
     });
 
