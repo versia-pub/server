@@ -249,6 +249,8 @@ export const parseTextMentions = async (text: string) => {
 
     // Attempt to resolve mentions that were not found
     for (const person of notFound) {
+        if (person.split("@").length < 2) continue;
+
         const user = await resolveWebFinger(
             person.split("@")[1],
             person.split("@")[2],
