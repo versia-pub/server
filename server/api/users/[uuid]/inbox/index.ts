@@ -3,7 +3,7 @@ import { errorResponse, response } from "@response";
 import { client } from "~database/datasource";
 import { userRelations } from "~database/entities/relations";
 import type * as Lysand from "lysand-types";
-import { createNewStatus } from "~database/entities/Status";
+import { createNewStatus, resolveStatus } from "~database/entities/Status";
 import type { APIStatus } from "~types/entities/status";
 import {
     followAcceptToLysand,
@@ -132,26 +132,16 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 return errorResponse("Author not found", 400);
             }
 
-            await createNewStatus(
-                account,
-                note.content ?? {
-                    "text/plain": {
-                        content: "",
-                    },
+            const newStatus = await resolveStatus(undefined, note).catch(
+                (e) => {
+                    console.error(e);
+                    return null;
                 },
-                note.visibility as APIStatus["visibility"],
-                note.is_sensitive ?? false,
-                note.subject ?? "",
-                [],
-                note.uri,
-                // TODO: Resolve mentions
-                [],
-                // TODO: Add attachments
-                [],
-                // TODO: Resolve replies and quoting
-                undefined,
-                undefined,
             );
+
+            if (!newStatus) {
+                return errorResponse("Failed to add status", 500);
+            }
 
             return response("Note created", 201);
         }

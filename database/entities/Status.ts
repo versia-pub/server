@@ -23,7 +23,7 @@ import { applicationToAPI } from "./Application";
 import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
-import { getUserUri, userToAPI } from "./User";
+import { getUserUri, resolveUser, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
 import { objectToInboxRequest } from "./Federation";
 
@@ -58,9 +58,84 @@ export const isViewableByUser = (status: Status, user: User | null) => {
     return user && (status.mentions as User[]).includes(user);
 };
 
-export const fetchFromRemote = async (
-    uri: string,
-): Promise<StatusWithRelations | null> => {};
+export const resolveStatus = async (
+    uri?: string,
+    providedNote?: Lysand.Note,
+): Promise<StatusWithRelations> => {
+    if (!uri && !providedNote) {
+        throw new Error("No URI or note provided");
+    }
+
+    // Check if status not already in database
+    const foundStatus = await client.status.findUnique({
+        where: {
+            uri: uri ?? providedNote?.uri,
+        },
+        include: statusAndUserRelations,
+    });
+
+    if (foundStatus) return foundStatus;
+
+    let note: Lysand.Note | null = providedNote ?? null;
+
+    if (uri) {
+        if (!URL.canParse(uri)) {
+            throw new Error(`Invalid URI to parse ${uri}`);
+        }
+
+        const response = await fetch(uri, {
+            method: "GET",
+            headers: {
+                Accept: "application/json",
+            },
+        });
+
+        note = (await response.json()) as Lysand.Note;
+    }
+
+    if (!note) {
+        throw new Error("No note was able to be fetched");
+    }
+
+    if (note.type !== "Note") {
+        throw new Error("Invalid object type");
+    }
+
+    if (!note.author) {
+        throw new Error("Invalid object author");
+    }
+
+    const author = await resolveUser(note.author);
+
+    if (!author) {
+        throw new Error("Invalid object author");
+    }
+
+    return await createNewStatus(
+        author,
+        note.content ?? {
+            "text/plain": {
+                content: "",
+            },
+        },
+        note.visibility as APIStatus["visibility"],
+        note.is_sensitive ?? false,
+        note.subject ?? "",
+        [],
+        note.uri,
+        await Promise.all(
+            (note.mentions ?? [])
+                .map((mention) => resolveUser(mention))
+                .filter(
+                    (mention) => mention !== null,
+                ) as Promise<UserWithRelations>[],
+        ),
+        // TODO: Add attachments
+        [],
+        note.replies_to ? await resolveStatus(note.replies_to) : undefined,
+        note.quotes ? await resolveStatus(note.quotes) : undefined,
+    );
+};
 
 /**
  * Return all the ancestors of this post,

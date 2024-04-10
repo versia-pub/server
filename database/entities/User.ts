@@ -180,6 +180,26 @@ export const resolveUser = async (uri: string) => {
 
     if (foundUser) return foundUser;
 
+    // Check if URI is of a local user
+    if (uri.startsWith(config.http.base_url)) {
+        const uuid = uri.match(
+            /[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
+        );
+
+        if (!uuid) {
+            throw new Error(
+                `URI ${uri} is of a local user, but it could not be parsed`,
+            );
+        }
+
+        return client.user.findUnique({
+            where: {
+                id: uuid[0],
+            },
+            include: userRelations,
+        });
+    }
+
     if (!URL.canParse(uri)) {
         throw new Error(`Invalid URI to parse ${uri}`);
     }
