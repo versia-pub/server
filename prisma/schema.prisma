@@ -111,7 +111,6 @@ model Status {
   updatedAt            DateTime       @updatedAt
   reblog               Status?        @relation("StatusToStatus", fields: [reblogId], references: [id], onDelete: Cascade)
   reblogId             String?        @db.Uuid
-  isReblog             Boolean
   content              String         @default("")
   contentType          String         @default("text/plain")
   contentSource        String         @default("")
