@@ -52,10 +52,6 @@ export interface Entity {
     };
 }
 
-export interface InlineCustomEmojis {
-    [key: string]: Emoji;
-}
-
 export interface Publication extends Entity {
     type: "Note" | "Patch";
     author: string;
@@ -129,39 +125,50 @@ export interface Field {
     value: ContentFormat;
 }
 
-export interface Like extends Entity {
+export interface Action extends Entity {
+    type:
+        | "Like"
+        | "Dislike"
+        | "Follow"
+        | "FollowAccept"
+        | "FollowReject"
+        | "Announce"
+        | "Undo";
+    author: string;
+}
+
+export interface Like extends Action {
     type: "Like";
-    author: string;
     object: string;
 }
 
-export interface Dislike extends Entity {
+export interface Undo extends Action {
+    type: "Undo";
+    object: string;
+}
+
+export interface Dislike extends Action {
     type: "Dislike";
-    author: string;
     object: string;
 }
 
-export interface Follow extends Entity {
+export interface Follow extends Action {
     type: "Follow";
-    author: string;
     followee: string;
 }
 
-export interface FollowAccept extends Entity {
+export interface FollowAccept extends Action {
     type: "FollowAccept";
-    author: string;
     follower: string;
 }
 
-export interface FollowReject extends Entity {
+export interface FollowReject extends Action {
     type: "FollowReject";
-    author: string;
     follower: string;
 }
 
-export interface Announce extends Entity {
+export interface Announce extends Action {
     type: "Announce";
-    author: string;
     object: string;
 }
 
@@ -225,4 +232,20 @@ export interface LongPronoun {
     dependent_possessive: string;
     independent_possessive: string;
     reflexive: string;
+}
+
+export interface ServerMetadata {
+    type: "ServerMetadata";
+    name: string;
+    version: string;
+    description?: string;
+    website?: string;
+    moderators?: string[];
+    admins?: string[];
+    logo?: ContentFormat;
+    banner?: ContentFormat;
+    supported_extensions: string[];
+    extensions?: {
+        [key: string]: object | undefined;
+    };
 }
