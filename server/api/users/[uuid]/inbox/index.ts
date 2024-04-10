@@ -79,6 +79,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .split(",")[0]
             .replace(/"/g, "");
 
+        console.log(`Resolving keyId ${keyId}`);
+
         const sender = await resolveUser(keyId);
 
         if (!sender) {

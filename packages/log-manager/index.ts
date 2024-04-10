@@ -104,7 +104,9 @@ export class LogManager {
 
                     string += `${stringified}\n`;
                 } catch {
-                    string += `    [Invalid JSON] (raw: ${await req.text()})\n`;
+                    string += `    [Invalid JSON] (raw: ${await req
+                        .clone()
+                        .text()})\n`;
                 }
             } else if (
                 content_type &&
