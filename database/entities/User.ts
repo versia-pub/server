@@ -137,7 +137,6 @@ export const resolveUser = async (uri: string) => {
     const response = await fetch(uri, {
         method: "GET",
         headers: {
-            "Content-Type": "application/json",
             Accept: "application/json",
         },
     });

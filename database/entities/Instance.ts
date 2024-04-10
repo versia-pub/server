@@ -25,6 +25,8 @@ export const addInstanceIfNotExists = async (
 
     if (found) return found;
 
+    console.log(`Fetching instance metadata for ${origin}`);
+
     // Fetch the instance configuration
     const metadata = (await fetch(new URL("/.well-known/lysand", origin)).then(
         (res) => res.json(),

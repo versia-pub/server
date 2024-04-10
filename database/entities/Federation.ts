@@ -50,7 +50,7 @@ export const objectToInboxRequest = async (
         headers: {
             "Content-Type": "application/json",
             Date: date.toISOString(),
-            Origin: config.http.base_url,
+            Origin: new URL(config.http.base_url).host,
             Signature: `keyId="${author.uri}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
         },
         body: JSON.stringify(object),
