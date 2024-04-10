@@ -224,6 +224,13 @@ export const resolveUser = async (uri: string) => {
     return user;
 };
 
+export const getUserUri = (user: User) => {
+    return (
+        user.uri ||
+        new URL(`/users/${user.id}`, config.http.base_url).toString()
+    );
+};
+
 /**
  * Resolves a WebFinger identifier to a user.
  * @param identifier Either a UUID or a username
@@ -513,9 +520,7 @@ export const userToLysand = (user: UserWithRelations): Lysand.User => {
     return {
         id: user.id,
         type: "User",
-        uri:
-            user.uri ||
-            new URL(`/users/${user.id}`, config.http.base_url).toString(),
+        uri: getUserUri(user),
         bio: {
             "text/html": {
                 content: user.note,
@@ -612,10 +617,7 @@ export const followRequestToLysand = (
     return {
         type: "Follow",
         id: id,
-        author: new URL(
-            `/users/${follower.id}`,
-            config.http.base_url,
-        ).toString(),
+        author: getUserUri(follower),
         followee: followee.uri,
         created_at: new Date().toISOString(),
         uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
@@ -648,10 +650,7 @@ export const followAcceptToLysand = (
             config.http.base_url,
         ).toString(),
         created_at: new Date().toISOString(),
-        follower: new URL(
-            `/users/${follower.id}`,
-            config.http.base_url,
-        ).toString(),
+        follower: getUserUri(follower),
         uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
     };
 };

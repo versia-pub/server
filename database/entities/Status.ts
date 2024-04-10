@@ -23,7 +23,7 @@ import { applicationToAPI } from "./Application";
 import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
-import { resolveUser, userToAPI } from "./User";
+import { getUserUri, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
 import { objectToInboxRequest } from "./Federation";
 
@@ -497,23 +497,22 @@ export const statusToAPI = async (
     };
 };
 
+export const getStatusUri = (status?: Status | null) => {
+    if (!status) return undefined;
+
+    return (
+        status.uri ||
+        new URL(`/objects/note/${status.id}`, config.http.base_url).toString()
+    );
+};
+
 export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
     return {
         type: "Note",
         created_at: new Date(status.createdAt).toISOString(),
         id: status.id,
-        author:
-            status.author.uri ||
-            new URL(
-                `/users/${status.author.id}`,
-                config.http.base_url,
-            ).toString(),
-        uri:
-            status.uri ||
-            new URL(
-                `/objects/note/${status.id}`,
-                config.http.base_url,
-            ).toString(),
+        author: getUserUri(status.author),
+        uri: getStatusUri(status) ?? "",
         content: {
             "text/html": {
                 content: status.content,
@@ -527,8 +526,8 @@ export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
         ),
         is_sensitive: status.sensitive,
         mentions: status.mentions.map((mention) => mention.uri || ""),
-        quotes: status.quotingPost?.uri ?? undefined,
-        replies_to: status.inReplyToPost?.uri ?? undefined,
+        quotes: getStatusUri(status.quotingPost) ?? undefined,
+        replies_to: getStatusUri(status.inReplyToPost) ?? undefined,
         subject: status.spoilerText,
         visibility: status.visibility as Lysand.Visibility,
         extensions: {

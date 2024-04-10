@@ -1,6 +1,7 @@
 import type { User } from "@prisma/client";
 import type * as Lysand from "lysand-types";
 import { config } from "config-manager";
+import { getUserUri } from "./User";
 
 export const objectToInboxRequest = async (
     object: Lysand.Entity,
@@ -8,7 +9,11 @@ export const objectToInboxRequest = async (
     userToSendTo: User,
 ): Promise<Request> => {
     if (!userToSendTo.instanceId || !userToSendTo.endpoints.inbox) {
-        throw new Error("User has no inbox or is a local user");
+        throw new Error("UserToSendTo has no inbox or is a local user");
+    }
+
+    if (author.instanceId) {
+        throw new Error("Author is a remote user");
     }
 
     const privateKey = await crypto.subtle.importKey(
@@ -51,7 +56,9 @@ export const objectToInboxRequest = async (
             "Content-Type": "application/json",
             Date: date.toISOString(),
             Origin: new URL(config.http.base_url).host,
-            Signature: `keyId="${author.uri}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
+            Signature: `keyId="${getUserUri(
+                author,
+            )}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
         },
         body: JSON.stringify(object),
     });
