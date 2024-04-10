@@ -23,7 +23,7 @@ import { applicationToAPI } from "./Application";
 import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
-import { getUserUri, resolveUser, userToAPI } from "./User";
+import { getUserUri, resolveUser, resolveWebFinger, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
 import { objectToInboxRequest } from "./Federation";
 
@@ -223,7 +223,7 @@ export const parseTextMentions = async (text: string) => {
     const mentionedPeople =
         text.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)?/g) ?? [];
 
-    return await client.user.findMany({
+    const found = await client.user.findMany({
         where: {
             OR: mentionedPeople.map((person) => ({
                 username: person.split("@")[1],
@@ -237,6 +237,29 @@ export const parseTextMentions = async (text: string) => {
         },
         include: userRelations,
     });
+
+    const notFound = mentionedPeople.filter(
+        (person) =>
+            !found.find(
+                (user) =>
+                    user.username === person.split("@")[1] &&
+                    user.instance?.base_url === person.split("@")[2],
+            ),
+    );
+
+    // Attempt to resolve mentions that were not found
+    for (const person of notFound) {
+        const user = await resolveWebFinger(
+            person.split("@")[1],
+            person.split("@")[2],
+        );
+
+        if (user) {
+            found.push(user);
+        }
+    }
+
+    return found;
 };
 
 export const replaceTextMentions = async (
