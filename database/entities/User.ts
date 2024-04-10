@@ -11,7 +11,7 @@ import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
 import { createNewRelationship } from "./Relationship";
-import { urlToContentFormat } from "@content_types";
+import { getBestContentType, urlToContentFormat } from "@content_types";
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -172,6 +172,14 @@ export const resolveUser = async (uri: string) => {
     const userEmojis =
         data.extensions?.["org.lysand:custom_emojis"]?.emojis ?? [];
 
+    const instance = await addInstanceIfNotExists(data.uri);
+
+    const emojis = [];
+
+    for (const emoji of userEmojis) {
+        emojis.push(await addEmojiIfNotExists(emoji));
+    }
+
     const user = await client.user.create({
         data: {
             username: data.username,
@@ -186,10 +194,20 @@ export const resolveUser = async (uri: string) => {
                 inbox: data.inbox,
                 outbox: data.outbox,
             },
-            avatar: data.avatar?.[0].content || "",
-            header: data.header?.[0].content || "",
+            emojis: {
+                connect: emojis.map((emoji) => ({
+                    id: emoji.id,
+                })),
+            },
+            instanceId: instance.id,
+            avatar: data.avatar
+                ? Object.entries(data.avatar)[0][1].content
+                : "",
+            header: data.header
+                ? Object.entries(data.header)[0][1].content
+                : "",
             displayName: data.display_name ?? "",
-            note: data.bio?.[0].content ?? "",
+            note: getBestContentType(data.bio).content,
             publicKey: data.public_key.public_key,
             source: {
                 language: null,
@@ -199,33 +217,13 @@ export const resolveUser = async (uri: string) => {
                 fields: [],
             },
         },
+        include: userRelations,
     });
 
     // Add to Meilisearch
     await addUserToMeilisearch(user);
 
-    const emojis = [];
-
-    for (const emoji of userEmojis) {
-        emojis.push(await addEmojiIfNotExists(emoji));
-    }
-
-    const uriData = new URL(data.uri);
-
-    return await client.user.update({
-        where: {
-            id: user.id,
-        },
-        data: {
-            emojis: {
-                connect: emojis.map((emoji) => ({
-                    id: emoji.id,
-                })),
-            },
-            instanceId: (await addInstanceIfNotExists(uriData.origin)).id,
-        },
-        include: userRelations,
-    });
+    return user;
 };
 
 /**
@@ -258,7 +256,6 @@ export const resolveWebFinger = async (identifier: string, host: string) => {
         {
             method: "GET",
             headers: {
-                "Content-Type": "application/json",
                 Accept: "application/json",
             },
         },

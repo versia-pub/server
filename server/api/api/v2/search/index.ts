@@ -76,8 +76,17 @@ export default apiRoute<{
 
     if (!type || type === "accounts") {
         // Check if q is matching format username@domain.com or @username@domain.com
-        if (q?.trim().match(/@?[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)/g)) {
-            const [username, domain] = q.trim().split("@");
+        const accountMatches = q
+            ?.trim()
+            .match(/@?[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)/g);
+        if (accountMatches) {
+            // Remove leading @ if it exists
+            if (accountMatches[0].startsWith("@")) {
+                accountMatches[0] = accountMatches[0].slice(1);
+            }
+
+            const [username, domain] = accountMatches[0].split("@");
+
             const account = await client.user.findFirst({
                 where: {
                     username,
@@ -98,7 +107,10 @@ export default apiRoute<{
 
             if (resolve) {
                 const newUser = await resolveWebFinger(username, domain).catch(
-                    () => null,
+                    (e) => {
+                        console.error(e);
+                        return null;
+                    },
                 );
 
                 if (newUser) {

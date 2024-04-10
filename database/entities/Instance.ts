@@ -1,6 +1,6 @@
 import type { Instance } from "@prisma/client";
 import { client } from "~database/datasource";
-import type { ServerMetadata } from "~types/lysand/Object";
+import type * as Lysand from "lysand-types";
 
 /**
  * Represents an instance in the database.
@@ -15,32 +15,32 @@ export const addInstanceIfNotExists = async (
     url: string,
 ): Promise<Instance> => {
     const origin = new URL(url).origin;
-    const hostname = new URL(url).hostname;
+    const host = new URL(url).host;
 
     const found = await client.instance.findFirst({
         where: {
-            base_url: hostname,
+            base_url: host,
         },
     });
 
     if (found) return found;
 
     // Fetch the instance configuration
-    const metadata = (await fetch(`${origin}/.well-known/lysand`).then((res) =>
-        res.json(),
-    )) as Partial<ServerMetadata>;
+    const metadata = (await fetch(new URL("/.well-known/lysand", origin)).then(
+        (res) => res.json(),
+    )) as Lysand.ServerMetadata;
 
     if (metadata.type !== "ServerMetadata") {
-        throw new Error("Invalid instance metadata");
+        throw new Error("Invalid instance metadata (wrong type)");
     }
 
     if (!(metadata.name && metadata.version)) {
-        throw new Error("Invalid instance metadata");
+        throw new Error("Invalid instance metadata (missing name or version)");
     }
 
     return await client.instance.create({
         data: {
-            base_url: hostname,
+            base_url: host,
             name: metadata.name,
             version: metadata.version,
             logo: metadata.logo,
