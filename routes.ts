@@ -87,6 +87,9 @@ export const rawRoutes = {
     "/users/[uuid]": "./server/api/users/[uuid]/index",
     "/users/[uuid]/inbox": "./server/api/users/[uuid]/inbox/index",
     "/users/[uuid]/outbox": "./server/api/users/[uuid]/outbox/index",
+    // .well-known queries are automatically re-routed to well-known
+    "/well-known/webfinger": "./server/api/well-known/webfinger/index",
+    "/well-known/host-meta": "./server/api/well-known/host-meta/index",
     "/[...404]": "./server/api/[...404]",
 } as Record<string, string>;
 

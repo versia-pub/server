@@ -14,13 +14,29 @@ export const meta = applyConfig({
     route: "/.well-known/webfinger",
 });
 
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    // In the format acct:name@example.com
-    const resource = matchedRoute.query.resource;
+export default apiRoute<{
+    resource: string;
+}>(async (req, matchedRoute, extraData) => {
+    const { resource } = extraData.parsedRequest;
+
+    if (!resource) return errorResponse("No resource provided", 400);
+
+    // Check if resource is in the correct format (acct:uuid@domain)
+    if (
+        !resource.match(
+            /^acct:[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}@.+/i,
+        )
+    ) {
+        return errorResponse(
+            "Invalid resource (should be acct:uuid@domain)",
+            400,
+        );
+    }
+
     const requestedUser = resource.split("acct:")[1];
 
     const config = await extraData.configManager.getConfig();
-    const host = new URL(config.http.base_url).hostname;
+    const host = new URL(config.http.base_url).host;
 
     // Check if user is a local user
     if (requestedUser.split("@")[1] !== host) {
@@ -28,7 +44,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     }
 
     const user = await client.user.findUnique({
-        where: { username: requestedUser.split("@")[0] },
+        where: { id: requestedUser.split("@")[0] },
     });
 
     if (!user) {
@@ -36,7 +52,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     }
 
     return jsonResponse({
-        subject: `acct:${user.username}@${host}`,
+        subject: `acct:${user.id}@${host}`,
 
         links: [
             {

@@ -101,8 +101,9 @@ export const createServer = (
                 return jsonResponse({});
             }
 
+            // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
             const { file: filePromise, matchedRoute } = await matchRoute(
-                req.url,
+                req.url.replace(".well-known", "well-known"),
             );
 
             const file = filePromise;
