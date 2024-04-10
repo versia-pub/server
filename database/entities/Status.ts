@@ -23,7 +23,7 @@ import { applicationToAPI } from "./Application";
 import { attachmentToAPI, attachmentToLysand } from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
-import { fetchRemoteUser, parseMentionsUris, userToAPI } from "./User";
+import { resolveUser, parseMentionsUris, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
 
 const statusRelations = Prisma.validator<Prisma.StatusDefaultArgs>()({
@@ -57,62 +57,9 @@ export const isViewableByUser = (status: Status, user: User | null) => {
     return user && (status.mentions as User[]).includes(user);
 };
 
-export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
-    // Check if already in database
-    /* const existingStatus: StatusWithRelations | null =
-        await client.status.findFirst({
-            where: {
-                uri: uri,
-            },
-            include: statusAndUserRelations,
-        });
-
-    if (existingStatus) return existingStatus;
-
-    const status = await fetch(uri);
-
-    if (status.status === 404) return null;
-
-    const body = (await status.json()) as LysandPublication;
-
-    const content = getBestContentType(body.contents);
-
-    const emojis = await parseEmojis(content?.content || "");
-
-    const author = await fetchRemoteUser(body.author);
-
-    let replyStatus: Status | null = null;
-    let quotingStatus: Status | null = null;
-
-    if (body.replies_to.length > 0) {
-        replyStatus = await fetchFromRemote(body.replies_to[0]);
-    }
-
-    if (body.quotes.length > 0) {
-        quotingStatus = await fetchFromRemote(body.quotes[0]);
-    }
-
-    return await createNewStatus({
-        account: author,
-        content: content?.content || "",
-        content_type: content?.content_type,
-        application: null,
-        // TODO: Add visibility
-        visibility: "public",
-        spoiler_text: body.subject || "",
-        uri: body.uri,
-        sensitive: body.is_sensitive,
-        emojis: emojis,
-        mentions: await parseMentionsUris(body.mentions),
-        reply: replyStatus
-            ? {
-                  status: replyStatus,
-                  user: (replyStatus as StatusWithRelations).author,
-              }
-            : undefined,
-        quote: quotingStatus || undefined,
-    }); */
-};
+export const fetchFromRemote = async (
+    uri: string,
+): Promise<StatusWithRelations | null> => {};
 
 /**
  * Return all the ancestors of this post,

@@ -21,14 +21,10 @@ export default apiRoute<{
 
     if (!resource) return errorResponse("No resource provided", 400);
 
-    // Check if resource is in the correct format (acct:uuid@domain)
-    if (
-        !resource.match(
-            /^acct:[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}@.+/i,
-        )
-    ) {
+    // Check if resource is in the correct format (acct:uuid/username@domain)
+    if (!resource.match(/^acct:[a-zA-Z0-9-]+@[a-zA-Z0-9.-:]+$/)) {
         return errorResponse(
-            "Invalid resource (should be acct:uuid@domain)",
+            "Invalid resource (should be acct:(id or username)@domain)",
             400,
         );
     }
@@ -43,8 +39,17 @@ export default apiRoute<{
         return errorResponse("User is a remote user", 404);
     }
 
+    const isUuid = requestedUser
+        .split("@")[0]
+        .match(
+            /[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}/i,
+        );
+
     const user = await client.user.findUnique({
-        where: { id: requestedUser.split("@")[0] },
+        where: {
+            id: isUuid ? requestedUser.split("@")[0] : undefined,
+            username: isUuid ? undefined : requestedUser.split("@")[0],
+        },
     });
 
     if (!user) {
@@ -52,7 +57,7 @@ export default apiRoute<{
     }
 
     return jsonResponse({
-        subject: `acct:${user.id}@${host}`,
+        subject: `acct:${isUuid ? user.id : user.username}@${host}`,
 
         links: [
             {

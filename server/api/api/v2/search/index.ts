@@ -3,7 +3,11 @@ import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { statusToAPI } from "~database/entities/Status";
-import { userToAPI } from "~database/entities/User";
+import {
+    resolveUser,
+    resolveWebFinger,
+    userToAPI,
+} from "~database/entities/User";
 import {
     statusAndUserRelations,
     userRelations,
@@ -71,6 +75,42 @@ export default apiRoute<{
     let statusResults: { id: string }[] = [];
 
     if (!type || type === "accounts") {
+        // Check if q is matching format username@domain.com or @username@domain.com
+        if (q?.trim().match(/@?[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)/g)) {
+            const [username, domain] = q.trim().split("@");
+            const account = await client.user.findFirst({
+                where: {
+                    username,
+                    instance: {
+                        base_url: domain,
+                    },
+                },
+                include: userRelations,
+            });
+
+            if (account) {
+                return jsonResponse({
+                    accounts: [userToAPI(account)],
+                    statuses: [],
+                    hashtags: [],
+                });
+            }
+
+            if (resolve) {
+                const newUser = await resolveWebFinger(username, domain).catch(
+                    () => null,
+                );
+
+                if (newUser) {
+                    return jsonResponse({
+                        accounts: [userToAPI(newUser)],
+                        statuses: [],
+                        hashtags: [],
+                    });
+                }
+            }
+        }
+
         accountResults = (
             await meilisearch.index(MeiliIndexType.Accounts).search<{
                 id: string;

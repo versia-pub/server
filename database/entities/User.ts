@@ -128,7 +128,7 @@ export const followRequestUser = async (
     return relationship;
 };
 
-export const fetchRemoteUser = async (uri: string) => {
+export const resolveUser = async (uri: string) => {
     // Check if user not already in database
     const foundUser = await client.user.findUnique({
         where: {
@@ -226,6 +226,68 @@ export const fetchRemoteUser = async (uri: string) => {
         },
         include: userRelations,
     });
+};
+
+/**
+ * Resolves a WebFinger identifier to a user.
+ * @param identifier Either a UUID or a username
+ */
+export const resolveWebFinger = async (identifier: string, host: string) => {
+    // Check if user not already in database
+    const foundUser = await client.user.findUnique({
+        where: {
+            username: identifier,
+            instance: {
+                base_url: host,
+            },
+        },
+        include: userRelations,
+    });
+
+    if (foundUser) return foundUser;
+
+    const hostWithProtocol = host.startsWith("http") ? host : `https://${host}`;
+
+    const response = await fetch(
+        new URL(
+            `/.well-known/webfinger?${new URLSearchParams({
+                resource: `acct:${identifier}@${host}`,
+            })}`,
+            hostWithProtocol,
+        ),
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        },
+    );
+
+    const data = (await response.json()) as {
+        subject: string;
+        links: {
+            rel: string;
+            type: string;
+            href: string;
+        }[];
+    };
+
+    if (!data.subject || !data.links) {
+        throw new Error(
+            "Invalid WebFinger data (missing subject or links from response)",
+        );
+    }
+
+    const relevantLink = data.links.find((link) => link.rel === "self");
+
+    if (!relevantLink) {
+        throw new Error(
+            "Invalid WebFinger data (missing link with rel: 'self')",
+        );
+    }
+
+    return resolveUser(relevantLink.href);
 };
 
 /**

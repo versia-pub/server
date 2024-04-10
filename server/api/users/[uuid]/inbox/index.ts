@@ -142,7 +142,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 note.subject ?? "",
                 [],
                 note.uri,
-                // TODO: Resolve mention,s
+                // TODO: Resolve mentions
                 [],
                 // TODO: Add attachments
                 [],
