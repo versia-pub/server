@@ -245,16 +245,17 @@ export const replaceTextMentions = async (
         // Replace @username and @username@domain
         if (mention.instanceId) {
             finalText = finalText.replace(
-                new RegExp(
-                    `@${mention.username}@${mention.instance?.base_url}`,
-                    "g",
-                ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.uri}">@${mention.username}@${mention.instance?.base_url}</a>`,
+                `@${mention.username}@${mention.instance?.base_url}`,
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
+                    mention,
+                )}">@${mention.username}@${mention.instance?.base_url}</a>`,
             );
         } else {
             finalText = finalText.replace(
-                new RegExp(`@${mention.username}`, "g"),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.uri}">@${mention.username}</a>`,
+                `@${mention.username}`,
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
+                    mention,
+                )}">@${mention.username}</a>`,
             );
         }
     }
