@@ -71,6 +71,17 @@ export const followRequestUser = async (
 ) => {
     const isRemote = follower.instanceId !== followee.instanceId;
 
+    const relationship = await client.relationship.update({
+        where: { id: relationshipId },
+        data: {
+            following: isRemote ? false : !followee.isLocked,
+            requested: isRemote ? true : followee.isLocked,
+            showingReblogs: reblogs,
+            notifying: notify,
+            languages: languages,
+        },
+    });
+
     if (isRemote) {
         // Federate
         // TODO: Make database job
@@ -85,9 +96,17 @@ export const followRequestUser = async (
 
         if (!response.ok) {
             console.error(await response.text());
-            throw new Error(
+            console.error(
                 `Failed to federate follow request from ${follower.id} to ${followee.uri}`,
             );
+
+            return await client.relationship.update({
+                where: { id: relationshipId },
+                data: {
+                    following: false,
+                    requested: false,
+                },
+            });
         }
     } else {
         if (followee.isLocked) {
@@ -108,17 +127,6 @@ export const followRequestUser = async (
             });
         }
     }
-
-    const relationship = await client.relationship.update({
-        where: { id: relationshipId },
-        data: {
-            following: isRemote ? false : !followee.isLocked,
-            requested: isRemote ? true : followee.isLocked,
-            showingReblogs: reblogs,
-            notifying: notify,
-            languages: languages,
-        },
-    });
 
     return relationship;
 };
