@@ -628,16 +628,16 @@ export const followAcceptToLysand = (
     follower: User,
     followee: User,
 ): Lysand.FollowAccept => {
-    if (follower.instanceId) {
-        throw new Error("Follower must be a local user");
+    if (!follower.instanceId) {
+        throw new Error("Follower must be a remote user");
     }
 
-    if (!followee.instanceId) {
-        throw new Error("Followee must be a remote user");
+    if (followee.instanceId) {
+        throw new Error("Followee must be a local user");
     }
 
-    if (!followee.uri) {
-        throw new Error("Followee must have a URI in database");
+    if (!follower.uri) {
+        throw new Error("Follower must have a URI in database");
     }
 
     const id = crypto.randomUUID();
@@ -645,12 +645,9 @@ export const followAcceptToLysand = (
     return {
         type: "FollowAccept",
         id: id,
-        author: new URL(
-            `/users/${followee.id}`,
-            config.http.base_url,
-        ).toString(),
+        author: getUserUri(followee),
         created_at: new Date().toISOString(),
-        follower: getUserUri(follower),
+        follower: follower.uri,
         uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
     };
 };
