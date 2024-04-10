@@ -118,6 +118,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         }
     }
 
+    console.log(body);
+
     // Add sent data to database
     switch (body.type) {
         case "Note": {
