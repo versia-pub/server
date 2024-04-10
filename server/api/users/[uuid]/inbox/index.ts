@@ -79,12 +79,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .split(",")[0]
             .replace(/"/g, "");
 
-        // TODO: Fetch sender using WebFinger if not found
-        const sender = await client.user.findUnique({
-            where: {
-                uri: keyId,
-            },
-        });
+        const sender = await resolveUser(keyId);
 
         if (!sender) {
             return errorResponse("Invalid keyId", 400);
