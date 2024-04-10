@@ -221,7 +221,7 @@ export const getDescendants = async (
  */
 export const parseTextMentions = async (text: string) => {
     const mentionedPeople =
-        text.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
+        text.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)?/g) ?? [];
 
     return await client.user.findMany({
         where: {
@@ -301,6 +301,14 @@ export const createNewStatus = async (
 
         htmlContent = linkifyHtml(
             await replaceTextMentions(htmlContent, mentions ?? []),
+            {
+                defaultProtocol: "https",
+                validate: {
+                    email: () => false,
+                },
+                target: "_blank",
+                rel: "nofollow noopener noreferrer",
+            },
         );
     } else {
         htmlContent = "";
