@@ -131,6 +131,44 @@ export const followRequestUser = async (
     return relationship;
 };
 
+export const sendFollowAccept = async (follower: User, followee: User) => {
+    // TODO: Make database job
+    const request = await objectToInboxRequest(
+        followAcceptToLysand(follower, followee),
+        followee,
+        follower,
+    );
+
+    // Send request
+    const response = await fetch(request);
+
+    if (!response.ok) {
+        console.error(await response.text());
+        throw new Error(
+            `Failed to federate follow accept from ${followee.id} to ${follower.uri}`,
+        );
+    }
+};
+
+export const sendFollowReject = async (follower: User, followee: User) => {
+    // TODO: Make database job
+    const request = await objectToInboxRequest(
+        followRejectToLysand(follower, followee),
+        followee,
+        follower,
+    );
+
+    // Send request
+    const response = await fetch(request);
+
+    if (!response.ok) {
+        console.error(await response.text());
+        throw new Error(
+            `Failed to federate follow reject from ${followee.id} to ${follower.uri}`,
+        );
+    }
+};
+
 export const resolveUser = async (uri: string) => {
     // Check if user not already in database
     const foundUser = await client.user.findUnique({
@@ -657,5 +695,15 @@ export const followAcceptToLysand = (
         created_at: new Date().toISOString(),
         follower: follower.uri,
         uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
+    };
+};
+
+export const followRejectToLysand = (
+    follower: User,
+    followee: User,
+): Lysand.FollowReject => {
+    return {
+        ...followAcceptToLysand(follower, followee),
+        type: "FollowReject",
     };
 };

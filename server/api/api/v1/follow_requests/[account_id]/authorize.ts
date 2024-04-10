@@ -5,6 +5,7 @@ import {
     checkForBidirectionalRelationships,
     relationshipToAPI,
 } from "~database/entities/Relationship";
+import { sendFollowAccept } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
@@ -70,6 +71,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     });
 
     if (!relationship) return errorResponse("Relationship not found", 404);
+
+    // Check if accepting remote follow
+    if (account.instanceId) {
+        // Federate follow accept
+        await sendFollowAccept(account, user);
+    }
 
     return jsonResponse(relationshipToAPI(relationship));
 });

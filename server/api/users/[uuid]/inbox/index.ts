@@ -9,6 +9,7 @@ import {
     followAcceptToLysand,
     getRelationshipToOtherUser,
     resolveUser,
+    sendFollowAccept,
 } from "~database/entities/User";
 import { objectToInboxRequest } from "~database/entities/Federation";
 
@@ -194,22 +195,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
             if (!user.isLocked) {
                 // Federate FollowAccept
-                // TODO: Make database job
-                const request = await objectToInboxRequest(
-                    followAcceptToLysand(account, user),
-                    user,
-                    account,
-                );
-
-                // Send request
-                const response = await fetch(request);
-
-                if (!response.ok) {
-                    console.error(await response.text());
-                    throw new Error(
-                        `Failed to federate follow accept from ${user.id} to ${account.uri}`,
-                    );
-                }
+                await sendFollowAccept(account, user);
             }
 
             return response("Follow request sent", 200);
@@ -247,6 +233,34 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             });
 
             return response("Follow request accepted", 200);
+        }
+        case "FollowReject": {
+            const followReject = body as Lysand.FollowReject;
+
+            const account = await resolveUser(followReject.author);
+
+            if (!account) {
+                return errorResponse("Author not found", 400);
+            }
+
+            const relationship = await getRelationshipToOtherUser(
+                user,
+                account,
+            );
+
+            if (!relationship.requested) {
+                return response("There is no follow request to reject", 200);
+            }
+
+            await client.relationship.update({
+                where: { id: relationship.id },
+                data: {
+                    requested: false,
+                    following: false,
+                },
+            });
+
+            return response("Follow request rejected", 200);
         }
         default: {
             return errorResponse("Unknown object type", 400);
