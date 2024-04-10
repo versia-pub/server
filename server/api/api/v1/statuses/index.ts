@@ -8,6 +8,7 @@ import type { StatusWithRelations } from "~database/entities/Status";
 import {
     createNewStatus,
     federateStatus,
+    parseTextMentions,
     statusToAPI,
 } from "~database/entities/Status";
 import type { UserWithRelations } from "~database/entities/User";
@@ -169,7 +170,6 @@ export default apiRoute<{
 
     // Get reply account and status if exists
     let replyStatus: StatusWithRelations | null = null;
-    let replyUser: UserWithRelations | null = null;
     let quote: StatusWithRelations | null = null;
 
     if (in_reply_to_id) {
@@ -181,9 +181,6 @@ export default apiRoute<{
         if (!replyStatus) {
             return errorResponse("Reply status not found", 404);
         }
-
-        // @ts-expect-error Prisma Typescript doesn't include relations
-        replyUser = replyStatus.author;
     }
 
     if (quote_id) {
@@ -216,14 +213,13 @@ export default apiRoute<{
         return errorResponse("Invalid media IDs", 422);
     }
 
+    const mentions = await parseTextMentions(sanitizedStatus);
+
     const newStatus = await createNewStatus(
         user,
         {
-            "text/html": {
-                content: sanitizedStatus,
-            },
             [content_type ?? "text/plain"]: {
-                content: status ?? "",
+                content: sanitizedStatus ?? "",
             },
         },
         visibility as APIStatus["visibility"],
@@ -231,7 +227,7 @@ export default apiRoute<{
         spoiler_text ?? "",
         [],
         undefined,
-        [],
+        mentions,
         media_ids,
         replyStatus ?? undefined,
         quote ?? undefined,

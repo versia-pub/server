@@ -65,7 +65,7 @@ export default apiRoute<{
             {
                 where: {
                     authorId: id,
-                    isReblog: false,
+                    reblogId: null,
                     pinnedBy: {
                         some: {
                             id: user.id,
@@ -104,7 +104,7 @@ export default apiRoute<{
         {
             where: {
                 authorId: id,
-                isReblog: exclude_reblogs ? true : undefined,
+                reblogId: exclude_reblogs ? null : undefined,
                 id: {
                     lt: max_id,
                     gt: min_id,

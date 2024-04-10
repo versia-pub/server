@@ -24,7 +24,6 @@ export default apiRoute<{
     visibility: "public" | "unlisted" | "private";
 }>(async (req, matchedRoute, extraData) => {
     const id = matchedRoute.params.id;
-    const config = await extraData.configManager.getConfig();
 
     const { user } = extraData.auth;
 
@@ -56,30 +55,14 @@ export default apiRoute<{
         data: {
             authorId: user.id,
             reblogId: status.id,
-            isReblog: true,
-            uri: new URL(
-                `/statuses/FAKE-${crypto.randomUUID()}`,
-                config.http.base_url,
-            ).toString(),
             visibility,
             sensitive: false,
         },
         include: statusAndUserRelations,
     });
 
-    await client.status.update({
-        where: { id: newReblog.id },
-        data: {
-            uri: new URL(
-                `/statuses/${newReblog.id}`,
-                config.http.base_url,
-            ).toString(),
-        },
-        include: statusAndUserRelations,
-    });
-
     // Create notification for reblog if reblogged user is on the same instance
-    if ((status.author as UserWithRelations).instanceId === user.instanceId) {
+    if (status.author.instanceId === user.instanceId) {
         await client.notification.create({
             data: {
                 accountId: user.id,
@@ -90,16 +73,5 @@ export default apiRoute<{
         });
     }
 
-    return jsonResponse(
-        await statusToAPI(
-            {
-                ...newReblog,
-                uri: new URL(
-                    `/statuses/${newReblog.id}`,
-                    config.http.base_url,
-                ).toString(),
-            },
-            user,
-        ),
-    );
+    return jsonResponse(await statusToAPI(newReblog, user));
 });

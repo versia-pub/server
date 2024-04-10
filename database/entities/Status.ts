@@ -236,6 +236,32 @@ export const parseTextMentions = async (text: string) => {
     });
 };
 
+export const replaceTextMentions = async (
+    text: string,
+    mentions: UserWithRelations[],
+) => {
+    let finalText = text;
+    for (const mention of mentions) {
+        // Replace @username and @username@domain
+        if (mention.instanceId) {
+            finalText = finalText.replace(
+                new RegExp(
+                    `@${mention.username}@${mention.instance?.base_url}`,
+                    "g",
+                ),
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.uri}">@${mention.username}@${mention.instance?.base_url}</a>`,
+            );
+        } else {
+            finalText = finalText.replace(
+                new RegExp(`@${mention.username}`, "g"),
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.uri}">@${mention.username}</a>`,
+            );
+        }
+    }
+
+    return finalText;
+};
+
 /**
  * Creates a new status and saves it to the database.
  * @returns A promise that resolves with the new status.
@@ -274,6 +300,9 @@ export const createNewStatus = async (
         htmlContent = "";
     }
 
+    // Replace mentions text
+    htmlContent = await replaceTextMentions(htmlContent, mentions ?? []);
+
     // Parse emojis and fuse with existing emojis
     let foundEmojis = emojis;
 
@@ -298,7 +327,6 @@ export const createNewStatus = async (
             visibility: visibility,
             sensitive: is_sensitive,
             spoilerText: spoiler_text,
-            isReblog: false, // DEPRECATED FIELD
             emojis: {
                 connect: foundEmojis.map((emoji) => {
                     return {
