@@ -227,9 +227,12 @@ export const parseTextMentions = async (text: string) => {
         where: {
             OR: mentionedPeople.map((person) => ({
                 username: person.split("@")[1],
-                instance: {
-                    base_url: person.split("@")[2],
-                },
+                instance:
+                    person.split("@").length > 2
+                        ? {
+                              base_url: person.split("@")[2],
+                          }
+                        : null,
             })),
         },
         include: userRelations,
