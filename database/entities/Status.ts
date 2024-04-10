@@ -273,7 +273,7 @@ export const federateStatus = async (status: StatusWithRelations) => {
         const response = await fetch(request);
 
         if (!response.ok) {
-            console.error(response.text());
+            console.error(await response.text());
             throw new Error(
                 `Failed to federate status ${status.id} to ${user.uri}`,
             );
