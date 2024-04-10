@@ -1,5 +1,8 @@
 import { apiRoute, applyConfig } from "@api";
+import { urlToContentFormat } from "@content_types";
 import { jsonResponse } from "@response";
+import type * as Lysand from "lysand-types";
+import pkg from "../../../package.json";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -20,30 +23,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     return jsonResponse({
         type: "ServerMetadata",
         name: config.instance.name,
-        version: "0.0.1",
+        version: pkg.version,
         description: config.instance.description,
-        logo: config.instance.logo
-            ? [
-                  {
-                      content: config.instance.logo,
-                      content_type: `image/${
-                          config.instance.logo.split(".")[1]
-                      }`,
-                  },
-              ]
-            : undefined,
-        banner: config.instance.banner
-            ? [
-                  {
-                      content: config.instance.banner,
-                      content_type: `image/${
-                          config.instance.banner.split(".")[1]
-                      }`,
-                  },
-              ]
-            : undefined,
+        logo: urlToContentFormat(config.instance.logo) ?? undefined,
+        banner: urlToContentFormat(config.instance.banner) ?? undefined,
         supported_extensions: ["org.lysand:custom_emojis"],
         website: "https://lysand.org",
         // TODO: Add admins, moderators field
-    });
+    } satisfies Lysand.ServerMetadata);
 });

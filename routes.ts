@@ -90,6 +90,7 @@ export const rawRoutes = {
     // .well-known queries are automatically re-routed to well-known
     "/well-known/webfinger": "./server/api/well-known/webfinger/index",
     "/well-known/host-meta": "./server/api/well-known/host-meta/index",
+    "/well-known/lysand": "./server/api/well-known/lysand",
     "/[...404]": "./server/api/[...404]",
 } as Record<string, string>;
 
