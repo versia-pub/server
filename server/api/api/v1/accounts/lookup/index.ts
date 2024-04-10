@@ -68,5 +68,5 @@ export default apiRoute<{
         return jsonResponse(userToAPI(account));
     }
 
-    return errorResponse(`Account with username ${username} not found"`, 404);
+    return errorResponse(`Account with username ${username} not found`, 404);
 });
