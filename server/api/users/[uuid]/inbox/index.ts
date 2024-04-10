@@ -212,6 +212,34 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
             return response("Follow request sent", 200);
         }
+        case "FollowAccept": {
+            const followAccept = body as Lysand.FollowAccept;
+
+            const account = await resolveUser(followAccept.author);
+
+            if (!account) {
+                return errorResponse("Author not found", 400);
+            }
+
+            const relationship = await getRelationshipToOtherUser(
+                user,
+                account,
+            );
+
+            if (!relationship.requested) {
+                return response("There is no follow request to accept", 200);
+            }
+
+            await client.relationship.update({
+                where: { id: relationship.id },
+                data: {
+                    following: true,
+                    requested: false,
+                },
+            });
+
+            return response("Follow request accepted", 200);
+        }
         default: {
             return errorResponse("Unknown object type", 400);
         }
