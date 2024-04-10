@@ -178,9 +178,9 @@ export default apiRoute<{
             );
         }
 
-        const { uploadedFile } = await mediaManager.addFile(avatar);
+        const { path } = await mediaManager.addFile(avatar);
 
-        user.avatar = getUrl(uploadedFile.name, config);
+        user.avatar = getUrl(path, config);
     }
 
     if (header) {
@@ -192,9 +192,9 @@ export default apiRoute<{
             );
         }
 
-        const { uploadedFile } = await mediaManager.addFile(header);
+        const { path } = await mediaManager.addFile(header);
 
-        user.header = getUrl(uploadedFile.name, config);
+        user.header = getUrl(path, config);
     }
 
     if (locked) {

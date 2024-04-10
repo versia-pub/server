@@ -74,8 +74,8 @@ export default apiRoute<{
             }
 
             if (thumbnail) {
-                const { uploadedFile } = await mediaManager.addFile(thumbnail);
-                thumbnailUrl = getUrl(uploadedFile.name, config);
+                const { path } = await mediaManager.addFile(thumbnail);
+                thumbnailUrl = getUrl(path, config);
             }
 
             const descriptionText = description || attachment.description;

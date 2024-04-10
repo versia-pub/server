@@ -121,17 +121,17 @@ export default apiRoute<{
     }
 
     if (isImage) {
-        const { uploadedFile } = await mediaManager.addFile(file);
+        const { path } = await mediaManager.addFile(file);
 
-        url = getUrl(uploadedFile.name, config);
+        url = getUrl(path, config);
     }
 
     let thumbnailUrl = "";
 
     if (thumbnail) {
-        const { uploadedFile } = await mediaManager.addFile(thumbnail);
+        const { path } = await mediaManager.addFile(thumbnail);
 
-        thumbnailUrl = getUrl(uploadedFile.name, config);
+        thumbnailUrl = getUrl(path, config);
     }
 
     const newAttachment = await client.attachment.create({

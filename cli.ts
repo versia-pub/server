@@ -1251,7 +1251,7 @@ const cliBuilder = new CliBuilder([
                     return 1;
                 }
 
-                newUrl = getUrl(metadata.uploadedFile.name, config);
+                newUrl = getUrl(metadata.path, config);
 
                 console.log(
                     `${chalk.green("✓")} Uploaded emoji to object storage`,
