@@ -5,7 +5,7 @@ import { userToLysand } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
+    allowedMethods: ["GET"],
     auth: {
         required: false,
     },
@@ -16,9 +16,6 @@ export const meta = applyConfig({
     route: "/users/:uuid",
 });
 
-/**
- * ActivityPub user inbox endpoint
- */
 export default apiRoute(async (req, matchedRoute) => {
     const uuid = matchedRoute.params.uuid;
 

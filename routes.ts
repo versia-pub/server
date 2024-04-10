@@ -83,7 +83,7 @@ export const rawRoutes = {
         "./server/api/api/v1/statuses/[id]/unreblog",
     "/media/[id]": "./server/api/media/[id]/index",
     "/oauth/callback/[issuer]": "./server/api/oauth/callback/[issuer]/index",
-    "/object/[uuid]": "./server/api/object/[uuid]/index",
+    "/objects/note/[uuid]": "./server/api/objects/note/[uuid]/index",
     "/users/[uuid]": "./server/api/users/[uuid]/index",
     "/users/[uuid]/inbox": "./server/api/users/[uuid]/inbox/index",
     "/users/[uuid]/outbox": "./server/api/users/[uuid]/outbox/index",

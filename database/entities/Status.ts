@@ -59,8 +59,7 @@ export const isViewableByUser = (status: Status, user: User | null) => {
 
 export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
     // Check if already in database
-
-    const existingStatus: StatusWithRelations | null =
+    /* const existingStatus: StatusWithRelations | null =
         await client.status.findFirst({
             where: {
                 uri: uri,
@@ -112,7 +111,7 @@ export const fetchFromRemote = async (uri: string): Promise<Status | null> => {
               }
             : undefined,
         quote: quotingStatus || undefined,
-    });
+    }); */
 };
 
 /**
@@ -193,11 +192,126 @@ export const getDescendants = async (
 };
 
 /**
+ * Get people mentioned in the content (match @username or @username@domain.com mentions)
+ * @param text The text to parse mentions from.
+ * @returns An array of users mentioned in the text.
+ */
+export const parseTextMentions = async (text: string) => {
+    const mentionedPeople =
+        text.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_]+)?/g) ?? [];
+
+    return await client.user.findMany({
+        where: {
+            OR: mentionedPeople.map((person) => ({
+                username: person.split("@")[1],
+                instance: {
+                    base_url: person.split("@")[2],
+                },
+            })),
+        },
+        include: userRelations,
+    });
+};
+
+export const createNewStatus = async (
+    author: User,
+    content: Lysand.ContentFormat,
+    visibility: APIStatus["visibility"],
+    is_sensitive: boolean,
+    spoiler_text: string,
+    emojis: Emoji[],
+    uri?: string,
+    mentions?: UserWithRelations[],
+    /** List of IDs of database Attachment objects */
+    media_attachments?: string[],
+    inReplyTo?: StatusWithRelations,
+    quoting?: StatusWithRelations,
+) => {
+    let htmlContent: string;
+
+    if (content["text/html"]) {
+        htmlContent = content["text/html"].content;
+    } else if (content["text/markdown"]) {
+        htmlContent = linkifyHtml(
+            await sanitizeHtml(await parse(content["text/markdown"].content)),
+        );
+    } else if (content["text/plain"]) {
+        htmlContent = linkifyStr(content["text/plain"].content);
+
+        // Split by newline and add <p> tags
+        htmlContent = htmlContent
+            .split("\n")
+            .map((line) => `<p>${line}</p>`)
+            .join("\n");
+    } else {
+        htmlContent = "";
+    }
+
+    // Parse emojis and fuse with existing emojis
+    let foundEmojis = emojis;
+
+    if (author.instanceId === null) {
+        const parsedEmojis = await parseEmojis(htmlContent);
+        // Fuse and deduplicate
+        foundEmojis = [...emojis, ...parsedEmojis].filter(
+            (emoji, index, self) =>
+                index === self.findIndex((t) => t.id === emoji.id),
+        );
+    }
+
+    const status = await client.status.create({
+        data: {
+            authorId: author.id,
+            content: htmlContent,
+            contentSource:
+                content["text/plain"]?.content ||
+                content["text/markdown"]?.content ||
+                "",
+            contentType: "text/html",
+            visibility: visibility,
+            sensitive: is_sensitive,
+            spoilerText: spoiler_text,
+            isReblog: false, // DEPRECATED FIELD
+            emojis: {
+                connect: foundEmojis.map((emoji) => {
+                    return {
+                        id: emoji.id,
+                    };
+                }),
+            },
+            attachments: media_attachments
+                ? {
+                      connect: media_attachments.map((attachment) => {
+                          return {
+                              id: attachment,
+                          };
+                      }),
+                  }
+                : undefined,
+            inReplyToPostId: inReplyTo?.id,
+            quotingPostId: quoting?.id,
+            instanceId: author.instanceId || undefined,
+            uri: uri || null,
+            mentions: {
+                connect: mentions?.map((mention) => {
+                    return {
+                        id: mention.id,
+                    };
+                }),
+            },
+        },
+        include: statusAndUserRelations,
+    });
+
+    return status;
+};
+
+/**
  * Creates a new status and saves it to the database.
  * @param data The data for the new status.
  * @returns A promise that resolves with the new status.
  */
-export const createNewStatus = async (data: {
+export const createNewStatus2 = async (data: {
     account: User;
     application: Application | null;
     content: string;
@@ -539,11 +653,18 @@ export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
         type: "Note",
         created_at: new Date(status.createdAt).toISOString(),
         id: status.id,
-        author: status.authorId,
-        uri: new URL(
-            `/objects/note/${status.id}`,
-            config.http.base_url,
-        ).toString(),
+        author:
+            status.author.uri ||
+            new URL(
+                `/users/${status.author.id}`,
+                config.http.base_url,
+            ).toString(),
+        uri:
+            status.uri ||
+            new URL(
+                `/objects/note/${status.id}`,
+                config.http.base_url,
+            ).toString(),
         content: {
             "text/html": {
                 content: status.content,

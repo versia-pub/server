@@ -8,6 +8,7 @@ import type { StatusWithRelations } from "~database/entities/Status";
 import { createNewStatus, statusToAPI } from "~database/entities/Status";
 import type { UserWithRelations } from "~database/entities/User";
 import { statusAndUserRelations } from "~database/entities/relations";
+import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -211,30 +212,26 @@ export default apiRoute<{
         return errorResponse("Invalid media IDs", 422);
     }
 
-    const newStatus = await createNewStatus({
-        account: user,
-        application,
-        content: sanitizedStatus,
-        visibility:
-            visibility ||
-            (config.defaults.visibility as
-                | "public"
-                | "unlisted"
-                | "private"
-                | "direct"),
-        sensitive: sensitive || false,
-        spoiler_text: spoiler_text || "",
-        emojis: [],
-        media_attachments: media_ids,
-        reply:
-            replyStatus && replyUser
-                ? {
-                      user: replyUser,
-                      status: replyStatus,
-                  }
-                : undefined,
-        quote: quote || undefined,
-    });
+    const newStatus = await createNewStatus(
+        user,
+        {
+            "text/html": {
+                content: sanitizedStatus,
+            },
+            [content_type ?? "text/plain"]: {
+                content: status ?? "",
+            },
+        },
+        visibility as APIStatus["visibility"],
+        sensitive ?? false,
+        spoiler_text ?? "",
+        [],
+        undefined,
+        [],
+        media_ids,
+        replyStatus ?? undefined,
+        quote ?? undefined,
+    );
 
     // TODO: add database jobs to deliver the post
 

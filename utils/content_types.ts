@@ -1,21 +1,42 @@
-import type { ContentFormat } from "~types/lysand/Object";
+import type * as Lysand from "lysand-types";
+import { lookup } from "mime-types";
 
-export const getBestContentType = (contents: ContentFormat[]) => {
-    // Find the best content and content type
-    if (contents.find((c) => c.content_type === "text/x.misskeymarkdown")) {
-        return (
-            contents.find((c) => c.content_type === "text/x.misskeymarkdown") ||
-            null
-        );
+export const getBestContentType = (content?: Lysand.ContentFormat) => {
+    if (!content) return { content: "", format: "text/plain" };
+
+    const bestFormatsRanked = [
+        "text/x.misskeymarkdown",
+        "text/html",
+        "text/markdown",
+        "text/plain",
+    ];
+
+    for (const format of bestFormatsRanked) {
+        if (content[format])
+            return { content: content[format].content, format };
     }
-    if (contents.find((c) => c.content_type === "text/html")) {
-        return contents.find((c) => c.content_type === "text/html") || null;
+
+    return { content: "", format: "text/plain" };
+};
+
+export const urlToContentFormat = (
+    url: string,
+): Lysand.ContentFormat | null => {
+    if (!url) return null;
+    if (url.startsWith("https://api.dicebear.com/")) {
+        return {
+            "image/svg+xml": {
+                content: url,
+            },
+        };
     }
-    if (contents.find((c) => c.content_type === "text/markdown")) {
-        return contents.find((c) => c.content_type === "text/markdown") || null;
-    }
-    if (contents.find((c) => c.content_type === "text/plain")) {
-        return contents.find((c) => c.content_type === "text/plain") || null;
-    }
-    return contents[0] || null;
+    const mimeType =
+        lookup(url.replace(new URL(url).search, "")) ||
+        "application/octet-stream";
+
+    return {
+        [mimeType]: {
+            content: url,
+        },
+    };
 };

@@ -11,6 +11,7 @@ import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
 import { createNewRelationship } from "./Relationship";
+import { urlToContentFormat } from "@content_types";
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -493,18 +494,9 @@ export const userToLysand = (user: UserWithRelations): Lysand.User => {
         ).toString(),
         indexable: false,
         username: user.username,
-        avatar: {
-            [user.avatar.split(".")[1]]: {
-                content: getAvatarUrl(user, config),
-            },
-        },
-        header: {
-            [user.header.split(".")[1]]: {
-                content: getHeaderUrl(user, config),
-            },
-        },
+        avatar: urlToContentFormat(getAvatarUrl(user, config)) ?? undefined,
+        header: urlToContentFormat(getHeaderUrl(user, config)) ?? undefined,
         display_name: user.displayName,
-
         fields: (user.source as APISource).fields.map((field) => ({
             key: {
                 "text/html": {
