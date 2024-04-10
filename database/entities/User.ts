@@ -256,6 +256,10 @@ export const resolveWebFinger = async (identifier: string, host: string) => {
         },
     );
 
+    if (response.status === 404) {
+        return null;
+    }
+
     const data = (await response.json()) as {
         subject: string;
         links: {
