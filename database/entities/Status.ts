@@ -299,17 +299,14 @@ export const createNewStatus = async (
             .map((line) => `<p>${line}</p>`)
             .join("\n");
 
-        htmlContent = linkifyHtml(
-            await replaceTextMentions(htmlContent, mentions ?? []),
-            {
-                defaultProtocol: "https",
-                validate: {
-                    email: () => false,
-                },
-                target: "_blank",
-                rel: "nofollow noopener noreferrer",
+        htmlContent = linkifyHtml(htmlContent, {
+            defaultProtocol: "https",
+            validate: {
+                email: () => false,
             },
-        );
+            target: "_blank",
+            rel: "nofollow noopener noreferrer",
+        });
     } else {
         htmlContent = "";
     }
