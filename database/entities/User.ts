@@ -7,7 +7,7 @@ import { client } from "~database/datasource";
 import type { APIAccount } from "~types/entities/account";
 import type { APISource } from "~types/entities/source";
 import type * as Lysand from "lysand-types";
-import { addEmojiIfNotExists, emojiToAPI, emojiToLysand } from "./Emoji";
+import { fetchEmoji, emojiToAPI, emojiToLysand } from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
 import { userRelations } from "./relations";
 import { createNewRelationship } from "./Relationship";
@@ -241,7 +241,7 @@ export const resolveUser = async (uri: string) => {
     const emojis = [];
 
     for (const emoji of userEmojis) {
-        emojis.push(await addEmojiIfNotExists(emoji));
+        emojis.push(await fetchEmoji(emoji));
     }
 
     const user = await client.user.create({

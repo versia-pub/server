@@ -2,6 +2,7 @@ import type { Emoji } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { APIEmoji } from "~types/entities/emoji";
 import type * as Lysand from "lysand-types";
+import { addInstanceIfNotExists } from "./Instance";
 
 /**
  * Represents an emoji entity in the database.
@@ -29,15 +30,27 @@ export const parseEmojis = async (text: string): Promise<Emoji[]> => {
     });
 };
 
-export const addEmojiIfNotExists = async (emoji: Lysand.Emoji) => {
+/**
+ * Gets an emoji from the database, and fetches it from the remote instance if it doesn't exist.
+ * @param emoji Emoji to fetch
+ * @param host Host to fetch the emoji from if remote
+ * @returns The emoji
+ */
+export const fetchEmoji = async (emoji: Lysand.Emoji, host?: string) => {
     const existingEmoji = await client.emoji.findFirst({
         where: {
             shortcode: emoji.name,
-            instance: null,
+            instance: host
+                ? {
+                      base_url: host,
+                  }
+                : null,
         },
     });
 
     if (existingEmoji) return existingEmoji;
+
+    const instance = host ? await addInstanceIfNotExists(host) : null;
 
     return await client.emoji.create({
         data: {
@@ -46,6 +59,13 @@ export const addEmojiIfNotExists = async (emoji: Lysand.Emoji) => {
             alt: emoji.alt || emoji.url[0].description || undefined,
             content_type: Object.keys(emoji.url)[0],
             visible_in_picker: true,
+            instance: host
+                ? {
+                      connect: {
+                          id: instance?.id,
+                      },
+                  }
+                : undefined,
         },
     });
 };

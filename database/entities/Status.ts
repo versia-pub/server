@@ -26,7 +26,7 @@ import {
     attachmentToAPI,
     attachmentToLysand,
 } from "./Attachment";
-import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
+import { emojiToAPI, emojiToLysand, fetchEmoji, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
 import { getUserUri, resolveUser, resolveWebFinger, userToAPI } from "./User";
 import { statusAndUserRelations, userRelations } from "./relations";
@@ -116,16 +116,34 @@ export const resolveStatus = async (
         throw new Error("Invalid object author");
     }
 
-    const attachments = (
-        await Promise.all(
-            (note.attachments ?? []).map((attachment) =>
-                attachmentFromLysand(attachment).catch((e) => {
-                    console.error(e);
-                    return null;
-                }),
-            ),
-        )
-    ).filter((attachment) => attachment !== null) as Attachment[];
+    const attachments = [];
+
+    for (const attachment of note.attachments ?? []) {
+        const resolvedAttachment = await attachmentFromLysand(attachment).catch(
+            (e) => {
+                console.error(e);
+                return null;
+            },
+        );
+
+        if (resolvedAttachment) {
+            attachments.push(resolvedAttachment);
+        }
+    }
+
+    const emojis = [];
+
+    for (const emoji of note.extensions?.["org.lysand:custom_emojis"]?.emojis ??
+        []) {
+        const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
+            console.error(e);
+            return null;
+        });
+
+        if (resolvedEmoji) {
+            emojis.push(resolvedEmoji);
+        }
+    }
 
     return await createNewStatus(
         author,
@@ -137,7 +155,7 @@ export const resolveStatus = async (
         note.visibility as APIStatus["visibility"],
         note.is_sensitive ?? false,
         note.subject ?? "",
-        [],
+        emojis,
         note.uri,
         await Promise.all(
             (note.mentions ?? [])
