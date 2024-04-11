@@ -39,13 +39,13 @@ export async function fetchTimeline<T extends User | Status | Notification>(
             const urlWithoutQuery = req.url.split("?")[0];
             // Add prev link
             linkHeader.push(
-                `<${urlWithoutQuery}?min_id=${objects[0].id}>; rel="prev"`,
+                `<${urlWithoutQuery}?limit=${args?.limit ?? 20}&min_id=${
+                    objects[0].id
+                }>; rel="prev"`,
             );
         }
 
-        if (
-            objects.length < (Number(args?.limit) ?? Number.POSITIVE_INFINITY)
-        ) {
+        if (objects.length >= (Number(args?.limit) ?? 20)) {
             // Check if there are statuses after the last one
             // @ts-expect-error hack again
             const objectsAfter = await model({
@@ -59,7 +59,9 @@ export async function fetchTimeline<T extends User | Status | Notification>(
                 const urlWithoutQuery = req.url.split("?")[0];
                 // Add next link
                 linkHeader.push(
-                    `<${urlWithoutQuery}?max_id=${objectsAfter[0].id}>; rel="next"`,
+                    `<${urlWithoutQuery}?limit=${args?.limit ?? 20}&max_id=${
+                        objects.at(-1)?.id
+                    }>; rel="next"`,
                 );
             }
         }

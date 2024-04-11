@@ -563,6 +563,7 @@ export const createNewLocalUser = async (data: {
     avatar?: string;
     header?: string;
     admin?: boolean;
+    skipPasswordHash?: boolean;
 }): Promise<UserWithRelations | null> => {
     const keys = await generateUserKeys();
 
@@ -572,7 +573,9 @@ export const createNewLocalUser = async (data: {
             .values({
                 username: data.username,
                 displayName: data.display_name ?? data.username,
-                password: await Bun.password.hash(data.password),
+                password: data.skipPasswordHash
+                    ? data.password
+                    : await Bun.password.hash(data.password),
                 email: data.email,
                 note: data.bio ?? "",
                 avatar: data.avatar ?? config.defaults.avatar,
