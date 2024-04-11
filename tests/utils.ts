@@ -1,4 +1,4 @@
-import { server } from "~index";
+// import { server } from "~index";
 
 /**
  * This allows us to send a test request to the server even when it isnt running
@@ -7,7 +7,9 @@ import { server } from "~index";
  * @returns Response from the server
  */
 export async function sendTestRequest(req: Request) {
-    return server.fetch(req);
+    console.log(req);
+    return fetch(req);
+    // return server.fetch(req);
 }
 
 export function wrapRelativeUrl(url: string, base_url: string) {

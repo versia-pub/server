@@ -1,21 +1,24 @@
-import type { Attachment } from "@prisma/client";
 import type { Config } from "config-manager";
 import { MediaBackendType } from "media-manager";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIAttachment } from "~types/entities/attachment";
 import type * as Lysand from "lysand-types";
-import { client } from "~database/datasource";
+import { db } from "~drizzle/db";
+import { attachment } from "~drizzle/schema";
+import type { InferSelectModel } from "drizzle-orm";
+
+export type Attachment = InferSelectModel<typeof attachment>;
 
 export const attachmentToAPI = (
     attachment: Attachment,
 ): APIAsyncAttachment | APIAttachment => {
     let type = "unknown";
 
-    if (attachment.mime_type.startsWith("image/")) {
+    if (attachment.mimeType.startsWith("image/")) {
         type = "image";
-    } else if (attachment.mime_type.startsWith("video/")) {
+    } else if (attachment.mimeType.startsWith("video/")) {
         type = "video";
-    } else if (attachment.mime_type.startsWith("audio/")) {
+    } else if (attachment.mimeType.startsWith("audio/")) {
         type = "audio";
     }
 
@@ -23,8 +26,8 @@ export const attachmentToAPI = (
         id: attachment.id,
         type: type as "image" | "video" | "audio" | "unknown",
         url: attachment.url,
-        remote_url: attachment.remote_url,
-        preview_url: attachment.thumbnail_url,
+        remote_url: attachment.remoteUrl,
+        preview_url: attachment.thumbnailUrl,
         text_url: null,
         meta: {
             width: attachment.width || undefined,
@@ -63,7 +66,7 @@ export const attachmentToLysand = (
     attachment: Attachment,
 ): Lysand.ContentFormat => {
     return {
-        [attachment.mime_type]: {
+        [attachment.mimeType]: {
             content: attachment.url,
             blurhash: attachment.blurhash ?? undefined,
             description: attachment.description ?? undefined,
@@ -82,13 +85,15 @@ export const attachmentToLysand = (
 };
 
 export const attachmentFromLysand = async (
-    attachment: Lysand.ContentFormat,
-): Promise<Attachment> => {
-    const key = Object.keys(attachment)[0];
-    const value = attachment[key];
+    attachmentToConvert: Lysand.ContentFormat,
+): Promise<InferSelectModel<typeof attachment>> => {
+    const key = Object.keys(attachmentToConvert)[0];
+    const value = attachmentToConvert[key];
 
-    return await client.attachment.create({
-        data: {
+    const result = await db
+        .insert(attachment)
+        .values({
+            mimeType: key,
             url: value.content,
             description: value.description || undefined,
             duration: value.duration || undefined,
@@ -97,10 +102,11 @@ export const attachmentFromLysand = async (
             size: value.size || undefined,
             width: value.width || undefined,
             sha256: value.hash?.sha256 || undefined,
-            mime_type: key,
             blurhash: value.blurhash || undefined,
-        },
-    });
+        })
+        .returning();
+
+    return result[0];
 };
 
 export const getUrl = (name: string, config: Config) => {

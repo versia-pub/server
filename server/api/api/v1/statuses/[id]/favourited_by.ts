@@ -1,13 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
-import { isViewableByUser } from "~database/entities/Status";
-import { userToAPI, type UserWithRelations } from "~database/entities/User";
+import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 import {
-    statusAndUserRelations,
-    userRelations,
-} from "~database/entities/relations";
+    findManyUsers,
+    userToAPI,
+    type UserWithRelations,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,9 +33,8 @@ export default apiRoute<{
 
     const { user } = extraData.auth;
 
-    const status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const status = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if user is authorized to view this status (if it's private)
@@ -50,32 +48,18 @@ export default apiRoute<{
     if (limit < 1) return errorResponse("Invalid limit", 400);
 
     const { objects, link } = await fetchTimeline<UserWithRelations>(
-        client.user,
+        findManyUsers,
         {
-            where: {
-                likes: {
-                    some: {
-                        likedId: status.id,
-                    },
-                },
-                id: {
-                    lt: max_id,
-                    gte: since_id,
-                    gt: min_id,
-                },
-            },
-            include: {
-                ...userRelations,
-                likes: {
-                    where: {
-                        likedId: status.id,
-                    },
-                },
-            },
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-ignore
+            where: (liker, { and, lt, gt, gte, eq, sql }) =>
+                and(
+                    max_id ? lt(liker.id, max_id) : undefined,
+                    since_id ? gte(liker.id, since_id) : undefined,
+                    min_id ? gt(liker.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${liker.id})`,
+                ),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (liker, { desc }) => desc(liker.id),
         },
         req,
     );

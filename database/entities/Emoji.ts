@@ -1,33 +1,36 @@
-import type { Emoji } from "@prisma/client";
-import { client } from "~database/datasource";
 import type { APIEmoji } from "~types/entities/emoji";
 import type * as Lysand from "lysand-types";
 import { addInstanceIfNotExists } from "./Instance";
+import { db } from "~drizzle/db";
+import { emoji, instance } from "~drizzle/schema";
+import { and, eq, type InferSelectModel } from "drizzle-orm";
 
-/**
- * Represents an emoji entity in the database.
- */
+export type EmojiWithInstance = InferSelectModel<typeof emoji> & {
+    instance: InferSelectModel<typeof instance> | null;
+};
 
 /**
  * Used for parsing emojis from local text
  * @param text The text to parse
  * @returns An array of emojis
  */
-export const parseEmojis = async (text: string): Promise<Emoji[]> => {
+export const parseEmojis = async (text: string) => {
     const regex = /:[a-zA-Z0-9_]+:/g;
     const matches = text.match(regex);
     if (!matches) return [];
-    return await client.emoji.findMany({
-        where: {
-            shortcode: {
-                in: matches.map((match) => match.replace(/:/g, "")),
-            },
-            instanceId: null,
-        },
-        include: {
+    const emojis = await db.query.emoji.findMany({
+        where: (emoji, { eq, or }) =>
+            or(
+                ...matches
+                    .map((match) => match.replace(/:/g, ""))
+                    .map((match) => eq(emoji.shortcode, match)),
+            ),
+        with: {
             instance: true,
         },
     });
+
+    return emojis;
 };
 
 /**
@@ -36,62 +39,72 @@ export const parseEmojis = async (text: string): Promise<Emoji[]> => {
  * @param host Host to fetch the emoji from if remote
  * @returns The emoji
  */
-export const fetchEmoji = async (emoji: Lysand.Emoji, host?: string) => {
-    const existingEmoji = await client.emoji.findFirst({
-        where: {
-            shortcode: emoji.name,
-            instance: host
-                ? {
-                      base_url: host,
-                  }
-                : null,
-        },
-    });
+export const fetchEmoji = async (
+    emojiToFetch: Lysand.Emoji,
+    host?: string,
+): Promise<EmojiWithInstance> => {
+    const existingEmoji = await db
+        .select()
+        .from(emoji)
+        .innerJoin(instance, eq(emoji.instanceId, instance.id))
+        .where(
+            and(
+                eq(emoji.shortcode, emojiToFetch.name),
+                host ? eq(instance.baseUrl, host) : undefined,
+            ),
+        )
+        .limit(1);
 
-    if (existingEmoji) return existingEmoji;
+    if (existingEmoji[0])
+        return {
+            ...existingEmoji[0].Emoji,
+            instance: existingEmoji[0].Instance,
+        };
 
-    const instance = host ? await addInstanceIfNotExists(host) : null;
+    const foundInstance = host ? await addInstanceIfNotExists(host) : null;
 
-    return await client.emoji.create({
-        data: {
-            shortcode: emoji.name,
-            url: Object.entries(emoji.url)[0][1].content,
-            alt:
-                emoji.alt ||
-                Object.entries(emoji.url)[0][1].description ||
-                undefined,
-            content_type: Object.keys(emoji.url)[0],
-            visible_in_picker: true,
-            instance: host
-                ? {
-                      connect: {
-                          id: instance?.id,
-                      },
-                  }
-                : undefined,
-        },
-    });
+    const result = (
+        await db
+            .insert(emoji)
+            .values({
+                shortcode: emojiToFetch.name,
+                url: Object.entries(emojiToFetch.url)[0][1].content,
+                alt:
+                    emojiToFetch.alt ||
+                    Object.entries(emojiToFetch.url)[0][1].description ||
+                    undefined,
+                contentType: Object.keys(emojiToFetch.url)[0],
+                visibleInPicker: true,
+                instanceId: foundInstance?.id,
+            })
+            .returning()
+    )[0];
+
+    return {
+        ...result,
+        instance: foundInstance,
+    };
 };
 
 /**
  * Converts the emoji to an APIEmoji object.
  * @returns The APIEmoji object.
  */
-export const emojiToAPI = (emoji: Emoji): APIEmoji => {
+export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
     return {
         shortcode: emoji.shortcode,
         static_url: emoji.url, // TODO: Add static version
         url: emoji.url,
-        visible_in_picker: emoji.visible_in_picker,
+        visible_in_picker: emoji.visibleInPicker,
         category: undefined,
     };
 };
 
-export const emojiToLysand = (emoji: Emoji): Lysand.Emoji => {
+export const emojiToLysand = (emoji: EmojiWithInstance): Lysand.Emoji => {
     return {
         name: emoji.shortcode,
         url: {
-            [emoji.content_type]: {
+            [emoji.contentType]: {
                 content: emoji.url,
                 description: emoji.alt || undefined,
             },

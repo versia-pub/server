@@ -1,14 +1,13 @@
-import type { User } from "@prisma/client";
 import type * as Lysand from "lysand-types";
 import { config } from "config-manager";
-import { getUserUri } from "./User";
+import { getUserUri, type User } from "./User";
 
 export const objectToInboxRequest = async (
     object: Lysand.Entity,
     author: User,
     userToSendTo: User,
 ): Promise<Request> => {
-    if (!userToSendTo.instanceId || !userToSendTo.endpoints.inbox) {
+    if (!userToSendTo.instanceId || !userToSendTo.endpoints?.inbox) {
         throw new Error("UserToSendTo has no inbox or is a local user");
     }
 

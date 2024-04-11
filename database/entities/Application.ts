@@ -1,10 +1,9 @@
-import type { Application } from "@prisma/client";
-import { client } from "~database/datasource";
+import type { InferSelectModel } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import type { application } from "~drizzle/schema";
 import type { APIApplication } from "~types/entities/application";
 
-/**
- * Represents an application that can authenticate with the API.
- */
+export type Application = InferSelectModel<typeof application>;
 
 /**
  * Retrieves the application associated with the given access token.
@@ -14,16 +13,14 @@ import type { APIApplication } from "~types/entities/application";
 export const getFromToken = async (
     token: string,
 ): Promise<Application | null> => {
-    const dbToken = await client.token.findFirst({
-        where: {
-            access_token: token,
-        },
-        include: {
+    const result = await db.query.token.findFirst({
+        where: (tokens, { eq }) => eq(tokens.accessToken, token),
+        with: {
             application: true,
         },
     });
 
-    return dbToken?.application || null;
+    return result?.application || null;
 };
 
 /**
@@ -34,6 +31,6 @@ export const applicationToAPI = (app: Application): APIApplication => {
     return {
         name: app.name,
         website: app.website,
-        vapid_key: app.vapid_key,
+        vapid_key: app.vapidKey,
     };
 };

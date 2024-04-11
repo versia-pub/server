@@ -27,8 +27,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     return jsonResponse({
         name: application.name,
         website: application.website,
-        vapid_key: application.vapid_key,
-        redirect_uris: application.redirect_uris,
+        vapid_key: application.vapidKey,
+        redirect_uris: application.redirectUris,
         scopes: application.scopes,
     });
 });

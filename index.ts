@@ -2,13 +2,15 @@ import { exists, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { connectMeili } from "@meilisearch";
 import { moduleIsEntry } from "@module";
-import type { PrismaClientInitializationError } from "@prisma/client/runtime/library";
 import { initializeRedisCache } from "@redis";
 import { config } from "config-manager";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
-import { client } from "~database/datasource";
 import { createServer } from "~server";
+import { db, client as pgClient } from "~drizzle/db";
+import { status } from "~drizzle/schema";
+import { count, sql } from "drizzle-orm";
 
+await pgClient.connect();
 const timeAtStart = performance.now();
 
 // Create requests file if it doesnt exist
@@ -43,16 +45,18 @@ if (config.meilisearch.enabled) {
     await connectMeili(dualLogger);
 }
 
-if (redisCache) {
-    client.$use(redisCache);
-}
-
 // Check if database is reachable
 let postCount = 0;
 try {
-    postCount = await client.status.count();
+    postCount = (
+        await db
+            .select({
+                count: count(),
+            })
+            .from(status)
+    )[0].count;
 } catch (e) {
-    const error = e as PrismaClientInitializationError;
+    const error = e as Error;
     await logger.logError(LogLevel.CRITICAL, "Database", error);
     await consoleLogger.logError(LogLevel.CRITICAL, "Database", error);
     process.exit(1);

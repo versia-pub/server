@@ -1,6 +1,6 @@
-import type { Instance } from "@prisma/client";
-import { client } from "~database/datasource";
+import { db } from "~drizzle/db";
 import type * as Lysand from "lysand-types";
+import { instance } from "~drizzle/schema";
 
 /**
  * Represents an instance in the database.
@@ -11,16 +11,12 @@ import type * as Lysand from "lysand-types";
  * @param url
  * @returns Either the database instance if it already exists, or a newly created instance.
  */
-export const addInstanceIfNotExists = async (
-    url: string,
-): Promise<Instance> => {
+export const addInstanceIfNotExists = async (url: string) => {
     const origin = new URL(url).origin;
     const host = new URL(url).host;
 
-    const found = await client.instance.findFirst({
-        where: {
-            base_url: host,
-        },
+    const found = await db.query.instance.findFirst({
+        where: (instance, { eq }) => eq(instance.baseUrl, host),
     });
 
     if (found) return found;
@@ -40,12 +36,15 @@ export const addInstanceIfNotExists = async (
         throw new Error("Invalid instance metadata (missing name or version)");
     }
 
-    return await client.instance.create({
-        data: {
-            base_url: host,
-            name: metadata.name,
-            version: metadata.version,
-            logo: metadata.logo,
-        },
-    });
+    return (
+        await db
+            .insert(instance)
+            .values({
+                baseUrl: host,
+                name: metadata.name,
+                version: metadata.version,
+                logo: metadata.logo,
+            })
+            .returning()
+    )[0];
 };

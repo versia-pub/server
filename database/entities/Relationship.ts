@@ -1,10 +1,11 @@
-import type { Relationship, User } from "@prisma/client";
 import { client } from "~database/datasource";
 import type { APIRelationship } from "~types/entities/relationship";
+import type { User } from "./User";
+import type { InferSelectModel } from "drizzle-orm";
+import { relationship } from "~drizzle/schema";
+import { db } from "~drizzle/db";
 
-/**
- * Stores Mastodon API relationships
- */
+export type Relationship = InferSelectModel<typeof relationship>;
 
 /**
  * Creates a new relationship between two users.
@@ -16,25 +17,29 @@ export const createNewRelationship = async (
     owner: User,
     other: User,
 ): Promise<Relationship> => {
-    return await client.relationship.create({
-        data: {
-            ownerId: owner.id,
-            subjectId: other.id,
-            languages: [],
-            following: false,
-            showingReblogs: false,
-            notifying: false,
-            followedBy: false,
-            blocking: false,
-            blockedBy: false,
-            muting: false,
-            mutingNotifications: false,
-            requested: false,
-            domainBlocking: false,
-            endorsed: false,
-            note: "",
-        },
-    });
+    return (
+        await db
+            .insert(relationship)
+            .values({
+                ownerId: owner.id,
+                subjectId: other.id,
+                languages: [],
+                following: false,
+                showingReblogs: false,
+                notifying: false,
+                followedBy: false,
+                blocking: false,
+                blockedBy: false,
+                muting: false,
+                mutingNotifications: false,
+                requested: false,
+                domainBlocking: false,
+                endorsed: false,
+                note: "",
+                updatedAt: new Date().toISOString(),
+            })
+            .returning()
+    )[0];
 };
 
 export const checkForBidirectionalRelationships = async (
@@ -42,18 +47,14 @@ export const checkForBidirectionalRelationships = async (
     user2: User,
     createIfNotExists = true,
 ): Promise<boolean> => {
-    const relationship1 = await client.relationship.findFirst({
-        where: {
-            ownerId: user1.id,
-            subjectId: user2.id,
-        },
+    const relationship1 = await db.query.relationship.findFirst({
+        where: (rel, { and, eq }) =>
+            and(eq(rel.ownerId, user1.id), eq(rel.subjectId, user2.id)),
     });
 
-    const relationship2 = await client.relationship.findFirst({
-        where: {
-            ownerId: user2.id,
-            subjectId: user1.id,
-        },
+    const relationship2 = await db.query.relationship.findFirst({
+        where: (rel, { and, eq }) =>
+            and(eq(rel.ownerId, user2.id), eq(rel.subjectId, user1.id)),
     });
 
     if (!relationship1 && !relationship2 && createIfNotExists) {
@@ -82,7 +83,7 @@ export const relationshipToAPI = (rel: Relationship): APIRelationship => {
         notifying: rel.notifying,
         requested: rel.requested,
         showing_reblogs: rel.showingReblogs,
-        languages: rel.languages,
+        languages: rel.languages ?? [],
         note: rel.note,
     };
 };

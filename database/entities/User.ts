@@ -1,34 +1,127 @@
 import { addUserToMeilisearch } from "@meilisearch";
-import type { User } from "@prisma/client";
-import { Prisma } from "@prisma/client";
 import { type Config, config } from "config-manager";
 import { htmlToText } from "html-to-text";
-import { client } from "~database/datasource";
 import type { APIAccount } from "~types/entities/account";
 import type { APISource } from "~types/entities/source";
 import type * as Lysand from "lysand-types";
-import { fetchEmoji, emojiToAPI, emojiToLysand } from "./Emoji";
+import {
+    fetchEmoji,
+    emojiToAPI,
+    emojiToLysand,
+    type EmojiWithInstance,
+} from "./Emoji";
 import { addInstanceIfNotExists } from "./Instance";
-import { userRelations } from "./relations";
 import { createNewRelationship } from "./Relationship";
 import { getBestContentType, urlToContentFormat } from "@content_types";
 import { objectToInboxRequest } from "./Federation";
+import { and, eq, sql, type InferSelectModel } from "drizzle-orm";
+import {
+    emojiToUser,
+    instance,
+    notification,
+    relationship,
+    user,
+} from "~drizzle/schema";
+import { db } from "~drizzle/db";
+
+export type User = InferSelectModel<typeof user> & {
+    endpoints?: Partial<{
+        dislikes: string;
+        featured: string;
+        likes: string;
+        followers: string;
+        following: string;
+        inbox: string;
+        outbox: string;
+    }>;
+};
+
+export type UserWithRelations = User & {
+    instance: InferSelectModel<typeof instance> | null;
+    emojis: EmojiWithInstance[];
+    followerCount: number;
+    followingCount: number;
+    statusCount: number;
+};
+
+export type UserWithRelationsAndRelationships = UserWithRelations & {
+    relationships: InferSelectModel<typeof relationship>[];
+    relationshipSubjects: InferSelectModel<typeof relationship>[];
+};
+
+export const userRelations: {
+    instance: true;
+    emojis: {
+        with: {
+            emoji: {
+                with: {
+                    instance: true;
+                };
+            };
+        };
+    };
+} = {
+    instance: true,
+    emojis: {
+        with: {
+            emoji: {
+                with: {
+                    instance: true,
+                },
+            },
+        },
+    },
+};
+
+export const userExtras = {
+    followerCount:
+        sql`(SELECT COUNT(*) FROM "Relationship" "relationships" WHERE ("relationships"."ownerId" = "user".id AND "relationships"."following" = true))`.as(
+            "follower_count",
+        ),
+    followingCount:
+        sql`(SELECT COUNT(*) FROM "Relationship" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "user".id AND "relationshipSubjects"."following" = true))`.as(
+            "following_count",
+        ),
+    statusCount:
+        sql`(SELECT COUNT(*) FROM "Status" "statuses" WHERE "statuses"."authorId" = "user".id)`.as(
+            "status_count",
+        ),
+};
+
+export const userExtrasTemplate = (name: string) => ({
+    // @ts-ignore
+    followerCount: sql([
+        `(SELECT COUNT(*) FROM "Relationship" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
+    ]).as("follower_count"),
+    // @ts-ignore
+    followingCount: sql([
+        `(SELECT COUNT(*) FROM "Relationship" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "${name}".id AND "relationshipSubjects"."following" = true))`,
+    ]).as("following_count"),
+    // @ts-ignore
+    statusCount: sql([
+        `(SELECT COUNT(*) FROM "Status" "statuses" WHERE "statuses"."authorId" = "${name}".id)`,
+    ]).as("status_count"),
+});
+
+/* const a = await db.query.user.findFirst({
+    with: {
+        instance: true,
+        emojis: {
+            with: {
+                instance: true,
+            },
+        },
+    },
+    extras: {
+        //
+        followerCount: sql`SELECT COUNT(*) FROM relationship WHERE owner_id = user.id AND following = true`,
+    },
+}); */
 
 export interface AuthData {
     user: UserWithRelations | null;
     token: string;
 }
-
-/**
- * Represents a user in the database.
- * Stores local and remote users
- */
-
-const userRelations2 = Prisma.validator<Prisma.UserDefaultArgs>()({
-    include: userRelations,
-});
-
-export type UserWithRelations = Prisma.UserGetPayload<typeof userRelations2>;
 
 /**
  * Get the user's avatar in raw URL format
@@ -68,19 +161,22 @@ export const followRequestUser = async (
     reblogs = false,
     notify = false,
     languages: string[] = [],
-) => {
+): Promise<InferSelectModel<typeof relationship>> => {
     const isRemote = follower.instanceId !== followee.instanceId;
 
-    const relationship = await client.relationship.update({
-        where: { id: relationshipId },
-        data: {
-            following: isRemote ? false : !followee.isLocked,
-            requested: isRemote ? true : followee.isLocked,
-            showingReblogs: reblogs,
-            notifying: notify,
-            languages: languages,
-        },
-    });
+    const updatedRelationship = (
+        await db
+            .update(relationship)
+            .set({
+                following: isRemote ? false : !followee.isLocked,
+                requested: isRemote ? true : followee.isLocked,
+                showingReblogs: reblogs,
+                notifying: notify,
+                languages: languages,
+            })
+            .where(eq(relationship.id, relationshipId))
+            .returning()
+    )[0];
 
     if (isRemote) {
         // Federate
@@ -100,35 +196,26 @@ export const followRequestUser = async (
                 `Failed to federate follow request from ${follower.id} to ${followee.uri}`,
             );
 
-            return await client.relationship.update({
-                where: { id: relationshipId },
-                data: {
-                    following: false,
-                    requested: false,
-                },
-            });
+            return (
+                await db
+                    .update(relationship)
+                    .set({
+                        following: false,
+                        requested: false,
+                    })
+                    .where(eq(relationship.id, relationshipId))
+                    .returning()
+            )[0];
         }
     } else {
-        if (followee.isLocked) {
-            await client.notification.create({
-                data: {
-                    accountId: follower.id,
-                    type: "follow_request",
-                    notifiedId: followee.id,
-                },
-            });
-        } else {
-            await client.notification.create({
-                data: {
-                    accountId: follower.id,
-                    type: "follow",
-                    notifiedId: followee.id,
-                },
-            });
-        }
+        await db.insert(notification).values({
+            accountId: followee.id,
+            type: followee.isLocked ? "follow_request" : "follow",
+            notifiedId: follower.id,
+        });
     }
 
-    return relationship;
+    return updatedRelationship;
 };
 
 export const sendFollowAccept = async (follower: User, followee: User) => {
@@ -169,13 +256,88 @@ export const sendFollowReject = async (follower: User, followee: User) => {
     }
 };
 
-export const resolveUser = async (uri: string) => {
-    // Check if user not already in database
-    const foundUser = await client.user.findUnique({
-        where: {
-            uri,
+export const transformOutputToUserWithRelations = (
+    user: Omit<User, "endpoints"> & {
+        followerCount: unknown;
+        followingCount: unknown;
+        statusCount: unknown;
+        emojis: {
+            a: string;
+            b: string;
+            emoji?: EmojiWithInstance;
+        }[];
+        instance: InferSelectModel<typeof instance> | null;
+        endpoints: unknown;
+    },
+): UserWithRelations => {
+    return {
+        ...user,
+        followerCount: Number(user.followerCount),
+        followingCount: Number(user.followingCount),
+        statusCount: Number(user.statusCount),
+        endpoints:
+            user.endpoints ??
+            ({} as Partial<{
+                dislikes: string;
+                featured: string;
+                likes: string;
+                followers: string;
+                following: string;
+                inbox: string;
+                outbox: string;
+            }>),
+        emojis: user.emojis.map(
+            (emoji) =>
+                (emoji as unknown as Record<string, object>)
+                    .emoji as EmojiWithInstance,
+        ),
+    };
+};
+
+export const findManyUsers = async (
+    query: Parameters<typeof db.query.user.findMany>[0],
+): Promise<UserWithRelations[]> => {
+    const output = await db.query.user.findMany({
+        ...query,
+        with: {
+            ...userRelations,
+            ...query?.with,
         },
-        include: userRelations,
+        extras: {
+            ...userExtras,
+            ...query?.extras,
+        },
+    });
+
+    return output.map((user) => transformOutputToUserWithRelations(user));
+};
+
+export const findFirstUser = async (
+    query: Parameters<typeof db.query.user.findFirst>[0],
+): Promise<UserWithRelations | null> => {
+    const output = await db.query.user.findFirst({
+        ...query,
+        with: {
+            ...userRelations,
+            ...query?.with,
+        },
+        extras: {
+            ...userExtras,
+            ...query?.extras,
+        },
+    });
+
+    if (!output) return null;
+
+    return transformOutputToUserWithRelations(output);
+};
+
+export const resolveUser = async (
+    uri: string,
+): Promise<UserWithRelations | null> => {
+    // Check if user not already in database
+    const foundUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.uri, uri),
     });
 
     if (foundUser) return foundUser;
@@ -192,12 +354,12 @@ export const resolveUser = async (uri: string) => {
             );
         }
 
-        return client.user.findUnique({
-            where: {
-                id: uuid[0],
-            },
-            include: userRelations,
+        const foundLocalUser = await findFirstUser({
+            where: (user, { eq }) => eq(user.id, uuid[0]),
+            with: userRelations,
         });
+
+        return foundLocalUser || null;
     }
 
     if (!URL.canParse(uri)) {
@@ -244,50 +406,62 @@ export const resolveUser = async (uri: string) => {
         emojis.push(await fetchEmoji(emoji));
     }
 
-    const user = await client.user.create({
-        data: {
-            username: data.username,
-            uri: data.uri,
-            createdAt: new Date(data.created_at),
-            endpoints: {
-                dislikes: data.dislikes,
-                featured: data.featured,
-                likes: data.likes,
-                followers: data.followers,
-                following: data.following,
-                inbox: data.inbox,
-                outbox: data.outbox,
-            },
-            emojis: {
-                connect: emojis.map((emoji) => ({
-                    id: emoji.id,
-                })),
-            },
-            instanceId: instance.id,
-            avatar: data.avatar
-                ? Object.entries(data.avatar)[0][1].content
-                : "",
-            header: data.header
-                ? Object.entries(data.header)[0][1].content
-                : "",
-            displayName: data.display_name ?? "",
-            note: getBestContentType(data.bio).content,
-            publicKey: data.public_key.public_key,
-            source: {
-                language: null,
-                note: "",
-                privacy: "public",
-                sensitive: false,
-                fields: [],
-            },
-        },
-        include: userRelations,
+    const newUser = (
+        await db
+            .insert(user)
+            .values({
+                username: data.username,
+                uri: data.uri,
+                createdAt: new Date(data.created_at).toISOString(),
+                endpoints: {
+                    dislikes: data.dislikes,
+                    featured: data.featured,
+                    likes: data.likes,
+                    followers: data.followers,
+                    following: data.following,
+                    inbox: data.inbox,
+                    outbox: data.outbox,
+                },
+                instanceId: instance.id,
+                avatar: data.avatar
+                    ? Object.entries(data.avatar)[0][1].content
+                    : "",
+                header: data.header
+                    ? Object.entries(data.header)[0][1].content
+                    : "",
+                displayName: data.display_name ?? "",
+                note: getBestContentType(data.bio).content,
+                publicKey: data.public_key.public_key,
+                source: {
+                    language: null,
+                    note: "",
+                    privacy: "public",
+                    sensitive: false,
+                    fields: [],
+                },
+            })
+            .returning()
+    )[0];
+
+    // Add emojis to user
+    await db.insert(emojiToUser).values(
+        emojis.map((emoji) => ({
+            a: emoji.id,
+            b: newUser.id,
+        })),
+    );
+
+    const finalUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, newUser.id),
+        with: userRelations,
     });
 
-    // Add to Meilisearch
-    await addUserToMeilisearch(user);
+    if (!finalUser) return null;
 
-    return user;
+    // Add to Meilisearch
+    await addUserToMeilisearch(finalUser);
+
+    return finalUser;
 };
 
 export const getUserUri = (user: User) => {
@@ -301,19 +475,25 @@ export const getUserUri = (user: User) => {
  * Resolves a WebFinger identifier to a user.
  * @param identifier Either a UUID or a username
  */
-export const resolveWebFinger = async (identifier: string, host: string) => {
+export const resolveWebFinger = async (
+    identifier: string,
+    host: string,
+): Promise<UserWithRelations | null> => {
     // Check if user not already in database
-    const foundUser = await client.user.findUnique({
-        where: {
-            username: identifier,
-            instance: {
-                base_url: host,
-            },
-        },
-        include: userRelations,
-    });
+    const foundUser = await db
+        .select()
+        .from(user)
+        .innerJoin(instance, eq(user.instanceId, instance.id))
+        .where(and(eq(user.username, identifier), eq(instance.baseUrl, host)))
+        .limit(1);
 
-    if (foundUser) return foundUser;
+    if (foundUser[0])
+        return (
+            (await findFirstUser({
+                where: (user, { eq }) => eq(user.id, foundUser[0].User.id),
+                with: userRelations,
+            })) || null
+        );
 
     const hostWithProtocol = host.startsWith("http") ? host : `https://${host}`;
 
@@ -383,49 +563,57 @@ export const createNewLocalUser = async (data: {
     avatar?: string;
     header?: string;
     admin?: boolean;
-}) => {
+}): Promise<UserWithRelations | null> => {
     const keys = await generateUserKeys();
 
-    const user = await client.user.create({
-        data: {
-            username: data.username,
-            displayName: data.display_name ?? data.username,
-            password: await Bun.password.hash(data.password),
-            email: data.email,
-            note: data.bio ?? "",
-            avatar: data.avatar ?? config.defaults.avatar,
-            header: data.header ?? config.defaults.avatar,
-            isAdmin: data.admin ?? false,
-            publicKey: keys.public_key,
-            privateKey: keys.private_key,
-            source: {
-                language: null,
-                note: "",
-                privacy: "public",
-                sensitive: false,
-                fields: [],
-            },
-        },
-        include: userRelations,
+    const newUser = (
+        await db
+            .insert(user)
+            .values({
+                username: data.username,
+                displayName: data.display_name ?? data.username,
+                password: await Bun.password.hash(data.password),
+                email: data.email,
+                note: data.bio ?? "",
+                avatar: data.avatar ?? config.defaults.avatar,
+                header: data.header ?? config.defaults.avatar,
+                isAdmin: data.admin ?? false,
+                publicKey: keys.public_key,
+                privateKey: keys.private_key,
+                updatedAt: new Date().toISOString(),
+                source: {
+                    language: null,
+                    note: "",
+                    privacy: "public",
+                    sensitive: false,
+                    fields: [],
+                },
+            })
+            .returning()
+    )[0];
+
+    const finalUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, newUser.id),
+        with: userRelations,
     });
 
-    // Add to Meilisearch
-    await addUserToMeilisearch(user);
+    if (!finalUser) return null;
 
-    return user;
+    // Add to Meilisearch
+    await addUserToMeilisearch(finalUser);
+
+    return finalUser;
 };
 
 /**
  * Parses mentions from a list of URIs
  */
-export const parseMentionsUris = async (mentions: string[]) => {
-    return await client.user.findMany({
-        where: {
-            uri: {
-                in: mentions,
-            },
-        },
-        include: userRelations,
+export const parseMentionsUris = async (
+    mentions: string[],
+): Promise<UserWithRelations[]> => {
+    return await findManyUsers({
+        where: (user, { inArray }) => inArray(user.uri, mentions),
+        with: userRelations,
     });
 };
 
@@ -434,23 +622,22 @@ export const parseMentionsUris = async (mentions: string[]) => {
  * @param access_token The access token to retrieve the user from.
  * @returns The user associated with the given access token.
  */
-export const retrieveUserFromToken = async (access_token: string) => {
+export const retrieveUserFromToken = async (
+    access_token: string,
+): Promise<UserWithRelations | null> => {
     if (!access_token) return null;
 
-    const token = await client.token.findFirst({
-        where: {
-            access_token,
-        },
-        include: {
-            user: {
-                include: userRelations,
-            },
-        },
+    const token = await db.query.token.findFirst({
+        where: (tokens, { eq }) => eq(tokens.accessToken, access_token),
     });
 
-    if (!token) return null;
+    if (!token || !token.userId) return null;
 
-    return token.user;
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, token.userId ?? ""),
+    });
+
+    return user;
 };
 
 /**
@@ -461,34 +648,24 @@ export const retrieveUserFromToken = async (access_token: string) => {
 export const getRelationshipToOtherUser = async (
     user: UserWithRelations,
     other: User,
-) => {
-    const relationship = await client.relationship.findFirst({
-        where: {
-            ownerId: user.id,
-            subjectId: other.id,
-        },
+): Promise<InferSelectModel<typeof relationship>> => {
+    const foundRelationship = await db.query.relationship.findFirst({
+        where: (relationship, { and, eq }) =>
+            and(
+                eq(relationship.ownerId, user.id),
+                eq(relationship.subjectId, other.id),
+            ),
     });
 
-    if (!relationship) {
+    if (!foundRelationship) {
         // Create new relationship
 
         const newRelationship = await createNewRelationship(user, other);
 
-        await client.user.update({
-            where: { id: user.id },
-            data: {
-                relationships: {
-                    connect: {
-                        id: newRelationship.id,
-                    },
-                },
-            },
-        });
-
         return newRelationship;
     }
 
-    return relationship;
+    return foundRelationship;
 };
 
 /**
@@ -526,40 +703,42 @@ export const generateUserKeys = async () => {
 };
 
 export const userToAPI = (
-    user: UserWithRelations,
+    userToConvert: UserWithRelations,
     isOwnAccount = false,
 ): APIAccount => {
     return {
-        id: user.id,
-        username: user.username,
-        display_name: user.displayName,
-        note: user.note,
+        id: userToConvert.id,
+        username: userToConvert.username,
+        display_name: userToConvert.displayName,
+        note: userToConvert.note,
         url:
-            user.uri ||
-            new URL(`/@${user.username}`, config.http.base_url).toString(),
-        avatar: getAvatarUrl(user, config),
-        header: getHeaderUrl(user, config),
-        locked: user.isLocked,
-        created_at: new Date(user.createdAt).toISOString(),
-        followers_count: user.relationshipSubjects.filter((r) => r.following)
-            .length,
-        following_count: user.relationships.filter((r) => r.following).length,
-        statuses_count: user._count.statuses,
-        emojis: user.emojis.map((emoji) => emojiToAPI(emoji)),
+            userToConvert.uri ||
+            new URL(
+                `/@${userToConvert.username}`,
+                config.http.base_url,
+            ).toString(),
+        avatar: getAvatarUrl(userToConvert, config),
+        header: getHeaderUrl(userToConvert, config),
+        locked: userToConvert.isLocked,
+        created_at: new Date(userToConvert.createdAt).toISOString(),
+        followers_count: userToConvert.followerCount,
+        following_count: userToConvert.followingCount,
+        statuses_count: userToConvert.statusCount,
+        emojis: userToConvert.emojis.map((emoji) => emojiToAPI(emoji)),
         // TODO: Add fields
         fields: [],
-        bot: user.isBot,
+        bot: userToConvert.isBot,
         source:
-            isOwnAccount && user.source
-                ? (user.source as APISource)
+            isOwnAccount && userToConvert.source
+                ? (userToConvert.source as APISource)
                 : undefined,
         // TODO: Add static avatar and header
         avatar_static: "",
         header_static: "",
         acct:
-            user.instance === null
-                ? user.username
-                : `${user.username}@${user.instance.base_url}`,
+            userToConvert.instance === null
+                ? userToConvert.username
+                : `${userToConvert.username}@${userToConvert.instance.baseUrl}`,
         // TODO: Add these fields
         limited: false,
         moved: null,
@@ -569,8 +748,8 @@ export const userToAPI = (
         mute_expires_at: undefined,
         group: false,
         pleroma: {
-            is_admin: user.isAdmin,
-            is_moderator: user.isAdmin,
+            is_admin: userToConvert.isAdmin,
+            is_moderator: userToConvert.isAdmin,
         },
     };
 };

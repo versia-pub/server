@@ -1,9 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
-import { userToAPI, type UserWithRelations } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import {
+    findManyUsers,
+    userToAPI,
+    type UserWithRelations,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -28,25 +30,22 @@ export default apiRoute<{
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const { max_id, since_id, limit = 40 } = extraData.parsedRequest;
+    const { max_id, since_id, min_id, limit = 40 } = extraData.parsedRequest;
 
     const { objects: blocks, link } = await fetchTimeline<UserWithRelations>(
-        client.user,
+        findManyUsers,
         {
-            where: {
-                relationshipSubjects: {
-                    some: {
-                        ownerId: user.id,
-                        blocking: true,
-                    },
-                },
-                id: {
-                    lt: max_id,
-                    gte: since_id,
-                },
-            },
-            include: userRelations,
-            take: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            where: (subject, { lt, gte, gt, and, sql }) =>
+                and(
+                    max_id ? lt(subject.id, max_id) : undefined,
+                    since_id ? gte(subject.id, since_id) : undefined,
+                    min_id ? gt(subject.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${subject.id} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."blocking" = true)`,
+                ),
+            limit: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (subject, { desc }) => desc(subject.id),
         },
         req,
     );

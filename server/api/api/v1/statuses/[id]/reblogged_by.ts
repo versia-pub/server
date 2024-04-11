@@ -1,13 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
-import { isViewableByUser } from "~database/entities/Status";
-import { type UserWithRelations, userToAPI } from "~database/entities/User";
+import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 import {
-    statusAndUserRelations,
-    userRelations,
-} from "~database/entities/relations";
+    type UserWithRelations,
+    userToAPI,
+    findManyUsers,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,9 +33,8 @@ export default apiRoute<{
 
     const { user } = extraData.auth;
 
-    const status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const status = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if user is authorized to view this status (if it's private)
@@ -55,33 +53,18 @@ export default apiRoute<{
     if (limit < 1) return errorResponse("Invalid limit", 400);
 
     const { objects, link } = await fetchTimeline<UserWithRelations>(
-        client.user,
+        findManyUsers,
         {
-            where: {
-                statuses: {
-                    some: {
-                        reblogId: status.id,
-                    },
-                },
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-            },
-            include: {
-                ...userRelations,
-                statuses: {
-                    where: {
-                        reblogId: status.id,
-                    },
-                    include: statusAndUserRelations,
-                },
-            },
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-ignore
+            where: (reblogger, { and, lt, gt, gte, eq, sql }) =>
+                and(
+                    max_id ? lt(reblogger.id, max_id) : undefined,
+                    since_id ? gte(reblogger.id, since_id) : undefined,
+                    min_id ? gt(reblogger.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Status" WHERE "Status"."reblogId" = ${status.id} AND "Status"."authorId" = ${reblogger.id})`,
+                ),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (liker, { desc }) => desc(liker.id),
         },
         req,
     );

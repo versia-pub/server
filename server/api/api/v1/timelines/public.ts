@@ -3,6 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
 import {
+    findManyStatuses,
     statusToAPI,
     type StatusWithRelations,
 } from "~database/entities/Status";
@@ -49,27 +50,23 @@ export default apiRoute<{
     }
 
     const { objects, link } = await fetchTimeline<StatusWithRelations>(
-        client.status,
+        findManyStatuses,
         {
-            where: {
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-                instanceId: remote
-                    ? {
-                          not: null,
-                      }
-                    : local
-                      ? null
-                      : undefined,
-            },
-            include: statusAndUserRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-expect-error Yes I KNOW the types are wrong
+            where: (status, { lt, gte, gt, and, isNull, isNotNull }) =>
+                and(
+                    max_id ? lt(status.id, max_id) : undefined,
+                    since_id ? gte(status.id, since_id) : undefined,
+                    min_id ? gt(status.id, min_id) : undefined,
+                    remote
+                        ? isNotNull(status.instanceId)
+                        : local
+                          ? isNull(status.instanceId)
+                          : undefined,
+                ),
+            limit: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (status, { desc }) => desc(status.id),
         },
         req,
     );

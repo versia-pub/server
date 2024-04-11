@@ -1,11 +1,14 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
+import { sql } from "drizzle-orm";
 import { client } from "~database/datasource";
 import {
+    findManyStatuses,
     statusToAPI,
     type StatusWithRelations,
 } from "~database/entities/Status";
+import { findFirstUser } from "~database/entities/User";
 import {
     statusAndUserRelations,
     userRelations,
@@ -52,38 +55,30 @@ export default apiRoute<{
         pinned,
     } = extraData.parsedRequest;
 
-    const user = await client.user.findUnique({
-        where: { id },
-        include: userRelations,
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, id),
     });
 
     if (!user) return errorResponse("User not found", 404);
 
     if (pinned) {
         const { objects, link } = await fetchTimeline<StatusWithRelations>(
-            client.status,
+            findManyStatuses,
             {
-                where: {
-                    authorId: id,
-                    reblogId: null,
-                    pinnedBy: {
-                        some: {
-                            id: user.id,
-                        },
-                    },
-                    // If only_media is true, only return statuses with attachments
-                    attachments: only_media ? { some: {} } : undefined,
-                    id: {
-                        lt: max_id,
-                        gt: min_id,
-                        gte: since_id,
-                    },
-                },
-                include: statusAndUserRelations,
-                take: Number(limit),
-                orderBy: {
-                    id: "desc",
-                },
+                // @ts-ignore
+                where: (status, { and, lt, gt, gte, eq, sql }) =>
+                    and(
+                        max_id ? lt(status.id, max_id) : undefined,
+                        since_id ? gte(status.id, since_id) : undefined,
+                        min_id ? gt(status.id, min_id) : undefined,
+                        eq(status.authorId, id),
+                        sql`EXISTS (SELECT 1 FROM _UserPinnedNotes WHERE _UserPinnedNotes.status_id = ${status.id} AND _UserPinnedNotes.user_id = ${user.id})`,
+                        only_media
+                            ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                            : undefined,
+                    ),
+                // @ts-expect-error Yes I KNOW the types are wrong
+                orderBy: (status, { desc }) => desc(status.id),
             },
             req,
         );
@@ -100,22 +95,22 @@ export default apiRoute<{
     }
 
     const { objects, link } = await fetchTimeline<StatusWithRelations>(
-        client.status,
+        findManyStatuses,
         {
-            where: {
-                authorId: id,
-                reblogId: exclude_reblogs ? null : undefined,
-                id: {
-                    lt: max_id,
-                    gt: min_id,
-                    gte: since_id,
-                },
-            },
-            include: statusAndUserRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-ignore
+            where: (status, { and, lt, gt, gte, eq, sql }) =>
+                and(
+                    max_id ? lt(status.id, max_id) : undefined,
+                    since_id ? gte(status.id, since_id) : undefined,
+                    min_id ? gt(status.id, min_id) : undefined,
+                    eq(status.authorId, id),
+                    only_media
+                        ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                        : undefined,
+                    exclude_reblogs ? eq(status.reblogId, null) : undefined,
+                ),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (status, { desc }) => desc(status.id),
         },
         req,
     );

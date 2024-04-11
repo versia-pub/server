@@ -2,6 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { client } from "~database/datasource";
 import { emojiToAPI } from "~database/entities/Emoji";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -16,9 +17,10 @@ export const meta = applyConfig({
 });
 
 export default apiRoute(async () => {
-    const emojis = await client.emoji.findMany({
-        where: {
-            instanceId: null,
+    const emojis = await db.query.emoji.findMany({
+        where: (emoji, { isNull }) => isNull(emoji.instanceId),
+        with: {
+            instance: true,
         },
     });
 

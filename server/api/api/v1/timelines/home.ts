@@ -5,8 +5,10 @@ import { client } from "~database/datasource";
 import {
     type StatusWithRelations,
     statusToAPI,
+    findManyStatuses,
 } from "~database/entities/Status";
 import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -39,48 +41,40 @@ export default apiRoute<{
 
     if (!user) return errorResponse("Unauthorized", 401);
 
+    const followers = await db.query.relationship.findMany({
+        where: (relationship, { eq, and }) =>
+            and(
+                eq(relationship.subjectId, user.id),
+                eq(relationship.following, true),
+            ),
+    });
+
     const { objects, link } = await fetchTimeline<StatusWithRelations>(
-        client.status,
+        findManyStatuses,
         {
-            where: {
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-                OR: [
-                    {
-                        author: {
-                            OR: [
-                                {
-                                    relationshipSubjects: {
-                                        some: {
-                                            ownerId: user.id,
-                                            following: true,
-                                        },
-                                    },
-                                },
-                                {
-                                    id: user.id,
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        // Include posts where the user is mentioned in addition to posts by followed users
-                        mentions: {
-                            some: {
-                                id: user.id,
-                            },
-                        },
-                    },
-                ],
-            },
-            include: statusAndUserRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-expect-error Yes I KNOW the types are wrong
+            where: (status, { lt, gte, gt, and, or, eq, inArray, sql }) =>
+                or(
+                    and(
+                        max_id ? lt(status.id, max_id) : undefined,
+                        since_id ? gte(status.id, since_id) : undefined,
+                        min_id ? gt(status.id, min_id) : undefined,
+                    ),
+                    eq(status.authorId, user.id),
+                    /* inArray(
+                        status.authorId,
+                        followers.map((f) => f.ownerId),
+                    ), */
+                    // All statuses where the user is mentioned, using table StatusToUser which has a: status.id and b: user.id
+                    // WHERE format (... = ...)
+                    sql`EXISTS (SELECT 1 FROM "StatusToUser" WHERE "StatusToUser"."a" = ${status.id} AND "StatusToUser"."b" = ${user.id})`,
+                    // All statuses from users that the user is following
+                    // WHERE format (... = ...)
+                    sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${status.authorId} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."following" = true)`,
+                ),
+            limit: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (status, { desc }) => desc(status.id),
         },
         req,
     );

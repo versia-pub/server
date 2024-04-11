@@ -1,7 +1,10 @@
-import type { Notification } from "@prisma/client";
 import type { APINotification } from "~types/entities/notification";
 import { type StatusWithRelations, statusToAPI } from "./Status";
 import { type UserWithRelations, userToAPI } from "./User";
+import type { InferSelectModel } from "drizzle-orm";
+import type { notification } from "~drizzle/schema";
+
+export type Notification = InferSelectModel<typeof notification>;
 
 export type NotificationWithRelations = Notification & {
     status: StatusWithRelations | null;

@@ -1,4 +1,3 @@
-import type { User } from "@prisma/client";
 import { config } from "config-manager";
 // import { Worker } from "bullmq";
 import { type StatusWithRelations, statusToLysand } from "./Status";
@@ -117,70 +116,6 @@ import { type StatusWithRelations, statusToLysand } from "./Status";
 		},
 	}
 ); */
-
-/**
- * Convert a string into an ArrayBuffer
- * from https://developers.google.com/web/updates/2012/06/How-to-convert-ArrayBuffer-to-and-from-String
- */
-export const str2ab = (str: string) => {
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
-};
-
-export const federateStatusTo = async (
-    status: StatusWithRelations,
-    sender: User,
-    user: User,
-) => {
-    const privateKey = await crypto.subtle.importKey(
-        "pkcs8",
-        str2ab(atob(user.privateKey ?? "")),
-        "Ed25519",
-        false,
-        ["sign"],
-    );
-
-    const digest = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode("request_body"),
-    );
-
-    const userInbox = new URL(user.endpoints.inbox);
-
-    const date = new Date();
-
-    const signature = await crypto.subtle.sign(
-        "Ed25519",
-        privateKey,
-        new TextEncoder().encode(
-            `(request-target): post ${userInbox.pathname}\n` +
-                `host: ${userInbox.host}\n` +
-                `date: ${date.toUTCString()}\n` +
-                `digest: SHA-256=${btoa(
-                    String.fromCharCode(...new Uint8Array(digest)),
-                )}\n`,
-        ),
-    );
-
-    const signatureBase64 = btoa(
-        String.fromCharCode(...new Uint8Array(signature)),
-    );
-
-    return fetch(userInbox, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Date: date.toUTCString(),
-            Origin: config.http.base_url,
-            Signature: `keyId="${sender.uri}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
-        },
-        body: JSON.stringify(statusToLysand(status)),
-    });
-};
 
 export const addStatusFederationJob = async (statusId: string) => {
     /* await federationQueue.add("federation", {

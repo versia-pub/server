@@ -8,6 +8,7 @@ import type { StatusWithRelations } from "~database/entities/Status";
 import {
     createNewStatus,
     federateStatus,
+    findFirstStatuses,
     parseTextMentions,
     statusToAPI,
 } from "~database/entities/Status";
@@ -46,9 +47,9 @@ export default apiRoute<{
     scheduled_at?: string;
     local_only?: boolean;
     content_type?: string;
+    federate?: boolean;
 }>(async (req, matchedRoute, extraData) => {
     const { user, token } = extraData.auth;
-    const application = await getFromToken(token);
 
     if (!user) return errorResponse("Unauthorized", 401);
 
@@ -69,6 +70,7 @@ export default apiRoute<{
         spoiler_text,
         visibility,
         content_type,
+        federate = true,
     } = extraData.parsedRequest;
 
     // Validate status
@@ -173,9 +175,8 @@ export default apiRoute<{
     let quote: StatusWithRelations | null = null;
 
     if (in_reply_to_id) {
-        replyStatus = await client.status.findUnique({
-            where: { id: in_reply_to_id },
-            include: statusAndUserRelations,
+        replyStatus = await findFirstStatuses({
+            where: (status, { eq }) => eq(status.id, in_reply_to_id),
         });
 
         if (!replyStatus) {
@@ -184,9 +185,8 @@ export default apiRoute<{
     }
 
     if (quote_id) {
-        quote = await client.status.findUnique({
-            where: { id: quote_id },
-            include: statusAndUserRelations,
+        quote = await findFirstStatuses({
+            where: (status, { eq }) => eq(status.id, quote_id),
         });
 
         if (!quote) {
@@ -233,7 +233,13 @@ export default apiRoute<{
         quote ?? undefined,
     );
 
-    await federateStatus(newStatus);
+    if (!newStatus) {
+        return errorResponse("Failed to create status", 500);
+    }
+
+    if (federate) {
+        await federateStatus(newStatus);
+    }
 
     return jsonResponse(await statusToAPI(newStatus, user));
 });

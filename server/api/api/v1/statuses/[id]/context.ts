@@ -1,12 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import type { Relationship } from "~database/entities/Relationship";
 import {
+    findFirstStatuses,
     getAncestors,
     getDescendants,
     statusToAPI,
 } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -30,16 +31,47 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { user } = extraData.auth;
 
-    const foundStatus = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const foundStatus = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     if (!foundStatus) return errorResponse("Record not found", 404);
 
+    const relations = user
+        ? await db.query.relationship.findMany({
+              where: (relationship, { eq }) =>
+                  eq(relationship.ownerId, user.id),
+          })
+        : null;
+
+    const relationSubjects = user
+        ? await db.query.relationship.findMany({
+              where: (relationship, { eq }) =>
+                  eq(relationship.subjectId, user.id),
+          })
+        : null;
+
     // Get all ancestors
-    const ancestors = await getAncestors(foundStatus, user);
-    const descendants = await getDescendants(foundStatus, user);
+    const ancestors = await getAncestors(
+        foundStatus,
+        user
+            ? {
+                  ...user,
+                  relationships: relations as Relationship[],
+                  relationshipSubjects: relationSubjects as Relationship[],
+              }
+            : null,
+    );
+    const descendants = await getDescendants(
+        foundStatus,
+        user
+            ? {
+                  ...user,
+                  relationships: relations as Relationship[],
+                  relationshipSubjects: relationSubjects as Relationship[],
+              }
+            : null,
+    );
 
     return jsonResponse({
         ancestors: await Promise.all(

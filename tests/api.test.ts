@@ -10,21 +10,33 @@ import {
 import type { APIEmoji } from "~types/entities/emoji";
 import type { APIInstance } from "~types/entities/instance";
 import { sendTestRequest, wrapRelativeUrl } from "./utils";
+import { db } from "~drizzle/db";
+import { inArray } from "drizzle-orm";
+import { application, user } from "~drizzle/schema";
 
 const base_url = config.http.base_url;
 
 let token: Token;
-let user: UserWithRelations;
+let dummyUser: UserWithRelations;
 
 describe("API Tests", () => {
     beforeAll(async () => {
+        await db.delete(user).where(inArray(user.username, ["test", "test2"]));
+        await db
+            .delete(application)
+            .where(inArray(application.clientId, ["test"]));
+
         // Initialize test user
-        user = await createNewLocalUser({
+        dummyUser = await createNewLocalUser({
             email: "test@test.com",
             username: "test",
             password: "test",
             display_name: "",
         });
+
+        if (!dummyUser) {
+            throw new Error("Failed to create test user");
+        }
 
         token = await client.token.create({
             data: {
@@ -45,7 +57,7 @@ describe("API Tests", () => {
                 token_type: TokenType.BEARER,
                 user: {
                     connect: {
-                        id: user.id,
+                        id: dummyUser.id,
                     },
                 },
             },
@@ -53,19 +65,10 @@ describe("API Tests", () => {
     });
 
     afterAll(async () => {
-        await client.user.deleteMany({
-            where: {
-                username: {
-                    in: ["test", "test2"],
-                },
-            },
-        });
-
-        await client.application.deleteMany({
-            where: {
-                client_id: "test",
-            },
-        });
+        await db.delete(user).where(inArray(user.username, ["test", "test2"]));
+        await db
+            .delete(application)
+            .where(inArray(application.clientId, ["test"]));
     });
 
     describe("GET /api/v1/instance", () => {
@@ -89,7 +92,7 @@ describe("API Tests", () => {
 
             const instance = (await response.json()) as APIInstance;
 
-            expect(instance.uri).toBe(new URL(config.http.base_url).hostname);
+            expect(instance.uri).toBe(config.http.base_url);
             expect(instance.title).toBeDefined();
             expect(instance.description).toBeDefined();
             expect(instance.email).toBeDefined();

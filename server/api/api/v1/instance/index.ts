@@ -1,8 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
+import { count, isNull } from "drizzle-orm";
 import { client } from "~database/datasource";
 import { userToAPI } from "~database/entities/User";
 import { userRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
+import { status, user } from "~drizzle/schema";
 import manifest from "~package.json";
 import type { APIInstance } from "~types/entities/instance";
 
@@ -24,16 +27,23 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Get software version from package.json
     const version = manifest.version;
 
-    const statusCount = await client.status.count({
-        where: {
-            instanceId: null,
-        },
-    });
-    const userCount = await client.user.count({
-        where: {
-            instanceId: null,
-        },
-    });
+    const statusCount = (
+        await db
+            .select({
+                count: count(),
+            })
+            .from(status)
+            .where(isNull(status.instanceId))
+    )[0].count;
+
+    const userCount = (
+        await db
+            .select({
+                count: count(),
+            })
+            .from(user)
+            .where(isNull(user.instanceId))
+    )[0].count;
 
     // Get the first created admin user
     const contactAccount = await client.user.findFirst({
@@ -46,10 +56,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         },
         include: userRelations,
     });
-
-    if (!contactAccount) {
-        throw new Error("No admin user found");
-    }
 
     // Get user that have posted once in the last 30 days
     const monthlyActiveUsers = await client.user.count({
@@ -189,7 +195,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             },
             vapid_public_key: "",
         },
-        contact_account: userToAPI(contactAccount),
+        // @ts-expect-error Sometimes there just isnt an admin
+        contact_account: contactAccount ? userToAPI(contactAccount) : undefined,
     } satisfies APIInstance & {
         pleroma: object;
     });

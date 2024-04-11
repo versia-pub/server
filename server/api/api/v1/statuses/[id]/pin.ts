@@ -1,8 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
+import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
 import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
+import { statusToUser } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -26,34 +28,34 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    let status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const foundStatus = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if status exists
-    if (!status) return errorResponse("Record not found", 404);
+    if (!foundStatus) return errorResponse("Record not found", 404);
 
     // Check if status is user's
-    if (status.authorId !== user.id) return errorResponse("Unauthorized", 401);
+    if (foundStatus.authorId !== user.id)
+        return errorResponse("Unauthorized", 401);
 
-    await client.user.update({
-        where: { id: user.id },
-        data: {
-            pinnedNotes: {
-                connect: {
-                    id: status.id,
-                },
-            },
-        },
+    // Check if post is already pinned
+    if (
+        await db.query.statusToUser.findFirst({
+            where: (statusToUser, { and, eq }) =>
+                and(
+                    eq(statusToUser.a, foundStatus.id),
+                    eq(statusToUser.b, user.id),
+                ),
+        })
+    ) {
+        return errorResponse("Already pinned", 422);
+    }
+
+    await db.insert(statusToUser).values({
+        a: foundStatus.id,
+        b: user.id,
     });
 
-    status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
-    });
-
-    if (!status) return errorResponse("Record not found", 404);
-
-    return jsonResponse(statusToAPI(status, user));
+    return jsonResponse(statusToAPI(foundStatus, user));
 });

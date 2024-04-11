@@ -1,14 +1,17 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { eq } from "drizzle-orm";
 import { parse } from "marked";
-import { client } from "~database/datasource";
 import {
     editStatus,
+    findFirstStatuses,
     isViewableByUser,
     statusToAPI,
 } from "~database/entities/Status";
 import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
+import { status } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE", "PUT"],
@@ -42,37 +45,32 @@ export default apiRoute<{
 
     const { user } = extraData.auth;
 
-    const status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const foundStatus = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     const config = await extraData.configManager.getConfig();
 
     // Check if user is authorized to view this status (if it's private)
-    if (!status || !isViewableByUser(status, user))
+    if (!foundStatus || !isViewableByUser(foundStatus, user))
         return errorResponse("Record not found", 404);
 
     if (req.method === "GET") {
-        return jsonResponse(await statusToAPI(status));
+        return jsonResponse(await statusToAPI(foundStatus));
     }
     if (req.method === "DELETE") {
-        if (status.authorId !== user?.id) {
+        if (foundStatus.authorId !== user?.id) {
             return errorResponse("Unauthorized", 401);
         }
 
         // TODO: Implement delete and redraft functionality
 
-        // Get associated Status object
-
         // Delete status and all associated objects
-        await client.status.delete({
-            where: { id },
-        });
+        await db.delete(status).where(eq(status.id, id));
 
         return jsonResponse(
             {
-                ...(await statusToAPI(status, user)),
+                ...(await statusToAPI(foundStatus, user)),
                 // TODO: Add
                 // text: Add source text
                 // poll: Add source poll
@@ -82,7 +80,7 @@ export default apiRoute<{
         );
     }
     if (req.method === "PUT") {
-        if (status.authorId !== user?.id) {
+        if (foundStatus.authorId !== user?.id) {
             return errorResponse("Unauthorized", 401);
         }
 
@@ -191,27 +189,29 @@ export default apiRoute<{
         }
 
         // Check if media attachments are all valid
+        if (media_ids && media_ids.length > 0) {
+            const foundAttachments = await db.query.attachment.findMany({
+                where: (attachment, { inArray }) =>
+                    inArray(attachment.id, media_ids),
+            });
 
-        const foundAttachments = await client.attachment.findMany({
-            where: {
-                id: {
-                    in: media_ids ?? [],
-                },
-            },
-        });
-
-        if (foundAttachments.length !== (media_ids ?? []).length) {
-            return errorResponse("Invalid media IDs", 422);
+            if (foundAttachments.length !== (media_ids ?? []).length) {
+                return errorResponse("Invalid media IDs", 422);
+            }
         }
 
         // Update status
-        const newStatus = await editStatus(status, {
+        const newStatus = await editStatus(foundStatus, {
             content: sanitizedStatus,
             content_type,
             media_attachments: media_ids,
             spoiler_text: spoiler_text ?? "",
             sensitive: sensitive ?? false,
         });
+
+        if (!newStatus) {
+            return errorResponse("Failed to update status", 500);
+        }
 
         return jsonResponse(await statusToAPI(newStatus, user));
     }

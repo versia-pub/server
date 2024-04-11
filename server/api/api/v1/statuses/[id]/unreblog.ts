@@ -1,8 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import { isViewableByUser, statusToAPI } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { eq } from "drizzle-orm";
+import {
+    findFirstStatuses,
+    isViewableByUser,
+    statusToAPI,
+} from "~database/entities/Status";
+import { db } from "~drizzle/db";
+import { status } from "~drizzle/schema";
 import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
@@ -27,33 +32,28 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const foundStatus = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if user is authorized to view this status (if it's private)
-    if (!status || !isViewableByUser(status, user))
+    if (!foundStatus || !isViewableByUser(foundStatus, user))
         return errorResponse("Record not found", 404);
 
-    const existingReblog = await client.status.findFirst({
-        where: {
-            authorId: user.id,
-            reblogId: status.id,
-        },
+    const existingReblog = await findFirstStatuses({
+        where: (status, { eq }) =>
+            eq(status.authorId, user.id) && eq(status.reblogId, foundStatus.id),
     });
 
     if (!existingReblog) {
         return errorResponse("Not already reblogged", 422);
     }
 
-    await client.status.delete({
-        where: { id: existingReblog.id },
-    });
+    await db.delete(status).where(eq(status.id, existingReblog.id));
 
     return jsonResponse({
-        ...(await statusToAPI(status, user)),
+        ...(await statusToAPI(foundStatus, user)),
         reblogged: false,
-        reblogs_count: status._count.reblogs - 1,
+        reblogs_count: foundStatus.reblogCount - 1,
     } as APIStatus);
 });

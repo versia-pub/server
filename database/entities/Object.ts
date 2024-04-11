@@ -1,15 +1,22 @@
-import type { LysandObject } from "@prisma/client";
-import { client } from "~database/datasource";
-import type { LysandObjectType } from "~types/lysand/Object";
+import type { InferSelectModel } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { lysandObject } from "~drizzle/schema";
+import { findFirstUser } from "./User";
+import type * as Lysand from "lysand-types";
+
+export type LysandObject = InferSelectModel<typeof lysandObject>;
 
 /**
  * Represents a Lysand object in the database.
  */
 
-export const createFromObject = async (object: LysandObjectType) => {
-    const foundObject = await client.lysandObject.findFirst({
-        where: { remote_id: object.id },
-        include: {
+export const createFromObject = async (
+    object: Lysand.Entity,
+    authorUri: string,
+) => {
+    const foundObject = await db.query.lysandObject.findFirst({
+        where: (o, { eq }) => eq(o.remoteId, object.id),
+        with: {
             author: true,
         },
     });
@@ -18,45 +25,43 @@ export const createFromObject = async (object: LysandObjectType) => {
         return foundObject;
     }
 
-    const author = await client.lysandObject.findFirst({
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        where: { uri: (object as any).author },
+    const author = await findFirstUser({
+        where: (user, { eq }) => eq(user.uri, authorUri),
     });
 
-    return await client.lysandObject.create({
-        data: {
-            authorId: author?.id,
-            created_at: new Date(object.created_at).toISOString(),
-            extensions: object.extensions || {},
-            remote_id: object.id,
-            type: object.type,
-            uri: object.uri,
-            // Rest of data (remove id, author, created_at, extensions, type, uri)
-            extra_data: Object.fromEntries(
-                Object.entries(object).filter(
-                    ([key]) =>
-                        ![
-                            "id",
-                            "author",
-                            "created_at",
-                            "extensions",
-                            "type",
-                            "uri",
-                        ].includes(key),
-                ),
+    return await db.insert(lysandObject).values({
+        authorId: author?.id,
+        createdAt: new Date(object.created_at).toISOString(),
+        extensions: object.extensions,
+        remoteId: object.id,
+        type: object.type,
+        uri: object.uri,
+        // Rest of data (remove id, author, created_at, extensions, type, uri)
+        extraData: Object.fromEntries(
+            Object.entries(object).filter(
+                ([key]) =>
+                    ![
+                        "id",
+                        "author",
+                        "created_at",
+                        "extensions",
+                        "type",
+                        "uri",
+                    ].includes(key),
             ),
-        },
+        ),
     });
 };
 
-export const toLysand = (lyObject: LysandObject): LysandObjectType => {
+export const toLysand = (lyObject: LysandObject): Lysand.Entity => {
     return {
-        id: lyObject.remote_id || lyObject.id,
-        created_at: new Date(lyObject.created_at).toISOString(),
+        id: lyObject.remoteId || lyObject.id,
+        created_at: new Date(lyObject.createdAt).toISOString(),
         type: lyObject.type,
         uri: lyObject.uri,
-        ...lyObject.extra_data,
-        extensions: lyObject.extensions,
+        ...(lyObject.extraData as object),
+        // @ts-expect-error Assume stored JSON is valid
+        extensions: lyObject.extensions as object,
     };
 };
 
