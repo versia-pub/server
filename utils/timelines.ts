@@ -5,6 +5,7 @@ import type {
     Notification,
 } from "~database/entities/Notification";
 import type { db } from "~drizzle/db";
+import { config } from "config-manager";
 
 export async function fetchTimeline<T extends User | Status | Notification>(
     model:
@@ -24,6 +25,10 @@ export async function fetchTimeline<T extends User | Status | Notification>(
 
     // Constuct HTTP Link header (next and prev) only if there are more statuses
     const linkHeader = [];
+    const urlWithoutQuery = new URL(
+        new URL(req.url).pathname,
+        config.http.base_url,
+    ).toString();
 
     if (objects.length > 0) {
         // Check if there are statuses before the first one
@@ -36,7 +41,6 @@ export async function fetchTimeline<T extends User | Status | Notification>(
         });
 
         if (objectsBefore.length > 0) {
-            const urlWithoutQuery = req.url.split("?")[0];
             // Add prev link
             linkHeader.push(
                 `<${urlWithoutQuery}?limit=${args?.limit ?? 20}&min_id=${
@@ -56,7 +60,6 @@ export async function fetchTimeline<T extends User | Status | Notification>(
             });
 
             if (objectsAfter.length > 0) {
-                const urlWithoutQuery = req.url.split("?")[0];
                 // Add next link
                 linkHeader.push(
                     `<${urlWithoutQuery}?limit=${args?.limit ?? 20}&max_id=${
