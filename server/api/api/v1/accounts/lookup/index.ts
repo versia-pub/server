@@ -1,9 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import type { UserWithRelations } from "~database/entities/User";
-import { resolveWebFinger, userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import {
+    findFirstUser,
+    resolveWebFinger,
+    userToAPI,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -57,11 +58,8 @@ export default apiRoute<{
         username = username.slice(1);
     }
 
-    const account = await client.user.findFirst({
-        where: {
-            username,
-        },
-        include: userRelations,
+    const account = await findFirstUser({
+        where: (user, { eq }) => eq(user.username, username),
     });
 
     if (account) {

@@ -1,9 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import type { UserWithRelations } from "~database/entities/User";
-import { userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import { findFirstUser, userToAPI } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,15 +31,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { user } = extraData.auth;
 
-    let foundUser: UserWithRelations | null;
-    try {
-        foundUser = await client.user.findUnique({
-            where: { id },
-            include: userRelations,
-        });
-    } catch (e) {
-        return errorResponse("Invalid ID", 404);
-    }
+    const foundUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, id),
+    }).catch(() => null);
 
     if (!foundUser) return errorResponse("User not found", 404);
 

@@ -847,7 +847,7 @@ export const createNewStatus = async (
                     content["text/markdown"]?.content ||
                     "",
                 contentType: "text/html",
-                visibility: visibility,
+                visibility,
                 sensitive: is_sensitive,
                 spoilerText: spoiler_text,
                 instanceId: author.instanceId || null,
@@ -1148,7 +1148,7 @@ export const statusToAPI = async (
                 `/@${statusToConvert.author.username}/${statusToConvert.id}`,
                 config.http.base_url,
             ).toString(),
-        visibility: "public",
+        visibility: statusToConvert.visibility as APIStatus["visibility"],
         url:
             statusToConvert.uri ||
             new URL(

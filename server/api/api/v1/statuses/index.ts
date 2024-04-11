@@ -14,6 +14,7 @@ import {
 } from "~database/entities/Status";
 import type { UserWithRelations } from "~database/entities/User";
 import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
 import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
@@ -49,7 +50,7 @@ export default apiRoute<{
     content_type?: string;
     federate?: boolean;
 }>(async (req, matchedRoute, extraData) => {
-    const { user, token } = extraData.auth;
+    const { user } = extraData.auth;
 
     if (!user) return errorResponse("Unauthorized", 401);
 
@@ -138,9 +139,20 @@ export default apiRoute<{
     }
 
     if (scheduled_at) {
-        if (new Date(scheduled_at).getTime() < Date.now()) {
+        if (
+            Number.isNaN(new Date(scheduled_at).getTime()) ||
+            new Date(scheduled_at).getTime() < Date.now()
+        ) {
             return errorResponse("Scheduled time must be in the future", 422);
         }
+    }
+
+    // Validate visibility
+    if (
+        visibility &&
+        !["public", "unlisted", "private", "direct"].includes(visibility)
+    ) {
+        return errorResponse("Invalid visibility", 422);
     }
 
     let sanitizedStatus: string;
@@ -162,14 +174,6 @@ export default apiRoute<{
         );
     }
 
-    // Validate visibility
-    if (
-        visibility &&
-        !["public", "unlisted", "private", "direct"].includes(visibility)
-    ) {
-        return errorResponse("Invalid visibility", 422);
-    }
-
     // Get reply account and status if exists
     let replyStatus: StatusWithRelations | null = null;
     let quote: StatusWithRelations | null = null;
@@ -177,7 +181,7 @@ export default apiRoute<{
     if (in_reply_to_id) {
         replyStatus = await findFirstStatuses({
             where: (status, { eq }) => eq(status.id, in_reply_to_id),
-        });
+        }).catch(() => null);
 
         if (!replyStatus) {
             return errorResponse("Reply status not found", 404);
@@ -187,7 +191,7 @@ export default apiRoute<{
     if (quote_id) {
         quote = await findFirstStatuses({
             where: (status, { eq }) => eq(status.id, quote_id),
-        });
+        }).catch(() => null);
 
         if (!quote) {
             return errorResponse("Quote status not found", 404);
@@ -200,17 +204,17 @@ export default apiRoute<{
     }
 
     // Check if media attachments are all valid
+    if (media_ids && media_ids.length > 0) {
+        const foundAttachments = await db.query.attachment
+            .findMany({
+                where: (attachment, { inArray }) =>
+                    inArray(attachment.id, media_ids),
+            })
+            .catch(() => []);
 
-    const foundAttachments = await client.attachment.findMany({
-        where: {
-            id: {
-                in: media_ids ?? [],
-            },
-        },
-    });
-
-    if (foundAttachments.length !== (media_ids ?? []).length) {
-        return errorResponse("Invalid media IDs", 422);
+        if (foundAttachments.length !== (media_ids ?? []).length) {
+            return errorResponse("Invalid media IDs", 422);
+        }
     }
 
     const mentions = await parseTextMentions(sanitizedStatus);
@@ -222,7 +226,7 @@ export default apiRoute<{
                 content: sanitizedStatus ?? "",
             },
         },
-        visibility as APIStatus["visibility"],
+        visibility ?? "public",
         sensitive ?? false,
         spoiler_text ?? "",
         [],
