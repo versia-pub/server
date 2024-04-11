@@ -55,8 +55,11 @@ export const fetchEmoji = async (emoji: Lysand.Emoji, host?: string) => {
     return await client.emoji.create({
         data: {
             shortcode: emoji.name,
-            url: emoji.url[0].content,
-            alt: emoji.alt || emoji.url[0].description || undefined,
+            url: Object.entries(emoji.url)[0][1].content,
+            alt:
+                emoji.alt ||
+                Object.entries(emoji.url)[0][1].description ||
+                undefined,
             content_type: Object.keys(emoji.url)[0],
             visible_in_picker: true,
             instance: host
