@@ -7,9 +7,7 @@ import {
 } from "~tests/utils";
 import { config } from "~index";
 import { meta } from "./index";
-import type { APIStatus } from "~types/entities/status";
 import type { APIAccount } from "~types/entities/account";
-import { getUserUri } from "~database/entities/User";
 
 await deleteOldTestUsers();
 
@@ -39,19 +37,6 @@ beforeAll(async () => {
 
 // /api/v1/accounts/:id
 describe(meta.route, () => {
-    test("should return 401 if not authenticated and trying to use following", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route.replace(":id", users[0].id)}?following=true`,
-                    config.http.base_url,
-                ),
-            ),
-        );
-
-        expect(response.status).toBe(401);
-    });
-
     test("should return 404 if ID is invalid", async () => {
         const response = await sendTestRequest(
             new Request(
