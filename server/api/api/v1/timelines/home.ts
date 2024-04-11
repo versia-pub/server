@@ -65,9 +65,9 @@ export default apiRoute<{
                         status.authorId,
                         followers.map((f) => f.ownerId),
                     ), */
-                    // All statuses where the user is mentioned, using table StatusToUser which has a: status.id and b: user.id
+                    // All statuses where the user is mentioned, using table _StatusToUser which has a: status.id and b: user.id
                     // WHERE format (... = ...)
-                    sql`EXISTS (SELECT 1 FROM "StatusToUser" WHERE "StatusToUser"."a" = ${status.id} AND "StatusToUser"."b" = ${user.id})`,
+                    sql`EXISTS (SELECT 1 FROM "_StatusToUser" WHERE "_StatusToUser"."a" = ${status.id} AND "_StatusToUser"."b" = ${user.id})`,
                     // All statuses from users that the user is following
                     // WHERE format (... = ...)
                     sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${status.authorId} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."following" = true)`,

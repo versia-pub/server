@@ -1,9 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
-import { userToAPI, type UserWithRelations } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import {
+    findManyUsers,
+    userToAPI,
+    type UserWithRelations,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,26 +36,19 @@ export default apiRoute<{
     if (!user) return errorResponse("Unauthorized", 401);
 
     const { objects, link } = await fetchTimeline<UserWithRelations>(
-        client.user,
+        findManyUsers,
         {
-            where: {
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-                relationships: {
-                    some: {
-                        subjectId: user.id,
-                        requested: true,
-                    },
-                },
-            },
-            include: userRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-expect-error Yes I KNOW the types are wrong
+            where: (subject, { lt, gte, gt, and, sql }) =>
+                and(
+                    max_id ? lt(subject.id, max_id) : undefined,
+                    since_id ? gte(subject.id, since_id) : undefined,
+                    min_id ? gt(subject.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${user.id} AND "Relationship"."ownerId" = ${subject.id} AND "Relationship"."requested" = true)`,
+                ),
+            limit: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (subject, { desc }) => desc(subject.id),
         },
         req,
     );

@@ -1,13 +1,20 @@
 import { apiRoute, applyConfig } from "@api";
-import type { Prisma } from "@prisma/client";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import { client } from "~database/datasource";
-import { notificationToAPI } from "~database/entities/Notification";
+import {
+    findManyNotifications,
+    notificationToAPI,
+} from "~database/entities/Notification";
 import {
     statusAndUserRelations,
     userRelations,
 } from "~database/entities/relations";
+import type {
+    Notification,
+    NotificationWithRelations,
+} from "~database/entities/Notification";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -52,41 +59,24 @@ export default apiRoute<{
         return errorResponse("Can't use both types and exclude_types", 400);
     }
 
-    const { objects, link } = await fetchTimeline<
-        Prisma.NotificationGetPayload<{
-            include: {
-                account: {
-                    include: typeof userRelations;
-                };
-                status: {
-                    include: typeof statusAndUserRelations;
-                };
-            };
-        }>
-    >(
-        client.notification,
+    const { objects, link } = await fetchTimeline<NotificationWithRelations>(
+        findManyNotifications,
         {
-            where: {
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-                notifiedId: user.id,
-                accountId: account_id,
-            },
-            include: {
-                account: {
-                    include: userRelations,
-                },
-                status: {
-                    include: statusAndUserRelations,
-                },
-            },
-            orderBy: {
-                id: "desc",
-            },
-            take: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            where: (notification, { lt, gte, gt, and, or, eq, inArray, sql }) =>
+                or(
+                    and(
+                        max_id ? lt(notification.id, max_id) : undefined,
+                        since_id ? gte(notification.id, since_id) : undefined,
+                        min_id ? gt(notification.id, min_id) : undefined,
+                    ),
+                    eq(notification.notifiedId, user.id),
+                    eq(notification.accountId, account_id),
+                ),
+            with: {},
+            limit: Number(limit),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (notification, { desc }) => desc(notification.id),
         },
         req,
     );

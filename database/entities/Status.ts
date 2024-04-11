@@ -100,6 +100,21 @@ export const statusExtras = {
         ),
 };
 
+export const statusExtrasTemplate = (name: string) => ({
+    // @ts-ignore
+    reblogCount: sql([
+        `(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."reblogId" = ${name}.id)`,
+    ]).as("reblog_count"),
+    // @ts-ignore
+    likeCount: sql([
+        `(SELECT COUNT(*) FROM "Like" "like" WHERE "like"."likedId" = ${name}.id)`,
+    ]).as("like_count"),
+    // @ts-ignore
+    replyCount: sql([
+        `(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."inReplyToPostId" = ${name}.id)`,
+    ]).as("reply_count"),
+});
+
 /**
  * Returns whether this status is viewable by a user.
  * @param user The user to check.
@@ -137,6 +152,15 @@ export const findManyStatuses = async (
             attachments: {
                 where: (attachment, { eq }) =>
                     eq(attachment.statusId, sql`"status"."id"`),
+            },
+            emojis: {
+                with: {
+                    emoji: {
+                        with: {
+                            instance: true,
+                        },
+                    },
+                },
             },
             author: {
                 with: {

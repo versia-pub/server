@@ -536,7 +536,12 @@ export const userRelations = relations(user, ({ many, one }) => ({
     relationshipSubjects: many(relationship, {
         relationName: "RelationshipToSubject",
     }),
-    notifications: many(notification),
+    notificationsMade: many(notification, {
+        relationName: "NotificationToAccount",
+    }),
+    notificationsReceived: many(notification, {
+        relationName: "NotificationToNotified",
+    }),
     openIdAccounts: many(openIdAccount),
     flags: many(flag),
     modNotes: many(modNote),
@@ -636,6 +641,24 @@ export const statusRelations = relations(status, ({ many, one }) => ({
     likes: many(like),
     reblogs: many(status, {
         relationName: "StatusToReblog",
+    }),
+    notifications: many(notification),
+}));
+
+export const notificationRelations = relations(notification, ({ one }) => ({
+    account: one(user, {
+        fields: [notification.accountId],
+        references: [user.id],
+        relationName: "NotificationToAccount",
+    }),
+    notified: one(user, {
+        fields: [notification.notifiedId],
+        references: [user.id],
+        relationName: "NotificationToNotified",
+    }),
+    status: one(status, {
+        fields: [notification.statusId],
+        references: [status.id],
     }),
 }));
 
