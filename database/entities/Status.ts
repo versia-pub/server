@@ -79,7 +79,6 @@ export type StatusWithoutRecursiveRelations = Omit<
     | "inReplyTo"
     | "quoting"
     | "reblog"
-    | "mentions"
     | "reblogCount"
     | "likeCount"
     | "replyCount"
@@ -193,10 +192,10 @@ export const findManyStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_reblog_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -225,10 +224,10 @@ export const findManyStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_inReplyTo_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -257,10 +256,10 @@ export const findManyStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_quoting_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -290,6 +289,11 @@ export const findManyStatuses = async (
         reblog: post.reblog && {
             ...post.reblog,
             author: transformOutputToUserWithRelations(post.reblog.author),
+            mentions: post.reblog.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: post.reblog.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
@@ -299,6 +303,11 @@ export const findManyStatuses = async (
         inReplyTo: post.inReplyTo && {
             ...post.inReplyTo,
             author: transformOutputToUserWithRelations(post.inReplyTo.author),
+            mentions: post.inReplyTo.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: post.inReplyTo.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
@@ -308,6 +317,11 @@ export const findManyStatuses = async (
         quoting: post.quoting && {
             ...post.quoting,
             author: transformOutputToUserWithRelations(post.quoting.author),
+            mentions: post.quoting.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: post.quoting.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
@@ -336,6 +350,15 @@ export const findFirstStatuses = async (
                 where: (attachment, { eq }) =>
                     eq(attachment.statusId, sql`"status"."id"`),
             },
+            emojis: {
+                with: {
+                    emoji: {
+                        with: {
+                            instance: true,
+                        },
+                    },
+                },
+            },
             author: {
                 with: {
                     ...userRelations,
@@ -349,7 +372,6 @@ export const findFirstStatuses = async (
                         extras: userExtrasTemplate("status_mentions_user"),
                     },
                 },
-                where: (mention, { eq }) => eq(mention.a, sql`"status"."id"`),
             },
             reblog: {
                 with: {
@@ -368,10 +390,10 @@ export const findFirstStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_reblog_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -400,10 +422,10 @@ export const findFirstStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_inReplyTo_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -432,10 +454,10 @@ export const findFirstStatuses = async (
                     mentions: {
                         with: {
                             user: {
-                                with: {
-                                    instance: true,
-                                    relationships: true,
-                                },
+                                with: userRelations,
+                                extras: userExtrasTemplate(
+                                    "status_quoting_mentions_user",
+                                ),
                             },
                         },
                     },
@@ -465,6 +487,11 @@ export const findFirstStatuses = async (
         reblog: output.reblog && {
             ...output.reblog,
             author: transformOutputToUserWithRelations(output.reblog.author),
+            mentions: output.reblog.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: output.reblog.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
@@ -474,6 +501,11 @@ export const findFirstStatuses = async (
         inReplyTo: output.inReplyTo && {
             ...output.inReplyTo,
             author: transformOutputToUserWithRelations(output.inReplyTo.author),
+            mentions: output.inReplyTo.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: output.inReplyTo.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
@@ -483,6 +515,11 @@ export const findFirstStatuses = async (
         quoting: output.quoting && {
             ...output.quoting,
             author: transformOutputToUserWithRelations(output.quoting.author),
+            mentions: output.quoting.mentions.map(
+                (mention) =>
+                    mention.user &&
+                    transformOutputToUserWithRelations(mention.user),
+            ),
             emojis: output.quoting.emojis.map(
                 (emoji) =>
                     (emoji as unknown as Record<string, object>)
