@@ -4,6 +4,7 @@ import { MediaBackendType } from "media-manager";
 import type { APIAsyncAttachment } from "~types/entities/async_attachment";
 import type { APIAttachment } from "~types/entities/attachment";
 import type * as Lysand from "lysand-types";
+import { client } from "~database/datasource";
 
 export const attachmentToAPI = (
     attachment: Attachment,
@@ -78,6 +79,28 @@ export const attachmentToLysand = (
             width: attachment.width ?? undefined,
         },
     };
+};
+
+export const attachmentFromLysand = async (
+    attachment: Lysand.ContentFormat,
+): Promise<Attachment> => {
+    const key = Object.keys(attachment)[0];
+    const value = attachment[key];
+
+    return await client.attachment.create({
+        data: {
+            url: value.content,
+            description: value.description || undefined,
+            duration: value.duration || undefined,
+            fps: value.fps || undefined,
+            height: value.height || undefined,
+            size: value.size || undefined,
+            width: value.width || undefined,
+            sha256: value.hash?.sha256 || undefined,
+            mime_type: key,
+            blurhash: value.blurhash || undefined,
+        },
+    });
 };
 
 export const getUrl = (name: string, config: Config) => {

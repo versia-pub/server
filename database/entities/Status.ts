@@ -7,6 +7,7 @@ import {
     type Relationship,
     type Status,
     type User,
+    type Attachment,
 } from "@prisma/client";
 import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
@@ -20,7 +21,11 @@ import type { APIStatus } from "~types/entities/status";
 import type { Note } from "~types/lysand/Object";
 import type * as Lysand from "lysand-types";
 import { applicationToAPI } from "./Application";
-import { attachmentToAPI, attachmentToLysand } from "./Attachment";
+import {
+    attachmentFromLysand,
+    attachmentToAPI,
+    attachmentToLysand,
+} from "./Attachment";
 import { emojiToAPI, emojiToLysand, parseEmojis } from "./Emoji";
 import type { UserWithRelations } from "./User";
 import { getUserUri, resolveUser, resolveWebFinger, userToAPI } from "./User";
@@ -111,6 +116,17 @@ export const resolveStatus = async (
         throw new Error("Invalid object author");
     }
 
+    const attachments = (
+        await Promise.all(
+            (note.attachments ?? []).map((attachment) =>
+                attachmentFromLysand(attachment).catch((e) => {
+                    console.error(e);
+                    return null;
+                }),
+            ),
+        )
+    ).filter((attachment) => attachment !== null) as Attachment[];
+
     return await createNewStatus(
         author,
         note.content ?? {
@@ -130,8 +146,7 @@ export const resolveStatus = async (
                     (mention) => mention !== null,
                 ) as Promise<UserWithRelations>[],
         ),
-        // TODO: Add attachments
-        [],
+        attachments.map((a) => a.id),
         note.replies_to ? await resolveStatus(note.replies_to) : undefined,
         note.quotes ? await resolveStatus(note.quotes) : undefined,
     );
