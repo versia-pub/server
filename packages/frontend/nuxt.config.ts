@@ -34,6 +34,9 @@ export default defineNuxtConfig({
     schemaOrg: {
         enabled: false,
     },
+    ogImage: {
+        enabled: false,
+    },
     vite: {
         define: {
             __VERSION__: JSON.stringify(pkg.version),
