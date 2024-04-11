@@ -72,7 +72,7 @@ export default apiRoute<{
                         since_id ? gte(status.id, since_id) : undefined,
                         min_id ? gt(status.id, min_id) : undefined,
                         eq(status.authorId, id),
-                        sql`EXISTS (SELECT 1 FROM _UserPinnedNotes WHERE _UserPinnedNotes.status_id = ${status.id} AND _UserPinnedNotes.user_id = ${user.id})`,
+                        sql`EXISTS (SELECT 1 FROM "_UserPinnedNotes" WHERE "_UserPinnedNotes"."A" = ${status.id} AND "_UserPinnedNotes"."B" = ${user.id})`,
                         only_media
                             ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
                             : undefined,
