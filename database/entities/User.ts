@@ -709,7 +709,6 @@ export const userToAPI = (
     userToConvert: UserWithRelations,
     isOwnAccount = false,
 ): APIAccount => {
-    console.log(userToConvert);
     return {
         id: userToConvert.id,
         username: userToConvert.username,

@@ -44,6 +44,7 @@ import {
     sql,
     isNotNull,
     inArray,
+    isNull,
 } from "drizzle-orm";
 import {
     status,
@@ -731,46 +732,81 @@ export const parseTextMentions = async (
 
     if (mentionedPeople.length === 0) return [];
 
-    const found = await db
-        .select({
-            id: user.id,
-            username: user.username,
-            baseUrl: instance.baseUrl,
-        })
-        .from(user)
-        .innerJoin(instance, eq(user.instanceId, instance.id))
-        .where(
-            or(
-                ...mentionedPeople.map((person) =>
-                    and(
-                        eq(user.username, person.split("@")[1]),
-                        person.split("@").length > 2
-                            ? eq(instance.baseUrl, person.split("@")[2])
-                            : undefined,
-                    ),
-                ),
-            ),
-        );
-
-    const notFound = mentionedPeople.filter(
+    const remoteUsers = mentionedPeople.filter(
         (person) =>
-            !found.find(
+            person.split("@").length === 3 &&
+            person.split("@")[2] !== new URL(config.http.base_url).host,
+    );
+
+    const localUsers = mentionedPeople.filter(
+        (person) =>
+            person.split("@").length <= 2 ||
+            person.split("@")[2] === new URL(config.http.base_url).host,
+    );
+
+    const foundRemote =
+        remoteUsers.length > 0
+            ? await db
+                  .select({
+                      id: user.id,
+                      username: user.username,
+                      baseUrl: instance.baseUrl,
+                  })
+                  .from(user)
+                  .innerJoin(instance, eq(user.instanceId, instance.id))
+                  .where(
+                      or(
+                          ...remoteUsers.map((person) =>
+                              and(
+                                  eq(user.username, person.split("@")[1]),
+                                  eq(instance.baseUrl, person.split("@")[2]),
+                              ),
+                          ),
+                      ),
+                  )
+            : [];
+
+    const foundLocal =
+        localUsers.length > 0
+            ? await db
+                  .select({
+                      id: user.id,
+                  })
+                  .from(user)
+                  .where(
+                      and(
+                          inArray(
+                              user.username,
+                              localUsers.map((person) => person.split("@")[1]),
+                          ),
+                          isNull(user.instanceId),
+                      ),
+                  )
+            : [];
+
+    const combinedFound = [
+        ...foundLocal.map((user) => user.id),
+        ...foundRemote.map((user) => user.id),
+    ];
+
+    const finalList =
+        combinedFound.length > 0
+            ? await findManyUsers({
+                  where: (user, { inArray }) => inArray(user.id, combinedFound),
+              })
+            : [];
+
+    const notFoundRemote = remoteUsers.filter(
+        (person) =>
+            !foundRemote.find(
                 (user) =>
                     user.username === person.split("@")[1] &&
                     user.baseUrl === person.split("@")[2],
             ),
     );
 
-    const finalList = await findManyUsers({
-        where: (user, { inArray }) =>
-            inArray(
-                user.username,
-                found.map((f) => f.username),
-            ),
-    });
-
     // Attempt to resolve mentions that were not found
-    for (const person of notFound) {
+    for (const person of notFoundRemote) {
         if (person.split("@").length < 2) continue;
 
         const user = await resolveWebFinger(
@@ -802,7 +838,15 @@ export const replaceTextMentions = async (
             );
         } else {
             finalText = finalText.replace(
-                `@${mention.username}`,
+                // Only replace @username if it doesn't have another @ right after
+                new RegExp(`@${mention.username}(?![a-zA-Z0-9_@])`, "g"),
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
+                    mention,
+                )}">@${mention.username}</a>`,
+            );
+
+            finalText = finalText.replace(
+                `@${mention.username}@${new URL(config.http.base_url).host}`,
                 `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
                     mention,
                 )}">@${mention.username}</a>`,
@@ -836,8 +880,8 @@ export const createNewStatus = async (
     if (content["text/html"]) {
         htmlContent = content["text/html"].content;
     } else if (content["text/markdown"]) {
-        htmlContent = linkifyHtml(
-            await sanitizeHtml(await parse(content["text/markdown"].content)),
+        htmlContent = await sanitizeHtml(
+            await parse(content["text/markdown"].content),
         );
     } else if (content["text/plain"]) {
         // Split by newline and add <p> tags
@@ -845,21 +889,22 @@ export const createNewStatus = async (
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");
-
-        htmlContent = linkifyHtml(htmlContent, {
-            defaultProtocol: "https",
-            validate: {
-                email: () => false,
-            },
-            target: "_blank",
-            rel: "nofollow noopener noreferrer",
-        });
     } else {
         htmlContent = "";
     }
 
     // Replace mentions text
     htmlContent = await replaceTextMentions(htmlContent, mentions ?? []);
+
+    // Linkify
+    htmlContent = linkifyHtml(htmlContent, {
+        defaultProtocol: "https",
+        validate: {
+            email: () => false,
+        },
+        target: "_blank",
+        rel: "nofollow noopener noreferrer",
+    });
 
     // Parse emojis and fuse with existing emojis
     let foundEmojis = emojis;
@@ -1142,6 +1187,23 @@ export const statusToAPI = async (
           }))
         : false;
 
+    // Convert mentions of local users from @username@host to @username
+    const mentionedLocalUsers = statusToConvert.mentions.filter(
+        (mention) => mention.instanceId === null,
+    );
+
+    let replacedContent = statusToConvert.content;
+
+    for (const mention of mentionedLocalUsers) {
+        replacedContent = replacedContent.replace(
+            new RegExp(
+                `@${mention.username}@${new URL(config.http.base_url).host}`,
+                "g",
+            ),
+            `@${mention.username}`,
+        );
+    }
+
     return {
         id: statusToConvert.id,
         in_reply_to_id: statusToConvert.inReplyToPostId || null,
@@ -1152,7 +1214,7 @@ export const statusToAPI = async (
             ? applicationToAPI(statusToConvert.application)
             : null,
         card: null,
-        content: statusToConvert.content,
+        content: replacedContent,
         emojis: statusToConvert.emojis.map((emoji) => emojiToAPI(emoji)),
         favourited: !!(statusToConvert.likes ?? []).find(
             (like) => like.likerId === userFetching?.id,
