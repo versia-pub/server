@@ -444,12 +444,14 @@ export const resolveUser = async (
     )[0];
 
     // Add emojis to user
-    await db.insert(emojiToUser).values(
-        emojis.map((emoji) => ({
-            a: emoji.id,
-            b: newUser.id,
-        })),
-    );
+    if (emojis.length > 0) {
+        await db.insert(emojiToUser).values(
+            emojis.map((emoji) => ({
+                a: emoji.id,
+                b: newUser.id,
+            })),
+        );
+    }
 
     const finalUser = await findFirstUser({
         where: (user, { eq }) => eq(user.id, newUser.id),
