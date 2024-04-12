@@ -356,7 +356,6 @@ export const resolveUser = async (
 
         const foundLocalUser = await findFirstUser({
             where: (user, { eq }) => eq(user.id, uuid[0]),
-            with: userRelations,
         });
 
         return foundLocalUser || null;
@@ -422,6 +421,7 @@ export const resolveUser = async (
                     inbox: data.inbox,
                     outbox: data.outbox,
                 },
+                updatedAt: new Date(data.created_at).toISOString(),
                 instanceId: instance.id,
                 avatar: data.avatar
                     ? Object.entries(data.avatar)[0][1].content
@@ -453,7 +453,6 @@ export const resolveUser = async (
 
     const finalUser = await findFirstUser({
         where: (user, { eq }) => eq(user.id, newUser.id),
-        with: userRelations,
     });
 
     if (!finalUser) return null;
@@ -491,7 +490,6 @@ export const resolveWebFinger = async (
         return (
             (await findFirstUser({
                 where: (user, { eq }) => eq(user.id, foundUser[0].User.id),
-                with: userRelations,
             })) || null
         );
 
@@ -597,7 +595,6 @@ export const createNewLocalUser = async (data: {
 
     const finalUser = await findFirstUser({
         where: (user, { eq }) => eq(user.id, newUser.id),
-        with: userRelations,
     });
 
     if (!finalUser) return null;
