@@ -147,6 +147,16 @@ export const createServer = (
                     return errorResponse("Unauthorized", 401);
                 }
 
+                // Check is Content-Type header is missing in relevant requests
+                if (["POST", "PUT", "PATCH"].includes(req.method)) {
+                    if (!req.headers.has("Content-Type")) {
+                        return errorResponse(
+                            `Content-Type header is missing but required on method ${req.method}`,
+                            400,
+                        );
+                    }
+                }
+
                 let parsedRequest = {};
 
                 try {
