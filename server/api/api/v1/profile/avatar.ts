@@ -1,8 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { eq } from "drizzle-orm";
 import { userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
+import { user } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],
@@ -20,20 +21,16 @@ export const meta = applyConfig({
  * Deletes a user avatar
  */
 export default apiRoute(async (req, matchedRoute, extraData) => {
-    const { user } = extraData.auth;
+    const { user: self } = extraData.auth;
 
-    if (!user) return errorResponse("Unauthorized", 401);
+    if (!self) return errorResponse("Unauthorized", 401);
 
-    // Delete user avatar
-    const newUser = await client.user.update({
-        where: {
-            id: user.id,
-        },
-        data: {
+    await db.update(user).set({ avatar: "" }).where(eq(user.id, self.id));
+
+    return jsonResponse(
+        userToAPI({
+            ...self,
             avatar: "",
-        },
-        include: userRelations,
-    });
-
-    return jsonResponse(userToAPI(newUser));
+        }),
+    );
 });

@@ -1,10 +1,12 @@
 import chalk from "chalk";
 import { config } from "config-manager";
+import { count } from "drizzle-orm";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { Meilisearch } from "meilisearch";
-import { client } from "~database/datasource";
 import type { Status } from "~database/entities/Status";
 import type { User } from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { status, user } from "~drizzle/schema";
 
 export const meilisearch = new Meilisearch({
     host: `${config.meilisearch.host}:${config.meilisearch.port}`,
@@ -81,19 +83,17 @@ export const getNthDatabaseAccountBatch = (
     n: number,
     batchSize = 1000,
 ): Promise<Record<string, string | Date>[]> => {
-    return client.user.findMany({
-        skip: n * batchSize,
-        take: batchSize,
-        select: {
+    return db.query.user.findMany({
+        offset: n * batchSize,
+        limit: batchSize,
+        columns: {
             id: true,
             username: true,
             displayName: true,
             note: true,
             createdAt: true,
         },
-        orderBy: {
-            createdAt: "asc",
-        },
+        orderBy: (user, { asc }) => asc(user.createdAt),
     });
 };
 
@@ -101,17 +101,15 @@ export const getNthDatabaseStatusBatch = (
     n: number,
     batchSize = 1000,
 ): Promise<Record<string, string | Date>[]> => {
-    return client.status.findMany({
-        skip: n * batchSize,
-        take: batchSize,
-        select: {
+    return db.query.status.findMany({
+        offset: n * batchSize,
+        limit: batchSize,
+        columns: {
             id: true,
             content: true,
             createdAt: true,
         },
-        orderBy: {
-            createdAt: "asc",
-        },
+        orderBy: (status, { asc }) => asc(status.createdAt),
     });
 };
 
@@ -120,7 +118,13 @@ export const rebuildSearchIndexes = async (
     batchSize = 100,
 ) => {
     if (indexes.includes(MeiliIndexType.Accounts)) {
-        const accountCount = await client.user.count();
+        const accountCount = (
+            await db
+                .select({
+                    count: count(),
+                })
+                .from(user)
+        )[0].count;
 
         for (let i = 0; i < accountCount / batchSize; i++) {
             const accounts = await getNthDatabaseAccountBatch(i, batchSize);
@@ -147,7 +151,13 @@ export const rebuildSearchIndexes = async (
     }
 
     if (indexes.includes(MeiliIndexType.Statuses)) {
-        const statusCount = await client.status.count();
+        const statusCount = (
+            await db
+                .select({
+                    count: count(),
+                })
+                .from(status)
+        )[0].count;
 
         for (let i = 0; i < statusCount / batchSize; i++) {
             const statuses = await getNthDatabaseStatusBatch(i, batchSize);

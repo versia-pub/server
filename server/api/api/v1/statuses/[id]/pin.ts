@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
 import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
 import { db } from "~drizzle/db";
 import { statusToUser } from "~drizzle/schema";
 

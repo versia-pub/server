@@ -1,13 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
 import {
     type StatusWithRelations,
     findManyStatuses,
     statusToAPI,
 } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
