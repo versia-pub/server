@@ -1,13 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
 import { createLike } from "~database/entities/Like";
 import {
     findFirstStatuses,
     isViewableByUser,
     statusToAPI,
 } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { db } from "~drizzle/db";
 import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
@@ -40,11 +39,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (!status || !isViewableByUser(status, user))
         return errorResponse("Record not found", 404);
 
-    const existingLike = await client.like.findFirst({
-        where: {
-            likedId: status.id,
-            likerId: user.id,
-        },
+    const existingLike = await db.query.like.findFirst({
+        where: (like, { and, eq }) =>
+            and(eq(like.likedId, status.id), eq(like.likerId, user.id)),
     });
 
     if (!existingLike) {

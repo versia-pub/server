@@ -1,12 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
 import {
-    statusToAPI,
     type StatusWithRelations,
+    findManyStatuses,
+    statusToAPI,
 } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -37,25 +36,18 @@ export default apiRoute<{
     if (!user) return errorResponse("Unauthorized", 401);
 
     const { objects, link } = await fetchTimeline<StatusWithRelations>(
-        client.status,
+        findManyStatuses,
         {
-            where: {
-                id: {
-                    lt: max_id ?? undefined,
-                    gte: since_id ?? undefined,
-                    gt: min_id ?? undefined,
-                },
-                likes: {
-                    some: {
-                        likerId: user.id,
-                    },
-                },
-            },
-            include: statusAndUserRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-ignore
+            where: (status, { and, lt, gt, gte, eq, sql }) =>
+                and(
+                    max_id ? lt(status.id, max_id) : undefined,
+                    since_id ? gte(status.id, since_id) : undefined,
+                    min_id ? gt(status.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${user.id})`,
+                ),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (status, { desc }) => desc(status.id),
         },
         req,
     );

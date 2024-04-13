@@ -3,10 +3,10 @@ import type { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
 // FILEPATH: /home/jessew/Dev/lysand/packages/media-manager/backends/s3.test.ts
 import {
+    LocalMediaBackend,
     MediaBackend,
     MediaBackendType,
     MediaHasher,
-    LocalMediaBackend,
     S3MediaBackend,
 } from "..";
 import { ConvertableMediaFormats, MediaConverter } from "../media-converter";

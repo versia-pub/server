@@ -1,6 +1,6 @@
-import { Client } from "pg";
 import { config } from "config-manager";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { Client } from "pg";
 import * as schema from "./schema";
 
 export const client = new Client({

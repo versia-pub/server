@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { config } from "~index";
 import {
     deleteOldTestUsers,
     getTestStatuses,
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import { config } from "~index";
-import { meta } from "./index";
 import type { APIAccount } from "~types/entities/account";
+import { meta } from "./index";
 
 await deleteOldTestUsers();
 

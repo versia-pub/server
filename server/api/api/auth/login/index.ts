@@ -1,8 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
-import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
-import { userRelations } from "~database/entities/relations";
+import { findFirstUser } from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { token } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -47,45 +48,28 @@ export default apiRoute<{
     if (!email || !password)
         return redirectToLogin("Invalid username or password");
 
-    // Get user
-    const user = await client.user.findFirst({
-        where: {
-            email,
-        },
-        include: userRelations,
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.email, email),
     });
 
     if (!user || !(await Bun.password.verify(password, user.password || "")))
         return redirectToLogin("Invalid username or password");
 
-    // Get application
-    const application = await client.application.findFirst({
-        where: {
-            client_id,
-        },
+    const application = await db.query.application.findFirst({
+        where: (app, { eq }) => eq(app.clientId, client_id),
     });
 
     if (!application) return redirectToLogin("Invalid client_id");
 
     const code = randomBytes(32).toString("hex");
 
-    await client.application.update({
-        where: { id: application.id },
-        data: {
-            tokens: {
-                create: {
-                    access_token: randomBytes(64).toString("base64url"),
-                    code: code,
-                    scope: scopes.join(" "),
-                    token_type: TokenType.BEARER,
-                    user: {
-                        connect: {
-                            id: user.id,
-                        },
-                    },
-                },
-            },
-        },
+    await db.insert(token).values({
+        accessToken: randomBytes(64).toString("base64url"),
+        code: code,
+        scope: scopes.join(" "),
+        tokenType: TokenType.BEARER,
+        applicationId: application.id,
+        userId: user.id,
     });
 
     // Redirect to OAuth confirmation screen

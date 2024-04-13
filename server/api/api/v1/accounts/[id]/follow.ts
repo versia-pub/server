@@ -1,11 +1,8 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { relationshipToAPI } from "~database/entities/Relationship";
 import {
-    createNewRelationship,
-    relationshipToAPI,
-} from "~database/entities/Relationship";
-import {
+    findFirstUser,
     followRequestUser,
     getRelationshipToOtherUser,
 } from "~database/entities/User";
@@ -39,27 +36,19 @@ export default apiRoute<{
 
     const { languages, notify, reblogs } = extraData.parsedRequest;
 
-    const user = await client.user.findUnique({
-        where: { id },
-        include: {
-            relationships: {
-                include: {
-                    owner: true,
-                    subject: true,
-                },
-            },
-        },
+    const otherUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, id),
     });
 
-    if (!user) return errorResponse("User not found", 404);
+    if (!otherUser) return errorResponse("User not found", 404);
 
     // Check if already following
-    let relationship = await getRelationshipToOtherUser(self, user);
+    let relationship = await getRelationshipToOtherUser(self, otherUser);
 
     if (!relationship.following) {
         relationship = await followRequestUser(
             self,
-            user,
+            otherUser,
             relationship.id,
             reblogs,
             notify,

@@ -4,8 +4,8 @@ import { fetchTimeline } from "@timelines";
 import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 import {
     type UserWithRelations,
-    userToAPI,
     findManyUsers,
+    userToAPI,
 } from "~database/entities/User";
 
 export const meta = applyConfig({

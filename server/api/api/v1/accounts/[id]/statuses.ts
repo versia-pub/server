@@ -1,18 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { sql } from "drizzle-orm";
-import { client } from "~database/datasource";
 import {
+    type StatusWithRelations,
     findManyStatuses,
     statusToAPI,
-    type StatusWithRelations,
 } from "~database/entities/Status";
 import { findFirstUser } from "~database/entities/User";
-import {
-    statusAndUserRelations,
-    userRelations,
-} from "~database/entities/relations";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,14 +1,14 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { config } from "~index";
 import {
     deleteOldTestUsers,
     getTestStatuses,
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import { config } from "~index";
-import { meta } from "./reblogged_by";
-import type { APIStatus } from "~types/entities/status";
 import type { APIAccount } from "~types/entities/account";
+import type { APIStatus } from "~types/entities/status";
+import { meta } from "./reblogged_by";
 
 await deleteOldTestUsers();
 
@@ -29,6 +29,7 @@ beforeAll(async () => {
             {
                 method: "POST",
                 headers: {
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
             },

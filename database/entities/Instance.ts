@@ -1,5 +1,5 @@
-import { db } from "~drizzle/db";
 import type * as Lysand from "lysand-types";
+import { db } from "~drizzle/db";
 import { instance } from "~drizzle/schema";
 
 /**

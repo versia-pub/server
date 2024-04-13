@@ -1,9 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
-import { type UserWithRelations, userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import {
+    type UserWithRelations,
+    findFirstUser,
+    findManyUsers,
+    userToAPI,
+} from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -32,36 +35,27 @@ export default apiRoute<{
     // TODO: Add pinned
     const { max_id, min_id, since_id, limit = 20 } = extraData.parsedRequest;
 
-    const user = await client.user.findUnique({
-        where: { id },
-        include: userRelations,
+    const otherUser = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, id),
     });
 
     if (limit < 1 || limit > 40) return errorResponse("Invalid limit", 400);
 
-    if (!user) return errorResponse("User not found", 404);
+    if (!otherUser) return errorResponse("User not found", 404);
 
     const { objects, link } = await fetchTimeline<UserWithRelations>(
-        client.user,
+        findManyUsers,
         {
-            where: {
-                relationships: {
-                    some: {
-                        subjectId: user.id,
-                        following: true,
-                    },
-                },
-                id: {
-                    lt: max_id,
-                    gt: min_id,
-                    gte: since_id,
-                },
-            },
-            include: userRelations,
-            take: Number(limit),
-            orderBy: {
-                id: "desc",
-            },
+            // @ts-ignore
+            where: (follower, { and, lt, gt, gte, eq, sql }) =>
+                and(
+                    max_id ? lt(follower.id, max_id) : undefined,
+                    since_id ? gte(follower.id, since_id) : undefined,
+                    min_id ? gt(follower.id, min_id) : undefined,
+                    sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${otherUser.id} AND "Relationship"."objectId" = ${follower.id} AND "Relationship"."following" = true)`,
+                ),
+            // @ts-expect-error Yes I KNOW the types are wrong
+            orderBy: (liker, { desc }) => desc(liker.id),
         },
         req,
     );

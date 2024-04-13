@@ -1,5 +1,5 @@
-import type { Config } from "drizzle-kit";
 import { config } from "config-manager";
+import type { Config } from "drizzle-kit";
 
 export default {
     driver: "pg",

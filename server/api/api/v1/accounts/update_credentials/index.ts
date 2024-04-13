@@ -2,15 +2,16 @@ import { apiRoute, applyConfig } from "@api";
 import { convertTextToHtml } from "@formatting";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { and, eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
-import { client } from "~database/datasource";
+import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
-import { userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
-import { S3MediaBackend, LocalMediaBackend } from "media-manager";
+import { findFirstUser, userToAPI } from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { emojiToUser, user } from "~drizzle/schema";
 import type { APISource } from "~types/entities/source";
 
 export const meta = applyConfig({
@@ -38,9 +39,9 @@ export default apiRoute<{
     "source[sensitive]": string;
     "source[language]": string;
 }>(async (req, matchedRoute, extraData) => {
-    const { user } = extraData.auth;
+    const { user: self } = extraData.auth;
 
-    if (!user) return errorResponse("Unauthorized", 401);
+    if (!self) return errorResponse("Unauthorized", 401);
 
     const config = await extraData.configManager.getConfig();
 
@@ -109,12 +110,12 @@ export default apiRoute<{
         }
 
         // Remove emojis
-        user.emojis = [];
+        self.emojis = [];
 
-        user.displayName = sanitizedDisplayName;
+        self.displayName = sanitizedDisplayName;
     }
 
-    if (note && user.source) {
+    if (note && self.source) {
         // Check if within allowed note length
         if (sanitizedNote.length > config.validation.max_note_size) {
             return errorResponse(
@@ -128,12 +129,12 @@ export default apiRoute<{
             return errorResponse("Bio contains blocked words", 422);
         }
 
-        (user.source as APISource).note = sanitizedNote;
+        (self.source as APISource).note = sanitizedNote;
         // TODO: Convert note to HTML
-        user.note = await convertTextToHtml(sanitizedNote);
+        self.note = await convertTextToHtml(sanitizedNote);
     }
 
-    if (source_privacy && user.source) {
+    if (source_privacy && self.source) {
         // Check if within allowed privacy values
         if (
             !["public", "unlisted", "private", "direct"].includes(
@@ -146,19 +147,19 @@ export default apiRoute<{
             );
         }
 
-        (user.source as APISource).privacy = source_privacy;
+        (self.source as APISource).privacy = source_privacy;
     }
 
-    if (source_sensitive && user.source) {
+    if (source_sensitive && self.source) {
         // Check if within allowed sensitive values
         if (source_sensitive !== "true" && source_sensitive !== "false") {
             return errorResponse("Sensitive must be a boolean", 422);
         }
 
-        (user.source as APISource).sensitive = source_sensitive === "true";
+        (self.source as APISource).sensitive = source_sensitive === "true";
     }
 
-    if (source_language && user.source) {
+    if (source_language && self.source) {
         if (!ISO6391.validate(source_language)) {
             return errorResponse(
                 "Language must be a valid ISO 639-1 code",
@@ -166,7 +167,7 @@ export default apiRoute<{
             );
         }
 
-        (user.source as APISource).language = source_language;
+        (self.source as APISource).language = source_language;
     }
 
     if (avatar) {
@@ -180,7 +181,7 @@ export default apiRoute<{
 
         const { path } = await mediaManager.addFile(avatar);
 
-        user.avatar = getUrl(path, config);
+        self.avatar = getUrl(path, config);
     }
 
     if (header) {
@@ -194,7 +195,7 @@ export default apiRoute<{
 
         const { path } = await mediaManager.addFile(header);
 
-        user.header = getUrl(path, config);
+        self.header = getUrl(path, config);
     }
 
     if (locked) {
@@ -203,7 +204,7 @@ export default apiRoute<{
             return errorResponse("Locked must be a boolean", 422);
         }
 
-        user.isLocked = locked === "true";
+        self.isLocked = locked === "true";
     }
 
     if (bot) {
@@ -212,7 +213,7 @@ export default apiRoute<{
             return errorResponse("Bot must be a boolean", 422);
         }
 
-        user.isBot = bot === "true";
+        self.isBot = bot === "true";
     }
 
     if (discoverable) {
@@ -221,7 +222,7 @@ export default apiRoute<{
             return errorResponse("Discoverable must be a boolean", 422);
         }
 
-        user.isDiscoverable = discoverable === "true";
+        self.isDiscoverable = discoverable === "true";
     }
 
     // Parse emojis
@@ -229,36 +230,49 @@ export default apiRoute<{
     const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
     const noteEmojis = await parseEmojis(sanitizedNote);
 
-    user.emojis = [...displaynameEmojis, ...noteEmojis];
+    self.emojis = [...displaynameEmojis, ...noteEmojis];
 
     // Deduplicate emojis
-    user.emojis = user.emojis.filter(
+    self.emojis = self.emojis.filter(
         (emoji, index, self) =>
             self.findIndex((e) => e.id === emoji.id) === index,
     );
 
-    const output = await client.user.update({
-        where: { id: user.id },
-        data: {
-            displayName: user.displayName,
-            note: user.note,
-            avatar: user.avatar,
-            header: user.header,
-            isLocked: user.isLocked,
-            isBot: user.isBot,
-            isDiscoverable: user.isDiscoverable,
-            emojis: {
-                disconnect: user.emojis.map((e) => ({
-                    id: e.id,
-                })),
-                connect: user.emojis.map((e) => ({
-                    id: e.id,
-                })),
-            },
-            source: user.source || undefined,
-        },
-        include: userRelations,
+    await db
+        .update(user)
+        .set({
+            displayName: self.displayName,
+            note: self.note,
+            avatar: self.avatar,
+            header: self.header,
+            isLocked: self.isLocked,
+            isBot: self.isBot,
+            isDiscoverable: self.isDiscoverable,
+            source: self.source || undefined,
+        })
+        .where(eq(user.id, self.id));
+
+    // Connect emojis, if any
+    for (const emoji of self.emojis) {
+        await db
+            .delete(emojiToUser)
+            .where(and(eq(emojiToUser.a, emoji.id), eq(emojiToUser.b, self.id)))
+            .execute();
+
+        await db
+            .insert(emojiToUser)
+            .values({
+                a: emoji.id,
+                b: self.id,
+            })
+            .execute();
+    }
+
+    const output = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, self.id),
     });
+
+    if (!output) return errorResponse("Couldn't edit user", 500);
 
     return jsonResponse(userToAPI(output));
 });

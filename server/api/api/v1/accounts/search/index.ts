@@ -2,10 +2,10 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sql } from "drizzle-orm";
 import {
+    type UserWithRelations,
     findManyUsers,
     resolveWebFinger,
     userToAPI,
-    type UserWithRelations,
 } from "~database/entities/User";
 import { user } from "~drizzle/schema";
 

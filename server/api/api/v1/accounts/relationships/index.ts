@@ -1,11 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
-import type { User } from "@prisma/client";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
 import {
     createNewRelationship,
     relationshipToAPI,
 } from "~database/entities/Relationship";
+import type { User } from "~database/entities/User";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -37,13 +37,12 @@ export default apiRoute<{
         return errorResponse("Number of ids must be between 1 and 10", 422);
     }
 
-    const relationships = await client.relationship.findMany({
-        where: {
-            ownerId: self.id,
-            subjectId: {
-                in: ids,
-            },
-        },
+    const relationships = await db.query.relationship.findMany({
+        where: (relationship, { inArray, and, eq }) =>
+            and(
+                inArray(relationship.subjectId, ids),
+                eq(relationship.ownerId, self.id),
+            ),
     });
 
     // Find IDs that dont have a relationship

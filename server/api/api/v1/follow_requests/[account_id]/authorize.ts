@@ -1,12 +1,17 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { and, eq } from "drizzle-orm";
 import {
     checkForBidirectionalRelationships,
     relationshipToAPI,
 } from "~database/entities/Relationship";
-import { sendFollowAccept } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import {
+    findFirstUser,
+    getRelationshipToOtherUser,
+    sendFollowAccept,
+} from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { relationship } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -27,11 +32,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { account_id } = matchedRoute.params;
 
-    const account = await client.user.findUnique({
-        where: {
-            id: account_id,
-        },
-        include: userRelations,
+    const account = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, account_id),
     });
 
     if (!account) return errorResponse("Account not found", 404);
@@ -40,37 +42,35 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     await checkForBidirectionalRelationships(user, account);
 
     // Authorize follow request
-    await client.relationship.updateMany({
-        where: {
-            subjectId: user.id,
-            ownerId: account.id,
-            requested: true,
-        },
-        data: {
+    await db
+        .update(relationship)
+        .set({
             requested: false,
             following: true,
-        },
-    });
+        })
+        .where(
+            and(
+                eq(relationship.subjectId, user.id),
+                eq(relationship.ownerId, account.id),
+            ),
+        );
 
     // Update followedBy for other user
-    await client.relationship.updateMany({
-        where: {
-            subjectId: account.id,
-            ownerId: user.id,
-        },
-        data: {
+    await db
+        .update(relationship)
+        .set({
             followedBy: true,
-        },
-    });
+        })
+        .where(
+            and(
+                eq(relationship.subjectId, account.id),
+                eq(relationship.ownerId, user.id),
+            ),
+        );
 
-    const relationship = await client.relationship.findFirst({
-        where: {
-            subjectId: account.id,
-            ownerId: user.id,
-        },
-    });
+    const foundRelationship = await getRelationshipToOtherUser(user, account);
 
-    if (!relationship) return errorResponse("Relationship not found", 404);
+    if (!foundRelationship) return errorResponse("Relationship not found", 404);
 
     // Check if accepting remote follow
     if (account.instanceId) {
@@ -78,5 +78,5 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         await sendFollowAccept(account, user);
     }
 
-    return jsonResponse(relationshipToAPI(relationship));
+    return jsonResponse(relationshipToAPI(foundRelationship));
 });

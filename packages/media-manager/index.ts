@@ -1,5 +1,5 @@
-import type { Config } from "config-manager";
 import { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
+import type { Config } from "config-manager";
 import type { ConvertableMediaFormats } from "./media-converter";
 import { MediaConverter } from "./media-converter";
 

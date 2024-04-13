@@ -1,9 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse, response } from "@response";
+import { eq } from "drizzle-orm";
 import type { MediaBackend } from "media-manager";
 import { MediaBackendType } from "media-manager";
-import { client } from "~database/datasource";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
+import { db } from "~drizzle/db";
+import { attachment } from "~drizzle/schema";
 import { LocalMediaBackend, S3MediaBackend } from "~packages/media-manager";
 
 export const meta = applyConfig({
@@ -35,13 +37,11 @@ export default apiRoute<{
 
     const id = matchedRoute.params.id;
 
-    const attachment = await client.attachment.findUnique({
-        where: {
-            id,
-        },
+    const foundAttachment = await db.query.attachment.findFirst({
+        where: (attachment, { eq }) => eq(attachment.id, id),
     });
 
-    if (!attachment) {
+    if (!foundAttachment) {
         return errorResponse("Media not found", 404);
     }
 
@@ -49,15 +49,15 @@ export default apiRoute<{
 
     switch (req.method) {
         case "GET": {
-            if (attachment.url) {
-                return jsonResponse(attachmentToAPI(attachment));
+            if (foundAttachment.url) {
+                return jsonResponse(attachmentToAPI(foundAttachment));
             }
             return response(null, 206);
         }
         case "PUT": {
             const { description, thumbnail } = extraData.parsedRequest;
 
-            let thumbnailUrl = attachment.thumbnail_url;
+            let thumbnailUrl = foundAttachment.thumbnailUrl;
 
             let mediaManager: MediaBackend;
 
@@ -78,26 +78,27 @@ export default apiRoute<{
                 thumbnailUrl = getUrl(path, config);
             }
 
-            const descriptionText = description || attachment.description;
+            const descriptionText = description || foundAttachment.description;
 
             if (
-                descriptionText !== attachment.description ||
-                thumbnailUrl !== attachment.thumbnail_url
+                descriptionText !== foundAttachment.description ||
+                thumbnailUrl !== foundAttachment.thumbnailUrl
             ) {
-                const newAttachment = await client.attachment.update({
-                    where: {
-                        id,
-                    },
-                    data: {
-                        description: descriptionText,
-                        thumbnail_url: thumbnailUrl,
-                    },
-                });
+                const newAttachment = (
+                    await db
+                        .update(attachment)
+                        .set({
+                            description: descriptionText,
+                            thumbnailUrl,
+                        })
+                        .where(eq(attachment.id, id))
+                        .returning()
+                )[0];
 
                 return jsonResponse(attachmentToAPI(newAttachment));
             }
 
-            return jsonResponse(attachmentToAPI(attachment));
+            return jsonResponse(attachmentToAPI(foundAttachment));
         }
     }
 

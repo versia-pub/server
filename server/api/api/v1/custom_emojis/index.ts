@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
-import { client } from "~database/datasource";
 import { emojiToAPI } from "~database/entities/Emoji";
 import { db } from "~drizzle/db";
 

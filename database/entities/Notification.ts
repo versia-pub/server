@@ -1,19 +1,19 @@
+import type { InferSelectModel } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import type { notification } from "~drizzle/schema";
 import type { APINotification } from "~types/entities/notification";
 import {
     type StatusWithRelations,
-    statusToAPI,
     findFirstStatuses,
+    statusToAPI,
 } from "./Status";
 import {
     type UserWithRelations,
-    userToAPI,
-    userRelations,
-    userExtrasTemplate,
     transformOutputToUserWithRelations,
+    userExtrasTemplate,
+    userRelations,
+    userToAPI,
 } from "./User";
-import type { InferSelectModel } from "drizzle-orm";
-import type { notification } from "~drizzle/schema";
-import { db } from "~drizzle/db";
 
 export type Notification = InferSelectModel<typeof notification>;
 

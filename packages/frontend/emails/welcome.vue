@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ETailwind, EButton } from "vue-email";
+import { EButton, ETailwind } from "vue-email";
 import tailwindConfig from "~/tailwind.config";
 
 defineProps<{

@@ -1,10 +1,10 @@
 import { config } from "config-manager";
+import { type InferSelectModel, and, eq } from "drizzle-orm";
+import type * as Lysand from "lysand-types";
+import { db } from "~drizzle/db";
+import { like, notification } from "~drizzle/schema";
 import type { StatusWithRelations } from "./Status";
 import type { UserWithRelations } from "./User";
-import type * as Lysand from "lysand-types";
-import { and, eq, type InferSelectModel } from "drizzle-orm";
-import { notification, like } from "~drizzle/schema";
-import { db } from "~drizzle/db";
 
 export type Like = InferSelectModel<typeof like>;
 

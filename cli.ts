@@ -9,12 +9,12 @@ import { CliBuilder, CliCommand } from "cli-parser";
 import Table from "cli-table";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
+import { lookup } from "mime-types";
 import { client } from "~database/datasource";
 import { getUrl } from "~database/entities/Attachment";
 import { createNewLocalUser } from "~database/entities/User";
 import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
 import { config } from "~packages/config-manager";
-import { lookup } from "mime-types";
 
 const args = process.argv;
 

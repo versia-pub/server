@@ -1,14 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { config } from "~index";
 import {
     deleteOldTestUsers,
     getTestStatuses,
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import { config } from "~index";
-import { meta } from "./favourited_by";
-import type { APIStatus } from "~types/entities/status";
 import type { APIAccount } from "~types/entities/account";
+import { meta } from "./favourited_by";
 
 await deleteOldTestUsers();
 
@@ -21,7 +20,7 @@ afterAll(async () => {
 
 beforeAll(async () => {
     for (const status of timeline) {
-        await fetch(
+        const res = await fetch(
             new URL(
                 `/api/v1/statuses/${status.id}/favourite`,
                 config.http.base_url,
@@ -29,6 +28,7 @@ beforeAll(async () => {
             {
                 method: "POST",
                 headers: {
+                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
             },

@@ -1,11 +1,11 @@
 import type { Config } from "config-manager";
-import { MediaBackendType } from "media-manager";
-import type { APIAsyncAttachment } from "~types/entities/async_attachment";
-import type { APIAttachment } from "~types/entities/attachment";
+import type { InferSelectModel } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
+import { MediaBackendType } from "media-manager";
 import { db } from "~drizzle/db";
 import { attachment } from "~drizzle/schema";
-import type { InferSelectModel } from "drizzle-orm";
+import type { APIAsyncAttachment } from "~types/entities/async_attachment";
+import type { APIAttachment } from "~types/entities/attachment";
 
 export type Attachment = InferSelectModel<typeof attachment>;
 

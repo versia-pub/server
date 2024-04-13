@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { db } from "~drizzle/db";
+import { application } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -33,24 +34,28 @@ export default apiRoute<{
             return errorResponse("Redirect URI must be a valid URI", 422);
         }
     }
-    const application = await client.application.create({
-        data: {
-            name: client_name || "",
-            redirect_uris: redirect_uris || "",
-            scopes: scopes || "read",
-            website: website || null,
-            client_id: randomBytes(32).toString("base64url"),
-            secret: randomBytes(64).toString("base64url"),
-        },
-    });
+
+    const app = (
+        await db
+            .insert(application)
+            .values({
+                name: client_name || "",
+                redirectUris: redirect_uris || "",
+                scopes: scopes || "read",
+                website: website || null,
+                clientId: randomBytes(32).toString("base64url"),
+                secret: randomBytes(64).toString("base64url"),
+            })
+            .returning()
+    )[0];
 
     return jsonResponse({
-        id: application.id,
-        name: application.name,
-        website: application.website,
-        client_id: application.client_id,
-        client_secret: application.secret,
-        redirect_uri: application.redirect_uris,
-        vapid_link: application.vapid_key,
+        id: app.id,
+        name: app.name,
+        website: app.website,
+        client_id: app.clientId,
+        client_secret: app.secret,
+        redirect_uri: app.redirectUris,
+        vapid_link: app.vapidKey,
     });
 });

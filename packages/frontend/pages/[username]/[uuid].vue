@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
 import { getHighlighterCore } from "shiki/core";
 import getWasm from "shiki/wasm";
+import { useRoute } from "vue-router";
 
 const config = (await useFetch("/api/config")).data.value;
 

@@ -1,11 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
-import { count, isNull } from "drizzle-orm";
-import { client } from "~database/datasource";
-import { userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import { and, count, countDistinct, eq, gte, isNull } from "drizzle-orm";
+import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { status, user } from "~drizzle/schema";
+import { instance, status, user } from "~drizzle/schema";
 import manifest from "~package.json";
 import type { APIInstance } from "~types/entities/instance";
 
@@ -45,33 +43,39 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .where(isNull(user.instanceId))
     )[0].count;
 
-    // Get the first created admin user
-    const contactAccount = await client.user.findFirst({
-        where: {
-            instanceId: null,
-            isAdmin: true,
-        },
-        orderBy: {
-            id: "asc",
-        },
-        include: userRelations,
+    const contactAccount = await findFirstUser({
+        where: (user, { isNull, eq, and }) =>
+            and(isNull(user.instanceId), eq(user.isAdmin, true)),
+        orderBy: (user, { asc }) => asc(user.id),
     });
 
-    // Get user that have posted once in the last 30 days
-    const monthlyActiveUsers = await client.user.count({
-        where: {
-            instanceId: null,
-            statuses: {
-                some: {
-                    createdAt: {
-                        gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                    },
-                },
-            },
-        },
-    });
+    const monthlyActiveUsers = (
+        await db
+            .select({
+                count: countDistinct(user),
+            })
+            .from(user)
+            .leftJoin(status, eq(user.id, status.authorId))
+            .where(
+                and(
+                    isNull(user.instanceId),
+                    gte(
+                        status.createdAt,
+                        new Date(
+                            Date.now() - 30 * 24 * 60 * 60 * 1000,
+                        ).toISOString(),
+                    ),
+                ),
+            )
+    )[0].count;
 
-    const knownDomainsCount = await client.instance.count();
+    const knownDomainsCount = (
+        await db
+            .select({
+                count: count(),
+            })
+            .from(instance)
+    )[0].count;
 
     // TODO: fill in more values
     return jsonResponse({

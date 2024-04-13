@@ -1,17 +1,17 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, response } from "@response";
-import { client } from "~database/datasource";
-import { userRelations } from "~database/entities/relations";
 import type * as Lysand from "lysand-types";
+import { client } from "~database/datasource";
+import { objectToInboxRequest } from "~database/entities/Federation";
 import { createNewStatus, resolveStatus } from "~database/entities/Status";
-import type { APIStatus } from "~types/entities/status";
 import {
     followAcceptToLysand,
     getRelationshipToOtherUser,
     resolveUser,
     sendFollowAccept,
 } from "~database/entities/User";
-import { objectToInboxRequest } from "~database/entities/Federation";
+import { userRelations } from "~database/entities/relations";
+import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

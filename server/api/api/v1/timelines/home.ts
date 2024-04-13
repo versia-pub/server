@@ -3,8 +3,8 @@ import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import {
     type StatusWithRelations,
-    statusToAPI,
     findManyStatuses,
+    statusToAPI,
 } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 

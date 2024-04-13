@@ -1,13 +1,34 @@
 import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
+import {
+    type InferSelectModel,
+    and,
+    eq,
+    inArray,
+    isNotNull,
+    isNull,
+    or,
+    sql,
+} from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import linkifyHtml from "linkify-html";
 import linkifyStr from "linkify-string";
+import type * as Lysand from "lysand-types";
 import { parse } from "marked";
+import { db } from "~drizzle/db";
+import {
+    type application,
+    attachment,
+    emojiToStatus,
+    instance,
+    type like,
+    status,
+    statusToUser,
+    user,
+} from "~drizzle/schema";
 import type { APIAttachment } from "~types/entities/attachment";
 import type { APIStatus } from "~types/entities/status";
 import type { Note } from "~types/lysand/Object";
-import type * as Lysand from "lysand-types";
 import { applicationToAPI } from "./Application";
 import {
     attachmentFromLysand,
@@ -15,48 +36,27 @@ import {
     attachmentToLysand,
 } from "./Attachment";
 import {
+    type EmojiWithInstance,
     emojiToAPI,
     emojiToLysand,
     fetchEmoji,
     parseEmojis,
-    type EmojiWithInstance,
 } from "./Emoji";
+import { objectToInboxRequest } from "./Federation";
 import {
-    getUserUri,
-    resolveUser,
-    resolveWebFinger,
-    userToAPI,
-    userExtras,
-    userRelations,
-    userExtrasTemplate,
     type User,
     type UserWithRelations,
     type UserWithRelationsAndRelationships,
-    transformOutputToUserWithRelations,
     findManyUsers,
+    getUserUri,
+    resolveUser,
+    resolveWebFinger,
+    transformOutputToUserWithRelations,
+    userExtras,
+    userExtrasTemplate,
+    userRelations,
+    userToAPI,
 } from "./User";
-import { objectToInboxRequest } from "./Federation";
-import {
-    and,
-    eq,
-    or,
-    type InferSelectModel,
-    sql,
-    isNotNull,
-    inArray,
-    isNull,
-} from "drizzle-orm";
-import {
-    status,
-    type application,
-    attachment,
-    type like,
-    user,
-    statusToUser,
-    emojiToStatus,
-    instance,
-} from "~drizzle/schema";
-import { db } from "~drizzle/db";
 
 export type Status = InferSelectModel<typeof status>;
 

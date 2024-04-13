@@ -1,8 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import { userToAPI } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import { findManyUsers, userToAPI } from "~database/entities/User";
+import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,34 +33,52 @@ export default apiRoute<{
         return errorResponse("Number of ids must be between 1 and 10", 422);
     }
 
-    const followersOfIds = await client.user.findMany({
-        where: {
-            relationships: {
-                some: {
-                    subjectId: {
-                        in: ids,
-                    },
-                    following: true,
-                },
-            },
+    const idFollowerRelationships = await db.query.relationship.findMany({
+        columns: {
+            ownerId: true,
         },
+        where: (relationship, { inArray, and, eq }) =>
+            and(
+                inArray(relationship.subjectId, ids),
+                eq(relationship.following, true),
+            ),
     });
 
-    // Find users that you follow in followersOfIds
-    const output = await client.user.findMany({
-        where: {
-            relationships: {
-                some: {
-                    ownerId: self.id,
-                    subjectId: {
-                        in: followersOfIds.map((f) => f.id),
-                    },
-                    following: true,
-                },
-            },
+    if (idFollowerRelationships.length === 0) {
+        return jsonResponse([]);
+    }
+
+    // Find users that you follow in idFollowerRelationships
+    const relevantRelationships = await db.query.relationship.findMany({
+        columns: {
+            subjectId: true,
         },
-        include: userRelations,
+        where: (relationship, { inArray, and, eq }) =>
+            and(
+                eq(relationship.ownerId, self.id),
+                inArray(
+                    relationship.subjectId,
+                    idFollowerRelationships.map((f) => f.ownerId),
+                ),
+                eq(relationship.following, true),
+            ),
     });
 
-    return jsonResponse(output.map((o) => userToAPI(o)));
+    if (relevantRelationships.length === 0) {
+        return jsonResponse([]);
+    }
+
+    const finalUsers = await findManyUsers({
+        where: (user, { inArray }) =>
+            inArray(
+                user.id,
+                relevantRelationships.map((r) => r.subjectId),
+            ),
+    });
+
+    if (finalUsers.length === 0) {
+        return jsonResponse([]);
+    }
+
+    return jsonResponse(finalUsers.map((o) => userToAPI(o)));
 });

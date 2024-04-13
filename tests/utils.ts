@@ -1,14 +1,14 @@
-import {
-    createNewLocalUser,
-    type User,
-    type UserWithRelations,
-} from "~database/entities/User";
 import { randomBytes } from "node:crypto";
-import { server } from "~index";
-import { db } from "~drizzle/db";
-import { status, token, user } from "~drizzle/schema";
 import { inArray, like } from "drizzle-orm";
 import type { Status } from "~database/entities/Status";
+import {
+    type User,
+    type UserWithRelations,
+    createNewLocalUser,
+} from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { status, token, user } from "~drizzle/schema";
+import { server } from "~index";
 
 /**
  * This allows us to send a test request to the server even when it isnt running

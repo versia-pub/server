@@ -2,19 +2,34 @@
     "$schema": "https://biomejs.dev/schemas/1.6.4/schema.json",
     "organizeImports": {
         "enabled": true,
-        "ignore": ["node_modules/**/*", "dist/**/*"]
+        "ignore": [
+            "node_modules/**/*",
+            "dist/**/*",
+            "packages/frontend/.output",
+            "packages/frontend/.nuxt"
+        ]
     },
     "linter": {
         "enabled": true,
         "rules": {
             "recommended": true
         },
-        "ignore": ["node_modules/**/*", "dist/**/*"]
+        "ignore": [
+            "node_modules/**/*",
+            "dist/**/*",
+            "packages/frontend/.output",
+            "packages/frontend/.nuxt"
+        ]
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
         "indentWidth": 4,
-        "ignore": ["node_modules/**/*", "dist/**/*"]
+        "ignore": [
+            "node_modules/**/*",
+            "dist/**/*",
+            "packages/frontend/.output",
+            "packages/frontend/.nuxt"
+        ]
     }
 }

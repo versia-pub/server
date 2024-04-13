@@ -1,9 +1,8 @@
-import { client } from "~database/datasource";
+import type { InferSelectModel } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { relationship } from "~drizzle/schema";
 import type { APIRelationship } from "~types/entities/relationship";
 import type { User } from "./User";
-import type { InferSelectModel } from "drizzle-orm";
-import { relationship } from "~drizzle/schema";
-import { db } from "~drizzle/db";
 
 export type Relationship = InferSelectModel<typeof relationship>;
 

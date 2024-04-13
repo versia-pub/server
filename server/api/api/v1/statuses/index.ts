@@ -2,8 +2,6 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
 import { parse } from "marked";
-import { client } from "~database/datasource";
-import { getFromToken } from "~database/entities/Application";
 import type { StatusWithRelations } from "~database/entities/Status";
 import {
     createNewStatus,
@@ -12,10 +10,7 @@ import {
     parseTextMentions,
     statusToAPI,
 } from "~database/entities/Status";
-import type { UserWithRelations } from "~database/entities/User";
-import { statusAndUserRelations } from "~database/entities/relations";
 import { db } from "~drizzle/db";
-import type { APIStatus } from "~types/entities/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

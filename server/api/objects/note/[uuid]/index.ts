@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import type * as Lysand from "lysand-types";
 import { client } from "~database/datasource";
+import { statusToLysand } from "~database/entities/Status";
 import { userToLysand } from "~database/entities/User";
 import { statusAndUserRelations } from "~database/entities/relations";
-import type * as Lysand from "lysand-types";
-import { statusToLysand } from "~database/entities/Status";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,18 +1,18 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Token } from "@prisma/client";
 import { config } from "config-manager";
+import { inArray } from "drizzle-orm";
 import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
 import {
     type UserWithRelations,
     createNewLocalUser,
 } from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { application, user } from "~drizzle/schema";
 import type { APIEmoji } from "~types/entities/emoji";
 import type { APIInstance } from "~types/entities/instance";
 import { sendTestRequest, wrapRelativeUrl } from "./utils";
-import { db } from "~drizzle/db";
-import { inArray } from "drizzle-orm";
-import { application, user } from "~drizzle/schema";
 
 const base_url = config.http.base_url;
 

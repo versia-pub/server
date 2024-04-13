@@ -1,13 +1,13 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "5",
-      "when": 1712805159664,
-      "tag": "0000_illegal_living_lightning",
-      "breakpoints": true
-    }
-  ]
+    "version": "5",
+    "dialect": "pg",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "5",
+            "when": 1712805159664,
+            "tag": "0000_illegal_living_lightning",
+            "breakpoints": true
+        }
+    ]
 }

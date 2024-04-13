@@ -3,9 +3,9 @@ import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 import {
+    type UserWithRelations,
     findManyUsers,
     userToAPI,
-    type UserWithRelations,
 } from "~database/entities/User";
 
 export const meta = applyConfig({

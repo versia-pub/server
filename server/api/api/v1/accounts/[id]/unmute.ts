@@ -1,11 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { eq } from "drizzle-orm";
+import { relationshipToAPI } from "~database/entities/Relationship";
 import {
-    createNewRelationship,
-    relationshipToAPI,
-} from "~database/entities/Relationship";
-import { getRelationshipToOtherUser } from "~database/entities/User";
+    findFirstUser,
+    getRelationshipToOtherUser,
+} from "~database/entities/User";
+import { db } from "~drizzle/db";
+import { relationship } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -30,54 +32,27 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!self) return errorResponse("Unauthorized", 401);
 
-    const user = await client.user.findUnique({
-        where: { id },
-        include: {
-            relationships: {
-                include: {
-                    owner: true,
-                    subject: true,
-                },
-            },
-        },
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, id),
     });
 
     if (!user) return errorResponse("User not found", 404);
 
     // Check if already following
-    let relationship = await getRelationshipToOtherUser(self, user);
+    const foundRelationship = await getRelationshipToOtherUser(self, user);
 
-    if (!relationship) {
-        // Create new relationship
+    if (foundRelationship.muting) {
+        foundRelationship.muting = false;
+        foundRelationship.mutingNotifications = false;
 
-        const newRelationship = await createNewRelationship(self, user);
-
-        await client.user.update({
-            where: { id: self.id },
-            data: {
-                relationships: {
-                    connect: {
-                        id: newRelationship.id,
-                    },
-                },
-            },
-        });
-
-        relationship = newRelationship;
+        await db
+            .update(relationship)
+            .set({
+                muting: false,
+                mutingNotifications: false,
+            })
+            .where(eq(relationship.id, foundRelationship.id));
     }
 
-    if (relationship.muting) {
-        relationship.muting = false;
-    }
-
-    // TODO: Implement duration
-
-    await client.relationship.update({
-        where: { id: relationship.id },
-        data: {
-            muting: false,
-        },
-    });
-
-    return jsonResponse(relationshipToAPI(relationship));
+    return jsonResponse(relationshipToAPI(foundRelationship));
 });

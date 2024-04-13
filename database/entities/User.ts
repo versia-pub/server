@@ -1,20 +1,10 @@
+import { getBestContentType, urlToContentFormat } from "@content_types";
 import { addUserToMeilisearch } from "@meilisearch";
 import { type Config, config } from "config-manager";
+import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import type { APIAccount } from "~types/entities/account";
-import type { APISource } from "~types/entities/source";
 import type * as Lysand from "lysand-types";
-import {
-    fetchEmoji,
-    emojiToAPI,
-    emojiToLysand,
-    type EmojiWithInstance,
-} from "./Emoji";
-import { addInstanceIfNotExists } from "./Instance";
-import { createNewRelationship } from "./Relationship";
-import { getBestContentType, urlToContentFormat } from "@content_types";
-import { objectToInboxRequest } from "./Federation";
-import { and, eq, sql, type InferSelectModel } from "drizzle-orm";
+import { db } from "~drizzle/db";
 import {
     emojiToUser,
     instance,
@@ -22,7 +12,17 @@ import {
     relationship,
     user,
 } from "~drizzle/schema";
-import { db } from "~drizzle/db";
+import type { APIAccount } from "~types/entities/account";
+import type { APISource } from "~types/entities/source";
+import {
+    type EmojiWithInstance,
+    emojiToAPI,
+    emojiToLysand,
+    fetchEmoji,
+} from "./Emoji";
+import { objectToInboxRequest } from "./Federation";
+import { addInstanceIfNotExists } from "./Instance";
+import { createNewRelationship } from "./Relationship";
 
 export type User = InferSelectModel<typeof user> & {
     endpoints?: Partial<{

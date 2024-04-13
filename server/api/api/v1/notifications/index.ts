@@ -1,20 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
-import { client } from "~database/datasource";
 import {
     findManyNotifications,
     notificationToAPI,
 } from "~database/entities/Notification";
-import {
-    statusAndUserRelations,
-    userRelations,
-} from "~database/entities/relations";
-import type {
-    Notification,
-    NotificationWithRelations,
-} from "~database/entities/Notification";
-import { db } from "~drizzle/db";
+import type { NotificationWithRelations } from "~database/entities/Notification";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -2,9 +2,9 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import {
+    type UserWithRelations,
     findManyUsers,
     userToAPI,
-    type UserWithRelations,
 } from "~database/entities/User";
 
 export const meta = applyConfig({

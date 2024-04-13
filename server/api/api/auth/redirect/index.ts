@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
-import { client } from "~database/datasource";
-import { userRelations } from "~database/entities/relations";
+import { and, eq } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { application, token } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -34,23 +35,15 @@ export default apiRoute<{
             302,
         );
 
-    // Get token
-    const token = await client.token.findFirst({
-        where: {
-            code,
-            application: {
-                client_id,
-            },
-        },
-        include: {
-            user: {
-                include: userRelations,
-            },
-            application: true,
-        },
-    });
+    const foundToken = await db
+        .select()
+        .from(token)
+        .leftJoin(application, eq(token.applicationId, application.id))
+        .where(and(eq(token.code, code), eq(application.clientId, client_id)))
+        .limit(1);
 
-    if (!token) return redirectToLogin("Invalid code");
+    if (!foundToken || foundToken.length <= 0)
+        return redirectToLogin("Invalid code");
 
     // Redirect back to application
     return Response.redirect(`${redirect_uri}?code=${code}`, 302);

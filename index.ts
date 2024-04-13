@@ -4,11 +4,11 @@ import { connectMeili } from "@meilisearch";
 import { moduleIsEntry } from "@module";
 import { initializeRedisCache } from "@redis";
 import { config } from "config-manager";
+import { count, sql } from "drizzle-orm";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
-import { createServer } from "~server";
 import { db, client as pgClient } from "~drizzle/db";
 import { status } from "~drizzle/schema";
-import { count, sql } from "drizzle-orm";
+import { createServer } from "~server";
 
 await pgClient.connect();
 const timeAtStart = performance.now();

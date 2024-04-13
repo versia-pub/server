@@ -1,16 +1,16 @@
-import {
-    pgTable,
-    timestamp,
-    text,
-    integer,
-    foreignKey,
-    uuid,
-    boolean,
-    uniqueIndex,
-    jsonb,
-    index,
-} from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
+import {
+    boolean,
+    foreignKey,
+    index,
+    integer,
+    jsonb,
+    pgTable,
+    text,
+    timestamp,
+    uniqueIndex,
+    uuid,
+} from "drizzle-orm/pg-core";
 
 export const emoji = pgTable("Emoji", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),

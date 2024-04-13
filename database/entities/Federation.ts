@@ -1,6 +1,6 @@
-import type * as Lysand from "lysand-types";
 import { config } from "config-manager";
-import { getUserUri, type User } from "./User";
+import type * as Lysand from "lysand-types";
+import { type User, getUserUri } from "./User";
 
 export const objectToInboxRequest = async (
     object: Lysand.Entity,

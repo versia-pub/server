@@ -1,9 +1,9 @@
-import type { APIEmoji } from "~types/entities/emoji";
+import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
-import { addInstanceIfNotExists } from "./Instance";
 import { db } from "~drizzle/db";
 import { emoji, instance } from "~drizzle/schema";
-import { and, eq, type InferSelectModel } from "drizzle-orm";
+import type { APIEmoji } from "~types/entities/emoji";
+import { addInstanceIfNotExists } from "./Instance";
 
 export type EmojiWithInstance = InferSelectModel<typeof emoji> & {
     instance: InferSelectModel<typeof instance> | null;

@@ -4,8 +4,9 @@ import { encode } from "blurhash";
 import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
 import sharp from "sharp";
-import { client } from "~database/datasource";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
+import { db } from "~drizzle/db";
+import { attachment } from "~drizzle/schema";
 import { LocalMediaBackend, S3MediaBackend } from "~packages/media-manager";
 
 export const meta = applyConfig({
@@ -132,20 +133,22 @@ export default apiRoute<{
         thumbnailUrl = getUrl(path, config);
     }
 
-    const newAttachment = await client.attachment.create({
-        data: {
-            url,
-            thumbnail_url: thumbnailUrl,
-            sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
-            mime_type: file.type,
-            description: description ?? "",
-            size: file.size,
-            blurhash: blurhash ?? undefined,
-            width: metadata?.width ?? undefined,
-            height: metadata?.height ?? undefined,
-        },
-    });
-
+    const newAttachment = (
+        await db
+            .insert(attachment)
+            .values({
+                url,
+                thumbnailUrl,
+                sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
+                mimeType: file.type,
+                description: description ?? "",
+                size: file.size,
+                blurhash: blurhash ?? undefined,
+                width: metadata?.width ?? undefined,
+                height: metadata?.height ?? undefined,
+            })
+            .returning()
+    )[0];
     // TODO: Add job to process videos and other media
 
     return jsonResponse(attachmentToAPI(newAttachment));

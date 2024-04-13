@@ -2,8 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { jsonResponse, response } from "@response";
 import { tempmailDomains } from "@tempmail";
 import ISO6391 from "iso-639-1";
-import { client } from "~database/datasource";
-import { createNewLocalUser } from "~database/entities/User";
+import { createNewLocalUser, findFirstUser } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -127,11 +126,16 @@ export default apiRoute<{
         });
 
     // Check if username is taken
-    if (await client.user.findFirst({ where: { username: body.username } }))
+    if (
+        await findFirstUser({
+            where: (user, { eq }) => eq(user.username, body.username ?? ""),
+        })
+    ) {
         errors.details.username.push({
             error: "ERR_TAKEN",
             description: "is already taken",
         });
+    }
 
     // Check if email is valid
     if (

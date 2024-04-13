@@ -1,8 +1,8 @@
 import type { InferSelectModel } from "drizzle-orm";
+import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import { lysandObject } from "~drizzle/schema";
 import { findFirstUser } from "./User";
-import type * as Lysand from "lysand-types";
 
 export type LysandObject = InferSelectModel<typeof lysandObject>;
 
