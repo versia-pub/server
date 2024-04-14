@@ -84,7 +84,10 @@ export const processRoute = async (
 
     const route: APIRouteExports | null = await import(
         matchedRoute.filePath
-    ).catch(() => null);
+    ).catch((e) => {
+        dualLogger.logError(LogLevel.ERROR, "Server.RouteImport", e as Error);
+        return null;
+    });
 
     console.log(route);
 
