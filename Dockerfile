@@ -21,9 +21,7 @@ COPY . /temp
 COPY --from=install /temp/node_modules /temp/node_modules
 # Build the project
 WORKDIR /temp
-RUN bunx --bun prisma generate
 RUN bun run prod-build
-COPY prisma /temp/dist
 WORKDIR /temp/dist
 
 # copy production dependencies and source code into final image

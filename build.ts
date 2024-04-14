@@ -32,6 +32,9 @@ await Bun.build({
 // I apologize for this
 await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
 
+// Copy Drizzle migrations to dist
+await $`cp -r drizzle dist/drizzle`;
+
 // Copy Sharp to dist
 await $`mkdir -p dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-libvips-linux-* dist/node_modules/@img`;

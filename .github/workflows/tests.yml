@@ -44,13 +44,6 @@ jobs:
               run: |
                   mv .github/config.workflow.toml config/config.toml
 
-            - name: Generate Prisma Client
-              run: |
-                  bunx prisma generate
-
-            - name: Migrate database
-              run: bun migrate
-
             - name: Run tests
               run: |
                   bun test
