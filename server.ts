@@ -3,7 +3,7 @@ import type { Config } from "config-manager";
 import { matches } from "ip-matching";
 import type { LogManager, MultiLogManager } from "log-manager";
 import { LogLevel } from "log-manager";
-import { processRoute } from "~packages/server-handler";
+import { processRoute } from "server-handler";
 import { matchRoute } from "~routes";
 
 export const createServer = (

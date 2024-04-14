@@ -1,7 +1,3 @@
-import type { APIRouteExports } from "~packages/server-handler";
-import type { RouteHandler } from "./server/api/routes.type";
-import type { APIRouteMeta } from "./types/api";
-
 // Why are these routes specified manually instead of using Bun's FileSystemRouter?
 // This is to allow for compilation of the routes, so that we can minify them and
 // node_modules in production
@@ -103,7 +99,7 @@ export const routeMatcher = new Bun.FileSystemRouter({
     dir: `${process.cwd()}/server/api`,
 });
 
-export const matchRoute = async <T = Record<string, never>>(url: string) => {
+export const matchRoute = async (url: string) => {
     const route = routeMatcher.match(url);
     if (!route) return { file: null, matchedRoute: null };
 

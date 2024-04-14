@@ -20,8 +20,8 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { emoji, openIdAccount, status, user } from "~drizzle/schema";
-import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
-import { config } from "~packages/config-manager";
+import { CliParameterType } from "cli-parser/cli-builder.type";
+import { config } from "config-manager";
 
 const args = process.argv;
 

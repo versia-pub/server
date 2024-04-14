@@ -6,7 +6,7 @@ import { MediaBackendType } from "media-manager";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 import { db } from "~drizzle/db";
 import { attachment } from "~drizzle/schema";
-import { LocalMediaBackend, S3MediaBackend } from "~packages/media-manager";
+import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],
