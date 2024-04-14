@@ -1,3 +1,4 @@
+import { dualLogger } from "@loggers";
 import { errorResponse, jsonResponse, response } from "@response";
 import type { MatchedRoute } from "bun";
 import { type Config, config } from "config-manager";
@@ -82,6 +83,12 @@ export const processRoute = async (
     const route: APIRouteExports | null = await import(
         matchedRoute.filePath
     ).catch(() => null);
+
+    await dualLogger.log(
+        LogLevel.DEBUG,
+        "Server.RouteProcessor",
+        JSON.stringify(route),
+    );
 
     if (!route) {
         return errorResponse("Route not found", 404);

@@ -104,7 +104,7 @@ export class LogManager {
     private async write(text: string) {
         Bun.stdout.name;
         if (this.output === Bun.stdout) {
-            await Bun.write(Bun.stdout, `${text}\n`);
+            await console.log(`${text}`);
         } else {
             if (!(await exists(this.output.name ?? ""))) {
                 // Create file if it doesn't exist
