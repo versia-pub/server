@@ -1,6 +1,8 @@
 # Bun doesn't run well on Musl but this seems to work
 FROM imbios/bun-node:1.1.3-current-alpine as base
 
+RUN apk add --no-cache libstdc++
+
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
 FROM base AS install
