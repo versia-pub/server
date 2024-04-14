@@ -12,6 +12,8 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { instance, user } from "~drizzle/schema";
+import { dualLogger } from "@loggers";
+import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -117,7 +119,11 @@ export default apiRoute<typeof meta, typeof schema>(
                         username,
                         domain,
                     ).catch((e) => {
-                        console.error(e);
+                        dualLogger.logError(
+                            LogLevel.ERROR,
+                            "WebFinger.Resolve",
+                            e,
+                        );
                         return null;
                     });
 

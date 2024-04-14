@@ -12,6 +12,8 @@ import {
     relationship,
     user,
 } from "~drizzle/schema";
+import { dualLogger } from "@loggers";
+import { LogLevel } from "~packages/log-manager";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import type { Source as APISource } from "~types/mastodon/source";
 import {
@@ -191,8 +193,15 @@ export const followRequestUser = async (
         const response = await fetch(request);
 
         if (!response.ok) {
-            console.error(await response.text());
-            console.error(
+            dualLogger.log(
+                LogLevel.DEBUG,
+                "Federation.FollowRequest",
+                await response.text(),
+            );
+
+            dualLogger.log(
+                LogLevel.ERROR,
+                "Federation.FollowRequest",
                 `Failed to federate follow request from ${follower.id} to ${followee.uri}`,
             );
 
@@ -230,8 +239,15 @@ export const sendFollowAccept = async (follower: User, followee: User) => {
     const response = await fetch(request);
 
     if (!response.ok) {
-        console.error(await response.text());
-        throw new Error(
+        dualLogger.log(
+            LogLevel.DEBUG,
+            "Federation.FollowAccept",
+            await response.text(),
+        );
+
+        dualLogger.log(
+            LogLevel.ERROR,
+            "Federation.FollowAccept",
             `Failed to federate follow accept from ${followee.id} to ${follower.uri}`,
         );
     }
@@ -249,8 +265,15 @@ export const sendFollowReject = async (follower: User, followee: User) => {
     const response = await fetch(request);
 
     if (!response.ok) {
-        console.error(await response.text());
-        throw new Error(
+        dualLogger.log(
+            LogLevel.DEBUG,
+            "Federation.FollowReject",
+            await response.text(),
+        );
+
+        dualLogger.log(
+            LogLevel.ERROR,
+            "Federation.FollowReject",
             `Failed to federate follow reject from ${followee.id} to ${follower.uri}`,
         );
     }

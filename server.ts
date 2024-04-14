@@ -24,8 +24,21 @@ export const createServer = (
                         return errorResponse("Forbidden", 403);
                     }
                 } catch (e) {
-                    console.error(`[-] Error while parsing banned IP "${ip}" `);
-                    throw e;
+                    logger.log(
+                        LogLevel.ERROR,
+                        "Server.IPCheck",
+                        `Error while parsing banned IP "${ip}" `,
+                    );
+                    logger.logError(
+                        LogLevel.ERROR,
+                        "Server.IPCheck",
+                        e as Error,
+                    );
+
+                    return errorResponse(
+                        `A server error occured: ${(e as Error).message}`,
+                        500,
+                    );
                 }
             }
 
@@ -57,10 +70,21 @@ export const createServer = (
                             );
                         }
                     } catch (e) {
-                        console.error(
-                            `[-] Error while parsing bait IP "${ip}" `,
+                        logger.log(
+                            LogLevel.ERROR,
+                            "Server.IPCheck",
+                            `Error while parsing bait IP "${ip}" `,
                         );
-                        throw e;
+                        logger.logError(
+                            LogLevel.ERROR,
+                            "Server.IPCheck",
+                            e as Error,
+                        );
+
+                        return errorResponse(
+                            `A server error occured: ${(e as Error).message}`,
+                            500,
+                        );
                     }
                 }
 

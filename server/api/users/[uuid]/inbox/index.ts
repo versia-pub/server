@@ -11,6 +11,8 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { notification, relationship } from "~drizzle/schema";
+import { dualLogger } from "@loggers";
+import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -126,7 +128,11 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
             const newStatus = await resolveStatus(undefined, note).catch(
                 (e) => {
-                    console.error(e);
+                    dualLogger.logError(
+                        LogLevel.ERROR,
+                        "Inbox.NoteResolve",
+                        e as Error,
+                    );
                     return null;
                 },
             );

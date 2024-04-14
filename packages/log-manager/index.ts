@@ -2,6 +2,7 @@ import { appendFile, exists, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { BunFile } from "bun";
 import chalk from "chalk";
+import { config } from "config-manager";
 
 export enum LogLevel {
     DEBUG = "debug",
@@ -10,6 +11,14 @@ export enum LogLevel {
     ERROR = "error",
     CRITICAL = "critical",
 }
+
+const logOrder = [
+    LogLevel.DEBUG,
+    LogLevel.INFO,
+    LogLevel.WARNING,
+    LogLevel.ERROR,
+    LogLevel.CRITICAL,
+];
 
 /**
  * Class for handling logging to disk or to stdout
@@ -67,6 +76,12 @@ export class LogManager {
         message: string,
         showTimestamp = true,
     ) {
+        if (
+            logOrder.indexOf(level) <
+            logOrder.indexOf(config.logging.log_level as LogLevel)
+        )
+            return;
+
         if (this.enableColors) {
             await this.write(
                 `${
@@ -113,6 +128,7 @@ export class LogManager {
      * @param error Error to log
      */
     async logError(level: LogLevel, entity: string, error: Error) {
+        error.stack && (await this.log(LogLevel.DEBUG, entity, error.stack));
         await this.log(level, entity, error.message);
     }
 

@@ -35,6 +35,8 @@ import {
     statusToMentions,
     user,
 } from "~drizzle/schema";
+import { dualLogger } from "@loggers";
+import { LogLevel } from "~packages/log-manager";
 import type { Note } from "~types/lysand/Object";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
@@ -601,7 +603,11 @@ export const resolveStatus = async (
     for (const attachment of note.attachments ?? []) {
         const resolvedAttachment = await attachmentFromLysand(attachment).catch(
             (e) => {
-                console.error(e);
+                dualLogger.logError(
+                    LogLevel.ERROR,
+                    "Federation.StatusResolver",
+                    e,
+                );
                 return null;
             },
         );
@@ -616,7 +622,7 @@ export const resolveStatus = async (
     for (const emoji of note.extensions?.["org.lysand:custom_emojis"]?.emojis ??
         []) {
         const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
-            console.error(e);
+            dualLogger.logError(LogLevel.ERROR, "Federation.StatusResolver", e);
             return null;
         });
 
@@ -1010,8 +1016,14 @@ export const federateStatus = async (status: StatusWithRelations) => {
         const response = await fetch(request);
 
         if (!response.ok) {
-            console.error(await response.text());
-            throw new Error(
+            dualLogger.log(
+                LogLevel.DEBUG,
+                "Federation.Status",
+                await response.text(),
+            );
+            dualLogger.log(
+                LogLevel.ERROR,
+                "Federation.Status",
                 `Failed to federate status ${status.id} to ${user.uri}`,
             );
         }

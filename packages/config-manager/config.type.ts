@@ -336,6 +336,9 @@ export interface Config {
         /** @default false */
         log_requests_verbose: boolean;
 
+        /** @default "info" */
+        log_level: "info" | "debug" | "warning" | "error" | "critical";
+
         /** @default false */
         log_ip: boolean;
 
@@ -591,6 +594,7 @@ export const defaultConfig: Config = {
     logging: {
         log_requests: false,
         log_requests_verbose: false,
+        log_level: "info",
         log_ip: false,
         log_filters: true,
         storage: {

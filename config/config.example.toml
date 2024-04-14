@@ -42,10 +42,10 @@ tos_url = "https://my-site.com/tos"
 # Whether to enable registrations or not
 registration = true
 rules = [
-	"Do not harass others",
-	"Be nice to people",
-	"Don't spam",
-	"Don't post illegal content",
+    "Do not harass others",
+    "Be nice to people",
+    "Don't spam",
+    "Don't post illegal content",
 ]
 
 # Delete this section if you don't want to use custom OAuth providers
@@ -72,8 +72,8 @@ bind_port = "8080"
 banned_ips = []
 # Banned user agents, regex format
 banned_user_agents = [
-	# "curl\/7.68.0",
-	# "wget\/1.20.3",
+    # "curl\/7.68.0",
+    # "wget\/1.20.3",
 ]
 
 [http.bait]
@@ -156,32 +156,32 @@ max_field_name_size = 1000
 max_field_value_size = 1000
 # Forbidden usernames, defaults are from Akkoma
 username_blacklist = [
-	".well-known",
-	"~",
-	"about",
-	"activities",
-	"api",
-	"auth",
-	"dev",
-	"inbox",
-	"internal",
-	"main",
-	"media",
-	"nodeinfo",
-	"notice",
-	"oauth",
-	"objects",
-	"proxy",
-	"push",
-	"registration",
-	"relay",
-	"settings",
-	"status",
-	"tag",
-	"users",
-	"web",
-	"search",
-	"mfa",
+    ".well-known",
+    "~",
+    "about",
+    "activities",
+    "api",
+    "auth",
+    "dev",
+    "inbox",
+    "internal",
+    "main",
+    "media",
+    "nodeinfo",
+    "notice",
+    "oauth",
+    "objects",
+    "proxy",
+    "push",
+    "registration",
+    "relay",
+    "settings",
+    "status",
+    "tag",
+    "users",
+    "web",
+    "search",
+    "mfa",
 ]
 # Whether to blacklist known temporary email providers
 blacklist_tempmail = false
@@ -189,57 +189,57 @@ blacklist_tempmail = false
 email_blacklist = []
 # Valid URL schemes, otherwise the URL is parsed as text
 url_scheme_whitelist = [
-	"http",
-	"https",
-	"ftp",
-	"dat",
-	"dweb",
-	"gopher",
-	"hyper",
-	"ipfs",
-	"ipns",
-	"irc",
-	"xmpp",
-	"ircs",
-	"magnet",
-	"mailto",
-	"mumble",
-	"ssb",
-	"gemini",
+    "http",
+    "https",
+    "ftp",
+    "dat",
+    "dweb",
+    "gopher",
+    "hyper",
+    "ipfs",
+    "ipns",
+    "irc",
+    "xmpp",
+    "ircs",
+    "magnet",
+    "mailto",
+    "mumble",
+    "ssb",
+    "gemini",
 ]
 # Only allow those MIME types of data to be uploaded
 # This can easily be spoofed, but if it is spoofed it will appear broken
 # to normal clients until despoofed
 enforce_mime_types = false
 allowed_mime_types = [
-	"image/jpeg",
-	"image/png",
-	"image/gif",
-	"image/heic",
-	"image/heif",
-	"image/webp",
-	"image/avif",
-	"video/webm",
-	"video/mp4",
-	"video/quicktime",
-	"video/ogg",
-	"audio/wave",
-	"audio/wav",
-	"audio/x-wav",
-	"audio/x-pn-wave",
-	"audio/vnd.wave",
-	"audio/ogg",
-	"audio/vorbis",
-	"audio/mpeg",
-	"audio/mp3",
-	"audio/webm",
-	"audio/flac",
-	"audio/aac",
-	"audio/m4a",
-	"audio/x-m4a",
-	"audio/mp4",
-	"audio/3gpp",
-	"video/x-ms-asf",
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/heic",
+    "image/heif",
+    "image/webp",
+    "image/avif",
+    "video/webm",
+    "video/mp4",
+    "video/quicktime",
+    "video/ogg",
+    "audio/wave",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/x-pn-wave",
+    "audio/vnd.wave",
+    "audio/ogg",
+    "audio/vorbis",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/webm",
+    "audio/flac",
+    "audio/aac",
+    "audio/m4a",
+    "audio/x-m4a",
+    "audio/mp4",
+    "audio/3gpp",
+    "video/x-ms-asf",
 ]
 
 [defaults]
@@ -294,8 +294,8 @@ banner = ""
 
 # Note contents
 note_content = [
-	# "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
-	# "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
+    # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
+    # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
 ]
 emoji = []
 # These will drop users matching the filters
@@ -308,6 +308,8 @@ bio = []
 log_requests = false
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
+# Available levels: debug, info, warning, error, critical
+log_level = "info"
 # For GDPR compliance, you can disable logging of IPs
 log_ip = false
 

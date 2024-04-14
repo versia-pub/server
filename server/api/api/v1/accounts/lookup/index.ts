@@ -17,6 +17,8 @@ import {
     resolveWebFinger,
     userToAPI,
 } from "~database/entities/User";
+import { dualLogger } from "@loggers";
+import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -68,7 +70,11 @@ export default apiRoute<typeof meta, typeof schema>(
             const [username, domain] = accountMatches[0].split("@");
             const foundAccount = await resolveWebFinger(username, domain).catch(
                 (e) => {
-                    console.error(e);
+                    dualLogger.logError(
+                        LogLevel.ERROR,
+                        "WebFinger.Resolve",
+                        e as Error,
+                    );
                     return null;
                 },
             );

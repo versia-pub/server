@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { config } from "~index";
+import { config } from "config-manager";
 import {
     deleteOldTestUsers,
     getTestStatuses,

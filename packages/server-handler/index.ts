@@ -164,6 +164,11 @@ export const processRoute = async (
 
         return output;
     } catch (err) {
+        await logger.log(
+            LogLevel.DEBUG,
+            "Server.RouteHandler",
+            (err as Error).toString(),
+        );
         await logger.logError(
             LogLevel.ERROR,
             "Server.RouteHandler",
