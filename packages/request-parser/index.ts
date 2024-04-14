@@ -21,7 +21,6 @@ export class RequestParser {
      * @throws Error if body is invalid
      */
     async toObject<T>() {
-        console.log(await this.determineContentType());
         try {
             switch (await this.determineContentType()) {
                 case "application/json":
@@ -98,6 +97,8 @@ export class RequestParser {
     private async parseFormData<T>(): Promise<Partial<T>> {
         const formData = await this.request.formData();
         const result: Partial<T> = {};
+
+        console.log([...formData.entries()]);
 
         for (const [key, value] of formData.entries()) {
             if (value instanceof Blob) {
