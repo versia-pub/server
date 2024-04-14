@@ -7,11 +7,13 @@ import ISO6391 from "iso-639-1";
 import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
+import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { emojiToUser, user } from "~drizzle/schema";
+import { config } from "config-manager";
 import type { APISource } from "~types/entities/source";
 
 export const meta = applyConfig({
@@ -27,45 +29,56 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute<{
-    display_name: string;
-    note: string;
-    avatar: File;
-    header: File;
-    locked: string;
-    bot: string;
-    discoverable: string;
-    "source[privacy]": string;
-    "source[sensitive]": string;
-    "source[language]": string;
-}>(async (req, matchedRoute, extraData) => {
-    const { user: self } = extraData.auth;
+export const schema = z.object({
+    display_name: z
+        .string()
+        .min(3)
+        .max(config.validation.max_displayname_size)
+        .optional(),
+    note: z.string().min(0).max(config.validation.max_bio_size).optional(),
+    avatar: z.instanceof(File).optional(),
+    header: z.instanceof(File).optional(),
+    locked: z.boolean().optional(),
+    bot: z.boolean().optional(),
+    discoverable: z.boolean().optional(),
+    "source[privacy]": z
+        .enum(["public", "unlisted", "private", "direct"])
+        .optional(),
+    "source[sensitive]": z.boolean().optional(),
+    "source[language]": z
+        .enum(ISO6391.getAllCodes() as [string, ...string[]])
+        .optional(),
+});
 
-    if (!self) return errorResponse("Unauthorized", 401);
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        const { user: self } = extraData.auth;
 
-    const config = await extraData.configManager.getConfig();
+        if (!self) return errorResponse("Unauthorized", 401);
 
-    const {
-        display_name,
-        note,
-        avatar,
-        header,
-        locked,
-        bot,
-        discoverable,
-        "source[privacy]": source_privacy,
-        "source[sensitive]": source_sensitive,
-        "source[language]": source_language,
-    } = extraData.parsedRequest;
+        const config = await extraData.configManager.getConfig();
 
-    const sanitizedNote = await sanitizeHtml(note ?? "");
+        const {
+            display_name,
+            note,
+            avatar,
+            header,
+            locked,
+            bot,
+            discoverable,
+            "source[privacy]": source_privacy,
+            "source[sensitive]": source_sensitive,
+            "source[language]": source_language,
+        } = extraData.parsedRequest;
 
-    const sanitizedDisplayName = display_name ?? ""; /*  sanitize(display_name ?? "", {
+        const sanitizedNote = await sanitizeHtml(note ?? "");
+
+        const sanitizedDisplayName = display_name ?? ""; /*  sanitize(display_name ?? "", {
         ALLOWED_TAGS: [],
         ALLOWED_ATTR: [],
     });
  */
-    /* if (!user.source) {
+        /* if (!user.source) {
 		user.source = {
 			privacy: "public",
 			sensitive: false,
@@ -74,205 +87,153 @@ export default apiRoute<{
 		};
 	} */
 
-    let mediaManager: MediaBackend;
+        let mediaManager: MediaBackend;
 
-    switch (config.media.backend as MediaBackendType) {
-        case MediaBackendType.LOCAL:
-            mediaManager = new LocalMediaBackend(config);
-            break;
-        case MediaBackendType.S3:
-            mediaManager = new S3MediaBackend(config);
-            break;
-        default:
-            // TODO: Replace with logger
-            throw new Error("Invalid media backend");
-    }
-
-    if (display_name) {
-        // Check if within allowed display name lengths
-        if (
-            sanitizedDisplayName.length < 3 ||
-            sanitizedDisplayName.length > config.validation.max_displayname_size
-        ) {
-            return errorResponse(
-                `Display name must be between 3 and ${config.validation.max_displayname_size} characters`,
-                422,
-            );
+        switch (config.media.backend as MediaBackendType) {
+            case MediaBackendType.LOCAL:
+                mediaManager = new LocalMediaBackend(config);
+                break;
+            case MediaBackendType.S3:
+                mediaManager = new S3MediaBackend(config);
+                break;
+            default:
+                // TODO: Replace with logger
+                throw new Error("Invalid media backend");
         }
 
-        // Check if display name doesnt match filters
-        if (
-            config.filters.displayname.some((filter) =>
-                sanitizedDisplayName.match(filter),
-            )
-        ) {
-            return errorResponse("Display name contains blocked words", 422);
+        if (display_name) {
+            // Check if display name doesnt match filters
+            if (
+                config.filters.displayname.some((filter) =>
+                    sanitizedDisplayName.match(filter),
+                )
+            ) {
+                return errorResponse(
+                    "Display name contains blocked words",
+                    422,
+                );
+            }
+
+            self.displayName = sanitizedDisplayName;
         }
 
-        // Remove emojis
-        self.emojis = [];
+        if (note && self.source) {
+            // Check if bio doesnt match filters
+            if (
+                config.filters.bio.some((filter) => sanitizedNote.match(filter))
+            ) {
+                return errorResponse("Bio contains blocked words", 422);
+            }
 
-        self.displayName = sanitizedDisplayName;
-    }
-
-    if (note && self.source) {
-        // Check if within allowed note length
-        if (sanitizedNote.length > config.validation.max_note_size) {
-            return errorResponse(
-                `Note must be less than ${config.validation.max_note_size} characters`,
-                422,
-            );
+            (self.source as APISource).note = sanitizedNote;
+            self.note = await convertTextToHtml(sanitizedNote);
         }
 
-        // Check if bio doesnt match filters
-        if (config.filters.bio.some((filter) => sanitizedNote.match(filter))) {
-            return errorResponse("Bio contains blocked words", 422);
+        if (source_privacy && self.source) {
+            (self.source as APISource).privacy = source_privacy;
         }
 
-        (self.source as APISource).note = sanitizedNote;
-        // TODO: Convert note to HTML
-        self.note = await convertTextToHtml(sanitizedNote);
-    }
-
-    if (source_privacy && self.source) {
-        // Check if within allowed privacy values
-        if (
-            !["public", "unlisted", "private", "direct"].includes(
-                source_privacy,
-            )
-        ) {
-            return errorResponse(
-                "Privacy must be one of public, unlisted, private, or direct",
-                422,
-            );
+        if (source_sensitive && self.source) {
+            (self.source as APISource).sensitive = source_sensitive;
         }
 
-        (self.source as APISource).privacy = source_privacy;
-    }
-
-    if (source_sensitive && self.source) {
-        // Check if within allowed sensitive values
-        if (source_sensitive !== "true" && source_sensitive !== "false") {
-            return errorResponse("Sensitive must be a boolean", 422);
+        if (source_language && self.source) {
+            (self.source as APISource).language = source_language;
         }
 
-        (self.source as APISource).sensitive = source_sensitive === "true";
-    }
+        if (avatar) {
+            // Check if within allowed avatar length (avatar is an image)
+            if (avatar.size > config.validation.max_avatar_size) {
+                return errorResponse(
+                    `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+                    422,
+                );
+            }
 
-    if (source_language && self.source) {
-        if (!ISO6391.validate(source_language)) {
-            return errorResponse(
-                "Language must be a valid ISO 639-1 code",
-                422,
-            );
+            const { path } = await mediaManager.addFile(avatar);
+
+            self.avatar = getUrl(path, config);
         }
 
-        (self.source as APISource).language = source_language;
-    }
+        if (header) {
+            // Check if within allowed header length (header is an image)
+            if (header.size > config.validation.max_header_size) {
+                return errorResponse(
+                    `Header must be less than ${config.validation.max_avatar_size} bytes`,
+                    422,
+                );
+            }
 
-    if (avatar) {
-        // Check if within allowed avatar length (avatar is an image)
-        if (avatar.size > config.validation.max_avatar_size) {
-            return errorResponse(
-                `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
-                422,
-            );
+            const { path } = await mediaManager.addFile(header);
+
+            self.header = getUrl(path, config);
         }
 
-        const { path } = await mediaManager.addFile(avatar);
-
-        self.avatar = getUrl(path, config);
-    }
-
-    if (header) {
-        // Check if within allowed header length (header is an image)
-        if (header.size > config.validation.max_header_size) {
-            return errorResponse(
-                `Header must be less than ${config.validation.max_avatar_size} bytes`,
-                422,
-            );
+        if (locked) {
+            self.isLocked = locked;
         }
 
-        const { path } = await mediaManager.addFile(header);
-
-        self.header = getUrl(path, config);
-    }
-
-    if (locked) {
-        // Check if locked is a boolean
-        if (locked !== "true" && locked !== "false") {
-            return errorResponse("Locked must be a boolean", 422);
+        if (bot) {
+            self.isBot = bot;
         }
 
-        self.isLocked = locked === "true";
-    }
-
-    if (bot) {
-        // Check if bot is a boolean
-        if (bot !== "true" && bot !== "false") {
-            return errorResponse("Bot must be a boolean", 422);
+        if (discoverable) {
+            self.isDiscoverable = discoverable;
         }
 
-        self.isBot = bot === "true";
-    }
+        // Parse emojis
+        const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
+        const noteEmojis = await parseEmojis(sanitizedNote);
 
-    if (discoverable) {
-        // Check if discoverable is a boolean
-        if (discoverable !== "true" && discoverable !== "false") {
-            return errorResponse("Discoverable must be a boolean", 422);
-        }
+        self.emojis = [...displaynameEmojis, ...noteEmojis];
 
-        self.isDiscoverable = discoverable === "true";
-    }
-
-    // Parse emojis
-
-    const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
-    const noteEmojis = await parseEmojis(sanitizedNote);
-
-    self.emojis = [...displaynameEmojis, ...noteEmojis];
-
-    // Deduplicate emojis
-    self.emojis = self.emojis.filter(
-        (emoji, index, self) =>
-            self.findIndex((e) => e.id === emoji.id) === index,
-    );
-
-    await db
-        .update(user)
-        .set({
-            displayName: self.displayName,
-            note: self.note,
-            avatar: self.avatar,
-            header: self.header,
-            isLocked: self.isLocked,
-            isBot: self.isBot,
-            isDiscoverable: self.isDiscoverable,
-            source: self.source || undefined,
-        })
-        .where(eq(user.id, self.id));
-
-    // Connect emojis, if any
-    for (const emoji of self.emojis) {
-        await db
-            .delete(emojiToUser)
-            .where(and(eq(emojiToUser.a, emoji.id), eq(emojiToUser.b, self.id)))
-            .execute();
+        // Deduplicate emojis
+        self.emojis = self.emojis.filter(
+            (emoji, index, self) =>
+                self.findIndex((e) => e.id === emoji.id) === index,
+        );
 
         await db
-            .insert(emojiToUser)
-            .values({
-                a: emoji.id,
-                b: self.id,
+            .update(user)
+            .set({
+                displayName: self.displayName,
+                note: self.note,
+                avatar: self.avatar,
+                header: self.header,
+                isLocked: self.isLocked,
+                isBot: self.isBot,
+                isDiscoverable: self.isDiscoverable,
+                source: self.source || undefined,
             })
-            .execute();
-    }
+            .where(eq(user.id, self.id));
 
-    const output = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, self.id),
-    });
+        // Connect emojis, if any
+        for (const emoji of self.emojis) {
+            await db
+                .delete(emojiToUser)
+                .where(
+                    and(
+                        eq(emojiToUser.emojiId, emoji.id),
+                        eq(emojiToUser.userId, self.id),
+                    ),
+                )
+                .execute();
 
-    if (!output) return errorResponse("Couldn't edit user", 500);
+            await db
+                .insert(emojiToUser)
+                .values({
+                    emojiId: emoji.id,
+                    userId: self.id,
+                })
+                .execute();
+        }
 
-    return jsonResponse(userToAPI(output));
-});
+        const output = await findFirstUser({
+            where: (user, { eq }) => eq(user.id, self.id),
+        });
+
+        if (!output) return errorResponse("Couldn't edit user", 500);
+
+        return jsonResponse(userToAPI(output));
+    },
+);

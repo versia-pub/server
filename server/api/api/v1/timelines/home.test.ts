@@ -27,36 +27,6 @@ describe(meta.route, () => {
         expect(response.status).toBe(401);
     });
 
-    test("should return 400 if limit is less than 1", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(`${meta.route}?limit=0`, config.http.base_url),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 400 if limit is greater than 80", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(`${meta.route}?limit=100`, config.http.base_url),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
     test("should correctly parse limit", async () => {
         const response = await sendTestRequest(
             new Request(

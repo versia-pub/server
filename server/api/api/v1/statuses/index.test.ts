@@ -52,7 +52,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(422);
     });
 
-    test("should return 400 is status is too long", async () => {
+    test("should return 422 is status is too long", async () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
@@ -67,7 +67,7 @@ describe(meta.route, () => {
             }),
         );
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(422);
     });
 
     test("should return 422 is visibility is invalid", async () => {
@@ -108,7 +108,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(422);
     });
 
-    test("should return 404 is in_reply_to_id is invalid", async () => {
+    test("should return 422 is in_reply_to_id is invalid", async () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
@@ -124,10 +124,10 @@ describe(meta.route, () => {
             }),
         );
 
-        expect(response.status).toBe(404);
+        expect(response.status).toBe(422);
     });
 
-    test("should return 404 is quote_id is invalid", async () => {
+    test("should return 422 is quote_id is invalid", async () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
@@ -143,7 +143,7 @@ describe(meta.route, () => {
             }),
         );
 
-        expect(response.status).toBe(404);
+        expect(response.status).toBe(422);
     });
 
     test("should return 422 is media_ids is invalid", async () => {

@@ -5,7 +5,9 @@ import { Parser } from "@json2csv/plainjs";
 import { MeiliIndexType, rebuildSearchIndexes } from "@meilisearch";
 import chalk from "chalk";
 import { CliBuilder, CliCommand } from "cli-parser";
+import { CliParameterType } from "cli-parser/cli-builder.type";
 import Table from "cli-table";
+import { config } from "config-manager";
 import { type SQL, eq, inArray, isNotNull, isNull, like } from "drizzle-orm";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
@@ -20,8 +22,6 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { emoji, openIdAccount, status, user } from "~drizzle/schema";
-import { CliParameterType } from "cli-parser/cli-builder.type";
-import { config } from "config-manager";
 
 const args = process.argv;
 

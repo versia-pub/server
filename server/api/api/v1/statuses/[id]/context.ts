@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import type { Relationship } from "~database/entities/Relationship";
 import {
@@ -28,6 +28,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Public for public statuses limited to 40 ancestors and 60 descendants with a maximum depth of 20.
     // User token + read:statuses for up to 4,096 ancestors, 4,096 descendants, unlimited depth, and private statuses.
     const id = matchedRoute.params.id;
+    if (!id.match(idValidator)) {
+        return errorResponse("Invalid ID, must be of type UUIDv7", 404);
+    }
 
     const { user } = extraData.auth;
 

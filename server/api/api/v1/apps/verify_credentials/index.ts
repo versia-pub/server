@@ -19,9 +19,12 @@ export const meta = applyConfig({
  */
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const { user, token } = extraData.auth;
+
+    if (!token) return errorResponse("Unauthorized", 401);
+    if (!user) return errorResponse("Unauthorized", 401);
+
     const application = await getFromToken(token);
 
-    if (!user) return errorResponse("Unauthorized", 401);
     if (!application) return errorResponse("Unauthorized", 401);
 
     return jsonResponse({

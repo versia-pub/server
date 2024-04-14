@@ -164,10 +164,8 @@ describe("API Tests", () => {
                         base_url,
                     ),
                     {
-                        method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -218,7 +216,6 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -249,7 +246,6 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -276,10 +272,8 @@ describe("API Tests", () => {
                         base_url,
                     ),
                     {
-                        method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -312,7 +306,6 @@ describe("API Tests", () => {
                         method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -341,7 +334,6 @@ describe("API Tests", () => {
                         method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -377,7 +369,6 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -399,7 +390,6 @@ describe("API Tests", () => {
                         method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -430,7 +420,6 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),

@@ -23,10 +23,8 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl("/api/v1/accounts/999999", base_url),
                     {
-                        method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -80,10 +78,8 @@ describe("API Tests", () => {
                         base_url,
                     ),
                     {
-                        method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -130,10 +126,8 @@ describe("API Tests", () => {
                         base_url,
                     ),
                     {
-                        method: "GET",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -585,7 +579,6 @@ describe("API Tests", () => {
                         method: "DELETE",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),
@@ -612,7 +605,6 @@ describe("API Tests", () => {
                         method: "DELETE",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
                     },
                 ),

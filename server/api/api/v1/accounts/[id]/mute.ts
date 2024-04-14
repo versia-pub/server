@@ -1,6 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { relationshipToAPI } from "~database/entities/Relationship";
 import {
     findFirstUser,
@@ -22,46 +23,58 @@ export const meta = applyConfig({
     },
 });
 
+export const schema = z.object({
+    notifications: z.coerce.boolean().optional(),
+    duration: z
+        .number()
+        .int()
+        .min(60)
+        .max(60 * 60 * 24 * 365 * 5)
+        .optional(),
+});
+
 /**
  * Mute a user
  */
-export default apiRoute<{
-    notifications: boolean;
-    duration: number;
-}>(async (req, matchedRoute, extraData) => {
-    const id = matchedRoute.params.id;
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        const id = matchedRoute.params.id;
+        if (!id.match(idValidator)) {
+            return errorResponse("Invalid ID, must be of type UUIDv7", 404);
+        }
 
-    const { user: self } = extraData.auth;
+        const { user: self } = extraData.auth;
 
-    if (!self) return errorResponse("Unauthorized", 401);
+        if (!self) return errorResponse("Unauthorized", 401);
 
-    const { notifications, duration } = extraData.parsedRequest;
+        const { notifications, duration } = extraData.parsedRequest;
 
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, id),
-    });
+        const user = await findFirstUser({
+            where: (user, { eq }) => eq(user.id, id),
+        });
 
-    if (!user) return errorResponse("User not found", 404);
+        if (!user) return errorResponse("User not found", 404);
 
-    // Check if already following
-    const foundRelationship = await getRelationshipToOtherUser(self, user);
+        // Check if already following
+        const foundRelationship = await getRelationshipToOtherUser(self, user);
 
-    if (!foundRelationship.muting) {
-        foundRelationship.muting = true;
-    }
-    if (notifications ?? true) {
-        foundRelationship.mutingNotifications = true;
-    }
+        if (!foundRelationship.muting) {
+            foundRelationship.muting = true;
+        }
+        if (notifications ?? true) {
+            foundRelationship.mutingNotifications = true;
+        }
 
-    await db
-        .update(relationship)
-        .set({
-            muting: true,
-            mutingNotifications: notifications ?? true,
-        })
-        .where(eq(relationship.id, foundRelationship.id));
+        await db
+            .update(relationship)
+            .set({
+                muting: true,
+                mutingNotifications: notifications ?? true,
+            })
+            .where(eq(relationship.id, foundRelationship.id));
 
-    // TODO: Implement duration
+        // TODO: Implement duration
 
-    return jsonResponse(relationshipToAPI(foundRelationship));
-});
+        return jsonResponse(relationshipToAPI(foundRelationship));
+    },
+);

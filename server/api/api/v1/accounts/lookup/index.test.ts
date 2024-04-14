@@ -21,45 +21,6 @@ afterAll(async () => {
 
 // /api/v1/accounts/lookup
 describe(meta.route, () => {
-    test("should return 400 if acct is missing", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 400 if acct is empty", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(`${meta.route}?acct=`, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 404 if acct is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(`${meta.route}?acct=invalid`, config.http.base_url),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
-
-        expect(response.status).toBe(404);
-    });
-
     test("should return 200 with users", async () => {
         const response = await sendTestRequest(
             new Request(

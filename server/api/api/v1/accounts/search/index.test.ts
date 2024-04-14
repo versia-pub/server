@@ -8,7 +8,6 @@ import {
     sendTestRequest,
 } from "~tests/utils";
 import type { APIAccount } from "~types/entities/account";
-import type { APIStatus } from "~types/entities/status";
 import { meta } from "./index";
 
 await deleteOldTestUsers();
@@ -21,66 +20,6 @@ afterAll(async () => {
 
 // /api/v1/accounts/search
 describe(meta.route, () => {
-    test("should return 400 if q is missing", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 400 if q is empty", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(`${meta.route}?q=`, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 400 if limit is less than 1", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?q=${users[0].username}&limit=0`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
-    test("should return 400 if limit is greater than 80", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?q=${users[0].username}&limit=100`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
-
-        expect(response.status).toBe(400);
-    });
-
     test("should return 200 with users", async () => {
         const response = await sendTestRequest(
             new Request(

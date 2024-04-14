@@ -1,6 +1,18 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import {
+    anyOf,
+    charIn,
+    createRegExp,
+    digit,
+    exactly,
+    letter,
+    maybe,
+    oneOrMore,
+    global,
+} from "magic-regexp";
+import { z } from "zod";
+import {
     findFirstUser,
     resolveWebFinger,
     userToAPI,
@@ -19,52 +31,71 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute<{
-    acct: string;
-}>(async (req, matchedRoute, extraData) => {
-    const { acct } = extraData.parsedRequest;
+export const schema = z.object({
+    acct: z.string().min(1).max(512),
+});
 
-    if (!acct) {
-        return errorResponse("Invalid acct parameter", 400);
-    }
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        const { acct } = extraData.parsedRequest;
 
-    // Check if acct is matching format username@domain.com or @username@domain.com
-    const accountMatches = acct
-        ?.trim()
-        .match(/@?[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)/g);
-    if (accountMatches) {
-        // Remove leading @ if it exists
-        if (accountMatches[0].startsWith("@")) {
-            accountMatches[0] = accountMatches[0].slice(1);
+        if (!acct) {
+            return errorResponse("Invalid acct parameter", 400);
         }
 
-        const [username, domain] = accountMatches[0].split("@");
-        const foundAccount = await resolveWebFinger(username, domain).catch(
-            (e) => {
-                console.error(e);
-                return null;
-            },
+        // Check if acct is matching format username@domain.com or @username@domain.com
+        const accountMatches = acct?.trim().match(
+            createRegExp(
+                maybe("@"),
+                oneOrMore(
+                    anyOf(letter.lowercase, digit, charIn("-")),
+                ).groupedAs("username"),
+                exactly("@"),
+                oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs(
+                    "domain",
+                ),
+
+                [global],
+            ),
         );
 
-        if (foundAccount) {
-            return jsonResponse(userToAPI(foundAccount));
+        if (accountMatches) {
+            // Remove leading @ if it exists
+            if (accountMatches[0].startsWith("@")) {
+                accountMatches[0] = accountMatches[0].slice(1);
+            }
+
+            const [username, domain] = accountMatches[0].split("@");
+            const foundAccount = await resolveWebFinger(username, domain).catch(
+                (e) => {
+                    console.error(e);
+                    return null;
+                },
+            );
+
+            if (foundAccount) {
+                return jsonResponse(userToAPI(foundAccount));
+            }
+
+            return errorResponse("Account not found", 404);
         }
 
-        return errorResponse("Account not found", 404);
-    }
+        let username = acct;
+        if (username.startsWith("@")) {
+            username = username.slice(1);
+        }
 
-    let username = acct;
-    if (username.startsWith("@")) {
-        username = username.slice(1);
-    }
+        const account = await findFirstUser({
+            where: (user, { eq }) => eq(user.username, username),
+        });
 
-    const account = await findFirstUser({
-        where: (user, { eq }) => eq(user.username, username),
-    });
+        if (account) {
+            return jsonResponse(userToAPI(account));
+        }
 
-    if (account) {
-        return jsonResponse(userToAPI(account));
-    }
-
-    return errorResponse(`Account with username ${username} not found`, 404);
-});
+        return errorResponse(
+            `Account with username ${username} not found`,
+            404,
+        );
+    },
+);

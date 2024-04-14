@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { createLike } from "~database/entities/Like";
 import {
@@ -26,6 +26,9 @@ export const meta = applyConfig({
  */
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const id = matchedRoute.params.id;
+    if (!id.match(idValidator)) {
+        return errorResponse("Invalid ID, must be of type UUIDv7", 404);
+    }
 
     const { user } = extraData.auth;
 

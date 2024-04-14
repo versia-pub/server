@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 
@@ -20,13 +20,8 @@ export const meta = applyConfig({
  */
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const id = matchedRoute.params.id;
-    // Check if ID is valid UUIDv7
-    if (
-        !id.match(
-            /^[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i,
-        )
-    ) {
-        return errorResponse("Invalid ID", 404);
+    if (!id.match(idValidator)) {
+        return errorResponse("Invalid ID, must be of type UUIDv7", 404);
     }
 
     const { user } = extraData.auth;

@@ -58,11 +58,11 @@ describe("RequestParser", () => {
             headers: { "Content-Type": "application/json" },
             body: "invalid json",
         });
-        const result = await new RequestParser(request).toObject<{
+        const result = new RequestParser(request).toObject<{
             param1: string;
             param2: string;
         }>();
-        expect(result).toEqual({});
+        expect(result).rejects.toThrow();
     });
 
     describe("should parse form data correctly", () => {

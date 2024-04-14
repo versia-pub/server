@@ -1,8 +1,15 @@
 import { config } from "config-manager";
-import type { RouteHandler } from "~server/api/routes.type";
-import type { APIRouteMeta } from "~types/api";
+import {
+    anyOf,
+    caseInsensitive,
+    charIn,
+    createRegExp,
+    digit,
+    exactly,
+} from "magic-regexp";
+import type { APIRouteMetadata, RouteHandler } from "server-handler";
 
-export const applyConfig = (routeMeta: APIRouteMeta) => {
+export const applyConfig = (routeMeta: APIRouteMetadata) => {
     const newMeta = routeMeta;
 
     // Apply ratelimits from config
@@ -16,6 +23,26 @@ export const applyConfig = (routeMeta: APIRouteMeta) => {
     return newMeta;
 };
 
-export const apiRoute = <T>(routeFunction: RouteHandler<T>) => {
+export const apiRoute = <
+    Metadata extends APIRouteMetadata,
+    ZodSchema extends Zod.AnyZodObject,
+>(
+    routeFunction: RouteHandler<Metadata, ZodSchema>,
+) => {
     return routeFunction;
 };
+
+export const idValidator = createRegExp(
+    anyOf(digit, charIn("ABCDEF")).times(8),
+    exactly("-"),
+    anyOf(digit, charIn("ABCDEF")).times(4),
+    exactly("-"),
+    exactly("7"),
+    anyOf(digit, charIn("ABCDEF")).times(3),
+    exactly("-"),
+    anyOf("8", "9", "A", "B").times(1),
+    anyOf(digit, charIn("ABCDEF")).times(3),
+    exactly("-"),
+    anyOf(digit, charIn("ABCDEF")).times(12),
+    [caseInsensitive],
+);

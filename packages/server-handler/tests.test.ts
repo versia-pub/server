@@ -120,7 +120,7 @@ describe("Route Processor", () => {
         expect(output.status).toBe(401);
     });
 
-    it("should return a 400 when the Content-Type header is missing in POST, PUT and PATCH requests", async () => {
+    it("should return a 400 when the Content-Type header is missing but there is a body", async () => {
         mock.module(
             "./route",
             () =>
@@ -147,35 +147,12 @@ describe("Route Processor", () => {
             } as MatchedRoute,
             new Request("https://test.com/route", {
                 method: "POST",
+                body: "test",
             }),
             new LogManager(Bun.file("/dev/null")),
         );
 
         expect(output.status).toBe(400);
-
-        const output2 = await processRoute(
-            {
-                filePath: "./route",
-            } as MatchedRoute,
-            new Request("https://test.com/route", {
-                method: "PUT",
-            }),
-            new LogManager(Bun.file("/dev/null")),
-        );
-
-        expect(output2.status).toBe(400);
-
-        const output3 = await processRoute(
-            {
-                filePath: "./route",
-            } as MatchedRoute,
-            new Request("https://test.com/route", {
-                method: "PATCH",
-            }),
-            new LogManager(Bun.file("/dev/null")),
-        );
-
-        expect(output3.status).toBe(400);
     });
 
     it("should return a 400 when the request could not be parsed", async () => {

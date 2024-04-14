@@ -3,6 +3,7 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { db } from "~drizzle/db";
 import { application } from "~drizzle/schema";
+import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -16,46 +17,43 @@ export const meta = applyConfig({
     },
 });
 
+export const schema = z.object({
+    client_name: z.string().min(1).max(100),
+    redirect_uris: z.string().min(0).max(2000).url(),
+    scopes: z.string().min(1).max(200),
+    website: z.string().min(0).max(2000).url().optional(),
+});
+
 /**
  * Creates a new application to obtain OAuth 2 credentials
  */
-export default apiRoute<{
-    client_name: string;
-    redirect_uris: string;
-    scopes: string;
-    website: string;
-}>(async (req, matchedRoute, extraData) => {
-    const { client_name, redirect_uris, scopes, website } =
-        extraData.parsedRequest;
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        const { client_name, redirect_uris, scopes, website } =
+            extraData.parsedRequest;
 
-    // Check if redirect URI is a valid URI, and also an absolute URI
-    if (redirect_uris) {
-        if (!URL.canParse(redirect_uris)) {
-            return errorResponse("Redirect URI must be a valid URI", 422);
-        }
-    }
+        const app = (
+            await db
+                .insert(application)
+                .values({
+                    name: client_name || "",
+                    redirectUris: redirect_uris || "",
+                    scopes: scopes || "read",
+                    website: website || null,
+                    clientId: randomBytes(32).toString("base64url"),
+                    secret: randomBytes(64).toString("base64url"),
+                })
+                .returning()
+        )[0];
 
-    const app = (
-        await db
-            .insert(application)
-            .values({
-                name: client_name || "",
-                redirectUris: redirect_uris || "",
-                scopes: scopes || "read",
-                website: website || null,
-                clientId: randomBytes(32).toString("base64url"),
-                secret: randomBytes(64).toString("base64url"),
-            })
-            .returning()
-    )[0];
-
-    return jsonResponse({
-        id: app.id,
-        name: app.name,
-        website: app.website,
-        client_id: app.clientId,
-        client_secret: app.secret,
-        redirect_uri: app.redirectUris,
-        vapid_link: app.vapidKey,
-    });
-});
+        return jsonResponse({
+            id: app.id,
+            name: app.name,
+            website: app.website,
+            client_id: app.clientId,
+            client_secret: app.secret,
+            redirect_uri: app.redirectUris,
+            vapid_link: app.vapidKey,
+        });
+    },
+);

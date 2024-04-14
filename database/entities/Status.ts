@@ -25,7 +25,7 @@ import {
     letter,
     maybe,
     oneOrMore,
-} from "magic-regexp/further-magic";
+} from "magic-regexp";
 import { parse } from "marked";
 import { db } from "~drizzle/db";
 import {

@@ -98,6 +98,7 @@
         "oauth4webapi": "^2.4.0",
         "pg": "^8.11.5",
         "request-parser": "workspace:*",
-        "sharp": "^0.33.3"
+        "sharp": "^0.33.3",
+        "zod": "^3.22.4"
     }
 }

@@ -1,5 +1,6 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { z } from "zod";
 import {
     createNewRelationship,
     relationshipToAPI,
@@ -20,47 +21,48 @@ export const meta = applyConfig({
     },
 });
 
+export const schema = z.object({
+    id: z.array(z.string().regex(idValidator)).min(1).max(10),
+});
+
 /**
  * Find relationships
  */
-export default apiRoute<{
-    id: string[];
-}>(async (req, matchedRoute, extraData) => {
-    const { user: self } = extraData.auth;
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        const { user: self } = extraData.auth;
 
-    if (!self) return errorResponse("Unauthorized", 401);
+        if (!self) return errorResponse("Unauthorized", 401);
 
-    const { id: ids } = extraData.parsedRequest;
+        const { id: ids } = extraData.parsedRequest;
 
-    // Minimum id count 1, maximum 10
-    if (!ids || ids.length < 1 || ids.length > 10) {
-        return errorResponse("Number of ids must be between 1 and 10", 422);
-    }
+        const relationships = await db.query.relationship.findMany({
+            where: (relationship, { inArray, and, eq }) =>
+                and(
+                    inArray(relationship.subjectId, ids),
+                    eq(relationship.ownerId, self.id),
+                ),
+        });
 
-    const relationships = await db.query.relationship.findMany({
-        where: (relationship, { inArray, and, eq }) =>
-            and(
-                inArray(relationship.subjectId, ids),
-                eq(relationship.ownerId, self.id),
-            ),
-    });
+        // Find IDs that dont have a relationship
+        const missingIds = ids.filter(
+            (id) => !relationships.some((r) => r.subjectId === id),
+        );
 
-    // Find IDs that dont have a relationship
-    const missingIds = ids.filter(
-        (id) => !relationships.some((r) => r.subjectId === id),
-    );
+        // Create the missing relationships
+        for (const id of missingIds) {
+            const relationship = await createNewRelationship(self, {
+                id,
+            } as User);
 
-    // Create the missing relationships
-    for (const id of missingIds) {
-        const relationship = await createNewRelationship(self, { id } as User);
+            relationships.push(relationship);
+        }
 
-        relationships.push(relationship);
-    }
+        // Order in the same order as ids
+        relationships.sort(
+            (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
+        );
 
-    // Order in the same order as ids
-    relationships.sort(
-        (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
-    );
-
-    return jsonResponse(relationships.map((r) => relationshipToAPI(r)));
-});
+        return jsonResponse(relationships.map((r) => relationshipToAPI(r)));
+    },
+);

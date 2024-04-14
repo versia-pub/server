@@ -2,6 +2,18 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sql } from "drizzle-orm";
 import {
+    createRegExp,
+    maybe,
+    oneOrMore,
+    anyOf,
+    letter,
+    digit,
+    charIn,
+    exactly,
+    global,
+} from "magic-regexp";
+import { z } from "zod";
+import {
     type UserWithRelations,
     findManyUsers,
     resolveWebFinger,
@@ -22,59 +34,75 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute<{
-    q?: string;
-    limit?: number;
-    offset?: number;
-    resolve?: boolean;
-    following?: boolean;
-}>(async (req, matchedRoute, extraData) => {
-    // TODO: Add checks for disabled or not email verified accounts
-    const {
-        following = false,
-        limit = 40,
-        offset,
-        resolve,
-        q,
-    } = extraData.parsedRequest;
-
-    const { user: self } = extraData.auth;
-
-    if (!self && following) return errorResponse("Unauthorized", 401);
-
-    if (limit < 1 || limit > 80) {
-        return errorResponse("Limit must be between 1 and 80", 400);
-    }
-
-    if (!q) {
-        return errorResponse("Query is required", 400);
-    }
-
-    const [username, host] = q?.split("@") || [];
-
-    const accounts: UserWithRelations[] = [];
-
-    if (resolve && username && host) {
-        const resolvedUser = await resolveWebFinger(username, host);
-
-        if (resolvedUser) {
-            accounts.push(resolvedUser);
-        }
-    } else {
-        accounts.push(
-            ...(await findManyUsers({
-                where: (account, { or, like }) =>
-                    or(
-                        like(account.displayName, `%${q}%`),
-                        like(account.username, `%${q}%`),
-                        following
-                            ? sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${user.id} AND "Relationship"."ownerId" = ${account.id} AND "Relationship"."following" = true)`
-                            : undefined,
+export const schema = z.object({
+    q: z
+        .string()
+        .min(1)
+        .max(512)
+        .regex(
+            createRegExp(
+                maybe("@"),
+                oneOrMore(
+                    anyOf(letter.lowercase, digit, charIn("-")),
+                ).groupedAs("username"),
+                maybe(
+                    exactly("@"),
+                    oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs(
+                        "domain",
                     ),
-                offset: Number(offset),
-            })),
-        );
-    }
-
-    return jsonResponse(accounts.map((acct) => userToAPI(acct)));
+                ),
+                [global],
+            ),
+        ),
+    limit: z.coerce.number().int().min(1).max(80).default(40),
+    offset: z.coerce.number().int().optional(),
+    resolve: z.coerce.boolean().optional(),
+    following: z.coerce.boolean().optional(),
 });
+
+export default apiRoute<typeof meta, typeof schema>(
+    async (req, matchedRoute, extraData) => {
+        // TODO: Add checks for disabled or not email verified accounts
+        const {
+            following = false,
+            limit,
+            offset,
+            resolve,
+            q,
+        } = extraData.parsedRequest;
+
+        const { user: self } = extraData.auth;
+
+        if (!self && following) return errorResponse("Unauthorized", 401);
+
+        // Remove any leading @
+        const [username, host] = q.replace(/^@/, "").split("@");
+
+        const accounts: UserWithRelations[] = [];
+
+        if (resolve && username && host) {
+            const resolvedUser = await resolveWebFinger(username, host);
+
+            if (resolvedUser) {
+                accounts.push(resolvedUser);
+            }
+        } else {
+            accounts.push(
+                ...(await findManyUsers({
+                    where: (account, { or, like }) =>
+                        or(
+                            like(account.displayName, `%${q}%`),
+                            like(account.username, `%${q}%`),
+                            following
+                                ? sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${user.id} AND "Relationship"."ownerId" = ${account.id} AND "Relationship"."following" = true)`
+                                : undefined,
+                        ),
+                    offset,
+                    limit,
+                })),
+            );
+        }
+
+        return jsonResponse(accounts.map((acct) => userToAPI(acct)));
+    },
+);

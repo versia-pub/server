@@ -21,12 +21,6 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(`${base_url}/api/v1/instance`, base_url),
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                    },
                 ),
             );
 
