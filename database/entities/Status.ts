@@ -1,3 +1,4 @@
+import { dualLogger } from "@loggers";
 import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
 import {
@@ -35,7 +36,6 @@ import {
     statusToMentions,
     user,
 } from "~drizzle/schema";
-import { dualLogger } from "@loggers";
 import { LogLevel } from "~packages/log-manager";
 import type { Note } from "~types/lysand/Object";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";

@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
+import { dualLogger } from "@loggers";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, sql } from "drizzle-orm";
@@ -12,7 +13,6 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { instance, user } from "~drizzle/schema";
-import { dualLogger } from "@loggers";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({

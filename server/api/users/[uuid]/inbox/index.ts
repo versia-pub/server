@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
+import { dualLogger } from "@loggers";
 import { errorResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
@@ -11,7 +12,6 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { notification, relationship } from "~drizzle/schema";
-import { dualLogger } from "@loggers";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({

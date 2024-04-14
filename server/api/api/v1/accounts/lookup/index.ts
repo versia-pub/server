@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
+import { dualLogger } from "@loggers";
 import { errorResponse, jsonResponse } from "@response";
 import {
     anyOf,
@@ -17,7 +18,6 @@ import {
     resolveWebFinger,
     userToAPI,
 } from "~database/entities/User";
-import { dualLogger } from "@loggers";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({

@@ -1,4 +1,5 @@
 import { getBestContentType, urlToContentFormat } from "@content_types";
+import { dualLogger } from "@loggers";
 import { addUserToMeilisearch } from "@meilisearch";
 import { type Config, config } from "config-manager";
 import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
@@ -12,7 +13,6 @@ import {
     relationship,
     user,
 } from "~drizzle/schema";
-import { dualLogger } from "@loggers";
 import { LogLevel } from "~packages/log-manager";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import type { Source as APISource } from "~types/mastodon/source";
