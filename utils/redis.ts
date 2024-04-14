@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+/* import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
 import { config } from "config-manager";
 import Redis from "ioredis";
@@ -56,3 +56,4 @@ export const initializeRedisCache = async () => {
 
     return null;
 };
+ */

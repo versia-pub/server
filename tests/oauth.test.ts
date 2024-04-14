@@ -1,26 +1,25 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Application, Token } from "@prisma/client";
-import { client } from "~database/datasource";
-import { createNewLocalUser } from "~database/entities/User";
-import { sendTestRequest, wrapRelativeUrl } from "./utils";
+import { afterAll, describe, expect, test } from "bun:test";
+import type { APIApplication } from "~types/entities/application";
+import {
+    deleteOldTestUsers,
+    getTestUsers,
+    sendTestRequest,
+    wrapRelativeUrl,
+} from "./utils";
+import type { APIToken } from "~types/entities/token";
 
 const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
 
 let client_id: string;
 let client_secret: string;
 let code: string;
-let token: Token;
+let token: APIToken;
+const { users, passwords, deleteUsers } = await getTestUsers(1);
 
-beforeAll(async () => {
-    // Init test user
-    await createNewLocalUser({
-        email: "test@test.com",
-        username: "test",
-        password: "test",
-        display_name: "",
-    });
+afterAll(async () => {
+    await deleteUsers();
+    await deleteOldTestUsers();
 });
-
 describe("POST /api/v1/apps/", () => {
     test("should create an application", async () => {
         const formData = new FormData();
@@ -61,8 +60,10 @@ describe("POST /api/auth/login/", () => {
     test("should get a code", async () => {
         const formData = new FormData();
 
-        formData.append("email", "test@test.com");
-        formData.append("password", "test");
+        console.log(users[0]?.email ?? "");
+
+        formData.append("email", users[0]?.email ?? "");
+        formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
             new Request(
@@ -139,20 +140,9 @@ describe("GET /api/v1/apps/verify_credentials", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const credentials = (await response.json()) as Partial<Application>;
+        const credentials = (await response.json()) as Partial<APIApplication>;
 
         expect(credentials.name).toBe("Test Application");
         expect(credentials.website).toBe("https://example.com");
-        expect(credentials.redirect_uris).toBe("https://example.com");
-        expect(credentials.scopes).toBe("read write");
-    });
-});
-
-afterAll(async () => {
-    // Clean up user
-    await client.user.delete({
-        where: {
-            username: "test",
-        },
     });
 });

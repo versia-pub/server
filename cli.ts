@@ -3,26 +3,25 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Parser } from "@json2csv/plainjs";
 import { MeiliIndexType, rebuildSearchIndexes } from "@meilisearch";
-import type { Prisma } from "@prisma/client";
 import chalk from "chalk";
 import { CliBuilder, CliCommand } from "cli-parser";
 import Table from "cli-table";
+import { type SQL, eq, inArray, isNotNull, isNull, like } from "drizzle-orm";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
 import { getUrl } from "~database/entities/Attachment";
+import { findFirstStatuses, findManyStatuses } from "~database/entities/Status";
 import {
+    type User,
     createNewLocalUser,
     findFirstUser,
     findManyUsers,
-    type User,
 } from "~database/entities/User";
-import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
-import { config } from "~packages/config-manager";
 import { db } from "~drizzle/db";
 import { emoji, openIdAccount, status, user } from "~drizzle/schema";
-import { type SQL, eq, inArray, isNotNull, isNull, like } from "drizzle-orm";
-import { findFirstStatuses, findManyStatuses } from "~database/entities/Status";
+import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
+import { config } from "~packages/config-manager";
 
 const args = process.argv;
 
@@ -947,17 +946,6 @@ const cliBuilder = new CliBuilder([
             if (fields.length === 0) {
                 console.log(`${chalk.red("✗")} Missing fields parameter`);
                 return 1;
-            }
-
-            const queries: Prisma.StatusWhereInput[] = [];
-
-            for (const field of fields) {
-                queries.push({
-                    [field]: {
-                        contains: query,
-                        mode: caseSensitive ? "default" : "insensitive",
-                    },
-                });
             }
 
             let instanceQuery: SQL<unknown> | undefined = isNull(

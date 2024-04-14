@@ -14,9 +14,9 @@ import {
     validateAuthResponse,
 } from "oauth4webapi";
 import { TokenType } from "~database/entities/Token";
+import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { token } from "~drizzle/schema";
-import { findFirstUser } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -2,7 +2,6 @@ import { exists, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { connectMeili } from "@meilisearch";
 import { moduleIsEntry } from "@module";
-import { initializeRedisCache } from "@redis";
 import { config } from "config-manager";
 import { count, sql } from "drizzle-orm";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
@@ -38,8 +37,6 @@ await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 // NODE_ENV seems to be broken and output `development` even when set to production, so use the flag instead
 const isProd =
     process.env.NODE_ENV === "production" || process.argv.includes("--prod");
-
-const redisCache = await initializeRedisCache();
 
 if (config.meilisearch.enabled) {
     await connectMeili(dualLogger);

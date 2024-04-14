@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { inArray, like } from "drizzle-orm";
-import type { Status } from "~database/entities/Status";
+import { type Status, findManyStatuses } from "~database/entities/Status";
 import {
     type User,
     type UserWithRelations,
@@ -31,19 +31,22 @@ export const deleteOldTestUsers = async () => {
 
 export const getTestUsers = async (count: number) => {
     const users: UserWithRelations[] = [];
+    const passwords: string[] = [];
 
     for (let i = 0; i < count; i++) {
+        const password = randomBytes(32).toString("hex");
+
         const user = await createNewLocalUser({
             username: `test-${randomBytes(32).toString("hex")}`,
             email: `${randomBytes(32).toString("hex")}@test.com`,
-            password: randomBytes(32).toString("hex"),
-            skipPasswordHash: true,
+            password,
         });
 
         if (!user) {
             throw new Error("Failed to create test user");
         }
 
+        passwords.push(password);
         users.push(user);
     }
 
@@ -64,6 +67,7 @@ export const getTestUsers = async (count: number) => {
     return {
         users,
         tokens,
+        passwords,
         deleteUsers: async () => {
             await db.delete(user).where(
                 inArray(
@@ -104,5 +108,14 @@ export const getTestStatuses = async (
         statuses.push(newStatus);
     }
 
-    return statuses.toSorted((a, b) => a.id.localeCompare(b.id));
+    const statusesWithRelations = await findManyStatuses({
+        where: (status, { inArray }) =>
+            inArray(
+                status.id,
+                statuses.map((s) => s.id),
+            ),
+        orderBy: (status, { asc }) => asc(status.id),
+    });
+
+    return statusesWithRelations;
 };

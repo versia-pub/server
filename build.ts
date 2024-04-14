@@ -13,7 +13,6 @@ await $`rm -rf dist && mkdir dist`;
 await Bun.build({
     entrypoints: [
         `${process.cwd()}/index.ts`,
-        `${process.cwd()}/prisma.ts`,
         `${process.cwd()}/cli.ts`,
         // Force Bun to include endpoints
         ...Object.values(rawRoutes),
@@ -22,7 +21,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: true,
-    external: ["bullmq", "@prisma/client", "frontend"],
+    external: ["bullmq", "frontend"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
@@ -32,14 +31,6 @@ await Bun.build({
 // Fix for wrong Bun file resolution, replaces node_modules with ./node_modules inside all dynamic imports
 // I apologize for this
 await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
-
-// Copy generated Prisma client to dist
-await $`mkdir -p dist/node_modules/@prisma`;
-await $`cp -r ${process.cwd()}/node_modules/@prisma dist/node_modules/`;
-await $`cp -r ${process.cwd()}/node_modules/.prisma dist/node_modules`;
-await $`mkdir -p dist/node_modules/.bin`;
-await $`cp -r ${process.cwd()}/node_modules/.bin/prisma dist/node_modules/.bin`;
-await $`cp -r ${process.cwd()}/node_modules/prisma dist/node_modules/`;
 
 // Copy Sharp to dist
 await $`mkdir -p dist/node_modules/@img`;

@@ -1,86 +1,19 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Token } from "@prisma/client";
 import { config } from "config-manager";
-import { client } from "~database/datasource";
-import { TokenType } from "~database/entities/Token";
-import {
-    type UserWithRelations,
-    createNewLocalUser,
-} from "~database/entities/User";
-import { sendTestRequest, wrapRelativeUrl } from "~tests/utils";
+import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
 import type { APIAccount } from "~types/entities/account";
 import type { APIRelationship } from "~types/entities/relationship";
 import type { APIStatus } from "~types/entities/status";
 
 const base_url = config.http.base_url;
 
-let token: Token;
-let user: UserWithRelations;
-let user2: UserWithRelations;
-
-beforeAll(async () => {
-    await client.user.deleteMany({
-        where: {
-            username: {
-                in: ["test", "test2"],
-            },
-        },
-    });
-
-    user = await createNewLocalUser({
-        email: "test@test.com",
-        username: "test",
-        password: "test",
-        display_name: "",
-    });
-
-    user2 = await createNewLocalUser({
-        email: "test2@test.com",
-        username: "test2",
-        password: "test2",
-        display_name: "",
-    });
-
-    token = await client.token.create({
-        data: {
-            access_token: "test",
-            application: {
-                create: {
-                    client_id: "test",
-                    name: "Test Application",
-                    redirect_uris: "https://example.com",
-                    scopes: "read write",
-                    secret: "test",
-                    website: "https://example.com",
-                    vapid_key: null,
-                },
-            },
-            code: "test",
-            scope: "read write",
-            token_type: TokenType.BEARER,
-            user: {
-                connect: {
-                    id: user.id,
-                },
-            },
-        },
-    });
-});
+const { users, tokens, deleteUsers } = await getTestUsers(2);
+const user = users[0];
+const user2 = users[1];
+const token = tokens[0];
 
 afterAll(async () => {
-    await client.user.deleteMany({
-        where: {
-            username: {
-                in: ["test", "test2"],
-            },
-        },
-    });
-
-    await client.application.deleteMany({
-        where: {
-            client_id: "test",
-        },
-    });
+    await deleteUsers();
 });
 
 describe("API Tests", () => {
@@ -92,7 +25,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                     },
@@ -117,7 +50,7 @@ describe("API Tests", () => {
                     {
                         method: "PATCH",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
@@ -149,7 +82,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                     },
@@ -199,7 +132,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                     },
@@ -228,7 +161,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -259,7 +192,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -290,7 +223,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -321,7 +254,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -347,7 +280,7 @@ describe("API Tests", () => {
                 new Request(wrapRelativeUrl("/api/v1/blocks", base_url), {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${token.access_token}`,
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
                 }),
             );
@@ -375,7 +308,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -406,7 +339,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ notifications: true }),
@@ -436,7 +369,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ notifications: false }),
@@ -463,7 +396,7 @@ describe("API Tests", () => {
                 new Request(wrapRelativeUrl("/api/v1/mutes", base_url), {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${token.access_token}`,
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
                 }),
             );
@@ -492,7 +425,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -523,7 +456,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -554,7 +487,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -585,7 +518,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({ comment: "This is a new note" }),
@@ -616,7 +549,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                         },
                     },
                 ),
@@ -651,7 +584,7 @@ describe("API Tests", () => {
                     {
                         method: "DELETE",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                     },
@@ -678,7 +611,7 @@ describe("API Tests", () => {
                     {
                         method: "DELETE",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                     },
@@ -708,7 +641,7 @@ describe("API Tests", () => {
                     {
                         method: "POST",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({}),
@@ -732,7 +665,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${token.accessToken}`,
                         },
                     },
                 ),

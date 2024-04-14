@@ -1,74 +1,19 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Token } from "@prisma/client";
 import { config } from "config-manager";
-import { inArray } from "drizzle-orm";
-import { client } from "~database/datasource";
-import { TokenType } from "~database/entities/Token";
-import {
-    type UserWithRelations,
-    createNewLocalUser,
-} from "~database/entities/User";
+import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { application, user } from "~drizzle/schema";
+import { emoji } from "~drizzle/schema";
 import type { APIEmoji } from "~types/entities/emoji";
 import type { APIInstance } from "~types/entities/instance";
-import { sendTestRequest, wrapRelativeUrl } from "./utils";
+import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const base_url = config.http.base_url;
 
-let token: Token;
-let dummyUser: UserWithRelations;
+const { tokens, deleteUsers } = await getTestUsers(1);
 
 describe("API Tests", () => {
-    beforeAll(async () => {
-        await db.delete(user).where(inArray(user.username, ["test", "test2"]));
-        await db
-            .delete(application)
-            .where(inArray(application.clientId, ["test"]));
-
-        // Initialize test user
-        dummyUser = await createNewLocalUser({
-            email: "test@test.com",
-            username: "test",
-            password: "test",
-            display_name: "",
-        });
-
-        if (!dummyUser) {
-            throw new Error("Failed to create test user");
-        }
-
-        token = await client.token.create({
-            data: {
-                access_token: "test",
-                application: {
-                    create: {
-                        client_id: "test",
-                        name: "Test Application",
-                        redirect_uris: "https://example.com",
-                        scopes: "read write",
-                        secret: "test",
-                        website: "https://example.com",
-                        vapid_key: null,
-                    },
-                },
-                code: "test",
-                scope: "read write",
-                token_type: TokenType.BEARER,
-                user: {
-                    connect: {
-                        id: dummyUser.id,
-                    },
-                },
-            },
-        });
-    });
-
     afterAll(async () => {
-        await db.delete(user).where(inArray(user.username, ["test", "test2"]));
-        await db
-            .delete(application)
-            .where(inArray(application.clientId, ["test"]));
+        await deleteUsers();
     });
 
     describe("GET /api/v1/instance", () => {
@@ -111,14 +56,11 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/custom_emojis", () => {
         beforeAll(async () => {
-            await client.emoji.create({
-                data: {
-                    instanceId: null,
-                    url: "https://example.com/test.png",
-                    content_type: "image/png",
-                    shortcode: "test",
-                    visible_in_picker: true,
-                },
+            await db.insert(emoji).values({
+                shortcode: "test",
+                url: "https://example.com/test.png",
+                contentType: "image/png",
+                visibleInPicker: true,
             });
         });
 
@@ -132,7 +74,7 @@ describe("API Tests", () => {
                     {
                         method: "GET",
                         headers: {
-                            Authorization: `Bearer ${token.access_token}`,
+                            Authorization: `Bearer ${tokens[0].accessToken}`,
                         },
                     },
                 ),
@@ -151,11 +93,7 @@ describe("API Tests", () => {
         });
 
         afterAll(async () => {
-            await client.emoji.deleteMany({
-                where: {
-                    shortcode: "test",
-                },
-            });
+            await db.delete(emoji).where(eq(emoji.shortcode, "test"));
         });
     });
 });
