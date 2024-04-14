@@ -122,11 +122,7 @@ export const createServer = (
 
             console.log(matchedRoute);
 
-            if (
-                matchedRoute &&
-                Object.keys(matchedRoute).length !== 0 &&
-                matchedRoute.name !== "/[...404]"
-            ) {
+            if (matchedRoute?.filePath && matchedRoute.name !== "/[...404]") {
                 return await processRoute(matchedRoute, req, logger);
             }
 
