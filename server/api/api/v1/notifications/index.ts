@@ -37,6 +37,8 @@ export const schema = z.object({
             "update",
             "admin.sign_up",
             "admin.report",
+            "chat",
+            "pleroma:chat_mention",
         ])
         .array()
         .optional(),
@@ -52,6 +54,8 @@ export const schema = z.object({
             "update",
             "admin.sign_up",
             "admin.report",
+            "chat",
+            "pleroma:chat_mention",
         ])
         .array()
         .optional(),

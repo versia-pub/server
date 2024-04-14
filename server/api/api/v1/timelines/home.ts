@@ -7,7 +7,6 @@ import {
     findManyStatuses,
     statusToAPI,
 } from "~database/entities/Status";
-import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
