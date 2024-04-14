@@ -46,10 +46,18 @@ export class RequestParser {
      * @private
      */
     private async determineContentType() {
-        if (this.request.headers.get("Content-Type")) {
-            return (
-                this.request.headers.get("Content-Type")?.split(";")[0] ?? ""
-            );
+        const content_type = this.request.headers.get("Content-Type");
+
+        if (content_type?.startsWith("application/json")) {
+            return "application/json";
+        }
+
+        if (content_type?.startsWith("application/x-www-form-urlencoded")) {
+            return "application/x-www-form-urlencoded";
+        }
+
+        if (content_type?.startsWith("multipart/form-data")) {
+            return "multipart/form-data";
         }
 
         // Check if body is valid JSON
@@ -66,6 +74,10 @@ export class RequestParser {
             return "multipart/form-data";
         } catch {
             // This is not FormData
+        }
+
+        if (content_type) {
+            return content_type.split(";")[0] ?? "";
         }
 
         if (this.request.body) {
@@ -87,7 +99,7 @@ export class RequestParser {
         const result: Partial<T> = {};
 
         for (const [key, value] of formData.entries()) {
-            if (value instanceof File) {
+            if (value instanceof Blob) {
                 result[key as keyof T] = value as T[keyof T];
             } else if (key.endsWith("[]")) {
                 const arrayKey = key.slice(0, -2) as keyof T;
