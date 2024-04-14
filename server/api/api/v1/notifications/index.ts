@@ -90,23 +90,23 @@ export default apiRoute<typeof meta, typeof schema>(
                         // @ts-expect-error Yes I KNOW the types are wrong
                         notification,
                         // @ts-expect-error Yes I KNOW the types are wrong
-                        { lt, gte, gt, and, or, eq, not },
+                        { lt, gte, gt, and, eq, not, inArray },
                     ) =>
-                        or(
-                            and(
-                                max_id
-                                    ? lt(notification.id, max_id)
-                                    : undefined,
-                                since_id
-                                    ? gte(notification.id, since_id)
-                                    : undefined,
-                                min_id
-                                    ? gt(notification.id, min_id)
-                                    : undefined,
-                            ),
+                        and(
+                            max_id ? lt(notification.id, max_id) : undefined,
+                            since_id
+                                ? gte(notification.id, since_id)
+                                : undefined,
+                            min_id ? gt(notification.id, min_id) : undefined,
                             eq(notification.notifiedId, user.id),
                             eq(notification.accountId, account_id),
                             not(eq(notification.accountId, user.id)),
+                            types
+                                ? inArray(notification.type, types)
+                                : undefined,
+                            exclude_types
+                                ? not(inArray(notification.type, exclude_types))
+                                : undefined,
                         ),
                     limit,
                     // @ts-expect-error Yes I KNOW the types are wrong
