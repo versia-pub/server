@@ -14,8 +14,6 @@ export const useConfig = async () => {
         host = useRequestURL().origin.toString();
     }
 
-    console.log(host);
-
     if (!host) {
         throw createError({
             statusCode: 500,

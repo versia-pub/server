@@ -60,8 +60,6 @@ describe("POST /api/auth/login/", () => {
     test("should get a code", async () => {
         const formData = new FormData();
 
-        console.log(users[0]?.email ?? "");
-
         formData.append("email", users[0]?.email ?? "");
         formData.append("password", passwords[0]);
 
