@@ -116,11 +116,15 @@ export const createServer = (
             }
 
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
-            const { matchedRoute } = await matchRoute(
+            const matchedRoute = await matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
 
-            if (matchedRoute && matchedRoute.name !== "/[...404]") {
+            if (
+                matchedRoute &&
+                Object.keys(matchedRoute).length !== 0 &&
+                matchedRoute.name !== "/[...404]"
+            ) {
                 return await processRoute(matchedRoute, req, logger);
             }
 

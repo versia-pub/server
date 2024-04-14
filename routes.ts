@@ -101,9 +101,8 @@ export const routeMatcher = new Bun.FileSystemRouter({
 
 export const matchRoute = async (url: string) => {
     const route = routeMatcher.match(url);
-    if (!route) return { file: null, matchedRoute: null };
 
-    return {
-        matchedRoute: route,
-    };
+    console.log(route);
+
+    return route ?? null;
 };
