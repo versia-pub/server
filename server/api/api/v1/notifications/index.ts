@@ -99,7 +99,9 @@ export default apiRoute<typeof meta, typeof schema>(
                                 : undefined,
                             min_id ? gt(notification.id, min_id) : undefined,
                             eq(notification.notifiedId, user.id),
-                            eq(notification.accountId, account_id),
+                            account_id
+                                ? eq(notification.accountId, account_id)
+                                : undefined,
                             not(eq(notification.accountId, user.id)),
                             types
                                 ? inArray(notification.type, types)
