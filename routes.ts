@@ -82,6 +82,7 @@ export const rawRoutes = {
     "/api/v1/statuses/[id]/unpin": "./server/api/api/v1/statuses/[id]/unpin",
     "/api/v1/statuses/[id]/unreblog":
         "./server/api/api/v1/statuses/[id]/unreblog",
+    "/api/_fe/config": "./server/api/api/_fe/config/index",
     "/media/[id]": "./server/api/media/[id]/index",
     "/oauth/callback/[issuer]": "./server/api/oauth/callback/[issuer]/index",
     "/objects/note/[uuid]": "./server/api/objects/note/[uuid]/index",

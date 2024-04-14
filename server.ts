@@ -193,7 +193,12 @@ export const createServer = (
                 .replace(config.http.base_url, "http://localhost:5173")
                 .replace(base_url_with_http, "http://localhost:5173");
 
-            const proxy = await fetch(replacedUrl).catch(async (e) => {
+            const proxy = await fetch(replacedUrl, {
+                headers: {
+                    // Include for SSR
+                    "X-Forwarded-Host": `${config.http.bind}:${config.http.bind_port}`,
+                },
+            }).catch(async (e) => {
                 await logger.logError(
                     LogLevel.ERROR,
                     "Server.Proxy",

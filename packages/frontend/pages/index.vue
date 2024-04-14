@@ -15,7 +15,8 @@
                 </div>
                 <div class="text-center">
                     <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Welcome to Lysand</h1>
-                    <p class="mt-6 text-lg leading-8 text-gray-600">You can login to this server by pointing any Mastodon
+                    <p class="mt-6 text-lg leading-8 text-gray-600">You can login to this server by pointing any
+                        Mastodon
                         client at <strong class="font-bold">{{ config?.http.base_url }}</strong></p>
                     <div class="mt-10 flex items-center justify-center gap-6 md:flex-row flex-col">
                         <a href="https://github.com/lysand-org/lysand" target="_blank"
@@ -29,7 +30,8 @@
                     <p class="mt-6 text-lg leading-8 text-gray-600">Here are some recommended clients:</p>
                     <ul class="w-full flex flex-col gap-3 mt-4">
                         <li v-for="client of recommendedClients" :key="client.name" class="w-full">
-                            <a :href="client.link" class="rounded-sm ring-2 ring-black/10 px-4 py-2 w-full flex flex-row gap-3 items-center">
+                            <a :href="client.link"
+                                class="rounded-sm ring-2 ring-black/10 px-4 py-2 w-full flex flex-row gap-3 items-center">
                                 <img :src="client.icon" :alt="client.name" class="h-10 w-10" />
                                 <div class="flex flex-col justify-between items-start">
                                     <h2 class="font-bold">{{ client.name }}</h2>
@@ -39,11 +41,13 @@
                         </li>
                     </ul>
                     <p class="mt-6 text-lg leading-8 text-gray-600">
-                        Many other clients exist, but <strong class="font-bold">they have not been tested for compatibility</strong>. Bug reports are nevertheless welcome.
+                        Many other clients exist, but <strong class="font-bold">they have not been tested for
+                            compatibility</strong>. Bug reports are nevertheless welcome.
                     </p>
 
                     <p class="mt-6 text-lg leading-8 text-gray-600">
-                        Found a problem? Report it on <a href="https://github.com/lysand-org/lysand/issues/new/choose" class="underline text-purple-700">the issue tracker</a>.
+                        Found a problem? Report it on <a href="https://github.com/lysand-org/lysand/issues/new/choose"
+                            class="underline text-purple-700">the issue tracker</a>.
                     </p>
                 </div>
             </div>
@@ -55,13 +59,12 @@
         </div>
     </div>
 </template>
-  
+
 <script setup lang="ts">
 import { recommendedClients } from "../constants";
 // @ts-ignore
 const version = __VERSION__;
-
-const config = (await useFetch("/api/config")).data.value;
+const config = await useConfig();
 
 useServerSeoMeta({
     title: "Welcome to Lysand!",
