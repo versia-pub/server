@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import strip from "strip-ansi";
 import { type CliParameter, CliParameterType } from "./cli-builder.type";
 
 export function startsWithArray(fullArray: string[], startArray: string[]) {

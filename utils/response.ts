@@ -1,6 +1,3 @@
-import type { APActivity, APObject } from "activitypub-types";
-import type { NodeObject } from "jsonld";
-
 export const response = (
     data: BodyInit | null = null,
     status = 200,
@@ -52,15 +49,6 @@ export const jsonResponse = (
 export const xmlResponse = (data: string, status = 200) => {
     return response(data, status, {
         "Content-Type": "application/xml",
-    });
-};
-
-export const jsonLdResponse = (
-    data: NodeObject | APActivity | APObject,
-    status = 200,
-) => {
-    return response(JSON.stringify(data), status, {
-        "Content-Type": "application/activity+json",
     });
 };
 

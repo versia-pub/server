@@ -40,7 +40,7 @@ await $`mkdir -p dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-libvips-linux-* dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
 
-// Copy Vite build output to dist
+// Copy Nuxt build output to dist
 await $`cp -r packages/frontend/.output dist/frontend`;
 
 // Copy the Bee Movie script from pages
