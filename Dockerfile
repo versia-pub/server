@@ -1,6 +1,6 @@
 # Use the official Bun image (Bun doesn't run well on Musl but this seems to work)
 # See all versions at https://hub.docker.com/r/oven/bun/tags
-FROM imbios/bun-node:1.1.2-current-debian as base
+FROM imbios/bun-node:1.1.3-current-alpine as base
 
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
@@ -26,7 +26,7 @@ WORKDIR /temp/dist
 
 # copy production dependencies and source code into final image
 # Alpine (musl) causes errors with Bun :(
-FROM oven/bun:1.1.2-slim
+FROM oven/bun:1.1.3-alpine
 
 # Create app directory
 RUN mkdir -p /app
