@@ -133,6 +133,8 @@ export const processRoute = async (
             return null;
         });
 
+    console.log(parsedRequest);
+
     if (!parsedRequest) {
         return errorResponse(
             "The request could not be parsed, it may be malformed",
