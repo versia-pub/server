@@ -4,7 +4,7 @@ import type { MatchedRoute } from "bun";
 import { type Config, config } from "config-manager";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { RequestParser } from "request-parser";
-import { type ZodType, z } from "zod";
+import type { ZodType, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import {
     type AuthData,
@@ -58,18 +58,6 @@ export interface APIRouteExports {
     schema: z.AnyZodObject;
     default: RouteHandler<APIRouteMetadata, z.AnyZodObject>;
 }
-
-const exampleZodSchema = z.object({
-    allowedMethods: z.array(z.string()),
-    ratelimits: z.object({
-        max: z.number(),
-        duration: z.number(),
-    }),
-    route: z.string(),
-    auth: z.object({
-        required: z.boolean(),
-    }),
-});
 
 export const processRoute = async (
     matchedRoute: MatchedRoute,

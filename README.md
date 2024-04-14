@@ -2,11 +2,11 @@
   <a href="https://lysand.org"><img src="https://cdn-web.cpluspatch.com/lysand.webp" alt="Lysand Logo" height=130></a>
 </p>
 
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
 ## What is this?
 
-This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in alpha phase, with basic federation and almost complete Mastodon API support.
+This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in beta phase, with basic federation and almost complete Mastodon API support.
 
 This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It implements the Mastodon API for support with clients that already support Mastodon or Pleroma.
 
@@ -15,7 +15,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ## Features
 
-- [x] Inbound federation
+- [x] Federation (partial)
 - [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files
@@ -26,12 +26,11 @@ This project aims to be a fully featured social network, with a focus on privacy
 - [x] Automatic image conversion to WebP or other formats
 - [x] Scripting-compatible CLI with JSON and CSV outputs
 - [ ] Moderation tools
-- [ ] Full Mastodon API support
-- [ ] Outbound federation
+- [x] Mastodon API support (partial)
 
 ## Screenshots
 
-Here are some screenshots of Lysand's built-in web client. This client is built with Vue, and serves to allow users to log in or register. It is kept to only the actions that cannot be done with a Mastodon client, to simplify development. In the future, there may be a full-featured client.
+Here are some screenshots of Lysand's built-in web client. This client is built with Nuxt, and serves to allow users to log in or register. It is kept to only the actions that cannot be done with a Mastodon client, to simplify development. In the future, there will be a full-featured client.
 
 ### On Desktop
 
@@ -114,130 +113,7 @@ Lysand is extremely fast and can handle thousands of HTTP requests per second on
 
 ## How do I run it?
 
-### Requirements
-
-- The [Bun Runtime](https://bun.sh), version 1.0.30 or later (usage of the latest version is recommended)
-- A PostgreSQL database
-- (Optional but recommended) A Linux-based operating system
-- (Optional if you want search) A working Meiliseach instance
-
-> [!WARNING]
-> Lysand has not been tested on Windows or MacOS. It is recommended to use a Linux-based operating system to run Lysand.
-> 
-> We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
-
-### Installation
-
-1. Clone this repository
-
-```bash
-git clone https://github.com/lysand-org/lysand.git
-```
-
-2. Install the dependencies
-
-```bash
-bun install
-```
-
-3. Set up a PostgreSQL database, using the `pg_uuidv7` extension
-
-Lysand offers a pre-made Docker image for PostgreSQL with the extension already installed. Use `ghcr.io/lysand-org/postgres:main` as your Docker image name to use it.
-
-You may otherwise use this [Dockerfile](Postgres.Dockerfile) to set it up.
-
-1. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
-
-2. Run migrations:
-
-```bash
-bun migrate
-```
-
-6. (If you want search)
-Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](docker-compose.yml) file.
-
-Set up Meiliseach's API key by passing the `MEILI_MASTER_KEY` environment variable to the server. Then, enale and configure search in the config file.
-7. Build everything:
-
-```bash
-bun prod-build
-```
-
-You may now start the server with `bun start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
-In fact, the `bun start` script merely runs `bun run dist/index.js --prod`!
-### Running
-
-To run the server, simply run the following command:
-
-```bash
-bun start
-```
-
-### Using the CLI
-
-Lysand includes a built-in CLI for managing the server. To use it, simply run the following command:
-
-```bash
-bun cli help
-```
-
-If you are running a production build, you will need to run `bun run dist/cli.js` or `./entrypoint.sh cli` instead.
-
-You can use the `help` command to see a list of available commands. These include creating users, deleting users and more. Each command also has a `--help,-h` flag that you can use to see more information about the command.
-
-#### Scripting with the CLI
-
-Some CLI commands that return data as tables can be used in scripts. To convert them to JSON or CSV, some commands allow you to specify a `--format` flag that can be either `"json"` or `"csv"`. See `bun cli help` or `bun cli <command> -h` for more information.
-
-Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.
-
-### Rebuilding the Search Index
-
-You may use the `bun cli index rebuild` command to automatically push all posts and users to Meilisearch, if it is configured. This is useful if you have just set up Meilisearch, or if you accidentally deleted something.
-
-### Using Database Commands
-
-The `bun prisma` commands allows you to use Prisma commands without needing to add in environment variables for the database config. Just run Prisma commands as you would normally, replacing `bunx prisma` with `bun prisma`.
-
-## With Docker
-
-> [!NOTE]
-> Docker is currently broken, as Bun with Prisma does not work well with Docker yet for unknown reasons. The following instructions are for when this is fixed.
->
-> These instructions will probably also work with Podman and other container runtimes.
-
-You can also run Lysand using Docker. To do so, you can:
-
-1. Acquire the Postgres Dockerfile from above
-2. Use this repository's [`docker-compose.yml`](docker-compose.yml) file
-3. Create the `lysand-net` docker network:
-```bash
-docker network create lysand-net
-```
-1. Fill in the config file (see [Installation](#installation))
-2. Run the following command:
-```bash
-docker-compose up -d
-```
-
-You may need root privileges to run Docker commands.
-
-### Running CLI commands inside Docker
-
-You can run CLI commands inside Docker using the following command:
-
-```bash
-sudo docker exec -it lysand sh entrypoint.sh cli ...
-```
-
-### Running migrations inside Docker
-
-You can run migrations inside Docker using the following command (if needed):
-
-```bash
-sudo docker exec -it lysand sh entrypoint.sh prisma migrate deploy
-```
+Please see the [installation guide](docs/installation.md) for more information on how to install Lysand.
 
 ## Contributing
 
@@ -249,9 +125,6 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 - Email notifications on certain actions
 
 ## Federation
-
-> [!WARNING]
-> Federation has not been tested outside of automated tests. It is not recommended to use this software in production.
 
 The following extensions are currently supported or being worked on:
 - `org.lysand:custom_emojis`: Custom emojis
@@ -304,23 +177,24 @@ Working endpoints are:
 - `/api/v1/mutes`
 - `/api/v2/media`
 - `/api/v1/notifications`
-
-Tests needed but completed:
-
 - `/api/v1/media/:id`
 - `/api/v2/media`
 - `/api/v1/favourites`
 - `/api/v1/accounts/:id/followers`
 - `/api/v1/accounts/:id/following`
 - `/api/v2/search`
+- `/api/v1/follow_requests`
+- `/api/v1/follow_requests/:account_id/authorize`
+- `/api/v1/follow_requests/:account_id/reject`
+- `/api/v1/statuses/:id/mute`
+- `/api/v1/statuses/:id/unmute`
+- `/api/v1/statuses/:id` (`PUT`)
+- `/api/v1/statuses/:id/source`
 
 Endpoints left:
 
 - `/api/v1/reports`
 - `/api/v1/accounts/:id/lists`
-- `/api/v1/follow_requests`
-- `/api/v1/follow_requests/:account_id/authorize`
-- `/api/v1/follow_requests/:account_id/reject`
 - `/api/v1/follow_suggestions`
 - `/api/v1/domain_blocks` (`GET`, `POST`, `DELETE`)
 - `/api/v2/filters` (`GET`, `POST`)
@@ -343,11 +217,7 @@ Endpoints left:
 - `/api/v1/statuses/:id/translate`
 - `/api/v1/statuses/:id/bookmark`
 - `/api/v1/statuses/:id/unbookmark`
-- `/api/v1/statuses/:id/mute`
-- `/api/v1/statuses/:id/unmute`
-- `/api/v1/statuses/:id` (`PUT`)
 - `/api/v1/statuses/:id/history`
-- `/api/v1/statuses/:id/source`
 - `/api/v1/polls/:id`
 - `/api/v1/polls/:id/votes`
 - `/api/v1/scheduled_statuses`
@@ -379,7 +249,7 @@ Endpoints left:
 - `/api/v1/announcements/:id/reactions/:name` (`PUT`, `DELETE`)
 - Admin API  
 
-WebSocket Streaming API also needed to be added (and push notifications)
+WebSocket Streaming API also needs to be added (and push notifications)
 
 ## License
 

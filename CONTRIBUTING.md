@@ -12,14 +12,13 @@ Lysand is built using the following technologies:
 - [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but faster and with more features
 - [PostgreSQL](https://www.postgresql.org/) - A relational database
   - [`pg_uuidv7`](https://github.com/fboulnois/pg_uuidv7) - A PostgreSQL extension that provides a UUIDv7 data type
-- [UnoCSS](https://unocss.dev) - A utility-first CSS framework, used for the login page
+- [Nuxt](https://nuxt.com/) - A Vue.js framework, used for the frontend
 - [Docker](https://www.docker.com/) - A containerization platform, used for development and deployment
 - [Sharp](https://sharp.pixelplumbing.com/) - An image processing library, used for fast image resizing and converting
 - [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript
-- [ESLint](https://eslint.org/) - A JavaScript linter
-- [Prettier](https://prettier.io/) - A code formatter
 
 ## Getting Started
+
 To get started, please follow these steps:
 
 1. Fork the repository, clone it on your local system and make your own branch
@@ -39,50 +38,9 @@ git clone https://github.com/lysand-org/lysand.git
 bun install
 ```
 
-3. Set up a PostgreSQL database, using the `pg_uuidv7` extension
+3. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](database.md))
 
-You may use the following [Dockerfile](Postgres.Dockerfile) to set it up:
-    
-```Dockerfile
-# Use the latest Postgres Docker image based on Alpine
-FROM postgres:alpine
-
-# Set working directory
-WORKDIR /usr/src/app
-
-# Install curl
-RUN apk add --no-cache curl
-
-RUN cd "$(mktemp -d)" \
-        && curl -LO "https://github.com/fboulnois/pg_uuidv7/releases/download/v1.3.0/{pg_uuidv7.tar.gz,SHA256SUMS}" \
-        && tar xf pg_uuidv7.tar.gz \
-        && sha256sum -c SHA256SUMS \
-        && PG_MAJOR=$(pg_config --version | sed 's/^.* \([0-9]\{1,\}\).*$/\1/') \
-        && cp "$PG_MAJOR/pg_uuidv7.so" "$(pg_config --pkglibdir)" \
-        && cp sql/pg_uuidv7--1.3.sql pg_uuidv7.control "$(pg_config --sharedir)/extension"
-# Add a script to run the CREATE EXTENSION command
-RUN echo '#!/bin/sh\npsql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE EXTENSION pg_uuidv7;"' > /docker-entrypoint-initdb.d/init.sh
-
-# Make the entrypoint script executable
-RUN chmod +x /docker-entrypoint-initdb.d/init.sh
-```
-
-4. Copy the `config.toml.example` file to `config.toml` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
-
-> [!WARNING]
-> You should disable Prisma Redis caching while developing, as it can mess up tests
-
-5. Generate the Prisma client:
-
-```bash
-bun prisma generate
-```
-
-6. Run migrations:
-
-```bash
-bun migrate
-```
+4. Copy the `config/config.toml.example` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
 ## Testing your changes
 
@@ -93,14 +51,14 @@ bun dev
 
 If your port number is lower than 1024, you may need to run the command as root.
 
-### Running the Vite server
+### Running the FE
 
-To start the Vite server, run:
+To start the frontend server, run:
 ```sh
-bun vite:dev
+bun fe:dev
 ```
 
-This should be run in a separate terminal window. The Vite server is used to serve the frontend assets and to provide hot module reloading.
+This should be run in a separate process as the server.
 
 ## Running tests
 
@@ -109,37 +67,32 @@ To run the tests, run:
 bun test
 ```
 
-The tests are located in the `tests/` directory and follow a Jest-like syntax. The server does not need to be started before running the tests, as the tests will spawn their own Lysand server instance.
+The tests are located in the `tests/` directory and follow a Jest-like syntax. The server should be shut down before running the tests.
 
 ## Code style
 
-We use ESLint and Prettier to enforce a consistent code style. To check if your code is compliant, run:
+We use [Biome](https://biomejs.dev) to enforce a consistent code style. To check if your code is compliant, run:
+
 ```sh
-bun lint
+bunx @biomejs/biome check .
 ```
 
 To automatically fix the issues, run:
 ```sh
-bun lint --fix
+bunx @biomejs/biome check . --apply
 ```
 
-You should have the [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) and [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extensions installed in VSCode, if you use it. From the ESLint extension, you can automatically fix the issues with `Ctrl+Shift+P` and `ESLint: Fix all auto-fixable Problems`.
-
-ESLint and Prettier are also integrated in the CI pipeline, so your code will be automatically checked when you push it. If the pipeline fails, you will need to fix the issues before your pull request can be merged.
-
-Code style such as brackets, spaces/tabs, etc are enforced by Prettier's ESLint plugin. You can find the simple configuration in the `.prettierrc` file.
+You can also install the Biome Visual Studio Code extension and have it format your code automatically on save.
 
 ### ESLint rules
 
-ESLint errors should not be ignored, except if they are false positives, in which case you can use a comment to disable the rule for the line or the file. If you need to disable a rule, please add a comment explaining why.
+Linting should not be ignored, except if they are false positives, in which case you can use a comment to disable the rule for the line or the file. If you need to disable a rule, please add a comment explaining why.
 
 TypeScript errors should be ignored with `// @ts-expect-error` comments, as well as with a reason for being ignored.
 
 ### Commit messages
 
-We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for our commit messages. This allows us to automatically generate the changelog and the version number.
-
-> **Note**: I don't actually enforce this rule, but it would be great if you could follow it.
+We use [Conventional Commits](https://www.conventionalcommits.org) for our commit messages. This allows us to automatically generate the changelog and the version number.
 
 ### Pull requests
 
@@ -151,13 +104,15 @@ We use Bun's integrated testing system to write tests. You can find more informa
 
 Tests **should** be written for all API routes and all functions that are not trivial. If you are not sure whether you should write a test for something, you probably should.
 
-To help with the creation of tests, you may find [GitHub Copilot](https://copilot.github.com/) useful (or some of its free alternatives like [Codeium](https://codeium.com/)). Please do not blindly copy the code that it generates, but use it as a starting point for your own tests. I recognize that writing tests is very tedious, which is why LLMs can come in handy.
+#### Adding per-route tests
+
+To add tests for a route, create a `route_file_name.test.ts` file in the same directory as the route itself. See [this example](/server/api/api/v1/timelines/home.test.ts) for help writing tests.
 
 ### Writing documentation
 
 Documentation for the Lysand protocol is available on [lysand.org](https://lysand.org/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
 
-This project should not need much documentation, but if you think that something needs to be documented, please add it to the README or contribution guide.
+This project should not need much documentation, but if you think that something needs to be documented, please add it to the README, docs or contribution guide.
 
 ## Reporting bugs
 
