@@ -99,10 +99,8 @@ export const routeMatcher = new Bun.FileSystemRouter({
     dir: `${process.cwd()}/server/api`,
 });
 
-export const matchRoute = async (url: string) => {
+export const matchRoute = (url: string) => {
     const route = routeMatcher.match(url);
-
-    console.log(route);
 
     return route ?? null;
 };

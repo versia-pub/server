@@ -116,9 +116,11 @@ export const createServer = (
             }
 
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
-            const matchedRoute = await matchRoute(
+            const matchedRoute = matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
+
+            console.log(matchedRoute);
 
             if (
                 matchedRoute &&
