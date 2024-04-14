@@ -21,6 +21,7 @@ export class RequestParser {
      * @throws Error if body is invalid
      */
     async toObject<T>() {
+        console.log(await this.determineContentType());
         try {
             switch (await this.determineContentType()) {
                 case "application/json":
