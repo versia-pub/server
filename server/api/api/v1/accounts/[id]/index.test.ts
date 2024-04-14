@@ -6,7 +6,7 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import type { APIAccount } from "~types/entities/account";
+import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./index";
 
 await deleteOldTestUsers();
@@ -86,6 +86,7 @@ describe(meta.route, () => {
             limited: false,
             noindex: false,
             suspended: false,
+            // @ts-expect-error Pleroma extension
             pleroma: {
                 is_admin: false,
                 is_moderator: false,

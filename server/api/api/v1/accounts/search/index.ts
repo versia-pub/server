@@ -2,15 +2,15 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sql } from "drizzle-orm";
 import {
-    createRegExp,
-    maybe,
-    oneOrMore,
     anyOf,
-    letter,
-    digit,
     charIn,
+    createRegExp,
+    digit,
     exactly,
     global,
+    letter,
+    maybe,
+    oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
 import {

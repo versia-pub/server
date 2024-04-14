@@ -2,6 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { convertTextToHtml } from "@formatting";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { config } from "config-manager";
 import { and, eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { MediaBackendType } from "media-manager";
@@ -13,8 +14,7 @@ import { parseEmojis } from "~database/entities/Emoji";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { emojiToUser, user } from "~drizzle/schema";
-import { config } from "config-manager";
-import type { APISource } from "~types/entities/source";
+import type { Source as APISource } from "~types/mastodon/source";
 
 export const meta = applyConfig({
     allowedMethods: ["PATCH"],

@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { relationshipToAPI } from "~database/entities/Relationship";
 import {
     findFirstUser,
@@ -8,7 +9,6 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { relationship } from "~drizzle/schema";
-import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

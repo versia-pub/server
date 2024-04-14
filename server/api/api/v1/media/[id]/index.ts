@@ -1,5 +1,6 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse, response } from "@response";
+import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import type { MediaBackend } from "media-manager";
 import { MediaBackendType } from "media-manager";
@@ -8,7 +9,6 @@ import { z } from "zod";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 import { db } from "~drizzle/db";
 import { attachment } from "~drizzle/schema";
-import { config } from "config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],

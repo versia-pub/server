@@ -6,10 +6,10 @@ import {
     createRegExp,
     digit,
     exactly,
+    global,
     letter,
     maybe,
     oneOrMore,
-    global,
 } from "magic-regexp";
 import { z } from "zod";
 import {

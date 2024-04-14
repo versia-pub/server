@@ -6,7 +6,7 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import type { APIStatus } from "~types/entities/status";
+import type { Status as APIStatus } from "~types/mastodon/status";
 import { meta } from "./home";
 
 await deleteOldTestUsers();

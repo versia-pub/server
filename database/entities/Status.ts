@@ -5,18 +5,15 @@ import {
     and,
     eq,
     inArray,
-    isNotNull,
     isNull,
     or,
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import linkifyHtml from "linkify-html";
-import linkifyStr from "linkify-string";
 import type * as Lysand from "lysand-types";
 import {
     anyOf,
-    char,
     charIn,
     createRegExp,
     digit,
@@ -38,9 +35,9 @@ import {
     statusToMentions,
     user,
 } from "~drizzle/schema";
-import type { APIAttachment } from "~types/entities/attachment";
-import type { APIStatus } from "~types/entities/status";
 import type { Note } from "~types/lysand/Object";
+import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
+import type { Status as APIStatus } from "~types/mastodon/status";
 import { applicationToAPI } from "./Application";
 import {
     attachmentFromLysand,
@@ -64,7 +61,6 @@ import {
     resolveUser,
     resolveWebFinger,
     transformOutputToUserWithRelations,
-    userExtras,
     userExtrasTemplate,
     userRelations,
     userToAPI,
@@ -1270,12 +1266,13 @@ export const statusToAPI = async (
                 config.http.base_url,
             ).toString(),
         bookmarked: false,
-        quote: statusToConvert.quoting
+        quote: !!statusToConvert.quotingPostId /* statusToConvert.quoting
             ? await statusToAPI(
                   statusToConvert.quoting as unknown as StatusWithRelations,
                   userFetching,
               )
-            : null,
+            : null, */,
+        // @ts-expect-error Pleroma extension
         quote_id: statusToConvert.quotingPostId || undefined,
     };
 };

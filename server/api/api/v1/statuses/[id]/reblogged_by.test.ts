@@ -6,8 +6,7 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import type { APIAccount } from "~types/entities/account";
-import type { APIStatus } from "~types/entities/status";
+import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./reblogged_by";
 
 await deleteOldTestUsers();

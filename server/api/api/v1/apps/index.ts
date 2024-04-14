@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { z } from "zod";
 import { db } from "~drizzle/db";
 import { application } from "~drizzle/schema";
-import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

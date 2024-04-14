@@ -1,6 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { config } from "config-manager";
+import ISO6391 from "iso-639-1";
 import { parse } from "marked";
 import { z } from "zod";
 import type { StatusWithRelations } from "~database/entities/Status";
@@ -12,8 +14,6 @@ import {
     statusToAPI,
 } from "~database/entities/Status";
 import { db } from "~drizzle/db";
-import { config } from "config-manager";
-import ISO6391 from "iso-639-1";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

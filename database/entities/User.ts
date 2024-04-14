@@ -12,8 +12,8 @@ import {
     relationship,
     user,
 } from "~drizzle/schema";
-import type { APIAccount } from "~types/entities/account";
-import type { APISource } from "~types/entities/source";
+import type { Account as APIAccount } from "~types/mastodon/account";
+import type { Source as APISource } from "~types/mastodon/source";
 import {
     type EmojiWithInstance,
     emojiToAPI,
@@ -749,6 +749,7 @@ export const userToAPI = (
         discoverable: undefined,
         mute_expires_at: undefined,
         group: false,
+        // @ts-expect-error Pleroma extension
         pleroma: {
             is_admin: userToConvert.isAdmin,
             is_moderator: userToConvert.isAdmin,

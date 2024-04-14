@@ -1,16 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { statusToAPI } from "~database/entities/Status";
-import {
-    getTestStatuses,
-    getTestUsers,
-    sendTestRequest,
-    wrapRelativeUrl,
-} from "~tests/utils";
-import type { APIAccount } from "~types/entities/account";
-import type { APIAsyncAttachment } from "~types/entities/async_attachment";
-import type { APIContext } from "~types/entities/context";
-import type { APIStatus } from "~types/entities/status";
+import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
+import type { Account as APIAccount } from "~types/mastodon/account";
+import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
+import type { Context as APIContext } from "~types/mastodon/context";
+import type { Status as APIStatus } from "~types/mastodon/status";
 
 const base_url = config.http.base_url;
 

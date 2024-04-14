@@ -6,7 +6,7 @@ import {
     isViewableByUser,
     statusToAPI,
 } from "~database/entities/Status";
-import type { APIStatus } from "~types/entities/status";
+import type { Status as APIStatus } from "~types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

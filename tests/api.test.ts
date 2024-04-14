@@ -3,8 +3,8 @@ import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import { emoji } from "~drizzle/schema";
-import type { APIEmoji } from "~types/entities/emoji";
-import type { APIInstance } from "~types/entities/instance";
+import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
+import type { Instance as APIInstance } from "~types/mastodon/instance";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const base_url = config.http.base_url;
@@ -44,7 +44,6 @@ describe("API Tests", () => {
             // expect(instance.contact_account).toBeDefined();
             expect(instance.rules).toBeDefined();
             expect(instance.approval_required).toBeDefined();
-            expect(instance.max_toot_chars).toBeDefined();
         });
     });
 

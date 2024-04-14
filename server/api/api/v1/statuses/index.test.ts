@@ -5,7 +5,7 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import type { APIStatus } from "~types/entities/status";
+import type { Status as APIStatus } from "~types/mastodon/status";
 import { meta } from "./index";
 
 await deleteOldTestUsers();
@@ -292,6 +292,7 @@ describe(meta.route, () => {
         const object2 = (await response2.json()) as APIStatus;
 
         expect(object2.content).toBe("<p>Hello, world again!</p>");
+        // @ts-expect-error Pleroma extension
         expect(object2.quote_id).toBe(object.id);
     });
 

@@ -1,9 +1,9 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
-import type { APIAccount } from "~types/entities/account";
-import type { APIRelationship } from "~types/entities/relationship";
-import type { APIStatus } from "~types/entities/status";
+import type { Account as APIAccount } from "~types/mastodon/account";
+import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
+import type { Status as APIStatus } from "~types/mastodon/status";
 
 const base_url = config.http.base_url;
 

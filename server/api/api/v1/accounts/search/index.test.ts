@@ -1,13 +1,11 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { getUserUri } from "~database/entities/User";
+import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "~index";
 import {
     deleteOldTestUsers,
-    getTestStatuses,
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import type { APIAccount } from "~types/entities/account";
+import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./index";
 
 await deleteOldTestUsers();

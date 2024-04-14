@@ -5,7 +5,7 @@ import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { instance, status, user } from "~drizzle/schema";
 import manifest from "~package.json";
-import type { APIInstance } from "~types/entities/instance";
+import type { Instance as APIInstance } from "~types/mastodon/instance";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -81,14 +81,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     return jsonResponse({
         approval_required: false,
         configuration: {
-            media_attachments: {
-                image_matrix_limit: config.validation.max_media_attachments,
-                image_size_limit: config.validation.max_media_size,
-                supported_mime_types: config.validation.allowed_mime_types,
-                video_frame_limit: 60,
-                video_matrix_limit: 10,
-                video_size_limit: config.validation.max_media_size,
-            },
             polls: {
                 max_characters_per_option:
                     config.validation.max_poll_option_size,
@@ -100,11 +92,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 characters_reserved_per_url: 0,
                 max_characters: config.validation.max_note_size,
                 max_media_attachments: config.validation.max_media_attachments,
-                supported_mime_types: [
-                    "text/plain",
-                    "text/markdown",
-                    "text/html",
-                ],
             },
         },
         description: "A test instance",
@@ -122,14 +109,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             user_count: userCount,
         },
         thumbnail: config.instance.logo,
-        tos_url: config.signups.tos_url,
         title: config.instance.name,
         uri: config.http.base_url,
         urls: {
             streaming_api: "",
         },
         version: `4.3.0+glitch (compatible; Lysand ${version}})`,
-        max_toot_chars: config.validation.max_note_size,
         pleroma: {
             metadata: {
                 account_activation_required: false,
@@ -199,7 +184,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             },
             vapid_public_key: "",
         },
-        // @ts-expect-error Sometimes there just isnt an admin
         contact_account: contactAccount ? userToAPI(contactAccount) : undefined,
     } satisfies APIInstance & {
         pleroma: object;

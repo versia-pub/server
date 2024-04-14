@@ -4,8 +4,8 @@ import type * as Lysand from "lysand-types";
 import { MediaBackendType } from "media-manager";
 import { db } from "~drizzle/db";
 import { attachment } from "~drizzle/schema";
-import type { APIAsyncAttachment } from "~types/entities/async_attachment";
-import type { APIAttachment } from "~types/entities/attachment";
+import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
+import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 
 export type Attachment = InferSelectModel<typeof attachment>;
 

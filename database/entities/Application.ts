@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import type { application } from "~drizzle/schema";
-import type { APIApplication } from "~types/entities/application";
+import type { Application as APIApplication } from "~types/mastodon/application";
 
 export type Application = InferSelectModel<typeof application>;
 

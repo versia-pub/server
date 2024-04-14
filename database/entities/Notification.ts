@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import type { notification } from "~drizzle/schema";
-import type { APINotification } from "~types/entities/notification";
+import type { Notification as APINotification } from "~types/mastodon/notification";
 import {
     type StatusWithRelations,
     findFirstStatuses,

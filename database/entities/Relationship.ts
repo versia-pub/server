@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import { relationship } from "~drizzle/schema";
-import type { APIRelationship } from "~types/entities/relationship";
+import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
 import type { User } from "./User";
 
 export type Relationship = InferSelectModel<typeof relationship>;
@@ -82,7 +82,6 @@ export const relationshipToAPI = (rel: Relationship): APIRelationship => {
         notifying: rel.notifying,
         requested: rel.requested,
         showing_reblogs: rel.showingReblogs,
-        languages: rel.languages ?? [],
         note: rel.note,
     };
 };

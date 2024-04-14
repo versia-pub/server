@@ -1,7 +1,9 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
+import { config } from "config-manager";
 import { eq } from "drizzle-orm";
+import ISO6391 from "iso-639-1";
 import { parse } from "marked";
 import { z } from "zod";
 import {
@@ -12,8 +14,6 @@ import {
 } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { status } from "~drizzle/schema";
-import { config } from "config-manager";
-import ISO6391 from "iso-639-1";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE", "PUT"],

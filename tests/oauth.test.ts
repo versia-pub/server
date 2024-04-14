@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { APIApplication } from "~types/entities/application";
-import type { APIToken } from "~types/entities/token";
+import type { Application as APIApplication } from "~types/mastodon/application";
+import type { Token as APIToken } from "~types/mastodon/token";
 import {
     deleteOldTestUsers,
     getTestUsers,
