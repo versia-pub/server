@@ -90,7 +90,7 @@ export default apiRoute<typeof meta, typeof schema>(
                         // @ts-expect-error Yes I KNOW the types are wrong
                         notification,
                         // @ts-expect-error Yes I KNOW the types are wrong
-                        { lt, gte, gt, and, or, eq, inArray, sql },
+                        { lt, gte, gt, and, or, eq, not },
                     ) =>
                         or(
                             and(
@@ -106,6 +106,7 @@ export default apiRoute<typeof meta, typeof schema>(
                             ),
                             eq(notification.notifiedId, user.id),
                             eq(notification.accountId, account_id),
+                            not(eq(notification.accountId, user.id)),
                         ),
                     limit,
                     // @ts-expect-error Yes I KNOW the types are wrong
