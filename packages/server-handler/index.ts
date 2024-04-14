@@ -80,6 +80,8 @@ export const processRoute = async (
         return response();
     }
 
+    console.log(matchedRoute);
+
     const route: APIRouteExports | null = await import(
         matchedRoute.filePath
     ).catch(() => null);
