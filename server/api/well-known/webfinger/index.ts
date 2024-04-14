@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
+import { findFirstUser } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -45,11 +45,9 @@ export default apiRoute<{
             /[0-9A-F]{8}-[0-9A-F]{4}-[7][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}/i,
         );
 
-    const user = await client.user.findUnique({
-        where: {
-            id: isUuid ? requestedUser.split("@")[0] : undefined,
-            username: isUuid ? undefined : requestedUser.split("@")[0],
-        },
+    const user = await findFirstUser({
+        where: (user, { eq }) =>
+            eq(isUuid ? user.id : user.username, requestedUser.split("@")[0]),
     });
 
     if (!user) {

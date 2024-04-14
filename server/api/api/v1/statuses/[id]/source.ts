@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse } from "@response";
-import { client } from "~database/datasource";
-import { isViewableByUser } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -26,9 +24,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const status = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if user is authorized to view this status (if it's private)

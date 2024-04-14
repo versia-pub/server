@@ -1,8 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { and, eq } from "drizzle-orm";
+import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
+import { db } from "~drizzle/db";
+import { statusToUser } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -26,9 +27,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    let status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
+    const status = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, id),
     });
 
     // Check if status exists
@@ -37,21 +37,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Check if status is user's
     if (status.authorId !== user.id) return errorResponse("Unauthorized", 401);
 
-    await client.user.update({
-        where: { id: user.id },
-        data: {
-            pinnedNotes: {
-                disconnect: {
-                    id: status.id,
-                },
-            },
-        },
-    });
-
-    status = await client.status.findUnique({
-        where: { id },
-        include: statusAndUserRelations,
-    });
+    await db
+        .delete(statusToUser)
+        .where(and(eq(statusToUser.a, status.id), eq(statusToUser.b, user.id)));
 
     if (!status) return errorResponse("Record not found", 404);
 

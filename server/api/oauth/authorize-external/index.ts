@@ -6,7 +6,8 @@ import {
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
-import { client } from "~database/datasource";
+import { db } from "~drizzle/db";
+import { openIdLoginFlow } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -60,19 +61,25 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const codeVerifier = generateRandomCodeVerifier();
 
-    // Store into database
-
-    const newFlow = await client.openIdLoginFlow.create({
-        data: {
-            codeVerifier,
-            application: {
-                connect: {
-                    client_id: clientId,
-                },
-            },
-            issuerId,
-        },
+    const application = await db.query.application.findFirst({
+        where: (application, { eq }) => eq(application.clientId, clientId),
     });
+
+    if (!application) {
+        return redirectToLogin("Invalid client_id");
+    }
+
+    // Store into database
+    const newFlow = (
+        await db
+            .insert(openIdLoginFlow)
+            .values({
+                codeVerifier,
+                applicationId: application.id,
+                issuerId,
+            })
+            .returning()
+    )[0];
 
     const codeChallenge = await calculatePKCECodeChallenge(codeVerifier);
 

@@ -13,8 +13,10 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import { client } from "~database/datasource";
 import { TokenType } from "~database/entities/Token";
+import { db } from "~drizzle/db";
+import { token } from "~drizzle/schema";
+import { findFirstUser } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -46,11 +48,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Remove state query parameter from URL
     currentUrl.searchParams.delete("state");
     const issuerParam = matchedRoute.params.issuer;
-    const flow = await client.openIdLoginFlow.findFirst({
-        where: {
-            id: matchedRoute.query.flow,
-        },
-        include: {
+
+    const flow = await db.query.openIdLoginFlow.findFirst({
+        where: (flow, { eq }) => eq(flow.id, matchedRoute.query.flow),
+        with: {
             application: true,
         },
     });
@@ -142,15 +143,19 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         ),
     );
 
-    const user = await client.user.findFirst({
-        where: {
-            linkedOpenIdAccounts: {
-                some: {
-                    serverId: sub,
-                    issuerId: issuer.id,
-                },
-            },
-        },
+    const userId = (
+        await db.query.openIdAccount.findFirst({
+            where: (account, { eq, and }) =>
+                and(eq(account.serverId, sub), eq(account.issuerId, issuer.id)),
+        })
+    )?.userId;
+
+    if (!userId) {
+        return redirectToLogin("No user found with that account");
+    }
+
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, userId),
     });
 
     if (!user) {
@@ -161,31 +166,21 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const code = randomBytes(32).toString("hex");
 
-    await client.application.update({
-        where: { id: flow.application.id },
-        data: {
-            tokens: {
-                create: {
-                    access_token: randomBytes(64).toString("base64url"),
-                    code: code,
-                    scope: flow.application.scopes,
-                    token_type: TokenType.BEARER,
-                    user: {
-                        connect: {
-                            id: user.id,
-                        },
-                    },
-                },
-            },
-        },
+    await db.insert(token).values({
+        accessToken: randomBytes(64).toString("base64url"),
+        code: code,
+        scope: flow.application.scopes,
+        tokenType: TokenType.BEARER,
+        userId: user.id,
+        applicationId: flow.application.id,
     });
 
     // Redirect back to application
     return Response.redirect(
         `/oauth/redirect?${new URLSearchParams({
-            redirect_uri: flow.application.redirect_uris,
+            redirect_uri: flow.application.redirectUris,
             code,
-            client_id: flow.application.client_id,
+            client_id: flow.application.clientId,
             application: flow.application.name,
             website: flow.application.website ?? "",
             scope: flow.application.scopes,

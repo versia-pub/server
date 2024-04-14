@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import { userToLysand } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
+import { findFirstUser, userToLysand } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -19,11 +17,8 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute) => {
     const uuid = matchedRoute.params.uuid;
 
-    const user = await client.user.findUnique({
-        where: {
-            id: uuid,
-        },
-        include: userRelations,
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, uuid),
     });
 
     if (!user) {

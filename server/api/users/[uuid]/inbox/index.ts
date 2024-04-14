@@ -1,17 +1,16 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, response } from "@response";
+import { eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
-import { client } from "~database/datasource";
-import { objectToInboxRequest } from "~database/entities/Federation";
-import { createNewStatus, resolveStatus } from "~database/entities/Status";
+import { resolveStatus } from "~database/entities/Status";
 import {
-    followAcceptToLysand,
+    findFirstUser,
     getRelationshipToOtherUser,
     resolveUser,
     sendFollowAccept,
 } from "~database/entities/User";
-import { userRelations } from "~database/entities/relations";
-import type { APIStatus } from "~types/entities/status";
+import { db } from "~drizzle/db";
+import { notification, relationship } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -28,18 +27,13 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const uuid = matchedRoute.params.uuid;
 
-    const user = await client.user.findUnique({
-        where: {
-            id: uuid,
-        },
-        include: userRelations,
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, uuid),
     });
 
     if (!user) {
         return errorResponse("User not found", 404);
     }
-
-    const config = await extraData.configManager.getConfig();
 
     // Process incoming request
     const body = extraData.parsedRequest as Lysand.Entity;
@@ -119,8 +113,6 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         }
     }
 
-    console.log(body);
-
     // Add sent data to database
     switch (body.type) {
         case "Note": {
@@ -154,33 +146,31 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 return errorResponse("Author not found", 400);
             }
 
-            const relationship = await getRelationshipToOtherUser(
+            const foundRelationship = await getRelationshipToOtherUser(
                 account,
                 user,
             );
 
             // Check if already following
-            if (relationship.following) {
+            if (foundRelationship.following) {
                 return response("Already following", 200);
             }
 
-            await client.relationship.update({
-                where: { id: relationship.id },
-                data: {
+            await db
+                .update(relationship)
+                .set({
                     following: !user.isLocked,
                     requested: user.isLocked,
                     showingReblogs: true,
                     notifying: true,
                     languages: [],
-                },
-            });
+                })
+                .where(eq(relationship.id, foundRelationship.id));
 
-            await client.notification.create({
-                data: {
-                    accountId: account.id,
-                    type: user.isLocked ? "follow_request" : "follow",
-                    notifiedId: user.id,
-                },
+            await db.insert(notification).values({
+                accountId: account.id,
+                type: user.isLocked ? "follow_request" : "follow",
+                notifiedId: user.id,
             });
 
             if (!user.isLocked) {
@@ -203,24 +193,24 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
             console.log(account);
 
-            const relationship = await getRelationshipToOtherUser(
+            const foundRelationship = await getRelationshipToOtherUser(
                 user,
                 account,
             );
 
-            console.log(relationship);
+            console.log(foundRelationship);
 
-            if (!relationship.requested) {
+            if (!foundRelationship.requested) {
                 return response("There is no follow request to accept", 200);
             }
 
-            await client.relationship.update({
-                where: { id: relationship.id },
-                data: {
+            await db
+                .update(relationship)
+                .set({
                     following: true,
                     requested: false,
-                },
-            });
+                })
+                .where(eq(relationship.id, foundRelationship.id));
 
             return response("Follow request accepted", 200);
         }
@@ -233,22 +223,22 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 return errorResponse("Author not found", 400);
             }
 
-            const relationship = await getRelationshipToOtherUser(
+            const foundRelationship = await getRelationshipToOtherUser(
                 user,
                 account,
             );
 
-            if (!relationship.requested) {
+            if (!foundRelationship.requested) {
                 return response("There is no follow request to reject", 200);
             }
 
-            await client.relationship.update({
-                where: { id: relationship.id },
-                data: {
+            await db
+                .update(relationship)
+                .set({
                     requested: false,
                     following: false,
-                },
-            });
+                })
+                .where(eq(relationship.id, foundRelationship.id));
 
             return response("Follow request rejected", 200);
         }

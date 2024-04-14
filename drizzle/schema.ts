@@ -132,6 +132,11 @@ export const application = pgTable(
     },
 );
 
+export const applicationRelations = relations(application, ({ many }) => ({
+    tokens: many(token),
+    loginFlows: many(openIdLoginFlow),
+}));
+
 export const token = pgTable("Token", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     tokenType: text("token_type").notNull(),
@@ -336,6 +341,16 @@ export const openIdLoginFlow = pgTable("OpenIdLoginFlow", {
     }),
     issuerId: text("issuerId").notNull(),
 });
+
+export const openIdLoginFlowRelations = relations(
+    openIdLoginFlow,
+    ({ one }) => ({
+        application: one(application, {
+            fields: [openIdLoginFlow.applicationId],
+            references: [application.id],
+        }),
+    }),
+);
 
 export const flag = pgTable("Flag", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),

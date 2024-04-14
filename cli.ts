@@ -10,11 +10,19 @@ import Table from "cli-table";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
-import { client } from "~database/datasource";
 import { getUrl } from "~database/entities/Attachment";
-import { createNewLocalUser } from "~database/entities/User";
+import {
+    createNewLocalUser,
+    findFirstUser,
+    findManyUsers,
+    type User,
+} from "~database/entities/User";
 import { CliParameterType } from "~packages/cli-parser/cli-builder.type";
 import { config } from "~packages/config-manager";
+import { db } from "~drizzle/db";
+import { emoji, openIdAccount, status, user } from "~drizzle/schema";
+import { type SQL, eq, inArray, isNotNull, isNull, like } from "drizzle-orm";
+import { findFirstStatuses, findManyStatuses } from "~database/entities/Status";
 
 const args = process.argv;
 
@@ -103,10 +111,9 @@ const cliBuilder = new CliBuilder([
             }
 
             // Check if user already exists
-            const user = await client.user.findFirst({
-                where: {
-                    OR: [{ username }, { email }],
-                },
+            const user = await findFirstUser({
+                where: (user, { or, eq }) =>
+                    or(eq(user.username, username), eq(user.email, email)),
             });
 
             if (user) {
@@ -136,7 +143,7 @@ const cliBuilder = new CliBuilder([
 
             console.log(
                 `${chalk.green("✓")} Created user ${chalk.blue(
-                    newUser.username,
+                    newUser?.username,
                 )}${admin ? chalk.green(" (admin)") : ""}`,
             );
 
@@ -189,13 +196,11 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const user = await client.user.findFirst({
-                where: {
-                    username: username,
-                },
+            const foundUser = await findFirstUser({
+                where: (user, { eq }) => eq(user.username, username),
             });
 
-            if (!user) {
+            if (!foundUser) {
                 console.log(`${chalk.red("✗")} User not found`);
                 return 1;
             }
@@ -203,7 +208,7 @@ const cliBuilder = new CliBuilder([
             if (!args.noconfirm) {
                 process.stdout.write(
                     `Are you sure you want to delete user ${chalk.blue(
-                        user.username,
+                        foundUser.username,
                     )}?\n${chalk.red(
                         chalk.bold(
                             "This is a destructive action and cannot be undone!",
@@ -220,14 +225,12 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await client.user.delete({
-                where: {
-                    id: user.id,
-                },
-            });
+            await db.delete(user).where(eq(user.id, foundUser.id));
 
             console.log(
-                `${chalk.green("✓")} Deleted user ${chalk.blue(user.username)}`,
+                `${chalk.green("✓")} Deleted user ${chalk.blue(
+                    foundUser.username,
+                )}`,
             );
 
             return 0;
@@ -308,21 +311,25 @@ const cliBuilder = new CliBuilder([
                 console.log(`${chalk.red("✗")} Invalid format`);
                 return 1;
             }
-            const users = filterObjects(
-                await client.user.findMany({
-                    where: {
-                        isAdmin: admins || undefined,
-                    },
-                    take: args.limit ?? 200,
-                    include: {
-                        instance:
-                            fields.length === 0
-                                ? true
-                                : fields.includes("instance"),
-                    },
-                }),
-                fields,
-            );
+
+            // @ts-ignore
+            let users: (User & {
+                instance?: {
+                    baseUrl: string;
+                };
+            })[] = await findManyUsers({
+                where: (user, { eq }) =>
+                    admins ? eq(user.isAdmin, true) : undefined,
+                limit: args.limit ?? 200,
+            });
+
+            // If instance is not in fields, remove them
+            if (fields.length > 0 && !fields.includes("instance")) {
+                users = users.map((user) => ({
+                    ...user,
+                    instance: undefined,
+                }));
+            }
 
             if (args.redact) {
                 for (const user of users) {
@@ -377,9 +384,10 @@ const cliBuilder = new CliBuilder([
                     isAdmin: () => chalk.red(user.isAdmin ? "Yes" : "No"),
                     instance: () =>
                         chalk.blue(
-                            user.instance ? user.instance.base_url : "Local",
+                            user.instance ? user.instance.baseUrl : "Local",
                         ),
-                    createdAt: () => chalk.blue(user.createdAt?.toISOString()),
+                    createdAt: () =>
+                        chalk.blue(new Date(user.createdAt).toISOString()),
                     id: () => chalk.blue(user.id),
                 };
 
@@ -497,25 +505,13 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const queries: Prisma.UserWhereInput[] = [];
-
-            for (const field of fields) {
-                queries.push({
-                    [field]: {
-                        contains: query,
-                        mode: caseSensitive ? "default" : "insensitive",
-                    },
-                });
-            }
-
-            const users = await client.user.findMany({
-                where: {
-                    OR: queries,
-                },
-                include: {
-                    instance: true,
-                },
-                take: Number(limit),
+            const users = await findManyUsers({
+                where: (user, { or, eq }) =>
+                    or(
+                        // @ts-expect-error
+                        ...fields.map((field) => eq(user[field], query)),
+                    ),
+                limit: Number(limit),
             });
 
             if (redact) {
@@ -560,7 +556,7 @@ const cliBuilder = new CliBuilder([
                     chalk.blue(user.displayName),
                     chalk.red(user.isAdmin ? "Yes" : "No"),
                     chalk.blue(
-                        user.instanceId ? user.instance?.base_url : "Local",
+                        user.instanceId ? user.instance?.baseUrl : "Local",
                     ),
                 ]);
             }
@@ -635,13 +631,8 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const user = await client.user.findFirst({
-                where: {
-                    username: username,
-                },
-                include: {
-                    linkedOpenIdAccounts: true,
-                },
+            const user = await findFirstUser({
+                where: (user, { eq }) => eq(user.username, username),
             });
 
             if (!user) {
@@ -649,9 +640,15 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            if (
-                user.linkedOpenIdAccounts.find((a) => a.issuerId === issuerId)
-            ) {
+            const linkedOpenIdAccounts = await db.query.openIdAccount.findMany({
+                where: (account, { eq, and }) =>
+                    and(
+                        eq(account.userId, user.id),
+                        eq(account.issuerId, issuerId),
+                    ),
+            });
+
+            if (linkedOpenIdAccounts.find((a) => a.issuerId === issuerId)) {
                 console.log(
                     `${chalk.red("✗")} User ${chalk.blue(
                         user.username,
@@ -661,18 +658,10 @@ const cliBuilder = new CliBuilder([
             }
 
             // Connect the OpenID account
-            await client.user.update({
-                where: {
-                    id: user.id,
-                },
-                data: {
-                    linkedOpenIdAccounts: {
-                        create: {
-                            issuerId: issuerId,
-                            serverId: serverId,
-                        },
-                    },
-                },
+            await db.insert(openIdAccount).values({
+                issuerId: issuerId,
+                serverId: serverId,
+                userId: user.id,
             });
 
             console.log(
@@ -723,13 +712,8 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const account = await client.openIdAccount.findFirst({
-                where: {
-                    serverId: id,
-                },
-                include: {
-                    User: true,
-                },
+            const account = await db.query.openIdAccount.findFirst({
+                where: (account, { eq }) => eq(account.serverId, id),
             });
 
             if (!account) {
@@ -737,17 +721,28 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            await client.openIdAccount.delete({
-                where: {
-                    id: account.id,
-                },
+            if (!account.userId) {
+                console.log(
+                    `${chalk.red("✗")} Account ${chalk.blue(
+                        account.serverId,
+                    )} is not connected to any user`,
+                );
+                return 1;
+            }
+
+            const user = await findFirstUser({
+                where: (user, { eq }) => eq(user.id, account.userId ?? ""),
             });
+
+            await db
+                .delete(openIdAccount)
+                .where(eq(openIdAccount.id, account.id));
 
             console.log(
                 `${chalk.green(
                     "✓",
                 )} Disconnected OpenID account from user ${chalk.blue(
-                    account.User?.username,
+                    user?.username,
                 )}`,
             );
 
@@ -800,10 +795,8 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const note = await client.status.findFirst({
-                where: {
-                    id: id,
-                },
+            const note = await findFirstStatuses({
+                where: (status, { eq }) => eq(status.id, id),
             });
 
             if (!note) {
@@ -831,11 +824,7 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await client.status.delete({
-                where: {
-                    id: note.id,
-                },
-            });
+            await db.delete(status).where(eq(status.id, note.id));
 
             console.log(
                 `${chalk.green("✓")} Deleted note ${chalk.blue(note.id)}`,
@@ -971,30 +960,30 @@ const cliBuilder = new CliBuilder([
                 });
             }
 
-            let instanceIdQuery: Prisma.StatusWhereInput["instanceId"];
+            let instanceQuery: SQL<unknown> | undefined = isNull(
+                status.instanceId,
+            );
 
             if (local && remote) {
-                instanceIdQuery = undefined;
+                instanceQuery = undefined;
             } else if (local) {
-                instanceIdQuery = null;
+                instanceQuery = isNull(status.instanceId);
             } else if (remote) {
-                instanceIdQuery = {
-                    not: null,
-                };
-            } else {
-                instanceIdQuery = undefined;
+                instanceQuery = isNotNull(status.instanceId);
             }
 
-            const notes = await client.status.findMany({
-                where: {
-                    OR: queries,
-                    instanceId: instanceIdQuery,
-                },
-                include: {
-                    author: true,
-                    instance: true,
-                },
-                take: Number(limit),
+            const notes = await findManyStatuses({
+                where: (status, { or, and }) =>
+                    and(
+                        or(
+                            ...fields.map((field) =>
+                                // @ts-expect-error
+                                like(status[field], `%${query}%`),
+                            ),
+                        ),
+                        instanceQuery,
+                    ),
+                limit: Number(limit),
             });
 
             if (redact) {
@@ -1038,9 +1027,11 @@ const cliBuilder = new CliBuilder([
                     chalk.green(note.content),
                     chalk.blue(note.author.username),
                     chalk.red(
-                        note.instanceId ? note.instance?.base_url : "Yes",
+                        note.author.instanceId
+                            ? note.author.instance?.baseUrl
+                            : "Yes",
                     ),
-                    chalk.blue(note.createdAt.toISOString()),
+                    chalk.blue(new Date(note.createdAt).toISOString()),
                 ]);
             }
 
@@ -1197,11 +1188,12 @@ const cliBuilder = new CliBuilder([
             }
 
             // Check if emoji already exists
-            const existingEmoji = await client.emoji.findFirst({
-                where: {
-                    shortcode: shortcode,
-                    instanceId: null,
-                },
+            const existingEmoji = await db.query.emoji.findFirst({
+                where: (emoji, { and, eq, isNull }) =>
+                    and(
+                        eq(emoji.shortcode, shortcode),
+                        isNull(emoji.instanceId),
+                    ),
             });
 
             if (existingEmoji) {
@@ -1262,19 +1254,21 @@ const cliBuilder = new CliBuilder([
             // Add the emoji
             const content_type = lookup(newUrl) || "application/octet-stream";
 
-            const emoji = await client.emoji.create({
-                data: {
-                    shortcode: shortcode,
-                    url: newUrl,
-                    visible_in_picker: true,
-                    content_type: content_type,
-                    instanceId: null,
-                },
-            });
+            const newEmoji = (
+                await db
+                    .insert(emoji)
+                    .values({
+                        shortcode: shortcode,
+                        url: newUrl,
+                        visibleInPicker: true,
+                        contentType: content_type,
+                    })
+                    .returning()
+            )[0];
 
             console.log(
                 `${chalk.green("✓")} Created emoji ${chalk.blue(
-                    emoji.shortcode,
+                    newEmoji.shortcode,
                 )}`,
             );
 
@@ -1303,7 +1297,7 @@ const cliBuilder = new CliBuilder([
                 name: "shortcode",
                 type: CliParameterType.STRING,
                 description:
-                    "Shortcode of the emoji to delete (can add up to two wildcards *)",
+                    "Shortcode of the emoji to delete (wildcards supported)",
                 needsValue: true,
                 positioned: true,
             },
@@ -1339,35 +1333,12 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            // Validate up to one wildcard
-            if (shortcode.split("*").length > 3) {
-                console.log(
-                    `${chalk.red(
-                        "✗",
-                    )} Invalid shortcode (can only have up to two wildcards)`,
-                );
-                return 1;
-            }
-
-            const hasWildcard = shortcode.includes("*");
-            const hasTwoWildcards = shortcode.split("*").length === 3;
-
-            const emojis = await client.emoji.findMany({
-                where: {
-                    shortcode: {
-                        startsWith: hasWildcard
-                            ? shortcode.split("*")[0]
-                            : undefined,
-                        endsWith: hasWildcard
-                            ? shortcode.split("*").at(-1)
-                            : undefined,
-                        contains: hasTwoWildcards
-                            ? shortcode.split("*")[1]
-                            : undefined,
-                        equals: hasWildcard ? undefined : shortcode,
-                    },
-                    instanceId: null,
-                },
+            const emojis = await db.query.emoji.findMany({
+                where: (emoji, { and, isNull, like }) =>
+                    and(
+                        like(emoji.shortcode, shortcode.replace(/\*/g, "%")),
+                        isNull(emoji.instanceId),
+                    ),
             });
 
             if (emojis.length === 0) {
@@ -1406,13 +1377,12 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await client.emoji.deleteMany({
-                where: {
-                    id: {
-                        in: emojis.map((e) => e.id),
-                    },
-                },
-            });
+            await db.delete(emoji).where(
+                inArray(
+                    emoji.id,
+                    emojis.map((e) => e.id),
+                ),
+            );
 
             console.log(
                 `${chalk.green(
@@ -1466,11 +1436,9 @@ const cliBuilder = new CliBuilder([
                 return 0;
             }
 
-            const emojis = await client.emoji.findMany({
-                where: {
-                    instanceId: null,
-                },
-                take: Number(limit),
+            const emojis = await db.query.emoji.findMany({
+                where: (emoji, { isNull }) => isNull(emoji.instanceId),
+                limit: Number(limit),
             });
 
             if (format === "json") {
@@ -1746,11 +1714,12 @@ const cliBuilder = new CliBuilder([
                 ).toString();
 
                 // Check if emoji already exists
-                const existingEmoji = await client.emoji.findFirst({
-                    where: {
-                        shortcode: shortcode,
-                        instanceId: null,
-                    },
+                const existingEmoji = await db.query.emoji.findFirst({
+                    where: (emoji, { and, eq, isNull }) =>
+                        and(
+                            eq(emoji.shortcode, shortcode),
+                            isNull(emoji.instanceId),
+                        ),
                 });
 
                 if (existingEmoji) {

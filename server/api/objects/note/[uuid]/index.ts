@@ -1,10 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import type * as Lysand from "lysand-types";
-import { client } from "~database/datasource";
-import { statusToLysand } from "~database/entities/Status";
-import { userToLysand } from "~database/entities/User";
-import { statusAndUserRelations } from "~database/entities/relations";
+import { findFirstStatuses, statusToLysand } from "~database/entities/Status";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -21,11 +17,8 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const uuid = matchedRoute.params.uuid;
 
-    const status = await client.status.findUnique({
-        where: {
-            id: uuid,
-        },
-        include: statusAndUserRelations,
+    const status = await findFirstStatuses({
+        where: (status, { eq }) => eq(status.id, uuid),
     });
 
     if (!status) {

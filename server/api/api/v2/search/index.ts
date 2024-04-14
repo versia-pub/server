@@ -1,17 +1,16 @@
 import { apiRoute, applyConfig } from "@api";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
-import { client } from "~database/datasource";
-import { statusToAPI } from "~database/entities/Status";
+import { and, eq, sql } from "drizzle-orm";
+import { findManyStatuses, statusToAPI } from "~database/entities/Status";
 import {
-    resolveUser,
+    findFirstUser,
+    findManyUsers,
     resolveWebFinger,
     userToAPI,
 } from "~database/entities/User";
-import {
-    statusAndUserRelations,
-    userRelations,
-} from "~database/entities/relations";
+import { db } from "~drizzle/db";
+import { instance, user } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -26,9 +25,6 @@ export const meta = applyConfig({
     },
 });
 
-/**
- * Upload new media
- */
 export default apiRoute<{
     q?: string;
     type?: string;
@@ -40,7 +36,7 @@ export default apiRoute<{
     limit?: number;
     offset?: number;
 }>(async (req, matchedRoute, extraData) => {
-    const { user } = extraData.auth;
+    const { user: self } = extraData.auth;
 
     const {
         q,
@@ -60,7 +56,7 @@ export default apiRoute<{
         return errorResponse("Meilisearch is not enabled", 501);
     }
 
-    if (!user && (resolve || offset)) {
+    if (!self && (resolve || offset)) {
         return errorResponse(
             "Cannot use resolve or offset without being authenticated",
             401,
@@ -87,15 +83,26 @@ export default apiRoute<{
 
             const [username, domain] = accountMatches[0].split("@");
 
-            const account = await client.user.findFirst({
-                where: {
-                    username,
-                    instance: {
-                        base_url: domain,
-                    },
-                },
-                include: userRelations,
-            });
+            const accountId = (
+                await db
+                    .select({
+                        id: user.id,
+                    })
+                    .from(user)
+                    .leftJoin(instance, eq(user.instanceId, instance.id))
+                    .where(
+                        and(
+                            eq(user.username, username),
+                            eq(instance.baseUrl, domain),
+                        ),
+                    )
+            )[0]?.id;
+
+            const account = accountId
+                ? await findFirstUser({
+                      where: (user, { eq }) => eq(user.id, accountId),
+                  })
+                : null;
 
             if (account) {
                 return jsonResponse({
@@ -146,43 +153,41 @@ export default apiRoute<{
         ).hits;
     }
 
-    const accounts = await client.user.findMany({
-        where: {
-            id: {
-                in: accountResults.map((hit) => hit.id),
-            },
-            relationshipSubjects: {
-                some: {
-                    subjectId: user?.id,
-                    following: following ? true : undefined,
-                },
-            },
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-        include: userRelations,
+    const accounts = await findManyUsers({
+        where: (user, { and, eq, inArray }) =>
+            and(
+                inArray(
+                    user.id,
+                    accountResults.map((hit) => hit.id),
+                ),
+                self
+                    ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
+                          self?.id
+                      } AND Relationships.following = ${
+                          following ? true : false
+                      } AND Relationships.objectId = ${user.id})`
+                    : undefined,
+            ),
+        orderBy: (user, { desc }) => desc(user.createdAt),
     });
 
-    const statuses = await client.status.findMany({
-        where: {
-            id: {
-                in: statusResults.map((hit) => hit.id),
-            },
-            author: {
-                relationshipSubjects: {
-                    some: {
-                        subjectId: user?.id,
-                        following: following ? true : undefined,
-                    },
-                },
-            },
-            authorId: account_id ? account_id : undefined,
-        },
-        orderBy: {
-            createdAt: "desc",
-        },
-        include: statusAndUserRelations,
+    const statuses = await findManyStatuses({
+        where: (status, { and, eq, inArray }) =>
+            and(
+                inArray(
+                    status.id,
+                    statusResults.map((hit) => hit.id),
+                ),
+                account_id ? eq(status.authorId, account_id) : undefined,
+                self
+                    ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
+                          self?.id
+                      } AND Relationships.following = ${
+                          following ? true : false
+                      } AND Relationships.objectId = ${status.authorId})`
+                    : undefined,
+            ),
+        orderBy: (status, { desc }) => desc(status.createdAt),
     });
 
     return jsonResponse({
