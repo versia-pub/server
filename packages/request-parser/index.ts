@@ -163,14 +163,19 @@ export class RequestParser {
         const url = new URL(this.request.url);
 
         for (const [key, value] of url.searchParams.entries()) {
-            if (key.endsWith("[]")) {
-                const arrayKey = key.slice(0, -2) as keyof T;
+            if (decodeURIComponent(key).endsWith("[]")) {
+                const arrayKey = decodeURIComponent(key).slice(
+                    0,
+                    -2,
+                ) as keyof T;
                 if (!result[arrayKey]) {
                     result[arrayKey] = [] as T[keyof T];
                 }
-                (result[arrayKey] as string[]).push(value);
+                (result[arrayKey] as string[]).push(decodeURIComponent(value));
             } else {
-                result[key as keyof T] = value as T[keyof T];
+                result[key as keyof T] = decodeURIComponent(
+                    value,
+                ) as T[keyof T];
             }
         }
         return result;
