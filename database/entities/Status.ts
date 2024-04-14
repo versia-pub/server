@@ -14,6 +14,18 @@ import { htmlToText } from "html-to-text";
 import linkifyHtml from "linkify-html";
 import linkifyStr from "linkify-string";
 import type * as Lysand from "lysand-types";
+import {
+    anyOf,
+    char,
+    charIn,
+    createRegExp,
+    digit,
+    exactly,
+    global,
+    letter,
+    maybe,
+    oneOrMore,
+} from "magic-regexp/further-magic";
 import { parse } from "marked";
 import { db } from "~drizzle/db";
 import {
@@ -719,6 +731,19 @@ export const getDescendants = async (
     return viewableDescendants;
 };
 
+export const createMentionRegExp = () =>
+    createRegExp(
+        exactly("@"),
+        oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
+            "username",
+        ),
+        maybe(
+            exactly("@"),
+            oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
+        ),
+        [global],
+    );
+
 /**
  * Get people mentioned in the content (match @username or @username@domain.com mentions)
  * @param text The text to parse mentions from.
@@ -727,91 +752,60 @@ export const getDescendants = async (
 export const parseTextMentions = async (
     text: string,
 ): Promise<UserWithRelations[]> => {
-    const mentionedPeople =
-        text.match(/@[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)?/g) ?? [];
-
+    const mentionedPeople = [...text.matchAll(createMentionRegExp())] ?? [];
     if (mentionedPeople.length === 0) return [];
 
-    const remoteUsers = mentionedPeople.filter(
+    const baseUrlHost = new URL(config.http.base_url).host;
+
+    const isLocal = (host?: string) => host === baseUrlHost || !host;
+
+    const foundUsers = await db
+        .select({
+            id: user.id,
+            username: user.username,
+            baseUrl: instance.baseUrl,
+        })
+        .from(user)
+        .leftJoin(instance, eq(user.instanceId, instance.id))
+        .where(
+            or(
+                ...mentionedPeople.map((person) =>
+                    and(
+                        eq(user.username, person?.[1] ?? ""),
+                        isLocal(person?.[2])
+                            ? isNull(user.instanceId)
+                            : eq(instance.baseUrl, person?.[2] ?? ""),
+                    ),
+                ),
+            ),
+        );
+
+    const notFoundRemoteUsers = mentionedPeople.filter(
         (person) =>
-            person.split("@").length === 3 &&
-            person.split("@")[2] !== new URL(config.http.base_url).host,
-    );
-
-    const localUsers = mentionedPeople.filter(
-        (person) =>
-            person.split("@").length <= 2 ||
-            person.split("@")[2] === new URL(config.http.base_url).host,
-    );
-
-    const foundRemote =
-        remoteUsers.length > 0
-            ? await db
-                  .select({
-                      id: user.id,
-                      username: user.username,
-                      baseUrl: instance.baseUrl,
-                  })
-                  .from(user)
-                  .innerJoin(instance, eq(user.instanceId, instance.id))
-                  .where(
-                      or(
-                          ...remoteUsers.map((person) =>
-                              and(
-                                  eq(user.username, person.split("@")[1]),
-                                  eq(instance.baseUrl, person.split("@")[2]),
-                              ),
-                          ),
-                      ),
-                  )
-            : [];
-
-    const foundLocal =
-        localUsers.length > 0
-            ? await db
-                  .select({
-                      id: user.id,
-                  })
-                  .from(user)
-                  .where(
-                      and(
-                          inArray(
-                              user.username,
-                              localUsers.map((person) => person.split("@")[1]),
-                          ),
-                          isNull(user.instanceId),
-                      ),
-                  )
-            : [];
-
-    const combinedFound = [
-        ...foundLocal.map((user) => user.id),
-        ...foundRemote.map((user) => user.id),
-    ];
-
-    const finalList =
-        combinedFound.length > 0
-            ? await findManyUsers({
-                  where: (user, { inArray }) => inArray(user.id, combinedFound),
-              })
-            : [];
-
-    const notFoundRemote = remoteUsers.filter(
-        (person) =>
-            !foundRemote.find(
+            !isLocal(person?.[2]) &&
+            !foundUsers.find(
                 (user) =>
-                    user.username === person.split("@")[1] &&
-                    user.baseUrl === person.split("@")[2],
+                    user.username === person?.[1] &&
+                    user.baseUrl === person?.[2],
             ),
     );
 
-    // Attempt to resolve mentions that were not found
-    for (const person of notFoundRemote) {
-        if (person.split("@").length < 2) continue;
+    const finalList =
+        foundUsers.length > 0
+            ? await findManyUsers({
+                  where: (user, { inArray }) =>
+                      inArray(
+                          user.id,
+                          foundUsers.map((u) => u.id),
+                      ),
+              })
+            : [];
 
+    // Attempt to resolve mentions that were not found
+    for (const person of notFoundRemoteUsers) {
         const user = await resolveWebFinger(
-            person.split("@")[1],
-            person.split("@")[2],
+            person?.[1] ?? "",
+            person?.[2] ?? "",
         );
 
         if (user) {
@@ -829,24 +823,39 @@ export const replaceTextMentions = async (
     let finalText = text;
     for (const mention of mentions) {
         // Replace @username and @username@domain
-        if (mention.instanceId) {
+        if (mention.instance) {
             finalText = finalText.replace(
-                `@${mention.username}@${mention.instance?.baseUrl}`,
+                createRegExp(
+                    exactly(`@${mention.username}@${mention.instance.baseUrl}`),
+                    [global],
+                ),
                 `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
                     mention,
-                )}">@${mention.username}@${mention.instance?.baseUrl}</a>`,
+                )}">@${mention.username}@${mention.instance.baseUrl}</a>`,
             );
         } else {
             finalText = finalText.replace(
                 // Only replace @username if it doesn't have another @ right after
-                new RegExp(`@${mention.username}(?![a-zA-Z0-9_@])`, "g"),
+                createRegExp(
+                    exactly(`@${mention.username}`)
+                        .notBefore(anyOf(letter, digit, charIn("@")))
+                        .notAfter(anyOf(letter, digit, charIn("@"))),
+                    [global],
+                ),
                 `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
                     mention,
                 )}">@${mention.username}</a>`,
             );
 
             finalText = finalText.replace(
-                `@${mention.username}@${new URL(config.http.base_url).host}`,
+                createRegExp(
+                    exactly(
+                        `@${mention.username}@${
+                            new URL(config.http.base_url).host
+                        }`,
+                    ),
+                    [global],
+                ),
                 `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
                     mention,
                 )}">@${mention.username}</a>`,
@@ -857,24 +866,10 @@ export const replaceTextMentions = async (
     return finalText;
 };
 
-/**
- * Creates a new status and saves it to the database.
- * @returns A promise that resolves with the new status.
- */
-export const createNewStatus = async (
-    author: User,
+export const contentToHtml = async (
     content: Lysand.ContentFormat,
-    visibility: APIStatus["visibility"],
-    is_sensitive: boolean,
-    spoiler_text: string,
-    emojis: EmojiWithInstance[],
-    uri?: string,
-    mentions?: UserWithRelations[],
-    /** List of IDs of database Attachment objects */
-    media_attachments?: string[],
-    inReplyTo?: StatusWithRelations,
-    quoting?: StatusWithRelations,
-): Promise<StatusWithRelations | null> => {
+    mentions: UserWithRelations[] = [],
+): Promise<string> => {
     let htmlContent: string;
 
     if (content["text/html"]) {
@@ -906,6 +901,29 @@ export const createNewStatus = async (
         rel: "nofollow noopener noreferrer",
     });
 
+    return htmlContent;
+};
+
+/**
+ * Creates a new status and saves it to the database.
+ * @returns A promise that resolves with the new status.
+ */
+export const createNewStatus = async (
+    author: User,
+    content: Lysand.ContentFormat,
+    visibility: APIStatus["visibility"],
+    is_sensitive: boolean,
+    spoiler_text: string,
+    emojis: EmojiWithInstance[],
+    uri?: string,
+    mentions?: UserWithRelations[],
+    /** List of IDs of database Attachment objects */
+    media_attachments?: string[],
+    inReplyTo?: StatusWithRelations,
+    quoting?: StatusWithRelations,
+): Promise<StatusWithRelations | null> => {
+    const htmlContent = await contentToHtml(content, mentions);
+
     // Parse emojis and fuse with existing emojis
     let foundEmojis = emojis;
 
@@ -927,6 +945,7 @@ export const createNewStatus = async (
                 contentSource:
                     content["text/plain"]?.content ||
                     content["text/markdown"]?.content ||
+                    Object.entries(content)[0][1].content ||
                     "",
                 contentType: "text/html",
                 visibility,
@@ -1067,33 +1086,25 @@ export const editStatus = async (
     // Parse emojis
     const emojis = await parseEmojis(data.content);
 
-    data.emojis = data.emojis ? [...data.emojis, ...emojis] : emojis;
+    // Fuse and deduplicate emojis
+    data.emojis = data.emojis
+        ? [...data.emojis, ...emojis].filter(
+              (emoji, index, self) =>
+                  index === self.findIndex((t) => t.id === emoji.id),
+          )
+        : emojis;
 
-    let formattedContent = "";
-
-    // Get HTML version of content
-    if (data.content_type === "text/markdown") {
-        formattedContent = linkifyHtml(
-            await sanitizeHtml(await parse(data.content)),
-        );
-    } else if (data.content_type === "text/x.misskeymarkdown") {
-        // Parse as MFM
-    } else {
-        // Parse as plaintext
-        formattedContent = linkifyStr(data.content);
-
-        // Split by newline and add <p> tags
-        formattedContent = formattedContent
-            .split("\n")
-            .map((line) => `<p>${line}</p>`)
-            .join("\n");
-    }
+    const htmlContent = await contentToHtml({
+        [data.content_type ?? "text/plain"]: {
+            content: data.content,
+        },
+    });
 
     const updated = (
         await db
             .update(status)
             .set({
-                content: formattedContent,
+                content: htmlContent,
                 contentSource: data.content,
                 contentType: data.content_type,
                 visibility: data.visibility,
@@ -1196,9 +1207,13 @@ export const statusToAPI = async (
 
     for (const mention of mentionedLocalUsers) {
         replacedContent = replacedContent.replace(
-            new RegExp(
-                `@${mention.username}@${new URL(config.http.base_url).host}`,
-                "g",
+            createRegExp(
+                exactly(
+                    `@${mention.username}@${
+                        new URL(config.http.base_url).host
+                    }`,
+                ),
+                [global],
             ),
             `@${mention.username}`,
         );

@@ -294,4 +294,68 @@ describe(meta.route, () => {
         expect(object2.content).toBe("<p>Hello, world again!</p>");
         expect(object2.quote_id).toBe(object.id);
     });
+
+    describe("mentions testing", () => {
+        test("should correctly parse @mentions", async () => {
+            const response = await sendTestRequest(
+                new Request(new URL(meta.route, config.http.base_url), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        status: `Hello, @${users[1].username}!`,
+                        federate: false,
+                    }),
+                }),
+            );
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("content-type")).toBe(
+                "application/json",
+            );
+
+            const object = (await response.json()) as APIStatus;
+
+            expect(object.mentions).toBeArrayOfSize(1);
+            expect(object.mentions[0]).toMatchObject({
+                id: users[1].id,
+                username: users[1].username,
+                acct: users[1].username,
+            });
+        });
+
+        test("should correctly parse @mentions@domain", async () => {
+            const response = await sendTestRequest(
+                new Request(new URL(meta.route, config.http.base_url), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        status: `Hello, @${users[1].username}@${
+                            new URL(config.http.base_url).host
+                        }!`,
+                        federate: false,
+                    }),
+                }),
+            );
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("content-type")).toBe(
+                "application/json",
+            );
+
+            const object = (await response.json()) as APIStatus;
+
+            expect(object.mentions).toBeArrayOfSize(1);
+            expect(object.mentions[0]).toMatchObject({
+                id: users[1].id,
+                username: users[1].username,
+                acct: users[1].username,
+            });
+        });
+    });
 });
