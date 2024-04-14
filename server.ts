@@ -119,9 +119,6 @@ export const createServer = (
             const matchedRoute = matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
-
-            console.log(matchedRoute);
-
             if (matchedRoute?.filePath && matchedRoute.name !== "/[...404]") {
                 return await processRoute(matchedRoute, req, logger);
             }
