@@ -113,7 +113,7 @@ export const processRoute = async (
     }
 
     // Check if Content-Type header is missing if there is a body
-    if (request.body) {
+    if (request.clone().body) {
         if (!request.headers.has("Content-Type")) {
             return errorResponse(
                 `Content-Type header is missing but required on method ${request.method}`,
