@@ -50,13 +50,13 @@ export const schema = z.object({
         .optional(),
     "poll[multiple]": z.boolean().optional(),
     "poll[hide_totals]": z.boolean().optional(),
-    in_reply_to_id: z.string().regex(idValidator).optional(),
-    quote_id: z.string().regex(idValidator).optional(),
+    in_reply_to_id: z.string().regex(idValidator).optional().nullable(),
+    quote_id: z.string().regex(idValidator).optional().nullable(),
     visibility: z
         .enum(["public", "unlisted", "private", "direct"])
         .optional()
         .default("public"),
-    scheduled_at: z.string().optional(),
+    scheduled_at: z.string().optional().nullable(),
     local_only: z.boolean().optional(),
     federate: z.boolean().optional().default(true),
 });

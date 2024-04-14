@@ -98,8 +98,6 @@ export class RequestParser {
         const formData = await this.request.formData();
         const result: Partial<T> = {};
 
-        console.log([...formData.entries()]);
-
         for (const [key, value] of formData.entries()) {
             if (value instanceof Blob) {
                 result[key as keyof T] = value as T[keyof T];
