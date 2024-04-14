@@ -39,6 +39,15 @@ export const schema = z.object({
             "admin.report",
             "chat",
             "pleroma:chat_mention",
+            "pleroma:emoji_reaction",
+            "pleroma:event_reminder",
+            "pleroma:participation_request",
+            "pleroma:participation_accepted",
+            "move",
+            "group_reblog",
+            "group_favourite",
+            "user_approved",
+            "update",
         ])
         .array()
         .optional(),
@@ -56,6 +65,15 @@ export const schema = z.object({
             "admin.report",
             "chat",
             "pleroma:chat_mention",
+            "pleroma:emoji_reaction",
+            "pleroma:event_reminder",
+            "pleroma:participation_request",
+            "pleroma:participation_accepted",
+            "move",
+            "group_reblog",
+            "group_favourite",
+            "user_approved",
+            "update",
         ])
         .array()
         .optional(),
