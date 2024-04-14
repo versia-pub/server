@@ -30,9 +30,9 @@ export class LogManager {
         private enableColors = false,
         private prettyDates = false,
     ) {
-        void this.write(
+        /* void this.write(
             `--- INIT LogManager at ${new Date().toISOString()} ---`,
-        );
+        ); */
     }
 
     getLevelColor(level: LogLevel) {

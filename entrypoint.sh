@@ -6,7 +6,7 @@
 # - `cli`: Starts the CLI, sends all arguments to it
 
 # Exit immediately if a command exits with a non-zero status.
-set -euo
+set -eu
 
 cd /app/dist
 
