@@ -27,6 +27,8 @@ WORKDIR /temp/dist
 # Copy production dependencies and source code into final image
 FROM oven/bun:1.1.3-alpine
 
+RUN apk add --no-cache libstdc++
+
 # Create app directory
 RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
