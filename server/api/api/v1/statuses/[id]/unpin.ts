@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { and, eq } from "drizzle-orm";
 import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
 import { db } from "~drizzle/db";
-import { statusToUser } from "~drizzle/schema";
+import { statusToMentions } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -38,8 +38,13 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (status.authorId !== user.id) return errorResponse("Unauthorized", 401);
 
     await db
-        .delete(statusToUser)
-        .where(and(eq(statusToUser.a, status.id), eq(statusToUser.b, user.id)));
+        .delete(statusToMentions)
+        .where(
+            and(
+                eq(statusToMentions.statusId, status.id),
+                eq(statusToMentions.userId, user.id),
+            ),
+        );
 
     if (!status) return errorResponse("Record not found", 404);
 

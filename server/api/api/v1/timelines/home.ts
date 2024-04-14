@@ -66,7 +66,7 @@ export default apiRoute<{
                     ), */
                         // All statuses where the user is mentioned, using table _StatusToUser which has a: status.id and b: user.id
                         // WHERE format (... = ...)
-                        sql`EXISTS (SELECT 1 FROM "_StatusToUser" WHERE "_StatusToUser"."A" = ${status.id} AND "_StatusToUser"."B" = ${user.id})`,
+                        sql`EXISTS (SELECT 1 FROM "StatusToMentions" WHERE "StatusToMentions"."statusId" = ${status.id} AND "StatusToMentions"."userId" = ${user.id})`,
                         // All statuses from users that the user is following
                         // WHERE format (... = ...)
                         sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${status.authorId} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."following" = true)`,

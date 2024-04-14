@@ -23,7 +23,7 @@ import {
     instance,
     type like,
     status,
-    statusToUser,
+    statusToMentions,
     user,
 } from "~drizzle/schema";
 import type { APIAttachment } from "~types/entities/attachment";
@@ -946,8 +946,8 @@ export const createNewStatus = async (
         await db
             .insert(emojiToStatus)
             .values({
-                a: emoji.id,
-                b: newStatus.id,
+                emojiId: emoji.id,
+                statusId: newStatus.id,
             })
             .execute();
     }
@@ -955,10 +955,10 @@ export const createNewStatus = async (
     // Connect mentions
     for (const mention of mentions ?? []) {
         await db
-            .insert(statusToUser)
+            .insert(statusToMentions)
             .values({
-                a: newStatus.id,
-                b: mention.id,
+                statusId: newStatus.id,
+                userId: mention.id,
             })
             .execute();
     }
@@ -1109,8 +1109,8 @@ export const editStatus = async (
         await db
             .insert(emojiToStatus)
             .values({
-                a: emoji.id,
-                b: updated.id,
+                emojiId: emoji.id,
+                statusId: updated.id,
             })
             .execute();
     }
@@ -1118,10 +1118,10 @@ export const editStatus = async (
     // Connect mentions
     for (const mention of mentions) {
         await db
-            .insert(statusToUser)
+            .insert(statusToMentions)
             .values({
-                a: updated.id,
-                b: mention.id,
+                statusId: updated.id,
+                userId: mention.id,
             })
             .execute();
     }
@@ -1157,11 +1157,11 @@ export const statusToAPI = async (
     userFetching?: UserWithRelations,
 ): Promise<APIStatus> => {
     const wasPinnedByUser = userFetching
-        ? !!(await db.query.statusToUser.findFirst({
+        ? !!(await db.query.userPinnedNotes.findFirst({
               where: (relation, { and, eq }) =>
                   and(
-                      eq(relation.a, statusToConvert.id),
-                      eq(relation.b, userFetching?.id),
+                      eq(relation.statusId, statusToConvert.id),
+                      eq(relation.userId, userFetching?.id),
                   ),
           }))
         : false;

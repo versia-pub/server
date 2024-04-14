@@ -108,13 +108,13 @@ export const userExtrasTemplate = (name: string) => ({
         instance: true,
         emojis: {
             with: {
-                instance: true,
+                emoji: {
+                    with: {
+                        instance: true,
+                    },
+                },
             },
         },
-    },
-    extras: {
-        //
-        followerCount: sql`SELECT COUNT(*) FROM relationship WHERE owner_id = user.id AND following = true`,
     },
 }); */
 
@@ -262,8 +262,8 @@ export const transformOutputToUserWithRelations = (
         followingCount: unknown;
         statusCount: unknown;
         emojis: {
-            a: string;
-            b: string;
+            userId: string;
+            emojiId: string;
             emoji?: EmojiWithInstance;
         }[];
         instance: InferSelectModel<typeof instance> | null;
@@ -447,8 +447,8 @@ export const resolveUser = async (
     if (emojis.length > 0) {
         await db.insert(emojiToUser).values(
             emojis.map((emoji) => ({
-                a: emoji.id,
-                b: newUser.id,
+                emojiId: emoji.id,
+                userId: newUser.id,
             })),
         );
     }

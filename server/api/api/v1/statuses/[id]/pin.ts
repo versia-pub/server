@@ -2,7 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
 import { db } from "~drizzle/db";
-import { statusToUser } from "~drizzle/schema";
+import { statusToMentions } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -50,7 +50,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         return errorResponse("Already pinned", 422);
     }
 
-    await db.insert(statusToUser).values({
+    await db.insert(statusToMentions).values({
         a: foundStatus.id,
         b: user.id,
     });

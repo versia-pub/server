@@ -4,12 +4,16 @@ import { connectMeili } from "@meilisearch";
 import { moduleIsEntry } from "@module";
 import { config } from "config-manager";
 import { count, sql } from "drizzle-orm";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { LogLevel, LogManager, MultiLogManager } from "log-manager";
 import { db, client as pgClient } from "~drizzle/db";
 import { status } from "~drizzle/schema";
 import { createServer } from "~server";
 
 await pgClient.connect();
+await migrate(db, {
+    migrationsFolder: "./drizzle",
+});
 const timeAtStart = performance.now();
 
 // Create requests file if it doesnt exist

@@ -1,12 +1,12 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { APIApplication } from "~types/entities/application";
+import type { APIToken } from "~types/entities/token";
 import {
     deleteOldTestUsers,
     getTestUsers,
     sendTestRequest,
     wrapRelativeUrl,
 } from "./utils";
-import type { APIToken } from "~types/entities/token";
 
 const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
 

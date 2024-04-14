@@ -60,14 +60,11 @@ export const lysandObject = pgTable(
     },
     (table) => {
         return {
-            remoteIdKey: uniqueIndex("LysandObject_remote_id_key").on(
-                table.remoteId,
-            ),
-            uriKey: uniqueIndex("LysandObject_uri_key").on(table.uri),
+            remoteIdKey: uniqueIndex().on(table.remoteId),
+            uriKey: uniqueIndex().on(table.uri),
             lysandObjectAuthorIdFkey: foreignKey({
                 columns: [table.authorId],
                 foreignColumns: [table.id],
-                name: "LysandObject_authorId_fkey",
             })
                 .onUpdate("cascade")
                 .onDelete("cascade"),
@@ -90,25 +87,27 @@ export const relationship = pgTable("Relationship", {
             onUpdate: "cascade",
         }),
     following: boolean("following").notNull(),
-    showingReblogs: boolean("showingReblogs").notNull(),
+    showingReblogs: boolean("showing_reblogs").notNull(),
     notifying: boolean("notifying").notNull(),
-    followedBy: boolean("followedBy").notNull(),
+    followedBy: boolean("followed_by").notNull(),
     blocking: boolean("blocking").notNull(),
-    blockedBy: boolean("blockedBy").notNull(),
+    blockedBy: boolean("blocked_by").notNull(),
     muting: boolean("muting").notNull(),
-    mutingNotifications: boolean("mutingNotifications").notNull(),
+    mutingNotifications: boolean("muting_notifications").notNull(),
     requested: boolean("requested").notNull(),
-    domainBlocking: boolean("domainBlocking").notNull(),
+    domainBlocking: boolean("domain_blocking").notNull(),
     endorsed: boolean("endorsed").notNull(),
     languages: text("languages").array(),
     note: text("note").notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
-    updatedAt: timestamp("updatedAt", {
+    updatedAt: timestamp("updated_at", {
         precision: 3,
         mode: "string",
-    }).notNull(),
+    })
+        .defaultNow()
+        .notNull(),
 });
 
 export const application = pgTable(
@@ -125,9 +124,7 @@ export const application = pgTable(
     },
     (table) => {
         return {
-            clientIdKey: uniqueIndex("Application_client_id_key").on(
-                table.clientId,
-            ),
+            clientIdKey: uniqueIndex().on(table.clientId),
         };
     },
 );
@@ -217,10 +214,12 @@ export const status = pgTable(
         updatedAt: timestamp("updatedAt", {
             precision: 3,
             mode: "string",
-        }).notNull(),
+        })
+            .defaultNow()
+            .notNull(),
         reblogId: uuid("reblogId"),
         content: text("content").default("").notNull(),
-        contentType: text("contentType").default("text/plain").notNull(),
+        contentType: text("content_type").default("text/plain").notNull(),
         visibility: text("visibility").notNull(),
         inReplyToPostId: uuid("inReplyToPostId"),
         quotingPostId: uuid("quotingPostId"),
@@ -229,34 +228,31 @@ export const status = pgTable(
             onUpdate: "cascade",
         }),
         sensitive: boolean("sensitive").notNull(),
-        spoilerText: text("spoilerText").default("").notNull(),
+        spoilerText: text("spoiler_text").default("").notNull(),
         applicationId: uuid("applicationId").references(() => application.id, {
             onDelete: "set null",
             onUpdate: "cascade",
         }),
-        contentSource: text("contentSource").default("").notNull(),
+        contentSource: text("content_source").default("").notNull(),
     },
     (table) => {
         return {
-            uriKey: uniqueIndex("Status_uri_key").on(table.uri),
+            uriKey: uniqueIndex().on(table.uri),
             statusReblogIdFkey: foreignKey({
                 columns: [table.reblogId],
                 foreignColumns: [table.id],
-                name: "Status_reblogId_fkey",
             })
                 .onUpdate("cascade")
                 .onDelete("cascade"),
             statusInReplyToPostIdFkey: foreignKey({
                 columns: [table.inReplyToPostId],
                 foreignColumns: [table.id],
-                name: "Status_inReplyToPostId_fkey",
             })
                 .onUpdate("cascade")
                 .onDelete("set null"),
             statusQuotingPostIdFkey: foreignKey({
                 columns: [table.quotingPostId],
                 foreignColumns: [table.id],
-                name: "Status_quotingPostId_fkey",
             })
                 .onUpdate("cascade")
                 .onDelete("set null"),
@@ -270,7 +266,7 @@ export const instance = pgTable("Instance", {
     name: text("name").notNull(),
     version: text("version").notNull(),
     logo: jsonb("logo").notNull(),
-    disableAutomoderation: boolean("disableAutomoderation")
+    disableAutomoderation: boolean("disable_automoderation")
         .default(false)
         .notNull(),
 });
@@ -281,8 +277,8 @@ export const openIdAccount = pgTable("OpenIdAccount", {
         onDelete: "set null",
         onUpdate: "cascade",
     }),
-    serverId: text("serverId").notNull(),
-    issuerId: text("issuerId").notNull(),
+    serverId: text("server_id").notNull(),
+    issuerId: text("issuer_id").notNull(),
 });
 
 export const user = pgTable(
@@ -291,55 +287,55 @@ export const user = pgTable(
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
         uri: text("uri"),
         username: text("username").notNull(),
-        displayName: text("displayName").notNull(),
+        displayName: text("display_name").notNull(),
         password: text("password"),
         email: text("email"),
         note: text("note").default("").notNull(),
-        isAdmin: boolean("isAdmin").default(false).notNull(),
+        isAdmin: boolean("is_admin").default(false).notNull(),
         endpoints: jsonb("endpoints"),
         source: jsonb("source").notNull(),
         avatar: text("avatar").notNull(),
         header: text("header").notNull(),
-        createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+        createdAt: timestamp("created_at", { precision: 3, mode: "string" })
             .defaultNow()
             .notNull(),
-        updatedAt: timestamp("updatedAt", {
+        updatedAt: timestamp("updated_at", {
             precision: 3,
             mode: "string",
         })
             .defaultNow()
             .notNull(),
-        isBot: boolean("isBot").default(false).notNull(),
-        isLocked: boolean("isLocked").default(false).notNull(),
-        isDiscoverable: boolean("isDiscoverable").default(false).notNull(),
+        isBot: boolean("is_bot").default(false).notNull(),
+        isLocked: boolean("is_locked").default(false).notNull(),
+        isDiscoverable: boolean("is_discoverable").default(false).notNull(),
         sanctions: text("sanctions").default("RRAY[").array(),
-        publicKey: text("publicKey").notNull(),
-        privateKey: text("privateKey"),
+        publicKey: text("public_key").notNull(),
+        privateKey: text("private_key"),
         instanceId: uuid("instanceId").references(() => instance.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
-        disableAutomoderation: boolean("disableAutomoderation")
+        disableAutomoderation: boolean("disable_automoderation")
             .default(false)
             .notNull(),
     },
     (table) => {
         return {
-            uriKey: uniqueIndex("User_uri_key").on(table.uri),
-            usernameKey: uniqueIndex("User_username_key").on(table.username),
-            emailKey: uniqueIndex("User_email_key").on(table.email),
+            uriKey: uniqueIndex().on(table.uri),
+            usernameKey: uniqueIndex().on(table.username),
+            emailKey: uniqueIndex().on(table.email),
         };
     },
 );
 
 export const openIdLoginFlow = pgTable("OpenIdLoginFlow", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    codeVerifier: text("codeVerifier").notNull(),
+    codeVerifier: text("code_verifier").notNull(),
     applicationId: uuid("applicationId").references(() => application.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    issuerId: text("issuerId").notNull(),
+    issuerId: text("issuer_id").notNull(),
 });
 
 export const openIdLoginFlowRelations = relations(
@@ -354,8 +350,8 @@ export const openIdLoginFlowRelations = relations(
 
 export const flag = pgTable("Flag", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    flagType: text("flagType").default("other").notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+    flagType: text("flag_type").default("other").notNull(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
     flaggeStatusId: uuid("flaggeStatusId").references(() => status.id, {
@@ -385,7 +381,7 @@ export const modNote = pgTable("ModNote", {
             onUpdate: "cascade",
         }),
     note: text("note").notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
 });
@@ -407,21 +403,21 @@ export const modTag = pgTable("ModTag", {
             onUpdate: "cascade",
         }),
     tag: text("tag").notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
 });
 
 export const emojiToUser = pgTable(
-    "_EmojiToUser",
+    "EmojiToUser",
     {
-        a: uuid("A")
+        emojiId: uuid("emojiId")
             .notNull()
             .references(() => emoji.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        b: uuid("B")
+        userId: uuid("userId")
             .notNull()
             .references(() => user.id, {
                 onDelete: "cascade",
@@ -430,36 +426,33 @@ export const emojiToUser = pgTable(
     },
     (table) => {
         return {
-            abUnique: uniqueIndex("_EmojiToUser_AB_unique").on(
-                table.a,
-                table.b,
-            ),
-            bIdx: index().on(table.b),
+            abUnique: uniqueIndex().on(table.emojiId, table.userId),
+            bIdx: index().on(table.userId),
         };
     },
 );
 
 export const emojiToUserRelations = relations(emojiToUser, ({ one }) => ({
     emoji: one(emoji, {
-        fields: [emojiToUser.a],
+        fields: [emojiToUser.emojiId],
         references: [emoji.id],
     }),
     user: one(user, {
-        fields: [emojiToUser.b],
+        fields: [emojiToUser.userId],
         references: [user.id],
     }),
 }));
 
 export const emojiToStatus = pgTable(
-    "_EmojiToStatus",
+    "EmojiToStatus",
     {
-        a: uuid("A")
+        emojiId: uuid("emojiId")
             .notNull()
             .references(() => emoji.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        b: uuid("B")
+        statusId: uuid("statusId")
             .notNull()
             .references(() => status.id, {
                 onDelete: "cascade",
@@ -468,25 +461,22 @@ export const emojiToStatus = pgTable(
     },
     (table) => {
         return {
-            abUnique: uniqueIndex("_EmojiToStatus_AB_unique").on(
-                table.a,
-                table.b,
-            ),
-            bIdx: index().on(table.b),
+            abUnique: uniqueIndex().on(table.emojiId, table.statusId),
+            bIdx: index().on(table.statusId),
         };
     },
 );
 
-export const statusToUser = pgTable(
-    "_StatusToUser",
+export const statusToMentions = pgTable(
+    "StatusToMentions",
     {
-        a: uuid("A")
+        statusId: uuid("statusId")
             .notNull()
             .references(() => status.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        b: uuid("B")
+        userId: uuid("userId")
             .notNull()
             .references(() => user.id, {
                 onDelete: "cascade",
@@ -495,25 +485,22 @@ export const statusToUser = pgTable(
     },
     (table) => {
         return {
-            abUnique: uniqueIndex("_StatusToUser_AB_unique").on(
-                table.a,
-                table.b,
-            ),
-            bIdx: index().on(table.b),
+            abUnique: uniqueIndex().on(table.statusId, table.userId),
+            bIdx: index().on(table.userId),
         };
     },
 );
 
 export const userPinnedNotes = pgTable(
-    "_UserPinnedNotes",
+    "UserToPinnedNotes",
     {
-        a: uuid("A")
+        userId: uuid("userId")
             .notNull()
             .references(() => status.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        b: uuid("B")
+        statusId: uuid("statusId")
             .notNull()
             .references(() => user.id, {
                 onDelete: "cascade",
@@ -522,11 +509,8 @@ export const userPinnedNotes = pgTable(
     },
     (table) => {
         return {
-            abUnique: uniqueIndex("_UserPinnedNotes_AB_unique").on(
-                table.a,
-                table.b,
-            ),
-            bIdx: index().on(table.b),
+            abUnique: uniqueIndex().on(table.userId, table.statusId),
+            bIdx: index().on(table.statusId),
         };
     },
 );
@@ -566,7 +550,7 @@ export const userRelations = relations(user, ({ many, one }) => ({
         fields: [user.instanceId],
         references: [instance.id],
     }),
-    mentionedIn: many(statusToUser),
+    mentionedIn: many(statusToMentions),
 }));
 
 export const relationshipRelations = relations(relationship, ({ one }) => ({
@@ -593,13 +577,13 @@ export const tokenRelations = relations(token, ({ one }) => ({
     }),
 }));
 
-export const statusToUserRelations = relations(statusToUser, ({ one }) => ({
+export const statusToUserRelations = relations(statusToMentions, ({ one }) => ({
     status: one(status, {
-        fields: [statusToUser.a],
+        fields: [statusToMentions.statusId],
         references: [status.id],
     }),
     user: one(user, {
-        fields: [statusToUser.b],
+        fields: [statusToMentions.userId],
         references: [user.id],
     }),
 }));
@@ -608,11 +592,11 @@ export const userPinnedNotesRelations = relations(
     userPinnedNotes,
     ({ one }) => ({
         status: one(status, {
-            fields: [userPinnedNotes.a],
+            fields: [userPinnedNotes.statusId],
             references: [status.id],
         }),
         user: one(user, {
-            fields: [userPinnedNotes.b],
+            fields: [userPinnedNotes.userId],
             references: [user.id],
         }),
     }),
@@ -626,7 +610,7 @@ export const statusRelations = relations(status, ({ many, one }) => ({
         relationName: "StatusToAuthor",
     }),
     attachments: many(attachment),
-    mentions: many(statusToUser),
+    mentions: many(statusToMentions),
     reblog: one(status, {
         fields: [status.reblogId],
         references: [status.id],
@@ -705,11 +689,11 @@ export const instanceRelations = relations(instance, ({ many }) => ({
 
 export const emojiToStatusRelations = relations(emojiToStatus, ({ one }) => ({
     emoji: one(emoji, {
-        fields: [emojiToStatus.a],
+        fields: [emojiToStatus.emojiId],
         references: [emoji.id],
     }),
     status: one(status, {
-        fields: [emojiToStatus.b],
+        fields: [emojiToStatus.statusId],
         references: [status.id],
     }),
 }));
