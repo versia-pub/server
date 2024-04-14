@@ -1,6 +1,7 @@
 import { appendFile, exists, mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { BunFile } from "bun";
+import chalk from "chalk";
 
 export enum LogLevel {
     DEBUG = "debug",
@@ -15,10 +16,42 @@ export enum LogLevel {
  * @param output BunFile of output (can be a normal file or something like Bun.stdout)
  */
 export class LogManager {
-    constructor(private output: BunFile) {
+    constructor(
+        private output: BunFile,
+        private enableColors = false,
+        private prettyDates = false,
+    ) {
         void this.write(
             `--- INIT LogManager at ${new Date().toISOString()} ---`,
         );
+    }
+
+    getLevelColor(level: LogLevel) {
+        switch (level) {
+            case LogLevel.DEBUG:
+                return chalk.blue;
+            case LogLevel.INFO:
+                return chalk.green;
+            case LogLevel.WARNING:
+                return chalk.yellow;
+            case LogLevel.ERROR:
+                return chalk.red;
+            case LogLevel.CRITICAL:
+                return chalk.bgRed;
+        }
+    }
+
+    getFormattedDate(date: Date = new Date()) {
+        return this.prettyDates
+            ? date.toLocaleString(undefined, {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+              })
+            : date.toISOString();
     }
 
     /**
@@ -34,11 +67,23 @@ export class LogManager {
         message: string,
         showTimestamp = true,
     ) {
-        await this.write(
-            `${
-                showTimestamp ? `${new Date().toISOString()} ` : ""
-            }[${level.toUpperCase()}] ${entity}: ${message}`,
-        );
+        if (this.enableColors) {
+            await this.write(
+                `${
+                    showTimestamp
+                        ? `${chalk.gray(this.getFormattedDate())} `
+                        : ""
+                }[${this.getLevelColor(level)(
+                    level.toUpperCase(),
+                )}] ${chalk.bold(entity)}: ${message}`,
+            );
+        } else {
+            await this.write(
+                `${
+                    showTimestamp ? `${this.getFormattedDate()} ` : ""
+                }[${level.toUpperCase()}] ${entity}: ${message}`,
+            );
+        }
     }
 
     private async write(text: string) {
