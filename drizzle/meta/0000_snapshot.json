@@ -1345,8 +1345,7 @@
                     "name": "sanctions",
                     "type": "text[]",
                     "primaryKey": false,
-                    "notNull": false,
-                    "default": "'RRAY['"
+                    "notNull": false
                 },
                 "publicKey": {
                     "name": "publicKey",

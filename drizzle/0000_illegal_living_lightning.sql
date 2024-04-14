@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS "User" (
 	"isBot" boolean DEFAULT false NOT NULL,
 	"isLocked" boolean DEFAULT false NOT NULL,
 	"isDiscoverable" boolean DEFAULT false NOT NULL,
-	"sanctions" text[] DEFAULT 'RRAY[',
+	"sanctions" text[],
 	"publicKey" text NOT NULL,
 	"privateKey" text,
 	"instanceId" uuid,

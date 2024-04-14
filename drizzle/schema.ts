@@ -308,7 +308,7 @@ export const user = pgTable(
         isBot: boolean("is_bot").default(false).notNull(),
         isLocked: boolean("is_locked").default(false).notNull(),
         isDiscoverable: boolean("is_discoverable").default(false).notNull(),
-        sanctions: text("sanctions").default("RRAY[").array(),
+        sanctions: text("sanctions").array(),
         publicKey: text("public_key").notNull(),
         privateKey: text("private_key"),
         instanceId: uuid("instanceId").references(() => instance.id, {
