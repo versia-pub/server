@@ -1,3 +1,4 @@
+import type { APIRouteExports } from "~packages/server-handler";
 import type { RouteHandler } from "./server/api/routes.type";
 import type { APIRouteMeta } from "./types/api";
 
@@ -107,10 +108,6 @@ export const matchRoute = async <T = Record<string, never>>(url: string) => {
     if (!route) return { file: null, matchedRoute: null };
 
     return {
-        file: (await import(rawRoutes[route.name])) as {
-            default: RouteHandler<T>;
-            meta: APIRouteMeta;
-        },
         matchedRoute: route,
     };
 };

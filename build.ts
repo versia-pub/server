@@ -2,6 +2,9 @@
 import { $ } from "bun";
 import { rawRoutes } from "~routes";
 
+const feOnly = process.argv.includes("--frontend");
+const serverOnly = process.argv.includes("--server");
+
 console.log("Building frontend...");
 
 await $`bun fe:build`;

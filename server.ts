@@ -1,15 +1,9 @@
-import {
-    clientResponse,
-    errorResponse,
-    jsonResponse,
-    response,
-} from "@response";
+import { errorResponse, response } from "@response";
 import type { Config } from "config-manager";
 import { matches } from "ip-matching";
 import type { LogManager, MultiLogManager } from "log-manager";
 import { LogLevel } from "log-manager";
-import { RequestParser } from "request-parser";
-import { getFromRequest } from "~database/entities/User";
+import { processRoute } from "~packages/server-handler";
 import { matchRoute } from "~routes";
 
 export const createServer = (
@@ -97,91 +91,13 @@ export const createServer = (
                 );
             }
 
-            if (req.method === "OPTIONS") {
-                return jsonResponse({});
-            }
-
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
-            const { file: filePromise, matchedRoute } = await matchRoute(
+            const { matchedRoute } = await matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
 
-            const file = filePromise;
-
-            if (matchedRoute && file === undefined) {
-                await logger.log(
-                    LogLevel.ERROR,
-                    "Server",
-                    `Route file ${matchedRoute.filePath} not found or not registered in the routes file`,
-                );
-
-                return errorResponse("Route not found", 500);
-            }
-
-            if (matchedRoute && matchedRoute.name !== "/[...404]" && file) {
-                const meta = file.meta;
-
-                // Check for allowed requests
-                // @ts-expect-error Stupid error
-                if (!meta.allowedMethods.includes(req.method)) {
-                    return errorResponse(
-                        `Method not allowed: allowed methods are: ${meta.allowedMethods.join(
-                            ", ",
-                        )}`,
-                        405,
-                    );
-                }
-
-                // TODO: Check for ratelimits
-                const auth = await getFromRequest(req);
-
-                // Check for authentication if required
-                if (
-                    (meta.auth.required ||
-                        (meta.auth.requiredOnMethods ?? []).includes(
-                            // @ts-expect-error Stupid error
-                            req.method,
-                        )) &&
-                    !auth.user
-                ) {
-                    return errorResponse("Unauthorized", 401);
-                }
-
-                // Check is Content-Type header is missing in relevant requests
-                if (["POST", "PUT", "PATCH"].includes(req.method)) {
-                    if (!req.headers.has("Content-Type")) {
-                        return errorResponse(
-                            `Content-Type header is missing but required on method ${req.method}`,
-                            400,
-                        );
-                    }
-                }
-
-                let parsedRequest = {};
-
-                try {
-                    parsedRequest = await new RequestParser(req).toObject();
-                } catch (e) {
-                    await logger.logError(
-                        LogLevel.ERROR,
-                        "Server.RouteRequestParser",
-                        e as Error,
-                    );
-                    return errorResponse("Bad request", 400);
-                }
-
-                return await file.default(req.clone(), matchedRoute, {
-                    auth,
-                    parsedRequest,
-                    // To avoid having to rewrite each route
-                    configManager: {
-                        getConfig: () => Promise.resolve(config),
-                    },
-                });
-            }
-
-            if (new URL(req.url).pathname.startsWith("/api")) {
-                return errorResponse("Route not found", 404);
+            if (matchedRoute && matchedRoute.name !== "/[...404]") {
+                return await processRoute(matchedRoute, req, logger);
             }
 
             const base_url_with_http = config.http.base_url.replace(

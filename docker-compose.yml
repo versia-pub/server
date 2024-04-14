@@ -1,15 +1,16 @@
----
 services:
     lysand:
-        image: ghcr.io/lysand-org/lysand:main
+        build: . # Automatic builds are currently broken, please build from source
+        # image: ghcr.io/lysand-org/lysand:latest
         volumes:
-            - ./logs:/app/logs
-            - ./config:/app/config
-            - ./uploads:/app/uploads
+            - ./logs:/app/dist/logs
+            - ./config:/app/dist/config
+            - ./uploads:/app/dist/uploads
         restart: unless-stopped
         container_name: lysand
         networks:
             - lysand-net
+            
     db:
         image: ghcr.io/lysand-org/postgres:main
         container_name: lysand-db
@@ -17,32 +18,33 @@ services:
         environment:
             POSTGRES_DB: lysand
             POSTGRES_USER: lysand
-            POSTGRES_PASSWORD: lysand
+            POSTGRES_PASSWORD: _______________
         networks:
             - lysand-net
         volumes:
             - ./db-data:/var/lib/postgresql/data
+
     redis:
-        image: redis:latest
+        image: redis:alpine
         container_name: lysand-redis
         volumes:
             - ./redis-data:/data
         restart: unless-stopped
         networks:
             - lysand-net
+
     meilisearch:
         stdin_open: true
         environment:
-            - MEILI_MASTER_KEY=add_your_key_here
+            - MEILI_MASTER_KEY=__________________
         tty: true
         networks:
             - lysand-net
         volumes:
             - ./meili-data:/meili_data
-        image: getmeili/meilisearch:v1.5
+        image: getmeili/meilisearch:v1.7
         container_name: lysand-meilisearch
         restart: unless-stopped
 
 networks:
     lysand-net:
-        internal: true

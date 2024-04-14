@@ -136,12 +136,8 @@ export class RequestParser {
      * @private
      * @throws Error if body is invalid
      */
-    private async parseJson<T>(): Promise<Partial<T>> {
-        try {
-            return (await this.request.json()) as T;
-        } catch {
-            return {};
-        }
+    private async parseJson<T>(): Promise<T> {
+        return (await this.request.json()) as T;
     }
 
     /**
