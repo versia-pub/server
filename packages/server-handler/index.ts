@@ -86,17 +86,7 @@ export const processRoute = async (
         matchedRoute.filePath
     ).catch(() => null);
 
-    await dualLogger.log(
-        LogLevel.DEBUG,
-        "Server.RouteProcessor",
-        JSON.stringify(matchedRoute),
-    );
-
-    await dualLogger.log(
-        LogLevel.DEBUG,
-        "Server.RouteProcessor",
-        JSON.stringify(route),
-    );
+    console.log(route);
 
     if (!route) {
         return errorResponse("Route not found", 404);
