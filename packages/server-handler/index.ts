@@ -87,6 +87,12 @@ export const processRoute = async (
     await dualLogger.log(
         LogLevel.DEBUG,
         "Server.RouteProcessor",
+        JSON.stringify(matchedRoute),
+    );
+
+    await dualLogger.log(
+        LogLevel.DEBUG,
+        "Server.RouteProcessor",
         JSON.stringify(route),
     );
 
