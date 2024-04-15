@@ -20,6 +20,10 @@ export const rawRoutes = {
     "/api/v1/favourites": "./server/api/api/v1/favourites/index",
     "/api/v1/follow_requests": "./server/api/api/v1/follow_requests/index",
     "/api/v1/instance": "./server/api/api/v1/instance/index",
+    "/api/v1/instance/rules": "./server/api/api/v1/instance/rules",
+    "/api/v1/instance/extended_description":
+        "./server/api/api/v1/instance/extended_description",
+    "/api/v2/instance": "./server/api/api/v2/instance/index",
     "/api/v1/media": "./server/api/api/v1/media/index",
     "/api/v1/mutes": "./server/api/api/v1/mutes/index",
     "/api/v1/notifications": "./server/api/api/v1/notifications/index",
