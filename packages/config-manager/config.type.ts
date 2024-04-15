@@ -75,7 +75,7 @@ export interface Config {
         /** @default true */
         registration: boolean;
 
-        /** @default ["Do not harass others","Be nice to people","Don't spam","Don't post illegal content"] */
+        /** @default [] */
         rules: string[];
     };
 
@@ -423,12 +423,7 @@ export const defaultConfig: Config = {
     signups: {
         tos_url: "https://my-site.com/tos",
         registration: true,
-        rules: [
-            "Do not harass others",
-            "Be nice to people",
-            "Don't spam",
-            "Don't post illegal content",
-        ],
+        rules: [],
     },
     oidc: {
         providers: [],
