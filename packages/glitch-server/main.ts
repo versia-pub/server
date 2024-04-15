@@ -13,7 +13,7 @@ export const handleGlitchRequest = async (
     let path = url.pathname;
     const accessToken = req.headers
         .get("Cookie")
-        ?.match(/_mastodon_session=(.*?)(;|$)/)?.[1];
+        ?.match(/_session_id=(.*?)(;|$)/)?.[1];
     const user = await retrieveUserFromToken(accessToken ?? "");
 
     // Strip leading /web from path

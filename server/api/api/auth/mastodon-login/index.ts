@@ -67,7 +67,7 @@ export default apiRoute<typeof meta, typeof schema>(
         return new Response(null, {
             headers: {
                 Location: "/",
-                "Set-Cookie": `_mastodon_session=${accessToken}; Domain=${
+                "Set-Cookie": `_session_id=${accessToken}; Domain=${
                     new URL(config.http.base_url).hostname
                 }; SameSite=Lax; Path=/; HttpOnly`,
             },
