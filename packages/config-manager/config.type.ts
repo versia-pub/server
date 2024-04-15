@@ -316,6 +316,9 @@ export interface Config {
         description: string;
 
         /** @default "" */
+        extended_description_path: string;
+
+        /** @default "" */
         logo: string;
 
         /** @default "" */
@@ -589,6 +592,7 @@ export const defaultConfig: Config = {
     instance: {
         name: "Lysand",
         description: "A test instance of Lysand",
+        extended_description_path: "",
         logo: "",
         banner: "",
     },

@@ -9,7 +9,6 @@ import {
 import { db } from "~drizzle/db";
 import { status, token, user } from "~drizzle/schema";
 import { server } from "~index";
-
 /**
  * This allows us to send a test request to the server even when it isnt running
  * CURRENTLY NOT WORKING, NEEDS TO BE FIXED

@@ -13,7 +13,7 @@ cd /app/dist
 # Parse first argument
 case "$1" in
   "start")
-    NITRO_PORT=5173 bun run ./frontend/server/index.mjs & NODE_ENV=production bun run ./index.js --prod
+    NODE_ENV=production bun run ./index.js --prod
     ;;
   "cli")
     # Start the CLI

@@ -1,13 +1,22 @@
-import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
 import { config } from "config-manager";
 import { count } from "drizzle-orm";
-import { LogLevel } from "log-manager";
+import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { db, setupDatabase } from "~drizzle/db";
 import { status } from "~drizzle/schema";
 import { createServer } from "~server";
 
 const timeAtStart = performance.now();
+
+const isEntry = import.meta.path === Bun.main;
+
+let dualLogger: LogManager | MultiLogManager = new LogManager(
+    Bun.file("/dev/null"),
+);
+
+if (isEntry) {
+    dualLogger = (await import("@loggers")).dualLogger;
+}
 
 await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 

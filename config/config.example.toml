@@ -286,6 +286,9 @@ avatars = []
 [instance]
 name = "Lysand"
 description = "A test instance of Lysand"
+# Path to a file containing a longer description of your instance
+# This will be parsed as Markdown
+extended_description_path = ""
 # URL to your instance logo (jpg files should be renamed to jpeg)
 logo = ""
 # URL to your instance banner (jpg files should be renamed to jpeg)
