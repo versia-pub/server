@@ -13,6 +13,96 @@ export const handleGlitchRequest = async (
     // Strip leading /web from path
     if (path.startsWith("/web")) path = path.slice(4);
 
+    if (path === "/manifest") {
+        const manifest = {
+            id: "/home",
+            name: config.instance.name,
+            short_name: config.instance.name,
+            icons: [
+                {
+                    src: "/packs/media/icons/android-chrome-36x36-e67f2bc645cc669c04ffcbc17203aeac.png",
+                    sizes: "36x36",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-48x48-d3afc36e9388913fb6add2476a556f67.png",
+                    sizes: "48x48",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-72x72-23ee104da45dc5388d59b8b0fad866f2.png",
+                    sizes: "72x72",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-96x96-fb2abfd885ab5de94025e09f6f9408b5.png",
+                    sizes: "96x96",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-144x144-99b386f89a3a2a22440964eba3b9f242.png",
+                    sizes: "144x144",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-192x192-8b4d35fdd9b5fa4592056ce687c9d0ba.png",
+                    sizes: "192x192",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-256x256-fecf6504157e3b195dd0e604cd711730.png",
+                    sizes: "256x256",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-384x384-dc559d916be51de4965dd7b8abf9c7c8.png",
+                    sizes: "384x384",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: "/packs/media/icons/android-chrome-512x512-85515d059c83f47d8e77e0703ebb7ff5.png",
+                    sizes: "512x512",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+            ],
+            theme_color: "#191b22",
+            background_color: "#191b22",
+            display: "standalone",
+            start_url: "/",
+            scope: "/",
+            share_target: {
+                url_template:
+                    "share?title={title}\u0026text={text}\u0026url={url}",
+                action: "share",
+                method: "GET",
+                enctype: "application/x-www-form-urlencoded",
+                params: { title: "title", text: "text", url: "url" },
+            },
+            shortcuts: [
+                { name: "Compose new post", url: "/publish" },
+                { name: "Notifications", url: "/notifications" },
+                { name: "Explore", url: "/explore" },
+            ],
+        };
+
+        return new Response(JSON.stringify(manifest), {
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "Content-Length": String(JSON.stringify(manifest).length),
+                Date: new Date().toUTCString(),
+            },
+        });
+    }
+
     // Redirect / to /index.html
     if (path === "/" || path === "") path = "/index.html";
     // If path doesn't have an extension (e.g. /about), serve index.html
@@ -45,6 +135,22 @@ export const handleGlitchRequest = async (
             "joinmastodon.org",
             "lysand.org",
         );
+
+        // Strip integrity attributes from script and link tags
+        const rewriter = new HTMLRewriter()
+            .on("script", {
+                element(element) {
+                    element.removeAttribute("integrity");
+                },
+            })
+            .on("link", {
+                element(element) {
+                    element.removeAttribute("integrity");
+                },
+            })
+            .transform(new Response(fileContents));
+
+        fileContents = await rewriter.text();
 
         // Check if file is index
         if (path === "/index.html") {
@@ -111,6 +217,7 @@ export const handleGlitchRequest = async (
 
             fileContents = await rewriter.text();
         }
+
         return new Response(fileContents, {
             headers: {
                 "Content-Type": `${file.type}; charset=utf-8`,
