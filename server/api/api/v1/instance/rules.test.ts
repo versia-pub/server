@@ -17,6 +17,7 @@ describe(meta.route, () => {
             config.signups.rules.map((rule, index) => ({
                 id: String(index),
                 text: rule,
+                hint: "",
             })),
         );
     });

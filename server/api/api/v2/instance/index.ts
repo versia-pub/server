@@ -110,6 +110,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         rules: config.signups.rules.map((rule, index) => ({
             id: String(index),
             text: rule,
+            hint: "",
         })),
     });
 });
