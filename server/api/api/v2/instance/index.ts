@@ -1,11 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
-import { and, count, countDistinct, eq, gte, isNull } from "drizzle-orm";
+import { and, countDistinct, eq, gte, isNull } from "drizzle-orm";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { instance, status, user } from "~drizzle/schema";
+import { status, user } from "~drizzle/schema";
 import manifest from "~package.json";
-import type { Instance as APIInstance } from "~types/mastodon/instance";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -108,6 +107,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             email: contactAccount?.email || null,
             account: contactAccount ? userToAPI(contactAccount) : null,
         },
-        rules: [],
+        rules: config.signups.rules.map((rule, index) => ({
+            id: String(index),
+            text: rule,
+        })),
     });
 });

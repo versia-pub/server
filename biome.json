@@ -6,7 +6,8 @@
             "node_modules/**/*",
             "dist/**/*",
             "packages/frontend/.output",
-            "packages/frontend/.nuxt"
+            "packages/frontend/.nuxt",
+            "glitch"
         ]
     },
     "linter": {
@@ -18,7 +19,8 @@
             "node_modules/**/*",
             "dist/**/*",
             "packages/frontend/.output",
-            "packages/frontend/.nuxt"
+            "packages/frontend/.nuxt",
+            "glitch"
         ]
     },
     "formatter": {
@@ -29,7 +31,8 @@
             "node_modules/**/*",
             "dist/**/*",
             "packages/frontend/.output",
-            "packages/frontend/.nuxt"
+            "packages/frontend/.nuxt",
+            "glitch"
         ]
     }
 }

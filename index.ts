@@ -1,3 +1,4 @@
+import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
 import { config } from "config-manager";
 import { count } from "drizzle-orm";
@@ -5,7 +6,6 @@ import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { db, setupDatabase } from "~drizzle/db";
 import { status } from "~drizzle/schema";
 import { createServer } from "~server";
-import { dualLogger } from "@loggers";
 
 const timeAtStart = performance.now();
 

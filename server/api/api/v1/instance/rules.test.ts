@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { meta } from "./rules";
-import { sendTestRequest } from "~tests/utils";
 import { config } from "config-manager";
+import { sendTestRequest } from "~tests/utils";
+import { meta } from "./rules";
 
 // /api/v1/instance/rules
 describe(meta.route, () => {

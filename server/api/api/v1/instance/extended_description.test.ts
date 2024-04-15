@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { meta } from "./extended_description";
-import { sendTestRequest } from "~tests/utils";
 import { config } from "config-manager";
+import { sendTestRequest } from "~tests/utils";
+import { meta } from "./extended_description";
 
 // /api/v1/instance/extended_description
 describe(meta.route, () => {
