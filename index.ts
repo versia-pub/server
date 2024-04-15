@@ -5,25 +5,26 @@ import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { db, setupDatabase } from "~drizzle/db";
 import { status } from "~drizzle/schema";
 import { createServer } from "~server";
+import { dualLogger } from "@loggers";
 
 const timeAtStart = performance.now();
 
 const isEntry = import.meta.path === Bun.main;
 
-let dualLogger: LogManager | MultiLogManager = new LogManager(
+let dualServerLogger: LogManager | MultiLogManager = new LogManager(
     Bun.file("/dev/null"),
 );
 
 if (isEntry) {
-    dualLogger = (await import("@loggers")).dualLogger;
+    dualServerLogger = dualLogger;
 }
 
-await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
+await dualServerLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 
-await setupDatabase(dualLogger);
+await setupDatabase(dualServerLogger);
 
 if (config.meilisearch.enabled) {
-    await connectMeili(dualLogger);
+    await connectMeili(dualServerLogger);
 }
 
 // Check if database is reachable
@@ -38,13 +39,13 @@ try {
     )[0].count;
 } catch (e) {
     const error = e as Error;
-    await dualLogger.logError(LogLevel.CRITICAL, "Database", error);
+    await dualServerLogger.logError(LogLevel.CRITICAL, "Database", error);
     process.exit(1);
 }
 
-const server = createServer(config, dualLogger, true);
+const server = createServer(config, dualServerLogger, true);
 
-await dualLogger.log(
+await dualServerLogger.log(
     LogLevel.INFO,
     "Server",
     `Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(
@@ -52,7 +53,7 @@ await dualLogger.log(
     ).toFixed(0)}ms`,
 );
 
-await dualLogger.log(
+await dualServerLogger.log(
     LogLevel.INFO,
     "Database",
     `Database is online, now serving ${postCount} posts`,
@@ -64,12 +65,12 @@ const response = await fetch(new URL("/", config.frontend.url))
     .catch(() => false);
 
 if (!response) {
-    await dualLogger.log(
+    await dualServerLogger.log(
         LogLevel.ERROR,
         "Server",
         `Frontend is unreachable at ${config.frontend.url}`,
     );
-    await dualLogger.log(
+    await dualServerLogger.log(
         LogLevel.ERROR,
         "Server",
         "Please ensure the frontend is online and reachable",
