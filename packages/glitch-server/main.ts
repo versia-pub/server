@@ -2,6 +2,8 @@ import { join } from "node:path";
 import { config } from "config-manager";
 import type { LogManager, MultiLogManager } from "~packages/log-manager";
 import { languages } from "./glitch-languages";
+import { redirect } from "@response";
+import { retrieveUserFromToken, userToAPI } from "~database/entities/User";
 
 export const handleGlitchRequest = async (
     req: Request,
@@ -9,6 +11,10 @@ export const handleGlitchRequest = async (
 ): Promise<Response | null> => {
     const url = new URL(req.url);
     let path = url.pathname;
+    const accessToken = req.headers
+        .get("Cookie")
+        ?.match(/_mastodon_session=(.*?)(;|$)/)?.[1];
+    const user = await retrieveUserFromToken(accessToken ?? "");
 
     // Strip leading /web from path
     if (path.startsWith("/web")) path = path.slice(4);
@@ -103,6 +109,13 @@ export const handleGlitchRequest = async (
         });
     }
 
+    if (path === "/auth/sign_in") {
+        if (req.method === "POST") {
+            return redirect("/api/auth/mastodon-login", 307);
+        }
+        path = "/auth/sign_in.html";
+    }
+
     // Redirect / to /index.html
     if (path === "/" || path === "") path = "/index.html";
     // If path doesn't have an extension (e.g. /about), serve index.html
@@ -115,10 +128,35 @@ export const handleGlitchRequest = async (
     if (await file.exists()) {
         let fileContents = await file.text();
 
+        if (path === "/auth/sign_in.html" && url.searchParams.get("error")) {
+            // Insert error message as first child of form.form_container
+            const rewriter = new HTMLRewriter()
+                .on("div.form-container", {
+                    element(element) {
+                        element.prepend(
+                            ` <div class='flash-message alert'>
+                            <strong>${decodeURIComponent(
+                                url.searchParams.get("error") ?? "",
+                            )}</strong>
+                        </div>`,
+                            {
+                                html: true,
+                            },
+                        );
+                    },
+                })
+                .transform(new Response(fileContents));
+
+            fileContents = await rewriter.text();
+        }
         for (const server of config.frontend.glitch.server) {
-            fileContents = fileContents.replace(
+            fileContents = fileContents.replaceAll(
                 `${new URL(server).origin}/`,
                 "/",
+            );
+            fileContents = fileContents.replaceAll(
+                new URL(server).host,
+                new URL(config.http.base_url).host,
             );
         }
 
@@ -161,7 +199,7 @@ export const handleGlitchRequest = async (
                         element.setInnerContent(
                             JSON.stringify({
                                 meta: {
-                                    access_token: null,
+                                    access_token: accessToken || null,
                                     activity_api_enabled: true,
                                     admin: null,
                                     domain: new URL(config.http.base_url).host,
@@ -177,7 +215,9 @@ export const handleGlitchRequest = async (
                                         "https://github.com/lysand-org/lysand",
                                     sso_redirect: null,
                                     status_page_url: null,
-                                    streaming_api_base_url: null,
+                                    streaming_api_base_url: `wss://${
+                                        new URL(config.http.base_url).host
+                                    }`,
                                     timeline_preview: true,
                                     title: config.instance.name,
                                     trends_as_landing_page: false,
@@ -187,9 +227,24 @@ export const handleGlitchRequest = async (
                                     display_media: null,
                                     reduce_motion: null,
                                     use_blurhash: null,
+                                    me: user ? user.id : undefined,
                                 },
-                                compose: { text: "" },
-                                accounts: {},
+                                compose: user
+                                    ? {
+                                          text: "",
+                                          me: user.id,
+                                          default_privacy: "public",
+                                          default_sensitive: false,
+                                          default_language: "en",
+                                      }
+                                    : {
+                                          text: "",
+                                      },
+                                accounts: user
+                                    ? {
+                                          [user.id]: userToAPI(user, true),
+                                      }
+                                    : {},
                                 media_attachments: {
                                     accept_content_types:
                                         config.validation.allowed_mime_types,

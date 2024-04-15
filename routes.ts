@@ -35,6 +35,7 @@ export const rawRoutes = {
     "/api/v2/media": "./server/api/api/v2/media/index",
     "/api/v2/search": "./server/api/api/v2/search/index",
     "/api/auth/login": "./server/api/api/auth/login/index",
+    "/api/auth/mastodon-login": "./server/api/api/auth/mastodon-login/index",
     "/api/auth/redirect": "./server/api/api/auth/redirect/index",
     "/nodeinfo/2.0": "./server/api/nodeinfo/2.0/index",
     "/oauth/authorize-external": "./server/api/oauth/authorize-external/index",
