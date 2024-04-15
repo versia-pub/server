@@ -172,7 +172,7 @@ export default apiRoute<typeof meta, typeof schema>(
                               self?.id
                           } AND Relationships.following = ${
                               following ? true : false
-                          } AND Relationships.objectId = ${user.id})`
+                          } AND Relationships.ownerId = ${user.id})`
                         : undefined,
                 ),
             orderBy: (user, { desc }) => desc(user.createdAt),
@@ -191,7 +191,7 @@ export default apiRoute<typeof meta, typeof schema>(
                               self?.id
                           } AND Relationships.following = ${
                               following ? true : false
-                          } AND Relationships.objectId = ${status.authorId})`
+                          } AND Relationships.ownerId = ${status.authorId})`
                         : undefined,
                 ),
             orderBy: (status, { desc }) => desc(status.createdAt),

@@ -57,7 +57,7 @@ export default apiRoute<typeof meta, typeof schema>(
                         max_id ? lt(follower.id, max_id) : undefined,
                         since_id ? gte(follower.id, since_id) : undefined,
                         min_id ? gt(follower.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${otherUser.id} AND "Relationship"."objectId" = ${follower.id} AND "Relationship"."following" = true)`,
+                        sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${otherUser.id} AND "Relationship"."ownerId" = ${follower.id} AND "Relationship"."following" = true)`,
                     ),
                 // @ts-expect-error Yes I KNOW the types are wrong
                 orderBy: (liker, { desc }) => desc(liker.id),
