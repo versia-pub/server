@@ -2,13 +2,6 @@
 import { $ } from "bun";
 import { rawRoutes } from "~routes";
 
-const feOnly = process.argv.includes("--frontend");
-const serverOnly = process.argv.includes("--server");
-
-console.log("Building frontend...");
-
-await $`bun fe:build`;
-
 console.log(`Building at ${process.cwd()}`);
 
 await $`rm -rf dist && mkdir dist`;
@@ -42,9 +35,6 @@ await $`cp -r drizzle dist/drizzle`;
 await $`mkdir -p dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-libvips-linux-* dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
-
-// Copy Nuxt build output to dist
-await $`cp -r packages/frontend/.output dist/frontend`;
 
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;

@@ -2,5 +2,5 @@
     "typescript.tsdk": "node_modules/typescript/lib",
     "jest.jestCommandLine": "/home/jessew/.bun/bin/bun test",
     "jest.rootPath": ".",
-    "conventionalCommits.scopes": ["database", "frontend"]
+    "conventionalCommits.scopes": ["database", "frontend", "build"]
 }
