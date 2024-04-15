@@ -9,7 +9,6 @@ import { createServer } from "~server";
 
 const timeAtStart = performance.now();
 
-// If imported as a module, redirect logs to /dev/null to not pollute console (e.g. in tests)
 await dualLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
 
 await setupDatabase(dualLogger);
@@ -33,6 +32,7 @@ try {
     await dualLogger.logError(LogLevel.CRITICAL, "Database", error);
     process.exit(1);
 }
+
 const server = createServer(config, dualLogger, true);
 
 await dualLogger.log(
@@ -48,5 +48,23 @@ await dualLogger.log(
     "Database",
     `Database is online, now serving ${postCount} posts`,
 );
+
+// Check if frontend is reachable
+const response = await fetch(new URL("/", config.frontend.url))
+    .then((res) => res.ok)
+    .catch(() => false);
+
+if (!response) {
+    await dualLogger.log(
+        LogLevel.ERROR,
+        "Server",
+        `Frontend is unreachable at ${config.frontend.url}`,
+    );
+    await dualLogger.log(
+        LogLevel.ERROR,
+        "Server",
+        "Please ensure the frontend is online and reachable",
+    );
+}
 
 export { config, server };

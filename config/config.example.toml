@@ -86,6 +86,10 @@ bait_ips = ["127.0.0.1", "::1"]
 # User agents to send bait data to (regex format)
 bait_user_agents = ["curl", "wget"]
 
+[frontend]
+# The URL to reach the frontend at (should be on a local network)
+url = "http://localhost:3000"
+
 [smtp]
 # SMTP server to use for sending emails
 server = "smtp.example.com"

@@ -129,8 +129,8 @@ export const createServer = (
             );
 
             const replacedUrl = req.url
-                .replace(config.http.base_url, "http://localhost:5173")
-                .replace(base_url_with_http, "http://localhost:5173");
+                .replace(config.http.base_url, config.frontend.url)
+                .replace(base_url_with_http, config.frontend.url);
 
             const proxy = await fetch(replacedUrl, {
                 headers: {
@@ -146,7 +146,7 @@ export const createServer = (
                 await logger.log(
                     LogLevel.ERROR,
                     "Server.Proxy",
-                    `The development Vite server is not running or the route is not found: ${replacedUrl}`,
+                    `The Frontend is not running or the route is not found: ${replacedUrl}`,
                 );
                 return errorResponse("Route not found", 404);
             });

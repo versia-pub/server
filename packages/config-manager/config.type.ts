@@ -120,6 +120,11 @@ export interface Config {
         };
     };
 
+    frontend: {
+        /** @default "http://localhost:3000" */
+        url: string;
+    };
+
     smtp: {
         /** @default "smtp.example.com" */
         server: string;
@@ -426,6 +431,9 @@ export const defaultConfig: Config = {
             bait_ips: ["127.0.0.1", "::1"],
             bait_user_agents: ["curl", "wget"],
         },
+    },
+    frontend: {
+        url: "http://localhost:3000",
     },
     smtp: {
         server: "smtp.example.com",
