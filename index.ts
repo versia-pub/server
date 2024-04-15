@@ -59,21 +59,38 @@ await dualServerLogger.log(
     `Database is online, now serving ${postCount} posts`,
 );
 
-// Check if frontend is reachable
-const response = await fetch(new URL("/", config.frontend.url))
-    .then((res) => res.ok)
-    .catch(() => false);
+if (config.frontend.enabled) {
+    if (!URL.canParse(config.frontend.url)) {
+        await dualServerLogger.log(
+            LogLevel.ERROR,
+            "Server",
+            `Frontend URL is not a valid URL: ${config.frontend.url}`,
+        );
+        process.exit(1);
+    }
 
-if (!response) {
+    // Check if frontend is reachable
+    const response = await fetch(new URL("/", config.frontend.url))
+        .then((res) => res.ok)
+        .catch(() => false);
+
+    if (!response) {
+        await dualServerLogger.log(
+            LogLevel.ERROR,
+            "Server",
+            `Frontend is unreachable at ${config.frontend.url}`,
+        );
+        await dualServerLogger.log(
+            LogLevel.ERROR,
+            "Server",
+            "Please ensure the frontend is online and reachable",
+        );
+    }
+} else {
     await dualServerLogger.log(
-        LogLevel.ERROR,
+        LogLevel.WARNING,
         "Server",
-        `Frontend is unreachable at ${config.frontend.url}`,
-    );
-    await dualServerLogger.log(
-        LogLevel.ERROR,
-        "Server",
-        "Please ensure the frontend is online and reachable",
+        "Frontend is disabled, skipping check",
     );
 }
 

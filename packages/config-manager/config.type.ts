@@ -121,6 +121,9 @@ export interface Config {
     };
 
     frontend: {
+        /** @default true */
+        enabled: boolean;
+
         /** @default "http://localhost:3000" */
         url: string;
 
@@ -442,6 +445,7 @@ export const defaultConfig: Config = {
         },
     },
     frontend: {
+        enabled: true,
         url: "http://localhost:3000",
         glitch: {
             enabled: false,

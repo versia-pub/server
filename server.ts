@@ -126,8 +126,10 @@ export const createServer = (
             }
 
             if (config.frontend.glitch.enabled) {
-                // Proxy all /web requests to Glitch-Soc
-                return await handleGlitchRequest(req, dualLogger);
+                return (
+                    (await handleGlitchRequest(req, dualLogger)) ??
+                    errorResponse("Route not found", 404)
+                );
             }
 
             const base_url_with_http = config.http.base_url.replace(

@@ -87,6 +87,8 @@ bait_ips = ["127.0.0.1", "::1"]
 bait_user_agents = ["curl", "wget"]
 
 [frontend]
+# Enable custom frontends (warning: not enabling this or Glitch will make Lysand only accessible via the Mastodon API)
+enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
 
