@@ -27,7 +27,7 @@ export const attachmentToAPI = (
         type: type as "image" | "video" | "audio" | "unknown",
         url: attachment.url,
         remote_url: attachment.remoteUrl,
-        preview_url: attachment.thumbnailUrl,
+        preview_url: attachment.thumbnailUrl || attachment.url,
         text_url: null,
         meta: {
             width: attachment.width || undefined,
