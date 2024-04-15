@@ -758,8 +758,8 @@ export const userToAPI = (
                 ? (userToConvert.source as APISource)
                 : undefined,
         // TODO: Add static avatar and header
-        avatar_static: "",
-        header_static: "",
+        avatar_static: getAvatarUrl(userToConvert, config),
+        header_static: getHeaderUrl(userToConvert, config),
         acct:
             userToConvert.instance === null
                 ? userToConvert.username
