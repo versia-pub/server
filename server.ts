@@ -117,22 +117,17 @@ export const createServer = (
                 );
             }
 
-            if (config.frontend.glitch.enabled) {
-                // Proxy all /web requests to Glitch-Soc
-                if (
-                    new URL(req.url).pathname.startsWith("/web") ||
-                    new URL(req.url).pathname.startsWith("/packs")
-                ) {
-                    return await handleGlitchRequest(req, dualLogger);
-                }
-            }
-
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
             const matchedRoute = matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
             if (matchedRoute?.filePath && matchedRoute.name !== "/[...404]") {
                 return await processRoute(matchedRoute, req, logger);
+            }
+
+            if (config.frontend.glitch.enabled) {
+                // Proxy all /web requests to Glitch-Soc
+                return await handleGlitchRequest(req, dualLogger);
             }
 
             const base_url_with_http = config.http.base_url.replace(
