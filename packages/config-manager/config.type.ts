@@ -123,6 +123,17 @@ export interface Config {
     frontend: {
         /** @default "http://localhost:3000" */
         url: string;
+
+        glitch: {
+            /** @default false */
+            enabled: boolean;
+
+            /** @default "glitch" */
+            assets: string;
+
+            /** @default [] */
+            server: string[];
+        };
     };
 
     smtp: {
@@ -437,6 +448,11 @@ export const defaultConfig: Config = {
     },
     frontend: {
         url: "http://localhost:3000",
+        glitch: {
+            enabled: false,
+            assets: "glitch",
+            server: [],
+        },
     },
     smtp: {
         server: "smtp.example.com",

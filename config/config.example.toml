@@ -90,6 +90,14 @@ bait_user_agents = ["curl", "wget"]
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
 
+[frontend.glitch]
+# Enable the Glitch frontend integration
+enabled = false
+# Glitch assets folder
+assets = "glitch"
+# Server the assets were ripped from (and any eventual CDNs)
+server = ["https://glitch.social", "https://static.glitch.social"]
+
 [smtp]
 # SMTP server to use for sending emails
 server = "smtp.example.com"

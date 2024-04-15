@@ -1,9 +1,11 @@
+import { dualLogger } from "@loggers";
 import { errorResponse, response } from "@response";
 import type { Config } from "config-manager";
 import { matches } from "ip-matching";
 import type { LogManager, MultiLogManager } from "log-manager";
 import { LogLevel } from "log-manager";
 import { processRoute } from "server-handler";
+import { handleGlitchRequest } from "~packages/glitch-server/main";
 import { matchRoute } from "~routes";
 
 export const createServer = (
@@ -113,6 +115,16 @@ export const createServer = (
                     config.logging.log_ip ? request_ip : undefined,
                     config.logging.log_requests_verbose,
                 );
+            }
+
+            if (config.frontend.glitch.enabled) {
+                // Proxy all /web requests to Glitch-Soc
+                if (
+                    new URL(req.url).pathname.startsWith("/web") ||
+                    new URL(req.url).pathname.startsWith("/packs")
+                ) {
+                    return await handleGlitchRequest(req, dualLogger);
+                }
             }
 
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
