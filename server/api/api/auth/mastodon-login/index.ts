@@ -13,7 +13,7 @@ export const meta = applyConfig({
         max: 4,
         duration: 60,
     },
-    route: "/api/auth/login",
+    route: "/api/auth/mastodon-logout",
     auth: {
         required: false,
     },

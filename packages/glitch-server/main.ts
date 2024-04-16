@@ -116,6 +116,12 @@ export const handleGlitchRequest = async (
         path = "/auth/sign_in.html";
     }
 
+    if (path === "/auth/sign_out") {
+        if (req.method === "POST") {
+            return redirect("/api/auth/mastodon-logout", 307);
+        }
+    }
+
     // Redirect / to /index.html
     if (path === "/" || path === "") path = "/index.html";
     // If path doesn't have an extension (e.g. /about), serve index.html
