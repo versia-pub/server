@@ -175,12 +175,12 @@ const handleDefaultRequest = async (
     accessToken: string,
 ) => {
     const file = Bun.file(join(config.frontend.glitch.assets, path));
+    const transformedText = path.endsWith(".html")
+        ? await indexTransforms(await file.text(), accessToken, user)
+        : undefined;
 
     if (await file.exists()) {
-        return returnFile(
-            file,
-            await indexTransforms(await file.text(), accessToken, user),
-        );
+        return returnFile(file, transformedText);
     }
 
     return null;
@@ -192,7 +192,6 @@ const indexTransforms = async (
     user: UserWithRelations | null,
 ) => {
     let newFileContents = fileContents;
-
     for (const server of config.frontend.glitch.server) {
         newFileContents = newFileContents.replaceAll(
             `${new URL(server).origin}/`,
@@ -209,14 +208,12 @@ const indexTransforms = async (
         "Lysand is free and open-source software using the Glitch-Soc frontend.",
     );
     newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
-    newFileContents = newFileContents.replaceAll(
-        "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
-        "This is not a Mastodon instance.",
-    );
-    newFileContents = newFileContents.replaceAll(
-        "joinmastodon.org",
-        "lysand.org",
-    );
+    newFileContents = newFileContents
+        .replaceAll(
+            "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
+            "This is not a Mastodon instance.",
+        )
+        .replaceAll("joinmastodon.org", "lysand.org");
 
     // Find script id="initial-state" and replace its contents with custom json
     const rewriter = new HTMLRewriter()
@@ -330,12 +327,12 @@ export const handleGlitchRequest = async (
         return handleSignOutRequest(req);
     }
 
-    // Redirect / to /index.html
-    if (path === "/" || path === "") path = "/index.html";
-    // If path doesn't have an extension (e.g. /about), serve index.html
-    // Also check if Accept header contains text/html
-    if (!path.includes(".") && req.headers.get("Accept")?.includes("text/html"))
+    if (
+        req.headers.get("Accept")?.includes("text/html") &&
+        !path.includes(".")
+    ) {
         path = "/index.html";
+    }
 
     return handleDefaultRequest(req, path, user, accessToken);
 };
