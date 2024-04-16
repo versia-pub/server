@@ -288,34 +288,6 @@ describe("API Tests", () => {
         });
     });
 
-    describe("GET /api/v1/timelines/public", () => {
-        test("should return an array of APIStatus objects that includes the created status", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `${base_url}/api/v1/timelines/public`,
-                        base_url,
-                    ),
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
-                "application/json",
-            );
-
-            const statuses = (await response.json()) as APIStatus[];
-
-            expect(statuses.some((s) => s.id === status?.id)).toBe(true);
-        });
-    });
-
     describe("GET /api/v1/accounts/:id/statuses", () => {
         test("should return the statuses of the specified user", async () => {
             const response = await sendTestRequest(

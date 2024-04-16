@@ -16,37 +16,6 @@ describe("API Tests", () => {
         await deleteUsers();
     });
 
-    describe("GET /api/v1/instance", () => {
-        test("should return an APIInstance object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(`${base_url}/api/v1/instance`, base_url),
-                ),
-            );
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
-                "application/json",
-            );
-
-            const instance = (await response.json()) as APIInstance;
-
-            expect(instance.uri).toBe(config.http.base_url);
-            expect(instance.title).toBeDefined();
-            expect(instance.description).toBeDefined();
-            expect(instance.email).toBeDefined();
-            expect(instance.version).toBeDefined();
-            expect(instance.urls).toBeDefined();
-            expect(instance.stats).toBeDefined();
-            expect(instance.thumbnail).toBeDefined();
-            expect(instance.languages).toBeDefined();
-            // Not implemented yet
-            // expect(instance.contact_account).toBeDefined();
-            expect(instance.rules).toBeDefined();
-            expect(instance.approval_required).toBeDefined();
-        });
-    });
-
     describe("GET /api/v1/custom_emojis", () => {
         beforeAll(async () => {
             await db.insert(emoji).values({

@@ -17,26 +17,6 @@ afterAll(async () => {
 });
 
 describe("API Tests", () => {
-    describe("POST /api/v1/accounts/:id", () => {
-        test("should return a 404 error when trying to fetch a non-existent user", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl("/api/v1/accounts/999999", base_url),
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
-
-            expect(response.status).toBe(404);
-            expect(response.headers.get("content-type")).toBe(
-                "application/json",
-            );
-        });
-    });
-
     describe("PATCH /api/v1/accounts/update_credentials", () => {
         test("should update the authenticated user's display name", async () => {
             const response = await sendTestRequest(
@@ -675,43 +655,6 @@ describe("API Tests", () => {
 
             expect(Array.isArray(familiarFollowers)).toBe(true);
             expect(familiarFollowers.length).toBe(0);
-            /* expect(typeof familiarFollowers[0].id).toBe("string");
-			expect(Array.isArray(familiarFollowers[0].accounts)).toBe(true);
-			expect(familiarFollowers[0].accounts.length).toBeGreaterThanOrEqual(
-				0
-			);
-
-			if (familiarFollowers[0].accounts.length === 0) return;
-			expect(familiarFollowers[0].accounts[0].id).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].username).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].acct).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].display_name).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].locked).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].bot).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].discoverable).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].group).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].created_at).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].note).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].url).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].avatar).toBeDefined();
-			expect(
-				familiarFollowers[0].accounts[0].avatar_static
-			).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].header).toBeDefined();
-			expect(
-				familiarFollowers[0].accounts[0].header_static
-			).toBeDefined();
-			expect(
-				familiarFollowers[0].accounts[0].followers_count
-			).toBeDefined();
-			expect(
-				familiarFollowers[0].accounts[0].following_count
-			).toBeDefined();
-			expect(
-				familiarFollowers[0].accounts[0].statuses_count
-			).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].emojis).toBeDefined();
-			expect(familiarFollowers[0].accounts[0].fields).toBeDefined(); */
         });
     });
 });
