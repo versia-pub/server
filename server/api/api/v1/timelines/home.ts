@@ -51,10 +51,6 @@ export default apiRoute<typeof meta, typeof schema>(
                         ),
                         or(
                             eq(status.authorId, user.id),
-                            /* inArray(
-                        status.authorId,
-                        followers.map((f) => f.ownerId),
-                    ), */
                             // All statuses where the user is mentioned, using table _StatusToUser which has a: status.id and b: user.id
                             // WHERE format (... = ...)
                             sql`EXISTS (SELECT 1 FROM "StatusToMentions" WHERE "StatusToMentions"."statusId" = ${status.id} AND "StatusToMentions"."userId" = ${user.id})`,

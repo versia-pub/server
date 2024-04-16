@@ -223,10 +223,6 @@ export const status = pgTable(
         visibility: text("visibility").notNull(),
         inReplyToPostId: uuid("inReplyToPostId"),
         quotingPostId: uuid("quotingPostId"),
-        instanceId: uuid("instanceId").references(() => instance.id, {
-            onDelete: "cascade",
-            onUpdate: "cascade",
-        }),
         sensitive: boolean("sensitive").notNull(),
         spoilerText: text("spoiler_text").default("").notNull(),
         applicationId: uuid("applicationId").references(() => application.id, {
@@ -683,7 +679,6 @@ export const emojiRelations = relations(emoji, ({ one, many }) => ({
 
 export const instanceRelations = relations(instance, ({ many }) => ({
     users: many(user),
-    statuses: many(status),
     emojis: many(emoji),
 }));
 

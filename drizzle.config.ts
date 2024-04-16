@@ -6,6 +6,11 @@ export default {
     out: "./drizzle",
     schema: "./drizzle/schema.ts",
     dbCredentials: {
+        /* host: "localhost",
+        port: 40000,
+        user: "lysand",
+        password: "lysand",
+        database: "lysand", */
         host: config.database.host,
         port: Number(config.database.port),
         user: config.database.username,

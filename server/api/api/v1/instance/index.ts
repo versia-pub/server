@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
-import { and, count, countDistinct, eq, gte, isNull } from "drizzle-orm";
+import { and, count, countDistinct, eq, gte, isNull, sql } from "drizzle-orm";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { instance, status, user } from "~drizzle/schema";
@@ -31,7 +31,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 count: count(),
             })
             .from(status)
-            .where(isNull(status.instanceId))
+            .where(
+                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`,
+            )
     )[0].count;
 
     const userCount = (

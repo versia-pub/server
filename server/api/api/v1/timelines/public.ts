@@ -50,10 +50,11 @@ export default apiRoute<typeof meta, typeof schema>(
                         max_id ? lt(status.id, max_id) : undefined,
                         since_id ? gte(status.id, since_id) : undefined,
                         min_id ? gt(status.id, min_id) : undefined,
+                        // use authorId to grab user, then use user.instanceId to filter local/remote statuses
                         remote
-                            ? isNotNull(status.instanceId)
+                            ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`
                             : local
-                              ? isNull(status.instanceId)
+                              ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`
                               : undefined,
                         only_media
                             ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`

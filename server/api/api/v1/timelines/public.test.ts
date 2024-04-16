@@ -63,6 +63,59 @@ describe(meta.route, () => {
         }
     });
 
+    test("should only fetch local statuses", async () => {
+        const response = await sendTestRequest(
+            new Request(
+                new URL(
+                    `${meta.route}?limit=20&local=true`,
+                    config.http.base_url,
+                ),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("application/json");
+
+        const objects = (await response.json()) as APIStatus[];
+
+        expect(objects.length).toBe(20);
+        for (const [index, status] of objects.entries()) {
+            expect(status.account).toBeDefined();
+            expect(status.account.id).toBe(users[0].id);
+            expect(status.content).toBeDefined();
+            expect(status.created_at).toBeDefined();
+            expect(status.id).toBe(timeline[index].id);
+        }
+    });
+
+    test("should only fetch remote statuses (0)", async () => {
+        const response = await sendTestRequest(
+            new Request(
+                new URL(
+                    `${meta.route}?limit=20&remote=true`,
+                    config.http.base_url,
+                ),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("application/json");
+
+        const objects = (await response.json()) as APIStatus[];
+
+        expect(objects.length).toBe(0);
+    });
+
     describe("should paginate properly", async () => {
         test("should send correct Link header", async () => {
             const response = await sendTestRequest(

@@ -8,7 +8,15 @@ import { CliBuilder, CliCommand } from "cli-parser";
 import { CliParameterType } from "cli-parser/cli-builder.type";
 import Table from "cli-table";
 import { config } from "config-manager";
-import { type SQL, eq, inArray, isNotNull, isNull, like } from "drizzle-orm";
+import {
+    type SQL,
+    eq,
+    inArray,
+    isNotNull,
+    isNull,
+    like,
+    sql,
+} from "drizzle-orm";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
@@ -948,16 +956,15 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            let instanceQuery: SQL<unknown> | undefined = isNull(
-                status.instanceId,
-            );
+            let instanceQuery: SQL<unknown> | undefined =
+                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`;
 
             if (local && remote) {
                 instanceQuery = undefined;
             } else if (local) {
-                instanceQuery = isNull(status.instanceId);
+                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`;
             } else if (remote) {
-                instanceQuery = isNotNull(status.instanceId);
+                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`;
             }
 
             const notes = await findManyStatuses({
