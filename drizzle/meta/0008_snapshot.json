@@ -1,6 +1,6 @@
 {
-    "id": "73c8df6a-c16d-4527-b959-46d6b32f56c6",
-    "prevId": "47f76353-0b58-4367-b273-8933b7c89e1f",
+    "id": "146b3c00-8c0f-4dec-8ce7-36f91a2fc445",
+    "prevId": "73c8df6a-c16d-4527-b959-46d6b32f56c6",
     "version": "5",
     "dialect": "pg",
     "tables": {
@@ -780,6 +780,13 @@
                     "type": "uuid",
                     "primaryKey": false,
                     "notNull": false
+                },
+                "dismissed": {
+                    "name": "dismissed",
+                    "type": "boolean",
+                    "primaryKey": false,
+                    "notNull": true,
+                    "default": false
                 }
             },
             "indexes": {},

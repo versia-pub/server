@@ -195,6 +195,7 @@ export const notification = pgTable("Notification", {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
+    dismissed: boolean("dismissed").default(false).notNull(),
 });
 
 export const status = pgTable(

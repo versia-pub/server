@@ -18,6 +18,7 @@ import {
 import { LogLevel } from "~packages/log-manager";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import type { Source as APISource } from "~types/mastodon/source";
+import type { Application } from "./Application";
 import {
     type EmojiWithInstance,
     emojiToAPI,
@@ -28,7 +29,6 @@ import { objectToInboxRequest } from "./Federation";
 import { addInstanceIfNotExists } from "./Instance";
 import { createNewRelationship } from "./Relationship";
 import type { Token } from "./Token";
-import type { Application } from "./Application";
 
 export type User = InferSelectModel<typeof user> & {
     endpoints?: Partial<{

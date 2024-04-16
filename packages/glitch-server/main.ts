@@ -1,9 +1,9 @@
 import { join } from "node:path";
+import { redirect } from "@response";
 import { config } from "config-manager";
+import { retrieveUserFromToken, userToAPI } from "~database/entities/User";
 import type { LogManager, MultiLogManager } from "~packages/log-manager";
 import { languages } from "./glitch-languages";
-import { redirect } from "@response";
-import { retrieveUserFromToken, userToAPI } from "~database/entities/User";
 
 export const handleGlitchRequest = async (
     req: Request,

@@ -17,6 +17,7 @@ export const meta = applyConfig({
     },
     auth: {
         required: true,
+        oauthPermissions: ["read:notifications"],
     },
 });
 
@@ -115,6 +116,7 @@ export default apiRoute<typeof meta, typeof schema>(
                                 : undefined,
                             min_id ? gt(notification.id, min_id) : undefined,
                             eq(notification.notifiedId, user.id),
+                            eq(notification.dismissed, false),
                             account_id
                                 ? eq(notification.accountId, account_id)
                                 : undefined,

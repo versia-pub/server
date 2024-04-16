@@ -6,8 +6,8 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import { meta } from "./index";
 import type { Notification as APINotification } from "~types/mastodon/notification";
+import { meta } from "./index";
 
 await deleteOldTestUsers();
 

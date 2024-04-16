@@ -32,16 +32,16 @@ import {
     emojiToStatus,
     instance,
     type like,
+    notification,
     status,
     statusToMentions,
     user,
-    notification,
 } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
 import type { Note } from "~types/lysand/Object";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
-import { applicationToAPI, type Application } from "./Application";
+import { type Application, applicationToAPI } from "./Application";
 import {
     attachmentFromLysand,
     attachmentToAPI,
