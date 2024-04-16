@@ -29,6 +29,8 @@ export const rawRoutes = {
     "/api/v1/notifications": "./server/api/api/v1/notifications/index",
     "/api/v1/notifications/clear":
         "./server/api/api/v1/notifications/clear/index",
+    "/api/v1/notifications/destroy_multiple":
+        "./server/api/api/v1/notifications/destroy_multiple/index",
     "/api/v1/notifications/[id]":
         "./server/api/api/v1/notifications/[id]/index",
     "/api/v1/notifications/[id]/dismiss":
