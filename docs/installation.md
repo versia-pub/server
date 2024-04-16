@@ -75,6 +75,11 @@ You may use the environment variables `NO_COLORS=true` and `NO_FANCY_DATES=true`
 
 Please see the [CLI documentation](cli.md) for more information on how to use the CLI.
 
+> [!NOTE]
+> You might be interested in running the [Glitch-Soc](glitch-soc.md) frontend, which is a fork of Mastodon's frontend with additional features.
+>
+> This is possible by following the instructions in [this file](glitch-soc.md).
+
 ### Updating the server
 
 Updating the server is as simple as pulling the latest changes from the repository and running `bun prod-build` again. You may need to run `bun install` again if there are new dependencies.
