@@ -1,14 +1,14 @@
 import { join } from "node:path";
 import { redirect } from "@response";
+import type { BunFile } from "bun";
 import { config } from "config-manager";
 import {
+    type UserWithRelations,
     retrieveUserFromToken,
     userToAPI,
-    type UserWithRelations,
 } from "~database/entities/User";
 import type { LogManager, MultiLogManager } from "~packages/log-manager";
 import { languages } from "./glitch-languages";
-import type { BunFile } from "bun";
 
 const handleManifestRequest = async () => {
     const manifest = {
