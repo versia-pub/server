@@ -28,9 +28,10 @@ import {
     findFirstUser,
     findManyUsers,
 } from "~database/entities/User";
-import { db } from "~drizzle/db";
+import { db, client } from "~drizzle/db";
 import { emoji, openIdAccount, status, user } from "~drizzle/schema";
 
+await client.connect();
 const args = process.argv;
 
 const filterObjects = <T extends object>(output: T[], fields: string[]) => {
