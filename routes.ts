@@ -27,6 +27,12 @@ export const rawRoutes = {
     "/api/v1/media": "./server/api/api/v1/media/index",
     "/api/v1/mutes": "./server/api/api/v1/mutes/index",
     "/api/v1/notifications": "./server/api/api/v1/notifications/index",
+    "/api/v1/notifications/clear":
+        "./server/api/api/v1/notifications/clear/index",
+    "/api/v1/notifications/[id]":
+        "./server/api/api/v1/notifications/[id]/index",
+    "/api/v1/notifications/[id]/dismiss":
+        "./server/api/api/v1/notifications/[id]/dismiss",
     "/api/v1/profile/avatar": "./server/api/api/v1/profile/avatar",
     "/api/v1/profile/header": "./server/api/api/v1/profile/header",
     "/api/v1/statuses": "./server/api/api/v1/statuses/index",
