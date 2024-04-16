@@ -172,7 +172,7 @@ export const followRequestUser = async (
     notify = false,
     languages: string[] = [],
 ): Promise<InferSelectModel<typeof relationship>> => {
-    const isRemote = follower.instanceId !== followee.instanceId;
+    const isRemote = followee.instanceId !== null;
 
     const updatedRelationship = (
         await db
@@ -226,9 +226,9 @@ export const followRequestUser = async (
         }
     } else {
         await db.insert(notification).values({
-            accountId: followee.id,
+            accountId: follower.id,
             type: followee.isLocked ? "follow_request" : "follow",
-            notifiedId: follower.id,
+            notifiedId: followee.id,
         });
     }
 

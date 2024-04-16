@@ -47,7 +47,6 @@ export const schema = z.object({
             "group_reblog",
             "group_favourite",
             "user_approved",
-            "update",
         ])
         .array()
         .optional(),
@@ -73,7 +72,6 @@ export const schema = z.object({
             "group_reblog",
             "group_favourite",
             "user_approved",
-            "update",
         ])
         .array()
         .optional(),

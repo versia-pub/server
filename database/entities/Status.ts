@@ -35,6 +35,7 @@ import {
     status,
     statusToMentions,
     user,
+    notification,
 } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
 import type { Note } from "~types/lysand/Object";
@@ -995,6 +996,18 @@ export const createNewStatus = async (
             .where(inArray(attachment.id, media_attachments));
     }
 
+    // Send notifications for mentioned local users
+    for (const mention of mentions ?? []) {
+        if (mention.instanceId === null) {
+            await db.insert(notification).values({
+                accountId: author.id,
+                notifiedId: mention.id,
+                type: "mention",
+                statusId: newStatus.id,
+            });
+        }
+    }
+
     return (
         (await findFirstStatuses({
             where: (status, { eq }) => eq(status.id, newStatus.id),
@@ -1144,6 +1157,18 @@ export const editStatus = async (
                 userId: mention.id,
             })
             .execute();
+    }
+
+    // Send notifications for mentioned local users
+    for (const mention of mentions ?? []) {
+        if (mention.instanceId === null) {
+            await db.insert(notification).values({
+                accountId: statusToEdit.authorId,
+                notifiedId: mention.id,
+                type: "mention",
+                statusId: updated.id,
+            });
+        }
     }
 
     // Set attachment parents
