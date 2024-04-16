@@ -173,11 +173,23 @@ export class RequestParser {
                 }
                 (result[arrayKey] as string[]).push(decodeURIComponent(value));
             } else {
-                result[key as keyof T] = decodeURIComponent(
-                    value,
+                result[key as keyof T] = castBoolean(
+                    decodeURIComponent(value),
                 ) as T[keyof T];
             }
         }
         return result;
     }
 }
+
+const castBoolean = (value: string) => {
+    if (["true"].includes(value)) {
+        return true;
+    }
+
+    if (["false"].includes(value)) {
+        return false;
+    }
+
+    return value;
+};

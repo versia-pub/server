@@ -26,9 +26,9 @@ export const schema = z.object({
     since_id: z.string().regex(idValidator).optional(),
     min_id: z.string().regex(idValidator).optional(),
     limit: z.coerce.number().int().min(1).max(80).optional().default(20),
-    local: z.coerce.boolean().optional(),
-    remote: z.coerce.boolean().optional(),
-    only_media: z.coerce.boolean().optional(),
+    local: z.boolean().optional(),
+    remote: z.boolean().optional(),
+    only_media: z.boolean().optional(),
 });
 
 export default apiRoute<typeof meta, typeof schema>(
@@ -53,9 +53,10 @@ export default apiRoute<typeof meta, typeof schema>(
                         // use authorId to grab user, then use user.instanceId to filter local/remote statuses
                         remote
                             ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`
-                            : local
-                              ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`
-                              : undefined,
+                            : undefined,
+                        local
+                            ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`
+                            : undefined,
                         only_media
                             ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
                             : undefined,

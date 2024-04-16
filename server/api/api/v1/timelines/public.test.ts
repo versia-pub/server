@@ -93,11 +93,11 @@ describe(meta.route, () => {
         }
     });
 
-    test("should only fetch remote statuses (0)", async () => {
+    test("should only fetch remote statuses", async () => {
         const response = await sendTestRequest(
             new Request(
                 new URL(
-                    `${meta.route}?limit=20&remote=true`,
+                    `${meta.route}?remote=true&allow_local_only=false&only_media=false`,
                     config.http.base_url,
                 ),
                 {
@@ -113,7 +113,7 @@ describe(meta.route, () => {
 
         const objects = (await response.json()) as APIStatus[];
 
-        expect(objects.length).toBe(0);
+        expect(objects).toBeArrayOfSize(1);
     });
 
     describe("should paginate properly", async () => {
