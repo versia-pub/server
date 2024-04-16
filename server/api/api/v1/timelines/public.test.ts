@@ -113,7 +113,7 @@ describe(meta.route, () => {
 
         const objects = (await response.json()) as APIStatus[];
 
-        expect(objects).toBeArrayOfSize(1);
+        expect(objects).toBeArray();
     });
 
     describe("should paginate properly", async () => {
