@@ -20,10 +20,7 @@ export const likeToLysand = (like: Like): Lysand.Like => {
         created_at: new Date(like.createdAt).toISOString(),
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
         object: (like as any).liked?.uri,
-        uri: new URL(
-            `/objects/like/${like.id}`,
-            config.http.base_url,
-        ).toString(),
+        uri: new URL(`/objects/${like.id}`, config.http.base_url).toString(),
     };
 };
 

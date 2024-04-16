@@ -1320,7 +1320,7 @@ export const getStatusUri = (status?: Status | null) => {
 
     return (
         status.uri ||
-        new URL(`/objects/note/${status.id}`, config.http.base_url).toString()
+        new URL(`/objects/${status.id}`, config.http.base_url).toString()
     );
 };
 
