@@ -953,7 +953,6 @@ export const createNewStatus = async (
                 visibility,
                 sensitive: is_sensitive,
                 spoilerText: spoiler_text,
-                instanceId: author.instanceId || null,
                 uri: uri || null,
                 inReplyToPostId: inReplyTo?.id,
                 quotingPostId: quoting?.id,
