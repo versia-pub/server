@@ -222,7 +222,7 @@ const brandingTransforms = async (
     );
     newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
     newFileContents = newFileContents.replaceAll(
-        "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
+        "Lysand is free, open-source software, and a trademark of Lysand gGmbH.",
         "This is not a Mastodon instance.",
     );
 
