@@ -1,6 +1,6 @@
 // Delete dist directory
 import { $ } from "bun";
-import { rawRoutes } from "~routes";
+import { routes } from "~routes";
 
 console.log(`Building at ${process.cwd()}`);
 
@@ -11,7 +11,7 @@ await Bun.build({
         `${process.cwd()}/index.ts`,
         `${process.cwd()}/cli.ts`,
         // Force Bun to include endpoints
-        ...Object.values(rawRoutes),
+        ...Object.values(routes),
     ],
     outdir: `${process.cwd()}/dist`,
     target: "bun",
