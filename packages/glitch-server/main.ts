@@ -192,6 +192,32 @@ const indexTransforms = async (
     user: UserWithRelations | null,
 ) => {
     let newFileContents = fileContents;
+
+    for (const server of config.frontend.glitch.server) {
+        newFileContents = newFileContents.replaceAll(
+            `${new URL(server).origin}/`,
+            "/",
+        );
+        newFileContents = newFileContents.replaceAll(
+            new URL(server).host,
+            new URL(config.http.base_url).host,
+        );
+    }
+
+    newFileContents = newFileContents.replaceAll(
+        "Glitch-soc is free open source software forked from Mastodon.",
+        "Lysand is free and open-source software using the Glitch-Soc frontend.",
+    );
+    newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
+    newFileContents = newFileContents.replaceAll(
+        "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
+        "This is not a Mastodon instance.",
+    );
+    newFileContents = newFileContents.replaceAll(
+        "joinmastodon.org",
+        "lysand.org",
+    );
+
     // Find script id="initial-state" and replace its contents with custom json
     const rewriter = new HTMLRewriter()
         .on("script#initial-state", {
@@ -275,31 +301,6 @@ const indexTransforms = async (
             },
         })
         .transform(new Response(newFileContents));
-
-    for (const server of config.frontend.glitch.server) {
-        newFileContents = newFileContents.replaceAll(
-            `${new URL(server).origin}/`,
-            "/",
-        );
-        newFileContents = newFileContents.replaceAll(
-            new URL(server).host,
-            new URL(config.http.base_url).host,
-        );
-    }
-
-    newFileContents = newFileContents.replaceAll(
-        "Glitch-soc is free open source software forked from Mastodon.",
-        "Lysand is free and open-source software using the Glitch-Soc frontend.",
-    );
-    newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
-    newFileContents = newFileContents.replaceAll(
-        "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
-        "This is not a Mastodon instance.",
-    );
-    newFileContents = newFileContents.replaceAll(
-        "joinmastodon.org",
-        "lysand.org",
-    );
 
     return rewriter.text();
 };
