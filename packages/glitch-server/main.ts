@@ -134,7 +134,11 @@ const handleSignInRequest = async (
                 Bun.file(
                     join(config.frontend.glitch.assets, "/auth/sign_in.html"),
                 ),
-                await indexTransforms(await rewriter.text(), accessToken, user),
+                await brandingTransforms(
+                    await rewriter.text(),
+                    accessToken,
+                    user,
+                ),
             );
         }
         return redirect("/api/auth/mastodon-login", 307);
@@ -146,7 +150,11 @@ const handleSignInRequest = async (
 
     return returnFile(
         file,
-        await indexTransforms(await file.text(), accessToken, user),
+        await htmlTransforms(
+            await brandingTransforms(await file.text(), accessToken, user),
+            accessToken,
+            user,
+        ),
     );
 };
 
@@ -175,18 +183,23 @@ const handleDefaultRequest = async (
     accessToken: string,
 ) => {
     const file = Bun.file(join(config.frontend.glitch.assets, path));
-    const transformedText = path.endsWith(".html")
-        ? await indexTransforms(await file.text(), accessToken, user)
-        : undefined;
 
     if (await file.exists()) {
+        const transformedText = await brandingTransforms(
+            path.endsWith(".html")
+                ? await htmlTransforms(await file.text(), accessToken, user)
+                : await file.text(),
+            accessToken,
+            user,
+        );
+
         return returnFile(file, transformedText);
     }
 
     return null;
 };
 
-const indexTransforms = async (
+const brandingTransforms = async (
     fileContents: string,
     accessToken: string,
     user: UserWithRelations | null,
@@ -208,13 +221,24 @@ const indexTransforms = async (
         "Lysand is free and open-source software using the Glitch-Soc frontend.",
     );
     newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
-    newFileContents = newFileContents
-        .replaceAll(
-            "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
-            "This is not a Mastodon instance.",
-        )
-        .replaceAll("joinmastodon.org", "lysand.org");
+    newFileContents = newFileContents.replaceAll(
+        "Lysand is free, open-source software, and a trademark of Mastodon gGmbH.",
+        "This is not a Mastodon instance.",
+    );
 
+    newFileContents = newFileContents.replaceAll(
+        "joinmastodon.org",
+        "lysand.org",
+    );
+
+    return newFileContents;
+};
+
+const htmlTransforms = async (
+    fileContents: string,
+    accessToken: string,
+    user: UserWithRelations | null,
+) => {
     // Find script id="initial-state" and replace its contents with custom json
     const rewriter = new HTMLRewriter()
         .on("script#initial-state", {
@@ -297,7 +321,7 @@ const indexTransforms = async (
                 element.removeAttribute("integrity");
             },
         })
-        .transform(new Response(newFileContents));
+        .transform(new Response(fileContents));
 
     return rewriter.text();
 };
