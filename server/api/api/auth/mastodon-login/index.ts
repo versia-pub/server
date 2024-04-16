@@ -63,13 +63,16 @@ export default apiRoute<typeof meta, typeof schema>(
             userId: user.id,
         });
 
+        // One week from now
+        const maxAge = String(60 * 60 * 24 * 7);
+
         // Redirect to home
         return new Response(null, {
             headers: {
                 Location: "/",
                 "Set-Cookie": `_session_id=${accessToken}; Domain=${
                     new URL(config.http.base_url).hostname
-                }; SameSite=Lax; Path=/; HttpOnly`,
+                }; SameSite=Lax; Path=/; HttpOnly; Max-Age=${maxAge}`,
             },
             status: 303,
         });
