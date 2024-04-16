@@ -66,7 +66,7 @@ export const schema = z.object({
  */
 export default apiRoute<typeof meta, typeof schema>(
     async (req, matchedRoute, extraData) => {
-        const { user } = extraData.auth;
+        const { user, application } = extraData.auth;
 
         if (!user) return errorResponse("Unauthorized", 401);
 
@@ -187,6 +187,7 @@ export default apiRoute<typeof meta, typeof schema>(
             media_ids,
             replyStatus ?? undefined,
             quote ?? undefined,
+            application ?? undefined,
         );
 
         if (!newStatus) {

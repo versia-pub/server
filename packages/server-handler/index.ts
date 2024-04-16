@@ -6,6 +6,7 @@ import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { RequestParser } from "request-parser";
 import type { ZodType, z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import type { Application } from "~database/entities/Application";
 import {
     type AuthData,
     type UserWithRelations,
@@ -31,6 +32,7 @@ export type RouteHandler<
             token: RouteMeta["auth"]["required"] extends true
                 ? string
                 : string | null;
+            application: Application | null;
         };
         parsedRequest: z.infer<ZodSchema>;
         configManager: {
@@ -140,6 +142,7 @@ export const processRoute = async (
             auth: {
                 token: auth?.token ?? null,
                 user: auth?.user ?? null,
+                application: auth?.application ?? null,
             },
             parsedRequest: parsingResult
                 ? (parsingResult.data as z.infer<typeof route.schema>)

@@ -95,6 +95,7 @@ export const getTestStatuses = async (
                     sensitive: false,
                     updatedAt: new Date().toISOString(),
                     visibility: "public",
+                    applicationId: null,
                     ...partial,
                 })
                 .returning()

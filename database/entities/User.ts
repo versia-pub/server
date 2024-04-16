@@ -7,10 +7,12 @@ import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import {
+    application,
     emojiToUser,
     instance,
     notification,
     relationship,
+    token,
     user,
 } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
@@ -25,6 +27,8 @@ import {
 import { objectToInboxRequest } from "./Federation";
 import { addInstanceIfNotExists } from "./Instance";
 import { createNewRelationship } from "./Relationship";
+import type { Token } from "./Token";
+import type { Application } from "./Application";
 
 export type User = InferSelectModel<typeof user> & {
     endpoints?: Partial<{
@@ -123,6 +127,7 @@ export const userExtrasTemplate = (name: string) => ({
 export interface AuthData {
     user: UserWithRelations | null;
     token: string;
+    application: Application | null;
 }
 
 /**
@@ -153,7 +158,10 @@ export const getFromRequest = async (req: Request): Promise<AuthData> => {
     // Check auth token
     const token = req.headers.get("Authorization")?.split(" ")[1] || "";
 
-    return { user: await retrieveUserFromToken(token), token };
+    const { user, application } =
+        await retrieveUserAndApplicationFromToken(token);
+
+    return { user, token, application };
 };
 
 export const followRequestUser = async (
@@ -652,9 +660,7 @@ export const retrieveUserFromToken = async (
 ): Promise<UserWithRelations | null> => {
     if (!access_token) return null;
 
-    const token = await db.query.token.findFirst({
-        where: (tokens, { eq }) => eq(tokens.accessToken, access_token),
-    });
+    const token = await retrieveToken(access_token);
 
     if (!token || !token.userId) return null;
 
@@ -663,6 +669,47 @@ export const retrieveUserFromToken = async (
     });
 
     return user;
+};
+
+export const retrieveUserAndApplicationFromToken = async (
+    access_token: string,
+): Promise<{
+    user: UserWithRelations | null;
+    application: Application | null;
+}> => {
+    if (!access_token) return { user: null, application: null };
+
+    const output = (
+        await db
+            .select({
+                token: token,
+                application: application,
+            })
+            .from(token)
+            .leftJoin(application, eq(token.applicationId, application.id))
+            .where(eq(token.accessToken, access_token))
+            .limit(1)
+    )[0];
+
+    if (!output?.token.userId) return { user: null, application: null };
+
+    const user = await findFirstUser({
+        where: (user, { eq }) => eq(user.id, output.token.userId ?? ""),
+    });
+
+    return { user, application: output.application ?? null };
+};
+
+export const retrieveToken = async (
+    access_token: string,
+): Promise<Token | null> => {
+    if (!access_token) return null;
+
+    return (
+        (await db.query.token.findFirst({
+            where: (tokens, { eq }) => eq(tokens.accessToken, access_token),
+        })) ?? null
+    );
 };
 
 /**

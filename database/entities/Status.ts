@@ -40,7 +40,7 @@ import { LogLevel } from "~packages/log-manager";
 import type { Note } from "~types/lysand/Object";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
-import { applicationToAPI } from "./Application";
+import { applicationToAPI, type Application } from "./Application";
 import {
     attachmentFromLysand,
     attachmentToAPI,
@@ -923,6 +923,7 @@ export const createNewStatus = async (
     media_attachments?: string[],
     inReplyTo?: StatusWithRelations,
     quoting?: StatusWithRelations,
+    application?: Application,
 ): Promise<StatusWithRelations | null> => {
     const htmlContent = await contentToHtml(content, mentions);
 
@@ -956,6 +957,7 @@ export const createNewStatus = async (
                 uri: uri || null,
                 inReplyToPostId: inReplyTo?.id,
                 quotingPostId: quoting?.id,
+                applicationId: application?.id ?? null,
                 updatedAt: new Date().toISOString(),
             })
             .returning()

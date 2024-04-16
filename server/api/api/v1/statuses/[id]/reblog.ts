@@ -35,7 +35,7 @@ export default apiRoute<typeof meta, typeof schema>(
             return errorResponse("Invalid ID, must be of type UUIDv7", 404);
         }
 
-        const { user } = extraData.auth;
+        const { user, application } = extraData.auth;
 
         if (!user) return errorResponse("Unauthorized", 401);
 
@@ -70,6 +70,7 @@ export default apiRoute<typeof meta, typeof schema>(
                     visibility,
                     sensitive: false,
                     updatedAt: new Date().toISOString(),
+                    applicationId: application?.id ?? null,
                 })
                 .returning()
         )[0];
