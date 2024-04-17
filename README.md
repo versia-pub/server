@@ -131,125 +131,136 @@ The following extensions are currently supported or being worked on:
 
 ## API
 
-Lysand implements the Mastodon API, with some extensions. The API is currently in early alpha, and is not recommended for use in production.
+Lysand implements the Mastodon API (as well as Glitch-Soc extensions). The API is currently almost fully complete, with some fringe functionality still being worked on.
 
 Working endpoints are:
 
-- `/api/v1/accounts`
-- `/api/v1/accounts/:id`
-- `/api/v1/accounts/:id/statuses`
-- `/api/v1/accounts/:id/follow`
-- `/api/v1/accounts/:id/unfollow`
-- `/api/v1/accounts/:id/block`
-- `/api/v1/accounts/:id/unblock`
-- `/api/v1/accounts/:id/mute`
-- `/api/v1/accounts/:id/unmute`
-- `/api/v1/accounts/:id/pin`
-- `/api/v1/accounts/:id/unpin`
-- `/api/v1/accounts/:id/note`
-- `/api/v1/accounts/:id/remove_from_followers`
-- `/api/v1/accounts/relationships`
-- `/api/v1/accounts/update_credentials`
-- `/api/v1/accounts/verify_credentials`
-- `/api/v1/accounts/familiar_followers`
-- `/api/v1/profile/avatar` (`DELETE`)
-- `/api/v1/profile/header` (`DELETE`)
-- `/api/v1/statuses/:id` (`GET`, `DELETE`)
-- `/api/v1/statuses/:id/context`
-- `/api/v1/statuses/:id/favourite`
-- `/api/v1/statuses/:id/unfavourite`
-- `/api/v1/statuses/:id/favourited_by`
-- `/api/v1/statuses/:id/reblogged_by`
-- `/api/v1/statuses/:id/reblog`
-- `/api/v1/statuses/:id/unreblog`
-- `/api/v1/statuses/:id/pin`
-- `/api/v1/statuses/:id/unpin`
-- `/api/v1/statuses`
-- `/api/v1/timelines/public`
-- `/api/v1/timelines/home`
-- `/api/v1/apps`
-- `/api/v1/instance`
-- `/api/v1/custom_emojis`
-- `/api/v1/apps/verify_credentials`
-- `/oauth/authorize`
-- `/oauth/token`
-- `/api/v1/blocks`
-- `/api/v1/mutes`
-- `/api/v2/media`
-- `/api/v1/notifications`
-- `/api/v1/media/:id`
-- `/api/v2/media`
-- `/api/v1/favourites`
-- `/api/v1/accounts/:id/followers`
-- `/api/v1/accounts/:id/following`
-- `/api/v2/search`
-- `/api/v1/follow_requests`
-- `/api/v1/follow_requests/:account_id/authorize`
-- `/api/v1/follow_requests/:account_id/reject`
-- `/api/v1/statuses/:id/mute`
-- `/api/v1/statuses/:id/unmute`
-- `/api/v1/statuses/:id` (`PUT`)
-- `/api/v1/statuses/:id/source`
-
-Endpoints left:
-
-- `/api/v1/reports`
-- `/api/v1/accounts/:id/lists`
-- `/api/v1/follow_suggestions`
-- `/api/v1/domain_blocks` (`GET`, `POST`, `DELETE`)
-- `/api/v2/filters` (`GET`, `POST`)
-- `/api/v2/filters/:id` (`GET`, `PUT`, `DELETE`)
-- `/api/v2/filters/:filter_id/keywords` (`GET`, `POST`)
-- `/api/v2/filters/keywords/:id` (`GET`, `PUT`, `DELETE`)
-- `/api/v2/filters/:filter_id/statuses` (`GET`, `POST`)
-- `/api/v2/filters/statuses/:id` (`GET`, `DELETE`)
-- `/api/v1/endorsements`
-- `/api/v1/featured_tags` (`GET`, `POST`)
-- `/api/v1/featured_tags/:id` (`DELETE`)
-- `/api/v1/featured_tags/suggestions`
-- `/api/v1/preferences`
-- `/api/v1/followed_tags`
-- `/api/v2/suggestions`
-- `/api/v1/suggestions/:account_id` (`DELETE`)
-- `/api/v1/tags/:id`
-- `/api/v1/tags/:id/follow`
-- `/api/v1/tags/:id/unfollow`
-- `/api/v1/statuses/:id/translate`
-- `/api/v1/statuses/:id/bookmark`
-- `/api/v1/statuses/:id/unbookmark`
-- `/api/v1/statuses/:id/history`
-- `/api/v1/polls/:id`
-- `/api/v1/polls/:id/votes`
-- `/api/v1/scheduled_statuses`
-- `/api/v1/scheduled_statuses/:id` (`GET`, `PUT`, `DELETE`)
-- `/api/v1/timelines/tag/:hashtag`
-- `/api/v1/timelines/list/:list_id`
-- `/api/v1/conversations`
-- `/api/v1/conversations/:id`
-- `/api/v1/conversations/:id/read`
-- `/api/v1/lists` (`GET`, `POST`)
-- `/api/v1/lists/:id` (`GET`, `PUT`, `DELETE`)
-- `/api/v1/markers` (`GET`, `POST`)
-- `/api/v1/lists/:id/accounts` (`GET`, `POST`, `DELETE`)
-- `/api/v1/notifications/:id`
-- `/api/v1/notifications/clear`
-- `/api/v1/notifications/:id/dismiss`
-- `/api/v2/instance`
-- `/api/v1/instance/peers`
-- `/api/v1/instance/activity`
-- `/api/v1/instance/rules`
-- `/api/v1/instance/domain_blocks`
-- `/api/v1/instance/extended_description`
-- `/api/v1/directory`
-- `/api/v1/trends/tags`
-- `/api/v1/trends/statuses`
-- `/api/v1/trends/links`
-- `/api/v1/announcements`
-- `/api/v1/announcements/:id/dismiss`
-- `/api/v1/announcements/:id/reactions/:name` (`PUT`, `DELETE`)
+- [x] `/api/v1/accounts/:id/block`
+- [x] `/api/v1/accounts/:id/follow`
+- [x] `/api/v1/accounts/:id/followers`
+- [x] `/api/v1/accounts/:id/following`
+- [ ] `/api/v1/accounts/:id/lists`
+- [x] `/api/v1/accounts/:id/mute`
+- [x] `/api/v1/accounts/:id/note`
+- [x] `/api/v1/accounts/:id/pin`
+- [x] `/api/v1/accounts/:id/remove_from_followers`
+- [x] `/api/v1/accounts/:id/statuses`
+- [x] `/api/v1/accounts/:id/unblock`
+- [x] `/api/v1/accounts/:id/unfollow`
+- [x] `/api/v1/accounts/:id/unmute`
+- [x] `/api/v1/accounts/:id/unpin`
+- [x] `/api/v1/accounts/:id`
+- [x] `/api/v1/accounts/familiar_followers`
+- [x] `/api/v1/accounts/relationships`
+- [x] `/api/v1/accounts/update_credentials`
+- [x] `/api/v1/accounts/verify_credentials`
+- [x] `/api/v1/accounts`
+- [ ] `/api/v1/announcements/:id/dismiss`
+- [ ] `/api/v1/announcements/:id/reactions/:name` (`PUT`, `DELETE`)
+- [ ] `/api/v1/announcements`
+- [x] `/api/v1/apps/verify_credentials`
+- [x] `/api/v1/apps`
+- [x] `/api/v1/blocks`
+- [ ] `/api/v1/conversations/:id/read`
+- [ ] `/api/v1/conversations/:id`
+- [ ] `/api/v1/conversations`
+- [x] `/api/v1/custom_emojis`
+- [ ] `/api/v1/directory`
+- [ ] `/api/v1/domain_blocks` (`GET`, `POST`, `DELETE`)
+- [ ] `/api/v1/endorsements`
+- [x] `/api/v1/favourites`
+- [ ] `/api/v1/featured_tags/:id` (`DELETE`)
+- [ ] `/api/v1/featured_tags/suggestions`
+- [ ] `/api/v1/featured_tags` (`GET`, `POST`)
+- [x] `/api/v1/follow_requests/:account_id/authorize`
+- [x] `/api/v1/follow_requests/:account_id/reject`
+- [x] `/api/v1/follow_requests`
+- [ ] `/api/v1/follow_suggestions`
+- [ ] `/api/v1/followed_tags`
+- [ ] `/api/v1/instance/activity`
+- [ ] `/api/v1/instance/domain_blocks`
+- [x] `/api/v1/instance/extended_description`
+- [ ] `/api/v1/instance/peers`
+- [x] `/api/v1/instance/rules`
+- [x] `/api/v1/instance`
+- [ ] `/api/v1/lists/:id/accounts` (`GET`, `POST`, `DELETE`)
+- [ ] `/api/v1/lists/:id` (`GET`, `PUT`, `DELETE`)
+- [ ] `/api/v1/lists` (`GET`, `POST`)
+- [x] `/api/v1/markers` (`GET`, `POST`)
+- [x] `/api/v1/media/:id`
+- [x] `/api/v1/mutes`
+- [x] `/api/v1/notifications/:id/dismiss`
+- [x] `/api/v1/notifications/:id`
+- [x] `/api/v1/notifications/clear`
+- [x] `/api/v1/notifications`
+- [ ] `/api/v1/polls/:id/votes`
+- [ ] `/api/v1/polls/:id`
+- [ ] `/api/v1/preferences`
+- [x] `/api/v1/profile/avatar` (`DELETE`)
+- [x] `/api/v1/profile/header` (`DELETE`)
+- [ ] `/api/v1/reports`
+- [ ] `/api/v1/scheduled_statuses/:id` (`GET`, `PUT`, `DELETE`)
+- [ ] `/api/v1/scheduled_statuses`
+- [ ] `/api/v1/statuses/:id/bookmark`
+- [x] `/api/v1/statuses/:id/context`
+- [x] `/api/v1/statuses/:id/favourite`
+- [x] `/api/v1/statuses/:id/favourited_by`
+- [ ] `/api/v1/statuses/:id/history`
+- [x] `/api/v1/statuses/:id/mute`
+- [x] `/api/v1/statuses/:id/pin`
+- [x] `/api/v1/statuses/:id/reblog`
+- [x] `/api/v1/statuses/:id/reblogged_by`
+- [x] `/api/v1/statuses/:id/source`
+- [ ] `/api/v1/statuses/:id/translate`
+- [ ] `/api/v1/statuses/:id/unbookmark`
+- [x] `/api/v1/statuses/:id/unfavourite`
+- [x] `/api/v1/statuses/:id/unmute`
+- [x] `/api/v1/statuses/:id/unpin`
+- [x] `/api/v1/statuses/:id/unreblog`
+- [x] `/api/v1/statuses/:id` (`GET`, `DELETE`)
+- [x] `/api/v1/statuses/:id` (`PUT`)
+- [x] `/api/v1/statuses`
+- [ ] `/api/v1/suggestions/:account_id` (`DELETE`)
+- [ ] `/api/v1/tags/:id/follow`
+- [ ] `/api/v1/tags/:id/unfollow`
+- [ ] `/api/v1/tags/:id`
+- [x] `/api/v1/timelines/home`
+- [ ] `/api/v1/timelines/list/:list_id`
+- [x] `/api/v1/timelines/public`
+- [ ] `/api/v1/timelines/tag/:hashtag`
+- [ ] `/api/v1/trends/links`
+- [ ] `/api/v1/trends/statuses`
+- [ ] `/api/v1/trends/tags`
+- [ ] `/api/v2/filters/:filter_id/keywords` (`GET`, `POST`)
+- [ ] `/api/v2/filters/:filter_id/statuses` (`GET`, `POST`)
+- [ ] `/api/v2/filters/:id` (`GET`, `PUT`, `DELETE`)
+- [ ] `/api/v2/filters/keywords/:id` (`GET`, `PUT`, `DELETE`)
+- [ ] `/api/v2/filters/statuses/:id` (`GET`, `DELETE`)
+- [ ] `/api/v2/filters` (`GET`, `POST`)
+- [x] `/api/v2/instance`
+- [x] `/api/v2/media`
+- [x] `/api/v2/search`
+- [ ] `/api/v2/suggestions`
+- [x] `/oauth/authorize`
+- [x] `/oauth/token`
 - Admin API  
 
-WebSocket Streaming API also needs to be added (and push notifications)
+### Main work to do
+
+- [ ] Announcements
+- [ ] Filters
+- [ ] Polls
+- [ ] Tags
+- [ ] Lists
+- [ ] Scheduled statuses
+- [ ] WebSockets
+- [ ] Push notifications
+- [ ] Trends
+- [ ] Suggestions
+- [ ] Bookmarks
+- [ ] Translation
+- [ ] Reports
+- [ ] Admin API
 
 ## License
 
