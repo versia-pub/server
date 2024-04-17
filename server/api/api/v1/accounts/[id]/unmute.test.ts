@@ -5,8 +5,8 @@ import {
     getTestUsers,
     sendTestRequest,
 } from "~tests/utils";
-import { meta } from "./unmute";
 import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
+import { meta } from "./unmute";
 
 await deleteOldTestUsers();
 

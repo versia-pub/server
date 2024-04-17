@@ -1,5 +1,5 @@
 # Bun doesn't run well on Musl but this seems to work
-FROM imbios/bun-node:1.1.3-current-alpine as base
+FROM imbios/bun-node:1.1.4-current-alpine as base
 
 RUN apk add --no-cache libstdc++
 
@@ -25,7 +25,7 @@ RUN bun run prod-build
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.1.3-alpine
+FROM oven/bun:1.1.4-alpine
 
 RUN apk add --no-cache libstdc++
 

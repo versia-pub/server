@@ -170,9 +170,9 @@ export default apiRoute<typeof meta, typeof schema>(
                     self
                         ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
                               self?.id
-                          } AND Relationships.following = ${
-                              following ? true : false
-                          } AND Relationships.ownerId = ${user.id})`
+                          } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
+                              user.id
+                          })`
                         : undefined,
                 ),
             orderBy: (user, { desc }) => desc(user.createdAt),
@@ -188,9 +188,9 @@ export default apiRoute<typeof meta, typeof schema>(
                 self
                     ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
                           self?.id
-                      } AND Relationships.following = ${
-                          following ? true : false
-                      } AND Relationships.ownerId = ${Notes.authorId})`
+                      } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
+                          Notes.authorId
+                      })`
                     : undefined,
             ),
         );

@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
+import { db } from "~drizzle/db";
 import {
     deleteOldTestUsers,
     getTestStatuses,
@@ -7,9 +8,8 @@ import {
     sendTestRequest,
 } from "~tests/utils";
 import type { Account as APIAccount } from "~types/mastodon/account";
-import { meta } from "./statuses";
 import type { Status as APIStatus } from "~types/mastodon/status";
-import { db } from "~drizzle/db";
+import { meta } from "./statuses";
 
 await deleteOldTestUsers();
 
