@@ -26,6 +26,28 @@ export const Emojis = pgTable("Emojis", {
     }),
 });
 
+export const Markers = pgTable("Markers", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    noteId: uuid("noteId").references(() => Notes.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    notificationId: uuid("notificationId").references(() => Notifications.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    userId: uuid("userId")
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
+    timeline: text("timeline").notNull().$type<"home" | "notifications">(),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+        .defaultNow()
+        .notNull(),
+});
+
 export const Likes = pgTable("Likes", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     likerId: uuid("likerId")
