@@ -17,6 +17,7 @@ import {
 } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
 import type { Account as APIAccount } from "~types/mastodon/account";
+import type { Mention as APIMention } from "~types/mastodon/mention";
 import type { Source as APISource } from "~types/mastodon/source";
 import type { Application } from "./Application";
 import {
@@ -30,16 +31,10 @@ import { addInstanceIfNotExists } from "./Instance";
 import { createNewRelationship } from "./Relationship";
 import type { Token } from "./Token";
 
-export type User = InferSelectModel<typeof user> & {
-    endpoints?: Partial<{
-        dislikes: string;
-        featured: string;
-        likes: string;
-        followers: string;
-        following: string;
-        inbox: string;
-        outbox: string;
-    }>;
+export type User = InferSelectModel<typeof user>;
+
+export type UserWithInstance = User & {
+    instance: InferSelectModel<typeof instance> | null;
 };
 
 export type UserWithRelations = User & {
@@ -108,21 +103,6 @@ export const userExtrasTemplate = (name: string) => ({
         `(SELECT COUNT(*) FROM "Status" "statuses" WHERE "statuses"."authorId" = "${name}".id)`,
     ]).as("status_count"),
 });
-
-/* const a = await db.query.user.findFirst({
-    with: {
-        instance: true,
-        emojis: {
-            with: {
-                emoji: {
-                    with: {
-                        instance: true,
-                    },
-                },
-            },
-        },
-    },
-}); */
 
 export interface AuthData {
     user: UserWithRelations | null;
@@ -773,6 +753,16 @@ export const generateUserKeys = async () => {
         public_key: publicKey,
     };
 };
+
+export const userToMention = (user: UserWithInstance): APIMention => ({
+    url: getUserUri(user),
+    username: user.username,
+    acct:
+        user.instance === null
+            ? user.username
+            : `${user.username}@${user.instance.baseUrl}`,
+    id: user.id,
+});
 
 export const userToAPI = (
     userToConvert: UserWithRelations,

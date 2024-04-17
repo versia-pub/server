@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import { inArray, like } from "drizzle-orm";
-import { type Status, findManyStatuses } from "~database/entities/Status";
+import { asc, inArray, like } from "drizzle-orm";
+import type { Status } from "~database/entities/Status";
 import {
     type User,
     type UserWithRelations,
@@ -9,6 +9,7 @@ import {
 import { db } from "~drizzle/db";
 import { status, token, user } from "~drizzle/schema";
 import { server } from "~index";
+import { Note } from "~packages/database-interface/note";
 /**
  * This allows us to send a test request to the server even when it isnt running
  * CURRENTLY NOT WORKING, NEEDS TO BE FIXED
@@ -86,20 +87,15 @@ export const getTestStatuses = async (
     const statuses: Status[] = [];
 
     for (let i = 0; i < count; i++) {
-        const newStatus = (
-            await db
-                .insert(status)
-                .values({
-                    content: `${i} ${randomBytes(32).toString("hex")}`,
-                    authorId: user.id,
-                    sensitive: false,
-                    updatedAt: new Date().toISOString(),
-                    visibility: "public",
-                    applicationId: null,
-                    ...partial,
-                })
-                .returning()
-        )[0];
+        const newStatus = await Note.insert({
+            content: `${i} ${randomBytes(32).toString("hex")}`,
+            authorId: user.id,
+            sensitive: false,
+            updatedAt: new Date().toISOString(),
+            visibility: "public",
+            applicationId: null,
+            ...partial,
+        });
 
         if (!newStatus) {
             throw new Error("Failed to create test status");
@@ -108,14 +104,13 @@ export const getTestStatuses = async (
         statuses.push(newStatus);
     }
 
-    const statusesWithRelations = await findManyStatuses({
-        where: (status, { inArray }) =>
+    return (
+        await Note.manyFromSql(
             inArray(
                 status.id,
                 statuses.map((s) => s.id),
             ),
-        orderBy: (status, { asc }) => asc(status.id),
-    });
-
-    return statusesWithRelations;
+            asc(status.id),
+        )
+    ).map((n) => n.getStatus());
 };

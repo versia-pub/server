@@ -6,14 +6,9 @@ import ISO6391 from "iso-639-1";
 import { parse } from "marked";
 import { z } from "zod";
 import type { StatusWithRelations } from "~database/entities/Status";
-import {
-    createNewStatus,
-    federateStatus,
-    findFirstStatuses,
-    parseTextMentions,
-    statusToAPI,
-} from "~database/entities/Status";
+import { federateNote, parseTextMentions } from "~database/entities/Status";
 import { db } from "~drizzle/db";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -125,28 +120,10 @@ export default apiRoute<typeof meta, typeof schema>(
         }
 
         // Get reply account and status if exists
-        let replyStatus: StatusWithRelations | null = null;
-        let quote: StatusWithRelations | null = null;
-
-        if (in_reply_to_id) {
-            replyStatus = await findFirstStatuses({
-                where: (status, { eq }) => eq(status.id, in_reply_to_id),
-            }).catch(() => null);
-
-            if (!replyStatus) {
-                return errorResponse("Reply status not found", 404);
-            }
-        }
-
-        if (quote_id) {
-            quote = await findFirstStatuses({
-                where: (status, { eq }) => eq(status.id, quote_id),
-            }).catch(() => null);
-
-            if (!quote) {
-                return errorResponse("Quote status not found", 404);
-            }
-        }
+        const replyStatus: StatusWithRelations | null =
+            (await Note.fromId(in_reply_to_id ?? null))?.getStatus() ?? null;
+        const quote: StatusWithRelations | null =
+            (await Note.fromId(quote_id ?? null))?.getStatus() ?? null;
 
         // Check if status body doesnt match filters
         if (
@@ -171,7 +148,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const mentions = await parseTextMentions(sanitizedStatus);
 
-        const newStatus = await createNewStatus(
+        const newNote = await Note.fromData(
             user,
             {
                 [content_type]: {
@@ -185,19 +162,19 @@ export default apiRoute<typeof meta, typeof schema>(
             undefined,
             mentions,
             media_ids,
-            replyStatus ?? undefined,
-            quote ?? undefined,
+            in_reply_to_id ?? undefined,
+            quote_id ?? undefined,
             application ?? undefined,
         );
 
-        if (!newStatus) {
+        if (!newNote) {
             return errorResponse("Failed to create status", 500);
         }
 
         if (federate) {
-            await federateStatus(newStatus);
+            await federateNote(newNote);
         }
 
-        return jsonResponse(await statusToAPI(newStatus, user));
+        return jsonResponse(await newNote.toAPI(user));
     },
 );

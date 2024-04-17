@@ -1,13 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import {
-    findFirstStatuses,
-    isViewableByUser,
-    statusToAPI,
-} from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { notification, status } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -41,12 +38,10 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { visibility } = extraData.parsedRequest;
 
-        const foundStatus = await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, id),
-        });
+        const foundStatus = await Note.fromId(id);
 
         // Check if user is authorized to view this status (if it's private)
-        if (!foundStatus || !isViewableByUser(foundStatus, user))
+        if (!foundStatus?.isViewableByUser(user))
             return errorResponse("Record not found", 404);
 
         const existingReblog = await db.query.status.findFirst({
@@ -61,42 +56,35 @@ export default apiRoute<typeof meta, typeof schema>(
             return errorResponse("Already reblogged", 422);
         }
 
-        const newReblog = (
-            await db
-                .insert(status)
-                .values({
-                    authorId: user.id,
-                    reblogId: foundStatus.id,
-                    visibility,
-                    sensitive: false,
-                    updatedAt: new Date().toISOString(),
-                    applicationId: application?.id ?? null,
-                })
-                .returning()
-        )[0];
+        const newReblog = await Note.insert({
+            authorId: user.id,
+            reblogId: foundStatus.getStatus().id,
+            visibility,
+            sensitive: false,
+            updatedAt: new Date().toISOString(),
+            applicationId: application?.id ?? null,
+        });
 
         if (!newReblog) {
             return errorResponse("Failed to reblog", 500);
         }
 
-        const finalNewReblog = await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, newReblog.id),
-        });
+        const finalNewReblog = await Note.fromId(newReblog.id);
 
         if (!finalNewReblog) {
             return errorResponse("Failed to reblog", 500);
         }
 
         // Create notification for reblog if reblogged user is on the same instance
-        if (foundStatus.author.instanceId === user.instanceId) {
+        if (foundStatus.getAuthor().instanceId === user.instanceId) {
             await db.insert(notification).values({
                 accountId: user.id,
-                notifiedId: foundStatus.authorId,
+                notifiedId: foundStatus.getAuthor().id,
                 type: "reblog",
-                statusId: foundStatus.reblogId,
+                statusId: foundStatus.getStatus().reblogId,
             });
         }
 
-        return jsonResponse(await statusToAPI(finalNewReblog, user));
+        return jsonResponse(await finalNewReblog.toAPI(user));
     },
 );

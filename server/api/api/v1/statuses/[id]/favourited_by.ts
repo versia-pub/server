@@ -2,12 +2,12 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
 import { z } from "zod";
-import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
 import {
     type UserWithRelations,
     findManyUsers,
     userToAPI,
 } from "~database/entities/User";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -40,12 +40,10 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { user } = extraData.auth;
 
-        const status = await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, id),
-        });
+        const status = await Note.fromId(id);
 
         // Check if user is authorized to view this status (if it's private)
-        if (!status || !isViewableByUser(status, user))
+        if (!status?.isViewableByUser(user))
             return errorResponse("Record not found", 404);
 
         const { max_id, min_id, since_id, limit } = extraData.parsedRequest;
@@ -59,7 +57,9 @@ export default apiRoute<typeof meta, typeof schema>(
                         max_id ? lt(liker.id, max_id) : undefined,
                         since_id ? gte(liker.id, since_id) : undefined,
                         min_id ? gt(liker.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${liker.id})`,
+                        sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${
+                            status.getStatus().id
+                        } AND "Like"."likerId" = ${liker.id})`,
                     ),
                 // @ts-expect-error Yes I KNOW the types are wrong
                 orderBy: (liker, { desc }) => desc(liker.id),

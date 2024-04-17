@@ -1,19 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
-import { eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
-import { parse } from "marked";
 import { z } from "zod";
-import {
-    editStatus,
-    findFirstStatuses,
-    isViewableByUser,
-    statusToAPI,
-} from "~database/entities/Status";
 import { db } from "~drizzle/db";
-import { status } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE", "PUT"],
@@ -31,7 +22,7 @@ export const meta = applyConfig({
 export const schema = z.object({
     status: z.string().max(config.validation.max_note_size).optional(),
     // TODO: Add regex to validate
-    content_type: z.string().optional(),
+    content_type: z.string().optional().default("text/plain"),
     media_ids: z
         .array(z.string().regex(idValidator))
         .max(config.validation.max_media_attachments)
@@ -65,49 +56,37 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { user } = extraData.auth;
 
-        const foundStatus = await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, id),
-        });
+        const foundStatus = await Note.fromId(id);
 
         const config = await extraData.configManager.getConfig();
 
         // Check if user is authorized to view this status (if it's private)
-        if (!foundStatus || !isViewableByUser(foundStatus, user))
+        if (!foundStatus?.isViewableByUser(user))
             return errorResponse("Record not found", 404);
 
         if (req.method === "GET") {
-            return jsonResponse(await statusToAPI(foundStatus));
+            return jsonResponse(await foundStatus.toAPI(user));
         }
         if (req.method === "DELETE") {
-            if (foundStatus.authorId !== user?.id) {
+            if (foundStatus.getAuthor().id !== user?.id) {
                 return errorResponse("Unauthorized", 401);
             }
 
             // TODO: Implement delete and redraft functionality
 
             // Delete status and all associated objects
-            await db.delete(status).where(eq(status.id, id));
+            await foundStatus.delete();
 
-            return jsonResponse(
-                {
-                    ...(await statusToAPI(foundStatus, user)),
-                    // TODO: Add
-                    // text: Add source text
-                    // poll: Add source poll
-                    // media_attachments
-                },
-                200,
-            );
+            return jsonResponse(await foundStatus.toAPI(user), 200);
         }
         if (req.method === "PUT") {
-            if (foundStatus.authorId !== user?.id) {
+            if (foundStatus.getAuthor().id !== user?.id) {
                 return errorResponse("Unauthorized", 401);
             }
 
             const {
                 status: statusText,
                 content_type,
-                "poll[expires_in]": expires_in,
                 "poll[options]": options,
                 media_ids,
                 spoiler_text,
@@ -131,22 +110,6 @@ export default apiRoute<typeof meta, typeof schema>(
                 );
             }
 
-            let sanitizedStatus: string;
-
-            if (content_type === "text/markdown") {
-                sanitizedStatus = await sanitizeHtml(
-                    await parse(statusText ?? ""),
-                );
-            } else if (content_type === "text/x.misskeymarkdown") {
-                // Parse as MFM
-                // TODO: Parse as MFM
-                sanitizedStatus = await sanitizeHtml(
-                    await parse(statusText ?? ""),
-                );
-            } else {
-                sanitizedStatus = await sanitizeHtml(statusText ?? "");
-            }
-
             // Check if status body doesnt match filters
             if (
                 config.filters.note_content.some((filter) =>
@@ -168,20 +131,27 @@ export default apiRoute<typeof meta, typeof schema>(
                 }
             }
 
-            // Update status
-            const newStatus = await editStatus(foundStatus, {
-                content: sanitizedStatus,
-                content_type,
-                media_attachments: media_ids,
-                spoiler_text: spoiler_text ?? "",
-                sensitive: sensitive ?? false,
-            });
+            const newNote = await foundStatus.updateFromData(
+                statusText
+                    ? {
+                          [content_type]: {
+                              content: statusText,
+                          },
+                      }
+                    : undefined,
+                undefined,
+                sensitive,
+                spoiler_text,
+                undefined,
+                undefined,
+                media_ids,
+            );
 
-            if (!newStatus) {
+            if (!newNote) {
                 return errorResponse("Failed to update status", 500);
             }
 
-            return jsonResponse(await statusToAPI(newStatus, user));
+            return jsonResponse(await newNote.toAPI(user));
         }
 
         return jsonResponse({});

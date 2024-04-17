@@ -1,13 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import type { Relationship } from "~database/entities/Relationship";
-import {
-    findFirstStatuses,
-    getAncestors,
-    getDescendants,
-    statusToAPI,
-} from "~database/entities/Status";
 import { db } from "~drizzle/db";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -34,9 +29,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { user } = extraData.auth;
 
-    const foundStatus = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const foundStatus = await Note.fromId(id);
 
     if (!foundStatus) return errorResponse("Record not found", 404);
 
@@ -55,8 +48,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         : null;
 
     // Get all ancestors
-    const ancestors = await getAncestors(
-        foundStatus,
+    const ancestors = await foundStatus.getAncestors(
         user
             ? {
                   ...user,
@@ -65,8 +57,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
               }
             : null,
     );
-    const descendants = await getDescendants(
-        foundStatus,
+
+    const descendants = await foundStatus.getDescendants(
         user
             ? {
                   ...user,
@@ -78,10 +70,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     return jsonResponse({
         ancestors: await Promise.all(
-            ancestors.map((status) => statusToAPI(status, user || undefined)),
+            ancestors.map((status) => status.toAPI(user)),
         ),
         descendants: await Promise.all(
-            descendants.map((status) => statusToAPI(status, user || undefined)),
+            descendants.map((status) => status.toAPI(user)),
         ),
     });
 });

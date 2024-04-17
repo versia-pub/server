@@ -2,6 +2,8 @@ import { config } from "config-manager";
 import type * as Lysand from "lysand-types";
 import { type User, getUserUri } from "./User";
 
+export const localObjectURI = (id: string) => `/objects/${id}`;
+
 export const objectToInboxRequest = async (
     object: Lysand.Entity,
     author: User,

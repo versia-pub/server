@@ -289,7 +289,15 @@ export const user = pgTable(
         email: text("email"),
         note: text("note").default("").notNull(),
         isAdmin: boolean("is_admin").default(false).notNull(),
-        endpoints: jsonb("endpoints"),
+        endpoints: jsonb("endpoints").$type<Partial<{
+            dislikes: string;
+            featured: string;
+            likes: string;
+            followers: string;
+            following: string;
+            inbox: string;
+            outbox: string;
+        }> | null>(),
         source: jsonb("source").notNull(),
         avatar: text("avatar").notNull(),
         header: text("header").notNull(),

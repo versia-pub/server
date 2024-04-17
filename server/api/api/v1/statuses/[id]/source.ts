@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse } from "@response";
-import { findFirstStatuses, isViewableByUser } from "~database/entities/Status";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -27,12 +27,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const status = await Note.fromId(id);
 
     // Check if user is authorized to view this status (if it's private)
-    if (!status || !isViewableByUser(status, user))
+    if (!status?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
     return errorResponse("Not implemented yet");

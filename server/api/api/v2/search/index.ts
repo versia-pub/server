@@ -2,9 +2,8 @@ import { apiRoute, applyConfig } from "@api";
 import { dualLogger } from "@loggers";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { findManyStatuses, statusToAPI } from "~database/entities/Status";
 import {
     findFirstUser,
     findManyUsers,
@@ -12,7 +11,8 @@ import {
     userToAPI,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { instance, user } from "~drizzle/schema";
+import { instance, status, user } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
@@ -178,29 +178,27 @@ export default apiRoute<typeof meta, typeof schema>(
             orderBy: (user, { desc }) => desc(user.createdAt),
         });
 
-        const statuses = await findManyStatuses({
-            where: (status, { and, eq, inArray }) =>
-                and(
-                    inArray(
-                        status.id,
-                        statusResults.map((hit) => hit.id),
-                    ),
-                    account_id ? eq(status.authorId, account_id) : undefined,
-                    self
-                        ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
-                              self?.id
-                          } AND Relationships.following = ${
-                              following ? true : false
-                          } AND Relationships.ownerId = ${status.authorId})`
-                        : undefined,
+        const statuses = await Note.manyFromSql(
+            and(
+                inArray(
+                    status.id,
+                    statusResults.map((hit) => hit.id),
                 ),
-            orderBy: (status, { desc }) => desc(status.createdAt),
-        });
+                account_id ? eq(status.authorId, account_id) : undefined,
+                self
+                    ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
+                          self?.id
+                      } AND Relationships.following = ${
+                          following ? true : false
+                      } AND Relationships.ownerId = ${status.authorId})`
+                    : undefined,
+            ),
+        );
 
         return jsonResponse({
             accounts: accounts.map((account) => userToAPI(account)),
             statuses: await Promise.all(
-                statuses.map((status) => statusToAPI(status)),
+                statuses.map((status) => status.toAPI(self)),
             ),
             hashtags: [],
         });

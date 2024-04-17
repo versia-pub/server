@@ -1,9 +1,6 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { and, eq } from "drizzle-orm";
-import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
-import { db } from "~drizzle/db";
-import { statusToMentions } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -30,26 +27,18 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const status = await Note.fromId(id);
 
     // Check if status exists
     if (!status) return errorResponse("Record not found", 404);
 
     // Check if status is user's
-    if (status.authorId !== user.id) return errorResponse("Unauthorized", 401);
+    if (status.getAuthor().id !== user.id)
+        return errorResponse("Unauthorized", 401);
 
-    await db
-        .delete(statusToMentions)
-        .where(
-            and(
-                eq(statusToMentions.statusId, status.id),
-                eq(statusToMentions.userId, user.id),
-            ),
-        );
+    await status.unpin(user);
 
     if (!status) return errorResponse("Record not found", 404);
 
-    return jsonResponse(statusToAPI(status, user));
+    return jsonResponse(await status.toAPI(user));
 });

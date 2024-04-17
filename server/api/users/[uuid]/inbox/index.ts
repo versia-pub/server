@@ -3,7 +3,7 @@ import { dualLogger } from "@loggers";
 import { errorResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
-import { resolveStatus } from "~database/entities/Status";
+import { resolveNote } from "~database/entities/Status";
 import {
     findFirstUser,
     getRelationshipToOtherUser,
@@ -126,16 +126,14 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                 return errorResponse("Author not found", 400);
             }
 
-            const newStatus = await resolveStatus(undefined, note).catch(
-                (e) => {
-                    dualLogger.logError(
-                        LogLevel.ERROR,
-                        "Inbox.NoteResolve",
-                        e as Error,
-                    );
-                    return null;
-                },
-            );
+            const newStatus = await resolveNote(undefined, note).catch((e) => {
+                dualLogger.logError(
+                    LogLevel.ERROR,
+                    "Inbox.NoteResolve",
+                    e as Error,
+                );
+                return null;
+            });
 
             if (!newStatus) {
                 return errorResponse("Failed to add status", 500);

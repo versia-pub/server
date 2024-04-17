@@ -1,11 +1,7 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { deleteLike } from "~database/entities/Like";
-import {
-    findFirstStatuses,
-    isViewableByUser,
-    statusToAPI,
-} from "~database/entities/Status";
+import { Note } from "~packages/database-interface/note";
 import type { Status as APIStatus } from "~types/mastodon/status";
 
 export const meta = applyConfig({
@@ -33,19 +29,17 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const foundStatus = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const foundStatus = await Note.fromId(id);
 
     // Check if user is authorized to view this status (if it's private)
-    if (!foundStatus || !isViewableByUser(foundStatus, user))
+    if (!foundStatus?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
-    await deleteLike(user, foundStatus);
+    await deleteLike(user, foundStatus.getStatus());
 
     return jsonResponse({
-        ...(await statusToAPI(foundStatus, user)),
+        ...(await foundStatus.toAPI(user)),
         favourited: false,
-        favourites_count: foundStatus.likeCount - 1,
+        favourites_count: foundStatus.getStatus().likeCount - 1,
     } as APIStatus);
 });

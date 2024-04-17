@@ -1,14 +1,11 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { sql } from "drizzle-orm";
-import { likeToLysand, type Like } from "~database/entities/Like";
-import {
-    findFirstStatuses,
-    statusToLysand,
-    type StatusWithRelations,
-} from "~database/entities/Status";
-import { db } from "~drizzle/db";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
+import { type Like, likeToLysand } from "~database/entities/Like";
+import { db } from "~drizzle/db";
+import { status } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -25,18 +22,16 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute) => {
     const uuid = matchedRoute.params.uuid;
 
-    let foundObject: StatusWithRelations | Like | null = null;
+    let foundObject: Note | Like | null = null;
     let apiObject: Lysand.Entity | null = null;
 
-    foundObject =
-        (await findFirstStatuses({
-            where: (status, { eq, and, inArray }) =>
-                and(
-                    eq(status.id, uuid),
-                    inArray(status.visibility, ["public", "unlisted"]),
-                ),
-        })) ?? null;
-    apiObject = foundObject ? statusToLysand(foundObject) : null;
+    foundObject = await Note.fromSql(
+        and(
+            eq(status.id, uuid),
+            inArray(status.visibility, ["public", "unlisted"]),
+        ),
+    );
+    apiObject = foundObject ? foundObject.toLysand() : null;
 
     if (!foundObject) {
         foundObject =

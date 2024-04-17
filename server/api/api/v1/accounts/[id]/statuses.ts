@@ -1,13 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
+import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    type StatusWithRelations,
-    findManyStatuses,
-    statusToAPI,
-} from "~database/entities/Status";
 import { findFirstUser } from "~database/entities/User";
+import { status } from "~drizzle/schema";
+import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -62,32 +59,23 @@ export default apiRoute<typeof meta, typeof schema>(
         if (!user) return errorResponse("User not found", 404);
 
         if (pinned) {
-            const { objects, link } = await fetchTimeline<StatusWithRelations>(
-                findManyStatuses,
-                {
-                    // @ts-ignore
-                    where: (status, { and, lt, gt, gte, eq, sql }) =>
-                        and(
-                            max_id ? lt(status.id, max_id) : undefined,
-                            since_id ? gte(status.id, since_id) : undefined,
-                            min_id ? gt(status.id, min_id) : undefined,
-                            eq(status.authorId, id),
-                            sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."statusId" = ${status.id} AND "UserToPinnedNotes"."userId" = ${user.id})`,
-                            only_media
-                                ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
-                                : undefined,
-                        ),
-                    // @ts-expect-error Yes I KNOW the types are wrong
-                    orderBy: (status, { desc }) => desc(status.id),
-                    limit,
-                },
-                req,
+            const { objects, link } = await Timeline.getNoteTimeline(
+                and(
+                    max_id ? lt(status.id, max_id) : undefined,
+                    since_id ? gte(status.id, since_id) : undefined,
+                    min_id ? gt(status.id, min_id) : undefined,
+                    eq(status.authorId, id),
+                    sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."statusId" = ${status.id} AND "UserToPinnedNotes"."userId" = ${user.id})`,
+                    only_media
+                        ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                        : undefined,
+                ),
+                limit,
+                req.url,
             );
 
             return jsonResponse(
-                await Promise.all(
-                    objects.map((status) => statusToAPI(status, user)),
-                ),
+                await Promise.all(objects.map((note) => note.toAPI(user))),
                 200,
                 {
                     Link: link,
@@ -95,32 +83,23 @@ export default apiRoute<typeof meta, typeof schema>(
             );
         }
 
-        const { objects, link } = await fetchTimeline<StatusWithRelations>(
-            findManyStatuses,
-            {
-                // @ts-ignore
-                where: (status, { and, lt, gt, gte, eq, sql }) =>
-                    and(
-                        max_id ? lt(status.id, max_id) : undefined,
-                        since_id ? gte(status.id, since_id) : undefined,
-                        min_id ? gt(status.id, min_id) : undefined,
-                        eq(status.authorId, id),
-                        only_media
-                            ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
-                            : undefined,
-                        exclude_reblogs ? eq(status.reblogId, null) : undefined,
-                    ),
-                // @ts-expect-error Yes I KNOW the types are wrong
-                orderBy: (status, { desc }) => desc(status.id),
-                limit,
-            },
-            req,
+        const { objects, link } = await Timeline.getNoteTimeline(
+            and(
+                max_id ? lt(status.id, max_id) : undefined,
+                since_id ? gte(status.id, since_id) : undefined,
+                min_id ? gt(status.id, min_id) : undefined,
+                eq(status.authorId, id),
+                only_media
+                    ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                    : undefined,
+                exclude_reblogs ? isNull(status.reblogId) : undefined,
+            ),
+            limit,
+            req.url,
         );
 
         return jsonResponse(
-            await Promise.all(
-                objects.map((status) => statusToAPI(status, user)),
-            ),
+            await Promise.all(objects.map((note) => note.toAPI(user))),
             200,
             {
                 Link: link,

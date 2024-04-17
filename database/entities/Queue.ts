@@ -1,6 +1,5 @@
 import { config } from "config-manager";
 // import { Worker } from "bullmq";
-import { type StatusWithRelations, statusToLysand } from "./Status";
 
 /* export const federationWorker = new Worker(
 	"federation",

@@ -3,17 +3,17 @@ import type {
     Notification,
     findManyNotifications,
 } from "~database/entities/Notification";
-import type { Status, findManyStatuses } from "~database/entities/Status";
+import type { Status, findManyNotes } from "~database/entities/Status";
 import type { User, findManyUsers } from "~database/entities/User";
 import type { db } from "~drizzle/db";
 
 export async function fetchTimeline<T extends User | Status | Notification>(
     model:
-        | typeof findManyStatuses
+        | typeof findManyNotes
         | typeof findManyUsers
         | typeof findManyNotifications,
     args:
-        | Parameters<typeof findManyStatuses>[0]
+        | Parameters<typeof findManyNotes>[0]
         | Parameters<typeof findManyUsers>[0]
         | Parameters<typeof db.query.notification.findMany>[0],
     req: Request,

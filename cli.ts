@@ -8,28 +8,20 @@ import { CliBuilder, CliCommand } from "cli-parser";
 import { CliParameterType } from "cli-parser/cli-builder.type";
 import Table from "cli-table";
 import { config } from "config-manager";
-import {
-    type SQL,
-    eq,
-    inArray,
-    isNotNull,
-    isNull,
-    like,
-    sql,
-} from "drizzle-orm";
+import { type SQL, and, eq, inArray, like, or, sql } from "drizzle-orm";
 import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
 import { getUrl } from "~database/entities/Attachment";
-import { findFirstStatuses, findManyStatuses } from "~database/entities/Status";
 import {
     type User,
     createNewLocalUser,
     findFirstUser,
     findManyUsers,
 } from "~database/entities/User";
-import { db, client } from "~drizzle/db";
+import { client, db } from "~drizzle/db";
 import { emoji, openIdAccount, status, user } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 await client.connect();
 const args = process.argv;
@@ -803,9 +795,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const note = await findFirstStatuses({
-                where: (status, { eq }) => eq(status.id, id),
-            });
+            const note = await Note.fromId(id);
 
             if (!note) {
                 console.log(`${chalk.red("✗")} Note not found`);
@@ -815,7 +805,7 @@ const cliBuilder = new CliBuilder([
             if (!args.noconfirm) {
                 process.stdout.write(
                     `Are you sure you want to delete note ${chalk.blue(
-                        note.id,
+                        note.getStatus().id,
                     )}?\n${chalk.red(
                         chalk.bold(
                             "This is a destructive action and cannot be undone!",
@@ -832,10 +822,12 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await db.delete(status).where(eq(status.id, note.id));
+            await note.delete();
 
             console.log(
-                `${chalk.green("✓")} Deleted note ${chalk.blue(note.id)}`,
+                `${chalk.green("✓")} Deleted note ${chalk.blue(
+                    note.getStatus().id,
+                )}`,
             );
 
             return 0;
@@ -968,8 +960,8 @@ const cliBuilder = new CliBuilder([
                 instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`;
             }
 
-            const notes = await findManyStatuses({
-                where: (status, { or, and }) =>
+            const notes = (
+                await Note.manyFromSql(
                     and(
                         or(
                             ...fields.map((field) =>
@@ -979,8 +971,10 @@ const cliBuilder = new CliBuilder([
                         ),
                         instanceQuery,
                     ),
-                limit: Number(limit),
-            });
+                    undefined,
+                    Number(limit),
+                )
+            ).map((n) => n.getStatus());
 
             if (redact) {
                 for (const note of notes) {

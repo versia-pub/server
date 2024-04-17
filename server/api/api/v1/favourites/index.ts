@@ -1,12 +1,9 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
+import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    type StatusWithRelations,
-    findManyStatuses,
-    statusToAPI,
-} from "~database/entities/Status";
+import { status } from "~drizzle/schema";
+import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -35,28 +32,19 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!user) return errorResponse("Unauthorized", 401);
 
-        const { objects, link } = await fetchTimeline<StatusWithRelations>(
-            findManyStatuses,
-            {
-                // @ts-ignore
-                where: (status, { and, lt, gt, gte, eq, sql }) =>
-                    and(
-                        max_id ? lt(status.id, max_id) : undefined,
-                        since_id ? gte(status.id, since_id) : undefined,
-                        min_id ? gt(status.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${user.id})`,
-                    ),
-                // @ts-expect-error Yes I KNOW the types are wrong
-                orderBy: (status, { desc }) => desc(status.id),
-                limit,
-            },
-            req,
+        const { objects, link } = await Timeline.getNoteTimeline(
+            and(
+                max_id ? lt(status.id, max_id) : undefined,
+                since_id ? gte(status.id, since_id) : undefined,
+                min_id ? gt(status.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${user.id})`,
+            ),
+            limit,
+            req.url,
         );
 
         return jsonResponse(
-            await Promise.all(
-                objects.map(async (status) => statusToAPI(status, user)),
-            ),
+            await Promise.all(objects.map(async (note) => note.toAPI(user))),
             200,
             {
                 Link: link,

@@ -27,38 +27,31 @@ import {
 import { parse } from "marked";
 import { db } from "~drizzle/db";
 import {
-    type application,
     attachment,
     emojiToStatus,
     instance,
-    type like,
     notification,
     status,
     statusToMentions,
     user,
 } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 import { LogLevel } from "~packages/log-manager";
-import type { Note } from "~types/lysand/Object";
-import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
-import { type Application, applicationToAPI } from "./Application";
-import {
-    attachmentFromLysand,
-    attachmentToAPI,
-    attachmentToLysand,
-} from "./Attachment";
+import type { Application } from "./Application";
+import { attachmentFromLysand, attachmentToLysand } from "./Attachment";
 import {
     type EmojiWithInstance,
-    emojiToAPI,
     emojiToLysand,
     fetchEmoji,
     parseEmojis,
 } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
+import type { Like } from "./Like";
 import {
     type User,
+    type UserWithInstance,
     type UserWithRelations,
-    type UserWithRelationsAndRelationships,
     findManyUsers,
     getUserUri,
     resolveUser,
@@ -66,21 +59,20 @@ import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
-    userToAPI,
 } from "./User";
 
 export type Status = InferSelectModel<typeof status>;
 
 export type StatusWithRelations = Status & {
     author: UserWithRelations;
-    mentions: UserWithRelations[];
+    mentions: UserWithInstance[];
     attachments: InferSelectModel<typeof attachment>[];
     reblog: StatusWithoutRecursiveRelations | null;
     emojis: EmojiWithInstance[];
-    likes: InferSelectModel<typeof like>[];
-    inReplyTo: StatusWithoutRecursiveRelations | null;
-    quoting: StatusWithoutRecursiveRelations | null;
-    application: InferSelectModel<typeof application> | null;
+    likes: Like[];
+    inReplyTo: Status | null;
+    quoting: Status | null;
+    application: Application | null;
     reblogCount: number;
     likeCount: number;
     replyCount: number;
@@ -88,15 +80,10 @@ export type StatusWithRelations = Status & {
 
 export type StatusWithoutRecursiveRelations = Omit<
     StatusWithRelations,
-    | "inReplyTo"
-    | "quoting"
-    | "reblog"
-    | "reblogCount"
-    | "likeCount"
-    | "replyCount"
+    "inReplyTo" | "quoting" | "reblog"
 >;
 
-export const statusExtras = {
+export const noteExtras = {
     reblogCount:
         sql`(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."reblogId" = "status".id)`.as(
             "reblog_count",
@@ -111,49 +98,12 @@ export const statusExtras = {
         ),
 };
 
-export const statusExtrasTemplate = (name: string) => ({
-    // @ts-ignore
-    reblogCount: sql([
-        `(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."reblogId" = ${name}.id)`,
-    ]).as("reblog_count"),
-    // @ts-ignore
-    likeCount: sql([
-        `(SELECT COUNT(*) FROM "Like" "like" WHERE "like"."likedId" = ${name}.id)`,
-    ]).as("like_count"),
-    // @ts-ignore
-    replyCount: sql([
-        `(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."inReplyToPostId" = ${name}.id)`,
-    ]).as("reply_count"),
-});
-
 /**
- * Returns whether this status is viewable by a user.
- * @param user The user to check.
- * @returns Whether this status is viewable by the user.
+ * Wrapper against the Status object to make it easier to work with
+ * @param query
+ * @returns
  */
-export const isViewableByUser = async (
-    status: StatusWithRelations,
-    user: UserWithRelations | null,
-) => {
-    if (status.authorId === user?.id) return true;
-    if (status.visibility === "public") return true;
-    if (status.visibility === "unlisted") return true;
-    if (status.visibility === "private") {
-        return user
-            ? await db.query.relationship.findFirst({
-                  where: (relationship, { and, eq }) =>
-                      and(
-                          eq(relationship.ownerId, user?.id),
-                          eq(relationship.subjectId, status.authorId),
-                          eq(relationship.following, true),
-                      ),
-              })
-            : false;
-    }
-    return user && status.mentions.includes(user);
-};
-
-export const findManyStatuses = async (
+export const findManyNotes = async (
     query: Parameters<typeof db.query.status.findMany>[0],
 ): Promise<StatusWithRelations[]> => {
     const output = await db.query.status.findMany({
@@ -182,8 +132,9 @@ export const findManyStatuses = async (
             mentions: {
                 with: {
                     user: {
-                        with: userRelations,
-                        extras: userExtrasTemplate("status_mentions_user"),
+                        with: {
+                            instance: true,
+                        },
                     },
                 },
             },
@@ -218,74 +169,15 @@ export const findManyStatuses = async (
                         extras: userExtrasTemplate("status_reblog_author"),
                     },
                 },
-            },
-            inReplyTo: {
-                with: {
-                    attachments: true,
-                    emojis: {
-                        with: {
-                            emoji: {
-                                with: {
-                                    instance: true,
-                                },
-                            },
-                        },
-                    },
-                    likes: true,
-                    application: true,
-                    mentions: {
-                        with: {
-                            user: {
-                                with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "status_inReplyTo_mentions_user",
-                                ),
-                            },
-                        },
-                    },
-                    author: {
-                        with: {
-                            ...userRelations,
-                        },
-                        extras: userExtrasTemplate("status_inReplyTo_author"),
-                    },
+                extras: {
+                    ...noteExtras,
                 },
             },
-            quoting: {
-                with: {
-                    attachments: true,
-                    emojis: {
-                        with: {
-                            emoji: {
-                                with: {
-                                    instance: true,
-                                },
-                            },
-                        },
-                    },
-                    likes: true,
-                    application: true,
-                    mentions: {
-                        with: {
-                            user: {
-                                with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "status_quoting_mentions_user",
-                                ),
-                            },
-                        },
-                    },
-                    author: {
-                        with: {
-                            ...userRelations,
-                        },
-                        extras: userExtrasTemplate("status_quoting_author"),
-                    },
-                },
-            },
+            inReplyTo: true,
+            quoting: true,
         },
         extras: {
-            ...statusExtras,
+            ...noteExtras,
             ...query?.extras,
         },
     });
@@ -293,65 +185,38 @@ export const findManyStatuses = async (
     return output.map((post) => ({
         ...post,
         author: transformOutputToUserWithRelations(post.author),
-        mentions: post.mentions.map(
-            (mention) =>
-                mention.user &&
-                transformOutputToUserWithRelations(mention.user),
-        ),
-        reblog: post.reblog && {
-            ...post.reblog,
-            author: transformOutputToUserWithRelations(post.reblog.author),
-            mentions: post.reblog.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: post.reblog.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
-        inReplyTo: post.inReplyTo && {
-            ...post.inReplyTo,
-            author: transformOutputToUserWithRelations(post.inReplyTo.author),
-            mentions: post.inReplyTo.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: post.inReplyTo.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
-        quoting: post.quoting && {
-            ...post.quoting,
-            author: transformOutputToUserWithRelations(post.quoting.author),
-            mentions: post.quoting.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: post.quoting.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
+        mentions: post.mentions.map((mention) => ({
+            ...mention.user,
+            endpoints: mention.user.endpoints as User["endpoints"],
+        })),
         emojis: (post.emojis ?? []).map(
             (emoji) =>
                 (emoji as unknown as Record<string, object>)
                     .emoji as EmojiWithInstance,
         ),
+        reblog: post.reblog && {
+            ...post.reblog,
+            author: transformOutputToUserWithRelations(post.reblog.author),
+            mentions: post.reblog.mentions.map((mention) => ({
+                ...mention.user,
+                endpoints: mention.user.endpoints as User["endpoints"],
+            })),
+            emojis: (post.reblog.emojis ?? []).map(
+                (emoji) =>
+                    (emoji as unknown as Record<string, object>)
+                        .emoji as EmojiWithInstance,
+            ),
+            reblogCount: Number(post.reblog.reblogCount),
+            likeCount: Number(post.reblog.likeCount),
+            replyCount: Number(post.reblog.replyCount),
+        },
         reblogCount: Number(post.reblogCount),
         likeCount: Number(post.likeCount),
         replyCount: Number(post.replyCount),
     }));
 };
 
-export const findFirstStatuses = async (
+export const findFirstNote = async (
     query: Parameters<typeof db.query.status.findFirst>[0],
 ): Promise<StatusWithRelations | null> => {
     const output = await db.query.status.findFirst({
@@ -380,8 +245,9 @@ export const findFirstStatuses = async (
             mentions: {
                 with: {
                     user: {
-                        with: userRelations,
-                        extras: userExtrasTemplate("status_mentions_user"),
+                        with: {
+                            instance: true,
+                        },
                     },
                 },
             },
@@ -416,74 +282,15 @@ export const findFirstStatuses = async (
                         extras: userExtrasTemplate("status_reblog_author"),
                     },
                 },
-            },
-            inReplyTo: {
-                with: {
-                    attachments: true,
-                    emojis: {
-                        with: {
-                            emoji: {
-                                with: {
-                                    instance: true,
-                                },
-                            },
-                        },
-                    },
-                    likes: true,
-                    application: true,
-                    mentions: {
-                        with: {
-                            user: {
-                                with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "status_inReplyTo_mentions_user",
-                                ),
-                            },
-                        },
-                    },
-                    author: {
-                        with: {
-                            ...userRelations,
-                        },
-                        extras: userExtrasTemplate("status_inReplyTo_author"),
-                    },
+                extras: {
+                    ...noteExtras,
                 },
             },
-            quoting: {
-                with: {
-                    attachments: true,
-                    emojis: {
-                        with: {
-                            emoji: {
-                                with: {
-                                    instance: true,
-                                },
-                            },
-                        },
-                    },
-                    likes: true,
-                    application: true,
-                    mentions: {
-                        with: {
-                            user: {
-                                with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "status_quoting_mentions_user",
-                                ),
-                            },
-                        },
-                    },
-                    author: {
-                        with: {
-                            ...userRelations,
-                        },
-                        extras: userExtrasTemplate("status_quoting_author"),
-                    },
-                },
-            },
+            inReplyTo: true,
+            quoting: true,
         },
         extras: {
-            ...statusExtras,
+            ...noteExtras,
             ...query?.extras,
         },
     });
@@ -493,74 +300,48 @@ export const findFirstStatuses = async (
     return {
         ...output,
         author: transformOutputToUserWithRelations(output.author),
-        mentions: output.mentions.map((mention) =>
-            transformOutputToUserWithRelations(mention.user),
-        ),
-        reblog: output.reblog && {
-            ...output.reblog,
-            author: transformOutputToUserWithRelations(output.reblog.author),
-            mentions: output.reblog.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: output.reblog.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
-        inReplyTo: output.inReplyTo && {
-            ...output.inReplyTo,
-            author: transformOutputToUserWithRelations(output.inReplyTo.author),
-            mentions: output.inReplyTo.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: output.inReplyTo.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
-        quoting: output.quoting && {
-            ...output.quoting,
-            author: transformOutputToUserWithRelations(output.quoting.author),
-            mentions: output.quoting.mentions.map(
-                (mention) =>
-                    mention.user &&
-                    transformOutputToUserWithRelations(mention.user),
-            ),
-            emojis: output.quoting.emojis.map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
-        },
+        mentions: output.mentions.map((mention) => ({
+            ...mention.user,
+            endpoints: mention.user.endpoints as User["endpoints"],
+        })),
         emojis: (output.emojis ?? []).map(
             (emoji) =>
                 (emoji as unknown as Record<string, object>)
                     .emoji as EmojiWithInstance,
         ),
+        reblog: output.reblog && {
+            ...output.reblog,
+            author: transformOutputToUserWithRelations(output.reblog.author),
+            mentions: output.reblog.mentions.map((mention) => ({
+                ...mention.user,
+                endpoints: mention.user.endpoints as User["endpoints"],
+            })),
+            emojis: (output.reblog.emojis ?? []).map(
+                (emoji) =>
+                    (emoji as unknown as Record<string, object>)
+                        .emoji as EmojiWithInstance,
+            ),
+            reblogCount: Number(output.reblog.reblogCount),
+            likeCount: Number(output.reblog.likeCount),
+            replyCount: Number(output.reblog.replyCount),
+        },
         reblogCount: Number(output.reblogCount),
         likeCount: Number(output.likeCount),
         replyCount: Number(output.replyCount),
     };
 };
 
-export const resolveStatus = async (
+export const resolveNote = async (
     uri?: string,
     providedNote?: Lysand.Note,
-): Promise<StatusWithRelations> => {
+): Promise<Note> => {
     if (!uri && !providedNote) {
         throw new Error("No URI or note provided");
     }
 
-    const foundStatus = await findFirstStatuses({
-        where: (status, { eq }) =>
-            eq(status.uri, uri ?? providedNote?.uri ?? ""),
-    });
+    const foundStatus = await Note.fromSql(
+        eq(status.uri, uri ?? providedNote?.uri ?? ""),
+    );
 
     if (foundStatus) return foundStatus;
 
@@ -632,7 +413,7 @@ export const resolveStatus = async (
         }
     }
 
-    const createdStatus = await createNewStatus(
+    const createdNote = await Note.fromData(
         author,
         note.content ?? {
             "text/plain": {
@@ -652,86 +433,19 @@ export const resolveStatus = async (
                 ) as Promise<UserWithRelations>[],
         ),
         attachments.map((a) => a.id),
-        note.replies_to ? await resolveStatus(note.replies_to) : undefined,
-        note.quotes ? await resolveStatus(note.quotes) : undefined,
+        note.replies_to
+            ? (await resolveNote(note.replies_to)).getStatus().id
+            : undefined,
+        note.quotes
+            ? (await resolveNote(note.quotes)).getStatus().id
+            : undefined,
     );
 
-    if (!createdStatus) {
+    if (!createdNote) {
         throw new Error("Failed to create status");
     }
 
-    return createdStatus;
-};
-
-/**
- * Return all the ancestors of this post,
- */
-export const getAncestors = async (
-    status: StatusWithRelations,
-    fetcher: UserWithRelationsAndRelationships | null,
-) => {
-    const ancestors: StatusWithRelations[] = [];
-
-    let currentStatus = status;
-
-    while (currentStatus.inReplyToPostId) {
-        const parent = await findFirstStatuses({
-            where: (status, { eq }) =>
-                eq(status.id, currentStatus.inReplyToPostId ?? ""),
-        });
-
-        if (!parent) break;
-
-        ancestors.push(parent);
-
-        currentStatus = parent;
-    }
-
-    // Filter for posts that are viewable by the user
-    const viewableAncestors = ancestors.filter((ancestor) =>
-        isViewableByUser(ancestor, fetcher),
-    );
-    return viewableAncestors;
-};
-
-/**
- * Return all the descendants of this post (recursive)
- * Temporary implementation, will be replaced with a recursive SQL query when Prisma adds support for it
- */
-export const getDescendants = async (
-    status: StatusWithRelations,
-    fetcher: UserWithRelationsAndRelationships | null,
-    depth = 0,
-) => {
-    const descendants: StatusWithRelations[] = [];
-
-    const currentStatus = status;
-
-    // Fetch all children of children of children recursively calling getDescendants
-
-    const children = await findManyStatuses({
-        where: (status, { eq }) => eq(status.inReplyToPostId, currentStatus.id),
-    });
-
-    for (const child of children) {
-        descendants.push(child);
-
-        if (depth < 20) {
-            const childDescendants = await getDescendants(
-                child,
-                fetcher,
-                depth + 1,
-            );
-            descendants.push(...childDescendants);
-        }
-    }
-
-    // Filter for posts that are viewable by the user
-
-    const viewableDescendants = descendants.filter((descendant) =>
-        isViewableByUser(descendant, fetcher),
-    );
-    return viewableDescendants;
+    return createdNote;
 };
 
 export const createMentionRegExp = () =>
@@ -907,122 +621,12 @@ export const contentToHtml = async (
     return htmlContent;
 };
 
-/**
- * Creates a new status and saves it to the database.
- * @returns A promise that resolves with the new status.
- */
-export const createNewStatus = async (
-    author: User,
-    content: Lysand.ContentFormat,
-    visibility: APIStatus["visibility"],
-    is_sensitive: boolean,
-    spoiler_text: string,
-    emojis: EmojiWithInstance[],
-    uri?: string,
-    mentions?: UserWithRelations[],
-    /** List of IDs of database Attachment objects */
-    media_attachments?: string[],
-    inReplyTo?: StatusWithRelations,
-    quoting?: StatusWithRelations,
-    application?: Application,
-): Promise<StatusWithRelations | null> => {
-    const htmlContent = await contentToHtml(content, mentions);
-
-    // Parse emojis and fuse with existing emojis
-    let foundEmojis = emojis;
-
-    if (author.instanceId === null) {
-        const parsedEmojis = await parseEmojis(htmlContent);
-        // Fuse and deduplicate
-        foundEmojis = [...emojis, ...parsedEmojis].filter(
-            (emoji, index, self) =>
-                index === self.findIndex((t) => t.id === emoji.id),
-        );
-    }
-
-    const newStatus = (
-        await db
-            .insert(status)
-            .values({
-                authorId: author.id,
-                content: htmlContent,
-                contentSource:
-                    content["text/plain"]?.content ||
-                    content["text/markdown"]?.content ||
-                    Object.entries(content)[0][1].content ||
-                    "",
-                contentType: "text/html",
-                visibility,
-                sensitive: is_sensitive,
-                spoilerText: spoiler_text,
-                uri: uri || null,
-                inReplyToPostId: inReplyTo?.id,
-                quotingPostId: quoting?.id,
-                applicationId: application?.id ?? null,
-                updatedAt: new Date().toISOString(),
-            })
-            .returning()
-    )[0];
-
-    // Connect emojis
-    for (const emoji of foundEmojis) {
-        await db
-            .insert(emojiToStatus)
-            .values({
-                emojiId: emoji.id,
-                statusId: newStatus.id,
-            })
-            .execute();
-    }
-
-    // Connect mentions
-    for (const mention of mentions ?? []) {
-        await db
-            .insert(statusToMentions)
-            .values({
-                statusId: newStatus.id,
-                userId: mention.id,
-            })
-            .execute();
-    }
-
-    // Set attachment parents
-    if (media_attachments && media_attachments.length > 0) {
-        await db
-            .update(attachment)
-            .set({
-                statusId: newStatus.id,
-            })
-            .where(inArray(attachment.id, media_attachments));
-    }
-
-    // Send notifications for mentioned local users
-    for (const mention of mentions ?? []) {
-        if (mention.instanceId === null) {
-            await db.insert(notification).values({
-                accountId: author.id,
-                notifiedId: mention.id,
-                type: "mention",
-                statusId: newStatus.id,
-            });
-        }
-    }
-
-    return (
-        (await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, newStatus.id),
-        })) || null
-    );
-};
-
-export const federateStatus = async (status: StatusWithRelations) => {
-    const toFederateTo = await getUsersToFederateTo(status);
-
-    for (const user of toFederateTo) {
+export const federateNote = async (note: Note) => {
+    for (const user of await note.getUsersToFederateTo()) {
         // TODO: Add queue system
         const request = await objectToInboxRequest(
-            statusToLysand(status),
-            status.author,
+            note.toLysand(),
+            note.getAuthor(),
             user,
         );
 
@@ -1038,55 +642,12 @@ export const federateStatus = async (status: StatusWithRelations) => {
             dualLogger.log(
                 LogLevel.ERROR,
                 "Federation.Status",
-                `Failed to federate status ${status.id} to ${user.uri}`,
+                `Failed to federate status ${note.getStatus().id} to ${
+                    user.uri
+                }`,
             );
         }
     }
-};
-
-export const getUsersToFederateTo = async (
-    status: StatusWithRelations,
-): Promise<UserWithRelations[]> => {
-    // Mentioned users
-    const mentionedUsers =
-        status.mentions.length > 0
-            ? await findManyUsers({
-                  where: (user, { or, and, isNotNull, eq, inArray }) =>
-                      and(
-                          isNotNull(user.instanceId),
-                          inArray(
-                              user.id,
-                              status.mentions.map((mention) => mention.id),
-                          ),
-                      ),
-                  with: {
-                      ...userRelations,
-                  },
-              })
-            : [];
-
-    const usersThatCanSeePost = await findManyUsers({
-        where: (user, { isNotNull }) => isNotNull(user.instanceId),
-        with: {
-            ...userRelations,
-            relationships: {
-                where: (relationship, { eq, and }) =>
-                    and(
-                        eq(relationship.subjectId, user.id),
-                        eq(relationship.following, true),
-                    ),
-            },
-        },
-    });
-
-    const fusedUsers = [...mentionedUsers, ...usersThatCanSeePost];
-
-    const deduplicatedUsersById = fusedUsers.filter(
-        (user, index, self) =>
-            index === self.findIndex((t) => t.id === user.id),
-    );
-
-    return deduplicatedUsersById;
 };
 
 export const editStatus = async (
@@ -1102,7 +663,7 @@ export const editStatus = async (
         mentions?: User[];
         media_attachments?: string[];
     },
-): Promise<StatusWithRelations | null> => {
+): Promise<Note | null> => {
     const mentions = await parseTextMentions(data.content);
 
     // Parse emojis
@@ -1122,20 +683,20 @@ export const editStatus = async (
         },
     });
 
-    const updated = (
-        await db
-            .update(status)
-            .set({
-                content: htmlContent,
-                contentSource: data.content,
-                contentType: data.content_type,
-                visibility: data.visibility,
-                sensitive: data.sensitive,
-                spoilerText: data.spoiler_text,
-            })
-            .where(eq(status.id, statusToEdit.id))
-            .returning()
-    )[0];
+    const note = await Note.fromId(statusToEdit.id);
+
+    if (!note) {
+        return null;
+    }
+
+    const updated = await note.update({
+        content: htmlContent,
+        contentSource: data.content,
+        contentType: data.content_type,
+        visibility: data.visibility,
+        sensitive: data.sensitive,
+        spoilerText: data.spoiler_text,
+    });
 
     // Connect emojis
     for (const emoji of data.emojis) {
@@ -1179,11 +740,7 @@ export const editStatus = async (
         })
         .where(inArray(attachment.id, data.media_attachments ?? []));
 
-    return (
-        (await findFirstStatuses({
-            where: (status, { eq }) => eq(status.id, updated.id),
-        })) || null
-    );
+    return await Note.fromId(updated.id);
 };
 
 export const isFavouritedBy = async (status: Status, user: User) => {
@@ -1191,128 +748,6 @@ export const isFavouritedBy = async (status: Status, user: User) => {
         where: (like, { and, eq }) =>
             and(eq(like.likerId, user.id), eq(like.likedId, status.id)),
     }));
-};
-
-/**
- * Converts this status to an API status.
- * @returns A promise that resolves with the API status.
- */
-export const statusToAPI = async (
-    statusToConvert: StatusWithRelations,
-    userFetching?: UserWithRelations,
-): Promise<APIStatus> => {
-    const wasPinnedByUser = userFetching
-        ? !!(await db.query.userPinnedNotes.findFirst({
-              where: (relation, { and, eq }) =>
-                  and(
-                      eq(relation.statusId, statusToConvert.id),
-                      eq(relation.userId, userFetching?.id),
-                  ),
-          }))
-        : false;
-
-    const wasRebloggedByUser = userFetching
-        ? !!(await db.query.status.findFirst({
-              where: (status, { eq, and }) =>
-                  and(
-                      eq(status.authorId, userFetching?.id),
-                      eq(status.reblogId, statusToConvert.id),
-                  ),
-          }))
-        : false;
-
-    const wasMutedByUser = userFetching
-        ? !!(await db.query.relationship.findFirst({
-              where: (relationship, { and, eq }) =>
-                  and(
-                      eq(relationship.ownerId, userFetching.id),
-                      eq(relationship.subjectId, statusToConvert.authorId),
-                      eq(relationship.muting, true),
-                  ),
-          }))
-        : false;
-
-    // Convert mentions of local users from @username@host to @username
-    const mentionedLocalUsers = statusToConvert.mentions.filter(
-        (mention) => mention.instanceId === null,
-    );
-
-    let replacedContent = statusToConvert.content;
-
-    for (const mention of mentionedLocalUsers) {
-        replacedContent = replacedContent.replace(
-            createRegExp(
-                exactly(
-                    `@${mention.username}@${
-                        new URL(config.http.base_url).host
-                    }`,
-                ),
-                [global],
-            ),
-            `@${mention.username}`,
-        );
-    }
-
-    return {
-        id: statusToConvert.id,
-        in_reply_to_id: statusToConvert.inReplyToPostId || null,
-        in_reply_to_account_id: statusToConvert.inReplyTo?.authorId || null,
-        account: userToAPI(statusToConvert.author),
-        created_at: new Date(statusToConvert.createdAt).toISOString(),
-        application: statusToConvert.application
-            ? applicationToAPI(statusToConvert.application)
-            : null,
-        card: null,
-        content: replacedContent,
-        emojis: statusToConvert.emojis.map((emoji) => emojiToAPI(emoji)),
-        favourited: !!(statusToConvert.likes ?? []).find(
-            (like) => like.likerId === userFetching?.id,
-        ),
-        favourites_count: (statusToConvert.likes ?? []).length,
-        media_attachments: (statusToConvert.attachments ?? []).map(
-            (a) => attachmentToAPI(a) as APIAttachment,
-        ),
-        mentions: statusToConvert.mentions.map((mention) => userToAPI(mention)),
-        language: null,
-        muted: wasMutedByUser,
-        pinned: wasPinnedByUser,
-        // TODO: Add polls
-        poll: null,
-        reblog: statusToConvert.reblog
-            ? await statusToAPI(
-                  statusToConvert.reblog as unknown as StatusWithRelations,
-                  userFetching,
-              )
-            : null,
-        reblogged: wasRebloggedByUser,
-        reblogs_count: statusToConvert.reblogCount,
-        replies_count: statusToConvert.replyCount,
-        sensitive: statusToConvert.sensitive,
-        spoiler_text: statusToConvert.spoilerText,
-        tags: [],
-        uri:
-            statusToConvert.uri ||
-            new URL(
-                `/@${statusToConvert.author.username}/${statusToConvert.id}`,
-                config.http.base_url,
-            ).toString(),
-        visibility: statusToConvert.visibility as APIStatus["visibility"],
-        url:
-            statusToConvert.uri ||
-            new URL(
-                `/@${statusToConvert.author.username}/${statusToConvert.id}`,
-                config.http.base_url,
-            ).toString(),
-        bookmarked: false,
-        quote: !!statusToConvert.quotingPostId /* statusToConvert.quoting
-            ? await statusToAPI(
-                  statusToConvert.quoting as unknown as StatusWithRelations,
-                  userFetching,
-              )
-            : null, */,
-        // @ts-expect-error Pleroma extension
-        quote_id: statusToConvert.quotingPostId || undefined,
-    };
 };
 
 export const getStatusUri = (status?: Status | null) => {

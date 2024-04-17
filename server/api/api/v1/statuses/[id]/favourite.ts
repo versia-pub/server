@@ -1,12 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { createLike } from "~database/entities/Like";
-import {
-    findFirstStatuses,
-    isViewableByUser,
-    statusToAPI,
-} from "~database/entities/Status";
 import { db } from "~drizzle/db";
+import { Note } from "~packages/database-interface/note";
 import type { Status as APIStatus } from "~types/mastodon/status";
 
 export const meta = applyConfig({
@@ -34,26 +30,27 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const status = await Note.fromId(id);
 
     // Check if user is authorized to view this status (if it's private)
-    if (!status || !isViewableByUser(status, user))
+    if (!status?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
     const existingLike = await db.query.like.findFirst({
         where: (like, { and, eq }) =>
-            and(eq(like.likedId, status.id), eq(like.likerId, user.id)),
+            and(
+                eq(like.likedId, status.getStatus().id),
+                eq(like.likerId, user.id),
+            ),
     });
 
     if (!existingLike) {
-        await createLike(user, status);
+        await createLike(user, status.getStatus());
     }
 
     return jsonResponse({
-        ...(await statusToAPI(status, user)),
+        ...(await status.toAPI(user)),
         favourited: true,
-        favourites_count: status.likeCount + 1,
+        favourites_count: status.getStatus().likeCount + 1,
     } as APIStatus);
 });

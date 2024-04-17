@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { findFirstStatuses, statusToAPI } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { statusToMentions } from "~drizzle/schema";
+import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -29,15 +29,13 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const foundStatus = await findFirstStatuses({
-        where: (status, { eq }) => eq(status.id, id),
-    });
+    const foundStatus = await Note.fromId(id);
 
     // Check if status exists
     if (!foundStatus) return errorResponse("Record not found", 404);
 
     // Check if status is user's
-    if (foundStatus.authorId !== user.id)
+    if (foundStatus.getAuthor().id !== user.id)
         return errorResponse("Unauthorized", 401);
 
     // Check if post is already pinned
@@ -45,7 +43,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         await db.query.userPinnedNotes.findFirst({
             where: (userPinnedNote, { and, eq }) =>
                 and(
-                    eq(userPinnedNote.statusId, foundStatus.id),
+                    eq(userPinnedNote.statusId, foundStatus.getStatus().id),
                     eq(userPinnedNote.userId, user.id),
                 ),
         })
@@ -54,9 +52,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     }
 
     await db.insert(statusToMentions).values({
-        statusId: foundStatus.id,
+        statusId: foundStatus.getStatus().id,
         userId: user.id,
     });
 
-    return jsonResponse(statusToAPI(foundStatus, user));
+    return jsonResponse(await foundStatus.toAPI(user));
 });
