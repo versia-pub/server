@@ -1,6 +1,6 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import type { notification } from "~drizzle/schema";
+import type { Notifications } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 import type { Notification as APINotification } from "~types/mastodon/notification";
 import type { StatusWithRelations } from "./Status";
@@ -12,7 +12,7 @@ import {
     userToAPI,
 } from "./User";
 
-export type Notification = InferSelectModel<typeof notification>;
+export type Notification = InferSelectModel<typeof Notifications>;
 
 export type NotificationWithRelations = Notification & {
     status: StatusWithRelations | null;
@@ -20,9 +20,9 @@ export type NotificationWithRelations = Notification & {
 };
 
 export const findManyNotifications = async (
-    query: Parameters<typeof db.query.notification.findMany>[0],
+    query: Parameters<typeof db.query.Notifications.findMany>[0],
 ): Promise<NotificationWithRelations[]> => {
-    const output = await db.query.notification.findMany({
+    const output = await db.query.Notifications.findMany({
         ...query,
         with: {
             ...query?.with,
@@ -30,7 +30,7 @@ export const findManyNotifications = async (
                 with: {
                     ...userRelations,
                 },
-                extras: userExtrasTemplate("notification_account"),
+                extras: userExtrasTemplate("Notifications_account"),
             },
         },
         extras: {
@@ -42,7 +42,7 @@ export const findManyNotifications = async (
         output.map(async (notif) => ({
             ...notif,
             account: transformOutputToUserWithRelations(notif.account),
-            status: (await Note.fromId(notif.statusId))?.getStatus() ?? null,
+            status: (await Note.fromId(notif.noteId))?.getStatus() ?? null,
         })),
     );
 };

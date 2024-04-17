@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
@@ -39,18 +39,18 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { objects, link } = await Timeline.getNoteTimeline(
             and(
-                max_id ? lt(status.id, max_id) : undefined,
-                since_id ? gte(status.id, since_id) : undefined,
-                min_id ? gt(status.id, min_id) : undefined,
+                max_id ? lt(Notes.id, max_id) : undefined,
+                since_id ? gte(Notes.id, since_id) : undefined,
+                min_id ? gt(Notes.id, min_id) : undefined,
                 // use authorId to grab user, then use user.instanceId to filter local/remote statuses
                 remote
-                    ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`
+                    ? sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NOT NULL)`
                     : undefined,
                 local
-                    ? sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`
+                    ? sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NULL)`
                     : undefined,
                 only_media
-                    ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                    ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
                     : undefined,
             ),
             limit,

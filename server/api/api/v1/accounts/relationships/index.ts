@@ -36,7 +36,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { id: ids } = extraData.parsedRequest;
 
-        const relationships = await db.query.relationship.findMany({
+        const relationships = await db.query.Relationships.findMany({
             where: (relationship, { inArray, and, eq }) =>
                 and(
                     inArray(relationship.subjectId, ids),

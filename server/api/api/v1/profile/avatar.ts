@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
 import { userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { user } from "~drizzle/schema";
+import { Users } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],
@@ -25,7 +25,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!self) return errorResponse("Unauthorized", 401);
 
-    await db.update(user).set({ avatar: "" }).where(eq(user.id, self.id));
+    await db.update(Users).set({ avatar: "" }).where(eq(Users.id, self.id));
 
     return jsonResponse(
         userToAPI({

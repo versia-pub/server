@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { db } from "~drizzle/db";
-import { statusToMentions } from "~drizzle/schema";
+import { NoteToMentions, UserToPinnedNotes } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -40,10 +40,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     // Check if post is already pinned
     if (
-        await db.query.userPinnedNotes.findFirst({
+        await db.query.UserToPinnedNotes.findFirst({
             where: (userPinnedNote, { and, eq }) =>
                 and(
-                    eq(userPinnedNote.statusId, foundStatus.getStatus().id),
+                    eq(userPinnedNote.noteId, foundStatus.getStatus().id),
                     eq(userPinnedNote.userId, user.id),
                 ),
         })
@@ -51,10 +51,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         return errorResponse("Already pinned", 422);
     }
 
-    await db.insert(statusToMentions).values({
-        statusId: foundStatus.getStatus().id,
-        userId: user.id,
-    });
+    await foundStatus.pin(user);
 
     return jsonResponse(await foundStatus.toAPI(user));
 });

@@ -16,7 +16,7 @@ import {
 import { TokenType } from "~database/entities/Token";
 import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { token } from "~drizzle/schema";
+import { Tokens } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -166,7 +166,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const code = randomBytes(32).toString("hex");
 
-    await db.insert(token).values({
+    await db.insert(Tokens).values({
         accessToken: randomBytes(64).toString("base64url"),
         code: code,
         scope: flow.application.scopes,

@@ -11,7 +11,7 @@ import {
     sendFollowReject,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { relationship } from "~drizzle/schema";
+import { Relationships } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -43,28 +43,28 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     // Reject follow request
     await db
-        .update(relationship)
+        .update(Relationships)
         .set({
             requested: false,
             following: false,
         })
         .where(
             and(
-                eq(relationship.subjectId, user.id),
-                eq(relationship.ownerId, account.id),
+                eq(Relationships.subjectId, user.id),
+                eq(Relationships.ownerId, account.id),
             ),
         );
 
     // Update followedBy for other user
     await db
-        .update(relationship)
+        .update(Relationships)
         .set({
             followedBy: false,
         })
         .where(
             and(
-                eq(relationship.subjectId, account.id),
-                eq(relationship.ownerId, user.id),
+                eq(Relationships.subjectId, account.id),
+                eq(Relationships.ownerId, user.id),
             ),
         );
 

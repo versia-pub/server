@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
@@ -34,10 +34,10 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { objects, link } = await Timeline.getNoteTimeline(
             and(
-                max_id ? lt(status.id, max_id) : undefined,
-                since_id ? gte(status.id, since_id) : undefined,
-                min_id ? gt(status.id, min_id) : undefined,
-                sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${status.id} AND "Like"."likerId" = ${user.id})`,
+                max_id ? lt(Notes.id, max_id) : undefined,
+                since_id ? gte(Notes.id, since_id) : undefined,
+                min_id ? gt(Notes.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${Notes.id} AND "Likes"."likerId" = ${user.id})`,
             ),
             limit,
             req.url,

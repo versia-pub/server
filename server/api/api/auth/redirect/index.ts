@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
 import { and, eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { application, token } from "~drizzle/schema";
+import { Applications, Tokens } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -18,10 +18,7 @@ export const meta = applyConfig({
 /**
  * OAuth Code flow
  */
-export default apiRoute<{
-    email: string;
-    password: string;
-}>(async (req, matchedRoute) => {
+export default apiRoute(async (req, matchedRoute) => {
     const redirect_uri = decodeURIComponent(matchedRoute.query.redirect_uri);
     const client_id = matchedRoute.query.client_id;
     const code = matchedRoute.query.code;
@@ -37,9 +34,9 @@ export default apiRoute<{
 
     const foundToken = await db
         .select()
-        .from(token)
-        .leftJoin(application, eq(token.applicationId, application.id))
-        .where(and(eq(token.code, code), eq(application.clientId, client_id)))
+        .from(Tokens)
+        .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
+        .where(and(eq(Tokens.code, code), eq(Applications.clientId, client_id)))
         .limit(1);
 
     if (!foundToken || foundToken.length <= 0)

@@ -7,7 +7,7 @@ import {
     getRelationshipToOtherUser,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { relationship } from "~drizzle/schema";
+import { Relationships } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -49,12 +49,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         foundRelationship.mutingNotifications = false;
 
         await db
-            .update(relationship)
+            .update(Relationships)
             .set({
                 muting: false,
                 mutingNotifications: false,
             })
-            .where(eq(relationship.id, foundRelationship.id));
+            .where(eq(Relationships.id, foundRelationship.id));
     }
 
     return jsonResponse(relationshipToAPI(foundRelationship));

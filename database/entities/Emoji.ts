@@ -1,12 +1,12 @@
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
-import { emoji, instance } from "~drizzle/schema";
+import { Emojis, Instances } from "~drizzle/schema";
 import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
 import { addInstanceIfNotExists } from "./Instance";
 
-export type EmojiWithInstance = InferSelectModel<typeof emoji> & {
-    instance: InferSelectModel<typeof instance> | null;
+export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
+    instance: InferSelectModel<typeof Instances> | null;
 };
 
 /**
@@ -18,7 +18,7 @@ export const parseEmojis = async (text: string) => {
     const regex = /:[a-zA-Z0-9_]+:/g;
     const matches = text.match(regex);
     if (!matches) return [];
-    const emojis = await db.query.emoji.findMany({
+    const emojis = await db.query.Emojis.findMany({
         where: (emoji, { eq, or }) =>
             or(
                 ...matches
@@ -45,27 +45,27 @@ export const fetchEmoji = async (
 ): Promise<EmojiWithInstance> => {
     const existingEmoji = await db
         .select()
-        .from(emoji)
-        .innerJoin(instance, eq(emoji.instanceId, instance.id))
+        .from(Emojis)
+        .innerJoin(Instances, eq(Emojis.instanceId, Instances.id))
         .where(
             and(
-                eq(emoji.shortcode, emojiToFetch.name),
-                host ? eq(instance.baseUrl, host) : undefined,
+                eq(Emojis.shortcode, emojiToFetch.name),
+                host ? eq(Instances.baseUrl, host) : undefined,
             ),
         )
         .limit(1);
 
     if (existingEmoji[0])
         return {
-            ...existingEmoji[0].Emoji,
-            instance: existingEmoji[0].Instance,
+            ...existingEmoji[0].Emojis,
+            instance: existingEmoji[0].Instances,
         };
 
     const foundInstance = host ? await addInstanceIfNotExists(host) : null;
 
     const result = (
         await db
-            .insert(emoji)
+            .insert(Emojis)
             .values({
                 shortcode: emojiToFetch.name,
                 url: Object.entries(emojiToFetch.url)[0][1].content,

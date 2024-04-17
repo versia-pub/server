@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";
-import { notification, status } from "~drizzle/schema";
+import { Notes, Notifications } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -44,13 +44,12 @@ export default apiRoute<typeof meta, typeof schema>(
         if (!foundStatus?.isViewableByUser(user))
             return errorResponse("Record not found", 404);
 
-        const existingReblog = await db.query.status.findFirst({
-            where: (status, { and, eq }) =>
-                and(
-                    eq(status.authorId, user.id),
-                    eq(status.reblogId, status.id),
-                ),
-        });
+        const existingReblog = await Note.fromSql(
+            and(
+                eq(Notes.authorId, user.id),
+                eq(Notes.reblogId, foundStatus.getStatus().id),
+            ),
+        );
 
         if (existingReblog) {
             return errorResponse("Already reblogged", 422);
@@ -77,11 +76,11 @@ export default apiRoute<typeof meta, typeof schema>(
 
         // Create notification for reblog if reblogged user is on the same instance
         if (foundStatus.getAuthor().instanceId === user.instanceId) {
-            await db.insert(notification).values({
+            await db.insert(Notifications).values({
                 accountId: user.id,
                 notifiedId: foundStatus.getAuthor().id,
                 type: "reblog",
-                statusId: foundStatus.getStatus().reblogId,
+                noteId: foundStatus.getStatus().reblogId,
             });
         }
 

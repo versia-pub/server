@@ -3,7 +3,7 @@ import { jsonResponse } from "@response";
 import { and, countDistinct, eq, gte, isNull } from "drizzle-orm";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { status, user } from "~drizzle/schema";
+import { Notes, Users } from "~drizzle/schema";
 import manifest from "~package.json";
 
 export const meta = applyConfig({
@@ -32,15 +32,15 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     const monthlyActiveUsers = (
         await db
             .select({
-                count: countDistinct(user),
+                count: countDistinct(Users),
             })
-            .from(user)
-            .leftJoin(status, eq(user.id, status.authorId))
+            .from(Users)
+            .leftJoin(Notes, eq(Users.id, Notes.authorId))
             .where(
                 and(
-                    isNull(user.instanceId),
+                    isNull(Users.instanceId),
                     gte(
-                        status.createdAt,
+                        Notes.createdAt,
                         new Date(
                             Date.now() - 30 * 24 * 60 * 60 * 1000,
                         ).toISOString(),

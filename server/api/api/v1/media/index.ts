@@ -9,7 +9,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 import { db } from "~drizzle/db";
-import { attachment } from "~drizzle/schema";
+import { Attachments } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -128,7 +128,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const newAttachment = (
             await db
-                .insert(attachment)
+                .insert(Attachments)
                 .values({
                     url,
                     thumbnailUrl,

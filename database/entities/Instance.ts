@@ -1,6 +1,6 @@
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
-import { instance } from "~drizzle/schema";
+import { Instances } from "~drizzle/schema";
 
 /**
  * Represents an instance in the database.
@@ -38,7 +38,7 @@ export const addInstanceIfNotExists = async (url: string) => {
 
     return (
         await db
-            .insert(instance)
+            .insert(Instances)
             .values({
                 baseUrl: host,
                 name: metadata.name,

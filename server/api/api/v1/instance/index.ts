@@ -3,7 +3,7 @@ import { jsonResponse } from "@response";
 import { and, count, countDistinct, eq, gte, isNull, sql } from "drizzle-orm";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { instance, status, user } from "~drizzle/schema";
+import { Instances, Notes, Users } from "~drizzle/schema";
 import manifest from "~package.json";
 import type { Instance as APIInstance } from "~types/mastodon/instance";
 
@@ -30,9 +30,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .select({
                 count: count(),
             })
-            .from(status)
+            .from(Notes)
             .where(
-                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`,
+                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${Notes.authorId} AND "User"."instanceId" IS NULL)`,
             )
     )[0].count;
 
@@ -41,8 +41,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .select({
                 count: count(),
             })
-            .from(user)
-            .where(isNull(user.instanceId))
+            .from(Users)
+            .where(isNull(Users.instanceId))
     )[0].count;
 
     const contactAccount = await findFirstUser({
@@ -54,15 +54,15 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     const monthlyActiveUsers = (
         await db
             .select({
-                count: countDistinct(user),
+                count: countDistinct(Users),
             })
-            .from(user)
-            .leftJoin(status, eq(user.id, status.authorId))
+            .from(Users)
+            .leftJoin(Notes, eq(Users.id, Notes.authorId))
             .where(
                 and(
-                    isNull(user.instanceId),
+                    isNull(Users.instanceId),
                     gte(
-                        status.createdAt,
+                        Notes.createdAt,
                         new Date(
                             Date.now() - 30 * 24 * 60 * 60 * 1000,
                         ).toISOString(),
@@ -76,7 +76,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .select({
                 count: count(),
             })
-            .from(instance)
+            .from(Instances)
     )[0].count;
 
     // TODO: fill in more values

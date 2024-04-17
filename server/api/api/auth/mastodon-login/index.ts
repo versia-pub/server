@@ -4,7 +4,7 @@ import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
 import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { token } from "~drizzle/schema";
+import { Tokens } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
@@ -54,7 +54,7 @@ export default apiRoute<typeof meta, typeof schema>(
         const code = randomBytes(32).toString("hex");
         const accessToken = randomBytes(64).toString("base64url");
 
-        await db.insert(token).values({
+        await db.insert(Tokens).values({
             accessToken,
             code: code,
             scope: "read write follow push",

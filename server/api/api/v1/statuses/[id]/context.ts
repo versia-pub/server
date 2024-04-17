@@ -34,14 +34,14 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (!foundStatus) return errorResponse("Record not found", 404);
 
     const relations = user
-        ? await db.query.relationship.findMany({
+        ? await db.query.Relationships.findMany({
               where: (relationship, { eq }) =>
                   eq(relationship.ownerId, user.id),
           })
         : null;
 
     const relationSubjects = user
-        ? await db.query.relationship.findMany({
+        ? await db.query.Relationships.findMany({
               where: (relationship, { eq }) =>
                   eq(relationship.subjectId, user.id),
           })

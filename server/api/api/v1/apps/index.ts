@@ -3,7 +3,7 @@ import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { z } from "zod";
 import { db } from "~drizzle/db";
-import { application } from "~drizzle/schema";
+import { Applications } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -34,7 +34,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const app = (
             await db
-                .insert(application)
+                .insert(Applications)
                 .values({
                     name: client_name || "",
                     redirectUris: redirect_uris || "",

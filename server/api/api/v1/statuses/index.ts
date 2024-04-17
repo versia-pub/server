@@ -70,7 +70,6 @@ export default apiRoute<typeof meta, typeof schema>(
         const {
             status,
             media_ids,
-            "poll[expires_in]": expires_in,
             "poll[options]": options,
             in_reply_to_id,
             quote_id,
@@ -119,12 +118,6 @@ export default apiRoute<typeof meta, typeof schema>(
             sanitizedStatus = await sanitizeHtml(status ?? "");
         }
 
-        // Get reply account and status if exists
-        const replyStatus: StatusWithRelations | null =
-            (await Note.fromId(in_reply_to_id ?? null))?.getStatus() ?? null;
-        const quote: StatusWithRelations | null =
-            (await Note.fromId(quote_id ?? null))?.getStatus() ?? null;
-
         // Check if status body doesnt match filters
         if (
             config.filters.note_content.some((filter) => status?.match(filter))
@@ -134,15 +127,28 @@ export default apiRoute<typeof meta, typeof schema>(
 
         // Check if media attachments are all valid
         if (media_ids && media_ids.length > 0) {
-            const foundAttachments = await db.query.attachment
-                .findMany({
-                    where: (attachment, { inArray }) =>
-                        inArray(attachment.id, media_ids),
-                })
-                .catch(() => []);
+            const foundAttachments = await db.query.Attachments.findMany({
+                where: (attachment, { inArray }) =>
+                    inArray(attachment.id, media_ids),
+            }).catch(() => []);
 
             if (foundAttachments.length !== (media_ids ?? []).length) {
                 return errorResponse("Invalid media IDs", 422);
+            }
+        }
+
+        // Check that in_reply_to_id and quote_id are real posts if provided
+        if (in_reply_to_id) {
+            const foundReply = await Note.fromId(in_reply_to_id);
+            if (!foundReply) {
+                return errorResponse("Invalid in_reply_to_id (not found)", 422);
+            }
+        }
+
+        if (quote_id) {
+            const foundQuote = await Note.fromId(quote_id);
+            if (!foundQuote) {
+                return errorResponse("Invalid quote_id (not found)", 422);
             }
         }
 

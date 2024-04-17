@@ -16,7 +16,7 @@ export const meta = applyConfig({
 });
 
 export default apiRoute(async () => {
-    const emojis = await db.query.emoji.findMany({
+    const emojis = await db.query.Emojis.findMany({
         where: (emoji, { isNull }) => isNull(emoji.instanceId),
         with: {
             instance: true,

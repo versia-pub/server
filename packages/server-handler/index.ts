@@ -77,7 +77,7 @@ export const processRoute = async (
         return null;
     });
 
-    if (!route) {
+    if (!route?.meta) {
         return errorResponse("Route not found", 404);
     }
 

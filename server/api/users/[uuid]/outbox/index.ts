@@ -2,7 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -25,8 +25,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const notes = await Note.manyFromSql(
         and(
-            eq(status.authorId, uuid),
-            inArray(status.visibility, ["public", "unlisted"]),
+            eq(Notes.authorId, uuid),
+            inArray(Notes.visibility, ["public", "unlisted"]),
         ),
         undefined,
         20,
@@ -37,11 +37,11 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         .select({
             count: count(),
         })
-        .from(status)
+        .from(Notes)
         .where(
             and(
-                eq(status.authorId, uuid),
-                inArray(status.visibility, ["public", "unlisted"]),
+                eq(Notes.authorId, uuid),
+                inArray(Notes.visibility, ["public", "unlisted"]),
             ),
         );
 

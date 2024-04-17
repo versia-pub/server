@@ -7,7 +7,7 @@ import {
     getRelationshipToOtherUser,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { relationship } from "~drizzle/schema";
+import { Relationships } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -48,23 +48,23 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         foundRelationship.followedBy = false;
 
         await db
-            .update(relationship)
+            .update(Relationships)
             .set({
                 followedBy: false,
             })
-            .where(eq(relationship.id, foundRelationship.id));
+            .where(eq(Relationships.id, foundRelationship.id));
 
         if (otherUser.instanceId === null) {
             // Also remove from followers list
             await db
-                .update(relationship)
+                .update(Relationships)
                 .set({
                     following: false,
                 })
                 .where(
                     and(
-                        eq(relationship.ownerId, otherUser.id),
-                        eq(relationship.subjectId, self.id),
+                        eq(Relationships.ownerId, otherUser.id),
+                        eq(Relationships.subjectId, self.id),
                     ),
                 );
         }

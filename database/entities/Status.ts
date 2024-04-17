@@ -27,13 +27,13 @@ import {
 import { parse } from "marked";
 import { db } from "~drizzle/db";
 import {
-    attachment,
-    emojiToStatus,
-    instance,
-    notification,
-    status,
-    statusToMentions,
-    user,
+    Attachments,
+    EmojiToNote,
+    Instances,
+    NoteToMentions,
+    Notes,
+    Notifications,
+    Users,
 } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 import { LogLevel } from "~packages/log-manager";
@@ -61,17 +61,17 @@ import {
     userRelations,
 } from "./User";
 
-export type Status = InferSelectModel<typeof status>;
+export type Status = InferSelectModel<typeof Notes>;
 
 export type StatusWithRelations = Status & {
     author: UserWithRelations;
     mentions: UserWithInstance[];
-    attachments: InferSelectModel<typeof attachment>[];
+    attachments: InferSelectModel<typeof Attachments>[];
     reblog: StatusWithoutRecursiveRelations | null;
     emojis: EmojiWithInstance[];
     likes: Like[];
-    inReplyTo: Status | null;
-    quoting: Status | null;
+    reply: Status | null;
+    quote: Status | null;
     application: Application | null;
     reblogCount: number;
     likeCount: number;
@@ -80,20 +80,20 @@ export type StatusWithRelations = Status & {
 
 export type StatusWithoutRecursiveRelations = Omit<
     StatusWithRelations,
-    "inReplyTo" | "quoting" | "reblog"
+    "reply" | "quote" | "reblog"
 >;
 
 export const noteExtras = {
     reblogCount:
-        sql`(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."reblogId" = "status".id)`.as(
+        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes".id)`.as(
             "reblog_count",
         ),
     likeCount:
-        sql`(SELECT COUNT(*) FROM "Like" "like" WHERE "like"."likedId" = "status".id)`.as(
+        sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes".id)`.as(
             "like_count",
         ),
     replyCount:
-        sql`(SELECT COUNT(*) FROM "Status" "status" WHERE "status"."inReplyToPostId" = "status".id)`.as(
+        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes".id)`.as(
             "reply_count",
         ),
 };
@@ -104,15 +104,15 @@ export const noteExtras = {
  * @returns
  */
 export const findManyNotes = async (
-    query: Parameters<typeof db.query.status.findMany>[0],
+    query: Parameters<typeof db.query.Notes.findMany>[0],
 ): Promise<StatusWithRelations[]> => {
-    const output = await db.query.status.findMany({
+    const output = await db.query.Notes.findMany({
         ...query,
         with: {
             ...query?.with,
             attachments: {
                 where: (attachment, { eq }) =>
-                    eq(attachment.statusId, sql`"status"."id"`),
+                    eq(attachment.noteId, sql`"Notes"."id"`),
             },
             emojis: {
                 with: {
@@ -127,7 +127,7 @@ export const findManyNotes = async (
                 with: {
                     ...userRelations,
                 },
-                extras: userExtrasTemplate("status_author"),
+                extras: userExtrasTemplate("Notes_author"),
             },
             mentions: {
                 with: {
@@ -157,7 +157,7 @@ export const findManyNotes = async (
                             user: {
                                 with: userRelations,
                                 extras: userExtrasTemplate(
-                                    "status_reblog_mentions_user",
+                                    "Notes_reblog_mentions_user",
                                 ),
                             },
                         },
@@ -166,15 +166,15 @@ export const findManyNotes = async (
                         with: {
                             ...userRelations,
                         },
-                        extras: userExtrasTemplate("status_reblog_author"),
+                        extras: userExtrasTemplate("Notes_reblog_author"),
                     },
                 },
                 extras: {
                     ...noteExtras,
                 },
             },
-            inReplyTo: true,
-            quoting: true,
+            reply: true,
+            quote: true,
         },
         extras: {
             ...noteExtras,
@@ -187,25 +187,17 @@ export const findManyNotes = async (
         author: transformOutputToUserWithRelations(post.author),
         mentions: post.mentions.map((mention) => ({
             ...mention.user,
-            endpoints: mention.user.endpoints as User["endpoints"],
+            endpoints: mention.user.endpoints,
         })),
-        emojis: (post.emojis ?? []).map(
-            (emoji) =>
-                (emoji as unknown as Record<string, object>)
-                    .emoji as EmojiWithInstance,
-        ),
+        emojis: (post.emojis ?? []).map((emoji) => emoji.emoji),
         reblog: post.reblog && {
             ...post.reblog,
             author: transformOutputToUserWithRelations(post.reblog.author),
             mentions: post.reblog.mentions.map((mention) => ({
                 ...mention.user,
-                endpoints: mention.user.endpoints as User["endpoints"],
+                endpoints: mention.user.endpoints,
             })),
-            emojis: (post.reblog.emojis ?? []).map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
+            emojis: (post.reblog.emojis ?? []).map((emoji) => emoji.emoji),
             reblogCount: Number(post.reblog.reblogCount),
             likeCount: Number(post.reblog.likeCount),
             replyCount: Number(post.reblog.replyCount),
@@ -217,15 +209,15 @@ export const findManyNotes = async (
 };
 
 export const findFirstNote = async (
-    query: Parameters<typeof db.query.status.findFirst>[0],
+    query: Parameters<typeof db.query.Notes.findFirst>[0],
 ): Promise<StatusWithRelations | null> => {
-    const output = await db.query.status.findFirst({
+    const output = await db.query.Notes.findFirst({
         ...query,
         with: {
             ...query?.with,
             attachments: {
                 where: (attachment, { eq }) =>
-                    eq(attachment.statusId, sql`"status"."id"`),
+                    eq(attachment.noteId, sql`"Notes"."id"`),
             },
             emojis: {
                 with: {
@@ -240,7 +232,7 @@ export const findFirstNote = async (
                 with: {
                     ...userRelations,
                 },
-                extras: userExtrasTemplate("status_author"),
+                extras: userExtrasTemplate("Notes_author"),
             },
             mentions: {
                 with: {
@@ -270,7 +262,7 @@ export const findFirstNote = async (
                             user: {
                                 with: userRelations,
                                 extras: userExtrasTemplate(
-                                    "status_reblog_mentions_user",
+                                    "Notes_reblog_mentions_user",
                                 ),
                             },
                         },
@@ -279,15 +271,15 @@ export const findFirstNote = async (
                         with: {
                             ...userRelations,
                         },
-                        extras: userExtrasTemplate("status_reblog_author"),
+                        extras: userExtrasTemplate("Notes_reblog_author"),
                     },
                 },
                 extras: {
                     ...noteExtras,
                 },
             },
-            inReplyTo: true,
-            quoting: true,
+            reply: true,
+            quote: true,
         },
         extras: {
             ...noteExtras,
@@ -302,25 +294,17 @@ export const findFirstNote = async (
         author: transformOutputToUserWithRelations(output.author),
         mentions: output.mentions.map((mention) => ({
             ...mention.user,
-            endpoints: mention.user.endpoints as User["endpoints"],
+            endpoints: mention.user.endpoints,
         })),
-        emojis: (output.emojis ?? []).map(
-            (emoji) =>
-                (emoji as unknown as Record<string, object>)
-                    .emoji as EmojiWithInstance,
-        ),
+        emojis: (output.emojis ?? []).map((emoji) => emoji.emoji),
         reblog: output.reblog && {
             ...output.reblog,
             author: transformOutputToUserWithRelations(output.reblog.author),
             mentions: output.reblog.mentions.map((mention) => ({
                 ...mention.user,
-                endpoints: mention.user.endpoints as User["endpoints"],
+                endpoints: mention.user.endpoints,
             })),
-            emojis: (output.reblog.emojis ?? []).map(
-                (emoji) =>
-                    (emoji as unknown as Record<string, object>)
-                        .emoji as EmojiWithInstance,
-            ),
+            emojis: (output.reblog.emojis ?? []).map((emoji) => emoji.emoji),
             reblogCount: Number(output.reblog.reblogCount),
             likeCount: Number(output.reblog.likeCount),
             replyCount: Number(output.reblog.replyCount),
@@ -340,7 +324,7 @@ export const resolveNote = async (
     }
 
     const foundStatus = await Note.fromSql(
-        eq(status.uri, uri ?? providedNote?.uri ?? ""),
+        eq(Notes.uri, uri ?? providedNote?.uri ?? ""),
     );
 
     if (foundStatus) return foundStatus;
@@ -478,20 +462,20 @@ export const parseTextMentions = async (
 
     const foundUsers = await db
         .select({
-            id: user.id,
-            username: user.username,
-            baseUrl: instance.baseUrl,
+            id: Users.id,
+            username: Users.username,
+            baseUrl: Instances.baseUrl,
         })
-        .from(user)
-        .leftJoin(instance, eq(user.instanceId, instance.id))
+        .from(Users)
+        .leftJoin(Instances, eq(Users.instanceId, Instances.id))
         .where(
             or(
                 ...mentionedPeople.map((person) =>
                     and(
-                        eq(user.username, person?.[1] ?? ""),
+                        eq(Users.username, person?.[1] ?? ""),
                         isLocal(person?.[2])
-                            ? isNull(user.instanceId)
-                            : eq(instance.baseUrl, person?.[2] ?? ""),
+                            ? isNull(Users.instanceId)
+                            : eq(Instances.baseUrl, person?.[2] ?? ""),
                     ),
                 ),
             ),
@@ -701,10 +685,10 @@ export const editStatus = async (
     // Connect emojis
     for (const emoji of data.emojis) {
         await db
-            .insert(emojiToStatus)
+            .insert(EmojiToNote)
             .values({
                 emojiId: emoji.id,
-                statusId: updated.id,
+                noteId: updated.id,
             })
             .execute();
     }
@@ -712,9 +696,9 @@ export const editStatus = async (
     // Connect mentions
     for (const mention of mentions) {
         await db
-            .insert(statusToMentions)
+            .insert(NoteToMentions)
             .values({
-                statusId: updated.id,
+                noteId: updated.id,
                 userId: mention.id,
             })
             .execute();
@@ -723,28 +707,28 @@ export const editStatus = async (
     // Send notifications for mentioned local users
     for (const mention of mentions ?? []) {
         if (mention.instanceId === null) {
-            await db.insert(notification).values({
+            await db.insert(Notifications).values({
                 accountId: statusToEdit.authorId,
                 notifiedId: mention.id,
                 type: "mention",
-                statusId: updated.id,
+                noteId: updated.id,
             });
         }
     }
 
     // Set attachment parents
     await db
-        .update(attachment)
+        .update(Attachments)
         .set({
-            statusId: updated.id,
+            noteId: updated.id,
         })
-        .where(inArray(attachment.id, data.media_attachments ?? []));
+        .where(inArray(Attachments.id, data.media_attachments ?? []));
 
     return await Note.fromId(updated.id);
 };
 
 export const isFavouritedBy = async (status: Status, user: User) => {
-    return !!(await db.query.like.findFirst({
+    return !!(await db.query.Likes.findFirst({
         where: (like, { and, eq }) =>
             and(eq(like.likerId, user.id), eq(like.likedId, status.id)),
     }));
@@ -779,8 +763,8 @@ export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
         ),
         is_sensitive: status.sensitive,
         mentions: status.mentions.map((mention) => mention.uri || ""),
-        quotes: getStatusUri(status.quoting) ?? undefined,
-        replies_to: getStatusUri(status.inReplyTo) ?? undefined,
+        quotes: getStatusUri(status.quote) ?? undefined,
+        replies_to: getStatusUri(status.reply) ?? undefined,
         subject: status.spoilerText,
         visibility: status.visibility as Lysand.Visibility,
         extensions: {

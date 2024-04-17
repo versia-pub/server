@@ -4,7 +4,7 @@ import { config } from "config-manager";
 import { count } from "drizzle-orm";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { db, setupDatabase } from "~drizzle/db";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { createServer } from "~server";
 
 const timeAtStart = performance.now();
@@ -35,7 +35,7 @@ try {
             .select({
                 count: count(),
             })
-            .from(status)
+            .from(Notes)
     )[0].count;
 } catch (e) {
     const error = e as Error;

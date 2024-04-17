@@ -20,7 +20,7 @@ import {
     findManyUsers,
 } from "~database/entities/User";
 import { client, db } from "~drizzle/db";
-import { emoji, openIdAccount, status, user } from "~drizzle/schema";
+import { Emojis, Notes, OpenIdAccounts, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 
 await client.connect();
@@ -225,7 +225,7 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await db.delete(user).where(eq(user.id, foundUser.id));
+            await db.delete(Users).where(eq(Users.id, foundUser.id));
 
             console.log(
                 `${chalk.green("✓")} Deleted user ${chalk.blue(
@@ -640,13 +640,15 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const linkedOpenIdAccounts = await db.query.openIdAccount.findMany({
-                where: (account, { eq, and }) =>
-                    and(
-                        eq(account.userId, user.id),
-                        eq(account.issuerId, issuerId),
-                    ),
-            });
+            const linkedOpenIdAccounts = await db.query.OpenIdAccounts.findMany(
+                {
+                    where: (account, { eq, and }) =>
+                        and(
+                            eq(account.userId, user.id),
+                            eq(account.issuerId, issuerId),
+                        ),
+                },
+            );
 
             if (linkedOpenIdAccounts.find((a) => a.issuerId === issuerId)) {
                 console.log(
@@ -658,7 +660,7 @@ const cliBuilder = new CliBuilder([
             }
 
             // Connect the OpenID account
-            await db.insert(openIdAccount).values({
+            await db.insert(OpenIdAccounts).values({
                 issuerId: issuerId,
                 serverId: serverId,
                 userId: user.id,
@@ -712,7 +714,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const account = await db.query.openIdAccount.findFirst({
+            const account = await db.query.OpenIdAccounts.findFirst({
                 where: (account, { eq }) => eq(account.serverId, id),
             });
 
@@ -735,8 +737,8 @@ const cliBuilder = new CliBuilder([
             });
 
             await db
-                .delete(openIdAccount)
-                .where(eq(openIdAccount.id, account.id));
+                .delete(OpenIdAccounts)
+                .where(eq(OpenIdAccounts.id, account.id));
 
             console.log(
                 `${chalk.green(
@@ -950,14 +952,14 @@ const cliBuilder = new CliBuilder([
             }
 
             let instanceQuery: SQL<unknown> | undefined =
-                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`;
+                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${Notes.authorId} AND "User"."instanceId" IS NULL)`;
 
             if (local && remote) {
                 instanceQuery = undefined;
             } else if (local) {
-                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NULL)`;
+                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${Notes.authorId} AND "User"."instanceId" IS NULL)`;
             } else if (remote) {
-                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${status.authorId} AND "User"."instanceId" IS NOT NULL)`;
+                instanceQuery = sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${Notes.authorId} AND "User"."instanceId" IS NOT NULL)`;
             }
 
             const notes = (
@@ -966,7 +968,7 @@ const cliBuilder = new CliBuilder([
                         or(
                             ...fields.map((field) =>
                                 // @ts-expect-error
-                                like(status[field], `%${query}%`),
+                                like(Notes[field], `%${query}%`),
                             ),
                         ),
                         instanceQuery,
@@ -1178,7 +1180,7 @@ const cliBuilder = new CliBuilder([
             }
 
             // Check if emoji already exists
-            const existingEmoji = await db.query.emoji.findFirst({
+            const existingEmoji = await db.query.Emojis.findFirst({
                 where: (emoji, { and, eq, isNull }) =>
                     and(
                         eq(emoji.shortcode, shortcode),
@@ -1246,7 +1248,7 @@ const cliBuilder = new CliBuilder([
 
             const newEmoji = (
                 await db
-                    .insert(emoji)
+                    .insert(Emojis)
                     .values({
                         shortcode: shortcode,
                         url: newUrl,
@@ -1323,7 +1325,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const emojis = await db.query.emoji.findMany({
+            const emojis = await db.query.Emojis.findMany({
                 where: (emoji, { and, isNull, like }) =>
                     and(
                         like(emoji.shortcode, shortcode.replace(/\*/g, "%")),
@@ -1367,9 +1369,9 @@ const cliBuilder = new CliBuilder([
                 }
             }
 
-            await db.delete(emoji).where(
+            await db.delete(Emojis).where(
                 inArray(
-                    emoji.id,
+                    Emojis.id,
                     emojis.map((e) => e.id),
                 ),
             );
@@ -1426,7 +1428,7 @@ const cliBuilder = new CliBuilder([
                 return 0;
             }
 
-            const emojis = await db.query.emoji.findMany({
+            const emojis = await db.query.Emojis.findMany({
                 where: (emoji, { isNull }) => isNull(emoji.instanceId),
                 limit: Number(limit),
             });
@@ -1704,7 +1706,7 @@ const cliBuilder = new CliBuilder([
                 ).toString();
 
                 // Check if emoji already exists
-                const existingEmoji = await db.query.emoji.findFirst({
+                const existingEmoji = await db.query.Emojis.findFirst({
                     where: (emoji, { and, eq, isNull }) =>
                         and(
                             eq(emoji.shortcode, shortcode),

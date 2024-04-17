@@ -1,10 +1,10 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { relationship } from "~drizzle/schema";
+import { Relationships } from "~drizzle/schema";
 import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
 import type { User } from "./User";
 
-export type Relationship = InferSelectModel<typeof relationship>;
+export type Relationship = InferSelectModel<typeof Relationships>;
 
 /**
  * Creates a new relationship between two users.
@@ -18,7 +18,7 @@ export const createNewRelationship = async (
 ): Promise<Relationship> => {
     return (
         await db
-            .insert(relationship)
+            .insert(Relationships)
             .values({
                 ownerId: owner.id,
                 subjectId: other.id,
@@ -46,12 +46,12 @@ export const checkForBidirectionalRelationships = async (
     user2: User,
     createIfNotExists = true,
 ): Promise<boolean> => {
-    const relationship1 = await db.query.relationship.findFirst({
+    const relationship1 = await db.query.Relationships.findFirst({
         where: (rel, { and, eq }) =>
             and(eq(rel.ownerId, user1.id), eq(rel.subjectId, user2.id)),
     });
 
-    const relationship2 = await db.query.relationship.findFirst({
+    const relationship2 = await db.query.Relationships.findFirst({
         where: (rel, { and, eq }) =>
             and(eq(rel.ownerId, user2.id), eq(rel.subjectId, user1.id)),
     });

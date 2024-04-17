@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { emoji } from "~drizzle/schema";
+import { Emojis } from "~drizzle/schema";
 import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
 import type { Instance as APIInstance } from "~types/mastodon/instance";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
@@ -18,7 +18,7 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/custom_emojis", () => {
         beforeAll(async () => {
-            await db.insert(emoji).values({
+            await db.insert(Emojis).values({
                 shortcode: "test",
                 url: "https://example.com/test.png",
                 contentType: "image/png",
@@ -55,7 +55,7 @@ describe("API Tests", () => {
         });
 
         afterAll(async () => {
-            await db.delete(emoji).where(eq(emoji.shortcode, "test"));
+            await db.delete(Emojis).where(eq(Emojis.shortcode, "test"));
         });
     });
 });

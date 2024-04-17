@@ -3,11 +3,11 @@ import type { InferSelectModel } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { MediaBackendType } from "media-manager";
 import { db } from "~drizzle/db";
-import { attachment } from "~drizzle/schema";
+import { Attachments } from "~drizzle/schema";
 import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 
-export type Attachment = InferSelectModel<typeof attachment>;
+export type Attachment = InferSelectModel<typeof Attachments>;
 
 export const attachmentToAPI = (
     attachment: Attachment,
@@ -86,12 +86,12 @@ export const attachmentToLysand = (
 
 export const attachmentFromLysand = async (
     attachmentToConvert: Lysand.ContentFormat,
-): Promise<InferSelectModel<typeof attachment>> => {
+): Promise<InferSelectModel<typeof Attachments>> => {
     const key = Object.keys(attachmentToConvert)[0];
     const value = attachmentToConvert[key];
 
     const result = await db
-        .insert(attachment)
+        .insert(Attachments)
         .values({
             mimeType: key,
             url: value.content,

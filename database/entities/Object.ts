@@ -1,10 +1,10 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
-import { lysandObject } from "~drizzle/schema";
+import { LysandObjects } from "~drizzle/schema";
 import { findFirstUser } from "./User";
 
-export type LysandObject = InferSelectModel<typeof lysandObject>;
+export type LysandObject = InferSelectModel<typeof LysandObjects>;
 
 /**
  * Represents a Lysand object in the database.
@@ -29,7 +29,7 @@ export const createFromObject = async (
         where: (user, { eq }) => eq(user.uri, authorUri),
     });
 
-    return await db.insert(lysandObject).values({
+    return await db.insert(LysandObjects).values({
         authorId: author?.id,
         createdAt: new Date(object.created_at).toISOString(),
         extensions: object.extensions,

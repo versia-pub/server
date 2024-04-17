@@ -45,7 +45,7 @@ export default apiRoute<typeof meta, typeof schema>(
             );
 
         // Get associated token
-        const application = await db.query.application.findFirst({
+        const application = await db.query.Applications.findFirst({
             where: (application, { eq, and }) =>
                 and(
                     eq(application.clientId, client_id),
@@ -61,7 +61,7 @@ export default apiRoute<typeof meta, typeof schema>(
                 401,
             );
 
-        const token = await db.query.token.findFirst({
+        const token = await db.query.Tokens.findFirst({
             where: (token, { eq }) =>
                 eq(token.code, code) && eq(token.applicationId, application.id),
         });

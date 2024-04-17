@@ -45,7 +45,7 @@ export default apiRoute<typeof meta, typeof schema>(
                             max_id ? lt(subject.id, max_id) : undefined,
                             since_id ? gte(subject.id, since_id) : undefined,
                             min_id ? gt(subject.id, min_id) : undefined,
-                            sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${subject.id} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."muting" = true)`,
+                            sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${subject.id} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."muting" = true)`,
                         ),
                     limit,
                     // @ts-expect-error Yes I KNOW the types are wrong

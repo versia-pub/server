@@ -2,11 +2,11 @@ import { config } from "config-manager";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
-import { like, notification } from "~drizzle/schema";
+import { Likes, Notifications } from "~drizzle/schema";
 import type { StatusWithRelations } from "./Status";
 import type { UserWithRelations } from "./User";
 
-export type Like = InferSelectModel<typeof like>;
+export type Like = InferSelectModel<typeof Likes>;
 
 /**
  * Represents a Like entity in the database.
@@ -33,18 +33,18 @@ export const createLike = async (
     user: UserWithRelations,
     status: StatusWithRelations,
 ) => {
-    await db.insert(like).values({
+    await db.insert(Likes).values({
         likedId: status.id,
         likerId: user.id,
     });
 
     if (status.author.instanceId === user.instanceId) {
         // Notify the user that their post has been favourited
-        await db.insert(notification).values({
+        await db.insert(Notifications).values({
             accountId: user.id,
             type: "favourite",
             notifiedId: status.authorId,
-            statusId: status.id,
+            noteId: status.id,
         });
     } else {
         // TODO: Add database jobs for federating this
@@ -61,18 +61,18 @@ export const deleteLike = async (
     status: StatusWithRelations,
 ) => {
     await db
-        .delete(like)
-        .where(and(eq(like.likedId, status.id), eq(like.likerId, user.id)));
+        .delete(Likes)
+        .where(and(eq(Likes.likedId, status.id), eq(Likes.likerId, user.id)));
 
     // Notify the user that their post has been favourited
     await db
-        .delete(notification)
+        .delete(Notifications)
         .where(
             and(
-                eq(notification.accountId, user.id),
-                eq(notification.type, "favourite"),
-                eq(notification.notifiedId, status.authorId),
-                eq(notification.statusId, status.id),
+                eq(Notifications.accountId, user.id),
+                eq(Notifications.type, "favourite"),
+                eq(Notifications.notifiedId, status.authorId),
+                eq(Notifications.noteId, status.id),
             ),
         );
 

@@ -7,7 +7,7 @@ import {
     processDiscoveryResponse,
 } from "oauth4webapi";
 import { db } from "~drizzle/db";
-import { openIdLoginFlow } from "~drizzle/schema";
+import { OpenIdLoginFlows } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -61,7 +61,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const codeVerifier = generateRandomCodeVerifier();
 
-    const application = await db.query.application.findFirst({
+    const application = await db.query.Applications.findFirst({
         where: (application, { eq }) => eq(application.clientId, clientId),
     });
 
@@ -72,7 +72,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Store into database
     const newFlow = (
         await db
-            .insert(openIdLoginFlow)
+            .insert(OpenIdLoginFlows)
             .values({
                 codeVerifier,
                 applicationId: application.id,

@@ -15,7 +15,7 @@ export async function fetchTimeline<T extends User | Status | Notification>(
     args:
         | Parameters<typeof findManyNotes>[0]
         | Parameters<typeof findManyUsers>[0]
-        | Parameters<typeof db.query.notification.findMany>[0],
+        | Parameters<typeof db.query.Notifications.findMany>[0],
     req: Request,
 ) {
     // BEFORE: Before in a top-to-bottom order, so the most recent posts

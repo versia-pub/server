@@ -13,7 +13,7 @@ import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { emojiToUser, user } from "~drizzle/schema";
+import { EmojiToUser, Users } from "~drizzle/schema";
 import type { Source as APISource } from "~types/mastodon/source";
 
 export const meta = applyConfig({
@@ -194,7 +194,7 @@ export default apiRoute<typeof meta, typeof schema>(
         );
 
         await db
-            .update(user)
+            .update(Users)
             .set({
                 displayName: self.displayName,
                 note: self.note,
@@ -205,22 +205,22 @@ export default apiRoute<typeof meta, typeof schema>(
                 isDiscoverable: self.isDiscoverable,
                 source: self.source || undefined,
             })
-            .where(eq(user.id, self.id));
+            .where(eq(Users.id, self.id));
 
         // Connect emojis, if any
         for (const emoji of self.emojis) {
             await db
-                .delete(emojiToUser)
+                .delete(EmojiToUser)
                 .where(
                     and(
-                        eq(emojiToUser.emojiId, emoji.id),
-                        eq(emojiToUser.userId, self.id),
+                        eq(EmojiToUser.emojiId, emoji.id),
+                        eq(EmojiToUser.userId, self.id),
                     ),
                 )
                 .execute();
 
             await db
-                .insert(emojiToUser)
+                .insert(EmojiToUser)
                 .values({
                     emojiId: emoji.id,
                     userId: self.id,

@@ -32,7 +32,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { id: ids } = extraData.parsedRequest;
 
-        const idFollowerRelationships = await db.query.relationship.findMany({
+        const idFollowerRelationships = await db.query.Relationships.findMany({
             columns: {
                 ownerId: true,
             },
@@ -48,7 +48,7 @@ export default apiRoute<typeof meta, typeof schema>(
         }
 
         // Find users that you follow in idFollowerRelationships
-        const relevantRelationships = await db.query.relationship.findMany({
+        const relevantRelationships = await db.query.Relationships.findMany({
             columns: {
                 subjectId: true,
             },

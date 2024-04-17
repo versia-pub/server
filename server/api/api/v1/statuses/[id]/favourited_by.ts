@@ -57,9 +57,9 @@ export default apiRoute<typeof meta, typeof schema>(
                         max_id ? lt(liker.id, max_id) : undefined,
                         since_id ? gte(liker.id, since_id) : undefined,
                         min_id ? gt(liker.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Like" WHERE "Like"."likedId" = ${
+                        sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${
                             status.getStatus().id
-                        } AND "Like"."likerId" = ${liker.id})`,
+                        } AND "Likes"."likerId" = ${liker.id})`,
                     ),
                 // @ts-expect-error Yes I KNOW the types are wrong
                 orderBy: (liker, { desc }) => desc(liker.id),

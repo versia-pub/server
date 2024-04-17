@@ -11,31 +11,32 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
+import type { Source as APISource } from "~types/mastodon/source";
 
-export const emoji = pgTable("Emoji", {
+export const Emojis = pgTable("Emojis", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     shortcode: text("shortcode").notNull(),
     url: text("url").notNull(),
     visibleInPicker: boolean("visible_in_picker").notNull(),
     alt: text("alt"),
     contentType: text("content_type").notNull(),
-    instanceId: uuid("instanceId").references(() => instance.id, {
+    instanceId: uuid("instanceId").references(() => Instances.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
 });
 
-export const like = pgTable("Like", {
+export const Likes = pgTable("Likes", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     likerId: uuid("likerId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
     likedId: uuid("likedId")
         .notNull()
-        .references(() => status.id, {
+        .references(() => Notes.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
@@ -44,7 +45,7 @@ export const like = pgTable("Like", {
         .notNull(),
 });
 
-export const lysandObject = pgTable(
+export const LysandObjects = pgTable(
     "LysandObject",
     {
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
@@ -72,17 +73,17 @@ export const lysandObject = pgTable(
     },
 );
 
-export const relationship = pgTable("Relationship", {
+export const Relationships = pgTable("Relationships", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     ownerId: uuid("ownerId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
     subjectId: uuid("subjectId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
@@ -110,8 +111,8 @@ export const relationship = pgTable("Relationship", {
         .notNull(),
 });
 
-export const application = pgTable(
-    "Application",
+export const Applications = pgTable(
+    "Applications",
     {
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
         name: text("name").notNull(),
@@ -129,12 +130,12 @@ export const application = pgTable(
     },
 );
 
-export const applicationRelations = relations(application, ({ many }) => ({
-    tokens: many(token),
-    loginFlows: many(openIdLoginFlow),
+export const ApplicationsRelations = relations(Applications, ({ many }) => ({
+    tokens: many(Tokens),
+    loginFlows: many(OpenIdLoginFlows),
 }));
 
-export const token = pgTable("Token", {
+export const Tokens = pgTable("Tokens", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     tokenType: text("token_type").notNull(),
     scope: text("scope").notNull(),
@@ -143,17 +144,17 @@ export const token = pgTable("Token", {
     createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
-    userId: uuid("userId").references(() => user.id, {
+    userId: uuid("userId").references(() => Users.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    applicationId: uuid("applicationId").references(() => application.id, {
+    applicationId: uuid("applicationId").references(() => Applications.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
 });
 
-export const attachment = pgTable("Attachment", {
+export const Attachments = pgTable("Attachments", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     url: text("url").notNull(),
     remoteUrl: text("remote_url"),
@@ -167,13 +168,13 @@ export const attachment = pgTable("Attachment", {
     width: integer("width"),
     height: integer("height"),
     size: integer("size"),
-    statusId: uuid("statusId").references(() => status.id, {
+    noteId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
 });
 
-export const notification = pgTable("Notification", {
+export const Notifications = pgTable("Notifications", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     type: text("type").notNull(),
     createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
@@ -181,31 +182,31 @@ export const notification = pgTable("Notification", {
         .notNull(),
     notifiedId: uuid("notifiedId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
     accountId: uuid("accountId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
-    statusId: uuid("statusId").references(() => status.id, {
+    noteId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
     dismissed: boolean("dismissed").default(false).notNull(),
 });
 
-export const status = pgTable(
-    "Status",
+export const Notes = pgTable(
+    "Notes",
     {
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
         uri: text("uri"),
         authorId: uuid("authorId")
             .notNull()
-            .references(() => user.id, {
+            .references(() => Users.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
@@ -222,11 +223,11 @@ export const status = pgTable(
         content: text("content").default("").notNull(),
         contentType: text("content_type").default("text/plain").notNull(),
         visibility: text("visibility").notNull(),
-        inReplyToPostId: uuid("inReplyToPostId"),
-        quotingPostId: uuid("quotingPostId"),
+        replyId: uuid("replyId"),
+        quotingId: uuid("quoteId"),
         sensitive: boolean("sensitive").notNull(),
         spoilerText: text("spoiler_text").default("").notNull(),
-        applicationId: uuid("applicationId").references(() => application.id, {
+        applicationId: uuid("applicationId").references(() => Applications.id, {
             onDelete: "set null",
             onUpdate: "cascade",
         }),
@@ -235,20 +236,20 @@ export const status = pgTable(
     (table) => {
         return {
             uriKey: uniqueIndex().on(table.uri),
-            statusReblogIdFkey: foreignKey({
+            noteReblogIdFkey: foreignKey({
                 columns: [table.reblogId],
                 foreignColumns: [table.id],
             })
                 .onUpdate("cascade")
                 .onDelete("cascade"),
-            statusInReplyToPostIdFkey: foreignKey({
-                columns: [table.inReplyToPostId],
+            noteReplyIdFkey: foreignKey({
+                columns: [table.replyId],
                 foreignColumns: [table.id],
             })
                 .onUpdate("cascade")
                 .onDelete("set null"),
-            statusQuotingPostIdFkey: foreignKey({
-                columns: [table.quotingPostId],
+            noteQuotingIdFkey: foreignKey({
+                columns: [table.quotingId],
                 foreignColumns: [table.id],
             })
                 .onUpdate("cascade")
@@ -257,7 +258,7 @@ export const status = pgTable(
     },
 );
 
-export const instance = pgTable("Instance", {
+export const Instances = pgTable("Instances", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     baseUrl: text("base_url").notNull(),
     name: text("name").notNull(),
@@ -268,9 +269,9 @@ export const instance = pgTable("Instance", {
         .notNull(),
 });
 
-export const openIdAccount = pgTable("OpenIdAccount", {
+export const OpenIdAccounts = pgTable("OpenIdAccounts", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    userId: uuid("userId").references(() => user.id, {
+    userId: uuid("userId").references(() => Users.id, {
         onDelete: "set null",
         onUpdate: "cascade",
     }),
@@ -278,8 +279,8 @@ export const openIdAccount = pgTable("OpenIdAccount", {
     issuerId: text("issuer_id").notNull(),
 });
 
-export const user = pgTable(
-    "User",
+export const Users = pgTable(
+    "Users",
     {
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
         uri: text("uri"),
@@ -298,7 +299,7 @@ export const user = pgTable(
             inbox: string;
             outbox: string;
         }> | null>(),
-        source: jsonb("source").notNull(),
+        source: jsonb("source").notNull().$type<APISource>(),
         avatar: text("avatar").notNull(),
         header: text("header").notNull(),
         createdAt: timestamp("created_at", { precision: 3, mode: "string" })
@@ -316,7 +317,7 @@ export const user = pgTable(
         sanctions: text("sanctions").array(),
         publicKey: text("public_key").notNull(),
         privateKey: text("private_key"),
-        instanceId: uuid("instanceId").references(() => instance.id, {
+        instanceId: uuid("instanceId").references(() => Instances.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
@@ -333,55 +334,55 @@ export const user = pgTable(
     },
 );
 
-export const openIdLoginFlow = pgTable("OpenIdLoginFlow", {
+export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     codeVerifier: text("code_verifier").notNull(),
-    applicationId: uuid("applicationId").references(() => application.id, {
+    applicationId: uuid("applicationId").references(() => Applications.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
     issuerId: text("issuer_id").notNull(),
 });
 
-export const openIdLoginFlowRelations = relations(
-    openIdLoginFlow,
+export const OpenIdLoginFlowsRelations = relations(
+    OpenIdLoginFlows,
     ({ one }) => ({
-        application: one(application, {
-            fields: [openIdLoginFlow.applicationId],
-            references: [application.id],
+        application: one(Applications, {
+            fields: [OpenIdLoginFlows.applicationId],
+            references: [Applications.id],
         }),
     }),
 );
 
-export const flag = pgTable("Flag", {
+export const Flags = pgTable("Flags", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     flagType: text("flag_type").default("other").notNull(),
     createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
-    flaggeStatusId: uuid("flaggeStatusId").references(() => status.id, {
+    noteId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    flaggedUserId: uuid("flaggedUserId").references(() => user.id, {
+    userId: uuid("userId").references(() => Users.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
 });
 
-export const modNote = pgTable("ModNote", {
+export const ModNotes = pgTable("ModNotes", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    notedStatusId: uuid("notedStatusId").references(() => status.id, {
+    nodeId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    notedUserId: uuid("notedUserId").references(() => user.id, {
+    userId: uuid("userId").references(() => Users.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
     modId: uuid("modId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
@@ -391,19 +392,19 @@ export const modNote = pgTable("ModNote", {
         .notNull(),
 });
 
-export const modTag = pgTable("ModTag", {
+export const ModTags = pgTable("ModTags", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    taggedStatusId: uuid("taggedStatusId").references(() => status.id, {
+    noteId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    taggedUserId: uuid("taggedUserId").references(() => user.id, {
+    userId: uuid("userId").references(() => Users.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
     modId: uuid("modId")
         .notNull()
-        .references(() => user.id, {
+        .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
@@ -413,18 +414,18 @@ export const modTag = pgTable("ModTag", {
         .notNull(),
 });
 
-export const emojiToUser = pgTable(
+export const EmojiToUser = pgTable(
     "EmojiToUser",
     {
         emojiId: uuid("emojiId")
             .notNull()
-            .references(() => emoji.id, {
+            .references(() => Emojis.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
         userId: uuid("userId")
             .notNull()
-            .references(() => user.id, {
+            .references(() => Users.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
@@ -437,267 +438,267 @@ export const emojiToUser = pgTable(
     },
 );
 
-export const emojiToUserRelations = relations(emojiToUser, ({ one }) => ({
-    emoji: one(emoji, {
-        fields: [emojiToUser.emojiId],
-        references: [emoji.id],
+export const EmojiToUserRelations = relations(EmojiToUser, ({ one }) => ({
+    emoji: one(Emojis, {
+        fields: [EmojiToUser.emojiId],
+        references: [Emojis.id],
     }),
-    user: one(user, {
-        fields: [emojiToUser.userId],
-        references: [user.id],
+    user: one(Users, {
+        fields: [EmojiToUser.userId],
+        references: [Users.id],
     }),
 }));
 
-export const emojiToStatus = pgTable(
-    "EmojiToStatus",
+export const EmojiToNote = pgTable(
+    "EmojiToNote",
     {
         emojiId: uuid("emojiId")
             .notNull()
-            .references(() => emoji.id, {
+            .references(() => Emojis.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        statusId: uuid("statusId")
+        noteId: uuid("noteId")
             .notNull()
-            .references(() => status.id, {
+            .references(() => Notes.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
     },
     (table) => {
         return {
-            abUnique: uniqueIndex().on(table.emojiId, table.statusId),
-            bIdx: index().on(table.statusId),
+            abUnique: uniqueIndex().on(table.emojiId, table.noteId),
+            bIdx: index().on(table.noteId),
         };
     },
 );
 
-export const statusToMentions = pgTable(
-    "StatusToMentions",
+export const NoteToMentions = pgTable(
+    "NoteToMentions",
     {
-        statusId: uuid("statusId")
+        noteId: uuid("noteId")
             .notNull()
-            .references(() => status.id, {
+            .references(() => Notes.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
         userId: uuid("userId")
             .notNull()
-            .references(() => user.id, {
+            .references(() => Users.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
     },
     (table) => {
         return {
-            abUnique: uniqueIndex().on(table.statusId, table.userId),
+            abUnique: uniqueIndex().on(table.noteId, table.userId),
             bIdx: index().on(table.userId),
         };
     },
 );
 
-export const userPinnedNotes = pgTable(
+export const UserToPinnedNotes = pgTable(
     "UserToPinnedNotes",
     {
         userId: uuid("userId")
             .notNull()
-            .references(() => status.id, {
+            .references(() => Users.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
-        statusId: uuid("statusId")
+        noteId: uuid("noteId")
             .notNull()
-            .references(() => user.id, {
+            .references(() => Notes.id, {
                 onDelete: "cascade",
                 onUpdate: "cascade",
             }),
     },
     (table) => {
         return {
-            abUnique: uniqueIndex().on(table.userId, table.statusId),
-            bIdx: index().on(table.statusId),
+            abUnique: uniqueIndex().on(table.userId, table.noteId),
+            bIdx: index().on(table.noteId),
         };
     },
 );
 
-export const attachmentRelations = relations(attachment, ({ one }) => ({
-    status: one(status, {
-        fields: [attachment.statusId],
-        references: [status.id],
+export const AttachmentsRelations = relations(Attachments, ({ one }) => ({
+    notes: one(Notes, {
+        fields: [Attachments.noteId],
+        references: [Notes.id],
     }),
 }));
 
-export const userRelations = relations(user, ({ many, one }) => ({
-    emojis: many(emojiToUser),
-    pinnedNotes: many(userPinnedNotes),
-    statuses: many(status, {
-        relationName: "StatusToAuthor",
+export const UsersRelations = relations(Users, ({ many, one }) => ({
+    emojis: many(EmojiToUser),
+    pinnedNotes: many(UserToPinnedNotes),
+    notes: many(Notes, {
+        relationName: "NoteToAuthor",
     }),
-    likes: many(like),
-    relationships: many(relationship, {
+    likes: many(Likes),
+    relationships: many(Relationships, {
         relationName: "RelationshipToOwner",
     }),
-    relationshipSubjects: many(relationship, {
+    relationshipSubjects: many(Relationships, {
         relationName: "RelationshipToSubject",
     }),
-    notificationsMade: many(notification, {
+    notificationsMade: many(Notifications, {
         relationName: "NotificationToAccount",
     }),
-    notificationsReceived: many(notification, {
+    notificationsReceived: many(Notifications, {
         relationName: "NotificationToNotified",
     }),
-    openIdAccounts: many(openIdAccount),
-    flags: many(flag),
-    modNotes: many(modNote),
-    modTags: many(modTag),
-    tokens: many(token),
-    instance: one(instance, {
-        fields: [user.instanceId],
-        references: [instance.id],
+    openIdAccounts: many(OpenIdAccounts),
+    flags: many(Flags),
+    modNotes: many(ModNotes),
+    modTags: many(ModTags),
+    tokens: many(Tokens),
+    instance: one(Instances, {
+        fields: [Users.instanceId],
+        references: [Instances.id],
     }),
-    mentionedIn: many(statusToMentions),
+    mentionedIn: many(NoteToMentions),
 }));
 
-export const relationshipRelations = relations(relationship, ({ one }) => ({
-    owner: one(user, {
-        fields: [relationship.ownerId],
-        references: [user.id],
+export const RelationshipsRelations = relations(Relationships, ({ one }) => ({
+    owner: one(Users, {
+        fields: [Relationships.ownerId],
+        references: [Users.id],
         relationName: "RelationshipToOwner",
     }),
-    subject: one(user, {
-        fields: [relationship.subjectId],
-        references: [user.id],
+    subject: one(Users, {
+        fields: [Relationships.subjectId],
+        references: [Users.id],
         relationName: "RelationshipToSubject",
     }),
 }));
 
-export const tokenRelations = relations(token, ({ one }) => ({
-    user: one(user, {
-        fields: [token.userId],
-        references: [user.id],
+export const TokensRelations = relations(Tokens, ({ one }) => ({
+    user: one(Users, {
+        fields: [Tokens.userId],
+        references: [Users.id],
     }),
-    application: one(application, {
-        fields: [token.applicationId],
-        references: [application.id],
-    }),
-}));
-
-export const statusToUserRelations = relations(statusToMentions, ({ one }) => ({
-    status: one(status, {
-        fields: [statusToMentions.statusId],
-        references: [status.id],
-    }),
-    user: one(user, {
-        fields: [statusToMentions.userId],
-        references: [user.id],
+    application: one(Applications, {
+        fields: [Tokens.applicationId],
+        references: [Applications.id],
     }),
 }));
 
-export const userPinnedNotesRelations = relations(
-    userPinnedNotes,
+export const NotesToUsersRelations = relations(NoteToMentions, ({ one }) => ({
+    note: one(Notes, {
+        fields: [NoteToMentions.noteId],
+        references: [Notes.id],
+    }),
+    user: one(Users, {
+        fields: [NoteToMentions.userId],
+        references: [Users.id],
+    }),
+}));
+
+export const UserToPinnedNotesRelations = relations(
+    UserToPinnedNotes,
     ({ one }) => ({
-        status: one(status, {
-            fields: [userPinnedNotes.statusId],
-            references: [status.id],
+        note: one(Notes, {
+            fields: [UserToPinnedNotes.noteId],
+            references: [Notes.id],
         }),
-        user: one(user, {
-            fields: [userPinnedNotes.userId],
-            references: [user.id],
+        user: one(Users, {
+            fields: [UserToPinnedNotes.userId],
+            references: [Users.id],
         }),
     }),
 );
 
-export const statusRelations = relations(status, ({ many, one }) => ({
-    emojis: many(emojiToStatus),
-    author: one(user, {
-        fields: [status.authorId],
-        references: [user.id],
-        relationName: "StatusToAuthor",
+export const NotesRelations = relations(Notes, ({ many, one }) => ({
+    emojis: many(EmojiToNote),
+    author: one(Users, {
+        fields: [Notes.authorId],
+        references: [Users.id],
+        relationName: "NoteToAuthor",
     }),
-    attachments: many(attachment),
-    mentions: many(statusToMentions),
-    reblog: one(status, {
-        fields: [status.reblogId],
-        references: [status.id],
-        relationName: "StatusToReblog",
+    attachments: many(Attachments),
+    mentions: many(NoteToMentions),
+    reblog: one(Notes, {
+        fields: [Notes.reblogId],
+        references: [Notes.id],
+        relationName: "NoteToReblogs",
     }),
-    usersThatHavePinned: many(userPinnedNotes),
-    inReplyTo: one(status, {
-        fields: [status.inReplyToPostId],
-        references: [status.id],
-        relationName: "StatusToReplying",
+    usersThatHavePinned: many(UserToPinnedNotes),
+    reply: one(Notes, {
+        fields: [Notes.replyId],
+        references: [Notes.id],
+        relationName: "NoteToReplies",
     }),
-    quoting: one(status, {
-        fields: [status.quotingPostId],
-        references: [status.id],
-        relationName: "StatusToQuoting",
+    quote: one(Notes, {
+        fields: [Notes.quotingId],
+        references: [Notes.id],
+        relationName: "NoteToQuotes",
     }),
-    application: one(application, {
-        fields: [status.applicationId],
-        references: [application.id],
+    application: one(Applications, {
+        fields: [Notes.applicationId],
+        references: [Applications.id],
     }),
-    quotes: many(status, {
-        relationName: "StatusToQuoting",
+    quotes: many(Notes, {
+        relationName: "NoteToQuotes",
     }),
-    replies: many(status, {
-        relationName: "StatusToReplying",
+    replies: many(Notes, {
+        relationName: "NoteToReplies",
     }),
-    likes: many(like),
-    reblogs: many(status, {
-        relationName: "StatusToReblog",
+    likes: many(Likes),
+    reblogs: many(Notes, {
+        relationName: "NoteToReblogs",
     }),
-    notifications: many(notification),
+    notifications: many(Notifications),
 }));
 
-export const notificationRelations = relations(notification, ({ one }) => ({
-    account: one(user, {
-        fields: [notification.accountId],
-        references: [user.id],
+export const NotificationsRelations = relations(Notifications, ({ one }) => ({
+    account: one(Users, {
+        fields: [Notifications.accountId],
+        references: [Users.id],
         relationName: "NotificationToAccount",
     }),
-    notified: one(user, {
-        fields: [notification.notifiedId],
-        references: [user.id],
+    notified: one(Users, {
+        fields: [Notifications.notifiedId],
+        references: [Users.id],
         relationName: "NotificationToNotified",
     }),
-    status: one(status, {
-        fields: [notification.statusId],
-        references: [status.id],
+    note: one(Notes, {
+        fields: [Notifications.noteId],
+        references: [Notes.id],
     }),
 }));
 
-export const likeRelations = relations(like, ({ one }) => ({
-    liker: one(user, {
-        fields: [like.likerId],
-        references: [user.id],
+export const LikesRelations = relations(Likes, ({ one }) => ({
+    liker: one(Users, {
+        fields: [Likes.likerId],
+        references: [Users.id],
     }),
-    liked: one(status, {
-        fields: [like.likedId],
-        references: [status.id],
+    liked: one(Notes, {
+        fields: [Likes.likedId],
+        references: [Notes.id],
     }),
 }));
 
-export const emojiRelations = relations(emoji, ({ one, many }) => ({
-    instance: one(instance, {
-        fields: [emoji.instanceId],
-        references: [instance.id],
+export const EmojisRelations = relations(Emojis, ({ one, many }) => ({
+    instance: one(Instances, {
+        fields: [Emojis.instanceId],
+        references: [Instances.id],
     }),
-    users: many(emojiToUser),
-    statuses: many(emojiToStatus),
+    users: many(EmojiToUser),
+    notes: many(EmojiToNote),
 }));
 
-export const instanceRelations = relations(instance, ({ many }) => ({
-    users: many(user),
-    emojis: many(emoji),
+export const InstancesRelations = relations(Instances, ({ many }) => ({
+    users: many(Users),
+    emojis: many(Emojis),
 }));
 
-export const emojiToStatusRelations = relations(emojiToStatus, ({ one }) => ({
-    emoji: one(emoji, {
-        fields: [emojiToStatus.emojiId],
-        references: [emoji.id],
+export const EmojisToNotesRelations = relations(EmojiToNote, ({ one }) => ({
+    emoji: one(Emojis, {
+        fields: [EmojiToNote.emojiId],
+        references: [Emojis.id],
     }),
-    status: one(status, {
-        fields: [emojiToStatus.statusId],
-        references: [status.id],
+    note: one(Notes, {
+        fields: [EmojiToNote.noteId],
+        references: [Notes.id],
     }),
 }));

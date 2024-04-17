@@ -11,7 +11,7 @@ import {
     sendFollowAccept,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { notification, relationship } from "~drizzle/schema";
+import { Notifications, Relationships } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
@@ -161,7 +161,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             }
 
             await db
-                .update(relationship)
+                .update(Relationships)
                 .set({
                     following: !user.isLocked,
                     requested: user.isLocked,
@@ -169,9 +169,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
                     notifying: true,
                     languages: [],
                 })
-                .where(eq(relationship.id, foundRelationship.id));
+                .where(eq(Relationships.id, foundRelationship.id));
 
-            await db.insert(notification).values({
+            await db.insert(Notifications).values({
                 accountId: account.id,
                 type: user.isLocked ? "follow_request" : "follow",
                 notifiedId: user.id,
@@ -209,12 +209,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             }
 
             await db
-                .update(relationship)
+                .update(Relationships)
                 .set({
                     following: true,
                     requested: false,
                 })
-                .where(eq(relationship.id, foundRelationship.id));
+                .where(eq(Relationships.id, foundRelationship.id));
 
             return response("Follow request accepted", 200);
         }
@@ -237,12 +237,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             }
 
             await db
-                .update(relationship)
+                .update(Relationships)
                 .set({
                     requested: false,
                     following: false,
                 })
-                .where(eq(relationship.id, foundRelationship.id));
+                .where(eq(Relationships.id, foundRelationship.id));
 
             return response("Follow request rejected", 200);
         }

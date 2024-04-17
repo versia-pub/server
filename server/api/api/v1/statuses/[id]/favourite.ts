@@ -36,7 +36,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (!status?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
-    const existingLike = await db.query.like.findFirst({
+    const existingLike = await db.query.Likes.findFirst({
         where: (like, { and, eq }) =>
             and(
                 eq(like.likedId, status.getStatus().id),

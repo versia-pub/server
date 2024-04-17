@@ -1,5 +1,5 @@
 import { type SQL, gt } from "drizzle-orm";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { Note } from "./note";
 
@@ -43,7 +43,7 @@ export class Timeline {
             switch (this.type) {
                 case TimelineType.NOTE: {
                     const objectBefore = await Note.fromSql(
-                        gt(status.id, objects[0].getStatus().id),
+                        gt(Notes.id, objects[0].getStatus().id),
                     );
 
                     if (objectBefore) {
@@ -57,7 +57,7 @@ export class Timeline {
                     if (objects.length >= (limit ?? 20)) {
                         const objectAfter = await Note.fromSql(
                             gt(
-                                status.id,
+                                Notes.id,
                                 objects[objects.length - 1].getStatus().id,
                             ),
                         );

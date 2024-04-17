@@ -8,7 +8,7 @@ import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
 import { db } from "~drizzle/db";
-import { attachment } from "~drizzle/schema";
+import { Attachments } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],
@@ -48,7 +48,7 @@ export default apiRoute<typeof meta, typeof schema>(
             return errorResponse("Invalid ID, must be of type UUIDv7", 404);
         }
 
-        const foundAttachment = await db.query.attachment.findFirst({
+        const foundAttachment = await db.query.Attachments.findFirst({
             where: (attachment, { eq }) => eq(attachment.id, id),
         });
 
@@ -98,12 +98,12 @@ export default apiRoute<typeof meta, typeof schema>(
                 ) {
                     const newAttachment = (
                         await db
-                            .update(attachment)
+                            .update(Attachments)
                             .set({
                                 description: descriptionText,
                                 thumbnailUrl,
                             })
-                            .where(eq(attachment.id, id))
+                            .where(eq(Attachments.id, id))
                             .returning()
                     )[0];
 

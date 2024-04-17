@@ -19,7 +19,7 @@ import {
     resolveWebFinger,
     userToAPI,
 } from "~database/entities/User";
-import { user } from "~drizzle/schema";
+import { Users } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -94,7 +94,7 @@ export default apiRoute<typeof meta, typeof schema>(
                             like(account.displayName, `%${q}%`),
                             like(account.username, `%${q}%`),
                             following
-                                ? sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${user.id} AND "Relationship"."ownerId" = ${account.id} AND "Relationship"."following" = true)`
+                                ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${account.id} AND "Relationships"."following" = true)`
                                 : undefined,
                         ),
                     offset,

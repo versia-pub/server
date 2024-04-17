@@ -7,7 +7,7 @@ import {
     createNewLocalUser,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { status, token, user } from "~drizzle/schema";
+import { Notes, Tokens, Users } from "~drizzle/schema";
 import { server } from "~index";
 import { Note } from "~packages/database-interface/note";
 /**
@@ -26,7 +26,7 @@ export function wrapRelativeUrl(url: string, base_url: string) {
 
 export const deleteOldTestUsers = async () => {
     // Deletes all users that match the test username (test-<32 random characters>)
-    await db.delete(user).where(like(user.username, "test-%"));
+    await db.delete(Users).where(like(Users.username, "test-%"));
 };
 
 export const getTestUsers = async (count: number) => {
@@ -51,7 +51,7 @@ export const getTestUsers = async (count: number) => {
     }
 
     const tokens = await db
-        .insert(token)
+        .insert(Tokens)
         .values(
             users.map((u) => ({
                 accessToken: randomBytes(32).toString("hex"),
@@ -69,9 +69,9 @@ export const getTestUsers = async (count: number) => {
         tokens,
         passwords,
         deleteUsers: async () => {
-            await db.delete(user).where(
+            await db.delete(Users).where(
                 inArray(
-                    user.id,
+                    Users.id,
                     users.map((u) => u.id),
                 ),
             );
@@ -107,10 +107,10 @@ export const getTestStatuses = async (
     return (
         await Note.manyFromSql(
             inArray(
-                status.id,
+                Notes.id,
                 statuses.map((s) => s.id),
             ),
-            asc(status.id),
+            asc(Notes.id),
         )
     ).map((n) => n.getStatus());
 };

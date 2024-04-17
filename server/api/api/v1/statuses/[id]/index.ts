@@ -121,7 +121,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
             // Check if media attachments are all valid
             if (media_ids && media_ids.length > 0) {
-                const foundAttachments = await db.query.attachment.findMany({
+                const foundAttachments = await db.query.Attachments.findMany({
                     where: (attachment, { inArray }) =>
                         inArray(attachment.id, media_ids),
                 });

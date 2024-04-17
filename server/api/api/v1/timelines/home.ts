@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, gt, gte, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
@@ -38,18 +38,16 @@ export default apiRoute<typeof meta, typeof schema>(
         const { objects, link } = await Timeline.getNoteTimeline(
             and(
                 and(
-                    max_id ? lt(status.id, max_id) : undefined,
-                    since_id ? gte(status.id, since_id) : undefined,
-                    min_id ? gt(status.id, min_id) : undefined,
+                    max_id ? lt(Notes.id, max_id) : undefined,
+                    since_id ? gte(Notes.id, since_id) : undefined,
+                    min_id ? gt(Notes.id, min_id) : undefined,
                 ),
                 or(
-                    eq(status.authorId, user.id),
-                    // All statuses where the user is mentioned, using table _StatusToUser which has a: status.id and b: user.id
-                    // WHERE format (... = ...)
-                    sql`EXISTS (SELECT 1 FROM "StatusToMentions" WHERE "StatusToMentions"."statusId" = ${status.id} AND "StatusToMentions"."userId" = ${user.id})`,
+                    eq(Notes.authorId, user.id),
+                    sql`EXISTS (SELECT 1 FROM "NoteToMentions" WHERE "NoteToMentions"."noteId" = ${Notes.id} AND "NoteToMentions"."userId" = ${user.id})`,
                     // All statuses from users that the user is following
                     // WHERE format (... = ...)
-                    sql`EXISTS (SELECT 1 FROM "Relationship" WHERE "Relationship"."subjectId" = ${status.authorId} AND "Relationship"."ownerId" = ${user.id} AND "Relationship"."following" = true)`,
+                    sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Notes.authorId} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."following" = true)`,
                 ),
             ),
             limit,

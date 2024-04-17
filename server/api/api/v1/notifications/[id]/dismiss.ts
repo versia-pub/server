@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import { notification } from "~drizzle/schema";
+import { Notifications } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -27,11 +27,11 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (!user) return errorResponse("Unauthorized", 401);
 
     await db
-        .update(notification)
+        .update(Notifications)
         .set({
             dismissed: true,
         })
-        .where(eq(notification.id, id));
+        .where(eq(Notifications.id, id));
 
     return jsonResponse({});
 });

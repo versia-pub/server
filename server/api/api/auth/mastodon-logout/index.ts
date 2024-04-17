@@ -1,10 +1,4 @@
-import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
-import { z } from "zod";
-import { TokenType } from "~database/entities/Token";
-import { findFirstUser } from "~database/entities/User";
-import { db } from "~drizzle/db";
-import { token } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({

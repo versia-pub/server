@@ -1,9 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
-import type { application } from "~drizzle/schema";
+import type { Applications } from "~drizzle/schema";
 import type { Application as APIApplication } from "~types/mastodon/application";
 
-export type Application = InferSelectModel<typeof application>;
+export type Application = InferSelectModel<typeof Applications>;
 
 /**
  * Retrieves the application associated with the given access token.
@@ -13,7 +13,7 @@ export type Application = InferSelectModel<typeof application>;
 export const getFromToken = async (
     token: string,
 ): Promise<Application | null> => {
-    const result = await db.query.token.findFirst({
+    const result = await db.query.Tokens.findFirst({
         where: (tokens, { eq }) => eq(tokens.accessToken, token),
         with: {
             application: true,

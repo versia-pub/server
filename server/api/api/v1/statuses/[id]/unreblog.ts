@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq } from "drizzle-orm";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 import type { Status as APIStatus } from "~types/mastodon/status";
 
@@ -38,8 +38,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const existingReblog = await Note.fromSql(
         and(
-            eq(status.authorId, user.id),
-            eq(status.reblogId, foundStatus.getStatus().id),
+            eq(Notes.authorId, user.id),
+            eq(Notes.reblogId, foundStatus.getStatus().id),
         ),
     );
 

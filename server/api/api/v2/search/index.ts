@@ -11,7 +11,7 @@ import {
     userToAPI,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { instance, status, user } from "~drizzle/schema";
+import { Instances, Notes, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
 import { LogLevel } from "~packages/log-manager";
 
@@ -88,14 +88,14 @@ export default apiRoute<typeof meta, typeof schema>(
                 const accountId = (
                     await db
                         .select({
-                            id: user.id,
+                            id: Users.id,
                         })
-                        .from(user)
-                        .leftJoin(instance, eq(user.instanceId, instance.id))
+                        .from(Users)
+                        .leftJoin(Instances, eq(Users.instanceId, Instances.id))
                         .where(
                             and(
-                                eq(user.username, username),
-                                eq(instance.baseUrl, domain),
+                                eq(Users.username, username),
+                                eq(Instances.baseUrl, domain),
                             ),
                         )
                 )[0]?.id;
@@ -181,16 +181,16 @@ export default apiRoute<typeof meta, typeof schema>(
         const statuses = await Note.manyFromSql(
             and(
                 inArray(
-                    status.id,
+                    Notes.id,
                     statusResults.map((hit) => hit.id),
                 ),
-                account_id ? eq(status.authorId, account_id) : undefined,
+                account_id ? eq(Notes.authorId, account_id) : undefined,
                 self
                     ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
                           self?.id
                       } AND Relationships.following = ${
                           following ? true : false
-                      } AND Relationships.ownerId = ${status.authorId})`
+                      } AND Relationships.ownerId = ${Notes.authorId})`
                     : undefined,
             ),
         );

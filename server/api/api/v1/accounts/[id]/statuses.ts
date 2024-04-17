@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { findFirstUser } from "~database/entities/User";
-import { status } from "~drizzle/schema";
+import { Notes } from "~drizzle/schema";
 import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
@@ -41,7 +41,6 @@ export default apiRoute<typeof meta, typeof schema>(
             return errorResponse("Invalid ID, must be of type UUIDv7", 404);
         }
 
-        // TODO: Add pinned
         const {
             max_id,
             min_id,
@@ -49,6 +48,7 @@ export default apiRoute<typeof meta, typeof schema>(
             limit,
             exclude_reblogs,
             only_media,
+            exclude_replies,
             pinned,
         } = extraData.parsedRequest;
 
@@ -58,41 +58,20 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!user) return errorResponse("User not found", 404);
 
-        if (pinned) {
-            const { objects, link } = await Timeline.getNoteTimeline(
-                and(
-                    max_id ? lt(status.id, max_id) : undefined,
-                    since_id ? gte(status.id, since_id) : undefined,
-                    min_id ? gt(status.id, min_id) : undefined,
-                    eq(status.authorId, id),
-                    sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."statusId" = ${status.id} AND "UserToPinnedNotes"."userId" = ${user.id})`,
-                    only_media
-                        ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
-                        : undefined,
-                ),
-                limit,
-                req.url,
-            );
-
-            return jsonResponse(
-                await Promise.all(objects.map((note) => note.toAPI(user))),
-                200,
-                {
-                    Link: link,
-                },
-            );
-        }
-
         const { objects, link } = await Timeline.getNoteTimeline(
             and(
-                max_id ? lt(status.id, max_id) : undefined,
-                since_id ? gte(status.id, since_id) : undefined,
-                min_id ? gt(status.id, min_id) : undefined,
-                eq(status.authorId, id),
+                max_id ? lt(Notes.id, max_id) : undefined,
+                since_id ? gte(Notes.id, since_id) : undefined,
+                min_id ? gt(Notes.id, min_id) : undefined,
+                eq(Notes.authorId, id),
                 only_media
-                    ? sql`EXISTS (SELECT 1 FROM "Attachment" WHERE "Attachment"."statusId" = ${status.id})`
+                    ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
                     : undefined,
-                exclude_reblogs ? isNull(status.reblogId) : undefined,
+                pinned
+                    ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = ${Notes.id} AND "UserToPinnedNotes"."userId" = ${user.id})`
+                    : undefined,
+                exclude_reblogs ? isNull(Notes.reblogId) : undefined,
+                exclude_replies ? isNull(Notes.replyId) : undefined,
             ),
             limit,
             req.url,

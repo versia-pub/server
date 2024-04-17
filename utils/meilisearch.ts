@@ -6,7 +6,7 @@ import { Meilisearch } from "meilisearch";
 import type { Status } from "~database/entities/Status";
 import type { User } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { status, user } from "~drizzle/schema";
+import { Notes, Users } from "~drizzle/schema";
 
 export const meilisearch = new Meilisearch({
     host: `${config.meilisearch.host}:${config.meilisearch.port}`,
@@ -83,7 +83,7 @@ export const getNthDatabaseAccountBatch = (
     n: number,
     batchSize = 1000,
 ): Promise<Record<string, string | Date>[]> => {
-    return db.query.user.findMany({
+    return db.query.Users.findMany({
         offset: n * batchSize,
         limit: batchSize,
         columns: {
@@ -101,7 +101,7 @@ export const getNthDatabaseStatusBatch = (
     n: number,
     batchSize = 1000,
 ): Promise<Record<string, string | Date>[]> => {
-    return db.query.status.findMany({
+    return db.query.Notes.findMany({
         offset: n * batchSize,
         limit: batchSize,
         columns: {
@@ -123,7 +123,7 @@ export const rebuildSearchIndexes = async (
                 .select({
                     count: count(),
                 })
-                .from(user)
+                .from(Users)
         )[0].count;
 
         for (let i = 0; i < accountCount / batchSize; i++) {
@@ -156,7 +156,7 @@ export const rebuildSearchIndexes = async (
                 .select({
                     count: count(),
                 })
-                .from(status)
+                .from(Notes)
         )[0].count;
 
         for (let i = 0; i < statusCount / batchSize; i++) {

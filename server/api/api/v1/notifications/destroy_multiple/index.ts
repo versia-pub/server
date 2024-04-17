@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@response";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";
-import { notification } from "~drizzle/schema";
+import { Notifications } from "~drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],
@@ -30,11 +30,11 @@ export default apiRoute<typeof meta, typeof schema>(
         const { ids } = extraData.parsedRequest;
 
         await db
-            .update(notification)
+            .update(Notifications)
             .set({
                 dismissed: true,
             })
-            .where(inArray(notification.id, ids));
+            .where(inArray(Notifications.id, ids));
 
         return jsonResponse({});
     },

@@ -7,13 +7,13 @@ import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import {
-    application,
-    emojiToUser,
-    instance,
-    notification,
-    relationship,
-    token,
-    user,
+    Applications,
+    EmojiToUser,
+    Instances,
+    Notifications,
+    Relationships,
+    Tokens,
+    Users,
 } from "~drizzle/schema";
 import { LogLevel } from "~packages/log-manager";
 import type { Account as APIAccount } from "~types/mastodon/account";
@@ -31,14 +31,14 @@ import { addInstanceIfNotExists } from "./Instance";
 import { createNewRelationship } from "./Relationship";
 import type { Token } from "./Token";
 
-export type User = InferSelectModel<typeof user>;
+export type User = InferSelectModel<typeof Users>;
 
 export type UserWithInstance = User & {
-    instance: InferSelectModel<typeof instance> | null;
+    instance: InferSelectModel<typeof Instances> | null;
 };
 
 export type UserWithRelations = User & {
-    instance: InferSelectModel<typeof instance> | null;
+    instance: InferSelectModel<typeof Instances> | null;
     emojis: EmojiWithInstance[];
     followerCount: number;
     followingCount: number;
@@ -46,8 +46,8 @@ export type UserWithRelations = User & {
 };
 
 export type UserWithRelationsAndRelationships = UserWithRelations & {
-    relationships: InferSelectModel<typeof relationship>[];
-    relationshipSubjects: InferSelectModel<typeof relationship>[];
+    relationships: InferSelectModel<typeof Relationships>[];
+    relationshipSubjects: InferSelectModel<typeof Relationships>[];
 };
 
 export const userRelations: {
@@ -76,15 +76,15 @@ export const userRelations: {
 
 export const userExtras = {
     followerCount:
-        sql`(SELECT COUNT(*) FROM "Relationship" "relationships" WHERE ("relationships"."ownerId" = "user".id AND "relationships"."following" = true))`.as(
+        sql`(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "Users".id AND "relationships"."following" = true))`.as(
             "follower_count",
         ),
     followingCount:
-        sql`(SELECT COUNT(*) FROM "Relationship" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "user".id AND "relationshipSubjects"."following" = true))`.as(
+        sql`(SELECT COUNT(*) FROM "Relationships" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "Users".id AND "relationshipSubjects"."following" = true))`.as(
             "following_count",
         ),
     statusCount:
-        sql`(SELECT COUNT(*) FROM "Status" "statuses" WHERE "statuses"."authorId" = "user".id)`.as(
+        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."authorId" = "Users".id)`.as(
             "status_count",
         ),
 };
@@ -92,15 +92,15 @@ export const userExtras = {
 export const userExtrasTemplate = (name: string) => ({
     // @ts-ignore
     followerCount: sql([
-        `(SELECT COUNT(*) FROM "Relationship" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
+        `(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
     ]).as("follower_count"),
     // @ts-ignore
     followingCount: sql([
-        `(SELECT COUNT(*) FROM "Relationship" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "${name}".id AND "relationshipSubjects"."following" = true))`,
+        `(SELECT COUNT(*) FROM "Relationships" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "${name}".id AND "relationshipSubjects"."following" = true))`,
     ]).as("following_count"),
     // @ts-ignore
     statusCount: sql([
-        `(SELECT COUNT(*) FROM "Status" "statuses" WHERE "statuses"."authorId" = "${name}".id)`,
+        `(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."authorId" = "${name}".id)`,
     ]).as("status_count"),
 });
 
@@ -151,12 +151,12 @@ export const followRequestUser = async (
     reblogs = false,
     notify = false,
     languages: string[] = [],
-): Promise<InferSelectModel<typeof relationship>> => {
+): Promise<InferSelectModel<typeof Relationships>> => {
     const isRemote = followee.instanceId !== null;
 
     const updatedRelationship = (
         await db
-            .update(relationship)
+            .update(Relationships)
             .set({
                 following: isRemote ? false : !followee.isLocked,
                 requested: isRemote ? true : followee.isLocked,
@@ -164,7 +164,7 @@ export const followRequestUser = async (
                 notifying: notify,
                 languages: languages,
             })
-            .where(eq(relationship.id, relationshipId))
+            .where(eq(Relationships.id, relationshipId))
             .returning()
     )[0];
 
@@ -195,17 +195,17 @@ export const followRequestUser = async (
 
             return (
                 await db
-                    .update(relationship)
+                    .update(Relationships)
                     .set({
                         following: false,
                         requested: false,
                     })
-                    .where(eq(relationship.id, relationshipId))
+                    .where(eq(Relationships.id, relationshipId))
                     .returning()
             )[0];
         }
     } else {
-        await db.insert(notification).values({
+        await db.insert(Notifications).values({
             accountId: follower.id,
             type: followee.isLocked ? "follow_request" : "follow",
             notifiedId: followee.id,
@@ -277,7 +277,7 @@ export const transformOutputToUserWithRelations = (
             emojiId: string;
             emoji?: EmojiWithInstance;
         }[];
-        instance: InferSelectModel<typeof instance> | null;
+        instance: InferSelectModel<typeof Instances> | null;
         endpoints: unknown;
     },
 ): UserWithRelations => {
@@ -306,9 +306,9 @@ export const transformOutputToUserWithRelations = (
 };
 
 export const findManyUsers = async (
-    query: Parameters<typeof db.query.user.findMany>[0],
+    query: Parameters<typeof db.query.Users.findMany>[0],
 ): Promise<UserWithRelations[]> => {
-    const output = await db.query.user.findMany({
+    const output = await db.query.Users.findMany({
         ...query,
         with: {
             ...userRelations,
@@ -324,9 +324,9 @@ export const findManyUsers = async (
 };
 
 export const findFirstUser = async (
-    query: Parameters<typeof db.query.user.findFirst>[0],
+    query: Parameters<typeof db.query.Users.findFirst>[0],
 ): Promise<UserWithRelations | null> => {
-    const output = await db.query.user.findFirst({
+    const output = await db.query.Users.findFirst({
         ...query,
         with: {
             ...userRelations,
@@ -418,7 +418,7 @@ export const resolveUser = async (
 
     const newUser = (
         await db
-            .insert(user)
+            .insert(Users)
             .values({
                 username: data.username,
                 uri: data.uri,
@@ -456,7 +456,7 @@ export const resolveUser = async (
 
     // Add emojis to user
     if (emojis.length > 0) {
-        await db.insert(emojiToUser).values(
+        await db.insert(EmojiToUser).values(
             emojis.map((emoji) => ({
                 emojiId: emoji.id,
                 userId: newUser.id,
@@ -494,15 +494,15 @@ export const resolveWebFinger = async (
     // Check if user not already in database
     const foundUser = await db
         .select()
-        .from(user)
-        .innerJoin(instance, eq(user.instanceId, instance.id))
-        .where(and(eq(user.username, identifier), eq(instance.baseUrl, host)))
+        .from(Users)
+        .innerJoin(Instances, eq(Users.instanceId, Instances.id))
+        .where(and(eq(Users.username, identifier), eq(Instances.baseUrl, host)))
         .limit(1);
 
     if (foundUser[0])
         return (
             (await findFirstUser({
-                where: (user, { eq }) => eq(user.id, foundUser[0].User.id),
+                where: (user, { eq }) => eq(user.id, foundUser[0].Users.id),
             })) || null
         );
 
@@ -580,7 +580,7 @@ export const createNewLocalUser = async (data: {
 
     const newUser = (
         await db
-            .insert(user)
+            .insert(Users)
             .values({
                 username: data.username,
                 displayName: data.display_name ?? data.username,
@@ -662,12 +662,12 @@ export const retrieveUserAndApplicationFromToken = async (
     const output = (
         await db
             .select({
-                token: token,
-                application: application,
+                token: Tokens,
+                application: Applications,
             })
-            .from(token)
-            .leftJoin(application, eq(token.applicationId, application.id))
-            .where(eq(token.accessToken, access_token))
+            .from(Tokens)
+            .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
+            .where(eq(Tokens.accessToken, access_token))
             .limit(1)
     )[0];
 
@@ -686,7 +686,7 @@ export const retrieveToken = async (
     if (!access_token) return null;
 
     return (
-        (await db.query.token.findFirst({
+        (await db.query.Tokens.findFirst({
             where: (tokens, { eq }) => eq(tokens.accessToken, access_token),
         })) ?? null
     );
@@ -700,8 +700,8 @@ export const retrieveToken = async (
 export const getRelationshipToOtherUser = async (
     user: UserWithRelations,
     other: User,
-): Promise<InferSelectModel<typeof relationship>> => {
-    const foundRelationship = await db.query.relationship.findFirst({
+): Promise<InferSelectModel<typeof Relationships>> => {
+    const foundRelationship = await db.query.Relationships.findFirst({
         where: (relationship, { and, eq }) =>
             and(
                 eq(relationship.ownerId, user.id),

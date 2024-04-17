@@ -43,13 +43,14 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import {
-    attachment,
-    emojiToStatus,
-    notification,
-    status,
-    statusToMentions,
-    user,
-    userRelations,
+    Attachments,
+    EmojiToNote,
+    NoteToMentions,
+    Notes,
+    Notifications,
+    UserToPinnedNotes,
+    Users,
+    UsersRelations,
 } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
@@ -64,16 +65,16 @@ export class Note {
     static async fromId(id: string | null): Promise<Note | null> {
         if (!id) return null;
 
-        return await Note.fromSql(eq(status.id, id));
+        return await Note.fromSql(eq(Notes.id, id));
     }
 
     static async fromIds(ids: string[]): Promise<Note[]> {
-        return await Note.manyFromSql(inArray(status.id, ids));
+        return await Note.manyFromSql(inArray(Notes.id, ids));
     }
 
     static async fromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(status.id),
+        orderBy: SQL<unknown> | undefined = desc(Notes.id),
     ) {
         const found = await findFirstNote({
             where: sql,
@@ -86,7 +87,7 @@ export class Note {
 
     static async manyFromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(status.id),
+        orderBy: SQL<unknown> | undefined = desc(Notes.id),
         limit?: number,
         offset?: number,
     ) {
@@ -121,11 +122,10 @@ export class Note {
         const usersThatCanSeePost = await findManyUsers({
             where: (user, { isNotNull }) => isNotNull(user.instanceId),
             with: {
-                ...userRelations,
                 relationships: {
                     where: (relationship, { eq, and }) =>
                         and(
-                            eq(relationship.subjectId, user.id),
+                            eq(relationship.subjectId, Users.id),
                             eq(relationship.following, true),
                         ),
                 },
@@ -163,24 +163,37 @@ export class Note {
     }
 
     async getReplyChildren() {
-        return await Note.manyFromSql(
-            eq(status.inReplyToPostId, this.status.id),
-        );
+        return await Note.manyFromSql(eq(Notes.replyId, this.status.id));
+    }
+
+    async pin(pinner: User) {
+        return (
+            await db
+                .insert(UserToPinnedNotes)
+                .values({
+                    noteId: this.status.id,
+                    userId: pinner.id,
+                })
+                .returning()
+        )[0];
     }
 
     async unpin(unpinner: User) {
-        return await db
-            .delete(statusToMentions)
-            .where(
-                and(
-                    eq(statusToMentions.statusId, this.status.id),
-                    eq(statusToMentions.userId, unpinner.id),
-                ),
-            );
+        return (
+            await db
+                .delete(UserToPinnedNotes)
+                .where(
+                    and(
+                        eq(NoteToMentions.noteId, this.status.id),
+                        eq(NoteToMentions.userId, unpinner.id),
+                    ),
+                )
+                .returning()
+        )[0];
     }
 
-    static async insert(values: InferInsertModel<typeof status>) {
-        return (await db.insert(status).values(values).returning())[0];
+    static async insert(values: InferInsertModel<typeof Notes>) {
+        return (await db.insert(Notes).values(values).returning())[0];
     }
 
     static async fromData(
@@ -225,18 +238,18 @@ export class Note {
             sensitive: is_sensitive,
             spoilerText: spoiler_text,
             uri: uri || null,
-            inReplyToPostId: replyId ?? null,
-            quotingPostId: quoteId ?? null,
+            replyId: replyId ?? null,
+            quotingId: quoteId ?? null,
             applicationId: application?.id ?? null,
         });
 
         // Connect emojis
         for (const emoji of foundEmojis) {
             await db
-                .insert(emojiToStatus)
+                .insert(EmojiToNote)
                 .values({
                     emojiId: emoji.id,
-                    statusId: newNote.id,
+                    noteId: newNote.id,
                 })
                 .execute();
         }
@@ -244,9 +257,9 @@ export class Note {
         // Connect mentions
         for (const mention of mentions ?? []) {
             await db
-                .insert(statusToMentions)
+                .insert(NoteToMentions)
                 .values({
-                    statusId: newNote.id,
+                    noteId: newNote.id,
                     userId: mention.id,
                 })
                 .execute();
@@ -255,21 +268,21 @@ export class Note {
         // Set attachment parents
         if (media_attachments && media_attachments.length > 0) {
             await db
-                .update(attachment)
+                .update(Attachments)
                 .set({
-                    statusId: newNote.id,
+                    noteId: newNote.id,
                 })
-                .where(inArray(attachment.id, media_attachments));
+                .where(inArray(Attachments.id, media_attachments));
         }
 
         // Send notifications for mentioned local users
         for (const mention of mentions ?? []) {
             if (mention.instanceId === null) {
-                await db.insert(notification).values({
+                await db.insert(Notifications).values({
                     accountId: author.id,
                     notifiedId: mention.id,
                     type: "mention",
-                    statusId: newNote.id,
+                    noteId: newNote.id,
                 });
             }
         }
@@ -319,29 +332,29 @@ export class Note {
 
         // Connect emojis
         await db
-            .delete(emojiToStatus)
-            .where(eq(emojiToStatus.statusId, this.status.id));
+            .delete(EmojiToNote)
+            .where(eq(EmojiToNote.noteId, this.status.id));
 
         for (const emoji of foundEmojis) {
             await db
-                .insert(emojiToStatus)
+                .insert(EmojiToNote)
                 .values({
                     emojiId: emoji.id,
-                    statusId: this.status.id,
+                    noteId: this.status.id,
                 })
                 .execute();
         }
 
         // Connect mentions
         await db
-            .delete(statusToMentions)
-            .where(eq(statusToMentions.statusId, this.status.id));
+            .delete(NoteToMentions)
+            .where(eq(NoteToMentions.noteId, this.status.id));
 
         for (const mention of mentions ?? []) {
             await db
-                .insert(statusToMentions)
+                .insert(NoteToMentions)
                 .values({
-                    statusId: this.status.id,
+                    noteId: this.status.id,
                     userId: mention.id,
                 })
                 .execute();
@@ -350,11 +363,11 @@ export class Note {
         // Set attachment parents
         if (media_attachments && media_attachments.length > 0) {
             await db
-                .update(attachment)
+                .update(Attachments)
                 .set({
-                    statusId: this.status.id,
+                    noteId: this.status.id,
                 })
-                .where(inArray(attachment.id, media_attachments));
+                .where(inArray(Attachments.id, media_attachments));
         }
 
         return await Note.fromId(newNote.id);
@@ -363,8 +376,8 @@ export class Note {
     async delete() {
         return (
             await db
-                .delete(status)
-                .where(eq(status.id, this.status.id))
+                .delete(Notes)
+                .where(eq(Notes.id, this.status.id))
                 .returning()
         )[0];
     }
@@ -372,18 +385,15 @@ export class Note {
     async update(newStatus: Partial<Status>) {
         return (
             await db
-                .update(status)
+                .update(Notes)
                 .set(newStatus)
-                .where(eq(status.id, this.status.id))
+                .where(eq(Notes.id, this.status.id))
                 .returning()
         )[0];
     }
 
     static async deleteMany(ids: string[]) {
-        return await db
-            .delete(status)
-            .where(inArray(status.id, ids))
-            .returning();
+        return await db.delete(Notes).where(inArray(Notes.id, ids)).returning();
     }
 
     /**
@@ -397,11 +407,11 @@ export class Note {
         if (this.getStatus().visibility === "unlisted") return true;
         if (this.getStatus().visibility === "private") {
             return user
-                ? await db.query.relationship.findFirst({
+                ? await db.query.Relationships.findFirst({
                       where: (relationship, { and, eq }) =>
                           and(
                               eq(relationship.ownerId, user?.id),
-                              eq(relationship.subjectId, status.authorId),
+                              eq(relationship.subjectId, Notes.authorId),
                               eq(relationship.following, true),
                           ),
                   })
@@ -416,10 +426,10 @@ export class Note {
     async toAPI(userFetching?: UserWithRelations | null): Promise<APIStatus> {
         const data = this.getStatus();
         const wasPinnedByUser = userFetching
-            ? !!(await db.query.userPinnedNotes.findFirst({
+            ? !!(await db.query.UserToPinnedNotes.findFirst({
                   where: (relation, { and, eq }) =>
                       and(
-                          eq(relation.statusId, data.id),
+                          eq(relation.noteId, data.id),
                           eq(relation.userId, userFetching?.id),
                       ),
               }))
@@ -428,14 +438,14 @@ export class Note {
         const wasRebloggedByUser = userFetching
             ? !!(await Note.fromSql(
                   and(
-                      eq(status.authorId, userFetching?.id),
-                      eq(status.reblogId, data.id),
+                      eq(Notes.authorId, userFetching?.id),
+                      eq(Notes.reblogId, data.id),
                   ),
               ))
             : false;
 
         const wasMutedByUser = userFetching
-            ? !!(await db.query.relationship.findFirst({
+            ? !!(await db.query.Relationships.findFirst({
                   where: (relationship, { and, eq }) =>
                       and(
                           eq(relationship.ownerId, userFetching.id),
@@ -468,8 +478,8 @@ export class Note {
 
         return {
             id: data.id,
-            in_reply_to_id: data.inReplyToPostId || null,
-            in_reply_to_account_id: data.inReplyTo?.authorId || null,
+            in_reply_to_id: data.replyId || null,
+            in_reply_to_account_id: data.reply?.authorId || null,
             account: userToAPI(data.author),
             created_at: new Date(data.createdAt).toISOString(),
             application: data.application
@@ -511,9 +521,9 @@ export class Note {
             visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoURI(),
             bookmarked: false,
-            quote: !!data.quotingPostId,
+            quote: !!data.quotingId,
             // @ts-expect-error Pleroma extension
-            quote_id: data.quotingPostId || undefined,
+            quote_id: data.quotingId || undefined,
         };
     }
 
@@ -546,8 +556,8 @@ export class Note {
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) => mention.uri || ""),
-            quotes: getStatusUri(status.quoting) ?? undefined,
-            replies_to: getStatusUri(status.inReplyTo) ?? undefined,
+            quotes: getStatusUri(status.quote) ?? undefined,
+            replies_to: getStatusUri(status.reply) ?? undefined,
             subject: status.spoilerText,
             visibility: status.visibility as Lysand.Visibility,
             extensions: {
@@ -567,10 +577,8 @@ export class Note {
 
         let currentStatus: Note = this;
 
-        while (currentStatus.getStatus().inReplyToPostId) {
-            const parent = await Note.fromId(
-                currentStatus.getStatus().inReplyToPostId,
-            );
+        while (currentStatus.getStatus().replyId) {
+            const parent = await Note.fromId(currentStatus.getStatus().replyId);
 
             if (!parent) {
                 break;

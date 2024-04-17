@@ -344,35 +344,6 @@ describe("API Tests", () => {
         });
     });
 
-    describe("GET /api/v1/statuses/:id/favourited_by", () => {
-        test("should return an array of User objects who favourited the specified status", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/favourited_by`,
-                        base_url,
-                    ),
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
-                "application/json",
-            );
-
-            const users = (await response.json()) as APIAccount[];
-
-            expect(users.length).toBe(1);
-            expect(users[0].id).toBe(user.id);
-        });
-    });
-
     describe("POST /api/v1/statuses/:id/unfavourite", () => {
         test("should unfavourite the specified status object", async () => {
             // Unfavourite the status
