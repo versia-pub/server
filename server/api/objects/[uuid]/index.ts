@@ -45,9 +45,9 @@ export default apiRoute(async (req, matchedRoute) => {
         apiObject = foundObject ? likeToLysand(foundObject) : null;
     }
 
-    if (!foundObject) {
+    if (!foundObject || !apiObject) {
         return errorResponse("Object not found", 404);
     }
 
-    return jsonResponse(foundObject);
+    return jsonResponse(apiObject);
 });
