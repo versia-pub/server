@@ -233,10 +233,10 @@ Working endpoints are:
 - [ ] `/api/v1/trends/tags`
 - [ ] `/api/v2/filters/:filter_id/keywords` (`GET`, `POST`)
 - [ ] `/api/v2/filters/:filter_id/statuses` (`GET`, `POST`)
-- [ ] `/api/v2/filters/:id` (`GET`, `PUT`, `DELETE`)
+- [x] `/api/v2/filters/:id` (`GET`, `PUT`, `DELETE`)
 - [ ] `/api/v2/filters/keywords/:id` (`GET`, `PUT`, `DELETE`)
 - [ ] `/api/v2/filters/statuses/:id` (`GET`, `DELETE`)
-- [ ] `/api/v2/filters` (`GET`, `POST`)
+- [x] `/api/v2/filters` (`GET`, `POST`)
 - [x] `/api/v2/instance`
 - [x] `/api/v2/media`
 - [x] `/api/v2/search`
@@ -248,7 +248,6 @@ Working endpoints are:
 ### Main work to do
 
 - [ ] Announcements
-- [ ] Filters
 - [ ] Polls
 - [ ] Tags
 - [ ] Lists

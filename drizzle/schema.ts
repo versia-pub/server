@@ -26,6 +26,50 @@ export const Emojis = pgTable("Emojis", {
     }),
 });
 
+export const Filters = pgTable("Filters", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    userId: uuid("userId")
+        .notNull()
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    context: text("context")
+        .array()
+        .$type<
+            ("home" | "notifications" | "public" | "thread" | "account")[]
+        >(),
+    title: text("title").notNull(),
+    filterAction: text("filter_action").notNull().$type<"warn" | "hide">(),
+    expireAt: timestamp("expires_at", { precision: 3, mode: "string" }),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+        .defaultNow()
+        .notNull(),
+});
+
+export const FilterKeywords = pgTable("FilterKeywords", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    filterId: uuid("filterId")
+        .notNull()
+        .references(() => Filters.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    keyword: text("keyword").notNull(),
+    wholeWord: boolean("whole_word").notNull(),
+});
+
+export const FilterRelations = relations(Filters, ({ many }) => ({
+    keywords: many(FilterKeywords),
+}));
+
+export const FilterKeywordsRelations = relations(FilterKeywords, ({ one }) => ({
+    filter: one(Filters, {
+        fields: [FilterKeywords.filterId],
+        references: [Filters.id],
+    }),
+}));
+
 export const Markers = pgTable("Markers", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     noteId: uuid("noteId").references(() => Notes.id, {

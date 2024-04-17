@@ -86,14 +86,12 @@ export const processRoute = async (
         return errorResponse("Method not allowed", 405);
     }
 
-    let auth: AuthData | null = null;
+    const auth: AuthData = await getFromRequest(request);
 
     if (
         route.meta.auth.required ||
         route.meta.auth.requiredOnMethods?.includes(request.method as HttpVerb)
     ) {
-        auth = await getFromRequest(request);
-
         if (!auth.user) {
             return errorResponse(
                 "Unauthorized: access to this method requires an authenticated user",
@@ -112,7 +110,7 @@ export const processRoute = async (
         }
     }
 
-    const parsedRequest = await new RequestParser(request)
+    const parsedRequest = await new RequestParser(request.clone())
         .toObject()
         .catch(async (err) => {
             await logger.logError(

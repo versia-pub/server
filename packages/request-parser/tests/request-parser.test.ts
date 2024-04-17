@@ -24,6 +24,28 @@ describe("RequestParser", () => {
             expect(result.test).toEqual(["value1", "value2"]);
         });
 
+        test("With Array of objects", async () => {
+            const request = new Request(
+                "http://localhost?test[][key]=value1&test[][value]=value2",
+            );
+            const result = await new RequestParser(request).toObject<{
+                test: { key: string; value: string }[];
+            }>();
+            expect(result.test).toEqual([{ key: "value1", value: "value2" }]);
+        });
+
+        test("With Array of multiple objects", async () => {
+            const request = new Request(
+                "http://localhost?test[][key]=value1&test[][value]=value2&test[][key]=value3&test[][value]=value4",
+            );
+            const result = await new RequestParser(request).toObject<{
+                test: { key: string[]; value: string[] }[];
+            }>();
+            expect(result.test).toEqual([
+                { key: ["value1", "value3"], value: ["value2", "value4"] },
+            ]);
+        });
+
         test("With both at once", async () => {
             const request = new Request(
                 "http://localhost?param1=value1&param2=value2&test[]=value1&test[]=value2",

@@ -107,4 +107,71 @@ describe(meta.route, () => {
             );
         }
     });
+
+    test("should not return notifications with filtered keywords", async () => {
+        const formData = new FormData();
+
+        formData.append("title", "Test Filter");
+        formData.append("context[]", "notifications");
+        formData.append("filter_action", "hide");
+        formData.append(
+            "keywords_attributes[0][keyword]",
+            timeline[0].content.slice(4, 20),
+        );
+        formData.append("keywords_attributes[0][whole_word]", "false");
+
+        const filterResponse = await sendTestRequest(
+            new Request(new URL("/api/v2/filters", config.http.base_url), {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: formData,
+            }),
+        );
+
+        expect(filterResponse.status).toBe(200);
+
+        const response = await sendTestRequest(
+            new Request(
+                new URL(`${meta.route}?limit=20`, config.http.base_url),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("application/json");
+
+        const objects = (await response.json()) as APINotification[];
+
+        expect(objects.length).toBe(3);
+        // There should be no element with a status with id of timeline[0].id
+        expect(objects).not.toContainEqual(
+            expect.objectContaining({
+                status: expect.objectContaining({ id: timeline[0].id }),
+            }),
+        );
+
+        // Delete filter
+        const filterDeleteResponse = await sendTestRequest(
+            new Request(
+                new URL(
+                    `/api/v2/filters/${(await filterResponse.json()).id}`,
+                    config.http.base_url,
+                ),
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(filterDeleteResponse.status).toBe(200);
+    });
 });

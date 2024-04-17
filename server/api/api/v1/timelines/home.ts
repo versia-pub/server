@@ -49,6 +49,10 @@ export default apiRoute<typeof meta, typeof schema>(
                     // WHERE format (... = ...)
                     sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Notes.authorId} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."following" = true)`,
                 ),
+                // Don't show statuses that have filtered words in them
+                // Filters in `Filters` table have keyword in `FilterKeywords` table (use LIKE)
+                // Filters table has a userId and a context which is an array
+                sql`NOT EXISTS (SELECT 1 FROM "Filters" WHERE "Filters"."userId" = ${user.id} AND "Filters"."filter_action" = 'hide' AND EXISTS (SELECT 1 FROM "FilterKeywords" WHERE "FilterKeywords"."filterId" = "Filters"."id" AND "Notes"."content" LIKE '%' || "FilterKeywords"."keyword" || '%') AND "Filters"."context" @> ARRAY['home'])`,
             ),
             limit,
             req.url,

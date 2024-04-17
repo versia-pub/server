@@ -1,6 +1,9 @@
 {
-    "name": "request-parser",
-    "version": "0.0.0",
-    "main": "index.ts",
-    "dependencies": {}
+  "name": "request-parser",
+  "version": "0.0.0",
+  "main": "index.ts",
+  "dependencies": { "qs": "^6.12.1" },
+  "devDependencies": {
+    "@types/qs": "^6.9.15"
+  }
 }

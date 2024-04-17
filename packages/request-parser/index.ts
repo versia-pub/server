@@ -1,9 +1,4 @@
-/**
- * RequestParser
- * @file index.ts
- * @module request-parser
- * @description Parses Request object into a JavaScript object based on the content type
- */
+import { parse } from "qs";
 
 /**
  * RequestParser
@@ -98,19 +93,38 @@ export class RequestParser {
         const formData = await this.request.formData();
         const result: Partial<T> = {};
 
-        for (const [key, value] of formData.entries()) {
-            if (value instanceof Blob) {
-                result[key as keyof T] = value as T[keyof T];
-            } else if (key.endsWith("[]")) {
-                const arrayKey = key.slice(0, -2) as keyof T;
-                if (!result[arrayKey]) {
-                    result[arrayKey] = [] as T[keyof T];
-                }
+        // Check if there are any files in the FormData
+        if (
+            Array.from(formData.values()).some((value) => value instanceof Blob)
+        ) {
+            for (const [key, value] of formData.entries()) {
+                if (value instanceof Blob) {
+                    result[key as keyof T] = value as T[keyof T];
+                } else if (key.endsWith("[]")) {
+                    const arrayKey = key.slice(0, -2) as keyof T;
+                    if (!result[arrayKey]) {
+                        result[arrayKey] = [] as T[keyof T];
+                    }
 
-                (result[arrayKey] as FormDataEntryValue[]).push(value);
-            } else {
-                result[key as keyof T] = value as T[keyof T];
+                    (result[arrayKey] as FormDataEntryValue[]).push(value);
+                } else {
+                    result[key as keyof T] = value as T[keyof T];
+                }
             }
+        } else {
+            // Convert to URLSearchParams and parse as query
+            const searchParams = new URLSearchParams([
+                ...formData.entries(),
+            ] as [string, string][]);
+
+            const parsed = parse(searchParams.toString(), {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            });
+
+            return castBooleanObject(
+                parsed as PossiblyRecursiveObject,
+            ) as Partial<T>;
         }
 
         return result;
@@ -159,28 +173,48 @@ export class RequestParser {
      * @returns JavaScript object of type T
      */
     private parseQuery<T>(): Partial<T> {
-        const result: Partial<T> = {};
-        const url = new URL(this.request.url);
+        const parsed = parse(
+            new URL(this.request.url).searchParams.toString(),
+            {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            },
+        );
 
-        for (const [key, value] of url.searchParams.entries()) {
-            if (decodeURIComponent(key).endsWith("[]")) {
-                const arrayKey = decodeURIComponent(key).slice(
-                    0,
-                    -2,
-                ) as keyof T;
-                if (!result[arrayKey]) {
-                    result[arrayKey] = [] as T[keyof T];
-                }
-                (result[arrayKey] as string[]).push(decodeURIComponent(value));
-            } else {
-                result[key as keyof T] = castBoolean(
-                    decodeURIComponent(value),
-                ) as T[keyof T];
-            }
-        }
-        return result;
+        return castBooleanObject(
+            parsed as PossiblyRecursiveObject,
+        ) as Partial<T>;
     }
 }
+
+interface PossiblyRecursiveObject {
+    [key: string]:
+        | PossiblyRecursiveObject[]
+        | PossiblyRecursiveObject
+        | string
+        | string[]
+        | boolean;
+}
+
+// Recursive
+const castBooleanObject = (value: PossiblyRecursiveObject | string) => {
+    if (typeof value === "string") {
+        return castBoolean(value);
+    }
+
+    for (const key in value) {
+        const child = value[key];
+        if (Array.isArray(child)) {
+            value[key] = child.map((v) => castBooleanObject(v)) as string[];
+        } else if (typeof child === "object") {
+            value[key] = castBooleanObject(child);
+        } else {
+            value[key] = castBoolean(child as string);
+        }
+    }
+
+    return value;
+};
 
 const castBoolean = (value: string) => {
     if (["true"].includes(value)) {

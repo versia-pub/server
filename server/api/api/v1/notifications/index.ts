@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { fetchTimeline } from "@timelines";
+import { sql } from "drizzle-orm";
 import { z } from "zod";
 import {
     findManyNotifications,
@@ -127,6 +128,24 @@ export default apiRoute<typeof meta, typeof schema>(
                             exclude_types
                                 ? not(inArray(notification.type, exclude_types))
                                 : undefined,
+                            // Don't show notes that have filtered words in them (via Notification.note.content via Notification.noteId)
+                            // Filters in `Filters` table have keyword in `FilterKeywords` table (use LIKE)
+                            // Filters table has a userId and a context which is an array
+                            sql`NOT EXISTS (
+                                SELECT 1 
+                                FROM "Filters" 
+                                WHERE "Filters"."userId" = ${user.id} 
+                                AND "Filters"."filter_action" = 'hide' 
+                                AND EXISTS (
+                                    SELECT 1 
+                                    FROM "FilterKeywords", "Notifications" as "n_inner", "Notes" 
+                                    WHERE "FilterKeywords"."filterId" = "Filters"."id" 
+                                    AND "n_inner"."noteId" = "Notes"."id" 
+                                    AND "Notes"."content" LIKE '%' || "FilterKeywords"."keyword" || '%' 
+                                    AND "n_inner"."id" = "Notifications"."id"
+                                ) 
+                                AND "Filters"."context" @> ARRAY['notifications']
+                            )`,
                         ),
                     limit,
                     // @ts-expect-error Yes I KNOW the types are wrong
