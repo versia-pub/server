@@ -49,7 +49,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     currentUrl.searchParams.delete("state");
     const issuerParam = matchedRoute.params.issuer;
 
-    const flow = await db.query.openIdLoginFlow.findFirst({
+    const flow = await db.query.OpenIdLoginFlows.findFirst({
         where: (flow, { eq }) => eq(flow.id, matchedRoute.query.flow),
         with: {
             application: true,
@@ -144,7 +144,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     );
 
     const userId = (
-        await db.query.openIdAccount.findFirst({
+        await db.query.OpenIdAccounts.findFirst({
             where: (account, { eq, and }) =>
                 and(eq(account.serverId, sub), eq(account.issuerId, issuer.id)),
         })
