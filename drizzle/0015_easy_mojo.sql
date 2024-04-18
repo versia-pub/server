@@ -1,0 +1,1 @@
+ALTER TABLE "Tokens" ALTER COLUMN "userId" SET NOT NULL;

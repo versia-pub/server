@@ -210,10 +210,12 @@ export const Tokens = pgTable("Tokens", {
     createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
-    userId: uuid("userId").references(() => Users.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-    }),
+    userId: uuid("userId")
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
     applicationId: uuid("applicationId").references(() => Applications.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
