@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig, idValidator } from "@api";
+import { response } from "@response";
+import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
 import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Tokens } from "~drizzle/schema";
-import { response } from "@response";
-import { jwtVerify, SignJWT } from "jose";
 import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({

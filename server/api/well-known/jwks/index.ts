@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
+import { createRemoteJWKSet, exportJWK } from "jose";
 import { config } from "~packages/config-manager";
-import { exportJWK, createRemoteJWKSet } from "jose";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

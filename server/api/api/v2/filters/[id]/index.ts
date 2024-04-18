@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { and, eq, inArray, type InferSelectModel } from "drizzle-orm";
+import { type InferSelectModel, and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";
 import { FilterKeywords, Filters } from "~drizzle/schema";

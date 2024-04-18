@@ -1,13 +1,13 @@
 import { apiRoute, applyConfig } from "@api";
-import { z } from "zod";
-import { findFirstUser } from "~database/entities/User";
-import { SignJWT } from "jose";
-import { config } from "~packages/config-manager";
 import { errorResponse, response } from "@response";
+import { SignJWT } from "jose";
 import { stringify } from "qs";
+import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { RequestParser } from "~packages/request-parser";
+import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
+import { config } from "~packages/config-manager";
+import { RequestParser } from "~packages/request-parser";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
