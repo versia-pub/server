@@ -76,6 +76,14 @@ banned_user_agents = [
     # "wget\/1.20.3",
 ]
 
+[http.tls]
+# If these values are set, Lysand will use these files for TLS
+enabled = false
+key = "config/privatekey.pem"
+cert = "config/certificate.pem"
+passphrase = ""
+ca = ""
+
 [http.bait]
 # Enable the bait feature (sends fake data to those who are flagged)
 enabled = false
@@ -88,6 +96,7 @@ bait_user_agents = ["curl", "wget"]
 
 [frontend]
 # Enable custom frontends (warning: not enabling this or Glitch will make Lysand only accessible via the Mastodon API)
+# Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
 enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"

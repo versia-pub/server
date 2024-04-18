@@ -15,6 +15,16 @@ export const createServer = (
 ) =>
     Bun.serve({
         port: config.http.bind_port,
+        tls: config.http.tls.enabled
+            ? {
+                  key: Bun.file(config.http.tls.key),
+                  cert: Bun.file(config.http.tls.cert),
+                  passphrase: config.http.tls.passphrase,
+                  ca: config.http.tls.ca
+                      ? Bun.file(config.http.tls.ca)
+                      : undefined,
+              }
+            : undefined,
         hostname: config.http.bind || "0.0.0.0", // defaults to "0.0.0.0"
         async fetch(req) {
             // Check for banned IPs
@@ -121,15 +131,9 @@ export const createServer = (
             const matchedRoute = matchRoute(
                 req.url.replace(".well-known", "well-known"),
             );
+
             if (matchedRoute?.filePath && matchedRoute.name !== "/[...404]") {
                 return await processRoute(matchedRoute, req, logger);
-            }
-
-            if (config.frontend.glitch.enabled) {
-                return (
-                    (await handleGlitchRequest(req, dualLogger)) ??
-                    errorResponse("Route not found", 404)
-                );
             }
 
             const base_url_with_http = config.http.base_url.replace(
@@ -157,13 +161,19 @@ export const createServer = (
                     "Server.Proxy",
                     `The Frontend is not running or the route is not found: ${replacedUrl}`,
                 );
-                return errorResponse("Route not found", 404);
+                return null;
             });
 
-            if (
-                proxy.status !== 404 &&
-                !(await proxy.clone().text()).includes("404 Not Found")
-            ) {
+            console.log(proxy);
+
+            if (!proxy || proxy.status === 404) {
+                if (config.frontend.glitch.enabled) {
+                    return (
+                        (await handleGlitchRequest(req, dualLogger)) ??
+                        errorResponse("Route not found", 404)
+                    );
+                }
+            } else {
                 return proxy;
             }
 

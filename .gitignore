@@ -179,3 +179,4 @@ glitch-old
 glitch
 glitch.tar.gz
 glitch-dev
+*.pem

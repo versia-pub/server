@@ -105,6 +105,23 @@ export interface Config {
 
         banned_user_agents: string[];
 
+        tls: {
+            /** @default false */
+            enabled: boolean;
+
+            /** @default "" */
+            key: string;
+
+            /** @default "" */
+            cert: string;
+
+            /** @default "" */
+            passphrase: string;
+
+            /** @default "" */
+            ca: string;
+        };
+
         bait: {
             /** @default false */
             enabled: boolean;
@@ -437,6 +454,13 @@ export const defaultConfig: Config = {
         bind_port: "8080",
         banned_ips: [],
         banned_user_agents: [],
+        tls: {
+            enabled: false,
+            key: "",
+            cert: "",
+            passphrase: "",
+            ca: "",
+        },
         bait: {
             enabled: false,
             send_file: "",

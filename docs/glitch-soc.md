@@ -8,7 +8,8 @@ Lysand supports the use of the Glitch-Soc fork of Mastodon's frontend. Here's ho
     ```toml
     [frontend]
     # Enable custom frontends (warning: not enabling this or Glitch will make Lysand only accessible via the Mastodon API)
-    enabled = false
+    # Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
+    enabled = true
     # The URL to reach the frontend at (should be on a local network)
     url = "http://localhost:3000"
 
@@ -20,8 +21,6 @@ Lysand supports the use of the Glitch-Soc fork of Mastodon's frontend. Here's ho
     # Server the assets were ripped from (and any eventual CDNs)
     server = ["https://tech.lgbt"]
     ```
-    (you can disable the normal frontend option as it will not be used anymore)
-
     The `server` option can be left as-is, unless you have downloaded your own `index.html` file from a different Glitch instance.
 4. Start Lysand and navigate to `/` to see the Glitch frontend in action.
 
