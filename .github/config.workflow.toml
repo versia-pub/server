@@ -37,6 +37,10 @@ rules = [
     "Don't post illegal content",
 ]
 
+[oidc]
+# Run Lysand with this value missing to generate a new key
+jwt_key = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl;MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="
+
 [http]
 base_url = "http://0.0.0.0:8080"
 bind = "0.0.0.0"
