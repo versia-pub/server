@@ -32,7 +32,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             })
             .from(Notes)
             .where(
-                sql`EXISTS (SELECT 1 FROM "User" WHERE "User"."id" = ${Notes.authorId} AND "User"."instanceId" IS NULL)`,
+                sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NULL)`,
             )
     )[0].count;
 
