@@ -31,7 +31,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         name: application.name,
         website: application.website,
         vapid_key: application.vapidKey,
-        redirect_uris: application.redirectUris,
+        redirect_uris: application.redirectUri,
         scopes: application.scopes,
     });
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "Tokens" ADD COLUMN "id_token" text;

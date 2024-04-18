@@ -89,6 +89,8 @@ export interface Config {
             client_secret: string;
             icon: string;
         }[];
+
+        jwt_key: string;
     };
 
     http: {
@@ -447,6 +449,7 @@ export const defaultConfig: Config = {
     },
     oidc: {
         providers: [],
+        jwt_key: "",
     },
     http: {
         base_url: "https://lysand.social",

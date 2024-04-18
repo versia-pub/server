@@ -729,22 +729,13 @@ export const generateUserKeys = async () => {
         "verify",
     ]);
 
-    const privateKey = btoa(
-        String.fromCharCode.apply(null, [
-            ...new Uint8Array(
-                // jesus help me what do these letters mean
-                await crypto.subtle.exportKey("pkcs8", keys.privateKey),
-            ),
-        ]),
-    );
-    const publicKey = btoa(
-        String.fromCharCode(
-            ...new Uint8Array(
-                // why is exporting a key so hard
-                await crypto.subtle.exportKey("spki", keys.publicKey),
-            ),
-        ),
-    );
+    const privateKey = Buffer.from(
+        await crypto.subtle.exportKey("pkcs8", keys.privateKey),
+    ).toString("base64");
+
+    const publicKey = Buffer.from(
+        await crypto.subtle.exportKey("spki", keys.publicKey),
+    ).toString("base64");
 
     // Add header, footer and newlines later on
     // These keys are base64 encrypted

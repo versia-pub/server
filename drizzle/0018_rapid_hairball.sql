@@ -1,0 +1,2 @@
+ALTER TABLE "Tokens" ALTER COLUMN "client_id" SET DEFAULT '';
+ALTER TABLE "Tokens" ALTER COLUMN "redirect_uri" SET DEFAULT '';

@@ -37,7 +37,7 @@ export default apiRoute<typeof meta, typeof schema>(
                 .insert(Applications)
                 .values({
                     name: client_name || "",
-                    redirectUris: redirect_uris || "",
+                    redirectUri: redirect_uris || "",
                     scopes: scopes || "read",
                     website: website || null,
                     clientId: randomBytes(32).toString("base64url"),
@@ -52,7 +52,7 @@ export default apiRoute<typeof meta, typeof schema>(
             website: app.website,
             client_id: app.clientId,
             client_secret: app.secret,
-            redirect_uri: app.redirectUris,
+            redirect_uri: app.redirectUri,
             vapid_link: app.vapidKey,
         });
     },

@@ -1,7 +1,10 @@
-import { apiRoute, applyConfig } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { apiRoute, applyConfig, idValidator } from "@api";
+import { jsonResponse } from "@response";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";
+import { Tokens } from "~drizzle/schema";
+import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -16,13 +19,42 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    grant_type: z.string(),
-    code: z.string(),
-    redirect_uri: z.string().url(),
-    client_id: z.string(),
-    client_secret: z.string(),
-    scope: z.string(),
+    code: z.string().optional(),
+    code_verifier: z.string().optional(),
+    grant_type: z.enum([
+        "authorization_code",
+        "refresh_token",
+        "client_credentials",
+        "password",
+        "urn:ietf:params:oauth:grant-type:device_code",
+        "urn:ietf:params:oauth:grant-type:token-exchange",
+        "urn:ietf:params:oauth:grant-type:saml2-bearer",
+        "urn:openid:params:grant-type:ciba",
+    ]),
+    client_id: z.string().optional(),
+    client_secret: z.string().optional(),
+    username: z.string().optional(),
+    password: z.string().optional(),
+    redirect_uri: z.string().url().optional(),
+    refresh_token: z.string().optional(),
+    scope: z.string().optional(),
+    assertion: z.string().optional(),
+    audience: z.string().optional(),
+    subject_token_type: z.string().optional(),
+    subject_token: z.string().optional(),
+    actor_token_type: z.string().optional(),
+    actor_token: z.string().optional(),
+    auth_req_id: z.string().optional(),
 });
+
+const returnError = (error: string, description: string) =>
+    jsonResponse(
+        {
+            error,
+            error_description: description,
+        },
+        401,
+    );
 
 /**
  * Allows getting token from OAuth code
@@ -33,50 +65,78 @@ export default apiRoute<typeof meta, typeof schema>(
             grant_type,
             code,
             redirect_uri,
+            scope,
             client_id,
             client_secret,
-            scope,
         } = extraData.parsedRequest;
 
-        if (grant_type !== "authorization_code")
-            return errorResponse(
-                "Invalid grant type (try 'authorization_code')",
-                422,
-            );
+        switch (grant_type) {
+            case "authorization_code": {
+                if (!code) {
+                    return returnError("invalid_request", "Code is required");
+                }
 
-        // Get associated token
-        const application = await db.query.Applications.findFirst({
-            where: (application, { eq, and }) =>
-                and(
-                    eq(application.clientId, client_id),
-                    eq(application.secret, client_secret),
-                    eq(application.redirectUris, redirect_uri),
-                    eq(application.scopes, scope?.replaceAll("+", " ")),
-                ),
-        });
+                if (!redirect_uri) {
+                    return returnError(
+                        "invalid_request",
+                        "Redirect URI is required",
+                    );
+                }
 
-        if (!application)
-            return errorResponse(
-                "Invalid client credentials (missing application)",
-                401,
-            );
+                if (!client_id) {
+                    return returnError(
+                        "invalid_client",
+                        "Client ID is required",
+                    );
+                }
 
-        const token = await db.query.Tokens.findFirst({
-            where: (token, { eq }) =>
-                eq(token.code, code) && eq(token.applicationId, application.id),
-        });
+                // Verify the client_secret
+                const client = await db.query.Applications.findFirst({
+                    where: (application, { eq }) =>
+                        eq(application.clientId, client_id),
+                });
 
-        if (!token)
-            return errorResponse(
-                "Invalid access token or client credentials",
-                401,
-            );
+                if (!client || client.secret !== client_secret) {
+                    return returnError(
+                        "invalid_client",
+                        "Invalid client credentials",
+                    );
+                }
 
-        return jsonResponse({
-            access_token: token.accessToken,
-            token_type: token.tokenType,
-            scope: token.scope,
-            created_at: new Date(token.createdAt).getTime(),
-        });
+                const token = await db.query.Tokens.findFirst({
+                    where: (token, { eq, and }) =>
+                        and(
+                            eq(token.code, code),
+                            eq(token.redirectUri, redirect_uri),
+                            eq(token.clientId, client_id),
+                        ),
+                });
+
+                if (!token) {
+                    return returnError("invalid_grant", "Code not found");
+                }
+
+                // Invalidate the code
+                await db
+                    .update(Tokens)
+                    .set({ code: null })
+                    .where(eq(Tokens.id, token.id));
+
+                return jsonResponse({
+                    access_token: token.accessToken,
+                    token_type: "Bearer",
+                    expires_in: token.expiresAt
+                        ? (new Date(token.expiresAt).getTime() - Date.now()) /
+                          1000
+                        : null,
+                    id_token: token.idToken,
+                    refresh_token: null,
+                    scope: token.scope,
+                    created_at: new Date(token.createdAt).toISOString(),
+                });
+            }
+        }
+
+        return returnError("unsupported_grant_type", "Unsupported grant type");
     },
 );

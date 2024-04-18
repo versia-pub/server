@@ -19,7 +19,7 @@ export const objectToInboxRequest = async (
 
     const privateKey = await crypto.subtle.importKey(
         "pkcs8",
-        Uint8Array.from(atob(author.privateKey ?? ""), (c) => c.charCodeAt(0)),
+        Buffer.from(author.privateKey ?? "", "base64"),
         "Ed25519",
         false,
         ["sign"],

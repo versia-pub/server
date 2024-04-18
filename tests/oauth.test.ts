@@ -13,6 +13,7 @@ const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
 let client_id: string;
 let client_secret: string;
 let code: string;
+let jwt: string;
 let token: APIToken;
 const { users, passwords, deleteUsers } = await getTestUsers(1);
 
@@ -57,7 +58,7 @@ describe("POST /api/v1/apps/", () => {
 });
 
 describe("POST /api/auth/login/", () => {
-    test("should get a code", async () => {
+    test("should get a JWT", async () => {
         const formData = new FormData();
 
         formData.append("email", users[0]?.email ?? "");
@@ -77,33 +78,80 @@ describe("POST /api/auth/login/", () => {
         );
 
         expect(response.status).toBe(302);
-        expect(response.headers.get("Location")).toMatch(
-            /^\/oauth\/redirect\?redirect_uri=https%3A%2F%2Fexample.com&code=[a-f0-9]+&client_id=[a-zA-Z0-9_-]+&application=Test\+Application&website=https%3A%2F%2Fexample.com&scope=read\+write$/,
+        expect(response.headers.get("location")).toBeDefined();
+        const locationHeader = new URL(
+            response.headers.get("Location") ?? "",
+            "",
         );
 
-        code =
-            new URL(
-                response.headers.get("Location") ?? "",
-                "http://lysand.localhost:8080",
-            ).searchParams.get("code") ?? "";
+        expect(locationHeader.pathname).toBe("/oauth/redirect");
+        expect(locationHeader.searchParams.get("client_id")).toBe(client_id);
+        expect(locationHeader.searchParams.get("redirect_uri")).toBe(
+            "https://example.com",
+        );
+        expect(locationHeader.searchParams.get("response_type")).toBe("code");
+        expect(locationHeader.searchParams.get("scope")).toBe("read write");
+
+        expect(response.headers.get("Set-Cookie")).toMatch(/jwt=[^;]+;/);
+
+        jwt =
+            response.headers.get("Set-Cookie")?.match(/jwt=([^;]+);/)?.[1] ??
+            "";
+    });
+});
+
+describe("POST /oauth/authorize/", () => {
+    test("should get a code", async () => {
+        const response = await sendTestRequest(
+            new Request(wrapRelativeUrl("/oauth/authorize", base_url), {
+                method: "POST",
+                headers: {
+                    Cookie: `jwt=${jwt}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    client_id,
+                    client_secret,
+                    redirect_uri: "https://example.com",
+                    response_type: "code",
+                    scope: "read write",
+                    max_age: "604800",
+                }),
+            }),
+        );
+
+        expect(response.status).toBe(302);
+        expect(response.headers.get("location")).toBeDefined();
+        const locationHeader = new URL(
+            response.headers.get("Location") ?? "",
+            "",
+        );
+
+        expect(locationHeader.origin).toBe("https://example.com");
+        expect(locationHeader.searchParams.get("client_id")).toBe(client_id);
+        expect(locationHeader.searchParams.get("scope")).toBe("read write");
+
+        code = locationHeader.searchParams.get("code") ?? "";
     });
 });
 
 describe("POST /oauth/token/", () => {
     test("should get an access token", async () => {
-        const formData = new FormData();
-
-        formData.append("grant_type", "authorization_code");
-        formData.append("code", code);
-        formData.append("redirect_uri", "https://example.com");
-        formData.append("client_id", client_id);
-        formData.append("client_secret", client_secret);
-        formData.append("scope", "read+write");
-
         const response = await sendTestRequest(
             new Request(wrapRelativeUrl("/oauth/token/", base_url), {
                 method: "POST",
-                body: formData,
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    grant_type: "authorization_code",
+                    code,
+                    redirect_uri: "https://example.com",
+                    client_id,
+                    client_secret,
+                    scope: "read write",
+                }),
             }),
         );
 
@@ -115,7 +163,10 @@ describe("POST /oauth/token/", () => {
             access_token: expect.any(String),
             token_type: "Bearer",
             scope: "read write",
-            created_at: expect.any(Number),
+            created_at: expect.any(String),
+            expires_in: expect.any(Number),
+            id_token: null,
+            refresh_token: null,
         });
 
         token = json;

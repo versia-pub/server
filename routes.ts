@@ -19,8 +19,8 @@ for (const [route, path] of Object.entries(routes)) {
 
 export { routes };
 
-export const matchRoute = (url: string) => {
-    const route = routeMatcher.match(url);
+export const matchRoute = (request: Request) => {
+    const route = routeMatcher.match(request);
 
     return route ?? null;
 };

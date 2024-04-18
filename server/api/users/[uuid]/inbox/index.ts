@@ -86,7 +86,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
         const public_key = await crypto.subtle.importKey(
             "spki",
-            Uint8Array.from(atob(sender.publicKey), (c) => c.charCodeAt(0)),
+            Buffer.from(sender.publicKey, "base64"),
             "Ed25519",
             false,
             ["verify"],

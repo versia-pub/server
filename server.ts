@@ -1,5 +1,6 @@
 import { dualLogger } from "@loggers";
 import { errorResponse, response } from "@response";
+import type { MatchedRoute } from "bun";
 import type { Config } from "config-manager";
 import { matches } from "ip-matching";
 import type { LogManager, MultiLogManager } from "log-manager";
@@ -129,10 +130,19 @@ export const createServer = (
 
             // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
             const matchedRoute = matchRoute(
-                req.url.replace(".well-known", "well-known"),
+                new Request(req.url.replace(".well-known", "well-known"), {
+                    method: req.method,
+                }),
             );
 
-            if (matchedRoute?.filePath && matchedRoute.name !== "/[...404]") {
+            if (
+                matchedRoute?.filePath &&
+                matchedRoute.name !== "/[...404]" &&
+                !(
+                    new URL(req.url).pathname.startsWith("/oauth/authorize") &&
+                    req.method === "GET"
+                )
+            ) {
                 return await processRoute(matchedRoute, req, logger);
             }
 
@@ -163,8 +173,6 @@ export const createServer = (
                 );
                 return null;
             });
-
-            console.log(proxy);
 
             if (!proxy || proxy.status === 404) {
                 if (config.frontend.glitch.enabled) {

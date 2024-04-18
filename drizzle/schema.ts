@@ -187,7 +187,7 @@ export const Applications = pgTable(
         clientId: text("client_id").notNull(),
         secret: text("secret").notNull(),
         scopes: text("scopes").notNull(),
-        redirectUris: text("redirect_uris").notNull(),
+        redirectUri: text("redirect_uri").notNull(),
     },
     (table) => {
         return {
@@ -206,10 +206,14 @@ export const Tokens = pgTable("Tokens", {
     tokenType: text("token_type").notNull(),
     scope: text("scope").notNull(),
     accessToken: text("access_token").notNull(),
-    code: text("code").notNull(),
+    code: text("code"),
+    expiresAt: timestamp("expires_at", { precision: 3, mode: "string" }),
     createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),
+    clientId: text("client_id").notNull().default(""),
+    redirectUri: text("redirect_uri").notNull().default(""),
+    idToken: text("id_token"),
     userId: uuid("userId")
         .references(() => Users.id, {
             onDelete: "cascade",

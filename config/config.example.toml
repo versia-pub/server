@@ -48,6 +48,10 @@ rules = [
     "Don't post illegal content",
 ]
 
+[oidc]
+# Run Lysand with this value missing to generate a new key
+jwt_key = ""
+
 # Delete this section if you don't want to use custom OAuth providers
 # This is an example configuration
 # The provider MUST support OpenID Connect with .well-known discovery

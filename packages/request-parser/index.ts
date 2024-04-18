@@ -137,23 +137,14 @@ export class RequestParser {
      * @throws Error if body is invalid
      */
     private async parseFormUrlencoded<T>(): Promise<Partial<T>> {
-        const formData = await this.request.formData();
-        const result: Partial<T> = {};
+        const parsed = parse(await this.request.text(), {
+            parseArrays: true,
+            interpretNumericEntities: true,
+        });
 
-        for (const [key, value] of formData.entries()) {
-            if (key.endsWith("[]")) {
-                const arrayKey = key.slice(0, -2) as keyof T;
-                if (!result[arrayKey]) {
-                    result[arrayKey] = [] as T[keyof T];
-                }
-
-                (result[arrayKey] as FormDataEntryValue[]).push(value);
-            } else {
-                result[key as keyof T] = value as T[keyof T];
-            }
-        }
-
-        return result;
+        return castBooleanObject(
+            parsed as PossiblyRecursiveObject,
+        ) as Partial<T>;
     }
 
     /**
