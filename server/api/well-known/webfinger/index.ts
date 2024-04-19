@@ -1,7 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { z } from "zod";
-import { findFirstUser } from "~database/entities/User";
+import { findFirstUser, getAvatarUrl } from "~database/entities/User";
+import { lookup } from "mime-types";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -66,6 +67,11 @@ export default apiRoute<typeof meta, typeof schema>(
                         `/users/${user.id}`,
                         config.http.base_url,
                     ).toString(),
+                },
+                {
+                    rel: "avatar",
+                    type: lookup(getAvatarUrl(user, config)),
+                    href: getAvatarUrl(user, config),
                 },
             ],
         });

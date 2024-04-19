@@ -54,7 +54,7 @@ if (isEntry) {
         await dualServerLogger.log(
             LogLevel.CRITICAL,
             "Server",
-            "Below is a generated key for you to copy in the config at oidc.jwt_private_key",
+            "Below is a generated key for you to copy in the config at oidc.jwt_key",
         );
         // Generate a key for them
         const keys = await crypto.subtle.generateKey("Ed25519", true, [
