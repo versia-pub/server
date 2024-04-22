@@ -24,7 +24,6 @@ import {
     maybe,
     oneOrMore,
 } from "magic-regexp";
-import { parse } from "marked";
 import { db } from "~drizzle/db";
 import {
     Attachments,
@@ -60,6 +59,11 @@ import {
     userExtrasTemplate,
     userRelations,
 } from "./User";
+import MarkdownIt from "markdown-it";
+import markdownItTocDoneRight from "markdown-it-toc-done-right";
+import markdownItContainer from "markdown-it-container";
+import markdownItAnchor from "markdown-it-anchor";
+import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 
 export type Status = InferSelectModel<typeof Notes>;
 
@@ -577,9 +581,9 @@ export const contentToHtml = async (
         htmlContent = content["text/html"].content;
     } else if (content["text/markdown"]) {
         htmlContent = await sanitizeHtml(
-            await parse(content["text/markdown"].content),
+            await markdownParse(content["text/markdown"].content),
         );
-    } else if (content["text/plain"]) {
+    } else if (content["text/plain"]?.content) {
         // Split by newline and add <p> tags
         htmlContent = content["text/plain"].content
             .split("\n")
@@ -603,6 +607,39 @@ export const contentToHtml = async (
     });
 
     return htmlContent;
+};
+
+export const markdownParse = async (content: string) => {
+    return (await getMarkdownRenderer()).render(content);
+};
+
+export const getMarkdownRenderer = async () => {
+    const renderer = MarkdownIt({
+        html: true,
+        linkify: true,
+    });
+
+    renderer.use(markdownItAnchor, {
+        permalink: markdownItAnchor.permalink.ariaHidden({
+            symbol: "",
+            placement: "before",
+        }),
+    });
+
+    renderer.use(markdownItTocDoneRight, {
+        containerClass: "toc",
+        level: [1, 2, 3, 4],
+        listType: "ul",
+        listClass: "toc-list",
+        itemClass: "toc-item",
+        linkClass: "toc-link",
+    });
+
+    renderer.use(markdownItTaskLists);
+
+    renderer.use(markdownItContainer);
+
+    return renderer;
 };
 
 export const federateNote = async (note: Note) => {

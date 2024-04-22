@@ -1,11 +1,8 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
 import ISO6391 from "iso-639-1";
-import { parse } from "marked";
 import { z } from "zod";
-import type { StatusWithRelations } from "~database/entities/Status";
 import { federateNote, parseTextMentions } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { Note } from "~packages/database-interface/note";
@@ -106,18 +103,6 @@ export default apiRoute<typeof meta, typeof schema>(
             }
         }
 
-        let sanitizedStatus: string;
-
-        if (content_type === "text/markdown") {
-            sanitizedStatus = await sanitizeHtml(parse(status ?? "") as string);
-        } else if (content_type === "text/x.misskeymarkdown") {
-            // Parse as MFM
-            // TODO: Parse as MFM
-            sanitizedStatus = await sanitizeHtml(parse(status ?? "") as string);
-        } else {
-            sanitizedStatus = await sanitizeHtml(status ?? "");
-        }
-
         // Check if status body doesnt match filters
         if (
             config.filters.note_content.some((filter) => status?.match(filter))
@@ -152,13 +137,13 @@ export default apiRoute<typeof meta, typeof schema>(
             }
         }
 
-        const mentions = await parseTextMentions(sanitizedStatus);
+        const mentions = await parseTextMentions(status ?? "");
 
         const newNote = await Note.fromData(
             user,
             {
                 [content_type]: {
-                    content: sanitizedStatus ?? "",
+                    content: status ?? "",
                 },
             },
             visibility,

@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
 import { dualLogger } from "@loggers";
 import { jsonResponse } from "@response";
-import { parse } from "marked";
+import { getMarkdownRenderer } from "~database/entities/Status";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
@@ -19,7 +19,7 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const config = await extraData.configManager.getConfig();
 
-    let extended_description = parse(
+    let extended_description = (await getMarkdownRenderer()).render(
         "This is a [Lysand](https://lysand.org) server with the default extended description.",
     );
     let lastModified = new Date(2024, 0, 0);
@@ -30,13 +30,13 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (await extended_description_file.exists()) {
         extended_description =
-            (await parse(
+            (await getMarkdownRenderer()).render(
                 (await extended_description_file.text().catch(async (e) => {
                     await dualLogger.logError(LogLevel.ERROR, "Routes", e);
                     return "";
                 })) ||
                     "This is a [Lysand](https://lysand.org) server with the default extended description.",
-            )) || "";
+            ) || "";
         lastModified = new Date(extended_description_file.lastModified);
     }
 

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@api";
-import { convertTextToHtml } from "@formatting";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
@@ -11,10 +10,10 @@ import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
+import { contentToHtml } from "~database/entities/Status";
 import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { EmojiToUser, Users } from "~drizzle/schema";
-import type { Source as APISource } from "~types/mastodon/source";
 
 export const meta = applyConfig({
     allowedMethods: ["PATCH"],
@@ -125,20 +124,24 @@ export default apiRoute<typeof meta, typeof schema>(
                 return errorResponse("Bio contains blocked words", 422);
             }
 
-            (self.source as APISource).note = sanitizedNote;
-            self.note = await convertTextToHtml(sanitizedNote);
+            self.source.note = sanitizedNote;
+            self.note = await contentToHtml({
+                "text/markdown": {
+                    content: sanitizedNote,
+                },
+            });
         }
 
         if (source_privacy && self.source) {
-            (self.source as APISource).privacy = source_privacy;
+            self.source.privacy = source_privacy;
         }
 
         if (source_sensitive && self.source) {
-            (self.source as APISource).sensitive = source_sensitive;
+            self.source.sensitive = source_sensitive;
         }
 
         if (source_language && self.source) {
-            (self.source as APISource).language = source_language;
+            self.source.language = source_language;
         }
 
         if (avatar) {

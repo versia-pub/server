@@ -20,8 +20,10 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    "user[email]": z.string().email(),
-    "user[password]": z.string().max(100).min(3),
+    user: z.object({
+        email: z.string().email(),
+        password: z.string().max(100).min(3),
+    }),
 });
 
 /**
@@ -29,8 +31,9 @@ export const schema = z.object({
  */
 export default apiRoute<typeof meta, typeof schema>(
     async (req, matchedRoute, extraData) => {
-        const { "user[email]": email, "user[password]": password } =
-            extraData.parsedRequest;
+        const {
+            user: { email, password },
+        } = extraData.parsedRequest;
 
         const redirectToLogin = (error: string) =>
             Response.redirect(
