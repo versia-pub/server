@@ -177,8 +177,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     // Redirect back to application
     return Response.redirect(
-        `/oauth/redirect?${new URLSearchParams({
-            redirect_uri: flow.application.redirectUris,
+        `/oauth/consent?${new URLSearchParams({
+            redirect_uri: flow.application.redirectUri,
             code,
             client_id: flow.application.clientId,
             application: flow.application.name,

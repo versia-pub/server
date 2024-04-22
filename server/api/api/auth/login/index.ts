@@ -150,7 +150,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     // Redirect to OAuth authorize with JWT
     return response(null, 302, {
         Location: new URL(
-            `/oauth/redirect?${searchParams.toString()}`,
+            `/oauth/consent?${searchParams.toString()}`,
             config.http.base_url,
         ).toString(),
         // Set cookie with JWT

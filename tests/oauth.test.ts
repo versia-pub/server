@@ -84,7 +84,7 @@ describe("POST /api/auth/login/", () => {
             "",
         );
 
-        expect(locationHeader.pathname).toBe("/oauth/redirect");
+        expect(locationHeader.pathname).toBe("/oauth/consent");
         expect(locationHeader.searchParams.get("client_id")).toBe(client_id);
         expect(locationHeader.searchParams.get("redirect_uri")).toBe(
             "https://example.com",
