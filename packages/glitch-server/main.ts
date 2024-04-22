@@ -94,6 +94,7 @@ const handleManifestRequest = async () => {
         headers: {
             "Content-Type": "application/json; charset=utf-8",
             "Content-Length": String(JSON.stringify(manifest).length),
+            "Cache-Control": "max-age=31536000",
             Date: new Date().toUTCString(),
         },
     });
@@ -171,6 +172,7 @@ const returnFile = async (file: BunFile, content?: string) => {
         headers: {
             "Content-Type": `${file.type}; charset=utf-8`,
             "Content-Length": String(file.size),
+            "Cache-Control": "max-age=31536000",
             Date: new Date().toUTCString(),
         },
     });

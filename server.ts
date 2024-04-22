@@ -174,6 +174,8 @@ export const createServer = (
                 return null;
             });
 
+            proxy?.headers.set("Cache-Control", "max-age=31536000");
+
             if (!proxy || proxy.status === 404) {
                 if (config.frontend.glitch.enabled) {
                     return (
