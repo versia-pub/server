@@ -128,22 +128,53 @@ export const createServer = (
                 );
             }
 
-            // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
-            const matchedRoute = matchRoute(
-                new Request(req.url.replace(".well-known", "well-known"), {
-                    method: req.method,
-                }),
-            );
+            const routePaths = [
+                "/api",
+                "/media",
+                "/nodeinfo",
+                "/.well-known",
+                "/users",
+                "/objects",
+                "/oauth/token",
+                "/oauth/providers",
+            ];
 
+            // Check if URL starts with routePath
             if (
-                matchedRoute?.filePath &&
-                matchedRoute.name !== "/[...404]" &&
-                !(
-                    new URL(req.url).pathname.startsWith("/oauth/authorize") &&
-                    req.method === "GET"
-                )
+                routePaths.some((path) =>
+                    new URL(req.url).pathname.startsWith(path),
+                ) ||
+                (new URL(req.url).pathname.startsWith("/oauth/authorize") &&
+                    req.method === "POST")
             ) {
-                return await processRoute(matchedRoute, req, logger);
+                // If route is .well-known, remove dot because the filesystem router can't handle dots for some reason
+                const matchedRoute = matchRoute(
+                    new Request(req.url.replace(".well-known", "well-known"), {
+                        method: req.method,
+                    }),
+                );
+
+                if (
+                    matchedRoute?.filePath &&
+                    matchedRoute.name !== "/[...404]" &&
+                    !(
+                        new URL(req.url).pathname.startsWith(
+                            "/oauth/authorize",
+                        ) && req.method === "GET"
+                    )
+                ) {
+                    return await processRoute(matchedRoute, req, logger);
+                }
+            }
+
+            if (config.frontend.glitch.enabled) {
+                if (!new URL(req.url).pathname.startsWith("/oauth")) {
+                    const glitch = await handleGlitchRequest(req, dualLogger);
+
+                    if (glitch) {
+                        return glitch;
+                    }
+                }
             }
 
             const base_url_with_http = config.http.base_url.replace(
@@ -177,16 +208,12 @@ export const createServer = (
             proxy?.headers.set("Cache-Control", "max-age=31536000");
 
             if (!proxy || proxy.status === 404) {
-                if (config.frontend.glitch.enabled) {
-                    return (
-                        (await handleGlitchRequest(req, dualLogger)) ??
-                        errorResponse("Route not found", 404)
-                    );
-                }
-            } else {
-                return proxy;
+                return errorResponse(
+                    "Route not found on proxy or API route",
+                    404,
+                );
             }
 
-            return errorResponse("Route not found", 404);
+            return proxy;
         },
     });
