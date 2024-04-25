@@ -109,6 +109,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             user_count: userCount,
         },
         thumbnail: config.instance.logo,
+        banner: config.instance.banner,
         title: config.instance.name,
         uri: config.http.base_url,
         urls: {
@@ -186,6 +187,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         },
         contact_account: contactAccount?.toAPI() || undefined,
     } satisfies APIInstance & {
+        banner: string;
         pleroma: object;
     });
 });

@@ -63,6 +63,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         thumbnail: {
             url: config.instance.logo,
         },
+        banner: {
+            url: config.instance.banner,
+        },
         languages: ["en"],
         configuration: {
             urls: {
