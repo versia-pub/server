@@ -114,7 +114,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         urls: {
             streaming_api: "",
         },
-        version: "4.3.0",
+        version: "4.3.0-alpha.3+glitch",
         pleroma: {
             metadata: {
                 account_activation_required: false,

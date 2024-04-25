@@ -52,7 +52,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     return jsonResponse({
         domain: new URL(config.http.base_url).hostname,
         title: config.instance.name,
-        version: "4.3.0",
+        version: "4.3.0-alpha.3+glitch",
         source_url: "https://github.com/lysand-org/lysand",
         description: config.instance.description,
         usage: {
