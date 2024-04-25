@@ -15,7 +15,7 @@ export const meta = applyConfig({
     route: "/api/v1/accounts/:id/following",
     auth: {
         required: false,
-        oauthPermissions: [],
+        oauthPermissions: ["read:accounts"],
     },
 });
 
@@ -36,7 +36,6 @@ export default apiRoute<typeof meta, typeof schema>(
             return errorResponse("Invalid ID, must be of type UUIDv7", 404);
         }
 
-        // TODO: Add pinned
         const { max_id, min_id, since_id, limit } = extraData.parsedRequest;
 
         const otherUser = await User.fromId(id);

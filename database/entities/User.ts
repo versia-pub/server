@@ -380,69 +380,6 @@ export const resolveWebFinger = async (
 };
 
 /**
- * Fetches the list of followers associated with the actor and updates the user's followers
- */
-export const fetchFollowers = () => {
-    //
-};
-
-/**
- * Creates a new LOCAL user.
- * @param data The data for the new user.
- * @returns The newly created user.
- */
-export const createNewLocalUser = async (data: {
-    username: string;
-    display_name?: string;
-    password: string;
-    email: string;
-    bio?: string;
-    avatar?: string;
-    header?: string;
-    admin?: boolean;
-    skipPasswordHash?: boolean;
-}): Promise<User | null> => {
-    const keys = await generateUserKeys();
-
-    const newUser = (
-        await db
-            .insert(Users)
-            .values({
-                username: data.username,
-                displayName: data.display_name ?? data.username,
-                password: data.skipPasswordHash
-                    ? data.password
-                    : await Bun.password.hash(data.password),
-                email: data.email,
-                note: data.bio ?? "",
-                avatar: data.avatar ?? config.defaults.avatar,
-                header: data.header ?? config.defaults.avatar,
-                isAdmin: data.admin ?? false,
-                publicKey: keys.public_key,
-                privateKey: keys.private_key,
-                updatedAt: new Date().toISOString(),
-                source: {
-                    language: null,
-                    note: "",
-                    privacy: "public",
-                    sensitive: false,
-                    fields: [],
-                },
-            })
-            .returning()
-    )[0];
-
-    const finalUser = await User.fromId(newUser.id);
-
-    if (!finalUser) return null;
-
-    // Add to Meilisearch
-    await addUserToMeilisearch(finalUser);
-
-    return finalUser;
-};
-
-/**
  * Parses mentions from a list of URIs
  */
 export const parseMentionsUris = async (
@@ -535,31 +472,6 @@ export const getRelationshipToOtherUser = async (
     }
 
     return foundRelationship;
-};
-
-/**
- * Generates keys for the user.
- */
-export const generateUserKeys = async () => {
-    const keys = await crypto.subtle.generateKey("Ed25519", true, [
-        "sign",
-        "verify",
-    ]);
-
-    const privateKey = Buffer.from(
-        await crypto.subtle.exportKey("pkcs8", keys.privateKey),
-    ).toString("base64");
-
-    const publicKey = Buffer.from(
-        await crypto.subtle.exportKey("spki", keys.publicKey),
-    ).toString("base64");
-
-    // Add header, footer and newlines later on
-    // These keys are base64 encrypted
-    return {
-        private_key: privateKey,
-        public_key: publicKey,
-    };
 };
 
 export const followRequestToLysand = (

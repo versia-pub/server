@@ -13,7 +13,6 @@ import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
 import { getUrl } from "~database/entities/Attachment";
-import { type UserType, createNewLocalUser } from "~database/entities/User";
 import { client, db } from "~drizzle/db";
 import { Emojis, Notes, OpenIdAccounts, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
@@ -129,7 +128,7 @@ const cliBuilder = new CliBuilder([
             }
 
             // Create user
-            const newUser = await createNewLocalUser({
+            const newUser = await User.fromDataLocal({
                 email: email,
                 password: password,
                 username: username,

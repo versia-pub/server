@@ -1,12 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~database/entities/Status";
-import { createNewLocalUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notes, Tokens, Users } from "~drizzle/schema";
 import { server } from "~index";
 import { Note } from "~packages/database-interface/note";
-import type { User } from "~packages/database-interface/user";
+import { User } from "~packages/database-interface/user";
 /**
  * This allows us to send a test request to the server even when it isnt running
  * CURRENTLY NOT WORKING, NEEDS TO BE FIXED
@@ -33,7 +32,7 @@ export const getTestUsers = async (count: number) => {
     for (let i = 0; i < count; i++) {
         const password = randomBytes(32).toString("hex");
 
-        const user = await createNewLocalUser({
+        const user = await User.fromDataLocal({
             username: `test-${randomBytes(32).toString("hex")}`,
             email: `${randomBytes(32).toString("hex")}@test.com`,
             password,

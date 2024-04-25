@@ -4,7 +4,6 @@ import { tempmailDomains } from "@tempmail";
 import { eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { createNewLocalUser } from "~database/entities/User";
 import { Users } from "~drizzle/schema";
 import { User } from "~packages/database-interface/user";
 
@@ -207,7 +206,7 @@ export default apiRoute<typeof meta, typeof schema>(
             );
         }
 
-        await createNewLocalUser({
+        await User.fromDataLocal({
             username: body.username ?? "",
             password: body.password ?? "",
             email: body.email ?? "",
