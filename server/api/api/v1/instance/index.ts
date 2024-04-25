@@ -114,7 +114,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         urls: {
             streaming_api: "",
         },
-        version: `4.3.0+glitch (compatible; Lysand ${version}})`,
+        version: `4.3.0+glitch (compatible; Mastodon ${version}})`,
         pleroma: {
             metadata: {
                 account_activation_required: false,
