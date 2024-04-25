@@ -190,6 +190,7 @@ export const createServer = (
                 headers: {
                     // Include for SSR
                     "X-Forwarded-Host": `${config.http.bind}:${config.http.bind_port}`,
+                    "Accept-Encoding": "identity",
                 },
             }).catch(async (e) => {
                 await logger.logError(

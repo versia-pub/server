@@ -206,6 +206,7 @@ export class User {
                         inbox: data.inbox,
                         outbox: data.outbox,
                     },
+                    fields: data.fields ?? [],
                     updatedAt: new Date(data.created_at).toISOString(),
                     instanceId: instance.id,
                     avatar: data.avatar
@@ -312,6 +313,7 @@ export class User {
                     header: data.header ?? config.defaults.avatar,
                     isAdmin: data.admin ?? false,
                     publicKey: keys.public_key,
+                    fields: [],
                     privateKey: keys.private_key,
                     updatedAt: new Date().toISOString(),
                     source: {
@@ -373,8 +375,10 @@ export class User {
             following_count: user.followingCount,
             statuses_count: user.statusCount,
             emojis: user.emojis.map((emoji) => emojiToAPI(emoji)),
-            // TODO: Add fields
-            fields: [],
+            fields: user.fields.map((field) => ({
+                name: htmlToText(getBestContentType(field.key).content),
+                value: getBestContentType(field.value).content,
+            })),
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
             // TODO: Add static avatar and header
@@ -450,24 +454,7 @@ export class User {
             avatar: urlToContentFormat(this.getAvatarUrl(config)) ?? undefined,
             header: urlToContentFormat(this.getHeaderUrl(config)) ?? undefined,
             display_name: user.displayName,
-            fields: user.source.fields.map((field) => ({
-                key: {
-                    "text/html": {
-                        content: field.name,
-                    },
-                    "text/plain": {
-                        content: htmlToText(field.name),
-                    },
-                },
-                value: {
-                    "text/html": {
-                        content: field.value,
-                    },
-                    "text/plain": {
-                        content: htmlToText(field.value),
-                    },
-                },
-            })),
+            fields: user.fields,
             public_key: {
                 actor: new URL(
                     `/users/${user.id}`,

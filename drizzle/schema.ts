@@ -12,6 +12,7 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import type { Source as APISource } from "~types/mastodon/source";
+import type * as Lysand from "lysand-types";
 
 export const Emojis = pgTable("Emojis", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
@@ -362,6 +363,12 @@ export const Users = pgTable(
         email: text("email"),
         note: text("note").default("").notNull(),
         isAdmin: boolean("is_admin").default(false).notNull(),
+        fields: jsonb("fields").notNull().default("[]").$type<
+            {
+                key: Lysand.ContentFormat;
+                value: Lysand.ContentFormat;
+            }[]
+        >(),
         endpoints: jsonb("endpoints").$type<Partial<{
             dislikes: string;
             featured: string;

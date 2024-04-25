@@ -1,0 +1,1 @@
+ALTER TABLE "Users" ADD COLUMN "fields" jsonb DEFAULT '[]' NOT NULL;

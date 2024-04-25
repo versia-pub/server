@@ -9,7 +9,7 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
-import { parseEmojis } from "~database/entities/Emoji";
+import { parseEmojis, type EmojiWithInstance } from "~database/entities/Emoji";
 import { contentToHtml } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { EmojiToUser, Users } from "~drizzle/schema";
@@ -40,12 +40,25 @@ export const schema = z.object({
     locked: z.boolean().optional(),
     bot: z.boolean().optional(),
     discoverable: z.boolean().optional(),
-    "source[privacy]": z
-        .enum(["public", "unlisted", "private", "direct"])
+    source: z
+        .object({
+            privacy: z
+                .enum(["public", "unlisted", "private", "direct"])
+                .optional(),
+            sensitive: z.boolean().optional(),
+            language: z
+                .enum(ISO6391.getAllCodes() as [string, ...string[]])
+                .optional(),
+        })
         .optional(),
-    "source[sensitive]": z.boolean().optional(),
-    "source[language]": z
-        .enum(ISO6391.getAllCodes() as [string, ...string[]])
+    fields_attributes: z
+        .array(
+            z.object({
+                name: z.string().max(config.validation.max_field_name_size),
+                value: z.string().max(config.validation.max_field_value_size),
+            }),
+        )
+        .max(config.validation.max_field_count)
         .optional(),
 });
 
@@ -66,9 +79,8 @@ export default apiRoute<typeof meta, typeof schema>(
             locked,
             bot,
             discoverable,
-            "source[privacy]": source_privacy,
-            "source[sensitive]": source_sensitive,
-            "source[language]": source_language,
+            source,
+            fields_attributes,
         } = extraData.parsedRequest;
 
         const sanitizedNote = await sanitizeHtml(note ?? "");
@@ -133,16 +145,16 @@ export default apiRoute<typeof meta, typeof schema>(
             });
         }
 
-        if (source_privacy && self.source) {
-            self.source.privacy = source_privacy;
+        if (source?.privacy) {
+            self.source.privacy = source.privacy;
         }
 
-        if (source_sensitive && self.source) {
-            self.source.sensitive = source_sensitive;
+        if (source?.sensitive) {
+            self.source.sensitive = source.sensitive;
         }
 
-        if (source_language && self.source) {
-            self.source.language = source_language;
+        if (source?.language) {
+            self.source.language = source.language;
         }
 
         if (avatar) {
@@ -185,11 +197,57 @@ export default apiRoute<typeof meta, typeof schema>(
             self.isDiscoverable = discoverable;
         }
 
+        const fieldEmojis: EmojiWithInstance[] = [];
+
+        if (fields_attributes) {
+            self.fields = [];
+            self.source.fields = [];
+            for (const field of fields_attributes) {
+                // Can be Markdown or plaintext, also has emojis
+                const parsedName = await contentToHtml({
+                    "text/markdown": {
+                        content: field.name,
+                    },
+                });
+
+                const parsedValue = await contentToHtml({
+                    "text/markdown": {
+                        content: field.value,
+                    },
+                });
+
+                // Parse emojis
+                const nameEmojis = await parseEmojis(parsedName);
+                const valueEmojis = await parseEmojis(parsedValue);
+
+                fieldEmojis.push(...nameEmojis, ...valueEmojis);
+
+                // Replace fields
+                self.fields.push({
+                    key: {
+                        "text/html": {
+                            content: parsedName,
+                        },
+                    },
+                    value: {
+                        "text/html": {
+                            content: parsedValue,
+                        },
+                    },
+                });
+
+                self.source.fields.push({
+                    name: field.name,
+                    value: field.value,
+                });
+            }
+        }
+
         // Parse emojis
         const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
         const noteEmojis = await parseEmojis(sanitizedNote);
 
-        self.emojis = [...displaynameEmojis, ...noteEmojis];
+        self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis];
 
         // Deduplicate emojis
         self.emojis = self.emojis.filter(
@@ -204,6 +262,7 @@ export default apiRoute<typeof meta, typeof schema>(
                 note: self.note,
                 avatar: self.avatar,
                 header: self.header,
+                fields: self.fields,
                 isLocked: self.isLocked,
                 isBot: self.isBot,
                 isDiscoverable: self.isDiscoverable,
