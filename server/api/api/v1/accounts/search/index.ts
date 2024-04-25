@@ -16,6 +16,7 @@ import { z } from "zod";
 import { resolveWebFinger } from "~database/entities/User";
 import { Users } from "~drizzle/schema";
 import { User } from "~packages/database-interface/user";
+import stringComparison from "string-comparison";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -100,6 +101,17 @@ export default apiRoute<typeof meta, typeof schema>(
             );
         }
 
-        return jsonResponse(accounts.map((acct) => acct.toAPI()));
+        // Sort accounts by closest match
+        // Returns array of numbers (indexes of accounts array)
+        const indexOfCorrectSort = stringComparison.jaccardIndex
+            .sortMatch(
+                q,
+                accounts.map((acct) => acct.getAcct()),
+            )
+            .map((sort) => sort.index);
+
+        const result = indexOfCorrectSort.map((index) => accounts[index]);
+
+        return jsonResponse(result.map((acct) => acct.toAPI()));
     },
 );
