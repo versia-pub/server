@@ -1,12 +1,14 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, response } from "@response";
+import { eq } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { stringify } from "qs";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
+import { Users } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
+import { User } from "~packages/database-interface/user";
 import { RequestParser } from "~packages/request-parser";
 
 export const meta = applyConfig({
@@ -77,11 +79,12 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         );
 
     // Find user
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.email, email),
-    });
+    const user = await User.fromSql(eq(Users.email, email));
 
-    if (!user || !(await Bun.password.verify(password, user.password || "")))
+    if (
+        !user ||
+        !(await Bun.password.verify(password, user.getUser().password || ""))
+    )
         return returnError(
             extraData.parsedRequest,
             "invalid_request",

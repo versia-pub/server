@@ -4,10 +4,10 @@ import type {
     findManyNotifications,
 } from "~database/entities/Notification";
 import type { Status, findManyNotes } from "~database/entities/Status";
-import type { User, findManyUsers } from "~database/entities/User";
+import type { UserType, findManyUsers } from "~database/entities/User";
 import type { db } from "~drizzle/db";
 
-export async function fetchTimeline<T extends User | Status | Notification>(
+export async function fetchTimeline<T extends UserType | Status | Notification>(
     model:
         | typeof findManyNotes
         | typeof findManyUsers

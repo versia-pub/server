@@ -1,8 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { z } from "zod";
-import { findFirstUser, getAvatarUrl } from "~database/entities/User";
+import { eq } from "drizzle-orm";
 import { lookup } from "mime-types";
+import { z } from "zod";
+import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -44,20 +46,18 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const isUuid = requestedUser.split("@")[0].match(idValidator);
 
-        const user = await findFirstUser({
-            where: (user, { eq }) =>
-                eq(
-                    isUuid ? user.id : user.username,
-                    requestedUser.split("@")[0],
-                ),
-        });
+        const user = await User.fromSql(
+            eq(isUuid ? Users.id : Users.username, requestedUser.split("@")[0]),
+        );
 
         if (!user) {
             return errorResponse("User not found", 404);
         }
 
         return jsonResponse({
-            subject: `acct:${isUuid ? user.id : user.username}@${host}`,
+            subject: `acct:${
+                isUuid ? user.id : user.getUser().username
+            }@${host}`,
 
             links: [
                 {
@@ -70,8 +70,8 @@ export default apiRoute<typeof meta, typeof schema>(
                 },
                 {
                     rel: "avatar",
-                    type: lookup(getAvatarUrl(user, config)),
-                    href: getAvatarUrl(user, config),
+                    type: lookup(user.getAvatarUrl(config)),
+                    href: user.getAvatarUrl(config),
                 },
             ],
         });

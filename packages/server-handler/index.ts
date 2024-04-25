@@ -7,11 +7,8 @@ import { RequestParser } from "request-parser";
 import type { ZodType, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import type { Application } from "~database/entities/Application";
-import {
-    type AuthData,
-    type UserWithRelations,
-    getFromRequest,
-} from "~database/entities/User";
+import { type AuthData, getFromRequest } from "~database/entities/User";
+import type { User } from "~packages/database-interface/user";
 
 type MaybePromise<T> = T | Promise<T>;
 type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
@@ -24,11 +21,11 @@ export type RouteHandler<
     matchedRoute: MatchedRoute,
     extraData: {
         auth: {
-            // If the route doesn't require authentication, set the type to UserWithRelations | null
-            // Otherwise set to UserWithRelations
+            // If the route doesn't require authentication, set the type to User | null
+            // Otherwise set to User
             user: RouteMeta["auth"]["required"] extends true
-                ? UserWithRelations
-                : UserWithRelations | null;
+                ? User
+                : User | null;
             token: RouteMeta["auth"]["required"] extends true
                 ? string
                 : string | null;

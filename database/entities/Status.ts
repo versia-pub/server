@@ -1,3 +1,4 @@
+import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { dualLogger } from "@loggers";
 import { sanitizeHtml } from "@sanitization";
 import { config } from "config-manager";
@@ -10,7 +11,6 @@ import {
     or,
     sql,
 } from "drizzle-orm";
-import { htmlToText } from "html-to-text";
 import linkifyHtml from "linkify-html";
 import type * as Lysand from "lysand-types";
 import {
@@ -24,46 +24,30 @@ import {
     maybe,
     oneOrMore,
 } from "magic-regexp";
+import MarkdownIt from "markdown-it";
+import markdownItAnchor from "markdown-it-anchor";
+import markdownItContainer from "markdown-it-container";
+import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { db } from "~drizzle/db";
-import {
-    Attachments,
-    EmojiToNote,
-    Instances,
-    NoteToMentions,
-    Notes,
-    Notifications,
-    Users,
-} from "~drizzle/schema";
+import { type Attachments, Instances, Notes, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
+import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
 import type { Status as APIStatus } from "~types/mastodon/status";
 import type { Application } from "./Application";
-import { attachmentFromLysand, attachmentToLysand } from "./Attachment";
-import {
-    type EmojiWithInstance,
-    emojiToLysand,
-    fetchEmoji,
-    parseEmojis,
-} from "./Emoji";
+import { attachmentFromLysand } from "./Attachment";
+import { type EmojiWithInstance, fetchEmoji } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
 import type { Like } from "./Like";
 import {
-    type User,
+    type UserType,
     type UserWithInstance,
     type UserWithRelations,
-    findManyUsers,
-    getUserUri,
-    resolveUser,
     resolveWebFinger,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
 } from "./User";
-import MarkdownIt from "markdown-it";
-import markdownItTocDoneRight from "markdown-it-toc-done-right";
-import markdownItContainer from "markdown-it-container";
-import markdownItAnchor from "markdown-it-anchor";
-import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 
 export type Status = InferSelectModel<typeof Notes>;
 
@@ -362,7 +346,7 @@ export const resolveNote = async (
         throw new Error("Invalid object author");
     }
 
-    const author = await resolveUser(note.author);
+    const author = await User.resolve(note.author);
 
     if (!author) {
         throw new Error("Invalid object author");
@@ -415,10 +399,8 @@ export const resolveNote = async (
         note.uri,
         await Promise.all(
             (note.mentions ?? [])
-                .map((mention) => resolveUser(mention))
-                .filter(
-                    (mention) => mention !== null,
-                ) as Promise<UserWithRelations>[],
+                .map((mention) => User.resolve(mention))
+                .filter((mention) => mention !== null) as Promise<User>[],
         ),
         attachments.map((a) => a.id),
         note.replies_to
@@ -454,9 +436,7 @@ export const createMentionRegExp = () =>
  * @param text The text to parse mentions from.
  * @returns An array of users mentioned in the text.
  */
-export const parseTextMentions = async (
-    text: string,
-): Promise<UserWithRelations[]> => {
+export const parseTextMentions = async (text: string): Promise<User[]> => {
     const mentionedPeople = [...text.matchAll(createMentionRegExp())] ?? [];
     if (mentionedPeople.length === 0) return [];
 
@@ -497,13 +477,12 @@ export const parseTextMentions = async (
 
     const finalList =
         foundUsers.length > 0
-            ? await findManyUsers({
-                  where: (user, { inArray }) =>
-                      inArray(
-                          user.id,
-                          foundUsers.map((u) => u.id),
-                      ),
-              })
+            ? await User.manyFromSql(
+                  inArray(
+                      Users.id,
+                      foundUsers.map((u) => u.id),
+                  ),
+              )
             : [];
 
     // Attempt to resolve mentions that were not found
@@ -521,49 +500,47 @@ export const parseTextMentions = async (
     return finalList;
 };
 
-export const replaceTextMentions = async (
-    text: string,
-    mentions: UserWithRelations[],
-) => {
+export const replaceTextMentions = async (text: string, mentions: User[]) => {
     let finalText = text;
     for (const mention of mentions) {
+        const user = mention.getUser();
         // Replace @username and @username@domain
-        if (mention.instance) {
+        if (user.instance) {
             finalText = finalText.replace(
                 createRegExp(
-                    exactly(`@${mention.username}@${mention.instance.baseUrl}`),
+                    exactly(`@${user.username}@${user.instance.baseUrl}`),
                     [global],
                 ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
-                    mention,
-                )}">@${mention.username}@${mention.instance.baseUrl}</a>`,
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
+                    user.username
+                }@${user.instance.baseUrl}</a>`,
             );
         } else {
             finalText = finalText.replace(
                 // Only replace @username if it doesn't have another @ right after
                 createRegExp(
-                    exactly(`@${mention.username}`)
+                    exactly(`@${user.username}`)
                         .notBefore(anyOf(letter, digit, charIn("@")))
                         .notAfter(anyOf(letter, digit, charIn("@"))),
                     [global],
                 ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
-                    mention,
-                )}">@${mention.username}</a>`,
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
+                    user.username
+                }</a>`,
             );
 
             finalText = finalText.replace(
                 createRegExp(
                     exactly(
-                        `@${mention.username}@${
+                        `@${user.username}@${
                             new URL(config.http.base_url).host
                         }`,
                     ),
                     [global],
                 ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${getUserUri(
-                    mention,
-                )}">@${mention.username}</a>`,
+                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
+                    user.username
+                }</a>`,
             );
         }
     }
@@ -573,7 +550,7 @@ export const replaceTextMentions = async (
 
 export const contentToHtml = async (
     content: Lysand.ContentFormat,
-    mentions: UserWithRelations[] = [],
+    mentions: User[] = [],
 ): Promise<string> => {
     let htmlContent: string;
 
@@ -663,152 +640,17 @@ export const federateNote = async (note: Note) => {
             dualLogger.log(
                 LogLevel.ERROR,
                 "Federation.Status",
-                `Failed to federate status ${note.getStatus().id} to ${
-                    user.uri
-                }`,
+                `Failed to federate status ${
+                    note.getStatus().id
+                } to ${user.getUri()}`,
             );
         }
     }
 };
 
-export const editStatus = async (
-    statusToEdit: StatusWithRelations,
-    data: {
-        content: string;
-        visibility?: APIStatus["visibility"];
-        sensitive: boolean;
-        spoiler_text: string;
-        emojis?: EmojiWithInstance[];
-        content_type?: string;
-        uri?: string;
-        mentions?: User[];
-        media_attachments?: string[];
-    },
-): Promise<Note | null> => {
-    const mentions = await parseTextMentions(data.content);
-
-    // Parse emojis
-    const emojis = await parseEmojis(data.content);
-
-    // Fuse and deduplicate emojis
-    data.emojis = data.emojis
-        ? [...data.emojis, ...emojis].filter(
-              (emoji, index, self) =>
-                  index === self.findIndex((t) => t.id === emoji.id),
-          )
-        : emojis;
-
-    const htmlContent = await contentToHtml({
-        [data.content_type ?? "text/plain"]: {
-            content: data.content,
-        },
-    });
-
-    const note = await Note.fromId(statusToEdit.id);
-
-    if (!note) {
-        return null;
-    }
-
-    const updated = await note.update({
-        content: htmlContent,
-        contentSource: data.content,
-        contentType: data.content_type,
-        visibility: data.visibility,
-        sensitive: data.sensitive,
-        spoilerText: data.spoiler_text,
-    });
-
-    // Connect emojis
-    for (const emoji of data.emojis) {
-        await db
-            .insert(EmojiToNote)
-            .values({
-                emojiId: emoji.id,
-                noteId: updated.id,
-            })
-            .execute();
-    }
-
-    // Connect mentions
-    for (const mention of mentions) {
-        await db
-            .insert(NoteToMentions)
-            .values({
-                noteId: updated.id,
-                userId: mention.id,
-            })
-            .execute();
-    }
-
-    // Send notifications for mentioned local users
-    for (const mention of mentions ?? []) {
-        if (mention.instanceId === null) {
-            await db.insert(Notifications).values({
-                accountId: statusToEdit.authorId,
-                notifiedId: mention.id,
-                type: "mention",
-                noteId: updated.id,
-            });
-        }
-    }
-
-    // Set attachment parents
-    await db
-        .update(Attachments)
-        .set({
-            noteId: updated.id,
-        })
-        .where(inArray(Attachments.id, data.media_attachments ?? []));
-
-    return await Note.fromId(updated.id);
-};
-
-export const isFavouritedBy = async (status: Status, user: User) => {
+export const isFavouritedBy = async (status: Status, user: UserType) => {
     return !!(await db.query.Likes.findFirst({
         where: (like, { and, eq }) =>
             and(eq(like.likerId, user.id), eq(like.likedId, status.id)),
     }));
-};
-
-export const getStatusUri = (status?: Status | null) => {
-    if (!status) return undefined;
-
-    return (
-        status.uri ||
-        new URL(`/objects/${status.id}`, config.http.base_url).toString()
-    );
-};
-
-export const statusToLysand = (status: StatusWithRelations): Lysand.Note => {
-    return {
-        type: "Note",
-        created_at: new Date(status.createdAt).toISOString(),
-        id: status.id,
-        author: getUserUri(status.author),
-        uri: getStatusUri(status) ?? "",
-        content: {
-            "text/html": {
-                content: status.content,
-            },
-            "text/plain": {
-                content: htmlToText(status.content),
-            },
-        },
-        attachments: (status.attachments ?? []).map((attachment) =>
-            attachmentToLysand(attachment),
-        ),
-        is_sensitive: status.sensitive,
-        mentions: status.mentions.map((mention) => mention.uri || ""),
-        quotes: getStatusUri(status.quote) ?? undefined,
-        replies_to: getStatusUri(status.reply) ?? undefined,
-        subject: status.spoilerText,
-        visibility: status.visibility as Lysand.Visibility,
-        extensions: {
-            "org.lysand:custom_emojis": {
-                emojis: status.emojis.map((emoji) => emojiToLysand(emoji)),
-            },
-            // TODO: Add polls and reactions
-        },
-    };
 };

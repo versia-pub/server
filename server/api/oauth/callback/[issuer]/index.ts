@@ -14,9 +14,9 @@ import {
     validateAuthResponse,
 } from "oauth4webapi";
 import { TokenType } from "~database/entities/Token";
-import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Tokens } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -154,9 +154,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         return redirectToLogin("No user found with that account");
     }
 
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, userId),
-    });
+    const user = await User.fromId(userId);
 
     if (!user) {
         return redirectToLogin("No user found with that account");

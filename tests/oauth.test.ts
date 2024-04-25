@@ -61,7 +61,7 @@ describe("POST /api/auth/login/", () => {
     test("should get a JWT", async () => {
         const formData = new FormData();
 
-        formData.append("email", users[0]?.email ?? "");
+        formData.append("email", users[0]?.getUser().email ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(

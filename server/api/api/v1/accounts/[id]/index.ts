@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { findFirstUser, userToAPI } from "~database/entities/User";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -26,11 +26,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { user } = extraData.auth;
 
-    const foundUser = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, id),
-    }).catch(() => null);
+    const foundUser = await User.fromId(id);
 
     if (!foundUser) return errorResponse("User not found", 404);
 
-    return jsonResponse(userToAPI(foundUser, user?.id === foundUser.id));
+    return jsonResponse(foundUser.toAPI(user?.id === foundUser.id));
 });

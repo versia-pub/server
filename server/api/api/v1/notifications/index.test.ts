@@ -58,7 +58,7 @@ beforeAll(async () => {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            status: `@${users[0].username} test mention`,
+            status: `@${users[0].getUser().username} test mention`,
             visibility: "direct",
             federate: false,
         }),

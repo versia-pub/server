@@ -2,6 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import type { Notifications } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
+import { User } from "~packages/database-interface/user";
 import type { Notification as APINotification } from "~types/mastodon/notification";
 import type { StatusWithRelations } from "./Status";
 import {
@@ -9,7 +10,6 @@ import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
-    userToAPI,
 } from "./User";
 
 export type Notification = InferSelectModel<typeof Notifications>;
@@ -50,15 +50,14 @@ export const findManyNotifications = async (
 export const notificationToAPI = async (
     notification: NotificationWithRelations,
 ): Promise<APINotification> => {
+    const account = new User(notification.account);
     return {
-        account: userToAPI(notification.account),
+        account: account.toAPI(),
         created_at: new Date(notification.createdAt).toISOString(),
         id: notification.id,
         type: notification.type,
         status: notification.status
-            ? await Note.fromStatus(notification.status).toAPI(
-                  notification.account,
-              )
+            ? await Note.fromStatus(notification.status).toAPI(account)
             : undefined,
     };
 };

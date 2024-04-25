@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
 import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";

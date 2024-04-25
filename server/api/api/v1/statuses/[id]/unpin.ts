@@ -36,7 +36,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (status.getAuthor().id !== user.id)
         return errorResponse("Unauthorized", 401);
 
-    await status.unpin(user);
+    await user.unpin(status);
 
     if (!status) return errorResponse("Record not found", 404);
 

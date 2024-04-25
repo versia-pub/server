@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { and, countDistinct, eq, gte, isNull } from "drizzle-orm";
-import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notes, Users } from "~drizzle/schema";
 import manifest from "~package.json";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -23,11 +23,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     // Get software version from package.json
     const version = manifest.version;
-    const contactAccount = await findFirstUser({
-        where: (user, { isNull, eq, and }) =>
-            and(isNull(user.instanceId), eq(user.isAdmin, true)),
-        orderBy: (user, { asc }) => asc(user.id),
-    });
+
+    const contactAccount = await User.fromSql(
+        and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
+    );
 
     const monthlyActiveUsers = (
         await db
@@ -104,8 +103,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             url: null,
         },
         contact: {
-            email: contactAccount?.email || null,
-            account: contactAccount ? userToAPI(contactAccount) : null,
+            email: contactAccount?.getUser().email || null,
+            account: contactAccount?.toAPI() || null,
         },
         rules: config.signups.rules.map((rule, index) => ({
             id: String(index),

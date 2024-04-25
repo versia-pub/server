@@ -1,9 +1,9 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
-import { userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],
@@ -27,10 +27,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     await db.update(Users).set({ avatar: "" }).where(eq(Users.id, self.id));
 
-    return jsonResponse(
-        userToAPI({
-            ...self,
-            avatar: "",
-        }),
-    );
+    return jsonResponse({
+        ...(await User.fromId(self.id))?.toAPI(),
+        avatar: "",
+    });
 });

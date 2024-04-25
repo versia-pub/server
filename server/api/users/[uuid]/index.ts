@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { findFirstUser, userToLysand } from "~database/entities/User";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -17,13 +17,11 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute) => {
     const uuid = matchedRoute.params.uuid;
 
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, uuid),
-    });
+    const user = await User.fromId(uuid);
 
     if (!user) {
         return errorResponse("User not found", 404);
     }
 
-    return jsonResponse(userToLysand(user));
+    return jsonResponse(user.toLysand());
 });

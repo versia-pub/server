@@ -1,13 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
+import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    type UserWithRelations,
-    findFirstUser,
-    findManyUsers,
-    userToAPI,
-} from "~database/entities/User";
+import { Users } from "~drizzle/schema";
+import { Timeline } from "~packages/database-interface/timeline";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -42,32 +39,23 @@ export default apiRoute<typeof meta, typeof schema>(
         // TODO: Add pinned
         const { max_id, min_id, since_id, limit } = extraData.parsedRequest;
 
-        const otherUser = await findFirstUser({
-            where: (user, { eq }) => eq(user.id, id),
-        });
+        const otherUser = await User.fromId(id);
 
         if (!otherUser) return errorResponse("User not found", 404);
 
-        const { objects, link } = await fetchTimeline<UserWithRelations>(
-            findManyUsers,
-            {
-                // @ts-ignore
-                where: (following, { and, lt, gt, gte, eq, sql }) =>
-                    and(
-                        max_id ? lt(following.id, max_id) : undefined,
-                        since_id ? gte(following.id, since_id) : undefined,
-                        min_id ? gt(following.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${following.id} AND "Relationships"."ownerId" = ${otherUser.id} AND "Relationships"."following" = true)`,
-                    ),
-                // @ts-expect-error Yes I KNOW the types are wrong
-                orderBy: (liker, { desc }) => desc(liker.id),
-                limit,
-            },
-            req,
+        const { objects, link } = await Timeline.getUserTimeline(
+            and(
+                max_id ? lt(Users.id, max_id) : undefined,
+                since_id ? gte(Users.id, since_id) : undefined,
+                min_id ? gt(Users.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${otherUser.id} AND "Relationships"."following" = true)`,
+            ),
+            limit,
+            req.url,
         );
 
         return jsonResponse(
-            await Promise.all(objects.map((object) => userToAPI(object))),
+            await Promise.all(objects.map((object) => object.toAPI())),
             200,
             {
                 Link: link,

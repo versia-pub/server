@@ -4,15 +4,11 @@ import { MeiliIndexType, meilisearch } from "@meilisearch";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    findFirstUser,
-    findManyUsers,
-    resolveWebFinger,
-    userToAPI,
-} from "~database/entities/User";
+import { resolveWebFinger } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Instances, Notes, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
+import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
@@ -100,15 +96,11 @@ export default apiRoute<typeof meta, typeof schema>(
                         )
                 )[0]?.id;
 
-                const account = accountId
-                    ? await findFirstUser({
-                          where: (user, { eq }) => eq(user.id, accountId),
-                      })
-                    : null;
+                const account = accountId ? await User.fromId(accountId) : null;
 
                 if (account) {
                     return jsonResponse({
-                        accounts: [userToAPI(account)],
+                        accounts: [account.toAPI()],
                         statuses: [],
                         hashtags: [],
                     });
@@ -129,7 +121,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
                     if (newUser) {
                         return jsonResponse({
-                            accounts: [userToAPI(newUser)],
+                            accounts: [newUser.toAPI()],
                             statuses: [],
                             hashtags: [],
                         });
@@ -160,23 +152,21 @@ export default apiRoute<typeof meta, typeof schema>(
             ).hits;
         }
 
-        const accounts = await findManyUsers({
-            where: (user, { and, eq, inArray }) =>
-                and(
-                    inArray(
-                        user.id,
-                        accountResults.map((hit) => hit.id),
-                    ),
-                    self
-                        ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
-                              self?.id
-                          } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
-                              user.id
-                          })`
-                        : undefined,
+        const accounts = await User.manyFromSql(
+            and(
+                inArray(
+                    Users.id,
+                    accountResults.map((hit) => hit.id),
                 ),
-            orderBy: (user, { desc }) => desc(user.createdAt),
-        });
+                self
+                    ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
+                          self?.id
+                      } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
+                          Users.id
+                      })`
+                    : undefined,
+            ),
+        );
 
         const statuses = await Note.manyFromSql(
             and(
@@ -196,7 +186,7 @@ export default apiRoute<typeof meta, typeof schema>(
         );
 
         return jsonResponse({
-            accounts: accounts.map((account) => userToAPI(account)),
+            accounts: accounts.map((account) => account.toAPI()),
             statuses: await Promise.all(
                 statuses.map((status) => status.toAPI(self)),
             ),

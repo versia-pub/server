@@ -1,13 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
+import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    type UserWithRelations,
-    findManyUsers,
-    userToAPI,
-} from "~database/entities/User";
+import { Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
+import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -48,28 +45,19 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { max_id, min_id, since_id, limit } = extraData.parsedRequest;
 
-        const { objects, link } = await fetchTimeline<UserWithRelations>(
-            findManyUsers,
-            {
-                // @ts-ignore
-                where: (liker, { and, lt, gt, gte, eq, sql }) =>
-                    and(
-                        max_id ? lt(liker.id, max_id) : undefined,
-                        since_id ? gte(liker.id, since_id) : undefined,
-                        min_id ? gt(liker.id, min_id) : undefined,
-                        sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${
-                            status.getStatus().id
-                        } AND "Likes"."likerId" = ${liker.id})`,
-                    ),
-                // @ts-expect-error Yes I KNOW the types are wrong
-                orderBy: (liker, { desc }) => desc(liker.id),
-                limit,
-            },
-            req,
+        const { objects, link } = await Timeline.getUserTimeline(
+            and(
+                max_id ? lt(Users.id, max_id) : undefined,
+                since_id ? gte(Users.id, since_id) : undefined,
+                min_id ? gt(Users.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${status.id} AND "Likes"."likerId" = ${Users.id})`,
+            ),
+            limit,
+            req.url,
         );
 
         return jsonResponse(
-            objects.map((user) => userToAPI(user)),
+            objects.map((user) => user.toAPI()),
             200,
             {
                 Link: link,

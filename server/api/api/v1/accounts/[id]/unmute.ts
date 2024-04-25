@@ -2,12 +2,10 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
 import { relationshipToAPI } from "~database/entities/Relationship";
-import {
-    findFirstUser,
-    getRelationshipToOtherUser,
-} from "~database/entities/User";
+import { getRelationshipToOtherUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Relationships } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -35,9 +33,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!self) return errorResponse("Unauthorized", 401);
 
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, id),
-    });
+    const user = await User.fromId(id);
 
     if (!user) return errorResponse("User not found", 404);
 

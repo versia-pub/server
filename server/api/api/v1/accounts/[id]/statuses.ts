@@ -2,9 +2,9 @@ import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { findFirstUser } from "~database/entities/User";
 import { Notes } from "~drizzle/schema";
 import { Timeline } from "~packages/database-interface/timeline";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -52,9 +52,7 @@ export default apiRoute<typeof meta, typeof schema>(
             pinned,
         } = extraData.parsedRequest;
 
-        const user = await findFirstUser({
-            where: (user, { eq }) => eq(user.id, id),
-        });
+        const user = await User.fromId(id);
 
         if (!user) return errorResponse("User not found", 404);
 

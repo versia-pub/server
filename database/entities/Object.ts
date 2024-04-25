@@ -14,7 +14,7 @@ export const createFromObject = async (
     object: Lysand.Entity,
     authorUri: string,
 ) => {
-    const foundObject = await db.query.lysandObject.findFirst({
+    const foundObject = await db.query.LysandObjects.findFirst({
         where: (o, { eq }) => eq(o.remoteId, object.id),
         with: {
             author: true,

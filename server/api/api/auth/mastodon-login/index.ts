@@ -2,10 +2,11 @@ import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
-import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
-import { Tokens } from "~drizzle/schema";
+import { Tokens, Users } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
+import { User } from "~packages/database-interface/user";
+import { eq } from "drizzle-orm";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -44,13 +45,14 @@ export default apiRoute<typeof meta, typeof schema>(
                 302,
             );
 
-        const user = await findFirstUser({
-            where: (user, { eq }) => eq(user.email, email),
-        });
+        const user = await User.fromSql(eq(Users.email, email));
 
         if (
             !user ||
-            !(await Bun.password.verify(password, user.password || ""))
+            !(await Bun.password.verify(
+                password,
+                user.getUser().password || "",
+            ))
         )
             return redirectToLogin("Invalid email or password");
 

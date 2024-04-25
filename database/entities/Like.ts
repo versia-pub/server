@@ -3,8 +3,8 @@ import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import { Likes, Notifications } from "~drizzle/schema";
-import type { StatusWithRelations } from "./Status";
-import type { UserWithRelations } from "./User";
+import type { Note } from "~packages/database-interface/note";
+import type { User } from "~packages/database-interface/user";
 
 export type Like = InferSelectModel<typeof Likes>;
 
@@ -27,24 +27,21 @@ export const likeToLysand = (like: Like): Lysand.Like => {
 /**
  * Create a like
  * @param user User liking the status
- * @param status Status being liked
+ * @param note Status being liked
  */
-export const createLike = async (
-    user: UserWithRelations,
-    status: StatusWithRelations,
-) => {
+export const createLike = async (user: User, note: Note) => {
     await db.insert(Likes).values({
-        likedId: status.id,
+        likedId: note.id,
         likerId: user.id,
     });
 
-    if (status.author.instanceId === user.instanceId) {
+    if (note.getAuthor().getUser().instanceId === user.getUser().instanceId) {
         // Notify the user that their post has been favourited
         await db.insert(Notifications).values({
             accountId: user.id,
             type: "favourite",
-            notifiedId: status.authorId,
-            noteId: status.id,
+            notifiedId: note.getAuthor().id,
+            noteId: note.id,
         });
     } else {
         // TODO: Add database jobs for federating this
@@ -54,15 +51,12 @@ export const createLike = async (
 /**
  * Delete a like
  * @param user User deleting their like
- * @param status Status being unliked
+ * @param note Status being unliked
  */
-export const deleteLike = async (
-    user: UserWithRelations,
-    status: StatusWithRelations,
-) => {
+export const deleteLike = async (user: User, note: Note) => {
     await db
         .delete(Likes)
-        .where(and(eq(Likes.likedId, status.id), eq(Likes.likerId, user.id)));
+        .where(and(eq(Likes.likedId, note.id), eq(Likes.likerId, user.id)));
 
     // Notify the user that their post has been favourited
     await db
@@ -71,12 +65,12 @@ export const deleteLike = async (
             and(
                 eq(Notifications.accountId, user.id),
                 eq(Notifications.type, "favourite"),
-                eq(Notifications.notifiedId, status.authorId),
-                eq(Notifications.noteId, status.id),
+                eq(Notifications.notifiedId, note.getAuthor().id),
+                eq(Notifications.noteId, note.id),
             ),
         );
 
-    if (user.instanceId === null && status.author.instanceId !== null) {
+    if (user.isLocal() && note.getAuthor().isRemote()) {
         // User is local, federate the delete
         // TODO: Federate this
     }

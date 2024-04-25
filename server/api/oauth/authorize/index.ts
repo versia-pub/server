@@ -4,10 +4,10 @@ import { response } from "@response";
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
-import { findFirstUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Tokens } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -136,9 +136,7 @@ export default apiRoute<typeof meta, typeof schema>(
         if (!payload.exp) return returnError("invalid_request", "Invalid exp");
 
         // Check if the user is authenticated
-        const user = await findFirstUser({
-            where: (user, { eq }) => eq(user.id, payload.sub ?? ""),
-        });
+        const user = await User.fromId(payload.sub);
 
         if (!user) return returnError("invalid_request", "Invalid sub");
 
@@ -226,17 +224,20 @@ export default apiRoute<typeof meta, typeof schema>(
                 // Include the user's profile information
                 idTokenPayload = {
                     ...idTokenPayload,
-                    name: user.displayName,
-                    preferred_username: user.username,
-                    picture: user.avatar,
-                    updated_at: new Date(user.updatedAt).toISOString(),
+                    name: user.getUser().displayName,
+                    preferred_username: user.getUser().username,
+                    picture: user.getAvatarUrl(config),
+                    updated_at: new Date(
+                        user.getUser().updatedAt,
+                    ).toISOString(),
                 };
             }
             if (scopeIncludesEmail) {
                 // Include the user's email address
                 idTokenPayload = {
                     ...idTokenPayload,
-                    email: user.email,
+                    email: user.getUser().email,
+                    // TODO: Add verification system
                     email_verified: true,
                 };
             }

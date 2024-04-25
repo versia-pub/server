@@ -11,9 +11,9 @@ import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
 import { parseEmojis } from "~database/entities/Emoji";
 import { contentToHtml } from "~database/entities/Status";
-import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { EmojiToUser, Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["PATCH"],
@@ -51,11 +51,12 @@ export const schema = z.object({
 
 export default apiRoute<typeof meta, typeof schema>(
     async (req, matchedRoute, extraData) => {
-        const { user: self } = extraData.auth;
+        const { user } = extraData.auth;
 
-        if (!self) return errorResponse("Unauthorized", 401);
+        if (!user) return errorResponse("Unauthorized", 401);
 
         const config = await extraData.configManager.getConfig();
+        const self = user.getUser();
 
         const {
             display_name,
@@ -231,12 +232,9 @@ export default apiRoute<typeof meta, typeof schema>(
                 .execute();
         }
 
-        const output = await findFirstUser({
-            where: (user, { eq }) => eq(user.id, self.id),
-        });
-
+        const output = await User.fromId(self.id);
         if (!output) return errorResponse("Couldn't edit user", 500);
 
-        return jsonResponse(userToAPI(output));
+        return jsonResponse(output.toAPI());
     },
 );

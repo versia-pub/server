@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { userToAPI } from "~database/entities/User";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -22,7 +21,5 @@ export default apiRoute((req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    return jsonResponse({
-        ...userToAPI(user, true),
-    });
+    return jsonResponse(user.toAPI(true));
 });

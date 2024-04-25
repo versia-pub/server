@@ -13,15 +13,11 @@ import extract from "extract-zip";
 import { MediaBackend } from "media-manager";
 import { lookup } from "mime-types";
 import { getUrl } from "~database/entities/Attachment";
-import {
-    type User,
-    createNewLocalUser,
-    findFirstUser,
-    findManyUsers,
-} from "~database/entities/User";
+import { type UserType, createNewLocalUser } from "~database/entities/User";
 import { client, db } from "~drizzle/db";
 import { Emojis, Notes, OpenIdAccounts, Users } from "~drizzle/schema";
 import { Note } from "~packages/database-interface/note";
+import { User } from "~packages/database-interface/user";
 
 await client.connect();
 const args = process.argv;
@@ -111,13 +107,12 @@ const cliBuilder = new CliBuilder([
             }
 
             // Check if user already exists
-            const user = await findFirstUser({
-                where: (user, { or, eq }) =>
-                    or(eq(user.username, username), eq(user.email, email)),
-            });
+            const user = await User.fromSql(
+                or(eq(Users.username, username), eq(Users.email, email)),
+            );
 
             if (user) {
-                if (user.username === username) {
+                if (user.getUser().username === username) {
                     console.log(
                         `${chalk.red("✗")} User with username ${chalk.blue(
                             username,
@@ -143,7 +138,7 @@ const cliBuilder = new CliBuilder([
 
             console.log(
                 `${chalk.green("✓")} Created user ${chalk.blue(
-                    newUser?.username,
+                    newUser?.getUser().username,
                 )}${admin ? chalk.green(" (admin)") : ""}`,
             );
 
@@ -196,9 +191,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const foundUser = await findFirstUser({
-                where: (user, { eq }) => eq(user.username, username),
-            });
+            const foundUser = await User.fromSql(eq(Users.username, username));
 
             if (!foundUser) {
                 console.log(`${chalk.red("✗")} User not found`);
@@ -208,7 +201,7 @@ const cliBuilder = new CliBuilder([
             if (!args.noconfirm) {
                 process.stdout.write(
                     `Are you sure you want to delete user ${chalk.blue(
-                        foundUser.username,
+                        foundUser.getUser().username,
                     )}?\n${chalk.red(
                         chalk.bold(
                             "This is a destructive action and cannot be undone!",
@@ -229,7 +222,7 @@ const cliBuilder = new CliBuilder([
 
             console.log(
                 `${chalk.green("✓")} Deleted user ${chalk.blue(
-                    foundUser.username,
+                    foundUser.getUser().username,
                 )}`,
             );
 
@@ -312,22 +305,19 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            // @ts-ignore
-            let users: (User & {
-                instance?: {
-                    baseUrl: string;
-                };
-            })[] = await findManyUsers({
-                where: (user, { eq }) =>
-                    admins ? eq(user.isAdmin, true) : undefined,
-                limit: args.limit ?? 200,
-            });
+            let users = (
+                await User.manyFromSql(
+                    admins ? eq(Users.isAdmin, true) : undefined,
+                    undefined,
+                    args.limit ?? 200,
+                )
+            ).map((u) => u.getUser());
 
             // If instance is not in fields, remove them
             if (fields.length > 0 && !fields.includes("instance")) {
                 users = users.map((user) => ({
                     ...user,
-                    instance: undefined,
+                    instance: null,
                 }));
             }
 
@@ -505,14 +495,14 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const users = await findManyUsers({
-                where: (user, { or, eq }) =>
-                    or(
-                        // @ts-expect-error
-                        ...fields.map((field) => eq(user[field], query)),
-                    ),
-                limit: Number(limit),
-            });
+            const users: User["user"][] = (
+                await User.manyFromSql(
+                    // @ts-ignore
+                    or(...fields.map((field) => eq(users[field], query))),
+                    undefined,
+                    Number(limit),
+                )
+            ).map((u) => u.getUser());
 
             if (redact) {
                 for (const user of users) {
@@ -631,9 +621,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const user = await findFirstUser({
-                where: (user, { eq }) => eq(user.username, username),
-            });
+            const user = await User.fromSql(eq(Users.username, username));
 
             if (!user) {
                 console.log(`${chalk.red("✗")} User not found`);
@@ -653,7 +641,7 @@ const cliBuilder = new CliBuilder([
             if (linkedOpenIdAccounts.find((a) => a.issuerId === issuerId)) {
                 console.log(
                     `${chalk.red("✗")} User ${chalk.blue(
-                        user.username,
+                        user.getUser().username,
                     )} is already connected to this OpenID Connect issuer with another account`,
                 );
                 return 1;
@@ -670,7 +658,7 @@ const cliBuilder = new CliBuilder([
                 `${chalk.green(
                     "✓",
                 )} Connected OpenID Connect account to user ${chalk.blue(
-                    user.username,
+                    user.getUser().username,
                 )}`,
             );
 
@@ -732,9 +720,7 @@ const cliBuilder = new CliBuilder([
                 return 1;
             }
 
-            const user = await findFirstUser({
-                where: (user, { eq }) => eq(user.id, account.userId ?? ""),
-            });
+            const user = await User.fromId(account.userId);
 
             await db
                 .delete(OpenIdAccounts)
@@ -744,7 +730,7 @@ const cliBuilder = new CliBuilder([
                 `${chalk.green(
                     "✓",
                 )} Disconnected OpenID account from user ${chalk.blue(
-                    user?.username,
+                    user?.getUser().username,
                 )}`,
             );
 

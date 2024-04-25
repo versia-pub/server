@@ -29,17 +29,17 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const foundStatus = await Note.fromId(id);
+    const note = await Note.fromId(id);
 
     // Check if user is authorized to view this status (if it's private)
-    if (!foundStatus?.isViewableByUser(user))
+    if (!note?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
-    await deleteLike(user, foundStatus.getStatus());
+    await deleteLike(user, note);
 
     return jsonResponse({
-        ...(await foundStatus.toAPI(user)),
+        ...(await note.toAPI(user)),
         favourited: false,
-        favourites_count: foundStatus.getStatus().likeCount - 1,
+        favourites_count: note.getStatus().likeCount - 1,
     } as APIStatus);
 });

@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { sql } from "drizzle-orm";
+import { eq, like, not, or, sql } from "drizzle-orm";
 import {
     anyOf,
     charIn,
@@ -13,13 +13,9 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import {
-    type UserWithRelations,
-    findManyUsers,
-    resolveWebFinger,
-    userToAPI,
-} from "~database/entities/User";
+import { resolveWebFinger } from "~database/entities/User";
 import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -78,7 +74,7 @@ export default apiRoute<typeof meta, typeof schema>(
         // Remove any leading @
         const [username, host] = q.replace(/^@/, "").split("@");
 
-        const accounts: UserWithRelations[] = [];
+        const accounts: User[] = [];
 
         if (resolve && username && host) {
             const resolvedUser = await resolveWebFinger(username, host);
@@ -88,21 +84,22 @@ export default apiRoute<typeof meta, typeof schema>(
             }
         } else {
             accounts.push(
-                ...(await findManyUsers({
-                    where: (account, { or, like }) =>
-                        or(
-                            like(account.displayName, `%${q}%`),
-                            like(account.username, `%${q}%`),
-                            following
-                                ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${account.id} AND "Relationships"."following" = true)`
-                                : undefined,
-                        ),
-                    offset,
+                ...(await User.manyFromSql(
+                    or(
+                        like(Users.displayName, `%${q}%`),
+                        like(Users.username, `%${q}%`),
+                        following && self
+                            ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${self.id} AND "Relationships"."following" = true)`
+                            : undefined,
+                        self ? not(eq(Users.id, self.id)) : undefined,
+                    ),
+                    undefined,
                     limit,
-                })),
+                    offset,
+                )),
             );
         }
 
-        return jsonResponse(accounts.map((acct) => userToAPI(acct)));
+        return jsonResponse(accounts.map((acct) => acct.toAPI()));
     },
 );

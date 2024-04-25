@@ -1,8 +1,10 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import { findManyUsers, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
+import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -67,18 +69,13 @@ export default apiRoute<typeof meta, typeof schema>(
             return jsonResponse([]);
         }
 
-        const finalUsers = await findManyUsers({
-            where: (user, { inArray }) =>
-                inArray(
-                    user.id,
-                    relevantRelationships.map((r) => r.subjectId),
-                ),
-        });
+        const finalUsers = await User.manyFromSql(
+            inArray(
+                Users.id,
+                relevantRelationships.map((r) => r.subjectId),
+            ),
+        );
 
-        if (finalUsers.length === 0) {
-            return jsonResponse([]);
-        }
-
-        return jsonResponse(finalUsers.map((o) => userToAPI(o)));
+        return jsonResponse(finalUsers.map((o) => o.toAPI()));
     },
 );

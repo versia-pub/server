@@ -30,27 +30,27 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     if (!user) return errorResponse("Unauthorized", 401);
 
-    const status = await Note.fromId(id);
+    const note = await Note.fromId(id);
 
     // Check if user is authorized to view this status (if it's private)
-    if (!status?.isViewableByUser(user))
+    if (!note?.isViewableByUser(user))
         return errorResponse("Record not found", 404);
 
     const existingLike = await db.query.Likes.findFirst({
         where: (like, { and, eq }) =>
             and(
-                eq(like.likedId, status.getStatus().id),
+                eq(like.likedId, note.getStatus().id),
                 eq(like.likerId, user.id),
             ),
     });
 
     if (!existingLike) {
-        await createLike(user, status.getStatus());
+        await createLike(user, note);
     }
 
     return jsonResponse({
-        ...(await status.toAPI(user)),
+        ...(await note.toAPI(user)),
         favourited: true,
-        favourites_count: status.getStatus().likeCount + 1,
+        favourites_count: note.getStatus().likeCount + 1,
     } as APIStatus);
 });

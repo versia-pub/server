@@ -1,18 +1,19 @@
 import { apiRoute, applyConfig } from "@api";
 import { dualLogger } from "@loggers";
-import { errorResponse, response } from "@response";
+import { errorResponse, jsonResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
+import { isValidationError } from "zod-validation-error";
 import { resolveNote } from "~database/entities/Status";
 import {
-    findFirstUser,
     getRelationshipToOtherUser,
-    resolveUser,
     sendFollowAccept,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notifications, Relationships } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
+import { EntityValidator, SignatureValidator } from "~packages/lysand-utils";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -29,227 +30,215 @@ export const meta = applyConfig({
 export default apiRoute(async (req, matchedRoute, extraData) => {
     const uuid = matchedRoute.params.uuid;
 
-    const user = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, uuid),
-    });
+    const user = await User.fromId(uuid);
 
     if (!user) {
         return errorResponse("User not found", 404);
     }
 
-    // Process incoming request
-    const body = extraData.parsedRequest as Lysand.Entity;
-
     // Verify request signature
     // TODO: Check if instance is defederated
+    // TODO: Reverse DNS lookup with Origin header
     // biome-ignore lint/correctness/noConstantCondition: Temporary
     if (true) {
-        // request is a Request object containing the previous request
+        const Signature = req.headers.get("Signature");
+        const DateHeader = req.headers.get("Date");
 
-        const signatureHeader = req.headers.get("Signature");
-        const origin = req.headers.get("Origin");
-        const date = req.headers.get("Date");
-
-        if (!signatureHeader) {
+        if (!Signature) {
             return errorResponse("Missing Signature header", 400);
         }
 
-        if (!origin) {
-            return errorResponse("Missing Origin header", 400);
-        }
-
-        if (!date) {
+        if (!DateHeader) {
             return errorResponse("Missing Date header", 400);
         }
 
-        const signature = signatureHeader
-            .split("signature=")[1]
-            .replace(/"/g, "");
-
-        const digest = await crypto.subtle.digest(
-            "SHA-256",
-            new TextEncoder().encode(JSON.stringify(body)),
-        );
-
-        const keyId = signatureHeader
-            .split("keyId=")[1]
+        const keyId = Signature.split("keyId=")[1]
             .split(",")[0]
             .replace(/"/g, "");
 
-        console.log(`Resolving keyId ${keyId}`);
-
-        const sender = await resolveUser(keyId);
+        const sender = await User.resolve(keyId);
 
         if (!sender) {
-            return errorResponse("Invalid keyId", 400);
+            return errorResponse("Could not resolve keyId", 400);
         }
 
-        const public_key = await crypto.subtle.importKey(
-            "spki",
-            Buffer.from(sender.publicKey, "base64"),
-            "Ed25519",
-            false,
-            ["verify"],
+        const validator = await SignatureValidator.fromStringKey(
+            sender.getUser().publicKey,
+            Signature,
+            DateHeader,
+            req.method,
+            new URL(req.url),
+            await req.text(),
         );
 
-        const expectedSignedString =
-            `(request-target): ${req.method.toLowerCase()} ${
-                new URL(req.url).pathname
-            }\n` +
-            `host: ${new URL(req.url).host}\n` +
-            `date: ${date}\n` +
-            `digest: SHA-256=${btoa(
-                String.fromCharCode(...new Uint8Array(digest)),
-            )}\n`;
-
-        // Check if signed string is valid
-        const isValid = await crypto.subtle.verify(
-            "Ed25519",
-            public_key,
-            Uint8Array.from(atob(signature), (c) => c.charCodeAt(0)),
-            new TextEncoder().encode(expectedSignedString),
-        );
+        const isValid = await validator.validate();
 
         if (!isValid) {
             return errorResponse("Invalid signature", 400);
         }
     }
 
-    // Add sent data to database
-    switch (body.type) {
-        case "Note": {
-            const note = body as Lysand.Note;
+    const validator = new EntityValidator(
+        extraData.parsedRequest as Lysand.Entity,
+    );
 
-            const account = await resolveUser(note.author);
+    try {
+        // Add sent data to database
+        switch (validator.getType()) {
+            case "Note": {
+                const note = await validator.validate<Lysand.Note>();
 
-            if (!account) {
-                return errorResponse("Author not found", 400);
-            }
+                const account = await User.resolve(note.author);
 
-            const newStatus = await resolveNote(undefined, note).catch((e) => {
-                dualLogger.logError(
-                    LogLevel.ERROR,
-                    "Inbox.NoteResolve",
-                    e as Error,
+                if (!account) {
+                    return errorResponse("Author not found", 404);
+                }
+
+                const newStatus = await resolveNote(undefined, note).catch(
+                    (e) => {
+                        dualLogger.logError(
+                            LogLevel.ERROR,
+                            "Inbox.NoteResolve",
+                            e as Error,
+                        );
+                        return null;
+                    },
                 );
-                return null;
-            });
 
-            if (!newStatus) {
-                return errorResponse("Failed to add status", 500);
+                if (!newStatus) {
+                    return errorResponse("Failed to add status", 500);
+                }
+
+                return response("Note created", 201);
             }
+            case "Follow": {
+                const follow = await validator.validate<Lysand.Follow>();
 
-            return response("Note created", 201);
+                const account = await User.resolve(follow.author);
+
+                if (!account) {
+                    return errorResponse("Author not found", 400);
+                }
+
+                const foundRelationship = await getRelationshipToOtherUser(
+                    account,
+                    user,
+                );
+
+                // Check if already following
+                if (foundRelationship.following) {
+                    return response("Already following", 200);
+                }
+
+                await db
+                    .update(Relationships)
+                    .set({
+                        following: !user.getUser().isLocked,
+                        requested: user.getUser().isLocked,
+                        showingReblogs: true,
+                        notifying: true,
+                        languages: [],
+                    })
+                    .where(eq(Relationships.id, foundRelationship.id));
+
+                await db.insert(Notifications).values({
+                    accountId: account.id,
+                    type: user.getUser().isLocked ? "follow_request" : "follow",
+                    notifiedId: user.id,
+                });
+
+                if (!user.getUser().isLocked) {
+                    // Federate FollowAccept
+                    await sendFollowAccept(account, user);
+                }
+
+                return response("Follow request sent", 200);
+            }
+            case "FollowAccept": {
+                const followAccept =
+                    await validator.validate<Lysand.FollowAccept>();
+
+                console.log(followAccept);
+
+                const account = await User.resolve(followAccept.author);
+
+                if (!account) {
+                    return errorResponse("Author not found", 400);
+                }
+
+                console.log(account);
+
+                const foundRelationship = await getRelationshipToOtherUser(
+                    user,
+                    account,
+                );
+
+                console.log(foundRelationship);
+
+                if (!foundRelationship.requested) {
+                    return response(
+                        "There is no follow request to accept",
+                        200,
+                    );
+                }
+
+                await db
+                    .update(Relationships)
+                    .set({
+                        following: true,
+                        requested: false,
+                    })
+                    .where(eq(Relationships.id, foundRelationship.id));
+
+                return response("Follow request accepted", 200);
+            }
+            case "FollowReject": {
+                const followReject =
+                    await validator.validate<Lysand.FollowReject>();
+
+                const account = await User.resolve(followReject.author);
+
+                if (!account) {
+                    return errorResponse("Author not found", 400);
+                }
+
+                const foundRelationship = await getRelationshipToOtherUser(
+                    user,
+                    account,
+                );
+
+                if (!foundRelationship.requested) {
+                    return response(
+                        "There is no follow request to reject",
+                        200,
+                    );
+                }
+
+                await db
+                    .update(Relationships)
+                    .set({
+                        requested: false,
+                        following: false,
+                    })
+                    .where(eq(Relationships.id, foundRelationship.id));
+
+                return response("Follow request rejected", 200);
+            }
+            default: {
+                return errorResponse("Object has not been implemented", 400);
+            }
         }
-        case "Follow": {
-            const follow = body as Lysand.Follow;
-
-            const account = await resolveUser(follow.author);
-
-            if (!account) {
-                return errorResponse("Author not found", 400);
-            }
-
-            const foundRelationship = await getRelationshipToOtherUser(
-                account,
-                user,
-            );
-
-            // Check if already following
-            if (foundRelationship.following) {
-                return response("Already following", 200);
-            }
-
-            await db
-                .update(Relationships)
-                .set({
-                    following: !user.isLocked,
-                    requested: user.isLocked,
-                    showingReblogs: true,
-                    notifying: true,
-                    languages: [],
-                })
-                .where(eq(Relationships.id, foundRelationship.id));
-
-            await db.insert(Notifications).values({
-                accountId: account.id,
-                type: user.isLocked ? "follow_request" : "follow",
-                notifiedId: user.id,
-            });
-
-            if (!user.isLocked) {
-                // Federate FollowAccept
-                await sendFollowAccept(account, user);
-            }
-
-            return response("Follow request sent", 200);
+    } catch (e) {
+        if (isValidationError(e)) {
+            return errorResponse(e.message, 400);
         }
-        case "FollowAccept": {
-            const followAccept = body as Lysand.FollowAccept;
-
-            console.log(followAccept);
-
-            const account = await resolveUser(followAccept.author);
-
-            if (!account) {
-                return errorResponse("Author not found", 400);
-            }
-
-            console.log(account);
-
-            const foundRelationship = await getRelationshipToOtherUser(
-                user,
-                account,
-            );
-
-            console.log(foundRelationship);
-
-            if (!foundRelationship.requested) {
-                return response("There is no follow request to accept", 200);
-            }
-
-            await db
-                .update(Relationships)
-                .set({
-                    following: true,
-                    requested: false,
-                })
-                .where(eq(Relationships.id, foundRelationship.id));
-
-            return response("Follow request accepted", 200);
-        }
-        case "FollowReject": {
-            const followReject = body as Lysand.FollowReject;
-
-            const account = await resolveUser(followReject.author);
-
-            if (!account) {
-                return errorResponse("Author not found", 400);
-            }
-
-            const foundRelationship = await getRelationshipToOtherUser(
-                user,
-                account,
-            );
-
-            if (!foundRelationship.requested) {
-                return response("There is no follow request to reject", 200);
-            }
-
-            await db
-                .update(Relationships)
-                .set({
-                    requested: false,
-                    following: false,
-                })
-                .where(eq(Relationships.id, foundRelationship.id));
-
-            return response("Follow request rejected", 200);
-        }
-        default: {
-            return errorResponse("Unknown object type", 400);
-        }
+        dualLogger.logError(LogLevel.ERROR, "Inbox", e as Error);
+        return jsonResponse(
+            {
+                error: "Failed to process request",
+                message: (e as Error).message,
+            },
+            500,
+        );
     }
-
-    //return jsonResponse(userToLysand(user));
 });

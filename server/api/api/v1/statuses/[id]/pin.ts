@@ -51,7 +51,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         return errorResponse("Already pinned", 422);
     }
 
-    await foundStatus.pin(user);
+    await user.pin(foundStatus);
 
     return jsonResponse(await foundStatus.toAPI(user));
 });

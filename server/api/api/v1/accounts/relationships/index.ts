@@ -5,7 +5,7 @@ import {
     createNewRelationship,
     relationshipToAPI,
 } from "~database/entities/Relationship";
-import type { User } from "~database/entities/User";
+import type { UserType } from "~database/entities/User";
 import { db } from "~drizzle/db";
 
 export const meta = applyConfig({
@@ -53,7 +53,7 @@ export default apiRoute<typeof meta, typeof schema>(
         for (const id of missingIds) {
             const relationship = await createNewRelationship(self, {
                 id,
-            } as User);
+            } as UserType);
 
             relationships.push(relationship);
         }

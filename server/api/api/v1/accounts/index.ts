@@ -1,9 +1,12 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse, response } from "@response";
 import { tempmailDomains } from "@tempmail";
+import { eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { createNewLocalUser, findFirstUser } from "~database/entities/User";
+import { createNewLocalUser } from "~database/entities/User";
+import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -133,11 +136,7 @@ export default apiRoute<typeof meta, typeof schema>(
             });
 
         // Check if username is taken
-        if (
-            await findFirstUser({
-                where: (user, { eq }) => eq(user.username, body.username ?? ""),
-            })
-        ) {
+        if (await User.fromSql(eq(Users.username, body.username))) {
             errors.details.username.push({
                 error: "ERR_TAKEN",
                 description: "is already taken",

@@ -4,9 +4,10 @@ import { count } from "drizzle-orm";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { Meilisearch } from "meilisearch";
 import type { Status } from "~database/entities/Status";
-import type { User } from "~database/entities/User";
+import type { UserType } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notes, Users } from "~drizzle/schema";
+import type { User } from "~packages/database-interface/user";
 
 export const meilisearch = new Meilisearch({
     host: `${config.meilisearch.host}:${config.meilisearch.port}`,
@@ -71,10 +72,10 @@ export const addUserToMeilisearch = async (user: User) => {
     await meilisearch.index(MeiliIndexType.Accounts).addDocuments([
         {
             id: user.id,
-            username: user.username,
-            displayName: user.displayName,
-            note: user.note,
-            createdAt: user.createdAt,
+            username: user.getUser().username,
+            displayName: user.getUser().displayName,
+            note: user.getUser().note,
+            createdAt: user.getUser().createdAt,
         },
     ]);
 };

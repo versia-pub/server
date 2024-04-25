@@ -2,11 +2,8 @@ import { join } from "node:path";
 import { redirect } from "@response";
 import type { BunFile } from "bun";
 import { config } from "config-manager";
-import {
-    type UserWithRelations,
-    retrieveUserFromToken,
-    userToAPI,
-} from "~database/entities/User";
+import { retrieveUserFromToken } from "~database/entities/User";
+import type { User } from "~packages/database-interface/user";
 import type { LogManager, MultiLogManager } from "~packages/log-manager";
 import { languages } from "./glitch-languages";
 
@@ -104,7 +101,7 @@ const handleSignInRequest = async (
     req: Request,
     path: string,
     url: URL,
-    user: UserWithRelations | null,
+    user: User | null,
     accessToken: string,
 ) => {
     if (req.method === "POST") {
@@ -181,7 +178,7 @@ const returnFile = async (file: BunFile, content?: string) => {
 const handleDefaultRequest = async (
     req: Request,
     path: string,
-    user: UserWithRelations | null,
+    user: User | null,
     accessToken: string,
 ) => {
     const file = Bun.file(join(config.frontend.glitch.assets, path));
@@ -204,7 +201,7 @@ const handleDefaultRequest = async (
 const brandingTransforms = async (
     fileContents: string,
     accessToken: string,
-    user: UserWithRelations | null,
+    user: User | null,
 ) => {
     let newFileContents = fileContents;
     for (const server of config.frontend.glitch.server) {
@@ -239,7 +236,7 @@ const brandingTransforms = async (
 const htmlTransforms = async (
     fileContents: string,
     accessToken: string,
-    user: UserWithRelations | null,
+    user: User | null,
 ) => {
     // Find script id="initial-state" and replace its contents with custom json
     const rewriter = new HTMLRewriter()
@@ -290,7 +287,7 @@ const htmlTransforms = async (
                               },
                         accounts: user
                             ? {
-                                  [user.id]: userToAPI(user, true),
+                                  [user.id]: user.toAPI(true),
                               }
                             : {},
                         media_attachments: {

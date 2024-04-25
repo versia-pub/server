@@ -1,12 +1,9 @@
 import { apiRoute, applyConfig, idValidator } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
+import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    type UserWithRelations,
-    findManyUsers,
-    userToAPI,
-} from "~database/entities/User";
+import { Users } from "~drizzle/schema";
+import { Timeline } from "~packages/database-interface/timeline";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -36,27 +33,19 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { max_id, since_id, min_id, limit } = extraData.parsedRequest;
 
-        const { objects: blocks, link } =
-            await fetchTimeline<UserWithRelations>(
-                findManyUsers,
-                {
-                    // @ts-expect-error Yes I KNOW the types are wrong
-                    where: (subject, { lt, gte, gt, and, sql }) =>
-                        and(
-                            max_id ? lt(subject.id, max_id) : undefined,
-                            since_id ? gte(subject.id, since_id) : undefined,
-                            min_id ? gt(subject.id, min_id) : undefined,
-                            sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${subject.id} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."blocking" = true)`,
-                        ),
-                    limit,
-                    // @ts-expect-error Yes I KNOW the types are wrong
-                    orderBy: (subject, { desc }) => desc(subject.id),
-                },
-                req,
-            );
+        const { objects: blocks, link } = await Timeline.getUserTimeline(
+            and(
+                max_id ? lt(Users.id, max_id) : undefined,
+                since_id ? gte(Users.id, since_id) : undefined,
+                min_id ? gt(Users.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."blocking" = true)`,
+            ),
+            limit,
+            req.url,
+        );
 
         return jsonResponse(
-            blocks.map((u) => userToAPI(u)),
+            blocks.map((u) => u.toAPI()),
             200,
             {
                 Link: link,

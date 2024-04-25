@@ -1,15 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~database/entities/Status";
-import {
-    type User,
-    type UserWithRelations,
-    createNewLocalUser,
-} from "~database/entities/User";
+import { createNewLocalUser } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notes, Tokens, Users } from "~drizzle/schema";
 import { server } from "~index";
 import { Note } from "~packages/database-interface/note";
+import type { User } from "~packages/database-interface/user";
 /**
  * This allows us to send a test request to the server even when it isnt running
  * CURRENTLY NOT WORKING, NEEDS TO BE FIXED
@@ -30,7 +27,7 @@ export const deleteOldTestUsers = async () => {
 };
 
 export const getTestUsers = async (count: number) => {
-    const users: UserWithRelations[] = [];
+    const users: User[] = [];
     const passwords: string[] = [];
 
     for (let i = 0; i < count; i++) {

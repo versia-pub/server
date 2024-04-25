@@ -6,12 +6,12 @@ import {
     relationshipToAPI,
 } from "~database/entities/Relationship";
 import {
-    findFirstUser,
     getRelationshipToOtherUser,
     sendFollowAccept,
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Relationships } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -32,9 +32,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
 
     const { account_id } = matchedRoute.params;
 
-    const account = await findFirstUser({
-        where: (user, { eq }) => eq(user.id, account_id),
-    });
+    const account = await User.fromId(account_id);
 
     if (!account) return errorResponse("Account not found", 404);
 
@@ -73,7 +71,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (!foundRelationship) return errorResponse("Relationship not found", 404);
 
     // Check if accepting remote follow
-    if (account.instanceId) {
+    if (account.isRemote()) {
         // Federate follow accept
         await sendFollowAccept(account, user);
     }

@@ -1,10 +1,12 @@
 import { type SQL, gt } from "drizzle-orm";
-import { Notes } from "~drizzle/schema";
+import { Notes, Users } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { Note } from "./note";
+import { User } from "./user";
 
 enum TimelineType {
     NOTE = "Note",
+    USER = "User",
 }
 
 export class Timeline {
@@ -15,7 +17,23 @@ export class Timeline {
         limit: number,
         url: string,
     ) {
-        return new Timeline(TimelineType.NOTE).fetchTimeline(sql, limit, url);
+        return new Timeline(TimelineType.NOTE).fetchTimeline<Note>(
+            sql,
+            limit,
+            url,
+        );
+    }
+
+    static async getUserTimeline(
+        sql: SQL<unknown> | undefined,
+        limit: number,
+        url: string,
+    ) {
+        return new Timeline(TimelineType.USER).fetchTimeline<User>(
+            sql,
+            limit,
+            url,
+        );
     }
 
     private async fetchTimeline<T>(
@@ -23,13 +41,15 @@ export class Timeline {
         limit: number,
         url: string,
     ) {
-        const objects: Note[] = [];
+        const notes: Note[] = [];
+        const users: User[] = [];
 
         switch (this.type) {
             case TimelineType.NOTE:
-                objects.push(
-                    ...(await Note.manyFromSql(sql, undefined, limit)),
-                );
+                notes.push(...(await Note.manyFromSql(sql, undefined, limit)));
+                break;
+            case TimelineType.USER:
+                users.push(...(await User.manyFromSql(sql, undefined, limit)));
                 break;
         }
 
@@ -39,26 +59,26 @@ export class Timeline {
             config.http.base_url,
         ).toString();
 
-        if (objects.length > 0) {
+        if (notes.length > 0) {
             switch (this.type) {
                 case TimelineType.NOTE: {
                     const objectBefore = await Note.fromSql(
-                        gt(Notes.id, objects[0].getStatus().id),
+                        gt(Notes.id, notes[0].getStatus().id),
                     );
 
                     if (objectBefore) {
                         linkHeader.push(
                             `<${urlWithoutQuery}?limit=${limit ?? 20}&min_id=${
-                                objects[0].getStatus().id
+                                notes[0].getStatus().id
                             }>; rel="prev"`,
                         );
                     }
 
-                    if (objects.length >= (limit ?? 20)) {
+                    if (notes.length >= (limit ?? 20)) {
                         const objectAfter = await Note.fromSql(
                             gt(
                                 Notes.id,
-                                objects[objects.length - 1].getStatus().id,
+                                notes[notes.length - 1].getStatus().id,
                             ),
                         );
 
@@ -67,7 +87,37 @@ export class Timeline {
                                 `<${urlWithoutQuery}?limit=${
                                     limit ?? 20
                                 }&max_id=${
-                                    objects[objects.length - 1].getStatus().id
+                                    notes[notes.length - 1].getStatus().id
+                                }>; rel="next"`,
+                            );
+                        }
+                    }
+                    break;
+                }
+                case TimelineType.USER: {
+                    const objectBefore = await User.fromSql(
+                        gt(Users.id, users[0].id),
+                    );
+
+                    if (objectBefore) {
+                        linkHeader.push(
+                            `<${urlWithoutQuery}?limit=${limit ?? 20}&min_id=${
+                                users[0].id
+                            }>; rel="prev"`,
+                        );
+                    }
+
+                    if (users.length >= (limit ?? 20)) {
+                        const objectAfter = await User.fromSql(
+                            gt(Users.id, users[users.length - 1].id),
+                        );
+
+                        if (objectAfter) {
+                            linkHeader.push(
+                                `<${urlWithoutQuery}?limit=${
+                                    limit ?? 20
+                                }&max_id=${
+                                    users[users.length - 1].id
                                 }>; rel="next"`,
                             );
                         }
@@ -77,9 +127,17 @@ export class Timeline {
             }
         }
 
-        return {
-            link: linkHeader.join(", "),
-            objects,
-        };
+        switch (this.type) {
+            case TimelineType.NOTE:
+                return {
+                    link: linkHeader.join(", "),
+                    objects: notes as T[],
+                };
+            case TimelineType.USER:
+                return {
+                    link: linkHeader.join(", "),
+                    objects: users as T[],
+                };
+        }
     }
 }

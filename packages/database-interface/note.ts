@@ -5,6 +5,7 @@ import {
     desc,
     eq,
     inArray,
+    isNotNull,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
@@ -30,17 +31,7 @@ import {
     contentToHtml,
     findFirstNote,
     findManyNotes,
-    getStatusUri,
 } from "~database/entities/Status";
-import {
-    type User,
-    type UserWithRelations,
-    type UserWithRelationsAndRelationships,
-    findManyUsers,
-    getUserUri,
-    userToAPI,
-    userToMention,
-} from "~database/entities/User";
 import { db } from "~drizzle/db";
 import {
     Attachments,
@@ -48,13 +39,12 @@ import {
     NoteToMentions,
     Notes,
     Notifications,
-    UserToPinnedNotes,
     Users,
-    UsersRelations,
 } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
+import { User } from "./user";
 
 /**
  * Gives helpers to fetch notes from database in a nice format
@@ -101,36 +91,44 @@ export class Note {
         return found.map((s) => new Note(s));
     }
 
+    get id() {
+        return this.status.id;
+    }
+
     async getUsersToFederateTo() {
         // Mentioned users
         const mentionedUsers =
             this.getStatus().mentions.length > 0
-                ? await findManyUsers({
-                      where: (user, { and, isNotNull, inArray }) =>
-                          and(
-                              isNotNull(user.instanceId),
-                              inArray(
-                                  user.id,
-                                  this.getStatus().mentions.map(
-                                      (mention) => mention.id,
-                                  ),
+                ? await User.manyFromSql(
+                      and(
+                          isNotNull(Users.instanceId),
+                          inArray(
+                              Users.id,
+                              this.getStatus().mentions.map(
+                                  (mention) => mention.id,
                               ),
                           ),
-                  })
+                      ),
+                  )
                 : [];
 
-        const usersThatCanSeePost = await findManyUsers({
-            where: (user, { isNotNull }) => isNotNull(user.instanceId),
-            with: {
-                relationships: {
-                    where: (relationship, { eq, and }) =>
-                        and(
-                            eq(relationship.subjectId, Users.id),
-                            eq(relationship.following, true),
-                        ),
+        const usersThatCanSeePost = await User.manyFromSql(
+            isNotNull(Users.instanceId),
+            undefined,
+            undefined,
+            undefined,
+            {
+                with: {
+                    relationships: {
+                        where: (relationship, { eq, and }) =>
+                            and(
+                                eq(relationship.subjectId, Users.id),
+                                eq(relationship.following, true),
+                            ),
+                    },
                 },
             },
-        });
+        );
 
         const fusedUsers = [...mentionedUsers, ...usersThatCanSeePost];
 
@@ -159,37 +157,11 @@ export class Note {
     }
 
     getAuthor() {
-        return this.status.author;
+        return new User(this.status.author);
     }
 
     async getReplyChildren() {
         return await Note.manyFromSql(eq(Notes.replyId, this.status.id));
-    }
-
-    async pin(pinner: User) {
-        return (
-            await db
-                .insert(UserToPinnedNotes)
-                .values({
-                    noteId: this.status.id,
-                    userId: pinner.id,
-                })
-                .returning()
-        )[0];
-    }
-
-    async unpin(unpinner: User) {
-        return (
-            await db
-                .delete(UserToPinnedNotes)
-                .where(
-                    and(
-                        eq(NoteToMentions.noteId, this.status.id),
-                        eq(NoteToMentions.userId, unpinner.id),
-                    ),
-                )
-                .returning()
-        )[0];
     }
 
     static async insert(values: InferInsertModel<typeof Notes>) {
@@ -204,7 +176,7 @@ export class Note {
         spoiler_text: string,
         emojis: EmojiWithInstance[],
         uri?: string,
-        mentions?: UserWithRelations[],
+        mentions?: User[],
         /** List of IDs of database Attachment objects */
         media_attachments?: string[],
         replyId?: string,
@@ -216,7 +188,7 @@ export class Note {
         // Parse emojis and fuse with existing emojis
         let foundEmojis = emojis;
 
-        if (author.instanceId === null) {
+        if (author.isLocal()) {
             const parsedEmojis = await parseEmojis(htmlContent);
             // Fuse and deduplicate
             foundEmojis = [...emojis, ...parsedEmojis].filter(
@@ -277,7 +249,7 @@ export class Note {
 
         // Send notifications for mentioned local users
         for (const mention of mentions ?? []) {
-            if (mention.instanceId === null) {
+            if (mention.isLocal()) {
                 await db.insert(Notifications).values({
                     accountId: author.id,
                     notifiedId: mention.id,
@@ -296,7 +268,7 @@ export class Note {
         is_sensitive?: boolean,
         spoiler_text?: string,
         emojis: EmojiWithInstance[] = [],
-        mentions: UserWithRelations[] = [],
+        mentions: User[] = [],
         /** List of IDs of database Attachment objects */
         media_attachments: string[] = [],
     ) {
@@ -307,7 +279,7 @@ export class Note {
         // Parse emojis and fuse with existing emojis
         let foundEmojis = emojis;
 
-        if (this.getAuthor().instanceId === null && htmlContent) {
+        if (this.getAuthor().isLocal() && htmlContent) {
             const parsedEmojis = await parseEmojis(htmlContent);
             // Fuse and deduplicate
             foundEmojis = [...emojis, ...parsedEmojis].filter(
@@ -401,7 +373,7 @@ export class Note {
      * @param user The user to check.
      * @returns Whether this status is viewable by the user.
      */
-    async isViewableByUser(user: UserWithRelations | null) {
+    async isViewableByUser(user: User | null) {
         if (this.getAuthor().id === user?.id) return true;
         if (this.getStatus().visibility === "public") return true;
         if (this.getStatus().visibility === "unlisted") return true;
@@ -423,7 +395,7 @@ export class Note {
         );
     }
 
-    async toAPI(userFetching?: UserWithRelations | null): Promise<APIStatus> {
+    async toAPI(userFetching?: User | null): Promise<APIStatus> {
         const data = this.getStatus();
         const wasPinnedByUser = userFetching
             ? !!(await db.query.UserToPinnedNotes.findFirst({
@@ -480,7 +452,7 @@ export class Note {
             id: data.id,
             in_reply_to_id: data.replyId || null,
             in_reply_to_account_id: data.reply?.authorId || null,
-            account: userToAPI(data.author),
+            account: this.getAuthor().toAPI(userFetching?.id === data.authorId),
             created_at: new Date(data.createdAt).toISOString(),
             application: data.application
                 ? applicationToAPI(data.application)
@@ -495,7 +467,16 @@ export class Note {
             media_attachments: (data.attachments ?? []).map(
                 (a) => attachmentToAPI(a) as APIAttachment,
             ),
-            mentions: data.mentions.map((mention) => userToMention(mention)),
+            mentions: data.mentions.map((mention) => ({
+                id: mention.id,
+                acct: User.getAcct(
+                    mention.instanceId === null,
+                    mention.username,
+                    mention.instance?.baseUrl,
+                ),
+                url: User.getUri(mention.id, mention.uri, config.http.base_url),
+                username: mention.username,
+            })),
             language: null,
             muted: wasMutedByUser,
             pinned: wasPinnedByUser,
@@ -531,8 +512,13 @@ export class Note {
         return localObjectURI(this.getStatus().id);
     }
 
+    static getURI(id?: string | null) {
+        if (!id) return null;
+        return localObjectURI(id);
+    }
+
     getMastoURI() {
-        return `/@${this.getAuthor().username}/${this.getStatus().id}`;
+        return `/@${this.getAuthor().getUser().username}/${this.id}`;
     }
 
     toLysand(): Lysand.Note {
@@ -541,7 +527,7 @@ export class Note {
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: getUserUri(status.author),
+            author: this.getAuthor().getUri(),
             uri: this.getURI(),
             content: {
                 "text/html": {
@@ -556,8 +542,8 @@ export class Note {
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) => mention.uri || ""),
-            quotes: getStatusUri(status.quote) ?? undefined,
-            replies_to: getStatusUri(status.reply) ?? undefined,
+            quotes: Note.getURI(status.quotingId) ?? undefined,
+            replies_to: Note.getURI(status.replyId) ?? undefined,
             subject: status.spoilerText,
             visibility: status.visibility as Lysand.Visibility,
             extensions: {
@@ -572,7 +558,7 @@ export class Note {
     /**
      * Return all the ancestors of this post,
      */
-    async getAncestors(fetcher: UserWithRelationsAndRelationships | null) {
+    async getAncestors(fetcher: User | null) {
         const ancestors: Note[] = [];
 
         let currentStatus: Note = this;
@@ -599,10 +585,7 @@ export class Note {
      * Return all the descendants of this post (recursive)
      * Temporary implementation, will be replaced with a recursive SQL query when I get to it
      */
-    async getDescendants(
-        fetcher: UserWithRelationsAndRelationships | null,
-        depth = 0,
-    ) {
+    async getDescendants(fetcher: User | null, depth = 0) {
         const descendants: Note[] = [];
         for (const child of await this.getReplyChildren()) {
             descendants.push(child);

@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
 import { and, count, countDistinct, eq, gte, isNull, sql } from "drizzle-orm";
-import { findFirstUser, userToAPI } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Instances, Notes, Users } from "~drizzle/schema";
 import manifest from "~package.json";
+import { User } from "~packages/database-interface/user";
 import type { Instance as APIInstance } from "~types/mastodon/instance";
 
 export const meta = applyConfig({
@@ -45,11 +45,9 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             .where(isNull(Users.instanceId))
     )[0].count;
 
-    const contactAccount = await findFirstUser({
-        where: (user, { isNull, eq, and }) =>
-            and(isNull(user.instanceId), eq(user.isAdmin, true)),
-        orderBy: (user, { asc }) => asc(user.id),
-    });
+    const contactAccount = await User.fromSql(
+        and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
+    );
 
     const monthlyActiveUsers = (
         await db
@@ -186,7 +184,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             },
             vapid_public_key: "",
         },
-        contact_account: contactAccount ? userToAPI(contactAccount) : undefined,
+        contact_account: contactAccount?.toAPI() || undefined,
     } satisfies APIInstance & {
         pleroma: object;
     });

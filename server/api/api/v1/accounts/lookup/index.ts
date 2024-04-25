@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig } from "@api";
 import { dualLogger } from "@loggers";
 import { errorResponse, jsonResponse } from "@response";
+import { eq } from "drizzle-orm";
 import {
     anyOf,
     charIn,
@@ -13,11 +14,9 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import {
-    findFirstUser,
-    resolveWebFinger,
-    userToAPI,
-} from "~database/entities/User";
+import { resolveWebFinger } from "~database/entities/User";
+import { Users } from "~drizzle/schema";
+import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
 
 export const meta = applyConfig({
@@ -80,7 +79,7 @@ export default apiRoute<typeof meta, typeof schema>(
             );
 
             if (foundAccount) {
-                return jsonResponse(userToAPI(foundAccount));
+                return jsonResponse(foundAccount.toAPI());
             }
 
             return errorResponse("Account not found", 404);
@@ -91,12 +90,10 @@ export default apiRoute<typeof meta, typeof schema>(
             username = username.slice(1);
         }
 
-        const account = await findFirstUser({
-            where: (user, { eq }) => eq(user.username, username),
-        });
+        const account = await User.fromSql(eq(Users.username, username));
 
         if (account) {
-            return jsonResponse(userToAPI(account));
+            return jsonResponse(account.toAPI());
         }
 
         return errorResponse(

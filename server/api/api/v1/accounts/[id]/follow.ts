@@ -4,10 +4,10 @@ import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { relationshipToAPI } from "~database/entities/Relationship";
 import {
-    findFirstUser,
     followRequestUser,
     getRelationshipToOtherUser,
 } from "~database/entities/User";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -46,9 +46,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const { languages, notify, reblogs } = extraData.parsedRequest;
 
-        const otherUser = await findFirstUser({
-            where: (user, { eq }) => eq(user.id, id),
-        });
+        const otherUser = await User.fromId(id);
 
         if (!otherUser) return errorResponse("User not found", 404);
 

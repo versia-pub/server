@@ -15,7 +15,7 @@ export const addInstanceIfNotExists = async (url: string) => {
     const origin = new URL(url).origin;
     const host = new URL(url).host;
 
-    const found = await db.query.instance.findFirst({
+    const found = await db.query.Instances.findFirst({
         where: (instance, { eq }) => eq(instance.baseUrl, host),
     });
 
