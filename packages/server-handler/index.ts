@@ -110,6 +110,7 @@ export const processRoute = async (
     const parsedRequest = await new RequestParser(request.clone())
         .toObject()
         .catch(async (err) => {
+            console.log(err);
             await logger.logError(
                 LogLevel.ERROR,
                 "Server.RouteRequestParser",

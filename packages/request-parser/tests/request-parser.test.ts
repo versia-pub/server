@@ -7,7 +7,7 @@ describe("RequestParser", () => {
             const request = new Request(
                 "http://localhost?param1=value1&param2=value2",
             );
-            const result = await new RequestParser(request).toObject<{
+            const result = await new RequestParser(request).parseQuery<{
                 param1: string;
                 param2: string;
             }>();
@@ -18,30 +18,30 @@ describe("RequestParser", () => {
             const request = new Request(
                 "http://localhost?test[]=value1&test[]=value2",
             );
-            const result = await new RequestParser(request).toObject<{
+            const result = await new RequestParser(request).parseQuery<{
                 test: string[];
             }>();
-            expect(result.test).toEqual(["value1", "value2"]);
+            expect(result?.test).toEqual(["value1", "value2"]);
         });
 
         test("With Array of objects", async () => {
             const request = new Request(
                 "http://localhost?test[][key]=value1&test[][value]=value2",
             );
-            const result = await new RequestParser(request).toObject<{
+            const result = await new RequestParser(request).parseQuery<{
                 test: { key: string; value: string }[];
             }>();
-            expect(result.test).toEqual([{ key: "value1", value: "value2" }]);
+            expect(result?.test).toEqual([{ key: "value1", value: "value2" }]);
         });
 
         test("With Array of multiple objects", async () => {
             const request = new Request(
                 "http://localhost?test[][key]=value1&test[][value]=value2&test[][key]=value3&test[][value]=value4",
             );
-            const result = await new RequestParser(request).toObject<{
+            const result = await new RequestParser(request).parseQuery<{
                 test: { key: string[]; value: string[] }[];
             }>();
-            expect(result.test).toEqual([
+            expect(result?.test).toEqual([
                 { key: ["value1", "value3"], value: ["value2", "value4"] },
             ]);
         });
@@ -50,7 +50,7 @@ describe("RequestParser", () => {
             const request = new Request(
                 "http://localhost?param1=value1&param2=value2&test[]=value1&test[]=value2",
             );
-            const result = await new RequestParser(request).toObject<{
+            const result = await new RequestParser(request).parseQuery<{
                 param1: string;
                 param2: string;
                 test: string[];
@@ -116,8 +116,8 @@ describe("RequestParser", () => {
             const result = await new RequestParser(request).toObject<{
                 file: File;
             }>();
-            expect(result.file).toBeInstanceOf(File);
-            expect(await result.file?.text()).toEqual("content");
+            expect(result?.file).toBeInstanceOf(File);
+            expect(await result?.file?.text()).toEqual("content");
         });
 
         test("With Array", async () => {
@@ -131,7 +131,7 @@ describe("RequestParser", () => {
             const result = await new RequestParser(request).toObject<{
                 test: string[];
             }>();
-            expect(result.test).toEqual(["value1", "value2"]);
+            expect(result?.test).toEqual(["value1", "value2"]);
         });
 
         test("With all three at once", async () => {

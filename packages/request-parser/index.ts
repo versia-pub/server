@@ -16,19 +16,24 @@ export class RequestParser {
      * @throws Error if body is invalid
      */
     async toObject<T>() {
-        try {
-            switch (await this.determineContentType()) {
-                case "application/json":
-                    return this.parseJson<T>();
-                case "application/x-www-form-urlencoded":
-                    return this.parseFormUrlencoded<T>();
-                case "multipart/form-data":
-                    return this.parseFormData<T>();
-                default:
-                    return this.parseQuery<T>();
-            }
-        } catch {
-            return {} as T;
+        switch (await this.determineContentType()) {
+            case "application/json":
+                return {
+                    ...(await this.parseJson<T>()),
+                    ...this.parseQuery<T>(),
+                };
+            case "application/x-www-form-urlencoded":
+                return {
+                    ...(await this.parseFormUrlencoded<T>()),
+                    ...this.parseQuery<T>(),
+                };
+            case "multipart/form-data":
+                return {
+                    ...(await this.parseFormData<T>()),
+                    ...this.parseQuery<T>(),
+                };
+            default:
+                return { ...this.parseQuery() } as T;
         }
     }
 
@@ -57,7 +62,7 @@ export class RequestParser {
 
         // Check if body is valid JSON
         try {
-            await this.request.json();
+            await this.request.clone().json();
             return "application/json";
         } catch {
             // This is not JSON
@@ -65,7 +70,7 @@ export class RequestParser {
 
         // Check if body is valid FormData
         try {
-            await this.request.formData();
+            await this.request.clone().formData();
             return "multipart/form-data";
         } catch {
             // This is not FormData
@@ -90,44 +95,38 @@ export class RequestParser {
      * @throws Error if body is invalid
      */
     private async parseFormData<T>(): Promise<Partial<T>> {
-        const formData = await this.request.formData();
+        const formData = await this.request.clone().formData();
         const result: Partial<T> = {};
 
-        // Check if there are any files in the FormData
-        if (
-            Array.from(formData.values()).some((value) => value instanceof Blob)
-        ) {
-            for (const [key, value] of formData.entries()) {
-                if (value instanceof Blob) {
-                    result[key as keyof T] = value as T[keyof T];
-                } else if (key.endsWith("[]")) {
-                    const arrayKey = key.slice(0, -2) as keyof T;
-                    if (!result[arrayKey]) {
-                        result[arrayKey] = [] as T[keyof T];
-                    }
-
-                    (result[arrayKey] as FormDataEntryValue[]).push(value);
-                } else {
-                    result[key as keyof T] = value as T[keyof T];
-                }
+        // Extract the files from the FormData
+        for (const [key, value] of formData.entries()) {
+            if (value instanceof Blob) {
+                result[key as keyof T] = value as T[keyof T];
             }
-        } else {
-            // Convert to URLSearchParams and parse as query
-            const searchParams = new URLSearchParams([
-                ...formData.entries(),
-            ] as [string, string][]);
-
-            const parsed = parse(searchParams.toString(), {
-                parseArrays: true,
-                interpretNumericEntities: true,
-            });
-
-            return castBooleanObject(
-                parsed as PossiblyRecursiveObject,
-            ) as Partial<T>;
         }
 
-        return result;
+        const formDataWithoutFiles = new FormData();
+        for (const [key, value] of formData.entries()) {
+            if (!(value instanceof Blob)) {
+                formDataWithoutFiles.append(key, value);
+            }
+        }
+
+        // Convert to URLSearchParams and parse as query
+        const searchParams = new URLSearchParams([
+            ...formDataWithoutFiles.entries(),
+        ] as [string, string][]);
+
+        const parsed = parse(searchParams.toString(), {
+            parseArrays: true,
+            interpretNumericEntities: true,
+        });
+
+        const casted = castBooleanObject(
+            parsed as PossiblyRecursiveObject,
+        ) as Partial<T>;
+
+        return { ...result, ...casted };
     }
 
     /**
@@ -163,7 +162,7 @@ export class RequestParser {
      * @throws Error if body is invalid
      * @returns JavaScript object of type T
      */
-    private parseQuery<T>(): Partial<T> {
+    parseQuery<T>(): Partial<T> {
         const parsed = parse(
             new URL(this.request.url).searchParams.toString(),
             {

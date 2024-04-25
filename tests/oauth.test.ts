@@ -77,6 +77,8 @@ describe("POST /api/auth/login/", () => {
             ),
         );
 
+        console.log(await response.text());
+
         expect(response.status).toBe(302);
         expect(response.headers.get("location")).toBeDefined();
         const locationHeader = new URL(

@@ -26,6 +26,31 @@ export const meta = applyConfig({
 export const schema = z.object({
     email: z.string().email(),
     password: z.string().min(2).max(100),
+    scope: z.string().optional(),
+    redirect_uri: z.string().url().optional(),
+    response_type: z.enum([
+        "code",
+        "token",
+        "none",
+        "id_token",
+        "code id_token",
+        "code token",
+        "token id_token",
+        "code token id_token",
+    ]),
+    client_id: z.string(),
+    state: z.string().optional(),
+    code_challenge: z.string().optional(),
+    code_challenge_method: z.enum(["plain", "S256"]).optional(),
+    prompt: z
+        .enum(["none", "login", "consent", "select_account"])
+        .optional()
+        .default("none"),
+    max_age: z
+        .number()
+        .int()
+        .optional()
+        .default(60 * 60 * 24 * 7),
 });
 
 export const querySchema = z.object({
@@ -91,22 +116,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             "Invalid email or password",
         );
 
-    const parsedQuery = await new RequestParser(
-        new Request(req.url),
-    ).toObject();
-
-    if (!parsedQuery) {
-        return errorResponse("Invalid query", 400);
-    }
-
-    const parsingResult = querySchema.safeParse(parsedQuery);
-
-    if (parsingResult && !parsingResult.success) {
-        // Return a 422 error with the first error message
-        return errorResponse(fromZodError(parsingResult.error).toString(), 422);
-    }
-
-    const { client_id } = parsingResult.data;
+    const { client_id } = extraData.parsedRequest;
 
     // Try and import the key
     const privateKey = await crypto.subtle.importKey(
@@ -145,9 +155,10 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
     if (application.website)
         searchParams.append("website", application.website);
 
-    // Add all data that is not undefined
-    for (const [key, value] of Object.entries(parsingResult.data)) {
-        if (value !== undefined) searchParams.append(key, String(value));
+    // Add all data that is not undefined except email and password
+    for (const [key, value] of Object.entries(extraData.parsedRequest)) {
+        if (key !== "email" && key !== "password" && value !== undefined)
+            searchParams.append(key, value);
     }
 
     // Redirect to OAuth authorize with JWT
