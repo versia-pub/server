@@ -11,8 +11,8 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type { Source as APISource } from "~types/mastodon/source";
 import type * as Lysand from "lysand-types";
+import type { Source as APISource } from "~types/mastodon/source";
 
 export const Emojis = pgTable("Emojis", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),

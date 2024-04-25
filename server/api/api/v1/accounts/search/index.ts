@@ -12,11 +12,11 @@ import {
     maybe,
     oneOrMore,
 } from "magic-regexp";
+import stringComparison from "string-comparison";
 import { z } from "zod";
 import { resolveWebFinger } from "~database/entities/User";
 import { Users } from "~drizzle/schema";
 import { User } from "~packages/database-interface/user";
-import stringComparison from "string-comparison";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

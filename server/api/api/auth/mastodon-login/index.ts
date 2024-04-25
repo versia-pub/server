@@ -1,12 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
 import { db } from "~drizzle/db";
 import { Tokens, Users } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
-import { eq } from "drizzle-orm";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

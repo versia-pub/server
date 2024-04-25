@@ -9,7 +9,7 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
-import { parseEmojis, type EmojiWithInstance } from "~database/entities/Emoji";
+import { type EmojiWithInstance, parseEmojis } from "~database/entities/Emoji";
 import { contentToHtml } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { EmojiToUser, Users } from "~drizzle/schema";
