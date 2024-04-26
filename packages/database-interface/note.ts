@@ -502,7 +502,8 @@ export class Note {
             visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoURI(),
             bookmarked: false,
-            quote: !!data.quotingId,
+            // Set to null because this breaks Megalodon
+            quote: false,
             // @ts-expect-error Pleroma extension
             quote_id: data.quotingId || undefined,
         };
