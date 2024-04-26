@@ -75,12 +75,12 @@ export default apiRoute<typeof meta, typeof schema>(
         }
 
         // Create notification for reblog if reblogged user is on the same instance
-        if (foundStatus.getAuthor().instanceId === user.instanceId) {
+        if (foundStatus.getAuthor().isLocal() && user.isLocal()) {
             await db.insert(Notifications).values({
                 accountId: user.id,
                 notifiedId: foundStatus.getAuthor().id,
                 type: "reblog",
-                noteId: foundStatus.getStatus().reblogId,
+                noteId: newReblog.reblogId,
             });
         }
 

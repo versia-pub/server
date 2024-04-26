@@ -148,7 +148,7 @@ describe(meta.route, () => {
 
         const objects = (await response.json()) as APINotification[];
 
-        expect(objects.length).toBe(3);
+        expect(objects.length).toBe(2);
         // There should be no element with a status with id of timeline[0].id
         expect(objects).not.toContainEqual(
             expect.objectContaining({
