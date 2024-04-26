@@ -10,6 +10,7 @@ import {
     timestamp,
     uniqueIndex,
     uuid,
+    type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import type * as Lysand from "lysand-types";
 import type { Source as APISource } from "~types/mastodon/source";
@@ -272,64 +273,47 @@ export const Notifications = pgTable("Notifications", {
     dismissed: boolean("dismissed").default(false).notNull(),
 });
 
-export const Notes = pgTable(
-    "Notes",
-    {
-        id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-        uri: text("uri"),
-        authorId: uuid("authorId")
-            .notNull()
-            .references(() => Users.id, {
-                onDelete: "cascade",
-                onUpdate: "cascade",
-            }),
-        createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
-            .defaultNow()
-            .notNull(),
-        updatedAt: timestamp("updatedAt", {
-            precision: 3,
-            mode: "string",
-        })
-            .defaultNow()
-            .notNull(),
-        reblogId: uuid("reblogId"),
-        content: text("content").default("").notNull(),
-        contentType: text("content_type").default("text/plain").notNull(),
-        visibility: text("visibility").notNull(),
-        replyId: uuid("replyId"),
-        quotingId: uuid("quoteId"),
-        sensitive: boolean("sensitive").notNull(),
-        spoilerText: text("spoiler_text").default("").notNull(),
-        applicationId: uuid("applicationId").references(() => Applications.id, {
-            onDelete: "set null",
+export const Notes = pgTable("Notes", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    uri: text("uri").unique(),
+    authorId: uuid("authorId")
+        .notNull()
+        .references(() => Users.id, {
+            onDelete: "cascade",
             onUpdate: "cascade",
         }),
-        contentSource: text("content_source").default("").notNull(),
-    },
-    (table) => {
-        return {
-            uriKey: uniqueIndex().on(table.uri),
-            noteReblogIdFkey: foreignKey({
-                columns: [table.reblogId],
-                foreignColumns: [table.id],
-            })
-                .onUpdate("cascade")
-                .onDelete("cascade"),
-            noteReplyIdFkey: foreignKey({
-                columns: [table.replyId],
-                foreignColumns: [table.id],
-            })
-                .onUpdate("cascade")
-                .onDelete("set null"),
-            noteQuotingIdFkey: foreignKey({
-                columns: [table.quotingId],
-                foreignColumns: [table.id],
-            })
-                .onUpdate("cascade")
-                .onDelete("set null"),
-        };
-    },
-);
+    createdAt: timestamp("createdAt", { precision: 3, mode: "string" })
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp("updatedAt", {
+        precision: 3,
+        mode: "string",
+    })
+        .defaultNow()
+        .notNull(),
+    reblogId: uuid("reblogId").references((): AnyPgColumn => Notes.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    content: text("content").default("").notNull(),
+    contentType: text("content_type").default("text/plain").notNull(),
+    visibility: text("visibility").notNull(),
+    replyId: uuid("replyId").references((): AnyPgColumn => Notes.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    quotingId: uuid("quoteId").references((): AnyPgColumn => Notes.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    sensitive: boolean("sensitive").notNull(),
+    spoilerText: text("spoiler_text").default("").notNull(),
+    applicationId: uuid("applicationId").references(() => Applications.id, {
+        onDelete: "set null",
+        onUpdate: "cascade",
+    }),
+    contentSource: text("content_source").default("").notNull(),
+});
 
 export const Instances = pgTable("Instances", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
