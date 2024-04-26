@@ -116,6 +116,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             streaming_api: "",
         },
         version: "4.3.0-alpha.3+glitch",
+        lysand_version: version,
         pleroma: {
             metadata: {
                 account_activation_required: false,
@@ -188,6 +189,7 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
         contact_account: contactAccount?.toAPI() || undefined,
     } satisfies APIInstance & {
         banner: string;
+        lysand_version: string;
         pleroma: object;
     });
 });

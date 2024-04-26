@@ -2,7 +2,7 @@ import { apiRoute, applyConfig } from "@api";
 import { urlToContentFormat } from "@content_types";
 import { jsonResponse } from "@response";
 import type * as Lysand from "lysand-types";
-import pkg from "../../../package.json";
+import pkg from "~package.json";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,5 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { jsonResponse } from "@response";
+import manifest from "~package.json";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -10,7 +11,7 @@ export const meta = applyConfig({
         duration: 60,
         max: 500,
     },
-    route: "/nodeinfo/2.0",
+    route: "/.well-known/nodeinfo/2.0",
 });
 
 /**
@@ -20,8 +21,8 @@ export default apiRoute(() => {
     // TODO: Implement this
     return jsonResponse({
         version: "2.0",
-        software: { name: "lysand", version: "0.0.1" },
-        protocols: ["activitypub"],
+        software: { name: "lysand", version: manifest.version },
+        protocols: ["lysand"],
         services: { outbound: [], inbound: [] },
         usage: {
             users: { total: 0, activeMonth: 0, activeHalfyear: 0 },
