@@ -1,109 +1,109 @@
 {
-  "name": "lysand",
-  "module": "index.ts",
-  "type": "module",
-  "version": "0.5.0",
-  "description": "A project to build a federated social network",
-  "author": {
-    "email": "contact@cpluspatch.com",
-    "name": "CPlusPatch",
-    "url": "https://cpluspatch.com"
-  },
-  "bugs": {
-    "url": "https://github.com/lysand-org/lysand/issues"
-  },
-  "icon": "https://github.com/lysand-org/lysand",
-  "license": "AGPL-3.0",
-  "keywords": ["federated", "activitypub", "bun"],
-  "workspaces": ["packages/*"],
-  "maintainers": [
-    {
-      "email": "contact@cpluspatch.com",
-      "name": "CPlusPatch",
-      "url": "https://cpluspatch.com"
+    "name": "lysand",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.5.0",
+    "description": "A project to build a federated social network",
+    "author": {
+        "email": "contact@cpluspatch.com",
+        "name": "CPlusPatch",
+        "url": "https://cpluspatch.com"
+    },
+    "bugs": {
+        "url": "https://github.com/lysand-org/lysand/issues"
+    },
+    "icon": "https://github.com/lysand-org/lysand",
+    "license": "AGPL-3.0",
+    "keywords": ["federated", "activitypub", "bun"],
+    "workspaces": ["packages/*"],
+    "maintainers": [
+        {
+            "email": "contact@cpluspatch.com",
+            "name": "CPlusPatch",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lysand-org/lysand.git"
+    },
+    "private": true,
+    "scripts": {
+        "dev": "bun run --watch index.ts",
+        "start": "NODE_ENV=production bun run dist/index.js --prod",
+        "lint": "bunx @biomejs/biome check .",
+        "prod-build": "bun run build.ts",
+        "benchmark:timeline": "bun run benchmarks/timelines.ts",
+        "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs,glitch,glitch-dev --exclude-ext sql,log,pem",
+        "cli": "bun run cli.ts"
+    },
+    "trustedDependencies": [
+        "@biomejs/biome",
+        "@fortawesome/fontawesome-common-types",
+        "@fortawesome/free-regular-svg-icons",
+        "@fortawesome/free-solid-svg-icons",
+        "es5-ext",
+        "esbuild",
+        "json-editor-vue",
+        "msgpackr-extract",
+        "nuxt-app",
+        "sharp",
+        "vue-demi"
+    ],
+    "devDependencies": {
+        "@biomejs/biome": "^1.7.0",
+        "@types/cli-table": "^0.3.4",
+        "@types/html-to-text": "^9.0.4",
+        "@types/ioredis": "^5.0.0",
+        "@types/jsonld": "^1.5.13",
+        "@types/markdown-it-container": "^2.0.10",
+        "@types/mime-types": "^2.1.4",
+        "@types/pg": "^8.11.5",
+        "bun-types": "latest",
+        "drizzle-kit": "^0.20.14",
+        "typescript": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5.3.2"
+    },
+    "dependencies": {
+        "@hackmd/markdown-it-task-lists": "^2.1.4",
+        "@json2csv/plainjs": "^7.0.6",
+        "@shikijs/markdown-it": "^1.3.0",
+        "@tufjs/canonical-json": "^2.0.0",
+        "blurhash": "^2.0.5",
+        "bullmq": "^5.7.1",
+        "chalk": "^5.3.0",
+        "cli-parser": "workspace:*",
+        "cli-table": "^0.3.11",
+        "config-manager": "workspace:*",
+        "drizzle-orm": "^0.30.7",
+        "extract-zip": "^2.0.1",
+        "html-to-text": "^9.0.5",
+        "ioredis": "^5.3.2",
+        "ip-matching": "^2.1.2",
+        "iso-639-1": "^3.1.0",
+        "isomorphic-dompurify": "latest",
+        "jose": "^5.2.4",
+        "linkify-html": "^4.1.3",
+        "linkify-string": "^4.1.3",
+        "linkifyjs": "^4.1.3",
+        "log-manager": "workspace:*",
+        "magic-regexp": "^0.8.0",
+        "markdown-it": "^14.1.0",
+        "markdown-it-anchor": "^8.6.7",
+        "markdown-it-container": "^4.0.0",
+        "markdown-it-toc-done-right": "^4.2.0",
+        "media-manager": "workspace:*",
+        "megalodon": "^10.0.0",
+        "meilisearch": "^0.38.0",
+        "mime-types": "^2.1.35",
+        "oauth4webapi": "^2.4.0",
+        "pg": "^8.11.5",
+        "request-parser": "workspace:*",
+        "sharp": "^0.33.3",
+        "string-comparison": "^1.3.0",
+        "zod": "^3.22.4",
+        "zod-validation-error": "^3.2.0"
     }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lysand-org/lysand.git"
-  },
-  "private": true,
-  "scripts": {
-    "dev": "bun run --watch index.ts",
-    "start": "NODE_ENV=production bun run dist/index.js --prod",
-    "lint": "bunx @biomejs/biome check .",
-    "prod-build": "bun run build.ts",
-    "benchmark:timeline": "bun run benchmarks/timelines.ts",
-    "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs,glitch,glitch-dev --exclude-ext sql,log,pem",
-    "cli": "bun run cli.ts"
-  },
-  "trustedDependencies": [
-    "@biomejs/biome",
-    "@fortawesome/fontawesome-common-types",
-    "@fortawesome/free-regular-svg-icons",
-    "@fortawesome/free-solid-svg-icons",
-    "es5-ext",
-    "esbuild",
-    "json-editor-vue",
-    "msgpackr-extract",
-    "nuxt-app",
-    "sharp",
-    "vue-demi"
-  ],
-  "devDependencies": {
-    "@biomejs/biome": "^1.7.0",
-    "@types/cli-table": "^0.3.4",
-    "@types/html-to-text": "^9.0.4",
-    "@types/ioredis": "^5.0.0",
-    "@types/jsonld": "^1.5.13",
-    "@types/markdown-it-container": "^2.0.10",
-    "@types/mime-types": "^2.1.4",
-    "@types/pg": "^8.11.5",
-    "bun-types": "latest",
-    "drizzle-kit": "^0.20.14",
-    "typescript": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5.3.2"
-  },
-  "dependencies": {
-    "@hackmd/markdown-it-task-lists": "^2.1.4",
-    "@json2csv/plainjs": "^7.0.6",
-    "@shikijs/markdown-it": "^1.3.0",
-    "@tufjs/canonical-json": "^2.0.0",
-    "blurhash": "^2.0.5",
-    "bullmq": "^5.7.1",
-    "chalk": "^5.3.0",
-    "cli-parser": "workspace:*",
-    "cli-table": "^0.3.11",
-    "config-manager": "workspace:*",
-    "drizzle-orm": "^0.30.7",
-    "extract-zip": "^2.0.1",
-    "html-to-text": "^9.0.5",
-    "ioredis": "^5.3.2",
-    "ip-matching": "^2.1.2",
-    "iso-639-1": "^3.1.0",
-    "isomorphic-dompurify": "latest",
-    "jose": "^5.2.4",
-    "linkify-html": "^4.1.3",
-    "linkify-string": "^4.1.3",
-    "linkifyjs": "^4.1.3",
-    "log-manager": "workspace:*",
-    "magic-regexp": "^0.8.0",
-    "markdown-it": "^14.1.0",
-    "markdown-it-anchor": "^8.6.7",
-    "markdown-it-container": "^4.0.0",
-    "markdown-it-toc-done-right": "^4.2.0",
-    "media-manager": "workspace:*",
-    "megalodon": "^10.0.0",
-    "meilisearch": "^0.38.0",
-    "mime-types": "^2.1.35",
-    "oauth4webapi": "^2.4.0",
-    "pg": "^8.11.5",
-    "request-parser": "workspace:*",
-    "sharp": "^0.33.3",
-    "string-comparison": "^1.3.0",
-    "zod": "^3.22.4",
-    "zod-validation-error": "^3.2.0"
-  }
 }

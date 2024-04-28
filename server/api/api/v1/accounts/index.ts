@@ -22,7 +22,7 @@ export const meta = applyConfig({
 
 // No validation on the Zod side as we need to do custom validation
 export const schema = z.object({
-    username: z.string(),
+    username: z.string().toLowerCase(),
     email: z.string(),
     password: z.string(),
     agreement: z.boolean(),

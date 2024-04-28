@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+    type AnyPgColumn,
     boolean,
     foreignKey,
     index,
@@ -10,7 +11,6 @@ import {
     timestamp,
     uniqueIndex,
     uuid,
-    type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import type * as Lysand from "lysand-types";
 import type { Source as APISource } from "~types/mastodon/source";
