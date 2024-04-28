@@ -448,6 +448,16 @@ export class Note {
             );
         }
 
+        const reblog = data.quotingId
+            ? await Note.fromId(data.quotingId).then((n) =>
+                  n?.toAPI(userFetching),
+              )
+            : data.reblog
+              ? await Note.fromStatus(data.reblog as StatusWithRelations).toAPI(
+                    userFetching,
+                )
+              : null;
+
         return {
             id: data.id,
             in_reply_to_id: data.replyId || null,
@@ -482,11 +492,7 @@ export class Note {
             pinned: wasPinnedByUser,
             // TODO: Add polls
             poll: null,
-            reblog: data.reblog
-                ? await Note.fromStatus(
-                      data.reblog as StatusWithRelations,
-                  ).toAPI(userFetching)
-                : null,
+            reblog: reblog ?? null,
             reblogged: wasRebloggedByUser,
             reblogs_count: data.reblogCount,
             replies_count: data.replyCount,
@@ -502,8 +508,7 @@ export class Note {
             visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoURI(),
             bookmarked: false,
-            // Set to null because this breaks Megalodon
-            quote: false,
+            quote: !!data.quotingId,
             // @ts-expect-error Pleroma extension
             quote_id: data.quotingId || undefined,
         };
