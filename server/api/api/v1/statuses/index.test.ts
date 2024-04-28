@@ -294,7 +294,8 @@ describe(meta.route, () => {
         expect(object2.content).toBe("<p>Hello, world again!</p>");
         // @ts-expect-error Pleroma extension
         expect(object2.quote_id).toBe(object.id);
-        expect(object2.reblog?.id).toBe(object.id);
+        // @ts-expect-error Glitch SOC extension
+        expect(object2.quote?.id).toBe(object.id);
     });
 
     describe("mentions testing", () => {
