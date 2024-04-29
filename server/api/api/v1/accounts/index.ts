@@ -166,6 +166,13 @@ export default apiRoute<typeof meta, typeof schema>(
                 description: "is from a blocked email provider",
             });
 
+        // Check if email is taken
+        if (await User.fromSql(eq(Users.email, body.email)))
+            errors.details.email.push({
+                error: "ERR_TAKEN",
+                description: "is already taken",
+            });
+
         // Check if agreement is accepted
         if (!body.agreement)
             errors.details.agreement.push({
