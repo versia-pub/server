@@ -22,7 +22,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    comment: z.string().min(0).max(5000).optional(),
+    comment: z.string().min(0).max(5000).trim().optional(),
 });
 
 /**

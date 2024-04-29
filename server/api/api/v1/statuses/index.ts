@@ -20,14 +20,14 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    status: z.string().max(config.validation.max_note_size).optional(),
+    status: z.string().max(config.validation.max_note_size).trim().optional(),
     // TODO: Add regex to validate
     content_type: z.string().optional().default("text/plain"),
     media_ids: z
         .array(z.string().regex(idValidator))
         .max(config.validation.max_media_attachments)
         .optional(),
-    spoiler_text: z.string().max(255).optional(),
+    spoiler_text: z.string().max(255).trim().optional(),
     sensitive: z.boolean().optional(),
     language: z.enum(ISO6391.getAllCodes() as [string, ...string[]]).optional(),
     "poll[options]": z

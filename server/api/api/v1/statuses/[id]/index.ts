@@ -20,7 +20,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    status: z.string().max(config.validation.max_note_size).optional(),
+    status: z.string().trim().max(config.validation.max_note_size).optional(),
     // TODO: Add regex to validate
     content_type: z.string().optional().default("text/plain"),
     media_ids: z

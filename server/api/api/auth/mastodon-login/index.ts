@@ -22,7 +22,7 @@ export const meta = applyConfig({
 
 export const schema = z.object({
     user: z.object({
-        email: z.string().email(),
+        email: z.string().email().toLowerCase(),
         password: z.string().max(100).min(3),
     }),
 });

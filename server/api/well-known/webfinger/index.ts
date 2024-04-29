@@ -19,7 +19,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    resource: z.string().min(1).max(512),
+    resource: z.string().trim().min(1).max(512),
 });
 
 export default apiRoute<typeof meta, typeof schema>(

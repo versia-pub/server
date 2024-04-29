@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { apiRoute, applyConfig } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { jsonResponse } from "@response";
 import { z } from "zod";
 import { db } from "~drizzle/db";
 import { Applications } from "~drizzle/schema";
@@ -18,7 +18,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    client_name: z.string().min(1).max(100),
+    client_name: z.string().trim().min(1).max(100),
     redirect_uris: z.string().min(0).max(2000).url(),
     scopes: z.string().min(1).max(200),
     website: z.string().min(0).max(2000).url().optional(),

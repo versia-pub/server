@@ -32,9 +32,15 @@ export const schema = z.object({
     display_name: z
         .string()
         .min(3)
+        .trim()
         .max(config.validation.max_displayname_size)
         .optional(),
-    note: z.string().min(0).max(config.validation.max_bio_size).optional(),
+    note: z
+        .string()
+        .min(0)
+        .max(config.validation.max_bio_size)
+        .trim()
+        .optional(),
     avatar: z.instanceof(File).optional(),
     header: z.instanceof(File).optional(),
     locked: z.boolean().optional(),
@@ -54,8 +60,14 @@ export const schema = z.object({
     fields_attributes: z
         .array(
             z.object({
-                name: z.string().max(config.validation.max_field_name_size),
-                value: z.string().max(config.validation.max_field_value_size),
+                name: z
+                    .string()
+                    .trim()
+                    .max(config.validation.max_field_name_size),
+                value: z
+                    .string()
+                    .trim()
+                    .max(config.validation.max_field_value_size),
             }),
         )
         .max(config.validation.max_field_count)

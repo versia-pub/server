@@ -25,7 +25,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    q: z.string().optional(),
+    q: z.string().trim().optional(),
     type: z.string().optional(),
     resolve: z.coerce.boolean().optional(),
     following: z.coerce.boolean().optional(),

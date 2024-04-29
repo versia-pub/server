@@ -18,7 +18,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    title: z.string().min(1).max(100).optional(),
+    title: z.string().trim().min(1).max(100).optional(),
     context: z
         .array(z.enum(["home", "notifications", "public", "thread", "account"]))
         .optional(),
@@ -32,7 +32,7 @@ export const schema = z.object({
     keywords_attributes: z
         .array(
             z.object({
-                keyword: z.string().min(1).max(100),
+                keyword: z.string().trim().min(1).max(100),
                 whole_word: z.boolean().optional(),
             }),
         )

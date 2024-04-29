@@ -21,7 +21,7 @@ export const meta = applyConfig({
 });
 
 export const schema = z.object({
-    email: z.string().email(),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(2).max(100),
     scope: z.string().optional(),
     redirect_uri: z.string().url().optional(),
