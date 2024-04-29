@@ -197,6 +197,7 @@ export default apiRoute<typeof meta, typeof schema>(
             // Error is something like "Validation failed: Password can't be blank, Username must contain only letters, numbers and underscores, Agreement must be accepted"
 
             const errorsText = Object.entries(errors.details)
+                .filter(([_, errors]) => errors.length > 0)
                 .map(
                     ([name, errors]) =>
                         `${name} ${errors
@@ -207,7 +208,11 @@ export default apiRoute<typeof meta, typeof schema>(
             return jsonResponse(
                 {
                     error: `Validation failed: ${errorsText}`,
-                    details: errors.details,
+                    details: Object.fromEntries(
+                        Object.entries(errors.details).filter(
+                            ([_, errors]) => errors.length > 0,
+                        ),
+                    ),
                 },
                 422,
             );
