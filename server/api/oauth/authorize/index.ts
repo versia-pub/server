@@ -52,16 +52,22 @@ export const querySchema = z.object({
         .default(60 * 60 * 24 * 7),
 });
 
-const returnError = (error: string, description: string) =>
-    response(null, 302, {
-        Location: new URL(
-            `/oauth/authorize?${new URLSearchParams({
-                error: error,
-                error_description: description,
-            }).toString()}`,
-            config.http.base_url,
-        ).toString(),
+const returnError = (query: object, error: string, description: string) => {
+    const searchParams = new URLSearchParams();
+
+    // Add all data that is not undefined except email and password
+    for (const [key, value] of Object.entries(query)) {
+        if (key !== "email" && key !== "password" && value !== undefined)
+            searchParams.append(key, value);
+    }
+
+    searchParams.append("error", error);
+    searchParams.append("error_description", description);
+
+    return response(null, 302, {
+        Location: `/oauth/authorize?${searchParams.toString()}`,
     });
+};
 
 /**
  * OIDC Authorization
@@ -82,6 +88,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!cookie)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "No cookies were sent with the request",
             );
@@ -93,6 +100,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!jwt)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "No jwt cookie was sent in the request",
             );
@@ -125,20 +133,41 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!result)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "Invalid JWT, could not verify",
             );
 
         const payload = result.payload;
 
-        if (!payload.sub) return returnError("invalid_request", "Invalid sub");
-        if (!payload.aud) return returnError("invalid_request", "Invalid aud");
-        if (!payload.exp) return returnError("invalid_request", "Invalid exp");
+        if (!payload.sub)
+            return returnError(
+                extraData.parsedRequest,
+                "invalid_request",
+                "Invalid sub",
+            );
+        if (!payload.aud)
+            return returnError(
+                extraData.parsedRequest,
+                "invalid_request",
+                "Invalid aud",
+            );
+        if (!payload.exp)
+            return returnError(
+                extraData.parsedRequest,
+                "invalid_request",
+                "Invalid exp",
+            );
 
         // Check if the user is authenticated
         const user = await User.fromId(payload.sub);
 
-        if (!user) return returnError("invalid_request", "Invalid sub");
+        if (!user)
+            return returnError(
+                extraData.parsedRequest,
+                "invalid_request",
+                "Invalid sub",
+            );
 
         const responseTypes = response_type.split(" ");
 
@@ -148,12 +177,14 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!asksCode && !asksToken && !asksIdToken)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "Invalid response_type, must ask for code, token, or id_token",
             );
 
         if (asksCode && !redirect_uri)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "Redirect URI is required for code flow",
             );
@@ -177,12 +208,14 @@ export default apiRoute<typeof meta, typeof schema>(
 
         if (!application)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_client",
                 "Invalid client_id or client_secret",
             );
 
         if (application.redirectUri !== redirect_uri)
             return returnError(
+                extraData.parsedRequest,
                 "invalid_request",
                 "Redirect URI does not match client_id",
             );
@@ -197,7 +230,11 @@ export default apiRoute<typeof meta, typeof schema>(
             scope &&
             !scope.split(" ").every((s) => applicationScopes.includes(s))
         )
-            return returnError("invalid_scope", "Invalid scope");
+            return returnError(
+                extraData.parsedRequest,
+                "invalid_scope",
+                "Invalid scope",
+            );
 
         // Generate tokens
         const code = randomBytes(256).toString("base64url");

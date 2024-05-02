@@ -37,7 +37,7 @@ export default apiRoute<typeof meta, typeof schema>(
                 .insert(Applications)
                 .values({
                     name: client_name || "",
-                    redirectUri: redirect_uris || "",
+                    redirectUri: decodeURIComponent(redirect_uris) || "",
                     scopes: scopes || "read",
                     website: website || null,
                     clientId: randomBytes(32).toString("base64url"),

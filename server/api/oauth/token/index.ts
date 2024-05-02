@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~drizzle/db";
 import { Tokens } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
