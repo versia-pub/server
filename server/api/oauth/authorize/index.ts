@@ -309,12 +309,7 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const searchParams = new URLSearchParams({
             code: code,
-            scope: scope ?? application.scopes,
-            token_type: "Bearer",
-            client_id: client_id,
         });
-
-        if (state) searchParams.set("state", state);
 
         return response(null, 302, {
             Location: `${redirectUri.origin}${
