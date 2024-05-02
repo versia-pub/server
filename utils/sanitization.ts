@@ -1,14 +1,11 @@
 import { config } from "config-manager";
-import type DOMPurify from "dompurify";
-import createDomPurify from "dompurify";
-import { Window } from "happy-dom";
+import DOMPurify from "isomorphic-dompurify";
 
-const window = new Window();
-// @ts-expect-error Mismatch between types, but they're okay i swear
-const purifier = createDomPurify(window);
-
-export const sanitizeHtml = async (html: string, extraConfig?: DOMPurify.Config) => {
-    const sanitizedHtml = purifier.sanitize(html, {
+export const sanitizeHtml = async (
+    html: string,
+    extraConfig?: DOMPurify.Config,
+) => {
+    const sanitizedHtml = DOMPurify.sanitize(html, {
         ALLOWED_TAGS: [
             "a",
             "p",
