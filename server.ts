@@ -1,5 +1,5 @@
 import { dualLogger } from "@loggers";
-import { errorResponse, response } from "@response";
+import { clientResponse, errorResponse, response } from "@response";
 import type { MatchedRoute } from "bun";
 import type { Config } from "config-manager";
 import { matches } from "ip-matching";
@@ -215,6 +215,10 @@ export const createServer = (
                 );
             }
 
-            return proxy;
+            return clientResponse(
+                await proxy.arrayBuffer(),
+                proxy.status,
+                proxy.headers.toJSON(),
+            );
         },
     });

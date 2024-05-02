@@ -5,8 +5,10 @@ export const response = (
 ) => {
     return new Response(data, {
         headers: {
-            "Content-Type": "application/json",
             "X-Frame-Options": "DENY",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Strict-Transport-Security": "max-age=3153600",
             "X-Permitted-Cross-Domain-Policies": "none",
             "Access-Control-Allow-Credentials": "true",
             "Access-Control-Allow-Headers":
@@ -15,7 +17,6 @@ export const response = (
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Expose-Headers":
                 "Link,X-RateLimit-Reset,X-RateLimit-Limit,X-RateLimit-Remaining,X-Request-Id,Idempotency-Key",
-            // CSP should follow  Content Security Policy directive: "connect-src 'self' blob: https: wss:".
             "Content-Security-Policy":
                 "default-src 'none'; frame-ancestors 'none'; form-action 'none'",
             ...headers,
@@ -30,8 +31,10 @@ export const clientResponse = (
     headers: Record<string, string> = {},
 ) => {
     return response(data, status, {
+        "Content-Security-Policy":
+            "Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src *; font-src 'self'; connect-src 'self'; media-src *; object-src 'none'; prefetch-src 'none'; child-src 'none'; frame-src 'none'; worker-src 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content; base-uri 'self'; manifest-src 'self'",
+        "Access-Control-Allow-Origin": "null",
         ...headers,
-        "Content-Security-Policy": "", //"default-src 'none'; frame-ancestors 'none'; form-action 'self'; connect-src 'self' blob: https: wss:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; object-src 'none'; media-src 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; prefetch-src 'self'; base-uri 'none';",
     });
 };
 
