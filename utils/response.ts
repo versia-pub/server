@@ -32,7 +32,7 @@ export const clientResponse = (
 ) => {
     return response(data, status, {
         "Content-Security-Policy":
-            "Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src *; font-src 'self'; connect-src 'self'; media-src *; object-src 'none'; prefetch-src 'none'; child-src 'none'; frame-src 'none'; worker-src 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content; base-uri 'self'; manifest-src 'self'",
+            "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src *; font-src 'self'; connect-src 'self'; media-src *; object-src 'none'; prefetch-src 'none'; child-src 'none'; frame-src 'none'; worker-src 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content; base-uri 'self'; manifest-src 'self'",
         "Access-Control-Allow-Origin": "null",
         ...headers,
     });
