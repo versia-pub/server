@@ -1,13 +1,25 @@
 services:
     lysand:
-        build: . # Automatic builds are currently broken, please build from source
-        # image: ghcr.io/lysand-org/lysand:latest
+        build: ghcr.io/lysand-org/lysand:main
         volumes:
             - ./logs:/app/dist/logs
             - ./config:/app/dist/config
             - ./uploads:/app/dist/uploads
+            - ./glitch:/app/dist/glitch
         restart: unless-stopped
         container_name: lysand
+        networks:
+            - lysand-net
+        depends-on:
+            - db
+            - redis
+            - meilisearch
+            - fe
+    
+    fe:
+        image: ghcr.io/lysand-org/lysand-fe:main
+        container_name: lysand-fe
+        restart: unless-stopped
         networks:
             - lysand-net
             

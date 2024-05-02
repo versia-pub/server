@@ -1,5 +1,10 @@
 # Installation
 
+> [!NOTE]
+> You should probably be using the `main` branch of this repository, as it is the most up-to-date. When 0.5 releases, you should switch to the `0.5` branch.
+>
+> For Docker, this means pulling the `main` tag
+
 ### Requirements
 
 - The [Bun Runtime](https://bun.sh), version 1.0.30 or later (usage of the latest version is recommended)

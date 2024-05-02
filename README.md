@@ -30,49 +30,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ## Screenshots
 
-Here are some screenshots of Lysand's built-in web client. This client is built with Nuxt, and serves to allow users to log in or register. It is kept to only the actions that cannot be done with a Mastodon client, to simplify development. In the future, there will be a full-featured client.
-
-### On Desktop
-
-#### Welcome Page
-
-![Welcome Page](assets/main.webp)
-
-#### Logging In
-
-![Logging In](assets/login.webp)
-
-#### OAuth Confirmation
-
-![OAuth Confirmation](assets/redirect.webp)
-
-#### Registration Page
-
-![Registration Page](assets/register.webp)
-
-#### Home Timeline
-
-![Home Timeline](assets/soapbox.webp)
-
-### On Mobile
-
-#### Logging In
-
-<center>
-  <img src="assets/login_mobile.webp" alt="Logging In" width="300">
-</center>
-
-#### OAuth Confirmation
-
-<center>
-  <img src="assets/redirect_mobile.webp" alt="OAuth Confirmation" width="300">
-</center>
-
-#### Registration Page
-
-<center>
-  <img src="assets/register_mobile.webp" alt="Registration Page" width="300">
-</center>
+You can visit [https://social.lysand.org](https://social.lysand.org) to see a live instance of Lysand with Lysand-FE.
 
 ## Benchmarks
 
