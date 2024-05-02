@@ -1,5 +1,5 @@
 # Bun doesn't run well on Musl but this seems to work
-FROM imbios/bun-node:1.1.6-current-alpine as base
+FROM imbios/bun-node:1.1.5-current-alpine as base
 
 RUN apk add --no-cache libstdc++
 
