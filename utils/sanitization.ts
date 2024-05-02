@@ -1,10 +1,14 @@
 import { config } from "config-manager";
-// import { sanitize } from "isomorphic-dompurify";
+import type DOMPurify from "dompurify";
+import createDomPurify from "dompurify";
+import { Window } from "happy-dom";
 
-export const sanitizeHtml = async (html: string) => {
-    // TEMP: Allow all tags and attributes
-    return html;
-    /*     const sanitizedHtml = sanitize(html, {
+const window = new Window();
+// @ts-expect-error Mismatch between types, but they're okay i swear
+const purifier = createDomPurify(window);
+
+export const sanitizeHtml = async (html: string, extraConfig?: DOMPurify.Config) => {
+    const sanitizedHtml = purifier.sanitize(html, {
         ALLOWED_TAGS: [
             "a",
             "p",
@@ -40,7 +44,8 @@ export const sanitizeHtml = async (html: string) => {
         USE_PROFILES: {
             mathMl: true,
         },
-    });
+        ...extraConfig,
+    }) as string;
 
     // Check text to only allow h-*, p-*, u-*, dt-*, e-*, mention, hashtag, ellipsis, invisible classes
     const allowedClasses = [
@@ -72,5 +77,5 @@ export const sanitizeHtml = async (html: string) => {
             },
         })
         .transform(new Response(sanitizedHtml))
-        .text(); */
+        .text();
 };

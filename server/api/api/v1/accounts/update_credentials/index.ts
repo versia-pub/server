@@ -97,19 +97,10 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const sanitizedNote = await sanitizeHtml(note ?? "");
 
-        const sanitizedDisplayName = display_name ?? ""; /*  sanitize(display_name ?? "", {
-        ALLOWED_TAGS: [],
-        ALLOWED_ATTR: [],
-    });
- */
-        /* if (!user.source) {
-		user.source = {
-			privacy: "public",
-			sensitive: false,
-			language: "en",
-			note: "",
-		};
-	} */
+        const sanitizedDisplayName = await sanitizeHtml(display_name ?? "", {
+            ALLOWED_TAGS: [],
+            ALLOWED_ATTR: [],
+        });
 
         let mediaManager: MediaBackend;
 
