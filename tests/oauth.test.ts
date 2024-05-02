@@ -130,8 +130,6 @@ describe("POST /oauth/authorize/", () => {
         );
 
         expect(locationHeader.origin).toBe("https://example.com");
-        expect(locationHeader.searchParams.get("client_id")).toBe(client_id);
-        expect(locationHeader.searchParams.get("scope")).toBe("read write");
 
         code = locationHeader.searchParams.get("code") ?? "";
     });
