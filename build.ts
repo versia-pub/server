@@ -17,7 +17,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "frontend", "jsdom"],
+    external: ["bullmq", "frontend"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
@@ -38,9 +38,6 @@ await $`cp -r drizzle dist/drizzle`;
 await $`mkdir -p dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-libvips-linux-* dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
-
-// Copy jsdom to dist
-await $`cp -r node_modules/jsdom dist/node_modules/jsdom`;
 
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;
