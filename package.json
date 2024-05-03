@@ -35,6 +35,7 @@
         "prod-build": "bun run build.ts",
         "benchmark:timeline": "bun run benchmarks/timelines.ts",
         "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs,glitch,glitch-dev --exclude-ext sql,log,pem",
+        "wc": "find server database *.ts docs packages types utils drizzle tests -type f -print0 | wc -m --files0-from=-",
         "cli": "bun run cli.ts"
     },
     "trustedDependencies": [
