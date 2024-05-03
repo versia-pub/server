@@ -1,12 +1,15 @@
 import { config } from "config-manager";
 import DOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
+import { Window } from "happy-dom";
+
+const window = new Window();
 
 export const sanitizeHtml = async (
     html: string,
     extraConfig?: DOMPurify.Config,
 ) => {
-    const sanitizedHtml = DOMPurify(new JSDOM().window).sanitize(html, {
+    // @ts-expect-error Types clash but it works i swear
+    const sanitizedHtml = DOMPurify(window).sanitize(html, {
         ALLOWED_TAGS: [
             "a",
             "p",
