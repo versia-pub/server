@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@api";
 import { errorResponse, jsonResponse } from "@response";
-import { sanitizeHtml } from "@sanitization";
+import { sanitizeHtml, sanitizedHtmlStrip } from "@sanitization";
 import { config } from "config-manager";
 import { and, eq } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
@@ -97,10 +97,9 @@ export default apiRoute<typeof meta, typeof schema>(
 
         const sanitizedNote = await sanitizeHtml(note ?? "");
 
-        const sanitizedDisplayName = await sanitizeHtml(display_name ?? "", {
-            ALLOWED_TAGS: [],
-            ALLOWED_ATTR: [],
-        });
+        const sanitizedDisplayName = await sanitizedHtmlStrip(
+            display_name ?? "",
+        );
 
         let mediaManager: MediaBackend;
 

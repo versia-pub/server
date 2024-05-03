@@ -555,14 +555,14 @@ export const contentToHtml = async (
     let htmlContent: string;
 
     if (content["text/html"]) {
-        htmlContent = content["text/html"].content;
+        htmlContent = await sanitizeHtml(content["text/html"].content);
     } else if (content["text/markdown"]) {
         htmlContent = await sanitizeHtml(
             await markdownParse(content["text/markdown"].content),
         );
     } else if (content["text/plain"]?.content) {
         // Split by newline and add <p> tags
-        htmlContent = content["text/plain"].content
+        htmlContent = (await sanitizeHtml(content["text/plain"].content))
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");

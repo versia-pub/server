@@ -45,6 +45,7 @@ import { config } from "~packages/config-manager";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
 import { User } from "./user";
+import { sanitizedHtmlStrip } from "@sanitization";
 
 /**
  * Gives helpers to fetch notes from database in a nice format
@@ -208,7 +209,7 @@ export class Note {
             contentType: "text/html",
             visibility,
             sensitive: is_sensitive,
-            spoilerText: spoiler_text,
+            spoilerText: await sanitizedHtmlStrip(spoiler_text),
             uri: uri || null,
             replyId: replyId ?? null,
             quotingId: quoteId ?? null,

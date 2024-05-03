@@ -1,52 +1,41 @@
-import { config } from "config-manager";
-import DOMPurify from "dompurify";
-import { GlobalWindow } from "happy-dom";
+import xss, { type IFilterXSSOptions } from "xss";
+import { stringifyEntitiesLight } from "stringify-entities";
 
-const window = new GlobalWindow();
+export const sanitizedHtmlStrip = (html: string) => {
+    return sanitizeHtml(html, {
+        whiteList: {},
+    });
+};
 
 export const sanitizeHtml = async (
     html: string,
-    extraConfig?: DOMPurify.Config,
+    extraConfig?: IFilterXSSOptions,
 ) => {
-    // @ts-expect-error Types clash but it works i swear
-    const sanitizedHtml = DOMPurify(window).sanitize(html, {
-        ALLOWED_TAGS: [
-            "a",
-            "p",
-            "br",
-            "b",
-            "i",
-            "em",
-            "strong",
-            "del",
-            "code",
-            "u",
-            "pre",
-            "ul",
-            "ol",
-            "li",
-            "blockquote",
-        ],
-        ALLOWED_ATTR: [
-            "href",
-            "target",
-            "title",
-            "rel",
-            "class",
-            "start",
-            "reversed",
-            "value",
-        ],
-        ALLOWED_URI_REGEXP: new RegExp(
-            `/^(?:(?:${config.validation.url_scheme_whitelist.join(
-                "|",
-            )}):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i`,
-        ),
-        USE_PROFILES: {
-            mathMl: true,
+    const sanitizedHtml = xss(html, {
+        whiteList: {
+            a: ["href", "title", "target", "rel", "class"],
+            p: ["class"],
+            br: ["class"],
+            b: ["class"],
+            i: ["class"],
+            em: ["class"],
+            strong: ["class"],
+            del: ["class"],
+            code: ["class"],
+            u: ["class"],
+            pre: ["class"],
+            ul: ["class"],
+            ol: ["class"],
+            li: ["class"],
+            blockquote: ["class"],
         },
+        stripIgnoreTag: false,
+        escapeHtml: (unsafeHtml) =>
+            stringifyEntitiesLight(unsafeHtml, {
+                escapeOnly: true,
+            }),
         ...extraConfig,
-    }) as string;
+    });
 
     // Check text to only allow h-*, p-*, u-*, dt-*, e-*, mention, hashtag, ellipsis, invisible classes
     const allowedClasses = [

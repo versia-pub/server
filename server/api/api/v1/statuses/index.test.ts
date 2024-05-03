@@ -361,4 +361,62 @@ describe(meta.route, () => {
             });
         });
     });
+
+    describe("HTML injection testing", () => {
+        test("should not allow HTML injection", async () => {
+            const response = await sendTestRequest(
+                new Request(new URL(meta.route, config.http.base_url), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        status: "Hi! <script>alert('Hello, world!');</script>",
+                        federate: false,
+                    }),
+                }),
+            );
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("content-type")).toBe(
+                "application/json",
+            );
+
+            const object = (await response.json()) as APIStatus;
+
+            expect(object.content).toBe(
+                "<p>Hi! &lt;script&gt;alert('Hello, world!');&lt;/script&gt;</p>",
+            );
+        });
+
+        test("should not allow HTML injection in spoiler_text", async () => {
+            const response = await sendTestRequest(
+                new Request(new URL(meta.route, config.http.base_url), {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        status: "Hello, world!",
+                        spoiler_text:
+                            "uwu <script>alert('Hello, world!');</script>",
+                        federate: false,
+                    }),
+                }),
+            );
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("content-type")).toBe(
+                "application/json",
+            );
+
+            const object = (await response.json()) as APIStatus;
+
+            expect(object.spoiler_text).toBe(
+                "uwu &#x3C;script&#x3E;alert(&#x27;Hello, world!&#x27;);&#x3C;/script&#x3E;",
+            );
+        });
+    });
 });
