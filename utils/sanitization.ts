@@ -1,11 +1,12 @@
 import { config } from "config-manager";
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
+import { JSDOM } from "jsdom";
 
 export const sanitizeHtml = async (
     html: string,
     extraConfig?: DOMPurify.Config,
 ) => {
-    const sanitizedHtml = DOMPurify.sanitize(html, {
+    const sanitizedHtml = DOMPurify(new JSDOM().window).sanitize(html, {
         ALLOWED_TAGS: [
             "a",
             "p",
