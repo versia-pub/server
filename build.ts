@@ -28,6 +28,8 @@ await Bun.build({
 // I apologize for this
 await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
 await $`sed -i 's|import"node_modules/|import"./node_modules/|g' dist/**/*.js`;
+// Replace /temp/node_modules with ./node_modules
+await $`sed -i 's|/temp/node_modules|./node_modules|g' dist/**/*.js`;
 
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
