@@ -1,8 +1,8 @@
 import { config } from "config-manager";
 import DOMPurify from "dompurify";
-import { Window } from "happy-dom";
+import { GlobalWindow } from "happy-dom";
 
-const window = new Window();
+const window = new GlobalWindow();
 
 export const sanitizeHtml = async (
     html: string,
