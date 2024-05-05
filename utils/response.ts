@@ -73,9 +73,10 @@ export const redirect = (url: string | URL, status = 302) => {
 };
 
 export const proxyUrl = (url: string | null) => {
+    const urlAsBase64Url = Buffer.from(url || "").toString("base64url");
     return url
         ? new URL(
-              `/media/proxy?url=${encodeURIComponent(url)}`,
+              `/media/proxy?url=${urlAsBase64Url}`,
               config.http.base_url,
           ).toString()
         : url;
