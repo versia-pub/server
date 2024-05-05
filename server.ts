@@ -215,10 +215,6 @@ export const createServer = (
                 );
             }
 
-            return clientResponse(
-                await proxy.arrayBuffer(),
-                proxy.status,
-                proxy.headers.toJSON(),
-            );
+            return proxy;
         },
     });
