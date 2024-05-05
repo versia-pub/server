@@ -394,11 +394,6 @@ export class User {
             discoverable: undefined,
             mute_expires_at: undefined,
             group: false,
-            // @ts-expect-error Pleroma extension
-            pleroma: {
-                is_admin: user.isAdmin,
-                is_moderator: user.isAdmin,
-            },
         };
     }
 

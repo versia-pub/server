@@ -86,11 +86,6 @@ describe(meta.route, () => {
             limited: false,
             noindex: false,
             suspended: false,
-            // @ts-expect-error Pleroma extension
-            pleroma: {
-                is_admin: false,
-                is_moderator: false,
-            },
         } satisfies APIAccount);
     });
 });

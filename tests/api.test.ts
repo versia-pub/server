@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import { Emojis } from "~drizzle/schema";
 import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
-import type { Instance as APIInstance } from "~types/mastodon/instance";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const base_url = config.http.base_url;
