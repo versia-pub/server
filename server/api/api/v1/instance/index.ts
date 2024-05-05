@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
-import { jsonResponse } from "@response";
+import { jsonResponse, proxyUrl } from "@response";
 import { and, count, countDistinct, eq, gte, isNull, sql } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import { Instances, Notes, Users } from "~drizzle/schema";
@@ -108,8 +108,8 @@ export default apiRoute(async (req, matchedRoute, extraData) => {
             status_count: statusCount,
             user_count: userCount,
         },
-        thumbnail: config.instance.logo,
-        banner: config.instance.banner,
+        thumbnail: proxyUrl(config.instance.logo),
+        banner: proxyUrl(config.instance.banner) ?? "",
         title: config.instance.name,
         uri: config.http.base_url,
         urls: {
