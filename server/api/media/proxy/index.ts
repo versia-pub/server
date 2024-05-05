@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@api";
-import { errorResponse, response } from "@response";
+import { response } from "@response";
 import { z } from "zod";
 
 export const meta = applyConfig({
@@ -22,6 +22,8 @@ export default apiRoute<typeof meta, typeof schema>(
     async (req, matchedRoute, extraData) => {
         const { url } = extraData.parsedRequest;
 
-        return fetch(url);
+        return fetch(url).then((res) => {
+            return response(res.body, res.status, res.headers.toJSON());
+        });
     },
 );
