@@ -1,0 +1,34 @@
+{
+    "name": "Lysand Dev Container",
+    "dockerFile": "Dockerfile",
+    "runArgs": [
+        "-v",
+        "${localWorkspaceFolder}/config:/workspace/config",
+        "-v",
+        "${localWorkspaceFolder}/logs:/workspace/logs",
+        "-v",
+        "${localWorkspaceFolder}/uploads:/workspace/uploads",
+        "--network=host"
+    ],
+    "mounts": [
+        "source=node_modules,target=/workspace/node_modules,type=bind,consistency=cached",
+        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/root/.ssh,readonly"
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            },
+            "extensions": [
+                "biomejs.biome",
+                "ms-vscode-remote.remote-containers",
+                "oven.bun-vscode",
+                "vivaxy.vscode-conventional-commits",
+                "EditorConfig.EditorConfig",
+                "tamasfe.even-better-toml",
+                "YoavBls.pretty-ts-errors",
+                "ms-vscode-remote.remote-containers"
+            ]
+        }
+    }
+}
