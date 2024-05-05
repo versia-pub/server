@@ -37,7 +37,7 @@ COPY entrypoint.sh /app
 LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
 LABEL org.opencontainers.image.source "https://github.com/lysand-org/lysand"
 LABEL org.opencontainers.image.vendor "Lysand Org"
-LABEL org.opencontainers.image.licenses "AGPL-3.0"
+LABEL org.opencontainers.image.licenses "AGPL-3.0-or-later"
 LABEL org.opencontainers.image.title "Lysand Server"
 LABEL org.opencontainers.image.description "Lysand Server docker image"
 

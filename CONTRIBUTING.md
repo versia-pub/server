@@ -128,4 +128,4 @@ If you find a bug, please open an issue on GitHub. Please make sure to include t
 
 # License
 
-Lysand is licensed under the [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html) license. By contributing to Lysand, you agree to license your contributions under the same license.
+Lysand is licensed under the [AGPLv3 or later](https://www.gnu.org/licenses/agpl-3.0.en.html) license. By contributing to Lysand, you agree to license your contributions under the same license.

@@ -1,17 +1,26 @@
 <p align="center">
-  <a href="https://lysand.org"><img src="https://cdn-web.cpluspatch.com/lysand.webp" alt="Lysand Logo" height=130></a>
+  <a href="https://lysand.org"><img src="https://cdn.lysand.org/logo-long-dark.webp" alt="Lysand Logo" height="110"></a>
 </p>
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
 ## What is this?
 
-This is a project to create a federated social network based on the [Lysand](https://lysand.org) protocol. It is currently in beta phase, with basic federation and almost complete Mastodon API support.
+**Lysand Server** is a federated social network server based on the [Lysand](https://lysand.org) protocol. It is currently in beta phase, with basic federation and almost complete Mastodon API support.
 
-This project aims to be a fully featured social network, with a focus on privacy, security, and performance. It implements the Mastodon API for support with clients that already support Mastodon or Pleroma.
+### Goals
 
-> [!NOTE]  
-> This project is not affiliated with Mastodon or Pleroma, and is not a fork of either project. It is a new project built from the ground up.
+- **Privacy**: Lysand is designed to be as private as possible. Unnecessary data is not stored, and data that is stored is done so securely.
+- **Configurability**: High configurability is a key feature of Lysand. Almost every aspect of the server can be configured to suit your needs. If you feel like something is missing, please open an issue.
+- **Security**: Lysand is designed with security in mind. It is built with modern security practices and technologies, and is constantly updated to ensure the highest level of security.
+- **Performance**: Efficiency and speed are a key focus of Lysand. The design is non-monolithic, and is built to be as fast as possible.
+- **Mastodon API compatibility**: Lysand is designed to be compatible with the Mastodon API, with Glitch-SOC extensions.
+
+### Anti-Goals
+
+- **Monolithic design**: Modularity and scaling is important to this project. This means that it is not a single, monolithic application, but rather a collection of smaller, more focused applications. (API layer, queue, database, frontend, etc.)
+- **Complexity**: Both in code and in function, Lysand should be as simple as possible. This does not mean adding no features or functionality, but rather that the features and functionality that are added should be well-written and easy to understand.
+- **Bloat**: Lysand should not be bloated with unnecessary features, packages, dependencies or code. It should be as lightweight as possible, while still being feature-rich.
 
 ## Features
 
@@ -30,44 +39,7 @@ This project aims to be a fully featured social network, with a focus on privacy
 
 ## Screenshots
 
-You can visit [https://social.lysand.org](https://social.lysand.org) to see a live instance of Lysand with Lysand-FE.
-
-## Benchmarks
-
-> [!NOTE]
-> These benchmarks are not representative of real-world performance, and are only meant to be used as a rough guide. Load, and therefore performance, will vary depending on the server's hardware and software configuration, as well as user activity.
-
-### Timeline Benchmarks
-
-You may run the following command to benchmark the `/api/v1/timelines/home` endpoint:
-
-```bash
-TOKEN=token_here bun benchmark:timeline <request_count>
-```
-
-The `request_count` variable is optional and defaults to 100. `TOKEN` is your personal user token, used to login to the API.
-
-On a quad-core laptop:
-
-```
-$ bun run benchmarks/timelines.ts 100
-✓ All requests succeeded
-✓ 100 requests fulfilled in 0.12611s
-```
-
-```
-$ bun run benchmarks/timelines.ts 1000
-✓ All requests succeeded
-✓ 1000 requests fulfilled in 0.90925s
-```
-
-```
-$ bun run benchmarks/timelines.ts 10000
-✓ All requests succeeded
-✓ 10000 requests fulfilled in 12.44852s
-```
-
-Lysand is extremely fast and can handle thousands of HTTP requests per second on a good server.
+You can visit [social.lysand.org](https://social.lysand.org) to see a live instance of Lysand with Lysand-FE.
 
 ## How do I run it?
 
@@ -77,15 +49,12 @@ Please see the [installation guide](docs/installation.md) for more information o
 
 Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information.
 
-## Planned Extra Features
-
-- Send notifications to moderators when a report is received
-- Email notifications on certain actions
-
 ## Federation
 
 The following extensions are currently supported or being worked on:
 - `org.lysand:custom_emojis`: Custom emojis
+- `org.lysand:polls`: Polls
+- `org.lysand:microblogging`: Microblogging
 
 ## API
 
@@ -201,6 +170,7 @@ Working endpoints are:
 - [ ] `/api/v2/suggestions`
 - [x] `/oauth/authorize`
 - [x] `/oauth/token`
+- [ ] `/oauth/revoke`
 - Admin API  
 
 ### Main work to do
@@ -221,4 +191,4 @@ Working endpoints are:
 
 ## License
 
-This project is licensed under the [AGPL-3.0](LICENSE).
+This project is licensed under the [AGPL-3.0-or-later](LICENSE).
