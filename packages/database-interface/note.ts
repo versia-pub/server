@@ -1,3 +1,4 @@
+import { sanitizedHtmlStrip } from "@sanitization";
 import {
     type InferInsertModel,
     type SQL,
@@ -45,7 +46,6 @@ import { config } from "~packages/config-manager";
 import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
 import type { Status as APIStatus } from "~types/mastodon/status";
 import { User } from "./user";
-import { sanitizedHtmlStrip } from "@sanitization";
 
 /**
  * Gives helpers to fetch notes from database in a nice format
@@ -494,12 +494,7 @@ export class Note {
             sensitive: data.sensitive,
             spoiler_text: data.spoilerText,
             tags: [],
-            uri:
-                data.uri ||
-                new URL(
-                    `/@${data.author.username}/${data.id}`,
-                    config.http.base_url,
-                ).toString(),
+            uri: data.uri || this.getMastoURI(),
             visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoURI(),
             bookmarked: false,

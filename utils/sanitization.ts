@@ -1,5 +1,5 @@
-import xss, { type IFilterXSSOptions } from "xss";
 import { stringifyEntitiesLight } from "stringify-entities";
+import xss, { type IFilterXSSOptions } from "xss";
 
 export const sanitizedHtmlStrip = (html: string) => {
     return sanitizeHtml(html, {

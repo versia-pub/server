@@ -1,3 +1,5 @@
+import { config } from "~packages/config-manager";
+
 export const response = (
     data: BodyInit | null = null,
     status = 200,
@@ -68,4 +70,13 @@ export const redirect = (url: string | URL, status = 302) => {
     return response(null, status, {
         Location: url.toString(),
     });
+};
+
+export const proxyUrl = (url: string | null) => {
+    return url
+        ? new URL(
+              `/media/proxy?url=${encodeURIComponent(url)}`,
+              config.http.base_url,
+          ).toString()
+        : url;
 };

@@ -1,3 +1,4 @@
+import { proxyUrl } from "@response";
 import type { Config } from "config-manager";
 import type { InferSelectModel } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
@@ -25,9 +26,9 @@ export const attachmentToAPI = (
     return {
         id: attachment.id,
         type: type as "image" | "video" | "audio" | "unknown",
-        url: attachment.url,
-        remote_url: attachment.remoteUrl,
-        preview_url: attachment.thumbnailUrl || attachment.url,
+        url: proxyUrl(attachment.url) ?? "",
+        remote_url: proxyUrl(attachment.remoteUrl),
+        preview_url: proxyUrl(attachment.thumbnailUrl || attachment.url),
         text_url: null,
         meta: {
             width: attachment.width || undefined,

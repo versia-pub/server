@@ -3,7 +3,7 @@ import { errorResponse, response } from "@response";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/api/v1/media/:id",
+    route: "/api/media/:id",
     ratelimits: {
         max: 100,
         duration: 60,

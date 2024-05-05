@@ -1,3 +1,4 @@
+import { proxyUrl } from "@response";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
@@ -93,8 +94,8 @@ export const fetchEmoji = async (
 export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
     return {
         shortcode: emoji.shortcode,
-        static_url: emoji.url, // TODO: Add static version
-        url: emoji.url,
+        static_url: proxyUrl(emoji.url) ?? "", // TODO: Add static version
+        url: proxyUrl(emoji.url) ?? "",
         visible_in_picker: emoji.visibleInPicker,
         category: undefined,
     };

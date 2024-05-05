@@ -1,6 +1,7 @@
 import { idValidator } from "@api";
 import { getBestContentType, urlToContentFormat } from "@content_types";
 import { addUserToMeilisearch } from "@meilisearch";
+import { proxyUrl } from "@response";
 import { type SQL, and, desc, eq, inArray } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
@@ -367,8 +368,8 @@ export class User {
             url:
                 user.uri ||
                 new URL(`/@${user.username}`, config.http.base_url).toString(),
-            avatar: this.getAvatarUrl(config),
-            header: this.getHeaderUrl(config),
+            avatar: proxyUrl(this.getAvatarUrl(config)) ?? "",
+            header: proxyUrl(this.getHeaderUrl(config)) ?? "",
             locked: user.isLocked,
             created_at: new Date(user.createdAt).toISOString(),
             followers_count: user.followerCount,
@@ -382,8 +383,8 @@ export class User {
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
             // TODO: Add static avatar and header
-            avatar_static: this.getAvatarUrl(config),
-            header_static: this.getHeaderUrl(config),
+            avatar_static: proxyUrl(this.getAvatarUrl(config)) ?? "",
+            header_static: proxyUrl(this.getHeaderUrl(config)) ?? "",
             acct: this.getAcct(),
             // TODO: Add these fields
             limited: false,
