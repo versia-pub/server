@@ -105,7 +105,9 @@ if (isEntry) {
     }
 }
 
-const app = new Hono();
+const app = new Hono({
+    strict: false,
+});
 
 app.use(ipBans);
 app.use(agentBans);

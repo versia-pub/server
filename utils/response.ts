@@ -76,7 +76,7 @@ export const proxyUrl = (url: string | null) => {
     const urlAsBase64Url = Buffer.from(url || "").toString("base64url");
     return url
         ? new URL(
-              `/media/proxy?url=${urlAsBase64Url}`,
+              `/media/proxy/${urlAsBase64Url}`,
               config.http.base_url,
           ).toString()
         : url;

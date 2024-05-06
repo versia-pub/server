@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/api/media/:id",
+    route: "/media/:id",
     ratelimits: {
         max: 100,
         duration: 60,

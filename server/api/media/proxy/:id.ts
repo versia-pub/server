@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/media/proxy",
+    route: "/media/proxy/:id",
     ratelimits: {
         max: 100,
         duration: 60,
@@ -17,8 +17,8 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    query: z.object({
-        url: z
+    param: z.object({
+        id: z
             .string()
             .transform((val) => Buffer.from(val, "base64url").toString()),
     }),
@@ -28,18 +28,18 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        zValidator("query", schemas.query, handleZodError),
+        zValidator("param", schemas.param, handleZodError),
         async (context) => {
-            const { url } = context.req.valid("query");
+            const { id } = context.req.valid("param");
 
             // Check if URL is valid
-            if (!URL.canParse(url))
+            if (!URL.canParse(id))
                 return errorResponse(
                     "Invalid URL (it should be encoded as base64url",
                     400,
                 );
 
-            return fetch(url).then((res) => {
+            return fetch(id).then((res) => {
                 return response(res.body, res.status, res.headers.toJSON());
             });
         },
