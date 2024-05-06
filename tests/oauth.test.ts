@@ -112,7 +112,7 @@ describe("POST /api/auth/login/", () => {
 describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
         const response = await sendTestRequest(
-            new Request(new URL(`/oauth/authorize`, base_url), {
+            new Request(new URL("/oauth/authorize", base_url), {
                 method: "POST",
                 headers: {
                     Cookie: `jwt=${jwt}`,

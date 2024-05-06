@@ -39,7 +39,11 @@ export default (app: Hono) =>
                     400,
                 );
 
-            return fetch(id).then((res) => {
+            return fetch(id, {
+                headers: {
+                    "Accept-Encoding": "identity",
+                },
+            }).then((res) => {
                 return response(res.body, res.status, res.headers.toJSON());
             });
         },
