@@ -22,6 +22,8 @@ services:
         restart: unless-stopped
         networks:
             - lysand-net
+        environment:
+            NUXT_PUBLIC_API_HOST: https://yourserver.com
             
     db:
         image: ghcr.io/lysand-org/postgres:main
