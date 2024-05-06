@@ -1,13 +1,8 @@
 # Installation
 
-> [!NOTE]
-> You should probably be using the `main` branch of this repository, as it is the most up-to-date. When 0.5 releases, you should switch to the `0.5` branch.
->
-> For Docker, this means pulling the `main` tag
-
 ### Requirements
 
-- The [Bun Runtime](https://bun.sh), version 1.0.30 or later (usage of the latest version is recommended)
+- The [Bun Runtime](https://bun.sh), version 1.1.7 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 - (Optional if you want search) A working Meiliseach instance
@@ -17,9 +12,9 @@
 > 
 > We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
-### With Docker
+### With Docker/Podman
 
-Docker is the recommended way to run Lysand (podman should also work). To run Lysand with Docker, follow these steps:
+Docker is the recommended way to run Lysand (podman also works). To run Lysand with Docker, follow these steps:
 
 1. Download the `docker-compose.yml` file from the repository
 
