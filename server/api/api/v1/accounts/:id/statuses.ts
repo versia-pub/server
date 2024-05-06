@@ -29,7 +29,7 @@ export const schemas = {
         max_id: z.string().regex(idValidator).optional(),
         since_id: z.string().regex(idValidator).optional(),
         min_id: z.string().regex(idValidator).optional(),
-        limit: z.number().int().min(1).max(40).optional().default(20),
+        limit: z.coerce.number().int().min(1).max(40).optional().default(20),
         only_media: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
