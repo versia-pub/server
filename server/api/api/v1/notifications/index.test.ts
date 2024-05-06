@@ -11,58 +11,87 @@ import { meta } from "./index";
 
 await deleteOldTestUsers();
 
+const getFormData = (object: Record<string, string | number | boolean>) =>
+    Object.keys(object).reduce((formData, key) => {
+        formData.append(key, String(object[key]));
+        return formData;
+    }, new FormData());
+
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    await fetch(
-        new URL(`/api/v1/accounts/${users[0].id}/follow`, config.http.base_url),
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+    const res1 = await sendTestRequest(
+        new Request(
+            new URL(
+                `/api/v1/accounts/${users[0].id}/follow`,
+                config.http.base_url,
+            ),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({}),
             },
-        },
-    );
-
-    await fetch(
-        new URL(
-            `/api/v1/statuses/${timeline[0].id}/favourite`,
-            config.http.base_url,
         ),
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
-            },
-        },
     );
 
-    await fetch(
-        new URL(
-            `/api/v1/statuses/${timeline[0].id}/reblog`,
-            config.http.base_url,
+    expect(res1.status).toBe(200);
+
+    const res2 = await sendTestRequest(
+        new Request(
+            new URL(
+                `/api/v1/statuses/${timeline[0].id}/favourite`,
+                config.http.base_url,
+            ),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({}),
+            },
         ),
-        {
+    );
+
+    expect(res2.status).toBe(200);
+
+    const res3 = await sendTestRequest(
+        new Request(
+            new URL(
+                `/api/v1/statuses/${timeline[0].id}/reblog`,
+                config.http.base_url,
+            ),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+                body: getFormData({}),
+            },
+        ),
+    );
+
+    expect(res3.status).toBe(200);
+
+    const res4 = await sendTestRequest(
+        new Request(new URL("/api/v1/statuses", config.http.base_url), {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[1].accessToken}`,
             },
-        },
-    );
-
-    await fetch(new URL("/api/v1/statuses", config.http.base_url), {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            status: `@${users[0].getUser().username} test mention`,
-            visibility: "direct",
-            federate: false,
+            body: getFormData({
+                status: `@${users[0].getUser().username} test mention`,
+                visibility: "direct",
+                federate: false,
+            }),
         }),
-    });
+    );
+
+    expect(res4.status).toBe(200);
 });
 
 afterAll(async () => {
@@ -109,24 +138,21 @@ describe(meta.route, () => {
     });
 
     test("should not return notifications with filtered keywords", async () => {
-        const formData = new FormData();
-
-        formData.append("title", "Test Filter");
-        formData.append("context[]", "notifications");
-        formData.append("filter_action", "hide");
-        formData.append(
-            "keywords_attributes[0][keyword]",
-            timeline[0].content.slice(4, 20),
-        );
-        formData.append("keywords_attributes[0][whole_word]", "false");
-
         const filterResponse = await sendTestRequest(
             new Request(new URL("/api/v2/filters", config.http.base_url), {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: formData,
+                body: new URLSearchParams({
+                    title: "Test Filter",
+                    "context[]": "notifications",
+                    filter_action: "hide",
+                    "keywords_attributes[0][keyword]":
+                        timeline[0].content.slice(4, 20),
+                    "keywords_attributes[0][whole_word]": "false",
+                }),
             }),
         );
 

@@ -1,5 +1,6 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig } from "@api";
 import { jsonResponse } from "@response";
+import type { Hono } from "hono";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -13,17 +14,18 @@ export const meta = applyConfig({
     route: "/oauth/providers",
 });
 
-/**
- * Lists available OAuth providers
- */
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const config = await extraData.configManager.getConfig();
-
-    return jsonResponse(
-        config.oidc.providers.map((p) => ({
-            name: p.name,
-            icon: p.icon,
-            id: p.id,
-        })),
-    );
-});
+export default (app: Hono) =>
+    app.on(meta.allowedMethods, meta.route, async () => {
+        return jsonResponse([
+            {
+                name: "GitHub",
+                icon: "github",
+                id: "github",
+            },
+            {
+                name: "Google",
+                icon: "google",
+                id: "google",
+            },
+        ]);
+    });

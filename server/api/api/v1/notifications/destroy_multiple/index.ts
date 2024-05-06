@@ -1,6 +1,8 @@
-import { apiRoute, applyConfig, idValidator } from "@api";
+import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
+import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~drizzle/db";
 import { Notifications } from "~drizzle/schema";
@@ -18,24 +20,37 @@ export const meta = applyConfig({
     },
 });
 
-export const schema = z.object({
-    ids: z.array(z.string().regex(idValidator)),
-});
+export const schemas = {
+    query: z.object({
+        "ids[]": z.array(z.string().uuid()),
+    }),
+};
 
-export default apiRoute<typeof meta, typeof schema>(
-    async (req, matchedRoute, extraData) => {
-        const { user } = extraData.auth;
-        if (!user) return errorResponse("Unauthorized", 401);
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("query", schemas.query, handleZodError),
+        auth(meta.auth),
+        async (context) => {
+            const { user } = context.req.valid("header");
 
-        const { ids } = extraData.parsedRequest;
+            if (!user) return errorResponse("Unauthorized", 401);
 
-        await db
-            .update(Notifications)
-            .set({
-                dismissed: true,
-            })
-            .where(inArray(Notifications.id, ids));
+            const { "ids[]": ids } = context.req.valid("query");
 
-        return jsonResponse({});
-    },
-);
+            await db
+                .update(Notifications)
+                .set({
+                    dismissed: true,
+                })
+                .where(
+                    and(
+                        inArray(Notifications.id, ids),
+                        eq(Notifications.notifiedId, user.id),
+                    ),
+                );
+
+            return jsonResponse({});
+        },
+    );

@@ -1,6 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, auth } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
+import type { Hono } from "hono";
 import { db } from "~drizzle/db";
 import { Notifications } from "~drizzle/schema";
 
@@ -17,16 +18,22 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const { user } = extraData.auth;
-    if (!user) return errorResponse("Unauthorized", 401);
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        auth(meta.auth),
+        async (context) => {
+            const { user } = context.req.valid("header");
+            if (!user) return errorResponse("Unauthorized", 401);
 
-    await db
-        .update(Notifications)
-        .set({
-            dismissed: true,
-        })
-        .where(eq(Notifications.notifiedId, user.id));
+            await db
+                .update(Notifications)
+                .set({
+                    dismissed: true,
+                })
+                .where(eq(Notifications.notifiedId, user.id));
 
-    return jsonResponse({});
-});
+            return jsonResponse({});
+        },
+    );

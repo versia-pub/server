@@ -1,5 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig } from "@api";
 import { jsonResponse } from "@response";
+import type { Hono } from "hono";
+import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -13,17 +15,16 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const config = await extraData.configManager.getConfig();
-
-    return jsonResponse({
-        http: {
-            bind: config.http.bind,
-            bind_port: config.http.bind_port,
-            base_url: config.http.base_url,
-            url: config.http.bind.includes("http")
-                ? `${config.http.bind}:${config.http.bind_port}`
-                : `http://${config.http.bind}:${config.http.bind_port}`,
-        },
+export default (app: Hono) =>
+    app.on(meta.allowedMethods, meta.route, async (context) => {
+        return jsonResponse({
+            http: {
+                bind: config.http.bind,
+                bind_port: config.http.bind_port,
+                base_url: config.http.base_url,
+                url: config.http.bind.includes("http")
+                    ? `${config.http.bind}:${config.http.bind_port}`
+                    : `http://${config.http.bind}:${config.http.bind_port}`,
+            },
+        });
     });
-});

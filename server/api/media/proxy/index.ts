@@ -1,5 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, handleZodError } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { errorResponse, response } from "@response";
+import type { Hono } from "hono";
 import { z } from "zod";
 
 export const meta = applyConfig({
@@ -14,26 +16,31 @@ export const meta = applyConfig({
     },
 });
 
-export const schema = z.object({
-    // Base64 encoded URL
-    url: z
-        .string()
-        .transform((val) => Buffer.from(val, "base64url").toString()),
-});
+export const schemas = {
+    query: z.object({
+        url: z
+            .string()
+            .transform((val) => Buffer.from(val, "base64url").toString()),
+    }),
+};
 
-export default apiRoute<typeof meta, typeof schema>(
-    async (req, matchedRoute, extraData) => {
-        const { url } = extraData.parsedRequest;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("query", schemas.query, handleZodError),
+        async (context) => {
+            const { url } = context.req.valid("query");
 
-        // Check if URL is valid
-        if (!URL.canParse(url))
-            return errorResponse(
-                "Invalid URL (it should be encoded as base64url",
-                400,
-            );
+            // Check if URL is valid
+            if (!URL.canParse(url))
+                return errorResponse(
+                    "Invalid URL (it should be encoded as base64url",
+                    400,
+                );
 
-        return fetch(url).then((res) => {
-            return response(res.body, res.status, res.headers.toJSON());
-        });
-    },
-);
+            return fetch(url).then((res) => {
+                return response(res.body, res.status, res.headers.toJSON());
+            });
+        },
+    );

@@ -1,4 +1,5 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig } from "@api";
+import type { Hono } from "hono";
 import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
@@ -16,15 +17,15 @@ export const meta = applyConfig({
 /**
  * Mastodon-FE logout route
  */
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    // Redirect to home
-    return new Response(null, {
-        headers: {
-            Location: "/",
-            "Set-Cookie": `_session_id=; Domain=${
-                new URL(config.http.base_url).hostname
-            }; SameSite=Lax; Path=/; HttpOnly; Max-Age=0; Expires=${new Date().toUTCString()}`,
-        },
-        status: 303,
+export default (app: Hono) =>
+    app.on(meta.allowedMethods, meta.route, async () => {
+        return new Response(null, {
+            headers: {
+                Location: "/",
+                "Set-Cookie": `_session_id=; Domain=${
+                    new URL(config.http.base_url).hostname
+                }; SameSite=Lax; Path=/; HttpOnly; Max-Age=0; Expires=${new Date().toUTCString()}`,
+            },
+            status: 303,
+        });
     });
-});

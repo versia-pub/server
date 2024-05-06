@@ -1,11 +1,13 @@
 import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
 import { config } from "config-manager";
-import { count } from "drizzle-orm";
+import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
-import { db, setupDatabase } from "~drizzle/db";
-import { Notes } from "~drizzle/schema";
-import { createServer } from "~server";
+import { setupDatabase } from "~drizzle/db";
+import { Note } from "~packages/database-interface/note";
+import type { APIRouteExports } from "~packages/server-handler";
+import { routes } from "~routes";
+import { createServer } from "~server2";
 
 const timeAtStart = performance.now();
 
@@ -28,20 +30,7 @@ if (config.meilisearch.enabled) {
 }
 
 // Check if database is reachable
-let postCount = 0;
-try {
-    postCount = (
-        await db
-            .select({
-                count: count(),
-            })
-            .from(Notes)
-    )[0].count;
-} catch (e) {
-    const error = e as Error;
-    await dualServerLogger.logError(LogLevel.CRITICAL, "Database", error);
-    process.exit(1);
-}
+const postCount = await Note.getCount();
 
 if (isEntry) {
     // Check if JWT private key is set in config
@@ -110,7 +99,21 @@ if (isEntry) {
     }
 }
 
-const server = createServer(config, dualServerLogger, true);
+const app = new Hono();
+
+// Inject own filesystem router
+for (const [route, path] of Object.entries(routes)) {
+    // use app.get(path, handler) to add routes
+    const route: APIRouteExports = await import(path);
+
+    if (!route.meta || !route.default) {
+        throw new Error(`Route ${path} does not have the correct exports.`);
+    }
+
+    route.default(app);
+}
+
+createServer(config, app);
 
 await dualServerLogger.log(
     LogLevel.INFO,
@@ -161,4 +164,4 @@ if (config.frontend.enabled) {
     );
 }
 
-export { config, server };
+export { app };

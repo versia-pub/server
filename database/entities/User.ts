@@ -109,6 +109,15 @@ export const getFromRequest = async (req: Request): Promise<AuthData> => {
     return { user, token, application };
 };
 
+export const getFromHeader = async (value: string): Promise<AuthData> => {
+    const token = value.split(" ")[1];
+
+    const { user, application } =
+        await retrieveUserAndApplicationFromToken(token);
+
+    return { user, token, application };
+};
+
 export const followRequestUser = async (
     follower: User,
     followee: User,

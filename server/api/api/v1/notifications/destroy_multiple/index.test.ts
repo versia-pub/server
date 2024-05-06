@@ -17,38 +17,48 @@ let notifications: APINotification[] = [];
 
 // Create some test notifications
 beforeAll(async () => {
-    await fetch(
-        new URL(`/api/v1/accounts/${users[0].id}/follow`, config.http.base_url),
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
-            },
-        },
-    );
-
-    for (const i of [0, 1, 2, 3]) {
-        await fetch(
+    await sendTestRequest(
+        new Request(
             new URL(
-                `/api/v1/statuses/${statuses[i].id}/favourite`,
+                `/api/v1/accounts/${users[0].id}/follow`,
                 config.http.base_url,
             ),
             {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[1].accessToken}`,
+                    "Content-Type": "application/json",
                 },
+                body: JSON.stringify({}),
             },
+        ),
+    );
+
+    for (const i of [0, 1, 2, 3]) {
+        await sendTestRequest(
+            new Request(
+                new URL(
+                    `/api/v1/statuses/${statuses[i].id}/favourite`,
+                    config.http.base_url,
+                ),
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${tokens[1].accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({}),
+                },
+            ),
         );
     }
 
-    notifications = await fetch(
-        new URL("/api/v1/notifications", config.http.base_url),
-        {
+    notifications = await sendTestRequest(
+        new Request(new URL("/api/v1/notifications", config.http.base_url), {
             headers: {
                 Authorization: `Bearer ${tokens[0].accessToken}`,
             },
-        },
+        }),
     ).then((r) => r.json());
 
     expect(notifications.length).toBe(5);
@@ -62,9 +72,17 @@ afterAll(async () => {
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
         const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "DELETE",
-            }),
+            new Request(
+                new URL(
+                    `${meta.route}?${new URLSearchParams(
+                        notifications.slice(1).map((n) => ["ids[]", n.id]),
+                    ).toString()}`,
+                    config.http.base_url,
+                ),
+                {
+                    method: "DELETE",
+                },
+            ),
         );
 
         expect(response.status).toBe(401);

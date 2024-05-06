@@ -1,5 +1,8 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, handleZodError } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
+import type { Hono } from "hono";
+import { z } from "zod";
 import { db } from "~drizzle/db";
 import { Applications, Tokens } from "~drizzle/schema";
 
@@ -15,33 +18,54 @@ export const meta = applyConfig({
     },
 });
 
+export const schemas = {
+    query: z.object({
+        redirect_uri: z.string().url(),
+        client_id: z.string(),
+        code: z.string(),
+    }),
+};
+
 /**
  * OAuth Code flow
  */
-export default apiRoute(async (req, matchedRoute) => {
-    const redirect_uri = decodeURIComponent(matchedRoute.query.redirect_uri);
-    const client_id = matchedRoute.query.client_id;
-    const code = matchedRoute.query.code;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("query", schemas.query, handleZodError),
+        async (context) => {
+            const { redirect_uri, client_id, code } =
+                context.req.valid("query");
 
-    const redirectToLogin = (error: string) =>
-        Response.redirect(
-            `/oauth/authorize?${new URLSearchParams({
-                ...matchedRoute.query,
-                error: encodeURIComponent(error),
-            }).toString()}`,
-            302,
-        );
+            const redirectToLogin = (error: string) =>
+                Response.redirect(
+                    `/oauth/authorize?${new URLSearchParams({
+                        ...context.req.query,
+                        error: encodeURIComponent(error),
+                    }).toString()}`,
+                    302,
+                );
 
-    const foundToken = await db
-        .select()
-        .from(Tokens)
-        .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
-        .where(and(eq(Tokens.code, code), eq(Applications.clientId, client_id)))
-        .limit(1);
+            const foundToken = await db
+                .select()
+                .from(Tokens)
+                .leftJoin(
+                    Applications,
+                    eq(Tokens.applicationId, Applications.id),
+                )
+                .where(
+                    and(
+                        eq(Tokens.code, code),
+                        eq(Applications.clientId, client_id),
+                    ),
+                )
+                .limit(1);
 
-    if (!foundToken || foundToken.length <= 0)
-        return redirectToLogin("Invalid code");
+            if (!foundToken || foundToken.length <= 0)
+                return redirectToLogin("Invalid code");
 
-    // Redirect back to application
-    return Response.redirect(`${redirect_uri}?code=${code}`, 302);
-});
+            // Redirect back to application
+            return Response.redirect(`${redirect_uri}?code=${code}`, 302);
+        },
+    );

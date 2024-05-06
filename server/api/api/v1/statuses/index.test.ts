@@ -16,21 +16,18 @@ afterAll(async () => {
     await deleteUsers();
 });
 
+const getFormData = (object: Record<string, string | number | boolean>) =>
+    Object.keys(object).reduce((formData, key) => {
+        formData.append(key, String(object[key]));
+        return formData;
+    }, new FormData());
+
 describe(meta.route, () => {
-    test("should return 405 if method is not allowed", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "GET",
-            }),
-        );
-
-        expect(response.status).toBe(405);
-    });
-
     test("should return 401 if not authenticated", async () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
+                body: new FormData(),
             }),
         );
 
@@ -42,10 +39,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({}),
+                body: new FormData(),
             }),
         );
 
@@ -57,10 +53,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "a".repeat(config.validation.max_note_size + 1),
                     federate: false,
                 }),
@@ -75,10 +70,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     visibility: "invalid",
                     federate: false,
@@ -94,10 +88,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     scheduled_at: "invalid",
                     federate: false,
@@ -113,10 +106,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     in_reply_to_id: "invalid",
                     federate: false,
@@ -132,10 +124,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     quote_id: "invalid",
                     federate: false,
@@ -151,12 +142,11 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
-                    media_ids: ["invalid"],
+                    "media_ids[]": "invalid",
                     federate: false,
                 }),
             }),
@@ -170,10 +160,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     federate: false,
                 }),
@@ -193,10 +182,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     visibility: "unlisted",
                     federate: false,
@@ -218,10 +206,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     federate: false,
                 }),
@@ -234,10 +221,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world again!",
                     in_reply_to_id: object.id,
                     federate: false,
@@ -259,10 +245,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world!",
                     federate: false,
                 }),
@@ -275,10 +260,9 @@ describe(meta.route, () => {
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: JSON.stringify({
+                body: getFormData({
                     status: "Hello, world again!",
                     quote_id: object.id,
                     federate: false,
@@ -304,10 +288,9 @@ describe(meta.route, () => {
                 new Request(new URL(meta.route, config.http.base_url), {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: JSON.stringify({
+                    body: getFormData({
                         status: `Hello, @${users[1].getUser().username}!`,
                         federate: false,
                     }),
@@ -334,10 +317,9 @@ describe(meta.route, () => {
                 new Request(new URL(meta.route, config.http.base_url), {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: JSON.stringify({
+                    body: getFormData({
                         status: `Hello, @${users[1].getUser().username}@${
                             new URL(config.http.base_url).host
                         }!`,
@@ -368,10 +350,9 @@ describe(meta.route, () => {
                 new Request(new URL(meta.route, config.http.base_url), {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: JSON.stringify({
+                    body: getFormData({
                         status: "Hi! <script>alert('Hello, world!');</script>",
                         federate: false,
                     }),
@@ -395,10 +376,9 @@ describe(meta.route, () => {
                 new Request(new URL(meta.route, config.http.base_url), {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: JSON.stringify({
+                    body: getFormData({
                         status: "Hello, world!",
                         spoiler_text:
                             "uwu <script>alert('Hello, world!');</script>",

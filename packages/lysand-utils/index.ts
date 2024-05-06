@@ -260,3 +260,23 @@ export const signedFetch = async (
         },
     });
 };
+
+// Export all schemas as a single object
+export default {
+    Note: schemas.Note,
+    User: schemas.User,
+    Reaction: schemas.Reaction,
+    Poll: schemas.Poll,
+    Vote: schemas.Vote,
+    VoteResult: schemas.VoteResult,
+    Report: schemas.Report,
+    ServerMetadata: schemas.ServerMetadata,
+    Like: schemas.Like,
+    Dislike: schemas.Dislike,
+    Follow: schemas.Follow,
+    FollowAccept: schemas.FollowAccept,
+    FollowReject: schemas.FollowReject,
+    Announce: schemas.Announce,
+    Undo: schemas.Undo,
+    Entity: schemas.Entity,
+};

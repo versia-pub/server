@@ -1,5 +1,6 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, auth } from "@api";
 import { errorResponse, jsonResponse } from "@response";
+import type { Hono } from "hono";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -14,12 +15,17 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute((req, matchedRoute, extraData) => {
-    // TODO: Add checks for disabled or not email verified accounts
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        auth(meta.auth),
+        async (context) => {
+            // TODO: Add checks for disabled/unverified accounts
+            const { user } = context.req.valid("header");
 
-    const { user } = extraData.auth;
+            if (!user) return errorResponse("Unauthorized", 401);
 
-    if (!user) return errorResponse("Unauthorized", 401);
-
-    return jsonResponse(user.toAPI(true));
-});
+            return jsonResponse(user.toAPI(true));
+        },
+    );

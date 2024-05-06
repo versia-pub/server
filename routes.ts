@@ -7,7 +7,7 @@ export const routeMatcher = new Bun.FileSystemRouter({
 });
 
 // Transform routes to be relative to the server/api directory
-const routes = routeMatcher.routes;
+let routes = routeMatcher.routes;
 
 for (const [route, path] of Object.entries(routes)) {
     routes[route] = path.replace(join(process.cwd()), ".");
@@ -16,6 +16,9 @@ for (const [route, path] of Object.entries(routes)) {
         delete routes[route];
     }
 }
+
+// Prevent catch-all routes from being first by reversinbg the order
+routes = Object.fromEntries(Object.entries(routes).reverse());
 
 export { routes };
 

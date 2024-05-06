@@ -1,6 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, auth } from "@api";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
+import type { Hono } from "hono";
 import { db } from "~drizzle/db";
 import { Users } from "~drizzle/schema";
 import { User } from "~packages/database-interface/user";
@@ -17,18 +18,24 @@ export const meta = applyConfig({
     },
 });
 
-/**
- * Deletes a user avatar
- */
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const { user: self } = extraData.auth;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        auth(meta.auth),
+        async (context) => {
+            const { user: self } = context.req.valid("header");
 
-    if (!self) return errorResponse("Unauthorized", 401);
+            if (!self) return errorResponse("Unauthorized", 401);
 
-    await db.update(Users).set({ avatar: "" }).where(eq(Users.id, self.id));
+            await db
+                .update(Users)
+                .set({ avatar: "" })
+                .where(eq(Users.id, self.id));
 
-    return jsonResponse({
-        ...(await User.fromId(self.id))?.toAPI(),
-        avatar: "",
-    });
-});
+            return jsonResponse({
+                ...(await User.fromId(self.id))?.toAPI(),
+                avatar: "",
+            });
+        },
+    );

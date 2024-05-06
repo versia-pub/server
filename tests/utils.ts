@@ -3,17 +3,16 @@ import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~database/entities/Status";
 import { db } from "~drizzle/db";
 import { Notes, Tokens, Users } from "~drizzle/schema";
-import { server } from "~index";
+import { app } from "~index";
 import { Note } from "~packages/database-interface/note";
 import { User } from "~packages/database-interface/user";
 /**
  * This allows us to send a test request to the server even when it isnt running
- * CURRENTLY NOT WORKING, NEEDS TO BE FIXED
  * @param req Request to send
  * @returns Response from the server
  */
 export async function sendTestRequest(req: Request) {
-    return server.fetch(req);
+    return app.fetch(req);
 }
 
 export function wrapRelativeUrl(url: string, base_url: string) {

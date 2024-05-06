@@ -2,6 +2,8 @@ import { dualLogger } from "@loggers";
 import { errorResponse, jsonResponse, response } from "@response";
 import type { MatchedRoute } from "bun";
 import { type Config, config } from "config-manager";
+import type { Hono } from "hono";
+import type { RouterRoute } from "hono/types";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { RequestParser } from "request-parser";
 import type { ZodType, z } from "zod";
@@ -11,7 +13,7 @@ import { type AuthData, getFromRequest } from "~database/entities/User";
 import type { User } from "~packages/database-interface/user";
 
 type MaybePromise<T> = T | Promise<T>;
-type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
+export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 
 export type RouteHandler<
     RouteMeta extends APIRouteMetadata,
@@ -54,8 +56,11 @@ export interface APIRouteMetadata {
 
 export interface APIRouteExports {
     meta: APIRouteMetadata;
-    schema: z.AnyZodObject;
-    default: RouteHandler<APIRouteMetadata, z.AnyZodObject>;
+    schemas?: {
+        query?: z.AnyZodObject;
+        body?: z.AnyZodObject;
+    };
+    default: (app: Hono) => RouterRoute;
 }
 
 export const processRoute = async (

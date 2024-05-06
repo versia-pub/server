@@ -26,7 +26,9 @@ beforeAll(async () => {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/json",
                 },
+                body: JSON.stringify({}),
             },
         ),
     );
@@ -81,7 +83,9 @@ describe(meta.route, () => {
                     method: "POST",
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
+                        "Content-Type": "application/json",
                     },
+                    body: JSON.stringify({}),
                 },
             ),
         );

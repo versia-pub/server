@@ -1,5 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig } from "@api";
 import { redirect } from "@response";
+import type { Hono } from "hono";
+import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -13,11 +15,10 @@ export const meta = applyConfig({
     route: "/.well-known/nodeinfo",
 });
 
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const config = await extraData.configManager.getConfig();
-
-    return redirect(
-        new URL("/.well-known/nodeinfo/2.0", config.http.base_url),
-        301,
-    );
-});
+export default (app: Hono) =>
+    app.on(meta.allowedMethods, meta.route, async () => {
+        return redirect(
+            new URL("/.well-known/nodeinfo/2.0", config.http.base_url),
+            301,
+        );
+    });

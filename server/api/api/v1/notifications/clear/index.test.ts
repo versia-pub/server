@@ -15,23 +15,29 @@ let notifications: APINotification[] = [];
 
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    await fetch(
-        new URL(`/api/v1/accounts/${users[0].id}/follow`, config.http.base_url),
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+    await sendTestRequest(
+        new Request(
+            new URL(
+                `/api/v1/accounts/${users[0].id}/follow`,
+                config.http.base_url,
+            ),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({}),
             },
-        },
+        ),
     );
 
-    notifications = await fetch(
-        new URL("/api/v1/notifications", config.http.base_url),
-        {
+    notifications = await sendTestRequest(
+        new Request(new URL("/api/v1/notifications", config.http.base_url), {
             headers: {
                 Authorization: `Bearer ${tokens[0].accessToken}`,
             },
-        },
+        }),
     ).then((r) => r.json());
 
     expect(notifications.length).toBe(1);
@@ -65,13 +71,15 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const newNotifications = await fetch(
-            new URL("/api/v1/notifications", config.http.base_url),
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+        const newNotifications = await sendTestRequest(
+            new Request(
+                new URL("/api/v1/notifications", config.http.base_url),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
                 },
-            },
+            ),
         ).then((r) => r.json());
 
         expect(newNotifications.length).toBe(0);

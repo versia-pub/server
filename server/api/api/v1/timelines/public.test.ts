@@ -220,24 +220,21 @@ describe(meta.route, () => {
     });
 
     test("should not return statuses with filtered keywords", async () => {
-        const formData = new FormData();
-
-        formData.append("title", "Test Filter");
-        formData.append("context[]", "public");
-        formData.append("filter_action", "hide");
-        formData.append(
-            "keywords_attributes[0][keyword]",
-            timeline[0].content.slice(4, 20),
-        );
-        formData.append("keywords_attributes[0][whole_word]", "false");
-
         const filterResponse = await sendTestRequest(
             new Request(new URL("/api/v2/filters", config.http.base_url), {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: formData,
+                body: new URLSearchParams({
+                    title: "Test Filter",
+                    "context[]": "public",
+                    filter_action: "hide",
+                    "keywords_attributes[0][keyword]":
+                        timeline[0].content.slice(4, 20),
+                    "keywords_attributes[0][whole_word]": "false",
+                }),
             }),
         );
 

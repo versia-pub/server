@@ -2,7 +2,17 @@ import { idValidator } from "@api";
 import { getBestContentType, urlToContentFormat } from "@content_types";
 import { addUserToMeilisearch } from "@meilisearch";
 import { proxyUrl } from "@response";
-import { type SQL, and, desc, eq, inArray } from "drizzle-orm";
+import {
+    type SQL,
+    and,
+    count,
+    countDistinct,
+    desc,
+    eq,
+    gte,
+    inArray,
+    isNull,
+} from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
 import {
@@ -20,6 +30,7 @@ import { db } from "~drizzle/db";
 import {
     EmojiToUser,
     NoteToMentions,
+    Notes,
     UserToPinnedNotes,
     Users,
 } from "~drizzle/schema";
@@ -100,6 +111,37 @@ export class User {
 
     static getUri(id: string, uri: string | null, baseUrl: string) {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
+    }
+
+    static async getCount() {
+        return (
+            await db
+                .select({
+                    count: count(),
+                })
+                .from(Users)
+                .where(isNull(Users.instanceId))
+        )[0].count;
+    }
+
+    static async getActiveInPeriod(milliseconds: number) {
+        return (
+            await db
+                .select({
+                    count: countDistinct(Users),
+                })
+                .from(Users)
+                .leftJoin(Notes, eq(Users.id, Notes.authorId))
+                .where(
+                    and(
+                        isNull(Users.instanceId),
+                        gte(
+                            Notes.createdAt,
+                            new Date(Date.now() - milliseconds).toISOString(),
+                        ),
+                    ),
+                )
+        )[0].count;
     }
 
     async pin(note: Note) {

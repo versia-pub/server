@@ -1,6 +1,8 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, auth, handleZodError } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { eq, like, not, or, sql } from "drizzle-orm";
+import type { Hono } from "hono";
 import {
     anyOf,
     charIn,
@@ -31,87 +33,90 @@ export const meta = applyConfig({
     },
 });
 
-export const schema = z.object({
-    q: z
-        .string()
-        .min(1)
-        .max(512)
-        .regex(
-            createRegExp(
-                maybe("@"),
-                oneOrMore(
-                    anyOf(letter.lowercase, digit, charIn("-")),
-                ).groupedAs("username"),
-                maybe(
-                    exactly("@"),
-                    oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs(
-                        "domain",
+export const schemas = {
+    query: z.object({
+        q: z
+            .string()
+            .min(1)
+            .max(512)
+            .regex(
+                createRegExp(
+                    maybe("@"),
+                    oneOrMore(
+                        anyOf(letter.lowercase, digit, charIn("-")),
+                    ).groupedAs("username"),
+                    maybe(
+                        exactly("@"),
+                        oneOrMore(
+                            anyOf(letter, digit, charIn("_-.:")),
+                        ).groupedAs("domain"),
                     ),
+                    [global],
                 ),
-                [global],
             ),
-        ),
-    limit: z.coerce.number().int().min(1).max(80).default(40),
-    offset: z.coerce.number().int().optional(),
-    resolve: z.coerce.boolean().optional(),
-    following: z.coerce.boolean().optional(),
-});
+        limit: z.coerce.number().int().min(1).max(80).default(40),
+        offset: z.coerce.number().int().optional(),
+        resolve: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .optional(),
+        following: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .optional(),
+    }),
+};
 
-export default apiRoute<typeof meta, typeof schema>(
-    async (req, matchedRoute, extraData) => {
-        // TODO: Add checks for disabled or not email verified accounts
-        const {
-            following = false,
-            limit,
-            offset,
-            resolve,
-            q,
-        } = extraData.parsedRequest;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("query", schemas.query, handleZodError),
+        auth(meta.auth),
+        async (context) => {
+            const { q, limit, offset, resolve, following } =
+                context.req.valid("query");
+            const { user: self } = context.req.valid("header");
 
-        const { user: self } = extraData.auth;
+            if (!self && following) return errorResponse("Unauthorized", 401);
 
-        if (!self && following) return errorResponse("Unauthorized", 401);
+            const [username, host] = q.replace(/^@/, "").split("@");
 
-        // Remove any leading @
-        const [username, host] = q.replace(/^@/, "").split("@");
+            const accounts: User[] = [];
 
-        const accounts: User[] = [];
+            if (resolve && username && host) {
+                const resolvedUser = await resolveWebFinger(username, host);
 
-        if (resolve && username && host) {
-            const resolvedUser = await resolveWebFinger(username, host);
-
-            if (resolvedUser) {
-                accounts.push(resolvedUser);
+                if (resolvedUser) {
+                    accounts.push(resolvedUser);
+                }
+            } else {
+                accounts.push(
+                    ...(await User.manyFromSql(
+                        or(
+                            like(Users.displayName, `%${q}%`),
+                            like(Users.username, `%${q}%`),
+                            following && self
+                                ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${self.id} AND "Relationships"."following" = true)`
+                                : undefined,
+                            self ? not(eq(Users.id, self.id)) : undefined,
+                        ),
+                        undefined,
+                        limit,
+                        offset,
+                    )),
+                );
             }
-        } else {
-            accounts.push(
-                ...(await User.manyFromSql(
-                    or(
-                        like(Users.displayName, `%${q}%`),
-                        like(Users.username, `%${q}%`),
-                        following && self
-                            ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${self.id} AND "Relationships"."following" = true)`
-                            : undefined,
-                        self ? not(eq(Users.id, self.id)) : undefined,
-                    ),
-                    undefined,
-                    limit,
-                    offset,
-                )),
-            );
-        }
 
-        // Sort accounts by closest match
-        // Returns array of numbers (indexes of accounts array)
-        const indexOfCorrectSort = stringComparison.jaccardIndex
-            .sortMatch(
-                q,
-                accounts.map((acct) => acct.getAcct()),
-            )
-            .map((sort) => sort.index);
+            const indexOfCorrectSort = stringComparison.jaccardIndex
+                .sortMatch(
+                    q,
+                    accounts.map((acct) => acct.getAcct()),
+                )
+                .map((sort) => sort.index);
 
-        const result = indexOfCorrectSort.map((index) => accounts[index]);
+            const result = indexOfCorrectSort.map((index) => accounts[index]);
 
-        return jsonResponse(result.map((acct) => acct.toAPI()));
-    },
-);
+            return jsonResponse(result.map((acct) => acct.toAPI()));
+        },
+    );

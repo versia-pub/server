@@ -1,7 +1,10 @@
-import { apiRoute, applyConfig } from "@api";
+import { apiRoute, applyConfig, handleZodError } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray, sql } from "drizzle-orm";
+import type { Hono } from "hono";
 import type * as Lysand from "lysand-types";
+import { z } from "zod";
 import { type Like, likeToLysand } from "~database/entities/Like";
 import { db } from "~drizzle/db";
 import { Notes } from "~drizzle/schema";
@@ -19,35 +22,47 @@ export const meta = applyConfig({
     route: "/objects/:id",
 });
 
-export default apiRoute(async (req, matchedRoute) => {
-    const uuid = matchedRoute.params.uuid;
+export const schemas = {
+    param: z.object({
+        uuid: z.string().uuid(),
+    }),
+};
 
-    let foundObject: Note | Like | null = null;
-    let apiObject: Lysand.Entity | null = null;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("param", schemas.param, handleZodError),
+        async (context) => {
+            const { uuid } = context.req.valid("param");
 
-    foundObject = await Note.fromSql(
-        and(
-            eq(Notes.id, uuid),
-            inArray(Notes.visibility, ["public", "unlisted"]),
-        ),
+            let foundObject: Note | Like | null = null;
+            let apiObject: Lysand.Entity | null = null;
+
+            foundObject = await Note.fromSql(
+                and(
+                    eq(Notes.id, uuid),
+                    inArray(Notes.visibility, ["public", "unlisted"]),
+                ),
+            );
+            apiObject = foundObject ? foundObject.toLysand() : null;
+
+            if (!foundObject) {
+                foundObject =
+                    (await db.query.Likes.findFirst({
+                        where: (like, { eq, and }) =>
+                            and(
+                                eq(like.id, uuid),
+                                sql`EXISTS (SELECT 1 FROM statuses WHERE statuses.id = ${like.likedId} AND statuses.visibility IN ('public', 'unlisted'))`,
+                            ),
+                    })) ?? null;
+                apiObject = foundObject ? likeToLysand(foundObject) : null;
+            }
+
+            if (!foundObject || !apiObject) {
+                return errorResponse("Object not found", 404);
+            }
+
+            return jsonResponse(apiObject);
+        },
     );
-    apiObject = foundObject ? foundObject.toLysand() : null;
-
-    if (!foundObject) {
-        foundObject =
-            (await db.query.Likes.findFirst({
-                where: (like, { eq, and }) =>
-                    and(
-                        eq(like.id, uuid),
-                        sql`EXISTS (SELECT 1 FROM statuses WHERE statuses.id = ${like.likedId} AND statuses.visibility IN ('public', 'unlisted'))`,
-                    ),
-            })) ?? null;
-        apiObject = foundObject ? likeToLysand(foundObject) : null;
-    }
-
-    if (!foundObject || !apiObject) {
-        return errorResponse("Object not found", 404);
-    }
-
-    return jsonResponse(apiObject);
-});

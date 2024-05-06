@@ -3,10 +3,12 @@ import {
     type InferInsertModel,
     type SQL,
     and,
+    count,
     desc,
     eq,
     inArray,
     isNotNull,
+    sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import type * as Lysand from "lysand-types";
@@ -159,6 +161,19 @@ export class Note {
 
     getAuthor() {
         return new User(this.status.author);
+    }
+
+    static async getCount() {
+        return (
+            await db
+                .select({
+                    count: count(),
+                })
+                .from(Notes)
+                .where(
+                    sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NULL)`,
+                )
+        )[0].count;
     }
 
     async getReplyChildren() {

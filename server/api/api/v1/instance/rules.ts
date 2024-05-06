@@ -1,5 +1,7 @@
-import { apiRoute, applyConfig } from "@api";
+import { applyConfig, auth } from "@api";
 import { jsonResponse } from "@response";
+import type { Hono } from "hono";
+import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -13,14 +15,18 @@ export const meta = applyConfig({
     },
 });
 
-export default apiRoute(async (req, matchedRoute, extraData) => {
-    const config = await extraData.configManager.getConfig();
-
-    return jsonResponse(
-        config.signups.rules.map((rule, index) => ({
-            id: String(index),
-            text: rule,
-            hint: "",
-        })),
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        auth(meta.auth),
+        async (context) => {
+            return jsonResponse(
+                config.signups.rules.map((rule, index) => ({
+                    id: String(index),
+                    text: rule,
+                    hint: "",
+                })),
+            );
+        },
     );
-});

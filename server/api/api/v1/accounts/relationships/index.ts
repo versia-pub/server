@@ -1,12 +1,14 @@
-import { apiRoute, applyConfig, idValidator } from "@api";
+import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
+import type { Hono } from "hono";
 import { z } from "zod";
 import {
     createNewRelationship,
     relationshipToAPI,
 } from "~database/entities/Relationship";
-import type { UserType } from "~database/entities/User";
 import { db } from "~drizzle/db";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -21,48 +23,48 @@ export const meta = applyConfig({
     },
 });
 
-export const schema = z.object({
-    id: z.array(z.string().regex(idValidator)).min(1).max(10),
-});
+export const schemas = {
+    query: z.object({
+        "id[]": z.array(z.string().uuid()).min(1).max(10),
+    }),
+};
 
-/**
- * Find relationships
- */
-export default apiRoute<typeof meta, typeof schema>(
-    async (req, matchedRoute, extraData) => {
-        const { user: self } = extraData.auth;
+export default (app: Hono) =>
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        zValidator("query", schemas.query, handleZodError),
+        auth(meta.auth),
+        async (context) => {
+            const { user: self } = context.req.valid("header");
+            const { "id[]": ids } = context.req.valid("query");
 
-        if (!self) return errorResponse("Unauthorized", 401);
+            if (!self) return errorResponse("Unauthorized", 401);
 
-        const { id: ids } = extraData.parsedRequest;
+            const relationships = await db.query.Relationships.findMany({
+                where: (relationship, { inArray, and, eq }) =>
+                    and(
+                        inArray(relationship.subjectId, ids),
+                        eq(relationship.ownerId, self.id),
+                    ),
+            });
 
-        const relationships = await db.query.Relationships.findMany({
-            where: (relationship, { inArray, and, eq }) =>
-                and(
-                    inArray(relationship.subjectId, ids),
-                    eq(relationship.ownerId, self.id),
-                ),
-        });
+            const missingIds = ids.filter(
+                (id) => !relationships.some((r) => r.subjectId === id),
+            );
 
-        // Find IDs that dont have a relationship
-        const missingIds = ids.filter(
-            (id) => !relationships.some((r) => r.subjectId === id),
-        );
+            for (const id of missingIds) {
+                const user = await User.fromId(id);
+                if (!user) continue;
+                const relationship = await createNewRelationship(self, user);
 
-        // Create the missing relationships
-        for (const id of missingIds) {
-            const relationship = await createNewRelationship(self, {
-                id,
-            } as UserType);
+                relationships.push(relationship);
+            }
 
-            relationships.push(relationship);
-        }
+            relationships.sort(
+                (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
+            );
 
-        // Order in the same order as ids
-        relationships.sort(
-            (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
-        );
-
-        return jsonResponse(relationships.map((r) => relationshipToAPI(r)));
-    },
-);
+            return jsonResponse(relationships.map((r) => relationshipToAPI(r)));
+        },
+    );

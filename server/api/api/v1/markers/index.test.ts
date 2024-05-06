@@ -53,16 +53,20 @@ describe(meta.route, () => {
 
     test("should create markers", async () => {
         const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                    "Content-Type": "application/json",
+            new Request(
+                new URL(
+                    `${meta.route}?${new URLSearchParams({
+                        "home[last_read_id]": timeline[0].id,
+                    })}`,
+                    config.http.base_url,
+                ),
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
                 },
-                body: JSON.stringify({
-                    "home[last_read_id]": timeline[0].id,
-                }),
-            }),
+            ),
         );
 
         expect(response.status).toBe(200);

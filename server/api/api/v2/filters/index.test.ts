@@ -50,8 +50,16 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-                body: formData,
+                body: new URLSearchParams({
+                    title: "Test Filter",
+                    "context[]": "home",
+                    filter_action: "warn",
+                    expires_in: "86400",
+                    "keywords_attributes[0][keyword]": "test",
+                    "keywords_attributes[0][whole_word]": "true",
+                }),
             }),
         );
 
