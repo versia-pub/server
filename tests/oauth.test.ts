@@ -34,7 +34,15 @@ describe("POST /api/v1/apps/", () => {
         const response = await sendTestRequest(
             new Request(new URL("/api/v1/apps", config.http.base_url), {
                 method: "POST",
-                body: formData,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    client_name: "Test Application",
+                    website: "https://example.com",
+                    redirect_uris: "https://example.com",
+                    scopes: "read write",
+                }),
             }),
         );
 

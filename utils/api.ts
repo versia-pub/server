@@ -152,3 +152,37 @@ export const qsQuery = () => {
         await next();
     });
 };
+
+// Fill in queries, formData and json
+export const jsonOrForm = () => {
+    return createMiddleware(async (context, next) => {
+        const contentType = context.req.header("content-type");
+
+        if (contentType?.includes("application/json")) {
+            context.req.parseBody = async <T extends BodyData = BodyData>() =>
+                (await context.req.json()) as T;
+            context.req.bodyCache.formData = await context.req.json();
+        } else if (contentType?.includes("application/x-www-form-urlencoded")) {
+            const parsed = parse(await context.req.text(), {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            });
+
+            // @ts-ignore Very bad hack
+            context.req.formData = () => Promise.resolve(parsed);
+            // @ts-ignore I'm so sorry for this
+            context.req.bodyCache.formData = parsed;
+        } else {
+            const parsed = parse(await context.req.text(), {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            });
+
+            // @ts-ignore Very bad hack
+            context.req.formData = () => Promise.resolve(parsed);
+            // @ts-ignore I'm so sorry for this
+            context.req.bodyCache.formData = parsed;
+        }
+        await next();
+    });
+};
