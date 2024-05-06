@@ -178,13 +178,15 @@ describe(meta.route, () => {
     });
 
     test("should create a post with visibility", async () => {
+        // This one uses JSON to test the interop
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/json",
                 },
-                body: new URLSearchParams({
+                body: JSON.stringify({
                     status: "Hello, world!",
                     visibility: "unlisted",
                     federate: "false",

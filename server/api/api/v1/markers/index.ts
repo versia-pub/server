@@ -34,6 +34,7 @@ export const schemas = {
         "timeline[]": z
             .array(z.enum(["home", "notifications"]))
             .max(2)
+            .or(z.enum(["home", "notifications"]))
             .optional(),
         "home[last_read_id]": z.string().regex(idValidator).optional(),
         "notifications[last_read_id]": z.string().regex(idValidator).optional(),
@@ -47,8 +48,10 @@ export default (app: Hono) =>
         zValidator("query", schemas.query, handleZodError),
         auth(meta.auth),
         async (context) => {
-            const { "timeline[]": timeline } = context.req.valid("query");
+            const { "timeline[]": timelines } = context.req.valid("query");
             const { user } = context.req.valid("header");
+
+            const timeline = Array.isArray(timelines) ? timelines : [];
 
             if (!user) {
                 return errorResponse("Unauthorized", 401);
