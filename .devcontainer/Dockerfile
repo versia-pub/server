@@ -1,7 +1,7 @@
 # Bun doesn't run well on Musl but this seems to work
 FROM oven/bun:1.1.7-alpine as base
 
-RUN apk add --no-cache libstdc++ git bash curl openssh
+RUN apk add --no-cache libstdc++ git bash curl openssh cloc
 
 # Switch to Bash by editing /etc/passwd
 RUN sed -i -e 's|/bin/ash|/bin/bash|g' /etc/passwd
