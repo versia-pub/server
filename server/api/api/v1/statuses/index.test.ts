@@ -27,7 +27,7 @@ describe(meta.route, () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
-                body: new FormData(),
+                body: new URLSearchParams(),
             }),
         );
 
@@ -41,7 +41,7 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: new FormData(),
+                body: new URLSearchParams(),
             }),
         );
 
@@ -55,9 +55,9 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "a".repeat(config.validation.max_note_size + 1),
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -72,10 +72,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     visibility: "invalid",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -90,10 +90,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     scheduled_at: "invalid",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -108,10 +108,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     in_reply_to_id: "invalid",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -126,10 +126,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     quote_id: "invalid",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -144,10 +144,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     "media_ids[]": "invalid",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -162,9 +162,9 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -184,10 +184,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
                     visibility: "unlisted",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -208,9 +208,9 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -223,10 +223,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world again!",
                     in_reply_to_id: object.id,
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -247,9 +247,9 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -262,10 +262,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Hello, world again!",
                     quote_id: object.id,
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );
@@ -290,9 +290,9 @@ describe(meta.route, () => {
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: getFormData({
+                    body: new URLSearchParams({
                         status: `Hello, @${users[1].getUser().username}!`,
-                        federate: false,
+                        federate: "false",
                     }),
                 }),
             );
@@ -319,11 +319,11 @@ describe(meta.route, () => {
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: getFormData({
+                    body: new URLSearchParams({
                         status: `Hello, @${users[1].getUser().username}@${
                             new URL(config.http.base_url).host
                         }!`,
-                        federate: false,
+                        federate: "false",
                     }),
                 }),
             );
@@ -352,9 +352,9 @@ describe(meta.route, () => {
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: getFormData({
+                    body: new URLSearchParams({
                         status: "Hi! <script>alert('Hello, world!');</script>",
-                        federate: false,
+                        federate: "false",
                     }),
                 }),
             );
@@ -378,11 +378,11 @@ describe(meta.route, () => {
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
-                    body: getFormData({
+                    body: new URLSearchParams({
                         status: "Hello, world!",
                         spoiler_text:
                             "uwu <script>alert('Hello, world!');</script>",
-                        federate: false,
+                        federate: "false",
                     }),
                 }),
             );

@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError, qs } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { config } from "config-manager";
@@ -30,7 +30,7 @@ export const schemas = {
             .optional(),
         // TODO: Add regex to validate
         content_type: z.string().optional().default("text/plain"),
-        "media_ids[]": z
+        media_ids: z
             .array(z.string().uuid())
             .max(config.validation.max_media_attachments)
             .optional(),
@@ -83,6 +83,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        qs(),
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
@@ -92,7 +93,7 @@ export default (app: Hono) =>
 
             const {
                 status,
-                "media_ids[]": media_ids,
+                media_ids,
                 "poll[options]": options,
                 in_reply_to_id,
                 quote_id,

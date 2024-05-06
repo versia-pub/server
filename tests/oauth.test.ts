@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import { config } from "~packages/config-manager";
 import type { Application as APIApplication } from "~types/mastodon/application";
 import type { Token as APIToken } from "~types/mastodon/token";
 import {
@@ -8,7 +9,7 @@ import {
     wrapRelativeUrl,
 } from "./utils";
 
-const base_url = "http://lysand.localhost:8080"; //config.http.base_url;
+const base_url = config.http.base_url;
 
 let client_id: string;
 let client_secret: string;
@@ -19,8 +20,8 @@ const { users, passwords, deleteUsers } = await getTestUsers(1);
 
 afterAll(async () => {
     await deleteUsers();
-    await deleteOldTestUsers();
 });
+
 describe("POST /api/v1/apps/", () => {
     test("should create an application", async () => {
         const formData = new FormData();
@@ -31,7 +32,7 @@ describe("POST /api/v1/apps/", () => {
         formData.append("scopes", "read write");
 
         const response = await sendTestRequest(
-            new Request(wrapRelativeUrl("/api/v1/apps/", base_url), {
+            new Request(new URL("/api/v1/apps", config.http.base_url), {
                 method: "POST",
                 body: formData,
             }),
@@ -66,8 +67,8 @@ describe("POST /api/auth/login/", () => {
 
         const response = await sendTestRequest(
             new Request(
-                wrapRelativeUrl(
-                    `/api/auth/login/?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                new URL(
+                    `/api/auth/login?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
                     base_url,
                 ),
                 {
@@ -76,8 +77,6 @@ describe("POST /api/auth/login/", () => {
                 },
             ),
         );
-
-        console.log(await response.text());
 
         expect(response.status).toBe(302);
         expect(response.headers.get("location")).toBeDefined();
@@ -102,24 +101,28 @@ describe("POST /api/auth/login/", () => {
     });
 });
 
-describe("POST /oauth/authorize/", () => {
+describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
         const response = await sendTestRequest(
-            new Request(wrapRelativeUrl("/oauth/authorize", base_url), {
-                method: "POST",
-                headers: {
-                    Cookie: `jwt=${jwt}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
+            new Request(
+                new URL(
+                    `/oauth/authorize?${new URLSearchParams({
+                        client_id,
+                        client_secret,
+                        redirect_uri: "https://example.com",
+                        response_type: "code",
+                        scope: "read write",
+                        max_age: "604800",
+                    })}`,
+                    base_url,
+                ),
+                {
+                    method: "POST",
+                    headers: {
+                        Cookie: `jwt=${jwt}`,
+                    },
                 },
-                body: new URLSearchParams({
-                    client_id,
-                    client_secret,
-                    redirect_uri: "https://example.com",
-                    response_type: "code",
-                    scope: "read write",
-                    max_age: "604800",
-                }),
-            }),
+            ),
         );
 
         expect(response.status).toBe(302);
@@ -138,7 +141,7 @@ describe("POST /oauth/authorize/", () => {
 describe("POST /oauth/token/", () => {
     test("should get an access token", async () => {
         const response = await sendTestRequest(
-            new Request(wrapRelativeUrl("/oauth/token/", base_url), {
+            new Request(wrapRelativeUrl("/oauth/token", base_url), {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${jwt}`,

@@ -1,13 +1,19 @@
 import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
+import { errorResponse } from "@response";
 import { config } from "config-manager";
 import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { setupDatabase } from "~drizzle/db";
+import { agentBans } from "~middlewares/agent-bans";
+import { bait } from "~middlewares/bait";
+import { ipBans } from "~middlewares/ip-bans";
+import { logger } from "~middlewares/logger";
 import { Note } from "~packages/database-interface/note";
+import { handleGlitchRequest } from "~packages/glitch-server/main";
 import type { APIRouteExports } from "~packages/server-handler";
 import { routes } from "~routes";
-import { createServer } from "~server2";
+import { createServer } from "~server";
 
 const timeAtStart = performance.now();
 
@@ -101,6 +107,11 @@ if (isEntry) {
 
 const app = new Hono();
 
+app.use(ipBans);
+app.use(agentBans);
+app.use(bait);
+app.use(logger);
+
 // Inject own filesystem router
 for (const [route, path] of Object.entries(routes)) {
     // use app.get(path, handler) to add routes
@@ -112,6 +123,49 @@ for (const [route, path] of Object.entries(routes)) {
 
     route.default(app);
 }
+
+app.all("*", async (context) => {
+    if (config.frontend.glitch.enabled) {
+        const glitch = await handleGlitchRequest(context.req.raw, dualLogger);
+
+        if (glitch) {
+            return glitch;
+        }
+    }
+
+    const base_url_with_http = config.http.base_url.replace(
+        "https://",
+        "http://",
+    );
+
+    const replacedUrl = context.req.url
+        .replace(config.http.base_url, config.frontend.url)
+        .replace(base_url_with_http, config.frontend.url);
+
+    const proxy = await fetch(replacedUrl, {
+        headers: {
+            // Include for SSR
+            "X-Forwarded-Host": `${config.http.bind}:${config.http.bind_port}`,
+            "Accept-Encoding": "identity",
+        },
+    }).catch(async (e) => {
+        await dualLogger.logError(LogLevel.ERROR, "Server.Proxy", e as Error);
+        await dualLogger.log(
+            LogLevel.ERROR,
+            "Server.Proxy",
+            `The Frontend is not running or the route is not found: ${replacedUrl}`,
+        );
+        return null;
+    });
+
+    proxy?.headers.set("Cache-Control", "max-age=31536000");
+
+    if (!proxy || proxy.status === 404) {
+        return errorResponse("Route not found on proxy or API route", 404);
+    }
+
+    return proxy;
+});
 
 createServer(config, app);
 

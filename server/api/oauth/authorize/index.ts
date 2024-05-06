@@ -29,13 +29,11 @@ export const schemas = {
             .enum(["none", "login", "consent", "select_account"])
             .optional()
             .default("none"),
-        max_age: z
+        max_age: z.coerce
             .number()
             .int()
             .optional()
             .default(60 * 60 * 24 * 7),
-    }),
-    body: z.object({
         scope: z.string().optional(),
         redirect_uri: z.string().url().optional(),
         response_type: z.enum([
@@ -77,7 +75,6 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        zValidator("json", schemas.body, handleZodError),
         async (context) => {
             const {
                 scope,
@@ -87,8 +84,8 @@ export default (app: Hono) =>
                 state,
                 code_challenge,
                 code_challenge_method,
-            } = context.req.valid("json");
-            const body = context.req.valid("json");
+            } = context.req.valid("query");
+            const body = context.req.valid("query");
 
             const cookie = context.req.header("Cookie");
 

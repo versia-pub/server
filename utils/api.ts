@@ -147,6 +147,8 @@ export const qsQuery = () => {
 
         // @ts-ignore Very bad hack
         context.req.query = () => parsed;
+        // @ts-ignore I'm so sorry for this
+        context.req.queries = () => parsed;
         await next();
     });
 };

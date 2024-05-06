@@ -105,10 +105,10 @@ describe(meta.route, () => {
                 headers: {
                     Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-                body: getFormData({
+                body: new URLSearchParams({
                     status: "Reply",
                     in_reply_to_id: timeline[0].id,
-                    federate: false,
+                    federate: "false",
                 }),
             }),
         );

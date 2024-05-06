@@ -83,10 +83,10 @@ beforeAll(async () => {
             headers: {
                 Authorization: `Bearer ${tokens[1].accessToken}`,
             },
-            body: getFormData({
+            body: new URLSearchParams({
                 status: `@${users[0].getUser().username} test mention`,
                 visibility: "direct",
-                federate: false,
+                federate: "false",
             }),
         }),
     );

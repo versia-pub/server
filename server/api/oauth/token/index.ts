@@ -20,7 +20,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    json: z.object({
+    form: z.object({
         code: z.string().optional(),
         code_verifier: z.string().optional(),
         grant_type: z.enum([
@@ -63,10 +63,10 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        zValidator("json", schemas.json, handleZodError),
+        zValidator("form", schemas.form, handleZodError),
         async (context) => {
             const { grant_type, code, redirect_uri, client_id, client_secret } =
-                context.req.valid("json");
+                context.req.valid("form");
 
             switch (grant_type) {
                 case "authorization_code": {

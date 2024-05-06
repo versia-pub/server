@@ -16,6 +16,12 @@ afterAll(async () => {
     await deleteUsers();
 });
 
+const getFormData = (object: Record<string, string | number | boolean>) =>
+    Object.keys(object).reduce((formData, key) => {
+        formData.append(key, String(object[key]));
+        return formData;
+    }, new FormData());
+
 describe("API Tests", () => {
     describe("PATCH /api/v1/accounts/update_credentials", () => {
         test("should update the authenticated user's display name", async () => {
@@ -29,9 +35,8 @@ describe("API Tests", () => {
                         method: "PATCH",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({
+                        body: getFormData({
                             display_name: "New Display Name",
                         }),
                     },

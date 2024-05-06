@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
-import type { Account as APIAccount } from "~types/mastodon/account";
 import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
 import type { Context as APIContext } from "~types/mastodon/context";
 import type { Status as APIStatus } from "~types/mastodon/status";
@@ -60,13 +59,12 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({
+                        body: new URLSearchParams({
                             status: "Hello, world!",
                             visibility: "public",
-                            media_ids: [media1?.id],
-                            federate: false,
+                            "media_ids[]": media1?.id ?? "",
+                            federate: "false",
                         }),
                     },
                 ),
@@ -108,13 +106,12 @@ describe("API Tests", () => {
                         method: "POST",
                         headers: {
                             Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
                         },
-                        body: JSON.stringify({
+                        body: new URLSearchParams({
                             status: "This is a reply!",
                             visibility: "public",
-                            in_reply_to_id: status?.id,
-                            federate: false,
+                            in_reply_to_id: status?.id ?? "",
+                            federate: "false",
                         }),
                     },
                 ),
