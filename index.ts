@@ -1,6 +1,6 @@
 import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
-import { errorResponse } from "@response";
+import { errorResponse, response } from "@response";
 import { config } from "config-manager";
 import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
@@ -123,6 +123,10 @@ for (const [route, path] of Object.entries(routes)) {
 
     route.default(app);
 }
+
+app.options("*", async () => {
+    return response(null);
+});
 
 app.all("*", async (context) => {
     if (config.frontend.glitch.enabled) {
