@@ -34,6 +34,7 @@
 - [x] Custom emoji support
 - [x] Automatic image conversion to WebP or other formats
 - [x] Scripting-compatible CLI with JSON and CSV outputs
+- [x] Markdown support just about everywhere: posts, profiles, profile fields, etc. Code blocks, tables, and more are supported.
 - [ ] Moderation tools
 - [x] Mastodon API support (partial)
 
