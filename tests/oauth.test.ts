@@ -112,25 +112,20 @@ describe("POST /api/auth/login/", () => {
 describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
         const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/oauth/authorize?${new URLSearchParams({
-                        client_id,
-                        client_secret,
-                        redirect_uri: "https://example.com",
-                        response_type: "code",
-                        scope: "read write",
-                        max_age: "604800",
-                    })}`,
-                    base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Cookie: `jwt=${jwt}`,
-                    },
+            new Request(new URL(`/oauth/authorize`, base_url), {
+                method: "POST",
+                headers: {
+                    Cookie: `jwt=${jwt}`,
                 },
-            ),
+                body: new URLSearchParams({
+                    client_id,
+                    client_secret,
+                    redirect_uri: "https://example.com",
+                    response_type: "code",
+                    scope: "read write",
+                    max_age: "604800",
+                }),
+            }),
         );
 
         expect(response.status).toBe(302);

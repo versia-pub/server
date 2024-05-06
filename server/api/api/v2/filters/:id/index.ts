@@ -1,4 +1,4 @@
-import { applyConfig, auth, qs } from "@api";
+import { applyConfig, auth, handleZodError, qs } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray } from "drizzle-orm";
@@ -71,8 +71,8 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         qs(),
-        zValidator("param", schemas.param),
-        zValidator("form", schemas.form),
+        zValidator("param", schemas.param, handleZodError),
+        zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
             const { user } = context.req.valid("header");

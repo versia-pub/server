@@ -1,4 +1,4 @@
-import { applyConfig, auth } from "@api";
+import { applyConfig, auth, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { encode } from "blurhash";
@@ -42,7 +42,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        zValidator("form", schemas.form),
+        zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
             const { file, thumbnail, description, focus } =

@@ -1,4 +1,4 @@
-import { applyConfig, auth } from "@api";
+import { applyConfig, auth, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
 import { MeiliIndexType, meilisearch } from "@meilisearch";
@@ -45,7 +45,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        zValidator("query", schemas.query),
+        zValidator("query", schemas.query, handleZodError),
         auth(meta.auth),
         async (context) => {
             const { user: self } = context.req.valid("header");

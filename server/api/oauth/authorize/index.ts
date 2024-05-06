@@ -34,6 +34,8 @@ export const schemas = {
             .int()
             .optional()
             .default(60 * 60 * 24 * 7),
+    }),
+    form: z.object({
         scope: z.string().optional(),
         redirect_uri: z.string().url().optional(),
         response_type: z.enum([
@@ -75,6 +77,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
+        zValidator("form", schemas.form, handleZodError),
         async (context) => {
             const {
                 scope,
@@ -84,8 +87,9 @@ export default (app: Hono) =>
                 state,
                 code_challenge,
                 code_challenge_method,
-            } = context.req.valid("query");
-            const body = context.req.valid("query");
+            } = context.req.valid("form");
+
+            const body = context.req.valid("form");
 
             const cookie = context.req.header("Cookie");
 
