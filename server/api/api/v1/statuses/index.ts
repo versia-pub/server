@@ -38,6 +38,7 @@ export const schemas = {
         sensitive: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         language: z
             .enum(ISO6391.getAllCodes() as [string, ...string[]])
@@ -46,7 +47,7 @@ export const schemas = {
             .array(z.string().max(config.validation.max_poll_option_size))
             .max(config.validation.max_poll_options)
             .optional(),
-        "poll[expires_in]": z
+        "poll[expires_in]": z.coerce
             .number()
             .int()
             .min(config.validation.min_poll_duration)
@@ -55,10 +56,12 @@ export const schemas = {
         "poll[multiple]": z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         "poll[hide_totals]": z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         in_reply_to_id: z.string().uuid().optional().nullable(),
         quote_id: z.string().uuid().optional().nullable(),
@@ -70,10 +73,12 @@ export const schemas = {
         local_only: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         federate: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional()
             .default("true"),
     }),

@@ -16,12 +16,6 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-const getFormData = (object: Record<string, string | number | boolean>) =>
-    Object.keys(object).reduce((formData, key) => {
-        formData.append(key, String(object[key]));
-        return formData;
-    }, new FormData());
-
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
         const response = await sendTestRequest(
