@@ -1,6 +1,6 @@
 services:
     lysand:
-        build: ghcr.io/lysand-org/lysand:main
+        build: ghcr.io/lysand-org/lysand:latest
         volumes:
             - ./logs:/app/dist/logs
             - ./config:/app/dist/config
