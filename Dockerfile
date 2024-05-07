@@ -21,7 +21,7 @@ COPY . /temp
 COPY --from=install /temp/node_modules /temp/node_modules
 # Build the project
 WORKDIR /temp
-RUN bun run prod-build
+RUN bun run build
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
