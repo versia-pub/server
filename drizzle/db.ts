@@ -1,4 +1,4 @@
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
@@ -13,7 +13,10 @@ export const client = new Client({
     database: config.database.database,
 });
 
-export const setupDatabase = async (logger: LogManager | MultiLogManager) => {
+export const setupDatabase = async (
+    logger: LogManager | MultiLogManager,
+    info = true,
+) => {
     try {
         await client.connect();
     } catch (e) {
@@ -28,7 +31,8 @@ export const setupDatabase = async (logger: LogManager | MultiLogManager) => {
     }
 
     // Migrate the database
-    await logger.log(LogLevel.INFO, "Database", "Migrating database...");
+    info &&
+        (await logger.log(LogLevel.INFO, "Database", "Migrating database..."));
 
     try {
         await migrate(db, {
@@ -44,7 +48,7 @@ export const setupDatabase = async (logger: LogManager | MultiLogManager) => {
         process.exit(1);
     }
 
-    await logger.log(LogLevel.INFO, "Database", "Database migrated");
+    info && (await logger.log(LogLevel.INFO, "Database", "Database migrated"));
 };
 
 export const db = drizzle(client, { schema });

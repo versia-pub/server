@@ -1,4 +1,4 @@
-import { config } from "config-manager";
+import { config } from "~packages/config-manager";
 import { LogManager, MultiLogManager } from "log-manager";
 
 const noColors = process.env.NO_COLORS === "true";

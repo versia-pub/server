@@ -1,0 +1,40 @@
+{
+  "name": "cli",
+  "version": "0.0.0",
+  "type": "module",
+  "dependencies": {
+    "@inquirer/confirm": "^3.1.6",
+    "@oclif/core": "^3.26.6",
+    "@oclif/plugin-help": "^6.0.21",
+    "@oclif/plugin-plugins": "^5.0.19",
+    "chalk": "^5.3.0",
+    "cli-progress": "^3.12.0",
+    "ora": "^8.0.1",
+    "table": "^6.8.2",
+    "uqr": "^0.1.2"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.11.5",
+    "oclif": "^4.10.4"
+  },
+  "oclif": {
+    "bin": "cli",
+    "dirname": "cli",
+    "commands": {
+      "strategy": "pattern",
+      "target": "./commands"
+    },
+    "additionalHelpFlags": ["-h"],
+    "additionalVersionFlags": ["-v"],
+    "plugins": ["@oclif/plugin-help"],
+    "description": "CLI to interface with the Lysand project",
+    "topicSeparator": " ",
+    "topics": {
+      "user": {
+        "description": "Manage users"
+      }
+    },
+    "theme": "./theme.json",
+    "flexibleTaxonomy": true
+  }
+}

@@ -35,6 +35,7 @@
         "*.d.ts",
         "**/*.ts",
         "**/*.d.ts",
-        "server/api/well-known/**/*.ts"
+        "server/api/well-known/**/*.ts",
+        "packages/cli/index.mts"
     ]
 }

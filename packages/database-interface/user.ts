@@ -144,6 +144,12 @@ export class User {
         )[0].count;
     }
 
+    async delete() {
+        return (
+            await db.delete(Users).where(eq(Users.id, this.id)).returning()
+        )[0];
+    }
+
     async pin(note: Note) {
         return (
             await db

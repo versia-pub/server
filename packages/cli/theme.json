@@ -1,0 +1,15 @@
+{
+    "bin": "white",
+    "command": "cyan",
+    "commandSummary": "white",
+    "dollarSign": "white",
+    "flag": "white",
+    "flagDefaultValue": "blue",
+    "flagOptions": "white",
+    "flagRequired": "red",
+    "flagSeparator": "white",
+    "sectionDescription": "white",
+    "sectionHeader": "underline",
+    "topic": "white",
+    "version": "green"
+}
