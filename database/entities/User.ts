@@ -34,11 +34,6 @@ export type UserWithRelations = UserType & {
     statusCount: number;
 };
 
-export type UserWithRelationsAndRelationships = UserWithRelations & {
-    relationships: InferSelectModel<typeof Relationships>[];
-    relationshipSubjects: InferSelectModel<typeof Relationships>[];
-};
-
 export const userRelations: {
     instance: true;
     emojis: {
@@ -98,16 +93,6 @@ export interface AuthData {
     token: string;
     application: Application | null;
 }
-
-export const getFromRequest = async (req: Request): Promise<AuthData> => {
-    // Check auth token
-    const token = req.headers.get("Authorization")?.split(" ")[1] || "";
-
-    const { user, application } =
-        await retrieveUserAndApplicationFromToken(token);
-
-    return { user, token, application };
-};
 
 export const getFromHeader = async (value: string): Promise<AuthData> => {
     const token = value.split(" ")[1];
@@ -386,15 +371,6 @@ export const resolveWebFinger = async (
     }
 
     return User.resolve(relevantLink.href);
-};
-
-/**
- * Parses mentions from a list of URIs
- */
-export const parseMentionsUris = async (
-    mentions: string[],
-): Promise<User[]> => {
-    return await User.manyFromSql(inArray(Users.uri, mentions));
 };
 
 /**

@@ -21,9 +21,3 @@ for (const [route, path] of Object.entries(routes)) {
 routes = Object.fromEntries(Object.entries(routes).reverse());
 
 export { routes };
-
-export const matchRoute = (request: Request) => {
-    const route = routeMatcher.match(request);
-
-    return route ?? null;
-};

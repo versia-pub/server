@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray, sql } from "drizzle-orm";

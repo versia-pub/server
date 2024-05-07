@@ -647,10 +647,3 @@ export const federateNote = async (note: Note) => {
         }
     }
 };
-
-export const isFavouritedBy = async (status: Status, user: UserType) => {
-    return !!(await db.query.Likes.findFirst({
-        where: (like, { and, eq }) =>
-            and(eq(like.likerId, user.id), eq(like.likedId, status.id)),
-    }));
-};

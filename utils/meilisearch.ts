@@ -3,8 +3,6 @@ import { config } from "config-manager";
 import { count } from "drizzle-orm";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { Meilisearch } from "meilisearch";
-import type { Status } from "~database/entities/Status";
-import type { UserType } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notes, Users } from "~drizzle/schema";
 import type { User } from "~packages/database-interface/user";
@@ -53,18 +51,6 @@ export enum MeiliIndexType {
     Accounts = "accounts",
     Statuses = "statuses",
 }
-
-export const addStausToMeilisearch = async (status: Status) => {
-    if (!config.meilisearch.enabled) return;
-
-    await meilisearch.index(MeiliIndexType.Statuses).addDocuments([
-        {
-            id: status.id,
-            content: status.content,
-            createdAt: status.createdAt,
-        },
-    ]);
-};
 
 export const addUserToMeilisearch = async (user: User) => {
     if (!config.meilisearch.enabled) return;

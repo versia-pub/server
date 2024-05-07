@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { jsonResponse, response } from "@response";
 import { tempmailDomains } from "@tempmail";

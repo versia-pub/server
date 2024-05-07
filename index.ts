@@ -11,9 +11,9 @@ import { ipBans } from "~middlewares/ip-bans";
 import { logger } from "~middlewares/logger";
 import { Note } from "~packages/database-interface/note";
 import { handleGlitchRequest } from "~packages/glitch-server/main";
-import type { APIRouteExports } from "~packages/server-handler";
 import { routes } from "~routes";
 import { createServer } from "~server";
+import type { APIRouteExports } from "~types/api";
 
 const timeAtStart = performance.now();
 

@@ -13,17 +13,12 @@ import {
     exactly,
 } from "magic-regexp";
 import { parse } from "qs";
-import type {
-    APIRouteExports,
-    APIRouteMetadata,
-    HttpVerb,
-    RouteHandler,
-} from "server-handler";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import type { Application } from "~database/entities/Application";
-import { getFromHeader, getFromRequest } from "~database/entities/User";
+import { getFromHeader } from "~database/entities/User";
 import type { User } from "~packages/database-interface/user";
+import type { APIRouteMetadata, HttpVerb } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMetadata) => {
     const newMeta = routeMeta;
@@ -37,15 +32,6 @@ export const applyConfig = (routeMeta: APIRouteMetadata) => {
     }
 
     return newMeta;
-};
-
-export const apiRoute = <
-    Metadata extends APIRouteMetadata,
-    ZodSchema extends Zod.AnyZodObject,
->(
-    routeFunction: APIRouteExports["default"],
-) => {
-    return routeFunction;
 };
 
 export const idValidator = createRegExp(
