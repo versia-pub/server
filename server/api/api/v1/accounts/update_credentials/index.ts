@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError, qs } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { sanitizeHtml, sanitizedHtmlStrip } from "@sanitization";
@@ -96,6 +96,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        qs(),
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
@@ -115,8 +116,6 @@ export default (app: Hono) =>
             if (!user) return errorResponse("Unauthorized", 401);
 
             const self = user.getUser();
-
-            const sanitizedNote = await sanitizeHtml(note ?? "");
 
             const sanitizedDisplayName = await sanitizedHtmlStrip(
                 display_name ?? "",
@@ -154,18 +153,14 @@ export default (app: Hono) =>
 
             if (note && self.source) {
                 // Check if bio doesnt match filters
-                if (
-                    config.filters.bio.some((filter) =>
-                        sanitizedNote.match(filter),
-                    )
-                ) {
+                if (config.filters.bio.some((filter) => note.match(filter))) {
                     return errorResponse("Bio contains blocked words", 422);
                 }
 
-                self.source.note = sanitizedNote;
+                self.source.note = note;
                 self.note = await contentToHtml({
                     "text/markdown": {
-                        content: sanitizedNote,
+                        content: note,
                     },
                 });
             }
@@ -270,7 +265,7 @@ export default (app: Hono) =>
 
             // Parse emojis
             const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
-            const noteEmojis = await parseEmojis(sanitizedNote);
+            const noteEmojis = await parseEmojis(self.note);
 
             self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis];
 

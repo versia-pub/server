@@ -107,19 +107,70 @@ export const auth = (authData: APIRouteMetadata["auth"]) =>
         };
     });
 
+/**
+ * Middleware to magically unfuck forms
+ * Add it to random Hono routes and hope it works
+ * @returns
+ */
 export const qs = () => {
     return createMiddleware(async (context, next) => {
-        const parsed = parse(await context.req.text(), {
-            parseArrays: true,
-            interpretNumericEntities: true,
-        });
+        const contentType = context.req.header("content-type");
 
-        context.req.parseBody = <T extends BodyData = BodyData>() =>
-            Promise.resolve(parsed as T);
-        // @ts-ignore Very bad hack
-        context.req.formData = () => Promise.resolve(parsed);
-        // @ts-ignore I'm so sorry for this
-        context.req.bodyCache.formData = parsed;
+        if (contentType?.includes("multipart/form-data")) {
+            // Get it as a query format to pass on to qs, then insert back files
+            const formData = await context.req.formData();
+            const urlparams = new URLSearchParams();
+            const files = new Map<string, File>();
+            for (const [key, value] of [...formData.entries()]) {
+                if (Array.isArray(value)) {
+                    for (const val of value) {
+                        urlparams.append(key, val);
+                    }
+                } else if (!(value instanceof File)) {
+                    urlparams.append(key, String(value));
+                } else {
+                    if (!files.has(key)) {
+                        files.set(key, value);
+                    }
+                }
+            }
+
+            const parsed = parse(urlparams.toString(), {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            });
+
+            // @ts-ignore Very bad hack
+            context.req.parseBody = <T extends BodyData = BodyData>() =>
+                Promise.resolve({
+                    ...parsed,
+                    ...Object.fromEntries(files),
+                } as T);
+
+            context.req.formData = () =>
+                // @ts-ignore I'm so sorry for this
+                Promise.resolve({
+                    ...parsed,
+                    ...Object.fromEntries(files),
+                });
+            // @ts-ignore I'm so sorry for this
+            context.req.bodyCache.formData = {
+                ...parsed,
+                ...Object.fromEntries(files),
+            };
+        } else if (contentType?.includes("application/x-www-form-urlencoded")) {
+            const parsed = parse(await context.req.text(), {
+                parseArrays: true,
+                interpretNumericEntities: true,
+            });
+
+            context.req.parseBody = <T extends BodyData = BodyData>() =>
+                Promise.resolve(parsed as T);
+            // @ts-ignore Very bad hack
+            context.req.formData = () => Promise.resolve(parsed);
+            // @ts-ignore I'm so sorry for this
+            context.req.bodyCache.formData = parsed;
+        }
         await next();
     });
 };

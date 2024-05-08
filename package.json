@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.7.0",
+    "@types/cli-progress": "^3.11.5",
     "@types/cli-table": "^0.3.4",
     "@types/html-to-text": "^9.0.4",
     "@types/ioredis": "^5.0.0",
@@ -81,12 +82,12 @@
     "@types/markdown-it-container": "^2.0.10",
     "@types/mime-types": "^2.1.4",
     "@types/pg": "^8.11.5",
+    "@types/qs": "^6.9.15",
     "bun-types": "latest",
     "drizzle-kit": "^0.20.14",
+    "oclif": "^4.10.4",
     "ts-prune": "^0.10.3",
-    "typescript": "latest",
-    "@types/cli-progress": "^3.11.5",
-    "oclif": "^4.10.4"
+    "typescript": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.3.2"
