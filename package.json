@@ -35,7 +35,7 @@
         "build": "bun run build.ts",
         "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs,glitch,glitch-dev --exclude-ext sql,log,pem",
         "wc": "find server database *.ts docs packages types utils drizzle tests -type f -print0 | wc -m --files0-from=-",
-        "cli": "bun run packages/cli/bin/run.ts",
+        "cli": "bun run cli/bin/run.ts",
         "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'"
     },
     "trustedDependencies": [
@@ -51,6 +51,27 @@
         "sharp",
         "vue-demi"
     ],
+    "oclif": {
+        "bin": "cli",
+        "dirname": "cli",
+        "commands": {
+            "strategy": "explicit",
+            "target": "./cli/index.ts",
+            "identifier": "commands"
+        },
+        "additionalHelpFlags": ["-h"],
+        "additionalVersionFlags": ["-v"],
+        "plugins": ["@oclif/plugin-help"],
+        "description": "CLI to interface with the Lysand project",
+        "topicSeparator": " ",
+        "topics": {
+            "user": {
+                "description": "Manage users"
+            }
+        },
+        "theme": "./cli/theme.json",
+        "flexibleTaxonomy": true
+    },
     "devDependencies": {
         "@biomejs/biome": "^1.7.0",
         "@types/cli-table": "^0.3.4",
@@ -63,12 +84,23 @@
         "bun-types": "latest",
         "drizzle-kit": "^0.20.14",
         "ts-prune": "^0.10.3",
-        "typescript": "latest"
+        "typescript": "latest",
+        "@types/cli-progress": "^3.11.5",
+        "oclif": "^4.10.4"
     },
     "peerDependencies": {
         "typescript": "^5.3.2"
     },
     "dependencies": {
+        "@inquirer/confirm": "^3.1.6",
+        "@inquirer/input": "^2.1.6",
+        "@oclif/core": "^3.26.6",
+        "@oclif/plugin-help": "^6.0.21",
+        "@oclif/plugin-plugins": "^5.0.19",
+        "cli-progress": "^3.12.0",
+        "ora": "^8.0.1",
+        "table": "^6.8.2",
+        "uqr": "^0.1.2",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
         "@hono/zod-validator": "^0.2.1",
         "@json2csv/plainjs": "^7.0.6",

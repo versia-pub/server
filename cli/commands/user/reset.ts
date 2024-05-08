@@ -1,17 +1,16 @@
+import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { formatArray } from "~packages/cli/utils/format";
-import confirm from "@inquirer/confirm";
-import ora from "ora";
-import { UserFinderCommand } from "~packages/cli/classes";
+import { renderUnicodeCompact } from "uqr";
+import { UserFinderCommand } from "~cli/classes";
+import { formatArray } from "~cli/utils/format";
 
-export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
-    static override description = "Deletes users";
+export default class UserReset extends UserFinderCommand<typeof UserReset> {
+    static override description = "Resets users' passwords";
 
     static override examples = [
         "<%= config.bin %> <%= command.id %> johngastron --type username",
         "<%= config.bin %> <%= command.id %> 018ec11c-c6cb-7a67-bd20-a4c81bf42912",
-        '<%= config.bin %> <%= command.id %> "*badword*" --pattern --type username',
     ];
 
     static override flags = {
@@ -21,6 +20,15 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
             allowNo: true,
             default: true,
         }),
+        limit: Flags.integer({
+            char: "n",
+            description: "Limit the number of users",
+            default: 1,
+        }),
+        raw: Flags.boolean({
+            description:
+                "Only output the password reset link (implies --no-print and --no-confirm)",
+        }),
     };
 
     static override args = {
@@ -28,7 +36,7 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
     };
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(UserDelete);
+        const { flags, args } = await this.parse(UserReset);
 
         const users = await this.findUsers();
 
@@ -38,7 +46,7 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
         }
 
         // Display user
-        flags.print &&
+        !flags.raw &&
             this.log(
                 chalk.bold(
                     `${chalk.green("✓")} Found ${chalk.green(
@@ -47,7 +55,8 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
                 ),
             );
 
-        flags.print &&
+        !flags.raw &&
+            flags.print &&
             this.log(
                 formatArray(
                     users.map((u) => u.getUser()),
@@ -62,9 +71,9 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
                 ),
             );
 
-        if (flags.confirm) {
+        if (flags.confirm && !flags.raw) {
             const choice = await confirm({
-                message: `Are you sure you want to delete these users? ${chalk.red(
+                message: `Reset these users's passwords? ${chalk.red(
                     "This is irreversible.",
                 )}`,
             });
@@ -75,15 +84,30 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
             }
         }
 
-        const spinner = ora("Deleting user(s)").start();
+        const link = "https://example.com/reset-password";
 
-        for (const user of users) {
-            await user.delete();
-        }
+        !flags.raw &&
+            this.log(
+                `${chalk.green("✓")} Password reset for ${
+                    users.length
+                } user(s)`,
+            );
 
-        spinner.stop();
+        this.log(
+            flags.raw
+                ? link
+                : `\nPassword reset link for ${chalk.bold(
+                      "@testuser",
+                  )}: ${chalk.underline(chalk.blue(link))}\n`,
+        );
 
-        this.log(chalk.bold(`${chalk.green("✓")} User(s) deleted`));
+        const qrcode = renderUnicodeCompact(link, {
+            border: 2,
+        });
+
+        // Pad all lines of QR code with spaces
+
+        !flags.raw && this.log(`  ${qrcode.replaceAll("\n", "\n  ")}`);
 
         this.exit(0);
     }

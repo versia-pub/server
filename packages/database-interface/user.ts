@@ -337,8 +337,8 @@ export class User {
     static async fromDataLocal(data: {
         username: string;
         display_name?: string;
-        password: string;
-        email: string;
+        password: string | undefined;
+        email: string | undefined;
         bio?: string;
         avatar?: string;
         header?: string;
@@ -353,9 +353,10 @@ export class User {
                 .values({
                     username: data.username,
                     displayName: data.display_name ?? data.username,
-                    password: data.skipPasswordHash
-                        ? data.password
-                        : await Bun.password.hash(data.password),
+                    password:
+                        data.skipPasswordHash || !data.password
+                            ? data.password
+                            : await Bun.password.hash(data.password),
                     email: data.email,
                     note: data.bio ?? "",
                     avatar: data.avatar ?? config.defaults.avatar,

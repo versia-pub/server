@@ -1,5 +1,5 @@
-import { config } from "~packages/config-manager";
 import { LogManager, MultiLogManager } from "log-manager";
+import { config } from "~packages/config-manager";
 
 const noColors = process.env.NO_COLORS === "true";
 const noFancyDates = process.env.NO_FANCY_DATES === "true";

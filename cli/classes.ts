@@ -1,8 +1,9 @@
+import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
+import chalk from "chalk";
 import { and, eq, like } from "drizzle-orm";
 import { Users } from "~drizzle/schema";
 import type { User } from "~packages/database-interface/user";
 import { BaseCommand } from "./base";
-import { Args, Flags, type Command, type Interfaces } from "@oclif/core";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<
     (typeof BaseCommand)["baseFlags"] & T["flags"]
@@ -63,6 +64,17 @@ export abstract class UserFinderCommand<
     }
 
     public async findUsers(): Promise<User[]> {
+        // Check if there are asterisks in the identifier but no pattern flag, warn the user if so
+        if (this.args.identifier.includes("*") && !this.flags.pattern) {
+            this.log(
+                chalk.bold(
+                    `${chalk.yellow(
+                        "⚠",
+                    )} Your identifier has asterisks but the --pattern flag is not set. This will match a literal string. If you want to use wildcards, set the --pattern flag.`,
+                ),
+            );
+        }
+
         const operator = this.flags.pattern ? like : eq;
         // Replace wildcards with an SQL LIKE pattern
         const identifier = this.flags.pattern

@@ -1,8 +1,8 @@
 import { Flags } from "@oclif/core";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
+import { BaseCommand } from "~cli/base";
+import { formatArray } from "~cli/utils/format";
 import { Users } from "~drizzle/schema";
-import { BaseCommand } from "~packages/cli/base";
-import { formatArray } from "~packages/cli/utils/format";
 import { User } from "~packages/database-interface/user";
 
 export default class UserList extends BaseCommand<typeof UserList> {
