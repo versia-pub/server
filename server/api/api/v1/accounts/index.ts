@@ -30,7 +30,8 @@ export const schemas = {
         password: z.string(),
         agreement: z
             .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase())),
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean()),
         locale: z.string(),
         reason: z.string(),
     }),
