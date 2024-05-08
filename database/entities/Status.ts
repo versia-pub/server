@@ -38,9 +38,7 @@ import type { Application } from "./Application";
 import { attachmentFromLysand } from "./Attachment";
 import { type EmojiWithInstance, fetchEmoji } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
-import type { Like } from "./Like";
 import {
-    type UserType,
     type UserWithInstance,
     type UserWithRelations,
     resolveWebFinger,
@@ -57,7 +55,6 @@ export type StatusWithRelations = Status & {
     attachments: InferSelectModel<typeof Attachments>[];
     reblog: StatusWithoutRecursiveRelations | null;
     emojis: EmojiWithInstance[];
-    likes: Like[];
     reply: Status | null;
     quote: Status | null;
     application: Application | null;
@@ -71,21 +68,6 @@ export type StatusWithoutRecursiveRelations = Omit<
     "reply" | "quote" | "reblog"
 >;
 
-export const noteExtras = {
-    reblogCount:
-        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes".id)`.as(
-            "reblog_count",
-        ),
-    likeCount:
-        sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes".id)`.as(
-            "like_count",
-        ),
-    replyCount:
-        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes".id)`.as(
-            "reply_count",
-        ),
-};
-
 /**
  * Wrapper against the Status object to make it easier to work with
  * @param query
@@ -98,10 +80,7 @@ export const findManyNotes = async (
         ...query,
         with: {
             ...query?.with,
-            attachments: {
-                where: (attachment, { eq }) =>
-                    eq(attachment.noteId, sql`"Notes"."id"`),
-            },
+            attachments: true,
             emojis: {
                 with: {
                     emoji: {
@@ -158,14 +137,36 @@ export const findManyNotes = async (
                     },
                 },
                 extras: {
-                    ...noteExtras,
+                    reblogCount:
+                        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes_reblog".id)`.as(
+                            "reblog_count",
+                        ),
+                    likeCount:
+                        sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes_reblog".id)`.as(
+                            "like_count",
+                        ),
+                    replyCount:
+                        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes_reblog".id)`.as(
+                            "reply_count",
+                        ),
                 },
             },
             reply: true,
             quote: true,
         },
         extras: {
-            ...noteExtras,
+            reblogCount:
+                sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes".id)`.as(
+                    "reblog_count",
+                ),
+            likeCount:
+                sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes".id)`.as(
+                    "like_count",
+                ),
+            replyCount:
+                sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes".id)`.as(
+                    "reply_count",
+                ),
             ...query?.extras,
         },
     });
@@ -194,113 +195,6 @@ export const findManyNotes = async (
         likeCount: Number(post.likeCount),
         replyCount: Number(post.replyCount),
     }));
-};
-
-export const findFirstNote = async (
-    query: Parameters<typeof db.query.Notes.findFirst>[0],
-): Promise<StatusWithRelations | null> => {
-    const output = await db.query.Notes.findFirst({
-        ...query,
-        with: {
-            ...query?.with,
-            attachments: {
-                where: (attachment, { eq }) =>
-                    eq(attachment.noteId, sql`"Notes"."id"`),
-            },
-            emojis: {
-                with: {
-                    emoji: {
-                        with: {
-                            instance: true,
-                        },
-                    },
-                },
-            },
-            author: {
-                with: {
-                    ...userRelations,
-                },
-                extras: userExtrasTemplate("Notes_author"),
-            },
-            mentions: {
-                with: {
-                    user: {
-                        with: {
-                            instance: true,
-                        },
-                    },
-                },
-            },
-            reblog: {
-                with: {
-                    attachments: true,
-                    emojis: {
-                        with: {
-                            emoji: {
-                                with: {
-                                    instance: true,
-                                },
-                            },
-                        },
-                    },
-                    likes: true,
-                    application: true,
-                    mentions: {
-                        with: {
-                            user: {
-                                with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "Notes_reblog_mentions_user",
-                                ),
-                            },
-                        },
-                    },
-                    author: {
-                        with: {
-                            ...userRelations,
-                        },
-                        extras: userExtrasTemplate("Notes_reblog_author"),
-                    },
-                },
-                extras: {
-                    ...noteExtras,
-                },
-            },
-            reply: true,
-            quote: true,
-        },
-        extras: {
-            ...noteExtras,
-            ...query?.extras,
-        },
-    });
-
-    if (!output) return null;
-
-    return {
-        ...output,
-        author: transformOutputToUserWithRelations(output.author),
-        mentions: output.mentions.map((mention) => ({
-            ...mention.user,
-            endpoints: mention.user.endpoints,
-        })),
-        emojis: (output.emojis ?? []).map((emoji) => emoji.emoji),
-        reblog: output.reblog && {
-            ...output.reblog,
-            author: transformOutputToUserWithRelations(output.reblog.author),
-            mentions: output.reblog.mentions.map((mention) => ({
-                ...mention.user,
-                endpoints: mention.user.endpoints,
-            })),
-            emojis: (output.reblog.emojis ?? []).map((emoji) => emoji.emoji),
-            reblogCount: Number(output.reblog.reblogCount),
-            likeCount: Number(output.reblog.likeCount),
-            replyCount: Number(output.reblog.replyCount),
-        },
-        reblogCount: Number(output.reblogCount),
-        likeCount: Number(output.likeCount),
-        replyCount: Number(output.replyCount),
-    };
 };
 
 export const resolveNote = async (

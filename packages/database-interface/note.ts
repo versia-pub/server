@@ -32,7 +32,6 @@ import {
     type Status,
     type StatusWithRelations,
     contentToHtml,
-    findFirstNote,
     findManyNotes,
 } from "~database/entities/Status";
 import { db } from "~drizzle/db";
@@ -69,13 +68,14 @@ export class Note {
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Notes.id),
     ) {
-        const found = await findFirstNote({
+        const found = await findManyNotes({
             where: sql,
             orderBy,
+            limit: 1,
         });
 
-        if (!found) return null;
-        return new Note(found);
+        if (!found[0]) return null;
+        return new Note(found[0]);
     }
 
     static async manyFromSql(
@@ -413,35 +413,47 @@ export class Note {
 
     async toAPI(userFetching?: User | null): Promise<APIStatus> {
         const data = this.getStatus();
-        const wasPinnedByUser = userFetching
-            ? !!(await db.query.UserToPinnedNotes.findFirst({
-                  where: (relation, { and, eq }) =>
-                      and(
-                          eq(relation.noteId, data.id),
-                          eq(relation.userId, userFetching?.id),
-                      ),
-              }))
-            : false;
 
-        const wasRebloggedByUser = userFetching
-            ? !!(await Note.fromSql(
-                  and(
-                      eq(Notes.authorId, userFetching?.id),
-                      eq(Notes.reblogId, data.id),
-                  ),
-              ))
-            : false;
-
-        const wasMutedByUser = userFetching
-            ? !!(await db.query.Relationships.findFirst({
-                  where: (relationship, { and, eq }) =>
-                      and(
-                          eq(relationship.ownerId, userFetching.id),
-                          eq(relationship.subjectId, data.authorId),
-                          eq(relationship.muting, true),
-                      ),
-              }))
-            : false;
+        const [pinnedByUser, rebloggedByUser, mutedByUser, likedByUser] = (
+            await Promise.all([
+                userFetching
+                    ? db.query.UserToPinnedNotes.findFirst({
+                          where: (relation, { and, eq }) =>
+                              and(
+                                  eq(relation.noteId, data.id),
+                                  eq(relation.userId, userFetching?.id),
+                              ),
+                      })
+                    : false,
+                userFetching
+                    ? Note.fromSql(
+                          and(
+                              eq(Notes.authorId, userFetching?.id),
+                              eq(Notes.reblogId, data.id),
+                          ),
+                      )
+                    : false,
+                userFetching
+                    ? db.query.Relationships.findFirst({
+                          where: (relationship, { and, eq }) =>
+                              and(
+                                  eq(relationship.ownerId, userFetching.id),
+                                  eq(relationship.subjectId, data.authorId),
+                                  eq(relationship.muting, true),
+                              ),
+                      })
+                    : false,
+                userFetching
+                    ? db.query.Likes.findFirst({
+                          where: (like, { and, eq }) =>
+                              and(
+                                  eq(like.likedId, data.id),
+                                  eq(like.likerId, userFetching.id),
+                              ),
+                      })
+                    : false,
+            ])
+        ).map((r) => !!r);
 
         // Convert mentions of local users from @username@host to @username
         const mentionedLocalUsers = data.mentions.filter(
@@ -476,10 +488,7 @@ export class Note {
             card: null,
             content: replacedContent,
             emojis: data.emojis.map((emoji) => emojiToAPI(emoji)),
-            // FIXME: data.likes is always empty
-            favourited: !!(data.likes ?? []).find(
-                (like) => like.likerId === userFetching?.id,
-            ),
+            favourited: likedByUser,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
                 (a) => attachmentToAPI(a) as APIAttachment,
@@ -495,8 +504,8 @@ export class Note {
                 username: mention.username,
             })),
             language: null,
-            muted: wasMutedByUser,
-            pinned: wasPinnedByUser,
+            muted: mutedByUser,
+            pinned: pinnedByUser,
             // TODO: Add polls
             poll: null,
             reblog: data.reblog
@@ -504,7 +513,7 @@ export class Note {
                       data.reblog as StatusWithRelations,
                   ).toAPI(userFetching)
                 : null,
-            reblogged: wasRebloggedByUser,
+            reblogged: rebloggedByUser,
             reblogs_count: data.reblogCount,
             replies_count: data.replyCount,
             sensitive: data.sensitive,
