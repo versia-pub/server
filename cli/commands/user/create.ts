@@ -103,7 +103,7 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             password: password ?? undefined,
             username: args.username,
             admin: flags.admin,
-            skipPasswordHash: !!password,
+            skipPasswordHash: !password,
         });
 
         if (!user) {
