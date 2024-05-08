@@ -18,7 +18,7 @@ case "$1" in
   "cli")
     # Start the CLI
     shift 1
-    bun run ./cli.js "$@"
+    bun run ./cli/index.js "$@"
     ;;
   *)
     # Run custom commands

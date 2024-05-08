@@ -5,7 +5,7 @@
     "dollarSign": "white",
     "flag": "white",
     "flagDefaultValue": "blue",
-    "flagOptions": "white",
+    "flagOptions": "green",
     "flagRequired": "red",
     "flagSeparator": "white",
     "sectionDescription": "white",

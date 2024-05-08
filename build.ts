@@ -10,7 +10,6 @@ await $`rm -rf dist && mkdir dist`;
 await Bun.build({
     entrypoints: [
         "index.ts",
-        "cli.ts",
         "cli/index.ts",
         // Force Bun to include endpoints
         ...Object.values(routes),

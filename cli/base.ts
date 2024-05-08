@@ -1,14 +1,11 @@
 import { Command } from "@oclif/core";
+import { setupDatabase } from "~drizzle/db";
+import { consoleLogger } from "@loggers";
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
     protected async init(): Promise<void> {
         await super.init();
 
-        const { setupDatabase } = await import("~drizzle/db");
-        const { consoleLogger } = await import("@loggers");
-
-        (async () => {
-            await setupDatabase(consoleLogger, false);
-        })();
+        await setupDatabase(consoleLogger, false);
     }
 }

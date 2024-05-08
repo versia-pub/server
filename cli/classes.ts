@@ -2,7 +2,7 @@ import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, like } from "drizzle-orm";
 import { Users } from "~drizzle/schema";
-import type { User } from "~packages/database-interface/user";
+import { User } from "~packages/database-interface/user";
 import { BaseCommand } from "./base";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<
@@ -80,8 +80,6 @@ export abstract class UserFinderCommand<
         const identifier = this.flags.pattern
             ? this.args.identifier.replace(/\*/g, "%")
             : this.args.identifier;
-
-        const { User } = await import("~packages/database-interface/user");
 
         return await User.manyFromSql(
             and(
