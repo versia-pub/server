@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";

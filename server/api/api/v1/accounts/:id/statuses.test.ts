@@ -19,12 +19,6 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-const getFormData = (object: Record<string, string | number | boolean>) =>
-    Object.keys(object).reduce((formData, key) => {
-        formData.append(key, String(object[key]));
-        return formData;
-    }, new FormData());
-
 beforeAll(async () => {
     const response = await sendTestRequest(
         new Request(

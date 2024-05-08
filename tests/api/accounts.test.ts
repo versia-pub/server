@@ -1,9 +1,11 @@
+/**
+ * @deprecated
+ */
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
-import type { Status as APIStatus } from "~types/mastodon/status";
 
 const base_url = config.http.base_url;
 
@@ -102,33 +104,6 @@ describe("API Tests", () => {
             expect(account.source?.language).toBeNull();
             expect(account.source?.note).toBe("");
             expect(account.source?.sensitive).toBe(false);
-        });
-    });
-
-    describe("GET /api/v1/accounts/:id/statuses", () => {
-        test("should return the statuses of the specified user", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user.id}/statuses`,
-                        base_url,
-                    ),
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
-
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
-                "application/json",
-            );
-
-            const statuses = (await response.json()) as APIStatus[];
-
-            expect(statuses.length).toBe(0);
         });
     });
 

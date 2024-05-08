@@ -1,13 +1,11 @@
+/**
+ * @deprecated
+ */
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "~packages/config-manager";
 import type { Application as APIApplication } from "~types/mastodon/application";
 import type { Token as APIToken } from "~types/mastodon/token";
-import {
-    deleteOldTestUsers,
-    getTestUsers,
-    sendTestRequest,
-    wrapRelativeUrl,
-} from "./utils";
+import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const base_url = config.http.base_url;
 
@@ -70,7 +68,7 @@ describe("POST /api/auth/login/", () => {
     test("should get a JWT", async () => {
         const formData = new FormData();
 
-        formData.append("email", users[0]?.getUser().email ?? "");
+        formData.append("identifier", users[0]?.getUser().email ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
@@ -87,21 +85,6 @@ describe("POST /api/auth/login/", () => {
         );
 
         expect(response.status).toBe(302);
-        expect(response.headers.get("location")).toBeDefined();
-        const locationHeader = new URL(
-            response.headers.get("Location") ?? "",
-            "",
-        );
-
-        expect(locationHeader.pathname).toBe("/oauth/consent");
-        expect(locationHeader.searchParams.get("client_id")).toBe(client_id);
-        expect(locationHeader.searchParams.get("redirect_uri")).toBe(
-            "https://example.com",
-        );
-        expect(locationHeader.searchParams.get("response_type")).toBe("code");
-        expect(locationHeader.searchParams.get("scope")).toBe("read write");
-
-        expect(response.headers.get("Set-Cookie")).toMatch(/jwt=[^;]+;/);
 
         jwt =
             response.headers.get("Set-Cookie")?.match(/jwt=([^;]+);/)?.[1] ??

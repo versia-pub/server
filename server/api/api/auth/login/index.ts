@@ -1,7 +1,7 @@
 import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, response } from "@response";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
@@ -24,7 +24,11 @@ export const meta = applyConfig({
 
 export const schemas = {
     form: z.object({
-        email: z.string().email().toLowerCase(),
+        identifier: z
+            .string()
+            .email()
+            .toLowerCase()
+            .or(z.string().toLowerCase()),
         password: z.string().min(2).max(100),
     }),
     query: z.object({
@@ -69,7 +73,10 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error_description", description);
 
     return response(null, 302, {
-        Location: `/oauth/authorize?${searchParams.toString()}`,
+        Location: new URL(
+            `/oauth/authorize?${searchParams.toString()}`,
+            config.http.base_url,
+        ).toString(),
     });
 };
 
@@ -80,12 +87,15 @@ export default (app: Hono) =>
         zValidator("form", schemas.form, handleZodError),
         zValidator("query", schemas.query, handleZodError),
         async (context) => {
-            const { email, password } = context.req.valid("form");
+            const { identifier, password } = context.req.valid("form");
             const { client_id } = context.req.valid("query");
 
             // Find user
             const user = await User.fromSql(
-                eq(Users.email, email.toLowerCase()),
+                or(
+                    eq(Users.email, identifier.toLowerCase()),
+                    eq(Users.username, identifier.toLowerCase()),
+                ),
             );
 
             if (
@@ -97,7 +107,7 @@ export default (app: Hono) =>
             )
                 return returnError(
                     context.req.query(),
-                    "invalid_request",
+                    "invalid_grant",
                     "Invalid email or password",
                 );
 

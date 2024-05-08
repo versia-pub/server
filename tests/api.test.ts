@@ -1,3 +1,6 @@
+/**
+ * @deprecated
+ */
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
