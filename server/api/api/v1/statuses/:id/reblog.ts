@@ -43,7 +43,7 @@ export default (app: Hono) =>
 
             if (!user) return errorResponse("Unauthorized", 401);
 
-            const foundStatus = await Note.fromId(id);
+            const foundStatus = await Note.fromId(id, user.id);
 
             if (!foundStatus?.isViewableByUser(user))
                 return errorResponse("Record not found", 404);
@@ -72,7 +72,7 @@ export default (app: Hono) =>
                 return errorResponse("Failed to reblog", 500);
             }
 
-            const finalNewReblog = await Note.fromId(newReblog.id);
+            const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
 
             if (!finalNewReblog) {
                 return errorResponse("Failed to reblog", 500);

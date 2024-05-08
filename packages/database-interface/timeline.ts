@@ -16,11 +16,13 @@ export class Timeline {
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
+        userId?: string,
     ) {
         return new Timeline(TimelineType.NOTE).fetchTimeline<Note>(
             sql,
             limit,
             url,
+            userId,
         );
     }
 
@@ -40,13 +42,22 @@ export class Timeline {
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
+        userId?: string,
     ) {
         const notes: Note[] = [];
         const users: User[] = [];
 
         switch (this.type) {
             case TimelineType.NOTE:
-                notes.push(...(await Note.manyFromSql(sql, undefined, limit)));
+                notes.push(
+                    ...(await Note.manyFromSql(
+                        sql,
+                        undefined,
+                        limit,
+                        undefined,
+                        userId,
+                    )),
+                );
                 break;
             case TimelineType.USER:
                 users.push(...(await User.manyFromSql(sql, undefined, limit)));

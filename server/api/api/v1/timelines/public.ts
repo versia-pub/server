@@ -79,6 +79,7 @@ export default (app: Hono) =>
                 ),
                 limit,
                 context.req.url,
+                user?.id,
             );
 
             return jsonResponse(

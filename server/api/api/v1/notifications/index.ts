@@ -174,6 +174,7 @@ export default (app: Hono) =>
                             desc(notification.id),
                     },
                     context.req.raw,
+                    user.id,
                 );
 
             return jsonResponse(

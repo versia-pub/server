@@ -37,10 +37,14 @@ export default (app: Hono) =>
             if (!user) return errorResponse("Unauthorized", 401);
 
             const notification = (
-                await findManyNotifications({
-                    where: (notification, { eq }) => eq(notification.id, id),
-                    limit: 1,
-                })
+                await findManyNotifications(
+                    {
+                        where: (notification, { eq }) =>
+                            eq(notification.id, id),
+                        limit: 1,
+                    },
+                    user.id,
+                )
             )[0];
 
             if (!notification)

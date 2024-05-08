@@ -62,6 +62,7 @@ export default (app: Hono) =>
         auth(meta.auth),
         async (context) => {
             const { id } = context.req.valid("param");
+            const { user } = context.req.valid("header");
 
             const otherUser = await User.fromId(id);
 
@@ -95,6 +96,7 @@ export default (app: Hono) =>
                 ),
                 limit,
                 context.req.url,
+                user?.id,
             );
 
             return jsonResponse(

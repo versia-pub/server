@@ -72,7 +72,7 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            const foundStatus = await Note.fromId(id);
+            const foundStatus = await Note.fromId(id, user?.id);
 
             if (!foundStatus?.isViewableByUser(user))
                 return errorResponse("Record not found", 404);

@@ -36,7 +36,7 @@ export default (app: Hono) =>
 
             if (!user) return errorResponse("Unauthorized", 401);
 
-            const foundStatus = await Note.fromId(id);
+            const foundStatus = await Note.fromId(id, user?.id);
 
             if (!foundStatus) return errorResponse("Record not found", 404);
 

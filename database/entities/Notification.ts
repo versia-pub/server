@@ -21,6 +21,7 @@ export type NotificationWithRelations = Notification & {
 
 export const findManyNotifications = async (
     query: Parameters<typeof db.query.Notifications.findMany>[0],
+    userId?: string,
 ): Promise<NotificationWithRelations[]> => {
     const output = await db.query.Notifications.findMany({
         ...query,
@@ -42,7 +43,8 @@ export const findManyNotifications = async (
         output.map(async (notif) => ({
             ...notif,
             account: transformOutputToUserWithRelations(notif.account),
-            status: (await Note.fromId(notif.noteId))?.getStatus() ?? null,
+            status:
+                (await Note.fromId(notif.noteId, userId))?.getStatus() ?? null,
         })),
     );
 };

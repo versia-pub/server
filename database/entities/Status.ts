@@ -61,6 +61,10 @@ export type StatusWithRelations = Status & {
     reblogCount: number;
     likeCount: number;
     replyCount: number;
+    pinned: boolean;
+    reblogged: boolean;
+    muted: boolean;
+    liked: boolean;
 };
 
 export type StatusWithoutRecursiveRelations = Omit<
@@ -75,6 +79,7 @@ export type StatusWithoutRecursiveRelations = Omit<
  */
 export const findManyNotes = async (
     query: Parameters<typeof db.query.Notes.findMany>[0],
+    userId?: string,
 ): Promise<StatusWithRelations[]> => {
     const output = await db.query.Notes.findMany({
         ...query,
@@ -149,6 +154,26 @@ export const findManyNotes = async (
                         sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes_reblog".id)`.as(
                             "reply_count",
                         ),
+                    pinned: userId
+                        ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes_reblog".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
+                              "pinned",
+                          )
+                        : sql`false`.as("pinned"),
+                    reblogged: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."authorId" = ${userId} AND "Notes"."reblogId" = "Notes_reblog".id)`.as(
+                              "reblogged",
+                          )
+                        : sql`false`.as("reblogged"),
+                    muted: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."ownerId" = ${userId} AND "Relationships"."subjectId" = "Notes_reblog"."authorId" AND "Relationships"."muting" = true)`.as(
+                              "muted",
+                          )
+                        : sql`false`.as("muted"),
+                    liked: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = "Notes_reblog".id AND "Likes"."likerId" = ${userId})`.as(
+                              "liked",
+                          )
+                        : sql`false`.as("liked"),
                 },
             },
             reply: true,
@@ -167,6 +192,26 @@ export const findManyNotes = async (
                 sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes".id)`.as(
                     "reply_count",
                 ),
+            pinned: userId
+                ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
+                      "pinned",
+                  )
+                : sql`false`.as("pinned"),
+            reblogged: userId
+                ? sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."authorId" = ${userId} AND "Notes"."reblogId" = "Notes".id)`.as(
+                      "reblogged",
+                  )
+                : sql`false`.as("reblogged"),
+            muted: userId
+                ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."ownerId" = ${userId} AND "Relationships"."subjectId" = "Notes"."authorId" AND "Relationships"."muting" = true)`.as(
+                      "muted",
+                  )
+                : sql`false`.as("muted"),
+            liked: userId
+                ? sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = "Notes".id AND "Likes"."likerId" = ${userId})`.as(
+                      "liked",
+                  )
+                : sql`false`.as("liked"),
             ...query?.extras,
         },
     });
@@ -190,10 +235,18 @@ export const findManyNotes = async (
             reblogCount: Number(post.reblog.reblogCount),
             likeCount: Number(post.reblog.likeCount),
             replyCount: Number(post.reblog.replyCount),
+            pinned: Boolean(post.reblog.pinned),
+            reblogged: Boolean(post.reblog.reblogged),
+            muted: Boolean(post.reblog.muted),
+            liked: Boolean(post.reblog.liked),
         },
         reblogCount: Number(post.reblogCount),
         likeCount: Number(post.likeCount),
         replyCount: Number(post.replyCount),
+        pinned: Boolean(post.pinned),
+        reblogged: Boolean(post.reblogged),
+        muted: Boolean(post.muted),
+        liked: Boolean(post.liked),
     }));
 };
 

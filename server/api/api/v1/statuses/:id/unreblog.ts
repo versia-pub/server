@@ -38,9 +38,7 @@ export default (app: Hono) =>
 
             if (!user) return errorResponse("Unauthorized", 401);
 
-            if (!user) return errorResponse("Unauthorized", 401);
-
-            const foundStatus = await Note.fromId(id);
+            const foundStatus = await Note.fromId(id, user.id);
 
             // Check if user is authorized to view this status (if it's private)
             if (!foundStatus?.isViewableByUser(user))
@@ -51,6 +49,8 @@ export default (app: Hono) =>
                     eq(Notes.authorId, user.id),
                     eq(Notes.reblogId, foundStatus.getStatus().id),
                 ),
+                undefined,
+                user?.id,
             );
 
             if (!existingReblog) {

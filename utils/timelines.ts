@@ -17,11 +17,12 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
         | Parameters<typeof findManyUsers>[0]
         | Parameters<typeof db.query.Notifications.findMany>[0],
     req: Request,
+    userId?: string,
 ) {
     // BEFORE: Before in a top-to-bottom order, so the most recent posts
     // AFTER: After in a top-to-bottom order, so the oldest posts
     // @ts-expect-error This is a hack to get around the fact that Prisma doesn't have a common base type for all models
-    const objects = (await model(args)) as T[];
+    const objects = (await model(args, userId)) as T[];
 
     // Constuct HTTP Link header (next and prev) only if there are more statuses
     const linkHeader = [];

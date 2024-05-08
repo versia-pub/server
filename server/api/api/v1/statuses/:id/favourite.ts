@@ -39,7 +39,7 @@ export default (app: Hono) =>
 
             if (!user) return errorResponse("Unauthorized", 401);
 
-            const note = await Note.fromId(id);
+            const note = await Note.fromId(id, user?.id);
 
             if (!note?.isViewableByUser(user))
                 return errorResponse("Record not found", 404);

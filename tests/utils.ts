@@ -106,6 +106,9 @@ export const getTestStatuses = async (
                 statuses.map((s) => s.id),
             ),
             asc(Notes.id),
+            undefined,
+            undefined,
+            user.id,
         )
     ).map((n) => n.getStatus());
 };

@@ -34,7 +34,7 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            const foundStatus = await Note.fromId(id);
+            const foundStatus = await Note.fromId(id, user?.id);
 
             if (!foundStatus) return errorResponse("Record not found", 404);
 

@@ -54,25 +54,38 @@ import { User } from "./user";
 export class Note {
     private constructor(private status: StatusWithRelations) {}
 
-    static async fromId(id: string | null): Promise<Note | null> {
+    static async fromId(
+        id: string | null,
+        userId?: string,
+    ): Promise<Note | null> {
         if (!id) return null;
 
-        return await Note.fromSql(eq(Notes.id, id));
+        return await Note.fromSql(eq(Notes.id, id), undefined, userId);
     }
 
-    static async fromIds(ids: string[]): Promise<Note[]> {
-        return await Note.manyFromSql(inArray(Notes.id, ids));
+    static async fromIds(ids: string[], userId?: string): Promise<Note[]> {
+        return await Note.manyFromSql(
+            inArray(Notes.id, ids),
+            undefined,
+            undefined,
+            undefined,
+            userId,
+        );
     }
 
     static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Notes.id),
+        userId?: string,
     ) {
-        const found = await findManyNotes({
-            where: sql,
-            orderBy,
-            limit: 1,
-        });
+        const found = await findManyNotes(
+            {
+                where: sql,
+                orderBy,
+                limit: 1,
+            },
+            userId,
+        );
 
         if (!found[0]) return null;
         return new Note(found[0]);
@@ -83,13 +96,17 @@ export class Note {
         orderBy: SQL<unknown> | undefined = desc(Notes.id),
         limit?: number,
         offset?: number,
+        userId?: string,
     ) {
-        const found = await findManyNotes({
-            where: sql,
-            orderBy,
-            limit,
-            offset,
-        });
+        const found = await findManyNotes(
+            {
+                where: sql,
+                orderBy,
+                limit,
+                offset,
+            },
+            userId,
+        );
 
         return found.map((s) => new Note(s));
     }
@@ -176,8 +193,14 @@ export class Note {
         )[0].count;
     }
 
-    async getReplyChildren() {
-        return await Note.manyFromSql(eq(Notes.replyId, this.status.id));
+    async getReplyChildren(userId?: string) {
+        return await Note.manyFromSql(
+            eq(Notes.replyId, this.status.id),
+            undefined,
+            undefined,
+            undefined,
+            userId,
+        );
     }
 
     static async insert(values: InferInsertModel<typeof Notes>) {
@@ -275,7 +298,7 @@ export class Note {
             }
         }
 
-        return await Note.fromId(newNote.id);
+        return await Note.fromId(newNote.id, newNote.authorId);
     }
 
     async updateFromData(
@@ -358,7 +381,7 @@ export class Note {
                 .where(inArray(Attachments.id, media_attachments));
         }
 
-        return await Note.fromId(newNote.id);
+        return await Note.fromId(newNote.id, newNote.authorId);
     }
 
     async delete() {
@@ -414,47 +437,6 @@ export class Note {
     async toAPI(userFetching?: User | null): Promise<APIStatus> {
         const data = this.getStatus();
 
-        const [pinnedByUser, rebloggedByUser, mutedByUser, likedByUser] = (
-            await Promise.all([
-                userFetching
-                    ? db.query.UserToPinnedNotes.findFirst({
-                          where: (relation, { and, eq }) =>
-                              and(
-                                  eq(relation.noteId, data.id),
-                                  eq(relation.userId, userFetching?.id),
-                              ),
-                      })
-                    : false,
-                userFetching
-                    ? Note.fromSql(
-                          and(
-                              eq(Notes.authorId, userFetching?.id),
-                              eq(Notes.reblogId, data.id),
-                          ),
-                      )
-                    : false,
-                userFetching
-                    ? db.query.Relationships.findFirst({
-                          where: (relationship, { and, eq }) =>
-                              and(
-                                  eq(relationship.ownerId, userFetching.id),
-                                  eq(relationship.subjectId, data.authorId),
-                                  eq(relationship.muting, true),
-                              ),
-                      })
-                    : false,
-                userFetching
-                    ? db.query.Likes.findFirst({
-                          where: (like, { and, eq }) =>
-                              and(
-                                  eq(like.likedId, data.id),
-                                  eq(like.likerId, userFetching.id),
-                              ),
-                      })
-                    : false,
-            ])
-        ).map((r) => !!r);
-
         // Convert mentions of local users from @username@host to @username
         const mentionedLocalUsers = data.mentions.filter(
             (mention) => mention.instanceId === null,
@@ -488,7 +470,7 @@ export class Note {
             card: null,
             content: replacedContent,
             emojis: data.emojis.map((emoji) => emojiToAPI(emoji)),
-            favourited: likedByUser,
+            favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
                 (a) => attachmentToAPI(a) as APIAttachment,
@@ -504,8 +486,8 @@ export class Note {
                 username: mention.username,
             })),
             language: null,
-            muted: mutedByUser,
-            pinned: pinnedByUser,
+            muted: data.muted,
+            pinned: data.pinned,
             // TODO: Add polls
             poll: null,
             reblog: data.reblog
@@ -513,7 +495,7 @@ export class Note {
                       data.reblog as StatusWithRelations,
                   ).toAPI(userFetching)
                 : null,
-            reblogged: rebloggedByUser,
+            reblogged: data.reblogged,
             reblogs_count: data.reblogCount,
             replies_count: data.replyCount,
             sensitive: data.sensitive,
@@ -525,8 +507,8 @@ export class Note {
             bookmarked: false,
             // @ts-expect-error Glitch-SOC extension
             quote: data.quotingId
-                ? (await Note.fromId(data.quotingId).then((n) =>
-                      n?.toAPI(userFetching),
+                ? (await Note.fromId(data.quotingId, userFetching?.id).then(
+                      (n) => n?.toAPI(userFetching),
                   )) ?? null
                 : null,
             quote_id: data.quotingId || undefined,
@@ -589,7 +571,10 @@ export class Note {
         let currentStatus: Note = this;
 
         while (currentStatus.getStatus().replyId) {
-            const parent = await Note.fromId(currentStatus.getStatus().replyId);
+            const parent = await Note.fromId(
+                currentStatus.getStatus().replyId,
+                fetcher?.id,
+            );
 
             if (!parent) {
                 break;
@@ -612,7 +597,7 @@ export class Note {
      */
     async getDescendants(fetcher: User | null, depth = 0) {
         const descendants: Note[] = [];
-        for (const child of await this.getReplyChildren()) {
+        for (const child of await this.getReplyChildren(fetcher?.id)) {
             descendants.push(child);
 
             if (depth < 20) {
