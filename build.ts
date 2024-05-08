@@ -1,28 +1,33 @@
-// Delete dist directory
 import { $ } from "bun";
+import chalk from "chalk";
+import ora from "ora";
 import { routes } from "~routes";
 
-console.log(`Building at ${process.cwd()}`);
+const buildSpinner = ora("Building").start();
 
 await $`rm -rf dist && mkdir dist`;
 
 await Bun.build({
     entrypoints: [
-        `${process.cwd()}/index.ts`,
-        `${process.cwd()}/cli.ts`,
+        "index.ts",
+        "cli.ts",
+        "cli/index.ts",
         // Force Bun to include endpoints
         ...Object.values(routes),
     ],
-    outdir: `${process.cwd()}/dist`,
+    outdir: "dist",
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "frontend"],
+    external: ["bullmq"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);
+        process.exit(1);
     }
 });
+
+buildSpinner.text = "Transforming";
 
 // Fix for wrong Bun file resolution, replaces node_modules with ./node_modules inside all dynamic imports
 // I apologize for this
@@ -42,4 +47,10 @@ await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;
 
-console.log("Built!");
+buildSpinner.stop();
+
+console.log(
+    `${chalk.green("✓")} Built project. You can now run it with ${chalk.green(
+        "bun run dist/index.js",
+    )}`,
+);
