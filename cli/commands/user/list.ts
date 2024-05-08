@@ -20,6 +20,7 @@ export default class UserList extends BaseCommand<typeof UserList> {
             char: "f",
             description: "Output format",
             options: ["json", "csv"],
+            exclusive: ["pretty-dates"],
         }),
         local: Flags.boolean({
             char: "l",
