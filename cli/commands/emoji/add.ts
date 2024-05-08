@@ -38,6 +38,8 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
             this.exit(1);
         }
 
+        this.log("Placeholder command, this command is not implemented yet.");
+
         /* if (!user) {
             this.log(
                 `${chalk.red("✗")} Failed to create user ${chalk.red(

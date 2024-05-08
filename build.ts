@@ -48,6 +48,8 @@ await $`cp beemovie.txt dist/beemovie.txt`;
 
 // Copy package.json
 await $`cp package.json dist/package.json`;
+// Copy cli/theme.json
+await $`cp cli/theme.json dist/cli/theme.json`;
 
 buildSpinner.stop();
 
