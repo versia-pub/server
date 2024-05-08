@@ -56,7 +56,7 @@
         "dirname": "cli",
         "commands": {
             "strategy": "explicit",
-            "target": "./cli/index.ts",
+            "target": "./cli/index",
             "identifier": "commands"
         },
         "additionalHelpFlags": ["-h"],
