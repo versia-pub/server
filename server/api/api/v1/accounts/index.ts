@@ -26,7 +26,7 @@ export const meta = applyConfig({
 export const schemas = {
     form: z.object({
         username: z.string(),
-        email: z.string(),
+        email: z.string().toLowerCase(),
         password: z.string(),
         agreement: z
             .string()
