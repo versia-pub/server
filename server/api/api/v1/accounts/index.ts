@@ -45,6 +45,7 @@ export default (app: Hono) =>
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
+            const form = context.req.valid("form");
             const { username, email, password, agreement, locale, reason } =
                 context.req.valid("form");
 
@@ -94,8 +95,8 @@ export default (app: Hono) =>
                 "locale",
                 "reason",
             ]) {
-                // @ts-expect-error We don't care about typing here
-                if (!parsedRequest[value]) {
+                // @ts-expect-error We don't care about the type here
+                if (!form[value]) {
                     errors.details[value].push({
                         error: "ERR_BLANK",
                         description: `can't be blank`,
