@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError, jsonOrForm } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { jsonResponse, response } from "@response";
 import { tempmailDomains } from "@tempmail";
@@ -40,6 +40,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
