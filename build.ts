@@ -46,6 +46,9 @@ await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;
 
+// Copy package.json
+await $`cp package.json dist/package.json`;
+
 buildSpinner.stop();
 
 console.log(
