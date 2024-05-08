@@ -13,3 +13,7 @@ export const commands = {
     "user:reset": UserReset,
     "emoji:add": EmojiAdd,
 };
+
+if (import.meta.path === Bun.main) {
+    await execute({ dir: import.meta.url });
+}
