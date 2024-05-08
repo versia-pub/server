@@ -476,10 +476,11 @@ export class Note {
             card: null,
             content: replacedContent,
             emojis: data.emojis.map((emoji) => emojiToAPI(emoji)),
+            // FIXME: data.likes is always empty
             favourited: !!(data.likes ?? []).find(
                 (like) => like.likerId === userFetching?.id,
             ),
-            favourites_count: (data.likes ?? []).length,
+            favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
                 (a) => attachmentToAPI(a) as APIAttachment,
             ),
