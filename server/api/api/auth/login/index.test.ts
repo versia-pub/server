@@ -147,7 +147,7 @@ describe(meta.route, () => {
                 "invalid_grant",
             );
             expect(locationHeader.searchParams.get("error_description")).toBe(
-                "Invalid email or password",
+                "Invalid identifier or password",
             );
 
             expect(response.headers.get("Set-Cookie")).toBeNull();
@@ -184,7 +184,7 @@ describe(meta.route, () => {
                 "invalid_grant",
             );
             expect(locationHeader.searchParams.get("error_description")).toBe(
-                "Invalid email or password",
+                "Invalid identifier or password",
             );
 
             expect(response.headers.get("Set-Cookie")).toBeNull();
@@ -221,7 +221,7 @@ describe(meta.route, () => {
                 "invalid_grant",
             );
             expect(locationHeader.searchParams.get("error_description")).toBe(
-                "Invalid email or password",
+                "Invalid identifier or password",
             );
 
             expect(response.headers.get("Set-Cookie")).toBeNull();

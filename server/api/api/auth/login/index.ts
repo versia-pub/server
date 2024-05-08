@@ -108,7 +108,7 @@ export default (app: Hono) =>
                 return returnError(
                     context.req.query(),
                     "invalid_grant",
-                    "Invalid email or password",
+                    "Invalid identifier or password",
                 );
 
             // Try and import the key
