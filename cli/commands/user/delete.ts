@@ -81,7 +81,7 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
             await user.delete();
         }
 
-        spinner.stop();
+        spinner.succeed();
 
         this.log(chalk.bold(`${chalk.green("✓")} User(s) deleted`));
 
