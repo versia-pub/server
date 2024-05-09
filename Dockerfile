@@ -1,5 +1,6 @@
-# Bun doesn't run well on Musl but this seems to work
-FROM imbios/bun-node:1.1.7-20-alpine as base
+# Use 1.1.4 for building to prevent a Unicode bug with 1.1.5+
+# Temporary until they fix it
+FROM imbios/bun-node:1.1.4-current-alpine as base
 
 RUN apk add --no-cache libstdc++
 
