@@ -142,7 +142,6 @@ export default (app: Hono) =>
 
             const searchParams = new URLSearchParams({
                 application: application.name,
-                client_secret: application.secret,
             });
 
             if (application.website)
