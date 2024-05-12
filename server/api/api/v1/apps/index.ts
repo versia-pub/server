@@ -22,7 +22,12 @@ export const meta = applyConfig({
 export const schemas = {
     form: z.object({
         client_name: z.string().trim().min(1).max(100),
-        redirect_uris: z.string().min(0).max(2000).url(),
+        redirect_uris: z
+            .string()
+            .min(0)
+            .max(2000)
+            .url()
+            .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
         scopes: z.string().min(1).max(200),
         website: z.string().min(0).max(2000).url().optional(),
     }),

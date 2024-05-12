@@ -37,7 +37,11 @@ export const schemas = {
     }),
     form: z.object({
         scope: z.string().optional(),
-        redirect_uri: z.string().url().optional(),
+        redirect_uri: z
+            .string()
+            .url()
+            .optional()
+            .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
         response_type: z.enum([
             "code",
             "token",
@@ -178,7 +182,7 @@ export default (app: Hono) =>
                 return returnError(
                     body,
                     "invalid_request",
-                    "Redirect URI is required for code flow",
+                    "Redirect URI is required for code flow (can be urn:ietf:wg:oauth:2.0:oob)",
                 );
 
             /* if (asksCode && !code_challenge)
@@ -211,9 +215,6 @@ export default (app: Hono) =>
                     "invalid_request",
                     "Redirect URI does not match client_id",
                 );
-
-            /* if (application.slate !== slate)
-                return returnError("invalid_request", "Invalid slate"); */
 
             // Validate scopes, they can either be equal or a subset of the application's scopes
             const applicationScopes = application.scopes.split(" ");
@@ -295,13 +296,16 @@ export default (app: Hono) =>
             });
 
             // Redirect to the client
-            const redirectUri = new URL(
-                redirect_uri ?? application.redirectUri,
-            );
+            const redirectUri =
+                redirect_uri === "urn:ietf:wg:oauth:2.0:oob"
+                    ? new URL("/oauth/code", config.http.base_url)
+                    : new URL(redirect_uri ?? application.redirectUri);
 
             const searchParams = new URLSearchParams({
                 code: code,
             });
+
+            if (state) searchParams.append("state", state);
 
             return response(null, 302, {
                 Location: `${redirectUri.origin}${
