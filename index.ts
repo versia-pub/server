@@ -7,6 +7,7 @@ import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { setupDatabase } from "~drizzle/db";
 import { agentBans } from "~middlewares/agent-bans";
 import { bait } from "~middlewares/bait";
+import { boundaryCheck } from "~middlewares/boundary-check";
 import { ipBans } from "~middlewares/ip-bans";
 import { logger } from "~middlewares/logger";
 import { Note } from "~packages/database-interface/note";
@@ -113,6 +114,7 @@ app.use(ipBans);
 app.use(agentBans);
 app.use(bait);
 app.use(logger);
+app.use(boundaryCheck);
 
 // Inject own filesystem router
 for (const [route, path] of Object.entries(routes)) {

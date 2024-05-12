@@ -60,4 +60,29 @@ describe("API Tests", () => {
             await db.delete(Emojis).where(eq(Emojis.shortcode, "test"));
         });
     });
+
+    test("Try sending FormData without a boundary", async () => {
+        const formData = new FormData();
+        formData.append("test", "test");
+
+        const response = await sendTestRequest(
+            new Request(
+                wrapRelativeUrl(`${base_url}/api/v1/custom_emojis`, base_url),
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                        "Content-Type": "multipart/form-data",
+                    },
+                    body: formData,
+                },
+            ),
+        );
+
+        expect(response.status).toBe(400);
+        const data = await response.json();
+
+        expect(data.error).toBeString();
+        expect(data.error).toContain("https://stackoverflow.com");
+    });
 });
