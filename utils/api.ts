@@ -207,12 +207,16 @@ export const jsonOrForm = () => {
             context.req.parseBody = async <T extends BodyData = BodyData>() =>
                 (await context.req.json()) as T;
             context.req.bodyCache.formData = await context.req.json();
+            context.req.formData = async () =>
+                context.req.bodyCache.formData as FormData;
         } else if (contentType?.includes("application/x-www-form-urlencoded")) {
             const parsed = parse(await context.req.text(), {
                 parseArrays: true,
                 interpretNumericEntities: true,
             });
 
+            context.req.parseBody = <T extends BodyData = BodyData>() =>
+                Promise.resolve(parsed as T);
             // @ts-ignore Very bad hack
             context.req.formData = () => Promise.resolve(parsed);
             // @ts-ignore I'm so sorry for this

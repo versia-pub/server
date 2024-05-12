@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError, jsonOrForm } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { response } from "@response";
 import type { Hono } from "hono";
@@ -76,6 +76,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        jsonOrForm(),
         zValidator("query", schemas.query, handleZodError),
         zValidator("form", schemas.form, handleZodError),
         async (context) => {
