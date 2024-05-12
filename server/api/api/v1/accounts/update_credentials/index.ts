@@ -1,7 +1,7 @@
 import { applyConfig, auth, handleZodError, qs } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
-import { sanitizeHtml, sanitizedHtmlStrip } from "@sanitization";
+import { sanitizedHtmlStrip } from "@sanitization";
 import { config } from "config-manager";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -224,17 +224,25 @@ export default (app: Hono) =>
                 self.source.fields = [];
                 for (const field of fields_attributes) {
                     // Can be Markdown or plaintext, also has emojis
-                    const parsedName = await contentToHtml({
-                        "text/markdown": {
-                            content: field.name,
+                    const parsedName = await contentToHtml(
+                        {
+                            "text/markdown": {
+                                content: field.name,
+                            },
                         },
-                    });
+                        undefined,
+                        true,
+                    );
 
-                    const parsedValue = await contentToHtml({
-                        "text/markdown": {
-                            content: field.value,
+                    const parsedValue = await contentToHtml(
+                        {
+                            "text/markdown": {
+                                content: field.value,
+                            },
                         },
-                    });
+                        undefined,
+                        true,
+                    );
 
                     // Parse emojis
                     const nameEmojis = await parseEmojis(parsedName);

@@ -394,5 +394,37 @@ describe(meta.route, () => {
                 "uwu &#x3C;script&#x3E;alert(&#x27;Hello, world!&#x27;);&#x3C;/script&#x3E;",
             );
         });
+
+        test("should rewrite all image and video src to go through proxy", async () => {
+            const response = await sendTestRequest(
+                new Request(new URL(meta.route, config.http.base_url), {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    body: new URLSearchParams({
+                        status: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
+                        federate: "false",
+                    }),
+                }),
+            );
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("content-type")).toBe(
+                "application/json",
+            );
+
+            const object = (await response.json()) as APIStatus;
+            // Proxy url is base_url/media/proxy/<base64url encoded url>
+            expect(object.content).toBe(
+                `<p><img src="${config.http.base_url}/media/proxy/${Buffer.from(
+                    "https://example.com/image.jpg",
+                ).toString("base64url")}"> <video src="${
+                    config.http.base_url
+                }/media/proxy/${Buffer.from(
+                    "https://example.com/video.mp4",
+                ).toString("base64url")}"> Test!</p>`,
+            );
+        });
     });
 });
