@@ -1,12 +1,12 @@
 import { execute } from "@oclif/core";
 import EmojiAdd from "./commands/emoji/add";
+import EmojiDelete from "./commands/emoji/delete";
+import EmojiImport from "./commands/emoji/import";
+import EmojiList from "./commands/emoji/list";
 import UserCreate from "./commands/user/create";
 import UserDelete from "./commands/user/delete";
 import UserList from "./commands/user/list";
 import UserReset from "./commands/user/reset";
-import EmojiDelete from "./commands/emoji/delete";
-import EmojiList from "./commands/emoji/list";
-import EmojiImport from "./commands/emoji/import";
 
 // Use "explicit" oclif strategy to avoid issues with oclif's module resolver and bundling
 export const commands = {

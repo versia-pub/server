@@ -1,12 +1,12 @@
+import confirm from "@inquirer/confirm";
 import { Args, Flags } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, inArray, isNull } from "drizzle-orm";
+import ora from "ora";
 import { EmojiFinderCommand } from "~cli/classes";
 import { formatArray } from "~cli/utils/format";
 import { db } from "~drizzle/db";
 import { Emojis } from "~drizzle/schema";
-import confirm from "@inquirer/confirm";
-import ora from "ora";
 
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete

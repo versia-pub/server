@@ -1,4 +1,7 @@
-# API
+# Moderation API
+
+> [!WARNING]
+> **NOT IMPLEMENTED**
 
 The Lysand project uses the Mastodon API to interact with clients. However, the moderation API is custom-made for Lysand Server, as it allows for more fine-grained control over the server's behavior.
 

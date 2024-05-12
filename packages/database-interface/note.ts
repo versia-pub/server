@@ -1,3 +1,4 @@
+import { proxyUrl } from "@response";
 import { sanitizedHtmlStrip } from "@sanitization";
 import {
     type InferInsertModel,
@@ -442,7 +443,17 @@ export class Note {
             (mention) => mention.instanceId === null,
         );
 
-        let replacedContent = data.content;
+        // Rewrite all src tags to go through proxy
+        let replacedContent = new HTMLRewriter()
+            .on("[src]", {
+                element(element) {
+                    element.setAttribute(
+                        "src",
+                        proxyUrl(element.getAttribute("src") ?? "") ?? "",
+                    );
+                },
+            })
+            .transform(data.content);
 
         for (const mention of mentionedLocalUsers) {
             replacedContent = replacedContent.replace(

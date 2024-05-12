@@ -1,3 +1,4 @@
+import { emojiValidator } from "@api";
 import { proxyUrl } from "@response";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
@@ -16,8 +17,7 @@ export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
  * @returns An array of emojis
  */
 export const parseEmojis = async (text: string) => {
-    const regex = /:[a-zA-Z0-9_]+:/g;
-    const matches = text.match(regex);
+    const matches = text.match(emojiValidator);
     if (!matches) return [];
     const emojis = await db.query.Emojis.findMany({
         where: (emoji, { eq, or }) =>
@@ -93,6 +93,8 @@ export const fetchEmoji = async (
  */
 export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
     return {
+        // @ts-expect-error ID is not in regular Mastodon API
+        id: emoji.id,
         shortcode: emoji.shortcode,
         static_url: proxyUrl(emoji.url) ?? "", // TODO: Add static version
         url: proxyUrl(emoji.url) ?? "",

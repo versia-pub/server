@@ -1,6 +1,6 @@
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { dualLogger } from "@loggers";
-import { sanitizeHtml } from "@sanitization";
+import { sanitizeHtml, sanitizeHtmlInline } from "@sanitization";
 import { config } from "config-manager";
 import {
     type InferSelectModel,
@@ -498,18 +498,20 @@ export const replaceTextMentions = async (text: string, mentions: User[]) => {
 export const contentToHtml = async (
     content: Lysand.ContentFormat,
     mentions: User[] = [],
+    inline = false,
 ): Promise<string> => {
     let htmlContent: string;
+    const sanitizer = inline ? sanitizeHtmlInline : sanitizeHtml;
 
     if (content["text/html"]) {
-        htmlContent = await sanitizeHtml(content["text/html"].content);
+        htmlContent = await sanitizer(content["text/html"].content);
     } else if (content["text/markdown"]) {
-        htmlContent = await sanitizeHtml(
+        htmlContent = await sanitizer(
             await markdownParse(content["text/markdown"].content),
         );
     } else if (content["text/plain"]?.content) {
         // Split by newline and add <p> tags
-        htmlContent = (await sanitizeHtml(content["text/plain"].content))
+        htmlContent = (await sanitizer(content["text/plain"].content))
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");

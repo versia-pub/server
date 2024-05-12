@@ -40,3 +40,15 @@ export const urlToContentFormat = (
         },
     };
 };
+
+export const mimeLookup = async (url: string) => {
+    const naiveLookup = lookup(url.replace(new URL(url).search, ""));
+
+    if (naiveLookup) return naiveLookup;
+
+    const fetchLookup = fetch(url, { method: "HEAD" }).then(
+        (response) => response.headers.get("content-type") || "",
+    );
+
+    return fetchLookup;
+};

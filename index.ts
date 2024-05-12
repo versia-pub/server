@@ -167,7 +167,10 @@ app.all("*", async (context) => {
     proxy?.headers.set("Cache-Control", "max-age=31536000");
 
     if (!proxy || proxy.status === 404) {
-        return errorResponse("Route not found on proxy or API route", 404);
+        return errorResponse(
+            "Route not found on proxy or API route. Are you using the correct HTTP method?",
+            404,
+        );
     }
 
     return proxy;

@@ -407,6 +407,27 @@ export class User {
         return isLocal ? username : `${username}@${baseUrl}`;
     }
 
+    async update(data: Partial<typeof Users.$inferSelect>) {
+        const updated = (
+            await db
+                .update(Users)
+                .set({
+                    ...data,
+                    updatedAt: new Date().toISOString(),
+                })
+                .where(eq(Users.id, this.id))
+                .returning()
+        )[0];
+
+        const newUser = await User.fromId(updated.id);
+
+        if (!newUser) throw new Error("User not found after update");
+
+        this.user = newUser.getUser();
+
+        return this;
+    }
+
     toAPI(isOwnAccount = false): APIAccount {
         const user = this.getUser();
         return {

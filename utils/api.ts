@@ -11,6 +11,8 @@ import {
     createRegExp,
     digit,
     exactly,
+    letter,
+    oneOrMore,
 } from "magic-regexp";
 import { parse } from "qs";
 import type { z } from "zod";
@@ -46,6 +48,12 @@ export const idValidator = createRegExp(
     anyOf(digit, charIn("ABCDEF")).times(3),
     exactly("-"),
     anyOf(digit, charIn("ABCDEF")).times(12),
+    [caseInsensitive],
+);
+
+export const emojiValidator = createRegExp(
+    // A-Z a-z 0-9 _ -
+    oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
     [caseInsensitive],
 );
 
@@ -209,16 +217,48 @@ export const jsonOrForm = () => {
             context.req.formData = () => Promise.resolve(parsed);
             // @ts-ignore I'm so sorry for this
             context.req.bodyCache.formData = parsed;
-        } else {
-            const parsed = parse(await context.req.text(), {
+        } else if (contentType?.includes("multipart/form-data")) {
+            // Get it as a query format to pass on to qs, then insert back files
+            const formData = await context.req.formData();
+            const urlparams = new URLSearchParams();
+            const files = new Map<string, File>();
+            for (const [key, value] of [...formData.entries()]) {
+                if (Array.isArray(value)) {
+                    for (const val of value) {
+                        urlparams.append(key, val);
+                    }
+                } else if (!(value instanceof File)) {
+                    urlparams.append(key, String(value));
+                } else {
+                    if (!files.has(key)) {
+                        files.set(key, value);
+                    }
+                }
+            }
+
+            const parsed = parse(urlparams.toString(), {
                 parseArrays: true,
                 interpretNumericEntities: true,
             });
 
             // @ts-ignore Very bad hack
-            context.req.formData = () => Promise.resolve(parsed);
+            context.req.parseBody = <T extends BodyData = BodyData>() =>
+                Promise.resolve({
+                    ...parsed,
+                    ...Object.fromEntries(files),
+                } as T);
+
+            context.req.formData = () =>
+                // @ts-ignore I'm so sorry for this
+                Promise.resolve({
+                    ...parsed,
+                    ...Object.fromEntries(files),
+                });
             // @ts-ignore I'm so sorry for this
-            context.req.bodyCache.formData = parsed;
+            context.req.bodyCache.formData = {
+                ...parsed,
+                ...Object.fromEntries(files),
+            };
         }
         await next();
     });

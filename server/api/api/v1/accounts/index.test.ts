@@ -6,7 +6,11 @@ import {
     expect,
     test,
 } from "bun:test";
+import { randomBytes } from "node:crypto";
 import { config } from "config-manager";
+import { eq } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { Users } from "~drizzle/schema";
 import {
     deleteOldTestUsers,
     getTestStatuses,
@@ -15,10 +19,6 @@ import {
 } from "~tests/utils";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./index";
-import { randomBytes } from "node:crypto";
-import { db } from "~drizzle/db";
-import { eq } from "drizzle-orm";
-import { Users } from "~drizzle/schema";
 
 const username = randomBytes(10).toString("hex");
 const username2 = randomBytes(10).toString("hex");

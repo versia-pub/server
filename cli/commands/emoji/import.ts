@@ -1,15 +1,15 @@
 import { Args, Flags } from "@oclif/core";
 import chalk from "chalk";
+import { and, inArray, isNull } from "drizzle-orm";
+import { lookup } from "mime-types";
 import ora from "ora";
+import { unzip } from "unzipit";
 import { BaseCommand } from "~/cli/base";
 import { getUrl } from "~database/entities/Attachment";
 import { db } from "~drizzle/db";
 import { Emojis } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { MediaBackend } from "~packages/media-manager";
-import { unzip } from "unzipit";
-import { and, inArray, isNull } from "drizzle-orm";
-import { lookup } from "mime-types";
 
 type MetaType = {
     emojis: {
