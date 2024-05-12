@@ -76,7 +76,7 @@ export const auth = (authData: APIRouteMetadata["auth"]) =>
 
         const error = errorResponse("Unauthorized", 401);
 
-        if (!auth) {
+        if (!auth?.user) {
             if (authData.required) {
                 return context.json(
                     {
