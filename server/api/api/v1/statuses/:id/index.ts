@@ -1,4 +1,10 @@
-import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import {
+    applyConfig,
+    auth,
+    handleZodError,
+    idValidator,
+    jsonOrForm,
+} from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { config } from "config-manager";
@@ -44,7 +50,7 @@ export const schemas = {
             .array(z.string().max(config.validation.max_poll_option_size))
             .max(config.validation.max_poll_options)
             .optional(),
-        "poll[expires_in]": z
+        "poll[expires_in]": z.coerce
             .number()
             .int()
             .min(config.validation.min_poll_duration)
@@ -65,6 +71,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
