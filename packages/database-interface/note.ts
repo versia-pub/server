@@ -599,7 +599,9 @@ export class Note {
         const viewableAncestors = ancestors.filter((ancestor) =>
             ancestor.isViewableByUser(fetcher),
         );
-        return viewableAncestors;
+
+        // Reverse the order so that the oldest posts are first
+        return viewableAncestors.toReversed();
     }
 
     /**
@@ -625,6 +627,7 @@ export class Note {
         const viewableDescendants = descendants.filter((descendant) =>
             descendant.isViewableByUser(fetcher),
         );
+
         return viewableDescendants;
     }
 }
