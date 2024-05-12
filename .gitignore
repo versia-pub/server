@@ -181,3 +181,4 @@ glitch.tar.gz
 glitch-dev
 *.pem
 oclif.manifest.json
+.direnv/
