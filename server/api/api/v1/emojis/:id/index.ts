@@ -70,8 +70,12 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
+
             // Check if user is admin
-            if (!user?.getUser().isAdmin) {
+            if (!user.getUser().isAdmin) {
                 return jsonResponse(
                     {
                         error: "You do not have permission to modify emojis (must be an administrator)",

@@ -7,7 +7,7 @@ import {
 } from "@api";
 import { mimeLookup } from "@content_types";
 import { zValidator } from "@hono/zod-validator";
-import { jsonResponse } from "@response";
+import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { getUrl } from "~database/entities/Attachment";
@@ -62,8 +62,12 @@ export default (app: Hono) =>
             const { shortcode, element, alt } = context.req.valid("form");
             const { user } = context.req.valid("header");
 
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
+
             // Check if user is admin
-            if (!user?.getUser().isAdmin) {
+            if (!user.getUser().isAdmin) {
                 return jsonResponse(
                     {
                         error: "You do not have permission to add emojis (must be an administrator)",
