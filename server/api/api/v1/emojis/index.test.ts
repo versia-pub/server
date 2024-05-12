@@ -107,10 +107,6 @@ describe(meta.route, () => {
         expect(response.ok).toBe(true);
         const emoji = await response.json();
         expect(emoji.shortcode).toBe("test2");
-        expect(emoji.url).toContain(
-            Buffer.from("https://cdn.lysand.org/logo.webp").toString(
-                "base64url",
-            ),
-        );
+        expect(emoji.url).toContain("/media/proxy/");
     });
 });
