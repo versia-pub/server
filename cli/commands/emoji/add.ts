@@ -121,7 +121,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
                 shortcode: args.shortcode,
                 url: getUrl(uploaded.path, config),
                 visibleInPicker: true,
-                contentType: file.type,
+                contentType: uploaded.uploadedFile.type,
             })
             .returning();
 

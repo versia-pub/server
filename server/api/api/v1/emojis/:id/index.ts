@@ -141,7 +141,7 @@ export default (app: Hono) =>
 
                     if (form.element) {
                         // Check of emoji is an image
-                        const contentType =
+                        let contentType =
                             form.element instanceof File
                                 ? form.element.type
                                 : await mimeLookup(form.element);
@@ -166,6 +166,7 @@ export default (app: Hono) =>
                             const uploaded = await media.addFile(form.element);
 
                             url = uploaded.path;
+                            contentType = uploaded.uploadedFile.type;
                         } else {
                             url = form.element;
                         }

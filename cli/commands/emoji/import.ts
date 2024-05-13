@@ -218,7 +218,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
                     shortcode: emoji.emoji.name,
                     url: getUrl(uploaded.path, config),
                     visibleInPicker: true,
-                    contentType: file.type,
+                    contentType: uploaded.uploadedFile.type,
                 })
                 .execute();
 
