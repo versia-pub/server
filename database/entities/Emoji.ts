@@ -1,4 +1,4 @@
-import { emojiValidator } from "@api";
+import { emojiValidator, emojiValidatorWithColons } from "@api";
 import { proxyUrl } from "@response";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import type * as Lysand from "lysand-types";
@@ -17,7 +17,7 @@ export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
  * @returns An array of emojis
  */
 export const parseEmojis = async (text: string) => {
-    const matches = text.match(emojiValidator);
+    const matches = text.match(emojiValidatorWithColons);
     if (!matches) return [];
     const emojis = await db.query.Emojis.findMany({
         where: (emoji, { eq, or }) =>

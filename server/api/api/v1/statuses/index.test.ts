@@ -1,5 +1,8 @@
-import { afterAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
+import { eq } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { Emojis } from "~drizzle/schema";
 import {
     deleteOldTestUsers,
     getTestUsers,
@@ -14,6 +17,16 @@ const { users, tokens, deleteUsers } = await getTestUsers(5);
 
 afterAll(async () => {
     await deleteUsers();
+    await db.delete(Emojis).where(eq(Emojis.shortcode, "test"));
+});
+
+beforeAll(async () => {
+    await db.insert(Emojis).values({
+        contentType: "image/png",
+        shortcode: "test",
+        url: "https://example.com/test.png",
+        visibleInPicker: true,
+    });
 });
 
 describe(meta.route, () => {
@@ -276,6 +289,32 @@ describe(meta.route, () => {
         expect(object2.quote_id).toBe(object.id);
         // @ts-expect-error Glitch SOC extension
         expect(object2.quote?.id).toBe(object.id);
+    });
+
+    test("should correctly parse emojis", async () => {
+        const response = await sendTestRequest(
+            new Request(new URL(meta.route, config.http.base_url), {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: "Hello, :test:!",
+                    federate: "false",
+                }),
+            }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.headers.get("content-type")).toBe("application/json");
+
+        const object = (await response.json()) as APIStatus;
+
+        expect(object.emojis).toBeArrayOfSize(1);
+        expect(object.emojis[0]).toMatchObject({
+            shortcode: "test",
+            url: expect.stringContaining("/media/proxy/"),
+        });
     });
 
     describe("mentions testing", () => {

@@ -57,6 +57,13 @@ export const emojiValidator = createRegExp(
     [caseInsensitive],
 );
 
+export const emojiValidatorWithColons = createRegExp(
+    exactly(":"),
+    oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
+    exactly(":"),
+    [caseInsensitive],
+);
+
 export const handleZodError = (
     result:
         | { success: true; data?: object }
