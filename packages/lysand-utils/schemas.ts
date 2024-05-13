@@ -206,6 +206,7 @@ const Extension = Entity.extend({
                 oneOrMore(exactly(letter.or(digit).or(charIn("_-")))),
             ),
         ),
+        "extension_type must be in the format '<namespaced_url>:extension_name/Extension_type', e.g. 'org.lysand:reactions/Reaction'. Notably, only the type can have uppercase letters.",
     ),
 });
 
