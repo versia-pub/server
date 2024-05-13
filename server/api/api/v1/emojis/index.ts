@@ -85,15 +85,17 @@ export default (app: Hono) =>
                     : await mimeLookup(element);
 
             if (!contentType.startsWith("image/")) {
-                return jsonResponse(
-                    {
-                        error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
-                    },
+                return errorResponse(
+                    `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
                     422,
                 );
             }
 
             if (element instanceof File) {
+                if (!element.name) {
+                    return errorResponse("File must have a name", 422);
+                }
+
                 const media = await MediaBackend.fromBackendType(
                     config.media.backend,
                     config,

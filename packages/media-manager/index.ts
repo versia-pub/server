@@ -1,6 +1,5 @@
 import { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
-import type { ConvertableMediaFormats } from "./media-converter";
 import { MediaConverter } from "./media-converter";
 
 export enum MediaBackendType {
@@ -103,13 +102,11 @@ export class LocalMediaBackend extends MediaBackend {
     public async addFile(file: File) {
         let convertedFile = file;
         if (this.shouldConvertImages(this.config)) {
-            const fileExtension = file.name.split(".").pop();
-            const mediaConverter = new MediaConverter(
-                fileExtension as ConvertableMediaFormats,
-                this.config.media.conversion
-                    .convert_to as ConvertableMediaFormats,
+            const mediaConverter = new MediaConverter();
+            convertedFile = await mediaConverter.convert(
+                file,
+                this.config.media.conversion.convert_to,
             );
-            convertedFile = await mediaConverter.convert(file);
         }
 
         const hash = await new MediaHasher().getMediaHash(convertedFile);
@@ -174,13 +171,11 @@ export class S3MediaBackend extends MediaBackend {
     public async addFile(file: File) {
         let convertedFile = file;
         if (this.shouldConvertImages(this.config)) {
-            const fileExtension = file.name.split(".").pop();
-            const mediaConverter = new MediaConverter(
-                fileExtension as ConvertableMediaFormats,
-                this.config.media.conversion
-                    .convert_to as ConvertableMediaFormats,
+            const mediaConverter = new MediaConverter();
+            convertedFile = await mediaConverter.convert(
+                file,
+                this.config.media.conversion.convert_to,
             );
-            convertedFile = await mediaConverter.convert(file);
         }
 
         const hash = await new MediaHasher().getMediaHash(convertedFile);

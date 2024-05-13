@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, jest, spyOn } from "bun:test";
 import type { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
-// FILEPATH: /home/jessew/Dev/lysand/packages/media-manager/backends/s3.test.ts
 import {
     LocalMediaBackend,
     MediaBackend,
@@ -9,7 +8,7 @@ import {
     MediaHasher,
     S3MediaBackend,
 } from "..";
-import { ConvertableMediaFormats, MediaConverter } from "../media-converter";
+import { MediaConverter } from "../media-converter";
 
 type DeepPartial<T> = {
     [P in keyof T]?: DeepPartial<T[P]>;
@@ -115,7 +114,7 @@ describe("S3MediaBackend", () => {
             },
             media: {
                 conversion: {
-                    convert_to: ConvertableMediaFormats.PNG,
+                    convert_to: "image/png",
                 },
             },
         };
@@ -201,7 +200,7 @@ describe("LocalMediaBackend", () => {
             media: {
                 conversion: {
                     convert_images: true,
-                    convert_to: ConvertableMediaFormats.PNG,
+                    convert_to: "image/png",
                 },
                 local_uploads_folder: "./uploads",
             },
@@ -220,10 +219,7 @@ describe("LocalMediaBackend", () => {
     it("should add file", async () => {
         const mockHash = "test-hash";
         spyOn(mockMediaHasher, "getMediaHash").mockResolvedValue(mockHash);
-        const mockMediaConverter = new MediaConverter(
-            ConvertableMediaFormats.JPG,
-            ConvertableMediaFormats.PNG,
-        );
+        const mockMediaConverter = new MediaConverter();
         spyOn(mockMediaConverter, "convert").mockResolvedValue(mockFile);
         // @ts-expect-error This is a mock
         spyOn(Bun, "file").mockImplementationOnce(() => ({

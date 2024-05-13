@@ -192,7 +192,7 @@ export interface Config {
             /** @default false */
             convert_images: boolean;
 
-            /** @default "webp" */
+            /** @default "image/webp" */
             convert_to: string;
         };
     };
@@ -494,7 +494,7 @@ export const defaultConfig: Config = {
         local_uploads_folder: "uploads",
         conversion: {
             convert_images: false,
-            convert_to: "webp",
+            convert_to: "image/webp",
         },
     },
     s3: {

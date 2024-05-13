@@ -1,33 +1,20 @@
 // FILEPATH: /home/jessew/Dev/lysand/packages/media-manager/media-converter.test.ts
 import { beforeEach, describe, expect, it } from "bun:test";
-import { ConvertableMediaFormats, MediaConverter } from "../media-converter";
+import { MediaConverter } from "../media-converter";
 
 describe("MediaConverter", () => {
     let mediaConverter: MediaConverter;
 
     beforeEach(() => {
-        mediaConverter = new MediaConverter(
-            ConvertableMediaFormats.JPG,
-            ConvertableMediaFormats.PNG,
-        );
-    });
-
-    it("should initialize with correct formats", () => {
-        expect(mediaConverter.fromFormat).toEqual(ConvertableMediaFormats.JPG);
-        expect(mediaConverter.toFormat).toEqual(ConvertableMediaFormats.PNG);
-    });
-
-    it("should check if media is convertable", () => {
-        expect(mediaConverter.isConvertable()).toBe(true);
-        mediaConverter.toFormat = ConvertableMediaFormats.JPG;
-        expect(mediaConverter.isConvertable()).toBe(false);
+        mediaConverter = new MediaConverter();
     });
 
     it("should replace file name extension", () => {
         const fileName = "test.jpg";
         const expectedFileName = "test.png";
         // Written like this because it's a private function
-        expect(mediaConverter.getReplacedFileName(fileName)).toEqual(
+        // @ts-ignore
+        expect(mediaConverter.getReplacedFileName(fileName, "png")).toEqual(
             expectedFileName,
         );
     });
@@ -36,6 +23,7 @@ describe("MediaConverter", () => {
         it("should extract filename from path", () => {
             const path = "path/to/test.jpg";
             const expectedFileName = "test.jpg";
+            // @ts-ignore
             expect(mediaConverter.extractFilenameFromPath(path)).toEqual(
                 expectedFileName,
             );
@@ -44,6 +32,7 @@ describe("MediaConverter", () => {
         it("should handle escaped slashes", () => {
             const path = "path/to/test\\/test.jpg";
             const expectedFileName = "test\\/test.jpg";
+            // @ts-ignore
             expect(mediaConverter.extractFilenameFromPath(path)).toEqual(
                 expectedFileName,
             );
@@ -55,11 +44,10 @@ describe("MediaConverter", () => {
 
         const convertedFile = await mediaConverter.convert(
             file as unknown as File,
+            "image/png",
         );
 
         expect(convertedFile.name).toEqual("megamind.png");
-        expect(convertedFile.type).toEqual(
-            `image/${ConvertableMediaFormats.PNG}`,
-        );
+        expect(convertedFile.type).toEqual("image/png");
     });
 });

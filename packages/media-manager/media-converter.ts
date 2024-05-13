@@ -5,34 +5,35 @@
  */
 import sharp from "sharp";
 
-export enum ConvertableMediaFormats {
-    PNG = "png",
-    WEBP = "webp",
-    JPEG = "jpeg",
-    JPG = "jpg",
-    AVIF = "avif",
-    JXL = "jxl",
-    HEIF = "heif",
-}
+export const supportedMediaFormats = [
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "image/avif",
+    "image/svg+xml",
+    "image/gif",
+    "image/tiff",
+];
+
+export const supportedOutputFormats = [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/avif",
+    "image/gif",
+    "image/tiff",
+];
 
 /**
  * Handles media conversion between formats
  */
 export class MediaConverter {
-    constructor(
-        public fromFormat: ConvertableMediaFormats,
-        public toFormat: ConvertableMediaFormats,
-    ) {}
-
     /**
      * Returns whether the media is convertable
      * @returns Whether the media is convertable
      */
-    public isConvertable() {
-        return (
-            this.fromFormat !== this.toFormat &&
-            Object.values(ConvertableMediaFormats).includes(this.fromFormat)
-        );
+    public isConvertable(file: File) {
+        return supportedMediaFormats.includes(file.type);
     }
 
     /**
@@ -40,10 +41,10 @@ export class MediaConverter {
      * @param fileName File name to replace
      * @returns File name with extension replaced
      */
-    private getReplacedFileName(fileName: string) {
+    private getReplacedFileName(fileName: string, newExtension: string) {
         return this.extractFilenameFromPath(fileName).replace(
-            new RegExp(`\\.${this.fromFormat}$`),
-            `.${this.toFormat}`,
+            /\.[^/.]+$/,
+            `.${newExtension}`,
         );
     }
 
@@ -63,32 +64,44 @@ export class MediaConverter {
      * @param media Media to convert
      * @returns Converted media
      */
-    public async convert(media: File) {
-        if (!this.isConvertable()) {
+    public async convert(
+        media: File,
+        toMime: (typeof supportedMediaFormats)[number],
+    ) {
+        if (!this.isConvertable(media)) {
             return media;
+        }
+
+        if (!supportedOutputFormats.includes(toMime)) {
+            throw new Error(
+                `Unsupported image output format: ${toMime}. Supported formats: ${supportedOutputFormats.join(
+                    ", ",
+                )}`,
+            );
         }
 
         const sharpCommand = sharp(await media.arrayBuffer());
 
-        // Calculate newFilename before changing formats to prevent errors with jpg files
-        const newFilename = this.getReplacedFileName(media.name);
+        const commandName = toMime.split("/")[1] as
+            | "jpeg"
+            | "png"
+            | "webp"
+            | "avif"
+            | "gif"
+            | "tiff";
 
-        if (this.fromFormat === ConvertableMediaFormats.JPG) {
-            this.fromFormat = ConvertableMediaFormats.JPEG;
-        }
-
-        if (this.toFormat === ConvertableMediaFormats.JPG) {
-            this.toFormat = ConvertableMediaFormats.JPEG;
-        }
-
-        const convertedBuffer = await sharpCommand[this.toFormat]().toBuffer();
+        const convertedBuffer = await sharpCommand[commandName]().toBuffer();
 
         // Convert the buffer to a BlobPart
         const buffer = new Blob([convertedBuffer]);
 
-        return new File([buffer], newFilename, {
-            type: `image/${this.toFormat}`,
-            lastModified: Date.now(),
-        });
+        return new File(
+            [buffer],
+            this.getReplacedFileName(media.name || "image", commandName),
+            {
+                type: toMime,
+                lastModified: Date.now(),
+            },
+        );
     }
 }
