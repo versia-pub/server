@@ -42,6 +42,7 @@ export const schemas = {
         sensitive: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         language: z
             .enum(ISO6391.getAllCodes() as [string, ...string[]])
@@ -59,10 +60,12 @@ export const schemas = {
         "poll[multiple]": z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
         "poll[hide_totals]": z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
             .optional(),
     }),
 };
