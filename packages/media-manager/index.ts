@@ -116,7 +116,12 @@ export class LocalMediaBackend extends MediaBackend {
         );
 
         if (await newFile.exists()) {
-            throw new Error("File already exists");
+            // Already exists, we don't need to upload it again
+            return {
+                uploadedFile: convertedFile,
+                path: `${hash}/${convertedFile.name}`,
+                hash: hash,
+            };
         }
 
         await Bun.write(newFile, convertedFile);
