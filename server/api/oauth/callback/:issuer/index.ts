@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError } from "@api";
 import { oauthRedirectUri } from "@constants";
 import { zValidator } from "@hono/zod-validator";
-import { response } from "@response";
+import { errorResponse, response } from "@response";
 import type { Hono } from "hono";
 import {
     authorizationCodeGrantRequest,
@@ -22,6 +22,7 @@ import { db } from "~drizzle/db";
 import { Tokens } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
+import { SignJWT } from "jose";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -122,13 +123,18 @@ export default (app: Hono) =>
 
             if (isOAuth2Error(parameters)) {
                 return returnError(
-                    context.req.query(),
+                    {
+                        redirect_uri: flow.application?.redirectUri,
+                        client_id: flow.application?.clientId,
+                        response_type: "code",
+                        scope: flow.application?.scopes,
+                    },
                     parameters.error,
                     parameters.error_description || "",
                 );
             }
 
-            const response = await authorizationCodeGrantRequest(
+            const oidcResponse = await authorizationCodeGrantRequest(
                 authServer,
                 {
                     client_id: issuer.client_id,
@@ -145,12 +151,17 @@ export default (app: Hono) =>
                     client_id: issuer.client_id,
                     client_secret: issuer.client_secret,
                 },
-                response,
+                oidcResponse,
             );
 
             if (isOAuth2Error(result)) {
                 return returnError(
-                    context.req.query(),
+                    {
+                        redirect_uri: flow.application?.redirectUri,
+                        client_id: flow.application?.clientId,
+                        response_type: "code",
+                        scope: flow.application?.scopes,
+                    },
                     result.error,
                     result.error_description || "",
                 );
@@ -194,7 +205,12 @@ export default (app: Hono) =>
 
             if (!userId) {
                 return returnError(
-                    context.req.query(),
+                    {
+                        redirect_uri: flow.application?.redirectUri,
+                        client_id: flow.application?.clientId,
+                        response_type: "code",
+                        scope: flow.application?.scopes,
+                    },
                     "invalid_request",
                     "No user found with that account",
                 );
@@ -204,18 +220,19 @@ export default (app: Hono) =>
 
             if (!user) {
                 return returnError(
-                    context.req.query(),
+                    {
+                        redirect_uri: flow.application?.redirectUri,
+                        client_id: flow.application?.clientId,
+                        response_type: "code",
+                        scope: flow.application?.scopes,
+                    },
                     "invalid_request",
                     "No user found with that account",
                 );
             }
 
             if (!flow.application)
-                return returnError(
-                    context.req.query(),
-                    "invalid_request",
-                    "No application found",
-                );
+                return errorResponse("Application not found", 500);
 
             const code = randomBytes(32).toString("hex");
 
@@ -228,17 +245,45 @@ export default (app: Hono) =>
                 applicationId: flow.application.id,
             });
 
-            // Redirect back to application
-            return Response.redirect(
-                `/oauth/consent?${new URLSearchParams({
-                    redirect_uri: flow.application.redirectUri,
-                    code,
-                    client_id: flow.application.clientId,
-                    application: flow.application.name,
-                    website: flow.application.website ?? "",
-                    scope: flow.application.scopes,
-                }).toString()}`,
-                302,
+            // Try and import the key
+            const privateKey = await crypto.subtle.importKey(
+                "pkcs8",
+                Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
+                "Ed25519",
+                false,
+                ["sign"],
             );
+
+            // Generate JWT
+            const jwt = await new SignJWT({
+                sub: user.id,
+                iss: new URL(config.http.base_url).origin,
+                aud: flow.application.clientId,
+                exp: Math.floor(Date.now() / 1000) + 60 * 60,
+                iat: Math.floor(Date.now() / 1000),
+                nbf: Math.floor(Date.now() / 1000),
+            })
+                .setProtectedHeader({ alg: "EdDSA" })
+                .sign(privateKey);
+
+            // Redirect back to application
+            return response(null, 302, {
+                Location: new URL(
+                    `/oauth/consent?${new URLSearchParams({
+                        redirect_uri: flow.application.redirectUri,
+                        code,
+                        client_id: flow.application.clientId,
+                        application: flow.application.name,
+                        website: flow.application.website ?? "",
+                        scope: flow.application.scopes,
+                        response_type: "code",
+                    }).toString()}`,
+                    config.http.base_url,
+                ).toString(),
+                // Set cookie with JWT
+                "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
+                    60 * 60
+                }`,
+            });
         },
     );
