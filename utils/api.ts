@@ -56,14 +56,14 @@ export const idValidator = createRegExp(
 export const emojiValidator = createRegExp(
     // A-Z a-z 0-9 _ -
     oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
-    [caseInsensitive],
+    [caseInsensitive, global],
 );
 
 export const emojiValidatorWithColons = createRegExp(
     exactly(":"),
     oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
     exactly(":"),
-    [caseInsensitive],
+    [caseInsensitive, global],
 );
 
 export const mentionValidator = createRegExp(
