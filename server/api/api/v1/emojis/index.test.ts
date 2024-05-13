@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
+import { inArray } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { Emojis } from "~drizzle/schema";
 import { getTestUsers, sendTestRequest } from "~tests/utils";
 import { meta } from "./index";
 
@@ -12,6 +15,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await deleteUsers();
+
+    await db
+        .delete(Emojis)
+        .where(inArray(Emojis.shortcode, ["test1", "test2", "test3"]));
 });
 
 describe(meta.route, () => {
@@ -52,7 +59,7 @@ describe(meta.route, () => {
 
     test("should upload a file and create an emoji", async () => {
         const formData = new FormData();
-        formData.append("shortcode", "test");
+        formData.append("shortcode", "test1");
         formData.append("element", Bun.file("tests/test-image.webp"));
 
         const response = await sendTestRequest(
@@ -67,13 +74,13 @@ describe(meta.route, () => {
 
         expect(response.ok).toBe(true);
         const emoji = await response.json();
-        expect(emoji.shortcode).toBe("test");
+        expect(emoji.shortcode).toBe("test1");
         expect(emoji.url).toContain("/media/proxy");
     });
 
     test("should try to upload a non-image", async () => {
         const formData = new FormData();
-        formData.append("shortcode", "test");
+        formData.append("shortcode", "test2");
         formData.append("element", new File(["test"], "test.txt"));
 
         const response = await sendTestRequest(
@@ -98,7 +105,7 @@ describe(meta.route, () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    shortcode: "test2",
+                    shortcode: "test3",
                     element: "https://cdn.lysand.org/logo.webp",
                 }),
             }),
@@ -106,7 +113,25 @@ describe(meta.route, () => {
 
         expect(response.ok).toBe(true);
         const emoji = await response.json();
-        expect(emoji.shortcode).toBe("test2");
+        expect(emoji.shortcode).toBe("test3");
         expect(emoji.url).toContain("/media/proxy/");
+    });
+
+    test("should fail when uploading an already existing emoji", async () => {
+        const formData = new FormData();
+        formData.append("shortcode", "test1");
+        formData.append("element", Bun.file("tests/test-image.webp"));
+
+        const response = await sendTestRequest(
+            new Request(new URL(meta.route, config.http.base_url), {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+                body: formData,
+            }),
+        );
+
+        expect(response.status).toBe(422);
     });
 });

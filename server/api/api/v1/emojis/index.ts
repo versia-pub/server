@@ -76,6 +76,18 @@ export default (app: Hono) =>
                 );
             }
 
+            // Check if emoji already exists
+            const existing = await db.query.Emojis.findFirst({
+                where: (emoji, { eq }) => eq(emoji.shortcode, shortcode),
+            });
+
+            if (existing) {
+                return errorResponse(
+                    `An emoji with the shortcode ${shortcode} already exists.`,
+                    422,
+                );
+            }
+
             let url = "";
 
             // Check of emoji is an image
