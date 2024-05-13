@@ -1,4 +1,29 @@
+import { emojiValidator } from "@api";
+import {
+    charIn,
+    createRegExp,
+    digit,
+    exactly,
+    letter,
+    oneOrMore,
+} from "magic-regexp";
+import { types } from "mime-types";
 import { z } from "zod";
+
+const ContentFormat = z.record(
+    z.enum(Object.values(types) as [string, ...string[]]),
+    z.object({
+        content: z.string(),
+        description: z.string().optional(),
+        size: z.number().int().nonnegative().optional(),
+        hash: z.record(z.string(), z.string()).optional(),
+        blurhash: z.string().optional(),
+        fps: z.number().int().nonnegative().optional(),
+        width: z.number().int().nonnegative().optional(),
+        height: z.number().int().nonnegative().optional(),
+        duration: z.number().nonnegative().optional(),
+    }),
+);
 
 const Entity = z.object({
     id: z.string().uuid(),
@@ -9,33 +34,18 @@ const Entity = z.object({
         "org.lysand:custom_emojis": z.object({
             emojis: z.array(
                 z.object({
-                    shortcode: z.string(),
-                    url: z.string(),
+                    name: z.string().regex(emojiValidator),
+                    url: ContentFormat,
                 }),
             ),
         }),
     }),
 });
 
-const ContentFormat = z.record(
-    z.string(),
-    z.object({
-        content: z.string(),
-        description: z.string().optional(),
-        size: z.number().optional(),
-        hash: z.record(z.string().optional()).optional(),
-        blurhash: z.string().optional(),
-        fps: z.number().optional(),
-        width: z.number().optional(),
-        height: z.number().optional(),
-        duration: z.number().optional(),
-    }),
-);
-
 const Visibility = z.enum(["public", "unlisted", "private", "direct"]);
 
 const Publication = Entity.extend({
-    type: z.union([z.literal("Note"), z.literal("Patch")]),
+    type: z.enum(["Note", "Patch"]),
     author: z.string().url(),
     content: ContentFormat.optional(),
     attachments: z.array(ContentFormat).optional(),
@@ -55,7 +65,7 @@ const Publication = Entity.extend({
             .object({
                 poll: z.object({
                     options: z.array(ContentFormat),
-                    votes: z.array(z.number()),
+                    votes: z.array(z.number().int().nonnegative()),
                     multiple_choice: z.boolean().optional(),
                     expires_at: z.string(),
                 }),
@@ -183,7 +193,20 @@ const Announce = Action.extend({
 
 const Extension = Entity.extend({
     type: z.literal("Extension"),
-    extension_type: z.string(),
+    extension_type: z.string().regex(
+        createRegExp(
+            // org namespace, then colon, then alphanumeric/_/-, then extension name
+            exactly(
+                oneOrMore(
+                    exactly(letter.lowercase.or(digit).or(charIn("_-."))),
+                ),
+                exactly(":"),
+                oneOrMore(exactly(letter.lowercase.or(digit).or(charIn("_-")))),
+                exactly("/"),
+                oneOrMore(exactly(letter.or(digit).or(charIn("_-")))),
+            ),
+        ),
+    ),
 });
 
 const Reaction = Extension.extend({
@@ -195,7 +218,7 @@ const Reaction = Extension.extend({
 const Poll = Extension.extend({
     extension_type: z.literal("org.lysand:polls/Poll"),
     options: z.array(ContentFormat),
-    votes: z.array(z.number()),
+    votes: z.array(z.number().int().nonnegative()),
     multiple_choice: z.boolean().optional(),
     expires_at: z.string(),
 });
@@ -209,7 +232,7 @@ const Vote = Extension.extend({
 const VoteResult = Extension.extend({
     extension_type: z.literal("org.lysand:polls/VoteResult"),
     poll: z.string().url(),
-    votes: z.array(z.number()),
+    votes: z.array(z.number().int().nonnegative()),
 });
 
 const Report = Extension.extend({
