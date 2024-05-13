@@ -92,10 +92,6 @@ export default (app: Hono) =>
             }
 
             if (element instanceof File) {
-                if (!element.name) {
-                    return errorResponse("File must have a name", 422);
-                }
-
                 const media = await MediaBackend.fromBackendType(
                     config.media.backend,
                     config,
