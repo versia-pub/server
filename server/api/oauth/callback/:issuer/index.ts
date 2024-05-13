@@ -2,8 +2,9 @@ import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError } from "@api";
 import { oauthRedirectUri } from "@constants";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, response } from "@response";
+import { errorResponse, jsonResponse, response } from "@response";
 import type { Hono } from "hono";
+import { SignJWT } from "jose";
 import {
     authorizationCodeGrantRequest,
     discoveryRequest,
@@ -19,10 +20,9 @@ import {
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
 import { db } from "~drizzle/db";
-import { Tokens } from "~drizzle/schema";
+import { OpenIdAccounts, Tokens } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
-import { SignJWT } from "jose";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -40,6 +40,11 @@ export const schemas = {
     query: z.object({
         clientId: z.string().optional(),
         flow: z.string(),
+        link: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .optional(),
+        user_id: z.string().uuid().optional(),
     }),
     param: z.object({
         issuer: z.string(),
@@ -75,7 +80,7 @@ export default (app: Hono) =>
             // Remove state query parameter from URL
             currentUrl.searchParams.delete("state");
             const { issuer: issuerParam } = context.req.valid("param");
-            const { flow: flowId, clientId } = context.req.valid("query");
+            const { flow: flowId, user_id, link } = context.req.valid("query");
 
             const flow = await db.query.OpenIdLoginFlows.findFirst({
                 where: (flow, { eq }) => eq(flow.id, flowId),
@@ -192,6 +197,37 @@ export default (app: Hono) =>
                     res,
                 ),
             );
+
+            if (link && user_id) {
+                // Check if userId is equal to application.clientId
+                if (!flow.application?.clientId.startsWith(user_id)) {
+                    return errorResponse("User ID does not match application");
+                }
+
+                // Check if account is already linked
+                const account = await db.query.OpenIdAccounts.findFirst({
+                    where: (account, { eq, and }) =>
+                        and(
+                            eq(account.serverId, sub),
+                            eq(account.issuerId, issuer.id),
+                        ),
+                });
+
+                if (account) {
+                    return errorResponse("Account already linked");
+                }
+
+                // Link the account
+                await db.insert(OpenIdAccounts).values({
+                    serverId: sub,
+                    issuerId: issuer.id,
+                    userId: user_id,
+                });
+
+                return response(null, 302, {
+                    Location: config.http.base_url,
+                });
+            }
 
             const userId = (
                 await db.query.OpenIdAccounts.findFirst({
