@@ -1,17 +1,23 @@
 import { randomBytes } from "node:crypto";
+import { consoleLogger } from "@loggers";
 import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~database/entities/Status";
 import { db } from "~drizzle/db";
+import { setupDatabase } from "~drizzle/db";
 import { Notes, Tokens, Users } from "~drizzle/schema";
 import { app } from "~index";
 import { Note } from "~packages/database-interface/note";
 import { User } from "~packages/database-interface/user";
+
+await setupDatabase(consoleLogger);
+
 /**
  * This allows us to send a test request to the server even when it isnt running
  * @param req Request to send
  * @returns Response from the server
  */
 export async function sendTestRequest(req: Request) {
+    // return fetch(req);
     return app.fetch(req);
 }
 

@@ -3,6 +3,7 @@ import EmojiAdd from "./commands/emoji/add";
 import EmojiDelete from "./commands/emoji/delete";
 import EmojiImport from "./commands/emoji/import";
 import EmojiList from "./commands/emoji/list";
+import Start from "./commands/start";
 import UserCreate from "./commands/user/create";
 import UserDelete from "./commands/user/delete";
 import UserList from "./commands/user/list";
@@ -18,6 +19,7 @@ export const commands = {
     "emoji:delete": EmojiDelete,
     "emoji:list": EmojiList,
     "emoji:import": EmojiImport,
+    start: Start,
 };
 
 if (import.meta.path === Bun.main) {

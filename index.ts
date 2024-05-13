@@ -18,7 +18,8 @@ import type { APIRouteExports } from "~types/api";
 
 const timeAtStart = performance.now();
 
-const isEntry = import.meta.path === Bun.main;
+const isEntry =
+    import.meta.path === Bun.main && !process.argv.includes("--silent");
 
 let dualServerLogger: LogManager | MultiLogManager = new LogManager(
     Bun.file("/dev/null"),

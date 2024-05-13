@@ -20,6 +20,12 @@ export const setupDatabase = async (
     try {
         await client.connect();
     } catch (e) {
+        if (
+            (e as Error).message ===
+            "Client has already been connected. You cannot reuse a client."
+        )
+            return;
+
         await logger.logError(LogLevel.CRITICAL, "Database", e as Error);
 
         await logger.log(

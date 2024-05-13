@@ -4,6 +4,7 @@ import type { Hono } from "hono";
 export const createServer = (config: Config, app: Hono) =>
     Bun.serve({
         port: config.http.bind_port,
+        reusePort: true,
         tls: config.http.tls.enabled
             ? {
                   key: Bun.file(config.http.tls.key),
