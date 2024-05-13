@@ -35,8 +35,13 @@ export default class Start extends BaseCommand<typeof Start> {
 
         const numCPUs = flags["all-threads"] ? os.cpus().length : flags.threads;
 
+        // Check if index is a JS or TS file (depending on the environment)
+        const index = (await Bun.file("index.ts").exists())
+            ? "index.ts"
+            : "index.js";
+
         for (let i = 0; i < numCPUs; i++) {
-            const args = ["bun", "index.ts"];
+            const args = ["bun", index];
             if (i !== 0 || flags.silent) {
                 args.push("--silent");
             }

@@ -47,4 +47,4 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENTRYPOINT [ "/bin/sh", "/app/entrypoint.sh" ]
 # Run migrations and start the server
-CMD [ "start" ]
+CMD [ "cli", "start" ]
