@@ -128,14 +128,18 @@ export default (app: Hono) =>
                         access_token: token.accessToken,
                         token_type: "Bearer",
                         expires_in: token.expiresAt
-                            ? (new Date(token.expiresAt).getTime() -
-                                  Date.now()) /
-                              1000
+                            ? Math.floor(
+                                  (new Date(token.expiresAt).getTime() -
+                                      Date.now()) /
+                                      1000,
+                              )
                             : null,
                         id_token: token.idToken,
                         refresh_token: null,
                         scope: token.scope,
-                        created_at: new Date(token.createdAt).toISOString(),
+                        created_at: Math.floor(
+                            new Date(token.createdAt).getTime() / 1000,
+                        ),
                     });
                 }
             }

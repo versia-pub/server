@@ -152,7 +152,7 @@ describe("POST /oauth/token/", () => {
             access_token: expect.any(String),
             token_type: "Bearer",
             scope: "read write",
-            created_at: expect.any(String),
+            created_at: expect.any(Number),
             expires_in: expect.any(Number),
             id_token: null,
             refresh_token: null,
