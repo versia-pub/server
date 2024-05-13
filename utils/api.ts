@@ -11,7 +11,9 @@ import {
     createRegExp,
     digit,
     exactly,
+    global,
     letter,
+    maybe,
     oneOrMore,
 } from "magic-regexp";
 import { parse } from "qs";
@@ -62,6 +64,28 @@ export const emojiValidatorWithColons = createRegExp(
     oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
     exactly(":"),
     [caseInsensitive],
+);
+
+export const mentionValidator = createRegExp(
+    exactly("@"),
+    oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
+        "username",
+    ),
+    maybe(
+        exactly("@"),
+        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
+    ),
+    [global],
+);
+
+export const webfingerMention = createRegExp(
+    exactly("acct:"),
+    oneOrMore(anyOf(letter, digit, charIn("-"))).groupedAs("username"),
+    maybe(
+        exactly("@"),
+        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
+    ),
+    [],
 );
 
 export const handleZodError = (

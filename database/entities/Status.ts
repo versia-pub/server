@@ -1,3 +1,4 @@
+import { mentionValidator } from "@api";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { dualLogger } from "@loggers";
 import { sanitizeHtml, sanitizeHtmlInline } from "@sanitization";
@@ -365,26 +366,13 @@ export const resolveNote = async (
     return createdNote;
 };
 
-export const createMentionRegExp = () =>
-    createRegExp(
-        exactly("@"),
-        oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
-            "username",
-        ),
-        maybe(
-            exactly("@"),
-            oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
-        ),
-        [global],
-    );
-
 /**
  * Get people mentioned in the content (match @username or @username@domain.com mentions)
  * @param text The text to parse mentions from.
  * @returns An array of users mentioned in the text.
  */
 export const parseTextMentions = async (text: string): Promise<User[]> => {
-    const mentionedPeople = [...text.matchAll(createMentionRegExp())] ?? [];
+    const mentionedPeople = [...text.matchAll(mentionValidator)] ?? [];
     if (mentionedPeople.length === 0) return [];
 
     const baseUrlHost = new URL(config.http.base_url).host;

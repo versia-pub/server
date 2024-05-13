@@ -1,4 +1,9 @@
-import { applyConfig, handleZodError, idValidator } from "@api";
+import {
+    applyConfig,
+    handleZodError,
+    idValidator,
+    webfingerMention,
+} from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
@@ -36,7 +41,7 @@ export default (app: Hono) =>
             const { resource } = context.req.valid("query");
 
             // Check if resource is in the correct format (acct:uuid/username@domain)
-            if (!resource.match(/^acct:[a-zA-Z0-9-]+@[a-zA-Z0-9.-:]+$/)) {
+            if (!resource.match(webfingerMention)) {
                 return errorResponse(
                     "Invalid resource (should be acct:(id or username)@domain)",
                     400,
