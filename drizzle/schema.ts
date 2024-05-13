@@ -26,6 +26,11 @@ export const Emojis = pgTable("Emojis", {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
+    ownerId: uuid("ownerId").references(() => Users.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    category: text("category"),
 });
 
 export const Filters = pgTable("Filters", {

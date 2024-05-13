@@ -1,4 +1,6 @@
 {
+    "id": "2ebf1bd7-ed30-4e28-aa35-091c4cec896c",
+    "prevId": "44e89287-856b-4cc8-bee0-fb394522b01c",
     "version": "6",
     "dialect": "postgresql",
     "tables": {
@@ -162,11 +164,11 @@
                 "Attachments_noteId_Notes_id_fk": {
                     "name": "Attachments_noteId_Notes_id_fk",
                     "tableFrom": "Attachments",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -205,20 +207,20 @@
                 "EmojiToNote_emojiId_Emojis_id_fk": {
                     "name": "EmojiToNote_emojiId_Emojis_id_fk",
                     "tableFrom": "EmojiToNote",
-                    "columnsFrom": ["emojiId"],
                     "tableTo": "Emojis",
+                    "columnsFrom": ["emojiId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "EmojiToNote_noteId_Notes_id_fk": {
                     "name": "EmojiToNote_noteId_Notes_id_fk",
                     "tableFrom": "EmojiToNote",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -257,20 +259,20 @@
                 "EmojiToUser_emojiId_Emojis_id_fk": {
                     "name": "EmojiToUser_emojiId_Emojis_id_fk",
                     "tableFrom": "EmojiToUser",
-                    "columnsFrom": ["emojiId"],
                     "tableTo": "Emojis",
+                    "columnsFrom": ["emojiId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "EmojiToUser_userId_Users_id_fk": {
                     "name": "EmojiToUser_userId_Users_id_fk",
                     "tableFrom": "EmojiToUser",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -322,6 +324,18 @@
                     "type": "uuid",
                     "primaryKey": false,
                     "notNull": false
+                },
+                "ownerId": {
+                    "name": "ownerId",
+                    "type": "uuid",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "category": {
+                    "name": "category",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
                 }
             },
             "indexes": {},
@@ -329,11 +343,20 @@
                 "Emojis_instanceId_Instances_id_fk": {
                     "name": "Emojis_instanceId_Instances_id_fk",
                     "tableFrom": "Emojis",
-                    "columnsFrom": ["instanceId"],
                     "tableTo": "Instances",
+                    "columnsFrom": ["instanceId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
+                },
+                "Emojis_ownerId_Users_id_fk": {
+                    "name": "Emojis_ownerId_Users_id_fk",
+                    "tableFrom": "Emojis",
+                    "tableTo": "Users",
+                    "columnsFrom": ["ownerId"],
+                    "columnsTo": ["id"],
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -374,11 +397,11 @@
                 "FilterKeywords_filterId_Filters_id_fk": {
                     "name": "FilterKeywords_filterId_Filters_id_fk",
                     "tableFrom": "FilterKeywords",
-                    "columnsFrom": ["filterId"],
                     "tableTo": "Filters",
+                    "columnsFrom": ["filterId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -438,11 +461,11 @@
                 "Filters_userId_Users_id_fk": {
                     "name": "Filters_userId_Users_id_fk",
                     "tableFrom": "Filters",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -491,20 +514,20 @@
                 "Flags_noteId_Notes_id_fk": {
                     "name": "Flags_noteId_Notes_id_fk",
                     "tableFrom": "Flags",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Flags_userId_Users_id_fk": {
                     "name": "Flags_userId_Users_id_fk",
                     "tableFrom": "Flags",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -594,20 +617,20 @@
                 "Likes_likerId_Users_id_fk": {
                     "name": "Likes_likerId_Users_id_fk",
                     "tableFrom": "Likes",
-                    "columnsFrom": ["likerId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["likerId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Likes_likedId_Notes_id_fk": {
                     "name": "Likes_likedId_Notes_id_fk",
                     "tableFrom": "Likes",
-                    "columnsFrom": ["likedId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["likedId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -684,11 +707,11 @@
                 "LysandObject_authorId_LysandObject_id_fk": {
                     "name": "LysandObject_authorId_LysandObject_id_fk",
                     "tableFrom": "LysandObject",
-                    "columnsFrom": ["authorId"],
                     "tableTo": "LysandObject",
+                    "columnsFrom": ["authorId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -742,29 +765,29 @@
                 "Markers_noteId_Notes_id_fk": {
                     "name": "Markers_noteId_Notes_id_fk",
                     "tableFrom": "Markers",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Markers_notificationId_Notifications_id_fk": {
                     "name": "Markers_notificationId_Notifications_id_fk",
                     "tableFrom": "Markers",
-                    "columnsFrom": ["notificationId"],
                     "tableTo": "Notifications",
+                    "columnsFrom": ["notificationId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Markers_userId_Users_id_fk": {
                     "name": "Markers_userId_Users_id_fk",
                     "tableFrom": "Markers",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -818,29 +841,29 @@
                 "ModNotes_noteId_Notes_id_fk": {
                     "name": "ModNotes_noteId_Notes_id_fk",
                     "tableFrom": "ModNotes",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "ModNotes_userId_Users_id_fk": {
                     "name": "ModNotes_userId_Users_id_fk",
                     "tableFrom": "ModNotes",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "ModNotes_modId_Users_id_fk": {
                     "name": "ModNotes_modId_Users_id_fk",
                     "tableFrom": "ModNotes",
-                    "columnsFrom": ["modId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["modId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -894,29 +917,29 @@
                 "ModTags_noteId_Notes_id_fk": {
                     "name": "ModTags_noteId_Notes_id_fk",
                     "tableFrom": "ModTags",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "ModTags_userId_Users_id_fk": {
                     "name": "ModTags_userId_Users_id_fk",
                     "tableFrom": "ModTags",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "ModTags_modId_Users_id_fk": {
                     "name": "ModTags_modId_Users_id_fk",
                     "tableFrom": "ModTags",
-                    "columnsFrom": ["modId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["modId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -955,20 +978,20 @@
                 "NoteToMentions_noteId_Notes_id_fk": {
                     "name": "NoteToMentions_noteId_Notes_id_fk",
                     "tableFrom": "NoteToMentions",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "NoteToMentions_userId_Users_id_fk": {
                     "name": "NoteToMentions_userId_Users_id_fk",
                     "tableFrom": "NoteToMentions",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1076,62 +1099,62 @@
                     "default": "''"
                 }
             },
-            "indexes": {
-                "Notes_uri_index": {
-                    "name": "Notes_uri_index",
-                    "columns": ["uri"],
-                    "isUnique": true
-                }
-            },
+            "indexes": {},
             "foreignKeys": {
                 "Notes_authorId_Users_id_fk": {
                     "name": "Notes_authorId_Users_id_fk",
                     "tableFrom": "Notes",
-                    "columnsFrom": ["authorId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["authorId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
-                },
-                "Notes_applicationId_Applications_id_fk": {
-                    "name": "Notes_applicationId_Applications_id_fk",
-                    "tableFrom": "Notes",
-                    "columnsFrom": ["applicationId"],
-                    "tableTo": "Applications",
-                    "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "set null"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Notes_reblogId_Notes_id_fk": {
                     "name": "Notes_reblogId_Notes_id_fk",
                     "tableFrom": "Notes",
-                    "columnsFrom": ["reblogId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["reblogId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Notes_replyId_Notes_id_fk": {
                     "name": "Notes_replyId_Notes_id_fk",
                     "tableFrom": "Notes",
-                    "columnsFrom": ["replyId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["replyId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "set null"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Notes_quoteId_Notes_id_fk": {
                     "name": "Notes_quoteId_Notes_id_fk",
                     "tableFrom": "Notes",
-                    "columnsFrom": ["quoteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["quoteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "set null"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
+                },
+                "Notes_applicationId_Applications_id_fk": {
+                    "name": "Notes_applicationId_Applications_id_fk",
+                    "tableFrom": "Notes",
+                    "tableTo": "Applications",
+                    "columnsFrom": ["applicationId"],
+                    "columnsTo": ["id"],
+                    "onDelete": "set null",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
-            "uniqueConstraints": {}
+            "uniqueConstraints": {
+                "Notes_uri_unique": {
+                    "name": "Notes_uri_unique",
+                    "nullsNotDistinct": false,
+                    "columns": ["uri"]
+                }
+            }
         },
         "public.Notifications": {
             "name": "Notifications",
@@ -1188,29 +1211,29 @@
                 "Notifications_notifiedId_Users_id_fk": {
                     "name": "Notifications_notifiedId_Users_id_fk",
                     "tableFrom": "Notifications",
-                    "columnsFrom": ["notifiedId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["notifiedId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Notifications_accountId_Users_id_fk": {
                     "name": "Notifications_accountId_Users_id_fk",
                     "tableFrom": "Notifications",
-                    "columnsFrom": ["accountId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["accountId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Notifications_noteId_Notes_id_fk": {
                     "name": "Notifications_noteId_Notes_id_fk",
                     "tableFrom": "Notifications",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1251,11 +1274,11 @@
                 "OpenIdAccounts_userId_Users_id_fk": {
                     "name": "OpenIdAccounts_userId_Users_id_fk",
                     "tableFrom": "OpenIdAccounts",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "set null"
+                    "onDelete": "set null",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1296,11 +1319,11 @@
                 "OpenIdLoginFlows_applicationId_Applications_id_fk": {
                     "name": "OpenIdLoginFlows_applicationId_Applications_id_fk",
                     "tableFrom": "OpenIdLoginFlows",
-                    "columnsFrom": ["applicationId"],
                     "tableTo": "Applications",
+                    "columnsFrom": ["applicationId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1427,20 +1450,20 @@
                 "Relationships_ownerId_Users_id_fk": {
                     "name": "Relationships_ownerId_Users_id_fk",
                     "tableFrom": "Relationships",
-                    "columnsFrom": ["ownerId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["ownerId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Relationships_subjectId_Users_id_fk": {
                     "name": "Relationships_subjectId_Users_id_fk",
                     "tableFrom": "Relationships",
-                    "columnsFrom": ["subjectId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["subjectId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1532,20 +1555,20 @@
                 "Tokens_userId_Users_id_fk": {
                     "name": "Tokens_userId_Users_id_fk",
                     "tableFrom": "Tokens",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "Tokens_applicationId_Applications_id_fk": {
                     "name": "Tokens_applicationId_Applications_id_fk",
                     "tableFrom": "Tokens",
-                    "columnsFrom": ["applicationId"],
                     "tableTo": "Applications",
+                    "columnsFrom": ["applicationId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1584,20 +1607,20 @@
                 "UserToPinnedNotes_userId_Users_id_fk": {
                     "name": "UserToPinnedNotes_userId_Users_id_fk",
                     "tableFrom": "UserToPinnedNotes",
-                    "columnsFrom": ["userId"],
                     "tableTo": "Users",
+                    "columnsFrom": ["userId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 },
                 "UserToPinnedNotes_noteId_Notes_id_fk": {
                     "name": "UserToPinnedNotes_noteId_Notes_id_fk",
                     "tableFrom": "UserToPinnedNotes",
-                    "columnsFrom": ["noteId"],
                     "tableTo": "Notes",
+                    "columnsFrom": ["noteId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1777,11 +1800,11 @@
                 "Users_instanceId_Instances_id_fk": {
                     "name": "Users_instanceId_Instances_id_fk",
                     "tableFrom": "Users",
-                    "columnsFrom": ["instanceId"],
                     "tableTo": "Instances",
+                    "columnsFrom": ["instanceId"],
                     "columnsTo": ["id"],
-                    "onUpdate": "cascade",
-                    "onDelete": "cascade"
+                    "onDelete": "cascade",
+                    "onUpdate": "cascade"
                 }
             },
             "compositePrimaryKeys": {},
@@ -1791,10 +1814,8 @@
     "enums": {},
     "schemas": {},
     "_meta": {
+        "columns": {},
         "schemas": {},
-        "tables": {},
-        "columns": {}
-    },
-    "id": "6fcfd8f6-d6d2-4321-827f-20f261b1b1f0",
-    "prevId": "c45f1b6f-a872-4e39-9c0b-05b1d6b27384"
+        "tables": {}
+    }
 }

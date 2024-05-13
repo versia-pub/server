@@ -99,7 +99,7 @@ export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
         static_url: proxyUrl(emoji.url) ?? "", // TODO: Add static version
         url: proxyUrl(emoji.url) ?? "",
         visible_in_picker: emoji.visibleInPicker,
-        category: undefined,
+        category: emoji.category ?? undefined,
     };
 };
 

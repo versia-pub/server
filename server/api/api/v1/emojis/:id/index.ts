@@ -52,7 +52,13 @@ export const schemas = {
                 .max(2000)
                 .url()
                 .or(z.instanceof(File)),
+            category: z.string().max(64).optional(),
             alt: z.string().max(1000).optional(),
+            global: z
+                .string()
+                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+                .or(z.boolean())
+                .optional(),
         })
         .partial()
         .optional(),
@@ -74,16 +80,6 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            // Check if user is admin
-            if (!user.getUser().isAdmin) {
-                return jsonResponse(
-                    {
-                        error: "You do not have permission to modify emojis (must be an administrator)",
-                    },
-                    403,
-                );
-            }
-
             const emoji = await db.query.Emojis.findFirst({
                 where: (emoji, { eq }) => eq(emoji.id, id),
                 with: {
@@ -92,6 +88,19 @@ export default (app: Hono) =>
             });
 
             if (!emoji) return errorResponse("Emoji not found", 404);
+
+            // Check if user is admin
+            if (
+                !user.getUser().isAdmin &&
+                emoji.ownerId !== user.getUser().id
+            ) {
+                return jsonResponse(
+                    {
+                        error: "You do not have permission to modify this emoji, as it is either global or not owned by you",
+                    },
+                    403,
+                );
+            }
 
             switch (context.req.method) {
                 case "DELETE": {
@@ -105,15 +114,28 @@ export default (app: Hono) =>
 
                     if (!form) {
                         return errorResponse(
-                            "Invalid form data (must supply shortcode and/or element and/or alt)",
+                            "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
                             422,
                         );
                     }
 
-                    if (!form.shortcode && !form.element && !form.alt) {
+                    if (
+                        !form.shortcode &&
+                        !form.element &&
+                        !form.alt &&
+                        !form.category &&
+                        form.global === undefined
+                    ) {
                         return errorResponse(
-                            "Invalid form data (must supply shortcode and/or element and/or alt)",
+                            "Invalid form data (must supply shortcode and/or element and/or alt and/or global)",
                             422,
+                        );
+                    }
+
+                    if (!user.getUser().isAdmin && form.global) {
+                        return errorResponse(
+                            "Only administrators can make an emoji global or not",
+                            401,
                         );
                     }
 
@@ -159,7 +181,9 @@ export default (app: Hono) =>
                                 shortcode: form.shortcode ?? emoji.shortcode,
                                 alt: form.alt ?? emoji.alt,
                                 url: emoji.url,
+                                ownerId: form.global ? null : user.id,
                                 contentType: emoji.contentType,
+                                category: form.category ?? emoji.category,
                             })
                             .where(eq(Emojis.id, id))
                             .returning()

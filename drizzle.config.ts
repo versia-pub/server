@@ -2,7 +2,7 @@ import { config } from "config-manager";
 import type { Config } from "drizzle-kit";
 
 export default {
-    driver: "pg",
+    dialect: "postgresql",
     out: "./drizzle",
     schema: "./drizzle/schema.ts",
     dbCredentials: {

@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
+import { inArray } from "drizzle-orm";
+import { db } from "~drizzle/db";
+import { Emojis } from "~drizzle/schema";
 import { getTestUsers, sendTestRequest } from "~tests/utils";
 import { meta } from "./index";
 
@@ -21,6 +24,7 @@ beforeAll(async () => {
             body: JSON.stringify({
                 shortcode: "test",
                 element: "https://cdn.lysand.org/logo.webp",
+                global: true,
             }),
         }),
     );
@@ -32,6 +36,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await deleteUsers();
+
+    await db
+        .delete(Emojis)
+        .where(inArray(Emojis.shortcode, ["test", "test2", "test3", "test4"]));
 });
 
 // /api/v1/emojis/:id (PATCH, DELETE, GET)
@@ -71,15 +79,19 @@ describe(meta.route, () => {
         expect(response.status).toBe(404);
     });
 
-    test("should return 403 if not an admin", async () => {
+    test("should not work if the user is trying to update an emoji they don't own", async () => {
         const response = await sendTestRequest(
             new Request(
                 new URL(meta.route.replace(":id", id), config.http.base_url),
                 {
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                    method: "GET",
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        shortcode: "test2",
+                    }),
                 },
             ),
         );
@@ -148,6 +160,43 @@ describe(meta.route, () => {
         expect(response.ok).toBe(true);
         const emoji = await response.json();
         expect(emoji.shortcode).toBe("test2");
+    });
+
+    test("should update the emoji to be non-global", async () => {
+        const response = await sendTestRequest(
+            new Request(
+                new URL(meta.route.replace(":id", id), config.http.base_url),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[1].accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                    method: "PATCH",
+                    body: JSON.stringify({
+                        global: false,
+                    }),
+                },
+            ),
+        );
+
+        expect(response.ok).toBe(true);
+
+        // Check if the other user can see it
+        const response2 = await sendTestRequest(
+            new Request(
+                new URL("/api/v1/custom_emojis", config.http.base_url),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                    method: "GET",
+                },
+            ),
+        );
+
+        expect(response2.ok).toBe(true);
+        const emojis = await response2.json();
+        expect(emojis).not.toContainEqual(expect.objectContaining({ id: id }));
     });
 
     test("should delete the emoji", async () => {

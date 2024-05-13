@@ -47,7 +47,13 @@ export const schemas = {
             .max(2000)
             .url()
             .or(z.instanceof(File)),
+        category: z.string().max(64).optional(),
         alt: z.string().max(1000).optional(),
+        global: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .or(z.boolean())
+            .optional(),
     }),
 };
 
@@ -59,31 +65,34 @@ export default (app: Hono) =>
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
-            const { shortcode, element, alt } = context.req.valid("form");
+            const { shortcode, element, alt, global, category } =
+                context.req.valid("form");
             const { user } = context.req.valid("header");
 
             if (!user) {
                 return errorResponse("Unauthorized", 401);
             }
 
-            // Check if user is admin
-            if (!user.getUser().isAdmin) {
-                return jsonResponse(
-                    {
-                        error: "You do not have permission to add emojis (must be an administrator)",
-                    },
-                    403,
+            if (!user.getUser().isAdmin && global) {
+                return errorResponse(
+                    "Only administrators can upload global emojis",
+                    401,
                 );
             }
 
             // Check if emoji already exists
             const existing = await db.query.Emojis.findFirst({
-                where: (emoji, { eq }) => eq(emoji.shortcode, shortcode),
+                where: (emoji, { eq, and, isNull, or }) =>
+                    and(
+                        eq(emoji.shortcode, shortcode),
+                        isNull(emoji.instanceId),
+                        or(eq(emoji.ownerId, user.id), isNull(emoji.ownerId)),
+                    ),
             });
 
             if (existing) {
                 return errorResponse(
-                    `An emoji with the shortcode ${shortcode} already exists.`,
+                    `An emoji with the shortcode ${shortcode} already exists, either owned by you or global.`,
                     422,
                 );
             }
@@ -123,6 +132,8 @@ export default (app: Hono) =>
                         shortcode,
                         url: getUrl(url, config),
                         visibleInPicker: true,
+                        ownerId: global ? null : user.id,
+                        category,
                         contentType,
                         alt,
                     })
