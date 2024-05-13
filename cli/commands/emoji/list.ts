@@ -3,7 +3,7 @@ import { and, eq, getTableColumns, isNotNull, isNull } from "drizzle-orm";
 import { BaseCommand } from "~cli/base";
 import { formatArray } from "~cli/utils/format";
 import { db } from "~drizzle/db";
-import { Emojis, Instances } from "~drizzle/schema";
+import { Emojis, Instances, Users } from "~drizzle/schema";
 
 export default class EmojiList extends BaseCommand<typeof EmojiList> {
     static override args = {};
@@ -36,6 +36,10 @@ export default class EmojiList extends BaseCommand<typeof EmojiList> {
             description: "Limit the number of emojis",
             default: 200,
         }),
+        username: Flags.string({
+            char: "u",
+            description: "Filter by username",
+        }),
     };
 
     public async run(): Promise<void> {
@@ -45,17 +49,29 @@ export default class EmojiList extends BaseCommand<typeof EmojiList> {
             .select({
                 ...getTableColumns(Emojis),
                 instanceUrl: Instances.baseUrl,
+                owner: Users.username,
             })
             .from(Emojis)
             .leftJoin(Instances, eq(Emojis.instanceId, Instances.id))
+            .leftJoin(Users, eq(Emojis.ownerId, Users.id))
             .where(
                 and(
                     flags.local ? isNull(Emojis.instanceId) : undefined,
                     flags.remote ? isNotNull(Emojis.instanceId) : undefined,
+                    flags.username
+                        ? eq(Users.username, flags.username)
+                        : undefined,
                 ),
             );
 
-        const keys = ["id", "shortcode", "alt", "contentType", "instanceUrl"];
+        const keys = [
+            "id",
+            "shortcode",
+            "alt",
+            "contentType",
+            "instanceUrl",
+            "owner",
+        ];
 
         this.log(
             formatArray(

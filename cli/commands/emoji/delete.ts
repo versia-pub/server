@@ -7,6 +7,8 @@ import { EmojiFinderCommand } from "~cli/classes";
 import { formatArray } from "~cli/utils/format";
 import { db } from "~drizzle/db";
 import { Emojis } from "~drizzle/schema";
+import { config } from "~packages/config-manager";
+import { MediaBackend } from "~packages/media-manager";
 
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete
@@ -77,16 +79,22 @@ export default class EmojiDelete extends EmojiFinderCommand<
 
         const spinner = ora("Deleting emoji(s)").start();
 
-        await db.delete(Emojis).where(
-            inArray(
-                Emojis.id,
-                emojis.map((e) => e.id),
-            ),
-        );
+        for (const emoji of emojis) {
+            spinner.text = `Deleting emoji ${chalk.gray(emoji.shortcode)} (${
+                emojis.findIndex((e) => e.id === emoji.id) + 1
+            }/${emojis.length})`;
 
-        spinner.succeed();
+            const mediaBackend = await MediaBackend.fromBackendType(
+                config.media.backend,
+                config,
+            );
 
-        this.log(chalk.bold(`${chalk.green("✓")} Emoji(s) deleted`));
+            await mediaBackend.deleteFileByUrl(emoji.url);
+
+            await db.delete(Emojis).where(eq(Emojis.id, emoji.id));
+        }
+
+        spinner.succeed("Emoji(s) deleted");
 
         this.exit(0);
     }

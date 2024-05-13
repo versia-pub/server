@@ -104,6 +104,13 @@ export default (app: Hono) =>
 
             switch (context.req.method) {
                 case "DELETE": {
+                    const mediaBackend = await MediaBackend.fromBackendType(
+                        config.media.backend,
+                        config,
+                    );
+
+                    await mediaBackend.deleteFileByUrl(emoji.url);
+
                     await db.delete(Emojis).where(eq(Emojis.id, id));
 
                     return response(null, 204);

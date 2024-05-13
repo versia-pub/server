@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, jest, spyOn } from "bun:test";
+import { beforeEach, describe, expect, it, jest, mock, spyOn } from "bun:test";
 import type { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
 import {
@@ -127,6 +127,7 @@ describe("S3MediaBackend", () => {
                 blob: jest.fn().mockResolvedValue(new Blob()),
                 headers: new Headers({ "Content-Type": "image/jpeg" }),
             }),
+            deleteObject: jest.fn().mockResolvedValue({}),
         } as Partial<S3Client>;
         s3MediaBackend = new S3MediaBackend(
             mockConfig as Config,
@@ -186,6 +187,21 @@ describe("S3MediaBackend", () => {
         expect(file).not.toBeNull();
         expect(file?.name).toEqual(mockFilename);
         expect(file?.type).toEqual("image/jpeg");
+    });
+
+    it("should delete file", async () => {
+        // deleteFileByUrl
+        // Upload file first
+        const mockHash = "test-hash";
+        spyOn(mockMediaHasher, "getMediaHash").mockResolvedValue(mockHash);
+        const result = await s3MediaBackend.addFile(mockFile);
+        const url = result.path;
+
+        await s3MediaBackend.deleteFileByUrl(`http://localhost:4566/${url}`);
+
+        expect(mockS3Client.deleteObject).toHaveBeenCalledWith(
+            expect.stringContaining(url),
+        );
     });
 });
 
@@ -273,5 +289,29 @@ describe("LocalMediaBackend", () => {
         expect(file).not.toBeNull();
         expect(file?.name).toEqual(mockFilename);
         expect(file?.type).toEqual("image/jpeg");
+    });
+
+    it("should delete file", async () => {
+        // deleteByUrl
+        const mockHash = "test-hash";
+        spyOn(mockMediaHasher, "getMediaHash").mockResolvedValue(mockHash);
+        const result = await localMediaBackend.addFile(mockFile);
+        const rmMock = jest.fn().mockResolvedValue(Promise.resolve());
+
+        // Spy on fs/promises rm
+        mock.module("fs/promises", () => {
+            return {
+                rm: rmMock,
+            };
+        });
+
+        await localMediaBackend.deleteFileByUrl(
+            "http://localhost:4566/test-hash",
+        );
+
+        expect(rmMock).toHaveBeenCalledWith(
+            `${mockConfig.media.local_uploads_folder}/${mockHash}`,
+            { recursive: true },
+        );
     });
 });

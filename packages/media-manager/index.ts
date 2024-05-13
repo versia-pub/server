@@ -1,3 +1,4 @@
+import { rm } from "node:fs/promises";
 import { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
 import type { Config } from "config-manager";
 import { MediaConverter } from "./media-converter";
@@ -71,6 +72,12 @@ export class MediaBackend {
         );
     }
 
+    public deleteFileByUrl(url: string): Promise<void> {
+        return Promise.reject(
+            new Error("Do not call MediaBackend directly: use a subclass"),
+        );
+    }
+
     /**
      * Fetches file from backend from filename
      * @param filename File name
@@ -133,6 +140,24 @@ export class LocalMediaBackend extends MediaBackend {
         };
     }
 
+    public async deleteFileByUrl(url: string) {
+        // url is of format https://base-url/media/SHA256HASH/FILENAME
+        const urlO = new URL(url);
+
+        const hash = urlO.pathname.split("/")[1];
+
+        const dirPath = `${this.config.media.local_uploads_folder}/${hash}`;
+
+        try {
+            await rm(dirPath, { recursive: true });
+        } catch (e) {
+            console.error(`Failed to delete directory at ${dirPath}`);
+            console.error(e);
+        }
+
+        return;
+    }
+
     public async getFileByHash(
         hash: string,
         databaseHashFetcher: (sha256: string) => Promise<string | null>,
@@ -171,6 +196,18 @@ export class S3MediaBackend extends MediaBackend {
         }),
     ) {
         super(config, MediaBackendType.S3);
+    }
+
+    public async deleteFileByUrl(url: string) {
+        // url is of format https://s3-base-url/SHA256HASH/FILENAME
+        const urlO = new URL(url);
+
+        const hash = urlO.pathname.split("/")[1];
+        const filename = urlO.pathname.split("/")[2];
+
+        await this.s3Client.deleteObject(`${hash}/${filename}`);
+
+        return;
     }
 
     public async addFile(file: File) {
