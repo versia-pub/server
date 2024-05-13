@@ -17,9 +17,9 @@ describe("API Tests", () => {
 
         const response = await sendTestRequest(
             new Request(
-                wrapRelativeUrl(`${base_url}/api/v1/custom_emojis`, base_url),
+                wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
                 {
-                    method: "GET",
+                    method: "POST",
                     headers: {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                         "Content-Type": "multipart/form-data",
