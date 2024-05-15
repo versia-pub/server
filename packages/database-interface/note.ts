@@ -1,3 +1,4 @@
+import type { EntityValidator } from "@lysand-org/federation";
 import { proxyUrl } from "@response";
 import { sanitizedHtmlStrip } from "@sanitization";
 import {
@@ -12,7 +13,6 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import type * as Lysand from "lysand-types";
 import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
@@ -210,7 +210,7 @@ export class Note {
 
     static async fromData(
         author: User,
-        content: Lysand.ContentFormat,
+        content: typeof EntityValidator.$ContentFormat,
         visibility: APIStatus["visibility"],
         is_sensitive: boolean,
         spoiler_text: string,
@@ -303,7 +303,7 @@ export class Note {
     }
 
     async updateFromData(
-        content?: Lysand.ContentFormat,
+        content?: typeof EntityValidator.$ContentFormat,
         visibility?: APIStatus["visibility"],
         is_sensitive?: boolean,
         spoiler_text?: string,
@@ -539,7 +539,7 @@ export class Note {
         return `/@${this.getAuthor().getUser().username}/${this.id}`;
     }
 
-    toLysand(): Lysand.Note {
+    toLysand(): typeof EntityValidator.$Note {
         const status = this.getStatus();
         return {
             type: "Note",
@@ -563,7 +563,11 @@ export class Note {
             quotes: Note.getURI(status.quotingId) ?? undefined,
             replies_to: Note.getURI(status.replyId) ?? undefined,
             subject: status.spoilerText,
-            visibility: status.visibility as Lysand.Visibility,
+            visibility: status.visibility as
+                | "public"
+                | "unlisted"
+                | "private"
+                | "direct",
             extensions: {
                 "org.lysand:custom_emojis": {
                     emojis: status.emojis.map((emoji) => emojiToLysand(emoji)),

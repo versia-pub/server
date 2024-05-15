@@ -1,3 +1,4 @@
+import type { EntityValidator } from "@lysand-org/federation";
 import { relations, sql } from "drizzle-orm";
 import {
     type AnyPgColumn,
@@ -12,7 +13,6 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type * as Lysand from "lysand-types";
 import type { Source as APISource } from "~types/mastodon/source";
 
 export const Emojis = pgTable("Emojis", {
@@ -354,8 +354,8 @@ export const Users = pgTable(
         isAdmin: boolean("is_admin").default(false).notNull(),
         fields: jsonb("fields").notNull().default("[]").$type<
             {
-                key: Lysand.ContentFormat;
-                value: Lysand.ContentFormat;
+                key: typeof EntityValidator.$ContentFormat;
+                value: typeof EntityValidator.$ContentFormat;
             }[]
         >(),
         endpoints: jsonb("endpoints").$type<Partial<{

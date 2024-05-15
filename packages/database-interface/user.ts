@@ -1,5 +1,6 @@
 import { idValidator } from "@api";
 import { getBestContentType, urlToContentFormat } from "@content_types";
+import type { EntityValidator } from "@lysand-org/federation";
 import { addUserToMeilisearch } from "@meilisearch";
 import { proxyUrl } from "@response";
 import {
@@ -14,7 +15,6 @@ import {
     isNull,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import type * as Lysand from "lysand-types";
 import {
     emojiToAPI,
     emojiToLysand,
@@ -206,7 +206,9 @@ export class User {
             },
         });
 
-        const data = (await response.json()) as Partial<Lysand.User>;
+        const data = (await response.json()) as Partial<
+            typeof EntityValidator.$User
+        >;
 
         if (
             !(
@@ -255,7 +257,11 @@ export class User {
                         inbox: data.inbox,
                         outbox: data.outbox,
                     },
-                    fields: data.fields ?? [],
+                    fields:
+                        data.fields?.map((f) => ({
+                            key: f.name,
+                            value: f.value,
+                        })) ?? [],
                     updatedAt: new Date(data.created_at).toISOString(),
                     instanceId: instance.id,
                     avatar: data.avatar
@@ -467,7 +473,7 @@ export class User {
         };
     }
 
-    toLysand(): Lysand.User {
+    toLysand(): typeof EntityValidator.$User {
         if (this.isRemote()) {
             throw new Error("Cannot convert remote user to Lysand format");
         }
@@ -520,7 +526,10 @@ export class User {
             avatar: urlToContentFormat(this.getAvatarUrl(config)) ?? undefined,
             header: urlToContentFormat(this.getHeaderUrl(config)) ?? undefined,
             display_name: user.displayName,
-            fields: user.fields,
+            fields: user.fields.map((f) => ({
+                name: f.key,
+                value: f.value,
+            })),
             public_key: {
                 actor: new URL(
                     `/users/${user.id}`,

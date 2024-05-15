@@ -1,6 +1,7 @@
 import { mentionValidator } from "@api";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { dualLogger } from "@loggers";
+import type { EntityValidator } from "@lysand-org/federation";
 import { sanitizeHtml, sanitizeHtmlInline } from "@sanitization";
 import { config } from "config-manager";
 import {
@@ -13,7 +14,6 @@ import {
     sql,
 } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
-import type * as Lysand from "lysand-types";
 import {
     anyOf,
     charIn,
@@ -253,7 +253,7 @@ export const findManyNotes = async (
 
 export const resolveNote = async (
     uri?: string,
-    providedNote?: Lysand.Note,
+    providedNote?: typeof EntityValidator.$Note,
 ): Promise<Note> => {
     if (!uri && !providedNote) {
         throw new Error("No URI or note provided");
@@ -265,7 +265,7 @@ export const resolveNote = async (
 
     if (foundStatus) return foundStatus;
 
-    let note: Lysand.Note | null = providedNote ?? null;
+    let note = providedNote ?? null;
 
     if (uri) {
         if (!URL.canParse(uri)) {
@@ -279,7 +279,7 @@ export const resolveNote = async (
             },
         });
 
-        note = (await response.json()) as Lysand.Note;
+        note = (await response.json()) as typeof EntityValidator.$Note;
     }
 
     if (!note) {
@@ -484,7 +484,7 @@ export const replaceTextMentions = async (text: string, mentions: User[]) => {
 };
 
 export const contentToHtml = async (
-    content: Lysand.ContentFormat,
+    content: typeof EntityValidator.$ContentFormat,
     mentions: User[] = [],
     inline = false,
 ): Promise<string> => {

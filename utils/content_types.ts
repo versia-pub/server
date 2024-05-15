@@ -1,7 +1,9 @@
-import type * as Lysand from "lysand-types";
+import type { EntityValidator } from "@lysand-org/federation";
 import { lookup } from "mime-types";
 
-export const getBestContentType = (content?: Lysand.ContentFormat) => {
+export const getBestContentType = (
+    content?: typeof EntityValidator.$ContentFormat,
+) => {
     if (!content) return { content: "", format: "text/plain" };
 
     const bestFormatsRanked = [
@@ -21,7 +23,7 @@ export const getBestContentType = (content?: Lysand.ContentFormat) => {
 
 export const urlToContentFormat = (
     url: string,
-): Lysand.ContentFormat | null => {
+): typeof EntityValidator.$ContentFormat | null => {
     if (!url) return null;
     if (url.startsWith("https://api.dicebear.com/")) {
         return {

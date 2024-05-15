@@ -1,11 +1,11 @@
+import type { EntityValidator } from "@lysand-org/federation";
 import { config } from "config-manager";
-import type * as Lysand from "lysand-types";
 import type { User } from "~packages/database-interface/user";
 
 export const localObjectURI = (id: string) => `/objects/${id}`;
 
 export const objectToInboxRequest = async (
-    object: Lysand.Entity,
+    object: typeof EntityValidator.$Entity,
     author: User,
     userToSendTo: User,
 ): Promise<Request> => {

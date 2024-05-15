@@ -1,7 +1,7 @@
-import { emojiValidator, emojiValidatorWithColons } from "@api";
+import { emojiValidatorWithColons } from "@api";
+import type { EntityValidator } from "@lysand-org/federation";
 import { proxyUrl } from "@response";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
-import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import { Emojis, Instances } from "~drizzle/schema";
 import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
@@ -41,7 +41,7 @@ export const parseEmojis = async (text: string) => {
  * @returns The emoji
  */
 export const fetchEmoji = async (
-    emojiToFetch: Lysand.Emoji,
+    emojiToFetch: (typeof EntityValidator.$CustomEmojiExtension)["emojis"][0],
     host?: string,
 ): Promise<EmojiWithInstance> => {
     const existingEmoji = await db
@@ -71,7 +71,6 @@ export const fetchEmoji = async (
                 shortcode: emojiToFetch.name,
                 url: Object.entries(emojiToFetch.url)[0][1].content,
                 alt:
-                    emojiToFetch.alt ||
                     Object.entries(emojiToFetch.url)[0][1].description ||
                     undefined,
                 contentType: Object.keys(emojiToFetch.url)[0],
@@ -103,7 +102,9 @@ export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
     };
 };
 
-export const emojiToLysand = (emoji: EmojiWithInstance): Lysand.Emoji => {
+export const emojiToLysand = (
+    emoji: EmojiWithInstance,
+): (typeof EntityValidator.$CustomEmojiExtension)["emojis"][0] => {
     return {
         name: emoji.shortcode,
         url: {
@@ -112,6 +113,5 @@ export const emojiToLysand = (emoji: EmojiWithInstance): Lysand.Emoji => {
                 description: emoji.alt || undefined,
             },
         },
-        alt: emoji.alt || undefined,
     };
 };

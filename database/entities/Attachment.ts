@@ -1,7 +1,7 @@
+import type { EntityValidator } from "@lysand-org/federation";
 import { proxyUrl } from "@response";
 import type { Config } from "config-manager";
 import type { InferSelectModel } from "drizzle-orm";
-import type * as Lysand from "lysand-types";
 import { MediaBackendType } from "media-manager";
 import { db } from "~drizzle/db";
 import { Attachments } from "~drizzle/schema";
@@ -65,7 +65,7 @@ export const attachmentToAPI = (
 
 export const attachmentToLysand = (
     attachment: Attachment,
-): Lysand.ContentFormat => {
+): typeof EntityValidator.$ContentFormat => {
     return {
         [attachment.mimeType]: {
             content: attachment.url,
@@ -86,7 +86,7 @@ export const attachmentToLysand = (
 };
 
 export const attachmentFromLysand = async (
-    attachmentToConvert: Lysand.ContentFormat,
+    attachmentToConvert: typeof EntityValidator.$ContentFormat,
 ): Promise<InferSelectModel<typeof Attachments>> => {
     const key = Object.keys(attachmentToConvert)[0];
     const value = attachmentToConvert[key];

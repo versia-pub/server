@@ -1,10 +1,10 @@
 import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
+import { EntityValidator, SignatureValidator } from "@lysand-org/federation";
 import { errorResponse, jsonResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
-import type * as Lysand from "lysand-types";
 import { z } from "zod";
 import { isValidationError } from "zod-validation-error";
 import { resolveNote } from "~database/entities/Status";
@@ -16,7 +16,6 @@ import { db } from "~drizzle/db";
 import { Notifications, Relationships } from "~drizzle/schema";
 import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
-import { EntityValidator, SignatureValidator } from "~packages/lysand-utils";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -82,29 +81,33 @@ export default (app: Hono) =>
 
                 const validator = await SignatureValidator.fromStringKey(
                     sender.getUser().publicKey,
-                    signature,
-                    date,
-                    context.req.method,
-                    new URL(context.req.url),
-                    await context.req.text(),
                 );
 
-                const isValid = await validator.validate();
+                const isValid = await validator
+                    .validate(context.req.raw)
+                    .catch((e) => {
+                        dualLogger.logError(
+                            LogLevel.ERROR,
+                            "Inbox.Signature",
+                            e as Error,
+                        );
+                        return false;
+                    });
 
                 if (!isValid) {
                     return errorResponse("Invalid signature", 400);
                 }
             }
 
-            const validator = new EntityValidator(
-                (await context.req.json()) as Lysand.Entity,
-            );
+            const validator = new EntityValidator();
+            const body: typeof EntityValidator.$Entity =
+                await context.req.json();
 
             try {
                 // Add sent data to database
-                switch (validator.getType()) {
+                switch (body.type) {
                     case "Note": {
-                        const note = await validator.validate<Lysand.Note>();
+                        const note = await validator.Note(body);
 
                         const account = await User.resolve(note.author);
 
@@ -131,8 +134,7 @@ export default (app: Hono) =>
                         return response("Note created", 201);
                     }
                     case "Follow": {
-                        const follow =
-                            await validator.validate<Lysand.Follow>();
+                        const follow = await validator.Follow(body);
 
                         const account = await User.resolve(follow.author);
 
@@ -175,8 +177,7 @@ export default (app: Hono) =>
                         return response("Follow request sent", 200);
                     }
                     case "FollowAccept": {
-                        const followAccept =
-                            await validator.validate<Lysand.FollowAccept>();
+                        const followAccept = await validator.FollowAccept(body);
 
                         console.log(followAccept);
 
@@ -211,8 +212,7 @@ export default (app: Hono) =>
                         return response("Follow request accepted", 200);
                     }
                     case "FollowReject": {
-                        const followReject =
-                            await validator.validate<Lysand.FollowReject>();
+                        const followReject = await validator.FollowReject(body);
 
                         const account = await User.resolve(followReject.author);
 

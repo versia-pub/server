@@ -1,6 +1,6 @@
+import type { EntityValidator } from "@lysand-org/federation";
 import { config } from "config-manager";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
-import type * as Lysand from "lysand-types";
 import { db } from "~drizzle/db";
 import { Likes, Notifications } from "~drizzle/schema";
 import type { Note } from "~packages/database-interface/note";
@@ -11,7 +11,7 @@ export type Like = InferSelectModel<typeof Likes>;
 /**
  * Represents a Like entity in the database.
  */
-export const likeToLysand = (like: Like): Lysand.Like => {
+export const likeToLysand = (like: Like): typeof EntityValidator.$Like => {
     return {
         id: like.id,
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten

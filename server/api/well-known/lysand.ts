@@ -1,8 +1,8 @@
 import { applyConfig } from "@api";
 import { urlToContentFormat } from "@content_types";
+import type { EntityValidator } from "@lysand-org/federation";
 import { jsonResponse } from "@response";
 import type { Hono } from "hono";
-import type * as Lysand from "lysand-types";
 import pkg from "~package.json";
 import { config } from "~packages/config-manager";
 
@@ -29,5 +29,5 @@ export default (app: Hono) =>
             banner: urlToContentFormat(config.instance.banner) ?? undefined,
             supported_extensions: ["org.lysand:custom_emojis"],
             website: "https://lysand.org",
-        } satisfies Lysand.ServerMetadata);
+        } satisfies typeof EntityValidator.$ServerMetadata);
     });
