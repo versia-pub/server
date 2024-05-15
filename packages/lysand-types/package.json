@@ -1,6 +1,0 @@
-{
-    "name": "lysand-types",
-    "version": "2.0.0",
-    "description": "A collection of types for the Lysand protocol",
-    "main": "index.ts"
-}
