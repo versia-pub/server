@@ -1,6 +1,7 @@
 import { dualLogger } from "@loggers";
 import { connectMeili } from "@meilisearch";
 import { errorResponse, response } from "@response";
+import chalk from "chalk";
 import { config } from "config-manager";
 import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
@@ -70,7 +71,7 @@ if (isEntry) {
         await dualServerLogger.log(
             LogLevel.CRITICAL,
             "Server",
-            `${privateKey};${publicKey}`,
+            chalk.gray(`${privateKey};${publicKey}`),
         );
         process.exit(1);
     }

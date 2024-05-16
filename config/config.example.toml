@@ -1,15 +1,9 @@
-# Lysand Config
-# All of these values can be changed via the CLI (they will be saved in a file named config.internal.toml
-# in the same directory as this one)
-# Changing this file does not require a restart, but might take a few seconds to apply
-# This file will be merged with the CLI configuration, taking precedence over it
-
 [database]
 # Main PostgreSQL database connection
 host = "localhost"
 port = 5432
 username = "lysand"
-password = "lysand"
+password = "mycoolpassword"
 database = "lysand"
 
 [redis.queue]
@@ -19,12 +13,13 @@ host = "localhost"
 port = 6379
 password = ""
 database = 0
+enabled = true
 
 [redis.cache]
 # Redis instance to be used as a timeline cache
 # Optional, can be the same as the queue instance
 host = "localhost"
-port = 6379
+port = 40004
 password = ""
 database = 1
 enabled = false
@@ -32,13 +27,13 @@ enabled = false
 [meilisearch]
 # If Meilisearch is not configured, search will not be enabled
 host = "localhost"
-port = 7700
-api_key = "______________________________"
-enabled = false
+port = 40007
+api_key = ""
+enabled = true
 
 [signups]
 # URL of your Terms of Service
-tos_url = "https://my-site.com/tos"
+tos_url = "https://social.lysand.org/tos"
 # Whether to enable registrations or not
 registration = true
 rules = [
@@ -56,23 +51,20 @@ jwt_key = ""
 # This is an example configuration
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this
-# Set the allowed redirect URIs to (regex) <base_url>/oauth/callback/<name>?.* to allow Lysand to use it
-# The last ?.* is important, as it allows for query parameters to be passed
 [[oidc.providers]]
-# Test with custom Authentik instance
-name = "CPlusPatch ID"
-id = "cpluspatch-id"
-url = "https://id.cpluspatch.com/application/o/lysand-testing/"
-client_id = "______________________________"
-client_secret = "__________________________________"
-icon = "https://cpluspatch.com/images/icons/logo.svg"
+# name = "CPlusPatch ID"
+# id = "cpluspatch-id"
+# url = "https://id.cpluspatch.com/application/o/lysand-testing/"
+# client_id = "XXXX"
+# client_secret = "XXXXX"
+# icon = "https://cpluspatch.com/images/icons/logo.svg"
 
 [http]
 # The full URL Lysand will be reachable by (paths are not supported)
-base_url = "https://lysand.social"
-# Address to bind to
-bind = "0.0.0.0"
-bind_port = "8080"
+base_url = "https://lysand.localhost:9900"
+# Address to bind to (0.0.0.0 is suggested for proxies)
+bind = "lysand.localhost"
+bind_port = 9900
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
@@ -85,8 +77,8 @@ banned_user_agents = [
 [http.tls]
 # If these values are set, Lysand will use these files for TLS
 enabled = false
-key = "config/privatekey.pem"
-cert = "config/certificate.pem"
+key = ""
+cert = ""
 passphrase = ""
 ca = ""
 
@@ -107,20 +99,25 @@ enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
 
+[frontend.settings]
+# Arbitrary key/value pairs to be passed to the frontend
+# This can be used to set up custom themes, etc on supported frontends.
+# theme = "dark"
+
 [frontend.glitch]
 # Enable the Glitch frontend integration
 enabled = false
 # Glitch assets folder
 assets = "glitch"
 # Server the assets were ripped from (and any eventual CDNs)
-server = ["https://glitch.social", "https://static.glitch.social"]
+server = ["https://tech.lgbt"]
 
 [smtp]
 # SMTP server to use for sending emails
 server = "smtp.example.com"
 port = 465
 username = "test@example.com"
-password = "____________"
+password = "password123"
 tls = true
 # Disable all email functions (this will allow people to sign up without verifying
 # their email)
@@ -131,7 +128,7 @@ enabled = false
 # If you need to change this value after setting up your instance, you must move all the files
 # from one backend to the other manually (the CLI will have an option to do this later)
 # TODO: Add CLI command to move files
-backend = "local"
+backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
 # If media backend is "local", this is the folder where the files will be stored
@@ -140,29 +137,19 @@ local_uploads_folder = "uploads"
 
 [media.conversion]
 # Whether to automatically convert images to another format on upload
-convert_images = false
-# Can be: "jxl", "webp", "avif", "png", "jpg", "heif"
+convert_images = true
+# Can be: "image/jxl", "image/webp", "image/avif", "image/png", "image/jpeg", "image/heif", "image/gif"
 # JXL support will likely not work
-convert_to = "webp"
+convert_to = "image/webp"
 
 [s3]
 # Can be left blank if you don't use the S3 media backend
-endpoint = "myhostname.banana.com"
-access_key = "_____________"
-secret_access_key = "_________________"
-region = ""
-bucket_name = "lysand"
-public_url = "https://cdn.test.com"
-
-[email]
-# Sends an email to moderators when a report is received
-send_on_report = false
-# Sends an email to moderators when a user is suspended
-send_on_suspend = false
-# Sends an email to moderators when a user is unsuspended
-send_on_unsuspend = false
-# Verify user emails when signing up (except via OIDC)
-verify_email = false
+# endpoint = ""
+# access_key = "XXXXX"
+# secret_access_key = "XXX"
+# region = ""
+# bucket_name = "lysand"
+# public_url = "https://cdn.example.com"
 
 [validation]
 # Checks user data
@@ -240,36 +227,8 @@ url_scheme_whitelist = [
 # This can easily be spoofed, but if it is spoofed it will appear broken
 # to normal clients until despoofed
 enforce_mime_types = false
-allowed_mime_types = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/heic",
-    "image/heif",
-    "image/webp",
-    "image/avif",
-    "video/webm",
-    "video/mp4",
-    "video/quicktime",
-    "video/ogg",
-    "audio/wave",
-    "audio/wav",
-    "audio/x-wav",
-    "audio/x-pn-wave",
-    "audio/vnd.wave",
-    "audio/ogg",
-    "audio/vorbis",
-    "audio/mpeg",
-    "audio/mp3",
-    "audio/webm",
-    "audio/flac",
-    "audio/aac",
-    "audio/m4a",
-    "audio/x-m4a",
-    "audio/mp4",
-    "audio/3gpp",
-    "video/x-ms-asf",
-]
+# Defaults to all valid MIME types
+# allowed_mime_types = []
 
 [defaults]
 # Default visibility for new notes
@@ -278,10 +237,10 @@ allowed_mime_types = [
 visibility = "public"
 # Default language for new notes (ISO code)
 language = "en"
-# Default avatar, must be a valid URL or "" for a placeholder avatar
-avatar = ""
-# Default header, must be a valid URL or "" for none
-header = ""
+# Default avatar, must be a valid URL or left out for a placeholder avatar
+# avatar = ""
+# Default header, must be a valid URL or left out for none
+# header = ""
 # A style name from https://www.dicebear.com/styles
 placeholder_style = "thumbs"
 
@@ -310,19 +269,20 @@ avatars = []
 
 [instance]
 name = "Lysand"
-description = "A test instance of Lysand"
+description = "A Lysand instance"
 # Path to a file containing a longer description of your instance
 # This will be parsed as Markdown
-extended_description_path = ""
-# URL to your instance logo (jpg files should be renamed to jpeg)
-logo = ""
-# URL to your instance banner (jpg files should be renamed to jpeg)
-banner = ""
+# extended_description_path = "config/description.md"
+# URL to your instance logo
+# logo = ""
+# URL to your instance banner
+# banner = ""
 
 
 [filters]
 # Regex filters for federated and local data
-# Does not apply retroactively (try the CLI for that)
+# Drops data matching the filters
+# Does not apply retroactively to existing data
 
 # Note contents
 note_content = [
@@ -341,7 +301,7 @@ log_requests = false
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
 # Available levels: debug, info, warning, error, critical
-log_level = "info"
+log_level = "debug"
 # For GDPR compliance, you can disable logging of IPs
 log_ip = false
 
@@ -362,5 +322,5 @@ max_coeff = 1.0
 [custom_ratelimits]
 # Add in any API route in this style here
 # Applies before the global ratelimit changes
-"/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
-"/api/v1/timelines/public" = { duration = 60, max = 200 }
+# "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
+# "/api/v1/timelines/public" = { duration = 60, max = 200 }

@@ -5,22 +5,43 @@
  * Fuses both and provides a way to retrieve individual values
  */
 
-import { watchConfig } from "c12";
-import { type Config, defaultConfig } from "./config.type";
+import { watchConfig, loadConfig } from "c12";
+import { configValidator, type Config } from "./config.type";
+import { fromError } from "zod-validation-error";
+import chalk from "chalk";
 
-const { config } = await watchConfig<Config>({
+const { config } = await watchConfig({
     configFile: "./config/config.toml",
-    defaultConfig: defaultConfig,
     overrides:
         (
-            await watchConfig<Config>({
+            await loadConfig<Config>({
                 configFile: "./config/config.internal.toml",
-                defaultConfig: {} as Config,
             })
         ).config ?? undefined,
 });
 
-const exportedConfig = config ?? defaultConfig;
+const parsed = await configValidator.safeParseAsync(config);
+
+if (!parsed.success) {
+    console.log(
+        `${chalk.bgRed.white(
+            " CRITICAL ",
+        )} There was an error parsing the config file at ${chalk.bold(
+            "./config/config.toml",
+        )}. Please fix the file and try again.`,
+    );
+    console.log(
+        `${chalk.bgRed.white(
+            " CRITICAL ",
+        )} Follow the installation intructions and get a sample config file from the repository if needed.`,
+    );
+    console.log(
+        `${chalk.bgRed.white(" CRITICAL ")} ${fromError(parsed.error).message}`,
+    );
+    process.exit(1);
+}
+
+const exportedConfig = parsed.data;
 
 export { exportedConfig as config };
 export type { Config };

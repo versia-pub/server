@@ -31,8 +31,8 @@ export const applyConfig = (routeMeta: APIRouteMetadata) => {
     newMeta.ratelimits.duration *= config.ratelimits.duration_coeff;
     newMeta.ratelimits.max *= config.ratelimits.max_coeff;
 
-    if (config.custom_ratelimits[routeMeta.route]) {
-        newMeta.ratelimits = config.custom_ratelimits[routeMeta.route];
+    if (config.ratelimits.custom[routeMeta.route]) {
+        newMeta.ratelimits = config.ratelimits.custom[routeMeta.route];
     }
 
     return newMeta;

@@ -8,6 +8,7 @@
         "build",
         "api",
         "cli",
-        "federation"
+        "federation",
+        "config"
     ]
 }

@@ -365,8 +365,8 @@ export class User {
                             : await Bun.password.hash(data.password),
                     email: data.email,
                     note: data.bio ?? "",
-                    avatar: data.avatar ?? config.defaults.avatar,
-                    header: data.header ?? config.defaults.avatar,
+                    avatar: data.avatar ?? config.defaults.avatar ?? "",
+                    header: data.header ?? config.defaults.avatar ?? "",
                     isAdmin: data.admin ?? false,
                     publicKey: keys.public_key,
                     fields: [],
@@ -399,7 +399,7 @@ export class User {
      * @returns The raw URL for the user's header
      */
     getHeaderUrl(config: Config) {
-        if (!this.user.header) return config.defaults.header;
+        if (!this.user.header) return config.defaults.header || "";
         return this.user.header;
     }
 
