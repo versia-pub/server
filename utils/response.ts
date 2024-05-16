@@ -72,7 +72,7 @@ export const redirect = (url: string | URL, status = 302) => {
     });
 };
 
-export const proxyUrl = (url: string | null) => {
+export const proxyUrl = (url: string | null = null) => {
     const urlAsBase64Url = Buffer.from(url || "").toString("base64url");
     return url
         ? new URL(

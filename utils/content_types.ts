@@ -22,7 +22,7 @@ export const getBestContentType = (
 };
 
 export const urlToContentFormat = (
-    url: string,
+    url?: string,
 ): typeof EntityValidator.$ContentFormat | null => {
     if (!url) return null;
     if (url.startsWith("https://api.dicebear.com/")) {

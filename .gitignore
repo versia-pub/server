@@ -182,3 +182,4 @@ glitch-dev
 *.pem
 oclif.manifest.json
 .direnv/
+tsconfig.tsbuildinfo

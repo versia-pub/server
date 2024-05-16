@@ -36,7 +36,8 @@
         "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs,glitch,glitch-dev --exclude-ext sql,log,pem",
         "wc": "find server database *.ts docs packages types utils drizzle tests -type f -print0 | wc -m --files0-from=-",
         "cli": "bun run cli/index.ts",
-        "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'"
+        "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'",
+        "check": "bunx tsc -p ."
     },
     "trustedDependencies": [
         "@biomejs/biome",
@@ -87,7 +88,7 @@
         "drizzle-kit": "^0.21.1",
         "oclif": "^4.10.4",
         "ts-prune": "^0.10.3",
-        "typescript": "latest"
+        "typescript": "^5.4.5"
     },
     "peerDependencies": {
         "typescript": "^5.3.2"

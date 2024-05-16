@@ -26,7 +26,7 @@ export default (app: Hono) =>
         let lastModified = new Date(2024, 0, 0);
 
         const extended_description_file = Bun.file(
-            config.instance.extended_description_path,
+            config.instance.extended_description_path || "",
         );
 
         if (await extended_description_file.exists()) {

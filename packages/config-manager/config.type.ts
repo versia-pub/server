@@ -90,7 +90,7 @@ export const configValidator = z.object({
                 }),
             )
             .default([]),
-        jwt_key: z.string().min(3).includes(";").default("").optional(),
+        jwt_key: z.string().min(3).includes(";").default(""),
     }),
     http: z.object({
         base_url: z.string().min(1).default("http://lysand.social"),
@@ -217,7 +217,14 @@ export const configValidator = z.object({
             bucket_name: z.string().min(1).default("lysand"),
             public_url: z.string().min(1).url(),
         })
-        .optional(),
+        .default({
+            endpoint: "",
+            access_key: "",
+            secret_access_key: "",
+            region: undefined,
+            bucket_name: "lysand",
+            public_url: "",
+        }),
     validation: z
         .object({
             max_displayname_size: z.number().int().default(50),
