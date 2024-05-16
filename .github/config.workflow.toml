@@ -73,7 +73,7 @@ convert_images = false
 # JXL support will likely not work
 convert_to = "webp"
 
-[s3]
+# [s3]
 # Can be left blank if you don't use the S3 media backend
 # endpoint = "https://s3-us-west-2.amazonaws.com"
 # access_key = ""
