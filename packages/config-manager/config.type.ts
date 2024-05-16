@@ -210,12 +210,12 @@ export const configValidator = z.object({
         }),
     s3: z
         .object({
-            endpoint: z.string().min(1),
-            access_key: z.string().min(1),
-            secret_access_key: z.string().min(1),
+            endpoint: z.string(),
+            access_key: z.string(),
+            secret_access_key: z.string(),
             region: z.string().optional(),
-            bucket_name: z.string().min(1).default("lysand"),
-            public_url: z.string().min(1).url(),
+            bucket_name: z.string().default("lysand"),
+            public_url: z.string().url(),
         })
         .default({
             endpoint: "",
@@ -223,7 +223,7 @@ export const configValidator = z.object({
             secret_access_key: "",
             region: undefined,
             bucket_name: "lysand",
-            public_url: "",
+            public_url: "https://cdn.example.com",
         }),
     validation: z
         .object({
