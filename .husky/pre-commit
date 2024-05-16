@@ -1,2 +1,3 @@
+bun install
 bun lint --apply
 bun check
