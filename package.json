@@ -87,7 +87,6 @@
         "@types/qs": "^6.9.15",
         "bun-types": "latest",
         "drizzle-kit": "^0.21.1",
-        "husky": "^9.0.11",
         "oclif": "^4.10.4",
         "ts-prune": "^0.10.3",
         "typescript": "^5.4.5"
@@ -96,6 +95,7 @@
         "typescript": "^5.3.2"
     },
     "dependencies": {
+        "husky": "^9.0.11",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
         "@hono/zod-validator": "^0.2.1",
         "@inquirer/confirm": "^3.1.6",
