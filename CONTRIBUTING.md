@@ -12,7 +12,6 @@ Lysand is built using the following technologies:
 - [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but faster and with more features
 - [PostgreSQL](https://www.postgresql.org/) - A relational database
   - [`pg_uuidv7`](https://github.com/fboulnois/pg_uuidv7) - A PostgreSQL extension that provides a UUIDv7 data type
-- [Nuxt](https://nuxt.com/) - A Vue.js framework, used for the frontend
 - [Docker](https://www.docker.com/) - A containerization platform, used for development and deployment
 - [Sharp](https://sharp.pixelplumbing.com/) - An image processing library, used for fast image resizing and converting
 - [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript
@@ -51,15 +50,6 @@ bun dev
 
 If your port number is lower than 1024, you may need to run the command as root.
 
-### Running the FE
-
-To start the frontend server, run:
-```sh
-bun fe:dev
-```
-
-This should be run in a separate process as the server.
-
 ## Running tests
 
 To run the tests, run:
@@ -74,17 +64,17 @@ The tests are located in the `tests/` directory and follow a Jest-like syntax. T
 We use [Biome](https://biomejs.dev) to enforce a consistent code style. To check if your code is compliant, run:
 
 ```sh
-bunx @biomejs/biome check .
+bun lint
 ```
 
 To automatically fix the issues, run:
 ```sh
-bunx @biomejs/biome check . --apply
+bun lint --apply
 ```
 
 You can also install the Biome Visual Studio Code extension and have it format your code automatically on save.
 
-### ESLint rules
+### TypeScript
 
 Linting should not be ignored, except if they are false positives, in which case you can use a comment to disable the rule for the line or the file. If you need to disable a rule, please add a comment explaining why.
 
@@ -92,7 +82,7 @@ TypeScript errors should be ignored with `// @ts-expect-error` comments, as well
 
 ### Commit messages
 
-We use [Conventional Commits](https://www.conventionalcommits.org) for our commit messages. This allows us to automatically generate the changelog and the version number.
+We use [Conventional Commits](https://www.conventionalcommits.org) for our commit messages. This allows us to automatically generate the changelog and the version number, while also making it easier to understand what changes were made in each commit.
 
 ### Pull requests
 
