@@ -5,10 +5,10 @@
  * Fuses both and provides a way to retrieve individual values
  */
 
-import { watchConfig, loadConfig } from "c12";
-import { configValidator, type Config } from "./config.type";
-import { fromError } from "zod-validation-error";
+import { loadConfig, watchConfig } from "c12";
 import chalk from "chalk";
+import { fromError } from "zod-validation-error";
+import { type Config, configValidator } from "./config.type";
 
 const { config } = await watchConfig({
     configFile: "./config/config.toml",

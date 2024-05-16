@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { types as mimeTypes } from "mime-types";
+import { z } from "zod";
 
 export enum MediaBackendType {
     LOCAL = "local",
@@ -69,7 +69,7 @@ export const configValidator = z.object({
             .min(1)
             .max(2 ** 16 - 1)
             .default(7700),
-        api_key: z.string().min(1),
+        api_key: z.string(),
         enabled: z.boolean().default(false),
     }),
     signups: z.object({
@@ -104,19 +104,34 @@ export const configValidator = z.object({
         // Not using .ip() because we allow CIDR ranges and wildcards and such
         banned_ips: z.array(z.string()).default([]),
         banned_user_agents: z.array(z.string()).default([]),
-        tls: z.object({
-            enabled: z.boolean().default(false),
-            key: z.string(),
-            cert: z.string(),
-            passphrase: z.string().optional(),
-            ca: z.string().optional(),
-        }),
-        bait: z.object({
-            enabled: z.boolean().default(false),
-            send_file: z.string().optional(),
-            bait_ips: z.array(z.string()).default([]),
-            bait_user_agents: z.array(z.string()).default([]),
-        }),
+        tls: z
+            .object({
+                enabled: z.boolean().default(false),
+                key: z.string(),
+                cert: z.string(),
+                passphrase: z.string().optional(),
+                ca: z.string().optional(),
+            })
+            .default({
+                enabled: false,
+                key: "",
+                cert: "",
+                passphrase: "",
+                ca: "",
+            }),
+        bait: z
+            .object({
+                enabled: z.boolean().default(false),
+                send_file: z.string().optional(),
+                bait_ips: z.array(z.string()).default([]),
+                bait_user_agents: z.array(z.string()).default([]),
+            })
+            .default({
+                enabled: false,
+                send_file: "",
+                bait_ips: [],
+                bait_user_agents: [],
+            }),
     }),
     frontend: z
         .object({
@@ -425,9 +440,13 @@ export const configValidator = z.object({
                 .default("info"),
             log_ip: z.boolean().default(false),
             log_filters: z.boolean().default(true),
-            storage: z.object({
-                requests: z.string().default("logs/requests.log"),
-            }),
+            storage: z
+                .object({
+                    requests: z.string().default("logs/requests.log"),
+                })
+                .default({
+                    requests: "logs/requests.log",
+                }),
         })
         .default({
             log_requests: false,

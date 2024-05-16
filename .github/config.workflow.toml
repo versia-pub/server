@@ -44,7 +44,7 @@ jwt_key = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl;MCow
 [http]
 base_url = "http://0.0.0.0:8080"
 bind = "0.0.0.0"
-bind_port = "8080"
+bind_port = 8080
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
@@ -75,23 +75,12 @@ convert_to = "webp"
 
 [s3]
 # Can be left blank if you don't use the S3 media backend
-endpoint = "https://s3-us-west-2.amazonaws.com"
-access_key = ""
-secret_access_key = ""
-region = "us-west-2"
-bucket_name = "lysand"
-public_url = "https://cdn.example.com"
-
-[email]
-# Sends an email to moderators when a report is received
-# NOT IMPLEMENTED
-send_on_report = false
-# Sends an email to moderators when a user is suspended
-# NOT IMPLEMENTED
-send_on_suspend = false
-# Sends an email to moderators when a user is unsuspended
-# NOT IMPLEMENTED
-send_on_unsuspend = false
+# endpoint = "https://s3-us-west-2.amazonaws.com"
+# access_key = ""
+# secret_access_key = ""
+# region = "us-west-2"
+# bucket_name = "lysand"
+# public_url = "https://cdn.example.com"
 
 [validation]
 # Self explanatory
@@ -200,9 +189,9 @@ visibility = "public"
 # Default language for new notes
 language = "en"
 # Default avatar, must be a valid URL or ""
-avatar = ""
+# avatar = ""
 # Default header, must be a valid URL or ""
-header = ""
+# header = ""
 
 [activitypub]
 # Use ActivityPub Tombstones instead of deleting objects
@@ -241,9 +230,9 @@ authorized_fetch = false
 name = "Lysand"
 description = "A test instance of Lysand"
 # URL to your instance logo (jpg files should be renamed to jpeg)
-logo = ""
+# logo = ""
 # URL to your instance banner (jpg files should be renamed to jpeg)
-banner = ""
+# banner = ""
 
 
 [filters]
