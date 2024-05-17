@@ -80,7 +80,7 @@ export default (app: Hono) =>
                 user_count: userCount,
             },
             thumbnail: proxyUrl(config.instance.logo),
-            banner: proxyUrl(config.instance.banner) ?? "",
+            banner: proxyUrl(config.instance.banner),
             title: config.instance.name,
             uri: config.http.base_url,
             urls: {
@@ -88,79 +88,25 @@ export default (app: Hono) =>
             },
             version: "4.3.0-alpha.3+glitch",
             lysand_version: version,
-            pleroma: {
-                metadata: {
-                    account_activation_required: false,
-                    features: [
-                        "pleroma_api",
-                        "akkoma_api",
-                        "mastodon_api",
-                        // "mastodon_api_streaming",
-                        // "polls",
-                        // "v2_suggestions",
-                        // "pleroma_explicit_addressing",
-                        // "shareable_emoji_packs",
-                        // "multifetch",
-                        // "pleroma:api/v1/notifications:include_types_filter",
-                        "quote_posting",
-                        "editing",
-                        // "bubble_timeline",
-                        // "relay",
-                        // "pleroma_emoji_reactions",
-                        // "exposable_reactions",
-                        // "profile_directory",
-                        "custom_emoji_reactions",
-                        // "pleroma:get:main/ostatus",
-                    ],
-                    federation: {
-                        enabled: true,
-                        exclusions: false,
-                        mrf_policies: [],
-                        mrf_simple: {
-                            accept: [],
-                            avatar_removal: [],
-                            background_removal: [],
-                            banner_removal: [],
-                            federated_timeline_removal: [],
-                            followers_only: [],
-                            media_nsfw: [],
-                            media_removal: [],
-                            reject: [],
-                            reject_deletes: [],
-                            report_removal: [],
-                        },
-                        mrf_simple_info: {
-                            media_nsfw: {},
-                            reject: {},
-                        },
-                        quarantined_instances: [],
-                        quarantined_instances_info: {
-                            quarantined_instances: {},
-                        },
-                    },
-                    fields_limits: {
-                        max_fields: config.validation.max_field_count,
-                        max_remote_fields: 9999,
-                        name_length: config.validation.max_field_name_size,
-                        value_length: config.validation.max_field_value_size,
-                    },
-                    post_formats: [
-                        "text/plain",
-                        "text/html",
-                        "text/markdown",
-                        "text/x.misskeymarkdown",
-                    ],
-                    privileged_staff: false,
-                },
-                stats: {
-                    mau: monthlyActiveUsers,
-                },
-                vapid_public_key: "",
+            sso: {
+                forced: false,
+                providers: config.oidc.providers.map((p) => ({
+                    name: p.name,
+                    icon: p.icon,
+                    id: p.id,
+                })),
             },
             contact_account: contactAccount?.toAPI() || undefined,
         } satisfies APIInstance & {
-            banner: string;
+            banner: string | null;
             lysand_version: string;
-            pleroma: object;
+            sso: {
+                forced: boolean;
+                providers: {
+                    id: string;
+                    name: string;
+                    icon?: string;
+                }[];
+            };
         });
     });

@@ -23,13 +23,13 @@ export const meta = applyConfig({
         duration: 60,
         max: 20,
     },
-    route: "/oauth/authorize-external",
+    route: "/oauth/sso",
 });
 
 export const schemas = {
     query: z.object({
         issuer: z.string(),
-        clientId: z.string().optional(),
+        client_id: z.string().optional(),
     }),
 };
 
@@ -57,10 +57,10 @@ export default (app: Hono) =>
         zValidator("query", schemas.query, handleZodError),
         async (context) => {
             // This is the Lysand client's client_id, not the external OAuth provider's client_id
-            const { issuer: issuerId, clientId } = context.req.valid("query");
+            const { issuer: issuerId, client_id } = context.req.valid("query");
             const body = await context.req.query();
 
-            if (!clientId || clientId === "undefined") {
+            if (!client_id || client_id === "undefined") {
                 return returnError(
                     body,
                     "invalid_request",
@@ -90,7 +90,7 @@ export default (app: Hono) =>
 
             const application = await db.query.Applications.findFirst({
                 where: (application, { eq }) =>
-                    eq(application.clientId, clientId),
+                    eq(application.clientId, client_id),
             });
 
             if (!application) {

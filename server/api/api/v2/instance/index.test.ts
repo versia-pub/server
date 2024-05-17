@@ -27,6 +27,7 @@ describe(meta.route, () => {
             "registrations",
             "contact",
             "rules",
+            "sso",
         ]);
     });
 });

@@ -86,7 +86,7 @@ beforeAll(async () => {
             body: new URLSearchParams({
                 status: `@${users[0].getUser().username} test mention`,
                 visibility: "direct",
-                federate: "false",
+                local_only: "true",
             }),
         }),
     );

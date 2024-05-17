@@ -64,7 +64,7 @@ describe(meta.route, () => {
                 },
                 body: new URLSearchParams({
                     status: "a".repeat(config.validation.max_note_size + 1),
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -82,7 +82,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world!",
                     visibility: "invalid",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -100,7 +100,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world!",
                     scheduled_at: "invalid",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -118,7 +118,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world!",
                     in_reply_to_id: "invalid",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -136,7 +136,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world!",
                     quote_id: "invalid",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -154,7 +154,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world!",
                     "media_ids[]": "invalid",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -171,7 +171,7 @@ describe(meta.route, () => {
                 },
                 body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -196,7 +196,7 @@ describe(meta.route, () => {
                 body: JSON.stringify({
                     status: "Hello, world!",
                     visibility: "unlisted",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -219,7 +219,7 @@ describe(meta.route, () => {
                 },
                 body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -235,7 +235,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world again!",
                     in_reply_to_id: object.id,
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -258,7 +258,7 @@ describe(meta.route, () => {
                 },
                 body: new URLSearchParams({
                     status: "Hello, world!",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -274,7 +274,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Hello, world again!",
                     quote_id: object.id,
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -300,7 +300,7 @@ describe(meta.route, () => {
                 },
                 body: new URLSearchParams({
                     status: "Hello, :test:!",
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );
@@ -327,7 +327,7 @@ describe(meta.route, () => {
                     },
                     body: new URLSearchParams({
                         status: `Hello, @${users[1].getUser().username}!`,
-                        federate: "false",
+                        local_only: "true",
                     }),
                 }),
             );
@@ -358,7 +358,7 @@ describe(meta.route, () => {
                         status: `Hello, @${users[1].getUser().username}@${
                             new URL(config.http.base_url).host
                         }!`,
-                        federate: "false",
+                        local_only: "true",
                     }),
                 }),
             );
@@ -389,7 +389,7 @@ describe(meta.route, () => {
                     },
                     body: new URLSearchParams({
                         status: "Hi! <script>alert('Hello, world!');</script>",
-                        federate: "false",
+                        local_only: "true",
                     }),
                 }),
             );
@@ -417,7 +417,7 @@ describe(meta.route, () => {
                         status: "Hello, world!",
                         spoiler_text:
                             "uwu <script>alert('Hello, world!');</script>",
-                        federate: "false",
+                        local_only: "true",
                     }),
                 }),
             );
@@ -443,7 +443,7 @@ describe(meta.route, () => {
                     },
                     body: new URLSearchParams({
                         status: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
-                        federate: "false",
+                        local_only: "true",
                     }),
                 }),
             );

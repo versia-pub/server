@@ -100,5 +100,13 @@ export default (app: Hono) =>
                 text: rule,
                 hint: "",
             })),
+            sso: {
+                forced: false,
+                providers: config.oidc.providers.map((p) => ({
+                    name: p.name,
+                    icon: p.icon,
+                    id: p.id,
+                })),
+            },
         });
     });

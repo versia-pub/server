@@ -102,7 +102,7 @@ describe(meta.route, () => {
                 body: new URLSearchParams({
                     status: "Reply",
                     in_reply_to_id: timeline[0].id,
-                    federate: "false",
+                    local_only: "true",
                 }),
             }),
         );

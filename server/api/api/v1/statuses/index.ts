@@ -74,13 +74,8 @@ export const schemas = {
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
             .or(z.boolean())
-            .optional(),
-        federate: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
             .optional()
-            .default("true"),
+            .default(false),
     }),
 };
 
@@ -107,7 +102,7 @@ export default (app: Hono) =>
                 spoiler_text,
                 visibility,
                 content_type,
-                federate,
+                local_only,
             } = context.req.valid("form");
 
             // Validate status
@@ -199,7 +194,7 @@ export default (app: Hono) =>
                 return errorResponse("Failed to create status", 500);
             }
 
-            if (federate) {
+            if (!local_only) {
                 await federateNote(newNote);
             }
 

@@ -1,27 +1,15 @@
 import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError } from "@api";
-import { oauthRedirectUri } from "@constants";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse, response } from "@response";
+import { errorResponse, response } from "@response";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
-import {
-    authorizationCodeGrantRequest,
-    discoveryRequest,
-    expectNoState,
-    getValidatedIdTokenClaims,
-    isOAuth2Error,
-    processAuthorizationCodeOpenIDResponse,
-    processDiscoveryResponse,
-    processUserInfoResponse,
-    userInfoRequest,
-    validateAuthResponse,
-} from "oauth4webapi";
 import { z } from "zod";
 import { TokenType } from "~database/entities/Token";
 import { db } from "~drizzle/db";
-import { OpenIdAccounts, Tokens } from "~drizzle/schema";
+import { Tokens } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
+import { OAuthManager } from "~packages/database-interface/oauth";
 import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -33,12 +21,12 @@ export const meta = applyConfig({
         duration: 60,
         max: 20,
     },
-    route: "/oauth/callback/:issuer",
+    route: "/oauth/sso/:issuer/callback",
 });
 
 export const schemas = {
     query: z.object({
-        clientId: z.string().optional(),
+        client_id: z.string().optional(),
         flow: z.string(),
         link: z
             .string()
@@ -68,6 +56,11 @@ const returnError = (query: object, error: string, description: string) => {
     });
 };
 
+/**
+ * OAuth Callback endpoint
+ * After the user has authenticated to an external OpenID provider,
+ * they are redirected here to complete the OAuth flow and get a code
+ */
 export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
@@ -82,151 +75,30 @@ export default (app: Hono) =>
             const { issuer: issuerParam } = context.req.valid("param");
             const { flow: flowId, user_id, link } = context.req.valid("query");
 
-            const flow = await db.query.OpenIdLoginFlows.findFirst({
-                where: (flow, { eq }) => eq(flow.id, flowId),
-                with: {
-                    application: true,
-                },
-            });
+            const manager = new OAuthManager(issuerParam);
 
-            if (!flow) {
-                return returnError(
-                    context.req.query(),
-                    "invalid_request",
-                    "Invalid flow",
-                );
-            }
-
-            const issuer = config.oidc.providers.find(
-                (provider) => provider.id === issuerParam,
-            );
-
-            if (!issuer) {
-                return returnError(
-                    context.req.query(),
-                    "invalid_request",
-                    "Invalid issuer",
-                );
-            }
-
-            const issuerUrl = new URL(issuer.url);
-
-            const authServer = await discoveryRequest(issuerUrl, {
-                algorithm: "oidc",
-            }).then((res) => processDiscoveryResponse(issuerUrl, res));
-
-            const parameters = validateAuthResponse(
-                authServer,
-                {
-                    client_id: issuer.client_id,
-                    client_secret: issuer.client_secret,
-                },
+            const userInfo = await manager.automaticOidcFlow(
+                flowId,
                 currentUrl,
-                // Whether to expect state or not
-                expectNoState,
+                (error, message, app) =>
+                    returnError(
+                        {
+                            ...manager.processOAuth2Error(app),
+                            link: link ? "true" : undefined,
+                        },
+                        error,
+                        message,
+                    ),
             );
 
-            if (isOAuth2Error(parameters)) {
-                return returnError(
-                    {
-                        redirect_uri: flow.application?.redirectUri,
-                        client_id: flow.application?.clientId,
-                        response_type: "code",
-                        scope: flow.application?.scopes,
-                    },
-                    parameters.error,
-                    parameters.error_description || "",
-                );
-            }
+            if (userInfo instanceof Response) return userInfo;
 
-            const oidcResponse = await authorizationCodeGrantRequest(
-                authServer,
-                {
-                    client_id: issuer.client_id,
-                    client_secret: issuer.client_secret,
-                },
-                parameters,
-                `${oauthRedirectUri(issuerParam)}?flow=${flow.id}`,
-                flow.codeVerifier,
-            );
+            const { sub } = userInfo.userInfo;
+            const flow = userInfo.flow;
 
-            const result = await processAuthorizationCodeOpenIDResponse(
-                authServer,
-                {
-                    client_id: issuer.client_id,
-                    client_secret: issuer.client_secret,
-                },
-                oidcResponse,
-            );
-
-            if (isOAuth2Error(result)) {
-                return returnError(
-                    {
-                        redirect_uri: flow.application?.redirectUri,
-                        client_id: flow.application?.clientId,
-                        response_type: "code",
-                        scope: flow.application?.scopes,
-                    },
-                    result.error,
-                    result.error_description || "",
-                );
-            }
-
-            const { access_token } = result;
-
-            const claims = getValidatedIdTokenClaims(result);
-            const { sub } = claims;
-
-            // Validate `sub`
-            // Later, we'll use this to automatically set the user's data
-            await userInfoRequest(
-                authServer,
-                {
-                    client_id: issuer.client_id,
-                    client_secret: issuer.client_secret,
-                },
-                access_token,
-            ).then((res) =>
-                processUserInfoResponse(
-                    authServer,
-                    {
-                        client_id: issuer.client_id,
-                        client_secret: issuer.client_secret,
-                    },
-                    sub,
-                    res,
-                ),
-            );
-
+            // If linking account
             if (link && user_id) {
-                // Check if userId is equal to application.clientId
-                if (!flow.application?.clientId.startsWith(user_id)) {
-                    return errorResponse("User ID does not match application");
-                }
-
-                // Check if account is already linked
-                const account = await db.query.OpenIdAccounts.findFirst({
-                    where: (account, { eq, and }) =>
-                        and(
-                            eq(account.serverId, sub),
-                            eq(account.issuerId, issuer.id),
-                        ),
-                });
-
-                if (account) {
-                    return errorResponse("Account already linked");
-                }
-
-                // Link the account
-                await db.insert(OpenIdAccounts).values({
-                    serverId: sub,
-                    issuerId: issuer.id,
-                    userId: user_id,
-                });
-
-                return response(null, 302, {
-                    Location: config.http.base_url,
-                });
+                return await manager.linkUser(user_id, userInfo);
             }
 
             const userId = (
@@ -234,7 +106,7 @@ export default (app: Hono) =>
                     where: (account, { eq, and }) =>
                         and(
                             eq(account.serverId, sub),
-                            eq(account.issuerId, issuer.id),
+                            eq(account.issuerId, manager.issuer.id),
                         ),
                 })
             )?.userId;
