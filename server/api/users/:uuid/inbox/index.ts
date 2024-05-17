@@ -26,7 +26,7 @@ export const meta = applyConfig({
         duration: 60,
         max: 500,
     },
-    route: "/users/:uuid",
+    route: "/users/:uuid/inbox",
 });
 
 export const schemas = {
