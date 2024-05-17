@@ -435,11 +435,13 @@ export const configValidator = z.object({
                     enabled: z.boolean().default(false),
                     software: z.enum(["lysand-ap"]).or(z.string()),
                     allowed_ips: z.array(z.string().trim()).default([]),
+                    token: z.string().default(""),
                 })
                 .default({
                     enabled: false,
                     software: "lysand-ap",
                     allowed_ips: [],
+                    token: "",
                 }),
         })
         .default({
@@ -460,6 +462,7 @@ export const configValidator = z.object({
                 enabled: false,
                 software: "lysand-ap",
                 allowed_ips: [],
+                token: "",
             },
         }),
     instance: z

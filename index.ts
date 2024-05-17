@@ -118,7 +118,8 @@ app.use(agentBans);
 app.use(bait);
 app.use(logger);
 app.use(boundaryCheck);
-app.use(urlCheck);
+// Disabled as federation now checks for this
+// app.use(urlCheck);
 
 // Inject own filesystem router
 for (const [route, path] of Object.entries(routes)) {

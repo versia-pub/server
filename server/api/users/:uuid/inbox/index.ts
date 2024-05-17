@@ -110,12 +110,22 @@ export default (app: Hono) =>
                     sender.getUser().publicKey,
                 );
 
+                // If base_url uses https and request uses http, rewrite request to use https
+                // This fixes reverse proxy errors
+                const reqUrl = new URL(context.req.url);
+                if (
+                    new URL(config.http.base_url).protocol === "https:" &&
+                    reqUrl.protocol === "http:"
+                ) {
+                    reqUrl.protocol = "https:";
+                }
+
                 const isValid = await validator
                     .validate(
                         signature,
                         new Date(Date.parse(date)),
                         context.req.method as HttpVerb,
-                        new URL(context.req.url),
+                        reqUrl,
                         await context.req.text(),
                     )
                     .catch((e) => {
