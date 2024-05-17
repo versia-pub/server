@@ -47,6 +47,12 @@ rules = [
 # Run Lysand with this value missing to generate a new key
 jwt_key = ""
 
+# If enabled, Lysand will require users to log in with an OAuth provider
+# Note that registering with an OAuth provider is not supported yet, so
+# this will lock out users who are not already registered or who do not have
+# an OAuth account linked
+forced = false
+
 # Delete this section if you don't want to use custom OAuth providers
 # This is an example configuration
 # The provider MUST support OpenID Connect with .well-known discovery
@@ -98,6 +104,15 @@ bait_user_agents = ["curl", "wget"]
 enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
+
+[frontend.routes]
+# Special routes for your frontend, below are the defaults for Lysand-FE
+# Can be set to a route already used by Lysand, as long as it is on a different HTTP method
+# e.g. /oauth/authorize is a POST-only route, so you can serve a GET route at /oauth/authorize
+# home = "/"
+# login = "/oauth/authorize"
+# consent = "/oauth/consent"
+# register = "/register"
 
 [frontend.settings]
 # Arbitrary key/value pairs to be passed to the frontend

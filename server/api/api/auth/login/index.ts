@@ -74,7 +74,7 @@ const returnError = (query: object, error: string, description: string) => {
 
     return response(null, 302, {
         Location: new URL(
-            `/oauth/authorize?${searchParams.toString()}`,
+            `${config.frontend.routes.login}?${searchParams.toString()}`,
             config.http.base_url,
         ).toString(),
     });
@@ -87,6 +87,14 @@ export default (app: Hono) =>
         zValidator("form", schemas.form, handleZodError),
         zValidator("query", schemas.query, handleZodError),
         async (context) => {
+            if (config.oidc.forced) {
+                return returnError(
+                    context.req.query(),
+                    "invalid_request",
+                    "Logging in with a password is disabled by the administrator. Please use a valid OpenID Connect provider.",
+                );
+            }
+
             const { identifier, password } = context.req.valid("form");
             const { client_id } = context.req.valid("query");
 
@@ -160,7 +168,9 @@ export default (app: Hono) =>
             // Redirect to OAuth authorize with JWT
             return response(null, 302, {
                 Location: new URL(
-                    `/oauth/consent?${searchParams.toString()}`,
+                    `${
+                        config.frontend.routes.consent
+                    }?${searchParams.toString()}`,
                     config.http.base_url,
                 ).toString(),
                 // Set cookie with JWT

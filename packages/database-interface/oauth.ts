@@ -152,7 +152,9 @@ export class OAuthManager {
         // Check if userId is equal to application.clientId
         if ((flow.application?.clientId ?? "") !== userId) {
             return response(null, 302, {
-                Location: `${config.http.base_url}?${new URLSearchParams({
+                Location: `${config.http.base_url}${
+                    config.frontend.routes.home
+                }?${new URLSearchParams({
                     oidc_account_linking_error: "Account linking error",
                     oidc_account_linking_error_message: `User ID does not match application client ID (${userId} != ${flow.application?.clientId})`,
                 })}`,
@@ -170,7 +172,9 @@ export class OAuthManager {
 
         if (account) {
             return response(null, 302, {
-                Location: `${config.http.base_url}?${new URLSearchParams({
+                Location: `${config.http.base_url}${
+                    config.frontend.routes.home
+                }?${new URLSearchParams({
                     oidc_account_linking_error: "Account already linked",
                     oidc_account_linking_error_message:
                         "This account has already been linked to this OpenID Connect provider.",
@@ -186,7 +190,9 @@ export class OAuthManager {
         });
 
         return response(null, 302, {
-            Location: `${config.http.base_url}?${new URLSearchParams({
+            Location: `${config.http.base_url}${
+                config.frontend.routes.home
+            }?${new URLSearchParams({
                 oidc_account_linked: "true",
             })}`,
         });

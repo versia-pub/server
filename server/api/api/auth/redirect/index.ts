@@ -5,6 +5,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~drizzle/db";
 import { Applications, Tokens } from "~drizzle/schema";
+import { config } from "~packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -40,7 +41,7 @@ export default (app: Hono) =>
 
             const redirectToLogin = (error: string) =>
                 Response.redirect(
-                    `/oauth/authorize?${new URLSearchParams({
+                    `${config.frontend.routes.login}?${new URLSearchParams({
                         ...context.req.query,
                         error: encodeURIComponent(error),
                     }).toString()}`,

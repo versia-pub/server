@@ -4,7 +4,9 @@ The frontend API contains endpoints that are useful for frontend developers. The
 
 ## Routes that the Frontend must implement
 
-- `GET /oauth/authorize` (NOT `POST`): Identifier/password login form, submits to [`POST /api/auth/login`](#sign-in) or OpenID Connect flow.
+These routes can be set to a different URL in the Lysand configuration, at `frontend.routes`. The frontend must implement these routes for the instance to function correctly.
+
+- `GET /oauth/authorize`: (NOT `POST`): Identifier/password login form, submits to [`POST /api/auth/login`](#sign-in) or OpenID Connect flow.
 - `GET /oauth/consent`: Consent form, submits to [`POST /api/auth/redirect`](#consent)
 
 ## Get Frontend Configuration

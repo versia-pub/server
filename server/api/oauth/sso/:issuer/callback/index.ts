@@ -52,7 +52,7 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error_description", description);
 
     return response(null, 302, {
-        Location: `/oauth/authorize?${searchParams.toString()}`,
+        Location: `${config.frontend.routes.login}?${searchParams.toString()}`,
     });
 };
 
@@ -177,7 +177,7 @@ export default (app: Hono) =>
             // Redirect back to application
             return response(null, 302, {
                 Location: new URL(
-                    `/oauth/consent?${new URLSearchParams({
+                    `${config.frontend.routes.consent}?${new URLSearchParams({
                         redirect_uri: flow.application.redirectUri,
                         code,
                         client_id: flow.application.clientId,

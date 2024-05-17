@@ -6,6 +6,20 @@ export enum MediaBackendType {
     S3 = "s3",
 }
 
+const zUrlPath = z
+    .string()
+    .trim()
+    .min(1)
+    // Remove trailing slashes, but keep the root slash
+    .transform((arg) => (arg === "/" ? arg : arg.replace(/\/$/, "")));
+
+const zUrl = z
+    .string()
+    .trim()
+    .min(1)
+    .refine((arg) => URL.canParse(arg), "Invalid url")
+    .transform((arg) => arg.replace(/\/$/, ""));
+
 export const configValidator = z.object({
     database: z.object({
         host: z.string().min(1).default("localhost"),
@@ -78,6 +92,7 @@ export const configValidator = z.object({
         rules: z.array(z.string()).default([]),
     }),
     oidc: z.object({
+        forced: z.boolean().default(false),
         providers: z
             .array(
                 z.object({
@@ -136,17 +151,30 @@ export const configValidator = z.object({
     frontend: z
         .object({
             enabled: z.boolean().default(true),
-            url: z.string().min(1).url().default("http://localhost:3000"),
+            url: zUrl.default("http://localhost:3000"),
             glitch: z
                 .object({
                     enabled: z.boolean().default(false),
                     assets: z.string().min(1).default("glitch"),
-                    server: z.array(z.string().url().min(1)).default([]),
+                    server: z.array(zUrl).default([]),
                 })
                 .default({
                     enabled: false,
                     assets: "glitch",
                     server: [],
+                }),
+            routes: z
+                .object({
+                    home: zUrlPath.default("/"),
+                    login: zUrlPath.default("/oauth/authorize"),
+                    consent: zUrlPath.default("/oauth/consent"),
+                    register: zUrlPath.default("/register"),
+                })
+                .default({
+                    home: "/",
+                    login: "/oauth/authorize",
+                    consent: "/oauth/consent",
+                    register: "/register",
                 }),
             settings: z.record(z.string(), z.any()).default({}),
         })
@@ -215,7 +243,7 @@ export const configValidator = z.object({
             secret_access_key: z.string(),
             region: z.string().optional(),
             bucket_name: z.string().default("lysand"),
-            public_url: z.string().url(),
+            public_url: zUrl,
         })
         .default({
             endpoint: "",
@@ -374,8 +402,8 @@ export const configValidator = z.object({
         .object({
             visibility: z.string().default("public"),
             language: z.string().default("en"),
-            avatar: z.string().url().optional(),
-            header: z.string().url().optional(),
+            avatar: zUrl.optional(),
+            header: zUrl.optional(),
             placeholder_style: z.string().default("thumbs"),
         })
         .default({
@@ -387,18 +415,18 @@ export const configValidator = z.object({
         }),
     federation: z
         .object({
-            blocked: z.array(z.string().url()).default([]),
-            followers_only: z.array(z.string().url()).default([]),
+            blocked: z.array(zUrl).default([]),
+            followers_only: z.array(zUrl).default([]),
             discard: z.object({
-                reports: z.array(z.string().url()).default([]),
-                deletes: z.array(z.string().url()).default([]),
-                updates: z.array(z.string().url()).default([]),
-                media: z.array(z.string().url()).default([]),
-                follows: z.array(z.string().url()).default([]),
-                likes: z.array(z.string().url()).default([]),
-                reactions: z.array(z.string().url()).default([]),
-                banners: z.array(z.string().url()).default([]),
-                avatars: z.array(z.string().url()).default([]),
+                reports: z.array(zUrl).default([]),
+                deletes: z.array(zUrl).default([]),
+                updates: z.array(zUrl).default([]),
+                media: z.array(zUrl).default([]),
+                follows: z.array(zUrl).default([]),
+                likes: z.array(zUrl).default([]),
+                reactions: z.array(zUrl).default([]),
+                banners: z.array(zUrl).default([]),
+                avatars: z.array(zUrl).default([]),
             }),
         })
         .default({
@@ -421,8 +449,8 @@ export const configValidator = z.object({
             name: z.string().min(1).default("Lysand"),
             description: z.string().min(1).default("A Lysand instance"),
             extended_description_path: z.string().optional(),
-            logo: z.string().url().optional(),
-            banner: z.string().url().optional(),
+            logo: zUrl.optional(),
+            banner: zUrl.optional(),
         })
         .default({
             name: "Lysand",

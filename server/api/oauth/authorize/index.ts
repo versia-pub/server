@@ -72,7 +72,7 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error_description", description);
 
     return response(null, 302, {
-        Location: `/oauth/authorize?${searchParams.toString()}`,
+        Location: `${config.frontend.routes.login}?${searchParams.toString()}`,
     });
 };
 

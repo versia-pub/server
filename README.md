@@ -24,7 +24,7 @@
 
 ## Features
 
-- [x] Federation (partial)
+- [x] Fully compliant Lysand 3.0 federation (partial)
 - [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files
@@ -32,11 +32,21 @@
 - [x] Configurable defaults
 - [x] Full regex-based filters for posts, users and media
 - [x] Custom emoji support
+- [x] Users can upload their own emojis for themselves
 - [x] Automatic image conversion to WebP or other formats
 - [x] Scripting-compatible CLI with JSON and CSV outputs
 - [x] Markdown support just about everywhere: posts, profiles, profile fields, etc. Code blocks, tables, and more are supported.
 - [ ] Moderation tools
-- [x] Mastodon API support (partial)
+- [x] Fully compliant Mastodon API support (partial)
+- [x] Glitch-SOC extensions
+- [x] Full compatibility with many clients such as Megalodon
+- [x] Ability to use your own frontends
+- [x] Non-monolithic architecture, microservices can be hosted in infinite amounts on infinite servers
+- [x] Ability to use all your threads
+- [x] Support for SSO providers (and disabling password logins)
+- [x] Fully written in TypeScript and thoroughly unit tested
+- [x] Automatic signed container builds for easy deployment
+- [x] Docker and Podman supported
 
 ## Screenshots
 
@@ -174,7 +184,7 @@ Working endpoints are:
 - [ ] `/oauth/revoke`
 - Admin API  
 
-### Main work to do
+### Main work to do for API
 
 - [ ] Announcements
 - [ ] Polls
@@ -189,6 +199,10 @@ Working endpoints are:
 - [ ] Translation
 - [ ] Reports
 - [ ] Admin API
+
+## Lysand API
+
+For Lysand's own custom API, please see the [API documentation](docs/api/index.md).
 
 ## License
 
