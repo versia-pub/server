@@ -10,4 +10,15 @@ For administrators. Please read [the documentation](./emojis.md).
 
 ## Moderation API
 
-For administrators. Not implemented. Please read [the documentation](./moderation.md).
+> [!WARNING]
+> **Not implemented.**
+
+For administrators. Please read [the documentation](./moderation.md).
+
+## Frontend API
+
+For frontend developers. Please read [the documentation](./frontend.md).
+
+## Mastodon API Extensions
+
+Extra attributes have been added to some Mastodon API routes. Those changes are [documented in this document](./mastodon.md)
