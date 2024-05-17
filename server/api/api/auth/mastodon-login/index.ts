@@ -64,6 +64,20 @@ export default (app: Hono) =>
             )
                 return redirectToLogin("Invalid email or password");
 
+            if (user.getUser().passwordResetToken) {
+                return response(null, 302, {
+                    Location: new URL(
+                        `${
+                            config.frontend.routes.password_reset
+                        }?${new URLSearchParams({
+                            token: user.getUser().passwordResetToken ?? "",
+                            login_reset: "true",
+                        }).toString()}`,
+                        config.http.base_url,
+                    ).toString(),
+                });
+            }
+
             const code = randomBytes(32).toString("hex");
             const accessToken = randomBytes(64).toString("base64url");
 

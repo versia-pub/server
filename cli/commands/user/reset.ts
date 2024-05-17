@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { renderUnicodeCompact } from "uqr";
 import { UserFinderCommand } from "~cli/classes";
 import { formatArray } from "~cli/utils/format";
+import { config } from "~packages/config-manager";
 
 export default class UserReset extends UserFinderCommand<typeof UserReset> {
     static override description = "Resets users' passwords";
@@ -84,30 +85,41 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
             }
         }
 
-        const link = "https://example.com/reset-password";
+        for (const user of users) {
+            const token = await user.resetPassword();
 
-        !flags.raw &&
+            const link = new URL(
+                `${config.frontend.routes.password_reset}?${new URLSearchParams(
+                    {
+                        token,
+                    },
+                ).toString()}`,
+                config.http.base_url,
+            ).toString();
+
+            !flags.raw &&
+                this.log(
+                    `${chalk.green("✓")} Password reset for ${
+                        users.length
+                    } user(s)`,
+                );
+
             this.log(
-                `${chalk.green("✓")} Password reset for ${
-                    users.length
-                } user(s)`,
+                flags.raw
+                    ? link
+                    : `\nPassword reset link for ${chalk.bold(
+                          "@testuser",
+                      )}: ${chalk.underline(chalk.blue(link))}\n`,
             );
 
-        this.log(
-            flags.raw
-                ? link
-                : `\nPassword reset link for ${chalk.bold(
-                      "@testuser",
-                  )}: ${chalk.underline(chalk.blue(link))}\n`,
-        );
+            const qrcode = renderUnicodeCompact(link, {
+                border: 2,
+            });
 
-        const qrcode = renderUnicodeCompact(link, {
-            border: 2,
-        });
+            // Pad all lines of QR code with spaces
 
-        // Pad all lines of QR code with spaces
-
-        !flags.raw && this.log(`  ${qrcode.replaceAll("\n", "\n  ")}`);
+            !flags.raw && this.log(`  ${qrcode.replaceAll("\n", "\n  ")}`);
+        }
 
         this.exit(0);
     }

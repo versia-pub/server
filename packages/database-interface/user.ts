@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { idValidator } from "@api";
 import { getBestContentType, urlToContentFormat } from "@content_types";
 import type { EntityValidator } from "@lysand-org/federation";
@@ -148,6 +149,16 @@ export class User {
         return (
             await db.delete(Users).where(eq(Users.id, this.id)).returning()
         )[0];
+    }
+
+    async resetPassword() {
+        const resetToken = await randomBytes(32).toString("hex");
+
+        await this.update({
+            passwordResetToken: resetToken,
+        });
+
+        return resetToken;
     }
 
     async pin(note: Note) {

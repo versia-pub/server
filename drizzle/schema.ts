@@ -352,6 +352,8 @@ export const Users = pgTable(
         email: text("email"),
         note: text("note").default("").notNull(),
         isAdmin: boolean("is_admin").default(false).notNull(),
+        emailVerificationToken: text("email_verification_token"),
+        passwordResetToken: text("password_reset_token"),
         fields: jsonb("fields").notNull().default("[]").$type<
             {
                 key: typeof EntityValidator.$ContentFormat;

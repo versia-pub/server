@@ -118,6 +118,7 @@ url = "http://localhost:3000"
 # login = "/oauth/authorize"
 # consent = "/oauth/consent"
 # register = "/register"
+# password_reset = "/oauth/reset"
 
 [frontend.settings]
 # Arbitrary key/value pairs to be passed to the frontend

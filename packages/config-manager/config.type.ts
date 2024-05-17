@@ -169,12 +169,14 @@ export const configValidator = z.object({
                     login: zUrlPath.default("/oauth/authorize"),
                     consent: zUrlPath.default("/oauth/consent"),
                     register: zUrlPath.default("/register"),
+                    password_reset: zUrlPath.default("/oauth/reset"),
                 })
                 .default({
                     home: "/",
                     login: "/oauth/authorize",
                     consent: "/oauth/consent",
                     register: "/register",
+                    password_reset: "/oauth/reset",
                 }),
             settings: z.record(z.string(), z.any()).default({}),
         })

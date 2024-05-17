@@ -1,6 +1,6 @@
 import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, response } from "@response";
+import { errorResponse, redirect, response } from "@response";
 import { eq, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
@@ -118,6 +118,20 @@ export default (app: Hono) =>
                     "invalid_grant",
                     "Invalid identifier or password",
                 );
+
+            if (user.getUser().passwordResetToken) {
+                return response(null, 302, {
+                    Location: new URL(
+                        `${
+                            config.frontend.routes.password_reset
+                        }?${new URLSearchParams({
+                            token: user.getUser().passwordResetToken ?? "",
+                            login_reset: "true",
+                        }).toString()}`,
+                        config.http.base_url,
+                    ).toString(),
+                });
+            }
 
             // Try and import the key
             const privateKey = await crypto.subtle.importKey(
