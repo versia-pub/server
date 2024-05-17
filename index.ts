@@ -11,6 +11,7 @@ import { bait } from "~middlewares/bait";
 import { boundaryCheck } from "~middlewares/boundary-check";
 import { ipBans } from "~middlewares/ip-bans";
 import { logger } from "~middlewares/logger";
+import { urlCheck } from "~middlewares/url-check";
 import { Note } from "~packages/database-interface/note";
 import { handleGlitchRequest } from "~packages/glitch-server/main";
 import { routes } from "~routes";
@@ -117,6 +118,7 @@ app.use(agentBans);
 app.use(bait);
 app.use(logger);
 app.use(boundaryCheck);
+app.use(urlCheck);
 
 // Inject own filesystem router
 for (const [route, path] of Object.entries(routes)) {

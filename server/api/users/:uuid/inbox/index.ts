@@ -1,7 +1,11 @@
 import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
-import { EntityValidator, SignatureValidator } from "@lysand-org/federation";
+import {
+    EntityValidator,
+    type HttpVerb,
+    SignatureValidator,
+} from "@lysand-org/federation";
 import { errorResponse, jsonResponse, response } from "@response";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
@@ -53,6 +57,8 @@ export default (app: Hono) =>
         async (context) => {
             const { uuid } = context.req.valid("param");
             const { signature, date } = context.req.valid("header");
+            const body: typeof EntityValidator.$Entity =
+                await context.req.valid("json");
 
             const user = await User.fromId(uuid);
 
@@ -105,7 +111,13 @@ export default (app: Hono) =>
                 );
 
                 const isValid = await validator
-                    .validate(context.req.raw)
+                    .validate(
+                        signature,
+                        new Date(Date.parse(date)),
+                        context.req.method as HttpVerb,
+                        new URL(context.req.url),
+                        await context.req.text(),
+                    )
                     .catch((e) => {
                         dualLogger.logError(
                             LogLevel.ERROR,
@@ -121,8 +133,6 @@ export default (app: Hono) =>
             }
 
             const validator = new EntityValidator();
-            const body: typeof EntityValidator.$Entity =
-                await context.req.valid("json");
 
             try {
                 // Add sent data to database

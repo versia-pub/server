@@ -35,4 +35,29 @@ describe("API Tests", () => {
         expect(data.error).toBeString();
         expect(data.error).toContain("https://stackoverflow.com");
     });
+
+    test("try sending a request with a different origin", async () => {
+        if (new URL(config.http.base_url).protocol === "http:") {
+            return;
+        }
+
+        const response = await sendTestRequest(
+            new Request(
+                new URL(
+                    "/api/v1/instance",
+                    base_url.replace("https://", "http://"),
+                ),
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(response.status).toBe(400);
+        const data = await response.json();
+        expect(data.error).toContain("does not match base URL");
+    });
 });
