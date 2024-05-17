@@ -1,6 +1,6 @@
 import { applyConfig, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
-import { jsonResponse } from "@response";
+import { errorResponse, jsonResponse } from "@response";
 import { and, count, eq, inArray } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import { db } from "~drizzle/db";
 import { Notes } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { Note } from "~packages/database-interface/note";
+import { User } from "~packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -30,6 +31,8 @@ export const schemas = {
     }),
 };
 
+const NOTES_PER_PAGE = 20;
+
 export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
@@ -39,8 +42,13 @@ export default (app: Hono) =>
         async (context) => {
             const { uuid } = context.req.valid("param");
 
+            const author = await User.fromId(uuid);
+
+            if (!author) {
+                return errorResponse("User not found", 404);
+            }
+
             const pageNumber = Number(context.req.valid("query").page) || 1;
-            const host = new URL(config.http.base_url).hostname;
 
             const notes = await Note.manyFromSql(
                 and(
@@ -48,33 +56,40 @@ export default (app: Hono) =>
                     inArray(Notes.visibility, ["public", "unlisted"]),
                 ),
                 undefined,
-                20,
-                20 * (pageNumber - 1),
+                NOTES_PER_PAGE,
+                NOTES_PER_PAGE * (pageNumber - 1),
             );
 
-            const totalNotes = await db
-                .select({
-                    count: count(),
-                })
-                .from(Notes)
-                .where(
-                    and(
-                        eq(Notes.authorId, uuid),
-                        inArray(Notes.visibility, ["public", "unlisted"]),
-                    ),
-                );
+            const totalNotes = (
+                await db
+                    .select({
+                        count: count(),
+                    })
+                    .from(Notes)
+                    .where(
+                        and(
+                            eq(Notes.authorId, uuid),
+                            inArray(Notes.visibility, ["public", "unlisted"]),
+                        ),
+                    )
+            )[0].count;
 
             return jsonResponse({
-                first: `${host}/users/${uuid}/outbox?page=1`,
-                last: `${host}/users/${uuid}/outbox?page=1`,
-                total_items: totalNotes,
-                // Server actor
-                author: new URL(
-                    "/users/actor",
+                first: new URL(
+                    `/users/${uuid}/outbox?page=1`,
                     config.http.base_url,
                 ).toString(),
+                last: new URL(
+                    `/users/${uuid}/outbox?page=${Math.ceil(
+                        totalNotes / NOTES_PER_PAGE,
+                    )}`,
+                    config.http.base_url,
+                ).toString(),
+                total_items: totalNotes,
+                // Server actor
+                author: author.getUri(),
                 next:
-                    notes.length === 20
+                    notes.length === NOTES_PER_PAGE
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber + 1}`,
                               config.http.base_url,

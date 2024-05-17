@@ -5,7 +5,8 @@ import {
 import { config } from "config-manager";
 import type { User } from "~packages/database-interface/user";
 
-export const localObjectURI = (id: string) => `/objects/${id}`;
+export const localObjectURI = (id: string) =>
+    new URL(`/objects/${id}`, config.http.base_url).toString();
 
 export const objectToInboxRequest = async (
     object: typeof EntityValidator.$Entity,

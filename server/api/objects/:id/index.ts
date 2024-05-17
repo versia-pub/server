@@ -24,7 +24,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     param: z.object({
-        uuid: z.string().uuid(),
+        id: z.string().uuid(),
     }),
 };
 
@@ -34,14 +34,14 @@ export default (app: Hono) =>
         meta.route,
         zValidator("param", schemas.param, handleZodError),
         async (context) => {
-            const { uuid } = context.req.valid("param");
+            const { id } = context.req.valid("param");
 
             let foundObject: Note | Like | null = null;
             let apiObject: typeof EntityValidator.$Entity | null = null;
 
             foundObject = await Note.fromSql(
                 and(
-                    eq(Notes.id, uuid),
+                    eq(Notes.id, id),
                     inArray(Notes.visibility, ["public", "unlisted"]),
                 ),
             );
@@ -52,7 +52,7 @@ export default (app: Hono) =>
                     (await db.query.Likes.findFirst({
                         where: (like, { eq, and }) =>
                             and(
-                                eq(like.id, uuid),
+                                eq(like.id, id),
                                 sql`EXISTS (SELECT 1 FROM statuses WHERE statuses.id = ${like.likedId} AND statuses.visibility IN ('public', 'unlisted'))`,
                             ),
                     })) ?? null;

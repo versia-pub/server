@@ -268,11 +268,7 @@ export class User {
                         inbox: data.inbox,
                         outbox: data.outbox,
                     },
-                    fields:
-                        data.fields?.map((f) => ({
-                            key: f.name,
-                            value: f.value,
-                        })) ?? [],
+                    fields: data.fields ?? [],
                     updatedAt: new Date(data.created_at).toISOString(),
                     instanceId: instance.id,
                     avatar: data.avatar
@@ -537,10 +533,7 @@ export class User {
             avatar: urlToContentFormat(this.getAvatarUrl(config)) ?? undefined,
             header: urlToContentFormat(this.getHeaderUrl(config)) ?? undefined,
             display_name: user.displayName,
-            fields: user.fields.map((f) => ({
-                name: f.key,
-                value: f.value,
-            })),
+            fields: user.fields,
             public_key: {
                 actor: new URL(
                     `/users/${user.id}`,
