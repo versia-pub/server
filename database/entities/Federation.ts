@@ -1,4 +1,7 @@
-import type { EntityValidator } from "@lysand-org/federation";
+import {
+    type EntityValidator,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import { config } from "config-manager";
 import type { User } from "~packages/database-interface/user";
 
@@ -25,40 +28,18 @@ export const objectToInboxRequest = async (
         ["sign"],
     );
 
-    const digest = await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(JSON.stringify(object)),
-    );
+    const ctor = new SignatureConstructor(privateKey, author.getUri());
 
     const userInbox = new URL(userToSendTo.getUser().endpoints?.inbox ?? "");
 
-    const date = new Date();
-
-    const signature = await crypto.subtle.sign(
-        "Ed25519",
-        privateKey,
-        new TextEncoder().encode(
-            `(request-target): post ${userInbox.pathname}\n` +
-                `host: ${userInbox.host}\n` +
-                `date: ${date.toISOString()}\n` +
-                `digest: SHA-256=${Buffer.from(new Uint8Array(digest)).toString(
-                    "base64",
-                )}\n`,
-        ),
-    );
-
-    const signatureBase64 = Buffer.from(new Uint8Array(signature)).toString(
-        "base64",
-    );
-
-    return new Request(userInbox, {
+    const request = new Request(userInbox, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Date: date.toISOString(),
             Origin: new URL(config.http.base_url).host,
-            Signature: `keyId="${author.getUri()}",algorithm="ed25519",headers="(request-target) host date digest",signature="${signatureBase64}"`,
         },
         body: JSON.stringify(object),
     });
+
+    return await ctor.sign(request);
 };
