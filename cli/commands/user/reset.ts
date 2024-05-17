@@ -108,7 +108,7 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
                 flags.raw
                     ? link
                     : `\nPassword reset link for ${chalk.bold(
-                          "@testuser",
+                          `@${user.getUser().username}`,
                       )}: ${chalk.underline(chalk.blue(link))}\n`,
             );
 
