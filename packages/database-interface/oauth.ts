@@ -150,7 +150,7 @@ export class OAuthManager {
         const { flow, userInfo } = oidcFlowData;
 
         // Check if userId is equal to application.clientId
-        if ((flow.application?.clientId ?? "") !== userId) {
+        if (!flow.application?.clientId.startsWith(userId)) {
             return response(null, 302, {
                 Location: `${config.http.base_url}${
                     config.frontend.routes.home

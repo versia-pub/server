@@ -30,6 +30,9 @@ export const schemas = {
     query: z.object({
         issuer: z.string(),
         client_id: z.string().optional(),
+        redirect_uri: z.string().url().optional(),
+        scope: z.string().optional(),
+        response_type: z.enum(["code"]).optional(),
     }),
 };
 
