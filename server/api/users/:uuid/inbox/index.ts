@@ -37,6 +37,7 @@ export const schemas = {
         signature: z.string(),
         date: z.string(),
     }),
+    body: z.any(),
 };
 
 export default (app: Hono) =>
@@ -45,6 +46,7 @@ export default (app: Hono) =>
         meta.route,
         zValidator("param", schemas.param, handleZodError),
         zValidator("header", schemas.header, handleZodError),
+        zValidator("json", schemas.body, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
             const { signature, date } = context.req.valid("header");
@@ -101,7 +103,7 @@ export default (app: Hono) =>
 
             const validator = new EntityValidator();
             const body: typeof EntityValidator.$Entity =
-                await context.req.json();
+                await context.req.valid("json");
 
             try {
                 // Add sent data to database
