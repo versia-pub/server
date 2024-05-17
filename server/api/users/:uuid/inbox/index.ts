@@ -3,8 +3,10 @@ import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
 import { EntityValidator, SignatureValidator } from "@lysand-org/federation";
 import { errorResponse, jsonResponse, response } from "@response";
+import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
+import { matches } from "ip-matching";
 import { z } from "zod";
 import { isValidationError } from "zod-validation-error";
 import { resolveNote } from "~database/entities/Status";
@@ -14,6 +16,7 @@ import {
 } from "~database/entities/User";
 import { db } from "~drizzle/db";
 import { Notifications, Relationships } from "~drizzle/schema";
+import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
 import { LogLevel } from "~packages/log-manager";
 
@@ -57,11 +60,27 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
+            // @ts-expect-error IP attribute is not in types
+            const request_ip = context.env?.ip as
+                | SocketAddress
+                | undefined
+                | null;
+
+            let checkSignature = true;
+
+            if (request_ip?.address && config.federation.bridge.enabled) {
+                for (const ip of config.federation.bridge.allowed_ips) {
+                    if (matches(ip, request_ip?.address)) {
+                        checkSignature = false;
+                        break;
+                    }
+                }
+            }
+
             // Verify request signature
             // TODO: Check if instance is defederated
             // TODO: Reverse DNS lookup with Origin header
-            // biome-ignore lint/correctness/noConstantCondition: Temporary
-            if (true) {
+            if (checkSignature) {
                 if (!signature) {
                     return errorResponse("Missing Signature header", 400);
                 }

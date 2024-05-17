@@ -288,6 +288,16 @@ reactions = []
 banners = []
 avatars = []
 
+# For bridge software, such as lysand-org/activitypub
+# Bridges must be hosted separately from the main Lysand process
+[federation.bridge]
+enabled = false
+# Only lysand-ap exists for now
+software = "lysand-ap"
+# WARNING: These IPs will have signature checks disabled.
+# Only use the bridge software if you trust it.
+allowed_ips = ["192.168.1.0/24"]
+
 [instance]
 name = "Lysand"
 description = "A Lysand instance"

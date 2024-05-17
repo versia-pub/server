@@ -430,6 +430,17 @@ export const configValidator = z.object({
                 banners: z.array(zUrl).default([]),
                 avatars: z.array(zUrl).default([]),
             }),
+            bridge: z
+                .object({
+                    enabled: z.boolean().default(false),
+                    software: z.enum(["lysand-ap"]).or(z.string()),
+                    allowed_ips: z.array(z.string().trim()).default([]),
+                })
+                .default({
+                    enabled: false,
+                    software: "lysand-ap",
+                    allowed_ips: [],
+                }),
         })
         .default({
             blocked: [],
@@ -444,6 +455,11 @@ export const configValidator = z.object({
                 reactions: [],
                 banners: [],
                 avatars: [],
+            },
+            bridge: {
+                enabled: false,
+                software: "lysand-ap",
+                allowed_ips: [],
             },
         }),
     instance: z
