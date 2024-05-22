@@ -76,6 +76,7 @@
     },
     "devDependencies": {
         "@biomejs/biome": "^1.7.0",
+        "@types/bun": "^1.1.2",
         "@types/cli-progress": "^3.11.5",
         "@types/cli-table": "^0.3.4",
         "@types/html-to-text": "^9.0.4",
@@ -85,7 +86,6 @@
         "@types/mime-types": "^2.1.4",
         "@types/pg": "^8.11.5",
         "@types/qs": "^6.9.15",
-        "bun-types": "latest",
         "drizzle-kit": "^0.21.1",
         "oclif": "^4.10.4",
         "ts-prune": "^0.10.3",
