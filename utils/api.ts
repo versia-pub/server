@@ -24,7 +24,7 @@ import { fromZodError } from "zod-validation-error";
 import type { Application } from "~database/entities/Application";
 import { getFromHeader } from "~database/entities/User";
 import type { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
+import { LogLevel, LogManager } from "~packages/log-manager";
 import type { APIRouteMetadata, HttpVerb } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMetadata) => {
@@ -302,7 +302,10 @@ export const jsonOrForm = () => {
     });
 };
 
-export const debugRequest = async (req: Request, logger = consoleLogger) => {
+export const debugRequest = async (
+    req: Request,
+    logger = new LogManager(Bun.stdout),
+) => {
     const body = await req.clone().text();
     await logger.log(
         LogLevel.DEBUG,

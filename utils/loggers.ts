@@ -10,6 +10,7 @@ const isEntry = true;
 export const logger = new LogManager(
     isEntry ? requests_log : Bun.file("/dev/null"),
 );
+
 export const consoleLogger = new LogManager(
     isEntry ? Bun.stdout : Bun.file("/dev/null"),
     !noColors,

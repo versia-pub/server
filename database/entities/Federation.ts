@@ -1,3 +1,4 @@
+import { debugRequest } from "@api";
 import {
     type EntityValidator,
     SignatureConstructor,
@@ -42,5 +43,12 @@ export const objectToInboxRequest = async (
         body: JSON.stringify(object),
     });
 
-    return await ctor.sign(request);
+    const signed = await ctor.sign(request);
+
+    if (config.debug.federation) {
+        // Debug request
+        await debugRequest(signed);
+    }
+
+    return signed;
 };
