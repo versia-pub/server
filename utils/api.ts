@@ -1,4 +1,6 @@
+import { consoleLogger } from "@loggers";
 import { errorResponse } from "@response";
+import chalk from "chalk";
 import { config } from "config-manager";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
@@ -22,6 +24,7 @@ import { fromZodError } from "zod-validation-error";
 import type { Application } from "~database/entities/Application";
 import { getFromHeader } from "~database/entities/User";
 import type { User } from "~packages/database-interface/user";
+import { LogLevel } from "~packages/log-manager";
 import type { APIRouteMetadata, HttpVerb } from "~types/api";
 
 export const applyConfig = (routeMeta: APIRouteMetadata) => {
@@ -297,4 +300,22 @@ export const jsonOrForm = () => {
         }
         await next();
     });
+};
+
+export const debugRequest = async (req: Request, logger = consoleLogger) => {
+    const body = await req.clone().text();
+    await logger.log(
+        LogLevel.DEBUG,
+        "RequestDebugger",
+        `\n${chalk.green(req.method)} ${chalk.blue(req.url)}\n${chalk.bold(
+            "Hash",
+        )}: ${chalk.yellow(
+            new Bun.SHA256().update(body).digest("hex"),
+        )}\n${chalk.bold("Headers")}:\n${Array.from(req.headers.entries())
+            .map(
+                ([key, value]) =>
+                    ` - ${chalk.cyan(key)}: ${chalk.white(value)}`,
+            )
+            .join("\n")}\n${chalk.bold("Body")}: ${chalk.gray(body)}`,
+    );
 };

@@ -1,4 +1,4 @@
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, debugRequest, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
 import {
@@ -43,6 +43,8 @@ export const schemas = {
     header: z.object({
         signature: z.string(),
         date: z.string(),
+        authorization: z.string().optional(),
+        origin: z.string(),
     }),
     body: z.any(),
 };
@@ -56,9 +58,33 @@ export default (app: Hono) =>
         zValidator("json", schemas.body, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
-            const { signature, date } = context.req.valid("header");
+            const { signature, date, authorization, origin } =
+                context.req.valid("header");
+
+            // Check if Origin is defederated
+            if (
+                config.federation.blocked.find(
+                    (blocked) =>
+                        blocked.includes(origin) || origin.includes(blocked),
+                )
+            ) {
+                // Pretend to accept request
+                return response(null, 201);
+            }
+
             const body: typeof EntityValidator.$Entity =
                 await context.req.valid("json");
+
+            if (config.debug.federation) {
+                // Debug request
+                await debugRequest(
+                    new Request(context.req.url, {
+                        method: context.req.method,
+                        headers: context.req.raw.headers,
+                        body: await context.req.text(),
+                    }),
+                );
+            }
 
             const user = await User.fromId(uuid);
 
@@ -74,27 +100,38 @@ export default (app: Hono) =>
 
             let checkSignature = true;
 
-            if (request_ip?.address && config.federation.bridge.enabled) {
-                for (const ip of config.federation.bridge.allowed_ips) {
-                    if (matches(ip, request_ip?.address)) {
-                        checkSignature = false;
-                        break;
+            if (config.federation.bridge.enabled) {
+                const token = authorization?.split("Bearer ")[1];
+                if (token) {
+                    // Request is bridge request
+                    if (token !== config.federation.bridge.token) {
+                        return errorResponse(
+                            "An invalid token was passed in the Authorization header. Please use the correct token, or remove the Authorization header.",
+                            401,
+                        );
+                    }
+
+                    if (request_ip?.address) {
+                        if (config.federation.bridge.allowed_ips.length > 0)
+                            checkSignature = false;
+
+                        for (const ip of config.federation.bridge.allowed_ips) {
+                            if (matches(ip, request_ip?.address)) {
+                                checkSignature = false;
+                                break;
+                            }
+                        }
+                    } else {
+                        return errorResponse(
+                            "Request IP address is not available",
+                            500,
+                        );
                     }
                 }
             }
 
             // Verify request signature
-            // TODO: Check if instance is defederated
-            // TODO: Reverse DNS lookup with Origin header
             if (checkSignature) {
-                if (!signature) {
-                    return errorResponse("Missing Signature header", 400);
-                }
-
-                if (!date) {
-                    return errorResponse("Missing Date header", 400);
-                }
-
                 const keyId = signature
                     .split("keyId=")[1]
                     .split(",")[0]
@@ -177,6 +214,17 @@ export default (app: Hono) =>
                     case "Follow": {
                         const follow = await validator.Follow(body);
 
+                        if (
+                            config.federation.discard.follows.find(
+                                (blocked) =>
+                                    blocked.includes(origin) ||
+                                    origin.includes(blocked),
+                            )
+                        ) {
+                            // Pretend to accept request
+                            return response("Follow request sent", 200);
+                        }
+
                         const account = await User.resolve(follow.author);
 
                         if (!account) {
@@ -220,7 +268,16 @@ export default (app: Hono) =>
                     case "FollowAccept": {
                         const followAccept = await validator.FollowAccept(body);
 
-                        console.log(followAccept);
+                        if (
+                            config.federation.discard.follows.find(
+                                (blocked) =>
+                                    blocked.includes(origin) ||
+                                    origin.includes(blocked),
+                            )
+                        ) {
+                            // Pretend to accept request
+                            return response("Follow request accepted", 200);
+                        }
 
                         const account = await User.resolve(followAccept.author);
 
@@ -254,6 +311,17 @@ export default (app: Hono) =>
                     }
                     case "FollowReject": {
                         const followReject = await validator.FollowReject(body);
+
+                        if (
+                            config.federation.discard.follows.find(
+                                (blocked) =>
+                                    blocked.includes(origin) ||
+                                    origin.includes(blocked),
+                            )
+                        ) {
+                            // Pretend to accept request
+                            return response("Follow request rejected", 200);
+                        }
 
                         const account = await User.resolve(followReject.author);
 

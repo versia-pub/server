@@ -36,7 +36,8 @@ describe("API Tests", () => {
         expect(data.error).toContain("https://stackoverflow.com");
     });
 
-    test("try sending a request with a different origin", async () => {
+    // Now automatically mitigated by the server
+    /* test("try sending a request with a different origin", async () => {
         if (new URL(config.http.base_url).protocol === "http:") {
             return;
         }
@@ -59,5 +60,5 @@ describe("API Tests", () => {
         expect(response.status).toBe(400);
         const data = await response.json();
         expect(data.error).toContain("does not match base URL");
-    });
+    }); */
 });

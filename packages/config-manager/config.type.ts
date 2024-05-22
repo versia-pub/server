@@ -527,6 +527,13 @@ export const configValidator = z.object({
             )
             .default({}),
     }),
+    debug: z
+        .object({
+            federation: z.boolean().default(false),
+        })
+        .default({
+            federation: false,
+        }),
 });
 
 export type Config = z.infer<typeof configValidator>;
