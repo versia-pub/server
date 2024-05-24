@@ -44,7 +44,7 @@ export const objectToInboxRequest = async (
         body: JSON.stringify(object),
     });
 
-    const signed = await ctor.sign(request);
+    const { request: signed, signedString } = await ctor.sign(request);
 
     if (config.debug.federation) {
         // Debug request
@@ -55,6 +55,13 @@ export const objectToInboxRequest = async (
             LogLevel.DEBUG,
             "Inbox.Signature",
             `Sender public key: ${author.getUser().publicKey}`,
+        );
+
+        // Log signed string
+        new LogManager(Bun.stdout).log(
+            LogLevel.DEBUG,
+            "Inbox.Signature",
+            `Signed string:\n${signedString}`,
         );
     }
 
