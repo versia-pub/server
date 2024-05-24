@@ -4,8 +4,6 @@
     "jest.rootPath": ".",
     "conventionalCommits.scopes": [
         "database",
-        "frontend",
-        "build",
         "api",
         "cli",
         "federation",

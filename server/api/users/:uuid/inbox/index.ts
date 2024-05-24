@@ -22,7 +22,7 @@ import { db } from "~drizzle/db";
 import { Notifications, Relationships } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
+import { LogLevel, LogManager } from "~packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -141,6 +141,15 @@ export default (app: Hono) =>
 
                 if (!sender) {
                     return errorResponse("Could not resolve keyId", 400);
+                }
+
+                if (config.debug.federation) {
+                    // Log public key
+                    new LogManager(Bun.stdout).log(
+                        LogLevel.DEBUG,
+                        "Inbox.Signature",
+                        `Sender public key: ${sender.getUser().publicKey}`,
+                    );
                 }
 
                 const validator = await SignatureValidator.fromStringKey(

@@ -5,6 +5,7 @@ import {
 } from "@lysand-org/federation";
 import { config } from "config-manager";
 import type { User } from "~packages/database-interface/user";
+import { LogLevel, LogManager } from "~packages/log-manager";
 
 export const localObjectURI = (id: string) =>
     new URL(`/objects/${id}`, config.http.base_url).toString();
@@ -48,6 +49,13 @@ export const objectToInboxRequest = async (
     if (config.debug.federation) {
         // Debug request
         await debugRequest(signed);
+
+        // Log public key
+        new LogManager(Bun.stdout).log(
+            LogLevel.DEBUG,
+            "Inbox.Signature",
+            `Sender public key: ${author.getUser().publicKey}`,
+        );
     }
 
     return signed;
