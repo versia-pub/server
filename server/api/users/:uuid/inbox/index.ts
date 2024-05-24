@@ -168,14 +168,17 @@ export default (app: Hono) =>
 
                 const isValid = await validator
                     .validate(
-                        signature,
-                        new Date(Date.parse(date)),
-                        context.req.method as HttpVerb,
-                        reqUrl,
-                        await context.req.text(),
+                        new Request(reqUrl, {
+                            method: context.req.method,
+                            headers: {
+                                Signature: signature,
+                                Date: date,
+                            },
+                            body: await context.req.text(),
+                        }),
                     )
                     .catch((e) => {
-                        dualLogger.logError(
+                        new LogManager(Bun.stdout).logError(
                             LogLevel.ERROR,
                             "Inbox.Signature",
                             e as Error,
