@@ -2,7 +2,7 @@
 
 ### Requirements
 
-- The [Bun Runtime](https://bun.sh), version 1.1.9 or later (usage of the latest version is recommended)
+- The [Bun Runtime](https://bun.sh), version 1.1.10 or later (usage of the latest version is recommended)
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 - (Optional if you want search) A working Meiliseach instance
