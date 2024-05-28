@@ -1,0 +1,3 @@
+[submodule "packages/lysand-api"]
+	path = packages/lysand-api
+	url = https://github.com/lysand-org/api.git
