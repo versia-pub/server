@@ -1,14 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import {
-    deleteOldTestUsers,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestUsers, sendTestRequest } from "~tests/utils";
 import type { Notification as APINotification } from "~types/mastodon/notification";
 import { meta } from "./index";
-
-await deleteOldTestUsers();
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let notifications: APINotification[] = [];

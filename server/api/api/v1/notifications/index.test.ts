@@ -1,15 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import {
-    deleteOldTestUsers,
-    getTestStatuses,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
 import type { Notification as APINotification } from "~types/mastodon/notification";
 import { meta } from "./index";
-
-await deleteOldTestUsers();
 
 const getFormData = (object: Record<string, string | number | boolean>) =>
     Object.keys(object).reduce((formData, key) => {

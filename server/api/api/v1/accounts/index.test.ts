@@ -11,12 +11,7 @@ import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~drizzle/db";
 import { Users } from "~drizzle/schema";
-import {
-    deleteOldTestUsers,
-    getTestStatuses,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./index";
 

@@ -1,15 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import {
-    deleteOldTestUsers,
-    getTestStatuses,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
 import type { Status as APIStatus } from "~types/mastodon/status";
 import { meta } from "./statuses";
-
-await deleteOldTestUsers();
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[1])).toReversed();

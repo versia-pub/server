@@ -1,14 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import {
-    deleteOldTestUsers,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestUsers, sendTestRequest } from "~tests/utils";
 import type { Account as APIAccount } from "~types/mastodon/account";
 import { meta } from "./following";
-
-await deleteOldTestUsers();
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 

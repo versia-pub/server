@@ -1,14 +1,7 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import {
-    deleteOldTestUsers,
-    getTestStatuses,
-    getTestUsers,
-    sendTestRequest,
-} from "~tests/utils";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
 import { meta } from "./index";
-
-await deleteOldTestUsers();
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 const timeline = await getTestStatuses(10, users[0]);
