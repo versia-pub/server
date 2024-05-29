@@ -11,7 +11,7 @@ FROM base AS install
 RUN mkdir -p /temp
 COPY . /temp
 WORKDIR /temp
-RUN bun install --frozen-lockfile --production
+RUN bun install --production
 
 FROM base as build
 
