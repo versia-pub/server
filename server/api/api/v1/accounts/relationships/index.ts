@@ -1,14 +1,14 @@
-import { applyConfig, auth, handleZodError, idValidator, qsQuery } from "@api";
+import { applyConfig, auth, handleZodError, idValidator, qsQuery } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import { z } from "zod";
 import {
     createNewRelationship,
     relationshipToAPI,
-} from "~database/entities/Relationship";
-import { db } from "~drizzle/db";
-import { User } from "~packages/database-interface/user";
+} from "~/database/entities/Relationship";
+import { db } from "~/drizzle/db";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

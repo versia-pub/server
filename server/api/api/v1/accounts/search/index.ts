@@ -1,6 +1,6 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { eq, like, not, or, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import {
@@ -16,9 +16,9 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { resolveWebFinger } from "~database/entities/User";
-import { Users } from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
+import { resolveWebFinger } from "~/database/entities/User";
+import { Users } from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

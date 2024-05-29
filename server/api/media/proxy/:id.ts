@@ -1,6 +1,6 @@
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError } from "@/api";
+import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, response } from "@response";
 import type { Hono } from "hono";
 import { z } from "zod";
 

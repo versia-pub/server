@@ -1,7 +1,7 @@
-import { applyConfig } from "@api";
-import { jsonResponse } from "@response";
+import { applyConfig } from "@/api";
+import { jsonResponse } from "@/response";
 import type { Hono } from "hono";
-import manifest from "~package.json";
+import manifest from "~/package.json";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,7 +1,7 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { dualLogger } from "@/loggers";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { dualLogger } from "@loggers";
-import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import {
@@ -16,10 +16,10 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import { resolveWebFinger } from "~database/entities/User";
-import { Users } from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
+import { resolveWebFinger } from "~/database/entities/User";
+import { Users } from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
+import { LogLevel } from "~/packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

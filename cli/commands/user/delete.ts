@@ -2,8 +2,8 @@ import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
 import ora from "ora";
-import { UserFinderCommand } from "~cli/classes";
-import { formatArray } from "~cli/utils/format";
+import { UserFinderCommand } from "~/cli/classes";
+import { formatArray } from "~/cli/utils/format";
 
 export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
     static override description = "Deletes users";

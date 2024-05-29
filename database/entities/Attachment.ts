@@ -1,12 +1,12 @@
+import { proxyUrl } from "@/response";
 import type { EntityValidator } from "@lysand-org/federation";
-import { proxyUrl } from "@response";
 import type { Config } from "config-manager";
 import type { InferSelectModel } from "drizzle-orm";
 import { MediaBackendType } from "media-manager";
-import { db } from "~drizzle/db";
-import { Attachments } from "~drizzle/schema";
-import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
-import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
+import { db } from "~/drizzle/db";
+import { Attachments } from "~/drizzle/schema";
+import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
+import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 
 export type Attachment = InferSelectModel<typeof Attachments>;
 

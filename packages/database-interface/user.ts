@@ -1,9 +1,9 @@
 import { randomBytes } from "node:crypto";
-import { idValidator } from "@api";
-import { getBestContentType, urlToContentFormat } from "@content_types";
+import { idValidator } from "@/api";
+import { getBestContentType, urlToContentFormat } from "@/content_types";
+import { addUserToMeilisearch } from "@/meilisearch";
+import { proxyUrl } from "@/response";
 import type { EntityValidator } from "@lysand-org/federation";
-import { addUserToMeilisearch } from "@meilisearch";
-import { proxyUrl } from "@response";
 import {
     type SQL,
     and,
@@ -20,24 +20,24 @@ import {
     emojiToAPI,
     emojiToLysand,
     fetchEmoji,
-} from "~database/entities/Emoji";
-import { addInstanceIfNotExists } from "~database/entities/Instance";
+} from "~/database/entities/Emoji";
+import { addInstanceIfNotExists } from "~/database/entities/Instance";
 import {
     type UserWithRelations,
     findFirstUser,
     findManyUsers,
-} from "~database/entities/User";
-import { db } from "~drizzle/db";
+} from "~/database/entities/User";
+import { db } from "~/drizzle/db";
 import {
     EmojiToUser,
     NoteToMentions,
     Notes,
     UserToPinnedNotes,
     Users,
-} from "~drizzle/schema";
-import { type Config, config } from "~packages/config-manager";
-import type { Account as APIAccount } from "~types/mastodon/account";
-import type { Mention as APIMention } from "~types/mastodon/mention";
+} from "~/drizzle/schema";
+import { type Config, config } from "~/packages/config-manager";
+import type { Account as APIAccount } from "~/types/mastodon/account";
+import type { Mention as APIMention } from "~/types/mastodon/mention";
 import type { Note } from "./note";
 
 /**

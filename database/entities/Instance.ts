@@ -1,6 +1,6 @@
 import type { EntityValidator } from "@lysand-org/federation";
-import { db } from "~drizzle/db";
-import { Instances } from "~drizzle/schema";
+import { db } from "~/drizzle/db";
+import { Instances } from "~/drizzle/schema";
 
 /**
  * Represents an instance in the database.

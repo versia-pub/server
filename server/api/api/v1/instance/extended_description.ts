@@ -1,10 +1,10 @@
-import { applyConfig, auth } from "@api";
-import { dualLogger } from "@loggers";
-import { jsonResponse } from "@response";
+import { applyConfig, auth } from "@/api";
+import { dualLogger } from "@/loggers";
+import { jsonResponse } from "@/response";
 import type { Hono } from "hono";
-import { getMarkdownRenderer } from "~database/entities/Status";
-import { config } from "~packages/config-manager";
-import { LogLevel } from "~packages/log-manager";
+import { getMarkdownRenderer } from "~/database/entities/Status";
+import { config } from "~/packages/config-manager";
+import { LogLevel } from "~/packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

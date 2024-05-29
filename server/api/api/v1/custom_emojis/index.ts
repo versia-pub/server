@@ -1,8 +1,8 @@
-import { applyConfig, auth } from "@api";
-import { jsonResponse } from "@response";
+import { applyConfig, auth } from "@/api";
+import { jsonResponse } from "@/response";
 import type { Hono } from "hono";
-import { emojiToAPI } from "~database/entities/Emoji";
-import { db } from "~drizzle/db";
+import { emojiToAPI } from "~/database/entities/Emoji";
+import { db } from "~/drizzle/db";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

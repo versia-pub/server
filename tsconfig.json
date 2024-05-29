@@ -22,9 +22,9 @@
         "experimentalDecorators": true,
         "verbatimModuleSyntax": true,
         "paths": {
-            "@*": ["./utils/*"],
-            "~*": ["./*"],
-            "+*": ["./server/api/*"]
+            "@/*": ["./utils/*"],
+            "~/*": ["./*"],
+            "+/*": ["./server/api/*"]
         }
     },
     "include": [

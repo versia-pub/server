@@ -1,7 +1,7 @@
-import { dualLogger } from "@loggers";
+import { dualLogger } from "@/loggers";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const logger = createMiddleware(async (context, next) => {
     const request_ip = context.env?.ip as SocketAddress | undefined | null;

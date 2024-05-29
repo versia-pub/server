@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Notification as APINotification } from "~types/mastodon/notification";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Notification as APINotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const getFormData = (object: Record<string, string | number | boolean>) =>

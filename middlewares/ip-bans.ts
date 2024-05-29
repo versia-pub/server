@@ -1,10 +1,10 @@
-import { logger } from "@loggers";
-import { errorResponse } from "@response";
+import { logger } from "@/loggers";
+import { errorResponse } from "@/response";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
-import { config } from "~packages/config-manager";
-import { LogLevel } from "~packages/log-manager";
+import { config } from "~/packages/config-manager";
+import { LogLevel } from "~/packages/log-manager";
 
 export const ipBans = createMiddleware(async (context, next) => {
     // Check for banned IPs

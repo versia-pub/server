@@ -1,15 +1,15 @@
-import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import { applyConfig, auth, handleZodError, idValidator } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
+import { fetchTimeline } from "@/timelines";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
-import { fetchTimeline } from "@timelines";
 import { sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import {
     findManyNotifications,
     notificationToAPI,
-} from "~database/entities/Notification";
-import type { NotificationWithRelations } from "~database/entities/Notification";
+} from "~/database/entities/Notification";
+import type { NotificationWithRelations } from "~/database/entities/Notification";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,6 +1,6 @@
-import { errorResponse } from "@response";
+import { errorResponse } from "@/response";
 import { createMiddleware } from "hono/factory";
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const urlCheck = createMiddleware(async (context, next) => {
     // Check that request URL matches base_url

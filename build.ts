@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import chalk from "chalk";
 import ora from "ora";
-import { routes } from "~routes";
+import { routes } from "~/routes";
 
 const buildSpinner = ora("Building").start();
 

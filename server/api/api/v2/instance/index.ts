@@ -1,11 +1,11 @@
-import { applyConfig } from "@api";
-import { jsonResponse, proxyUrl } from "@response";
+import { applyConfig } from "@/api";
+import { jsonResponse, proxyUrl } from "@/response";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
-import { Users } from "~drizzle/schema";
-import manifest from "~package.json";
-import { config } from "~packages/config-manager";
-import { User } from "~packages/database-interface/user";
+import { Users } from "~/drizzle/schema";
+import manifest from "~/package.json";
+import { config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

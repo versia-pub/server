@@ -1,5 +1,5 @@
-import { oauthRedirectUri } from "@constants";
-import { errorResponse, response } from "@response";
+import { oauthRedirectUri } from "@/constants";
+import { errorResponse, response } from "@/response";
 import type { InferInsertModel } from "drizzle-orm";
 import {
     type AuthorizationServer,
@@ -14,10 +14,10 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import type { Application } from "~database/entities/Application";
-import { db } from "~drizzle/db";
-import { type Applications, OpenIdAccounts } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
+import type { Application } from "~/database/entities/Application";
+import { db } from "~/drizzle/db";
+import { type Applications, OpenIdAccounts } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
 
 export class OAuthManager {
     public issuer: (typeof config.oidc.providers)[0];

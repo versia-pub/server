@@ -1,6 +1,6 @@
 import os from "node:os";
 import { Flags } from "@oclif/core";
-import { BaseCommand } from "~cli/base";
+import { BaseCommand } from "~/cli/base";
 
 export default class Start extends BaseCommand<typeof Start> {
     static override args = {};

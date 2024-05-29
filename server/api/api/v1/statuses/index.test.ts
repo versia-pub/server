@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
-import { db } from "~drizzle/db";
-import { Emojis } from "~drizzle/schema";
-import { getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { db } from "~/drizzle/db";
+import { Emojis } from "~/drizzle/schema";
+import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);

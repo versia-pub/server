@@ -1,14 +1,14 @@
-import { applyConfig, auth } from "@api";
-import { jsonResponse, proxyUrl } from "@response";
+import { applyConfig, auth } from "@/api";
+import { jsonResponse, proxyUrl } from "@/response";
 import { and, count, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
-import { db } from "~drizzle/db";
-import { Instances, Users } from "~drizzle/schema";
-import manifest from "~package.json";
-import { config } from "~packages/config-manager";
-import { Note } from "~packages/database-interface/note";
-import { User } from "~packages/database-interface/user";
-import type { Instance as APIInstance } from "~types/mastodon/instance";
+import { db } from "~/drizzle/db";
+import { Instances, Users } from "~/drizzle/schema";
+import manifest from "~/package.json";
+import { config } from "~/packages/config-manager";
+import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
+import type { Instance as APIInstance } from "~/types/mastodon/instance";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

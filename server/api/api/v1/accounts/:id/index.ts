@@ -1,9 +1,9 @@
-import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import { applyConfig, auth, handleZodError, idValidator } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { User } from "~packages/database-interface/user";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@api";
-import { oauthRedirectUri } from "@constants";
+import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { oauthRedirectUri } from "@/constants";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import {
     calculatePKCECodeChallenge,
@@ -11,9 +11,9 @@ import {
     processDiscoveryResponse,
 } from "oauth4webapi";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { Applications, OpenIdLoginFlows } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
+import { db } from "~/drizzle/db";
+import { Applications, OpenIdLoginFlows } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],

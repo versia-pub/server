@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { Client } from "pg";
-import { config } from "~/packages/config-manager";
+import { config } from "~//packages/config-manager";
 import * as schema from "./schema";
 
 export const client = new Client({

@@ -1,12 +1,12 @@
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@api";
+import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { Notes, Notifications } from "~drizzle/schema";
-import { Note } from "~packages/database-interface/note";
+import { db } from "~/drizzle/db";
+import { Notes, Notifications } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

@@ -1,7 +1,7 @@
-import { applyConfig } from "@api";
-import { redirect } from "@response";
+import { applyConfig } from "@/api";
+import { redirect } from "@/response";
 import type { Hono } from "hono";
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

@@ -2,9 +2,9 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~packages/config-manager";
-import type { Application as APIApplication } from "~types/mastodon/application";
-import type { Token as APIToken } from "~types/mastodon/token";
+import { config } from "~/packages/config-manager";
+import type { Application as APIApplication } from "~/types/mastodon/application";
+import type { Token as APIToken } from "~/types/mastodon/token";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const base_url = config.http.base_url;

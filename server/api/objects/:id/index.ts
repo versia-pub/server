@@ -1,14 +1,14 @@
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { EntityValidator } from "@lysand-org/federation";
-import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { type Like, likeToLysand } from "~database/entities/Like";
-import { db } from "~drizzle/db";
-import { Notes } from "~drizzle/schema";
-import { Note } from "~packages/database-interface/note";
+import { type Like, likeToLysand } from "~/database/entities/Like";
+import { db } from "~/drizzle/db";
+import { Notes } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

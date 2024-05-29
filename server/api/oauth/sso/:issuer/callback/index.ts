@@ -1,16 +1,16 @@
 import { randomBytes } from "node:crypto";
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError } from "@/api";
+import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, response } from "@response";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { TokenType } from "~database/entities/Token";
-import { db } from "~drizzle/db";
-import { Tokens } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { OAuthManager } from "~packages/database-interface/oauth";
-import { User } from "~packages/database-interface/user";
+import { TokenType } from "~/database/entities/Token";
+import { db } from "~/drizzle/db";
+import { Tokens } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { OAuthManager } from "~/packages/database-interface/oauth";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

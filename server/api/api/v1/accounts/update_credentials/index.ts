@@ -1,7 +1,7 @@
-import { applyConfig, auth, handleZodError, qs } from "@api";
+import { applyConfig, auth, handleZodError, qs } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
+import { sanitizedHtmlStrip } from "@/sanitization";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
-import { sanitizedHtmlStrip } from "@sanitization";
 import { config } from "config-manager";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -10,12 +10,12 @@ import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
-import { getUrl } from "~database/entities/Attachment";
-import { type EmojiWithInstance, parseEmojis } from "~database/entities/Emoji";
-import { contentToHtml } from "~database/entities/Status";
-import { db } from "~drizzle/db";
-import { EmojiToUser, Users } from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
+import { getUrl } from "~/database/entities/Attachment";
+import { type EmojiWithInstance, parseEmojis } from "~/database/entities/Emoji";
+import { contentToHtml } from "~/database/entities/Status";
+import { db } from "~/drizzle/db";
+import { EmojiToUser, Users } from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["PATCH"],

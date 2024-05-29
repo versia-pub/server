@@ -1,15 +1,15 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { relationshipToAPI } from "~database/entities/Relationship";
+import { relationshipToAPI } from "~/database/entities/Relationship";
 import {
     followRequestUser,
     getRelationshipToOtherUser,
-} from "~database/entities/User";
-import { User } from "~packages/database-interface/user";
+} from "~/database/entities/User";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

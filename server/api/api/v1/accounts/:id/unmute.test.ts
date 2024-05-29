@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Relationship as APIRelationship } from "~types/mastodon/relationship";
+import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
 import { meta } from "./unmute";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);

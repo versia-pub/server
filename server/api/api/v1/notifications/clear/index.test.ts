@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Notification as APINotification } from "~types/mastodon/notification";
+import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Notification as APINotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);

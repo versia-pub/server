@@ -1,18 +1,18 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { dualLogger } from "@/loggers";
+import { MeiliIndexType, meilisearch } from "@/meilisearch";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { dualLogger } from "@loggers";
-import { MeiliIndexType, meilisearch } from "@meilisearch";
-import { errorResponse, jsonResponse } from "@response";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { resolveWebFinger } from "~database/entities/User";
-import { db } from "~drizzle/db";
-import { Instances, Notes, Users } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { Note } from "~packages/database-interface/note";
-import { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
+import { resolveWebFinger } from "~/database/entities/User";
+import { db } from "~/drizzle/db";
+import { Instances, Notes, Users } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
+import { LogLevel } from "~/packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

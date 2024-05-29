@@ -1,9 +1,9 @@
 import { Flags } from "@oclif/core";
 import { and, eq, getTableColumns, isNotNull, isNull } from "drizzle-orm";
-import { BaseCommand } from "~cli/base";
-import { formatArray } from "~cli/utils/format";
-import { db } from "~drizzle/db";
-import { Emojis, Instances, Users } from "~drizzle/schema";
+import { BaseCommand } from "~/cli/base";
+import { formatArray } from "~/cli/utils/format";
+import { db } from "~/drizzle/db";
+import { Emojis, Instances, Users } from "~/drizzle/schema";
 
 export default class EmojiList extends BaseCommand<typeof EmojiList> {
     static override args = {};

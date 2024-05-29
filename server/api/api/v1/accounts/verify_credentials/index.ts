@@ -1,5 +1,5 @@
-import { applyConfig, auth } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { applyConfig, auth } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "hono";
 
 export const meta = applyConfig({

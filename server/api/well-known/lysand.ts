@@ -1,10 +1,10 @@
-import { applyConfig } from "@api";
-import { urlToContentFormat } from "@content_types";
+import { applyConfig } from "@/api";
+import { urlToContentFormat } from "@/content_types";
+import { jsonResponse } from "@/response";
 import type { EntityValidator } from "@lysand-org/federation";
-import { jsonResponse } from "@response";
 import type { Hono } from "hono";
-import pkg from "~package.json";
-import { config } from "~packages/config-manager";
+import pkg from "~/package.json";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

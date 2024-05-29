@@ -1,14 +1,14 @@
-import { applyConfig, handleZodError } from "@api";
+import { applyConfig, handleZodError } from "@/api";
+import { errorResponse, redirect, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, redirect, response } from "@response";
 import { eq, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { Users } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { User } from "~packages/database-interface/user";
+import { db } from "~/drizzle/db";
+import { Users } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

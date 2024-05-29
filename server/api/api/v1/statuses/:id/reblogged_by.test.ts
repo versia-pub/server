@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Account as APIAccount } from "~types/mastodon/account";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Account as APIAccount } from "~/types/mastodon/account";
 import { meta } from "./reblogged_by";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);

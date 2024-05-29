@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { sendTestRequest } from "~tests/utils";
+import { sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 // /api/v2/instance

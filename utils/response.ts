@@ -1,4 +1,4 @@
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const response = (
     data: BodyInit | null = null,

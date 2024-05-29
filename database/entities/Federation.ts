@@ -1,11 +1,11 @@
-import { debugRequest } from "@api";
+import { debugRequest } from "@/api";
 import {
     type EntityValidator,
     SignatureConstructor,
 } from "@lysand-org/federation";
 import { config } from "config-manager";
-import type { User } from "~packages/database-interface/user";
-import { LogLevel, LogManager } from "~packages/log-manager";
+import type { User } from "~/packages/database-interface/user";
+import { LogLevel, LogManager } from "~/packages/log-manager";
 
 export const localObjectURI = (id: string) =>
     new URL(`/objects/${id}`, config.http.base_url).toString();

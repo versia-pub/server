@@ -1,5 +1,5 @@
-import { consoleLogger } from "@loggers";
-import { errorResponse } from "@response";
+import { consoleLogger } from "@/loggers";
+import { errorResponse } from "@/response";
 import chalk from "chalk";
 import { config } from "config-manager";
 import type { Context } from "hono";
@@ -21,11 +21,11 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type { Application } from "~database/entities/Application";
-import { getFromHeader } from "~database/entities/User";
-import type { User } from "~packages/database-interface/user";
-import { LogLevel, LogManager } from "~packages/log-manager";
-import type { APIRouteMetadata, HttpVerb } from "~types/api";
+import type { Application } from "~/database/entities/Application";
+import { getFromHeader } from "~/database/entities/User";
+import type { User } from "~/packages/database-interface/user";
+import { LogLevel, LogManager } from "~/packages/log-manager";
+import type { APIRouteMetadata, HttpVerb } from "~/types/api";
 
 export const applyConfig = (routeMeta: APIRouteMetadata) => {
     const newMeta = routeMeta;

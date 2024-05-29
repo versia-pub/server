@@ -1,6 +1,6 @@
+import { proxyUrl } from "@/response";
+import { sanitizedHtmlStrip } from "@/sanitization";
 import type { EntityValidator } from "@lysand-org/federation";
-import { proxyUrl } from "@response";
-import { sanitizedHtmlStrip } from "@sanitization";
 import {
     type InferInsertModel,
     type SQL,
@@ -17,25 +17,25 @@ import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
     applicationToAPI,
-} from "~database/entities/Application";
+} from "~/database/entities/Application";
 import {
     attachmentToAPI,
     attachmentToLysand,
-} from "~database/entities/Attachment";
+} from "~/database/entities/Attachment";
 import {
     type EmojiWithInstance,
     emojiToAPI,
     emojiToLysand,
     parseEmojis,
-} from "~database/entities/Emoji";
-import { localObjectURI } from "~database/entities/Federation";
+} from "~/database/entities/Emoji";
+import { localObjectURI } from "~/database/entities/Federation";
 import {
     type Status,
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
-} from "~database/entities/Status";
-import { db } from "~drizzle/db";
+} from "~/database/entities/Status";
+import { db } from "~/drizzle/db";
 import {
     Attachments,
     EmojiToNote,
@@ -43,10 +43,10 @@ import {
     Notes,
     Notifications,
     Users,
-} from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import type { Attachment as APIAttachment } from "~types/mastodon/attachment";
-import type { Status as APIStatus } from "~types/mastodon/status";
+} from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 import { User } from "./user";
 
 /**

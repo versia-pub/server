@@ -4,19 +4,19 @@ import {
     emojiValidator,
     handleZodError,
     jsonOrForm,
-} from "@api";
-import { mimeLookup } from "@content_types";
+} from "@/api";
+import { mimeLookup } from "@/content_types";
+import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { getUrl } from "~database/entities/Attachment";
-import { emojiToAPI } from "~database/entities/Emoji";
-import { db } from "~drizzle/db";
-import { Emojis } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { MediaBackend } from "~packages/media-manager";
+import { getUrl } from "~/database/entities/Attachment";
+import { emojiToAPI } from "~/database/entities/Emoji";
+import { db } from "~/drizzle/db";
+import { Emojis } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { MediaBackend } from "~/packages/media-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE", "GET", "PATCH"],

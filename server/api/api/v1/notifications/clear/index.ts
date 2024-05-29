@@ -1,9 +1,9 @@
-import { applyConfig, auth } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { applyConfig, auth } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
-import { db } from "~drizzle/db";
-import { Notifications } from "~drizzle/schema";
+import { db } from "~/drizzle/db";
+import { Notifications } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

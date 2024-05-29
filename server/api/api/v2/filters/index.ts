@@ -1,11 +1,11 @@
-import { applyConfig, auth, handleZodError, jsonOrForm, qs } from "@api";
+import { applyConfig, auth, handleZodError, jsonOrForm, qs } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import { validator } from "hono/validator";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { FilterKeywords, Filters } from "~drizzle/schema";
+import { db } from "~/drizzle/db";
+import { FilterKeywords, Filters } from "~/drizzle/schema";
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],
     route: "/api/v2/filters",

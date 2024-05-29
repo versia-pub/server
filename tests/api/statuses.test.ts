@@ -3,10 +3,10 @@
  */
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~tests/utils";
-import type { AsyncAttachment as APIAsyncAttachment } from "~types/mastodon/async_attachment";
-import type { Context as APIContext } from "~types/mastodon/context";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
+import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
+import type { Context as APIContext } from "~/types/mastodon/context";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 
 const base_url = config.http.base_url;
 

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~tests/utils";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 import { meta } from "./home";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);

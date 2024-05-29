@@ -3,16 +3,16 @@ import {
     handleZodError,
     idValidator,
     webfingerMention,
-} from "@api";
+} from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { lookup } from "mime-types";
 import { z } from "zod";
-import { Users } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { User } from "~packages/database-interface/user";
+import { Users } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

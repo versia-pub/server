@@ -1,28 +1,28 @@
-import { applyConfig, debugRequest, handleZodError } from "@api";
+import { applyConfig, debugRequest, handleZodError } from "@/api";
+import { dualLogger } from "@/loggers";
+import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { dualLogger } from "@loggers";
-import { errorResponse, jsonResponse, response } from "@response";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";
-import { resolveNote } from "~database/entities/Status";
+import { resolveNote } from "~/database/entities/Status";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
-} from "~database/entities/User";
-import { db } from "~drizzle/db";
-import { Notifications, Relationships } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { User } from "~packages/database-interface/user";
-import { LogLevel, LogManager } from "~packages/log-manager";
+} from "~/database/entities/User";
+import { db } from "~/drizzle/db";
+import { Notifications, Relationships } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
+import { LogLevel, LogManager } from "~/packages/log-manager";
 import {
     EntityValidator,
     RequestParserHandler,
     SignatureValidator,
-} from "~packages/lysand-api/federation";
+} from "~/packages/lysand-api/federation";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

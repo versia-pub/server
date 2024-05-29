@@ -1,22 +1,22 @@
-import { dualLogger } from "@loggers";
-import { connectMeili } from "@meilisearch";
-import { errorResponse, response } from "@response";
+import { dualLogger } from "@/loggers";
+import { connectMeili } from "@/meilisearch";
+import { errorResponse, response } from "@/response";
 import chalk from "chalk";
 import { config } from "config-manager";
 import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
-import { setupDatabase } from "~drizzle/db";
-import { agentBans } from "~middlewares/agent-bans";
-import { bait } from "~middlewares/bait";
-import { boundaryCheck } from "~middlewares/boundary-check";
-import { ipBans } from "~middlewares/ip-bans";
-import { logger } from "~middlewares/logger";
-import { urlCheck } from "~middlewares/url-check";
-import { Note } from "~packages/database-interface/note";
-import { handleGlitchRequest } from "~packages/glitch-server/main";
-import { routes } from "~routes";
-import { createServer } from "~server";
-import type { APIRouteExports } from "~types/api";
+import { setupDatabase } from "~/drizzle/db";
+import { agentBans } from "~/middlewares/agent-bans";
+import { bait } from "~/middlewares/bait";
+import { boundaryCheck } from "~/middlewares/boundary-check";
+import { ipBans } from "~/middlewares/ip-bans";
+import { logger } from "~/middlewares/logger";
+import { urlCheck } from "~/middlewares/url-check";
+import { Note } from "~/packages/database-interface/note";
+import { handleGlitchRequest } from "~/packages/glitch-server/main";
+import { routes } from "~/routes";
+import { createServer } from "~/server";
+import type { APIRouteExports } from "~/types/api";
 
 const timeAtStart = performance.now();
 

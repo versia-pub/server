@@ -1,6 +1,6 @@
-import { errorResponse } from "@response";
+import { errorResponse } from "@/response";
 import { createMiddleware } from "hono/factory";
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const agentBans = createMiddleware(async (context, next) => {
     // Check for banned user agents (regex)

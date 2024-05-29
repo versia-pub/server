@@ -1,13 +1,13 @@
 import { randomBytes } from "node:crypto";
-import { consoleLogger } from "@loggers";
+import { consoleLogger } from "@/loggers";
 import { asc, inArray, like } from "drizzle-orm";
-import type { Status } from "~database/entities/Status";
-import { db } from "~drizzle/db";
-import { setupDatabase } from "~drizzle/db";
-import { Notes, Tokens, Users } from "~drizzle/schema";
-import { app } from "~index";
-import { Note } from "~packages/database-interface/note";
-import { User } from "~packages/database-interface/user";
+import type { Status } from "~/database/entities/Status";
+import { db } from "~/drizzle/db";
+import { setupDatabase } from "~/drizzle/db";
+import { Notes, Tokens, Users } from "~/drizzle/schema";
+import { app } from "~/index";
+import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
 
 await setupDatabase(consoleLogger);
 

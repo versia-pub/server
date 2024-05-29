@@ -1,4 +1,4 @@
-import { errorResponse } from "@response";
+import { errorResponse } from "@/response";
 import { createMiddleware } from "hono/factory";
 
 export const boundaryCheck = createMiddleware(async (context, next) => {

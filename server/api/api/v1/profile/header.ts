@@ -1,10 +1,10 @@
-import { applyConfig, auth } from "@api";
-import { errorResponse, jsonResponse } from "@response";
+import { applyConfig, auth } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
-import { db } from "~drizzle/db";
-import { Users } from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
+import { db } from "~/drizzle/db";
+import { Users } from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],

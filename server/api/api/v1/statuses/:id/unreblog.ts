@@ -1,12 +1,12 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { Notes } from "~drizzle/schema";
-import { Note } from "~packages/database-interface/note";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { Notes } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

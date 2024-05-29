@@ -1,12 +1,12 @@
-import { applyConfig, auth, handleZodError, idValidator } from "@api";
+import { applyConfig, auth, handleZodError, idValidator } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { Users } from "~drizzle/schema";
-import { Timeline } from "~packages/database-interface/timeline";
-import { User } from "~packages/database-interface/user";
+import { Users } from "~/drizzle/schema";
+import { Timeline } from "~/packages/database-interface/timeline";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],

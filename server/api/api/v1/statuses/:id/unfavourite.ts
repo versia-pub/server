@@ -1,11 +1,11 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { deleteLike } from "~database/entities/Like";
-import { Note } from "~packages/database-interface/note";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { deleteLike } from "~/database/entities/Like";
+import { Note } from "~/packages/database-interface/note";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

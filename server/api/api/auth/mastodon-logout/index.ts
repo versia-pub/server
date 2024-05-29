@@ -1,6 +1,6 @@
-import { applyConfig } from "@api";
+import { applyConfig } from "@/api";
 import type { Hono } from "hono";
-import { config } from "~packages/config-manager";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

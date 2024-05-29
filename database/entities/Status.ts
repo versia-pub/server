@@ -1,8 +1,8 @@
-import { mentionValidator } from "@api";
+import { mentionValidator } from "@/api";
+import { dualLogger } from "@/loggers";
+import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import { dualLogger } from "@loggers";
 import type { EntityValidator } from "@lysand-org/federation";
-import { sanitizeHtml, sanitizeHtmlInline } from "@sanitization";
 import { config } from "config-manager";
 import {
     type InferSelectModel,
@@ -29,12 +29,12 @@ import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
-import { db } from "~drizzle/db";
-import { type Attachments, Instances, Notes, Users } from "~drizzle/schema";
-import { Note } from "~packages/database-interface/note";
-import { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
-import type { Status as APIStatus } from "~types/mastodon/status";
+import { db } from "~/drizzle/db";
+import { type Attachments, Instances, Notes, Users } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
+import { LogLevel } from "~/packages/log-manager";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 import type { Application } from "./Application";
 import { attachmentFromLysand } from "./Attachment";
 import { type EmojiWithInstance, fetchEmoji } from "./Emoji";

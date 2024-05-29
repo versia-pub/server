@@ -1,12 +1,12 @@
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@api";
+import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse, response } from "@response";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { OpenIdAccounts } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
+import { db } from "~/drizzle/db";
+import { OpenIdAccounts } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE"],

@@ -1,9 +1,9 @@
 import type { InferSelectModel } from "drizzle-orm";
-import { db } from "~drizzle/db";
-import type { Notifications } from "~drizzle/schema";
-import { Note } from "~packages/database-interface/note";
-import { User } from "~packages/database-interface/user";
-import type { Notification as APINotification } from "~types/mastodon/notification";
+import { db } from "~/drizzle/db";
+import type { Notifications } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
+import type { Notification as APINotification } from "~/types/mastodon/notification";
 import type { StatusWithRelations } from "./Status";
 import {
     type UserWithRelations,

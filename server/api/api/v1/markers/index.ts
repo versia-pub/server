@@ -5,16 +5,16 @@ import {
     idValidator,
     qs,
     qsQuery,
-} from "@api";
+} from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { and, count, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { validator } from "hono/validator";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { Markers } from "~drizzle/schema";
-import type { Marker as APIMarker } from "~types/mastodon/marker";
+import { db } from "~/drizzle/db";
+import { Markers } from "~/drizzle/schema";
+import type { Marker as APIMarker } from "~/types/mastodon/marker";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],

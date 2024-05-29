@@ -4,15 +4,15 @@ import {
     handleZodError,
     idValidator,
     jsonOrForm,
-} from "@api";
+} from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { db } from "~drizzle/db";
-import { Note } from "~packages/database-interface/note";
+import { db } from "~/drizzle/db";
+import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE", "PUT"],

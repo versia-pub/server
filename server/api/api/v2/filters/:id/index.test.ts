@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
-import { getTestUsers, sendTestRequest } from "~tests/utils";
+import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);

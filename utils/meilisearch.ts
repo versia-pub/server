@@ -3,9 +3,9 @@ import { config } from "config-manager";
 import { count } from "drizzle-orm";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { Meilisearch } from "meilisearch";
-import { db } from "~drizzle/db";
-import { Notes, Users } from "~drizzle/schema";
-import type { User } from "~packages/database-interface/user";
+import { db } from "~/drizzle/db";
+import { Notes, Users } from "~/drizzle/schema";
+import type { User } from "~/packages/database-interface/user";
 
 export const meilisearch = new Meilisearch({
     host: `${config.meilisearch.host}:${config.meilisearch.port}`,

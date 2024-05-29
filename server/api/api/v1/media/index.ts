@@ -1,6 +1,6 @@
-import { applyConfig, auth, handleZodError } from "@api";
+import { applyConfig, auth, handleZodError } from "@/api";
+import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { errorResponse, jsonResponse } from "@response";
 import { encode } from "blurhash";
 import { config } from "config-manager";
 import type { Hono } from "hono";
@@ -9,9 +9,9 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
-import { attachmentToAPI, getUrl } from "~database/entities/Attachment";
-import { db } from "~drizzle/db";
-import { Attachments } from "~drizzle/schema";
+import { attachmentToAPI, getUrl } from "~/database/entities/Attachment";
+import { db } from "~/drizzle/db";
+import { Attachments } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],

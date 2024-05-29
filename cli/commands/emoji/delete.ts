@@ -3,12 +3,12 @@ import { Args, Flags } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import ora from "ora";
-import { EmojiFinderCommand } from "~cli/classes";
-import { formatArray } from "~cli/utils/format";
-import { db } from "~drizzle/db";
-import { Emojis } from "~drizzle/schema";
-import { config } from "~packages/config-manager";
-import { MediaBackend } from "~packages/media-manager";
+import { EmojiFinderCommand } from "~/cli/classes";
+import { formatArray } from "~/cli/utils/format";
+import { db } from "~/drizzle/db";
+import { Emojis } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
+import { MediaBackend } from "~/packages/media-manager";
 
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete

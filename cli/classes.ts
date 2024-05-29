@@ -1,9 +1,9 @@
 import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, getTableColumns, like } from "drizzle-orm";
-import { db } from "~drizzle/db";
-import { Emojis, Instances, Users } from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
+import { db } from "~/drizzle/db";
+import { Emojis, Instances, Users } from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
 import { BaseCommand } from "./base";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<

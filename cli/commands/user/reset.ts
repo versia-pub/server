@@ -2,9 +2,9 @@ import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
 import { renderUnicodeCompact } from "uqr";
-import { UserFinderCommand } from "~cli/classes";
-import { formatArray } from "~cli/utils/format";
-import { config } from "~packages/config-manager";
+import { UserFinderCommand } from "~/cli/classes";
+import { formatArray } from "~/cli/utils/format";
+import { config } from "~/packages/config-manager";
 
 export default class UserReset extends UserFinderCommand<typeof UserReset> {
     static override description = "Resets users' passwords";

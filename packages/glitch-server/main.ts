@@ -1,10 +1,10 @@
 import { join } from "node:path";
-import { redirect } from "@response";
+import { redirect } from "@/response";
 import type { BunFile } from "bun";
 import { config } from "config-manager";
-import { retrieveUserFromToken } from "~database/entities/User";
-import type { User } from "~packages/database-interface/user";
-import type { LogManager, MultiLogManager } from "~packages/log-manager";
+import { retrieveUserFromToken } from "~/database/entities/User";
+import type { User } from "~/packages/database-interface/user";
+import type { LogManager, MultiLogManager } from "~/packages/log-manager";
 import { languages } from "./glitch-languages";
 
 const handleManifestRequest = async () => {

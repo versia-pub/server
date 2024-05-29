@@ -1,8 +1,8 @@
-import { dualLogger } from "@loggers";
+import { dualLogger } from "@/loggers";
 import type { EntityValidator } from "@lysand-org/federation";
 import { config } from "config-manager";
 import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
-import { db } from "~drizzle/db";
+import { db } from "~/drizzle/db";
 import {
     Applications,
     Instances,
@@ -10,9 +10,9 @@ import {
     Relationships,
     Tokens,
     Users,
-} from "~drizzle/schema";
-import { User } from "~packages/database-interface/user";
-import { LogLevel } from "~packages/log-manager";
+} from "~/drizzle/schema";
+import { User } from "~/packages/database-interface/user";
+import { LogLevel } from "~/packages/log-manager";
 import type { Application } from "./Application";
 import type { EmojiWithInstance } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";

@@ -1,10 +1,10 @@
-import { emojiValidatorWithColons } from "@api";
+import { emojiValidatorWithColons } from "@/api";
+import { proxyUrl } from "@/response";
 import type { EntityValidator } from "@lysand-org/federation";
-import { proxyUrl } from "@response";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
-import { db } from "~drizzle/db";
-import { Emojis, Instances } from "~drizzle/schema";
-import type { Emoji as APIEmoji } from "~types/mastodon/emoji";
+import { db } from "~/drizzle/db";
+import { Emojis, Instances } from "~/drizzle/schema";
+import type { Emoji as APIEmoji } from "~/types/mastodon/emoji";
 import { addInstanceIfNotExists } from "./Instance";
 
 export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
