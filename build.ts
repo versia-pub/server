@@ -18,7 +18,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["bullmq", "unzipit"],
+    external: ["unzipit"],
 }).then((output) => {
     if (!output.success) {
         console.log(output.logs);

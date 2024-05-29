@@ -104,7 +104,6 @@
         "@oclif/core": "^3.26.6",
         "@tufjs/canonical-json": "^2.0.0",
         "blurhash": "^2.0.5",
-        "bullmq": "^5.7.1",
         "chalk": "^5.3.0",
         "cli-progress": "^3.12.0",
         "cli-table": "^0.3.11",

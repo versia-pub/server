@@ -1,6 +1,6 @@
 # Use 1.1.4 for building to prevent a Unicode bug with 1.1.5+
 # Temporary until they fix it
-FROM imbios/bun-node:1.1.4-current-alpine as base
+FROM oven/bun:1.1.4-alpine as base
 
 RUN apk add --no-cache libstdc++
 
