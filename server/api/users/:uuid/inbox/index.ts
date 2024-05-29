@@ -1,18 +1,13 @@
 import { applyConfig, debugRequest, handleZodError } from "@api";
 import { zValidator } from "@hono/zod-validator";
 import { dualLogger } from "@loggers";
-import {
-    EntityValidator,
-    type HttpVerb,
-    SignatureValidator,
-} from "@lysand-org/federation";
 import { errorResponse, jsonResponse, response } from "@response";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { matches } from "ip-matching";
 import { z } from "zod";
-import { isValidationError } from "zod-validation-error";
+import { type ValidationError, isValidationError } from "zod-validation-error";
 import { resolveNote } from "~database/entities/Status";
 import {
     getRelationshipToOtherUser,
@@ -23,6 +18,11 @@ import { Notifications, Relationships } from "~drizzle/schema";
 import { config } from "~packages/config-manager";
 import { User } from "~packages/database-interface/user";
 import { LogLevel, LogManager } from "~packages/log-manager";
+import {
+    EntityValidator,
+    RequestParserHandler,
+    SignatureValidator,
+} from "~packages/lysand-api/federation";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -192,13 +192,11 @@ export default (app: Hono) =>
             }
 
             const validator = new EntityValidator();
+            const handler = new RequestParserHandler(body, validator);
 
             try {
-                // Add sent data to database
-                switch (body.type) {
-                    case "Note": {
-                        const note = await validator.Note(body);
-
+                const result = await handler.parseBody({
+                    note: async (note) => {
                         const account = await User.resolve(note.author);
 
                         if (!account) {
@@ -222,21 +220,8 @@ export default (app: Hono) =>
                         }
 
                         return response("Note created", 201);
-                    }
-                    case "Follow": {
-                        const follow = await validator.Follow(body);
-
-                        if (
-                            config.federation.discard.follows.find(
-                                (blocked) =>
-                                    blocked.includes(origin) ||
-                                    origin.includes(blocked),
-                            )
-                        ) {
-                            // Pretend to accept request
-                            return response("Follow request sent", 200);
-                        }
-
+                    },
+                    follow: async (follow) => {
                         const account = await User.resolve(follow.author);
 
                         if (!account) {
@@ -246,7 +231,6 @@ export default (app: Hono) =>
                         const foundRelationship =
                             await getRelationshipToOtherUser(account, user);
 
-                        // Check if already following
                         if (foundRelationship.following) {
                             return response("Already following", 200);
                         }
@@ -271,38 +255,20 @@ export default (app: Hono) =>
                         });
 
                         if (!user.getUser().isLocked) {
-                            // Federate FollowAccept
                             await sendFollowAccept(account, user);
                         }
 
                         return response("Follow request sent", 200);
-                    }
-                    case "FollowAccept": {
-                        const followAccept = await validator.FollowAccept(body);
-
-                        if (
-                            config.federation.discard.follows.find(
-                                (blocked) =>
-                                    blocked.includes(origin) ||
-                                    origin.includes(blocked),
-                            )
-                        ) {
-                            // Pretend to accept request
-                            return response("Follow request accepted", 200);
-                        }
-
+                    },
+                    followAccept: async (followAccept) => {
                         const account = await User.resolve(followAccept.author);
 
                         if (!account) {
                             return errorResponse("Author not found", 400);
                         }
 
-                        console.log(account);
-
                         const foundRelationship =
                             await getRelationshipToOtherUser(user, account);
-
-                        console.log(foundRelationship);
 
                         if (!foundRelationship.requested) {
                             return response(
@@ -320,21 +286,8 @@ export default (app: Hono) =>
                             .where(eq(Relationships.id, foundRelationship.id));
 
                         return response("Follow request accepted", 200);
-                    }
-                    case "FollowReject": {
-                        const followReject = await validator.FollowReject(body);
-
-                        if (
-                            config.federation.discard.follows.find(
-                                (blocked) =>
-                                    blocked.includes(origin) ||
-                                    origin.includes(blocked),
-                            )
-                        ) {
-                            // Pretend to accept request
-                            return response("Follow request rejected", 200);
-                        }
-
+                    },
+                    followReject: async (followReject) => {
                         const account = await User.resolve(followReject.author);
 
                         if (!account) {
@@ -360,17 +313,17 @@ export default (app: Hono) =>
                             .where(eq(Relationships.id, foundRelationship.id));
 
                         return response("Follow request rejected", 200);
-                    }
-                    default: {
-                        return errorResponse(
-                            "Object has not been implemented",
-                            400,
-                        );
-                    }
+                    },
+                });
+
+                if (result) {
+                    return result;
                 }
+
+                return errorResponse("Object has not been implemented", 400);
             } catch (e) {
                 if (isValidationError(e)) {
-                    return errorResponse(e.message, 400);
+                    return errorResponse((e as ValidationError).message, 400);
                 }
                 dualLogger.logError(LogLevel.ERROR, "Inbox", e as Error);
                 return jsonResponse(
