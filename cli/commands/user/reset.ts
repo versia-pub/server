@@ -37,7 +37,7 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
     };
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(UserReset);
+        const { flags } = await this.parse(UserReset);
 
         const users = await this.findUsers();
 

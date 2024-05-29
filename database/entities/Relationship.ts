@@ -3,7 +3,6 @@ import { db } from "~/drizzle/db";
 import { Relationships } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
 import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
-import type { UserType } from "./User";
 
 export type Relationship = InferSelectModel<typeof Relationships>;
 

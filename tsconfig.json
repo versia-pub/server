@@ -25,7 +25,8 @@
             "@/*": ["./utils/*"],
             "~/*": ["./*"],
             "+/*": ["./server/api/*"]
-        }
+        },
+        "noUnusedLocals": true
     },
     "include": [
         "*.ts",

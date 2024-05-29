@@ -13,7 +13,7 @@ afterAll(async () => {
 
 beforeAll(async () => {
     for (const status of timeline) {
-        const res = await sendTestRequest(
+        await sendTestRequest(
             new Request(
                 new URL(
                     `/api/v1/statuses/${status.id}/favourite`,
@@ -66,7 +66,7 @@ describe(meta.route, () => {
         const objects = (await response.json()) as APIAccount[];
 
         expect(objects.length).toBe(1);
-        for (const [index, status] of objects.entries()) {
+        for (const [, status] of objects.entries()) {
             expect(status.id).toBe(users[1].id);
             expect(status.username).toBe(users[1].getUser().username);
         }

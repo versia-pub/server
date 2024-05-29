@@ -295,7 +295,7 @@ describe("LocalMediaBackend", () => {
         // deleteByUrl
         const mockHash = "test-hash";
         spyOn(mockMediaHasher, "getMediaHash").mockResolvedValue(mockHash);
-        const result = await localMediaBackend.addFile(mockFile);
+        await localMediaBackend.addFile(mockFile);
         const rmMock = jest.fn().mockResolvedValue(Promise.resolve());
 
         // Spy on fs/promises rm

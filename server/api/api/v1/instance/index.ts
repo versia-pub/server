@@ -35,10 +35,6 @@ export default (app: Hono) =>
             and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
         );
 
-        const monthlyActiveUsers = await User.getActiveInPeriod(
-            30 * 24 * 60 * 60 * 1000,
-        );
-
         const knownDomainsCount = (
             await db
                 .select({

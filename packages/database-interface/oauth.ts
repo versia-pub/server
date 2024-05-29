@@ -1,5 +1,5 @@
 import { oauthRedirectUri } from "@/constants";
-import { errorResponse, response } from "@/response";
+import { response } from "@/response";
 import type { InferInsertModel } from "drizzle-orm";
 import {
     type AuthorizationServer,

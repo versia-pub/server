@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError, idValidator, qsQuery } from "@/api";
+import { applyConfig, auth, handleZodError, qsQuery } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";

@@ -1,7 +1,7 @@
 import confirm from "@inquirer/confirm";
-import { Args, Flags } from "@oclif/core";
+import { Flags } from "@oclif/core";
 import chalk from "chalk";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import ora from "ora";
 import { EmojiFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
@@ -34,7 +34,7 @@ export default class EmojiDelete extends EmojiFinderCommand<
     };
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(EmojiDelete);
+        const { flags } = await this.parse(EmojiDelete);
 
         const emojis = await this.findEmojis();
 

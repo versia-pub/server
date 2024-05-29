@@ -3,7 +3,7 @@ import { config } from "config-manager";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { tokens, deleteUsers } = await getTestUsers(2);
 
 afterAll(async () => {
     await deleteUsers();

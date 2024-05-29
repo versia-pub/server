@@ -22,8 +22,6 @@ import {
     exactly,
     global,
     letter,
-    maybe,
-    oneOrMore,
 } from "magic-regexp";
 import MarkdownIt from "markdown-it";
 import markdownItAnchor from "markdown-it-anchor";

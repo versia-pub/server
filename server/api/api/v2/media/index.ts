@@ -45,8 +45,7 @@ export default (app: Hono) =>
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth),
         async (context) => {
-            const { file, thumbnail, description, focus } =
-                context.req.valid("form");
+            const { file, thumbnail, description } = context.req.valid("form");
 
             if (file.size > config.validation.max_media_size) {
                 return errorResponse(

@@ -84,15 +84,8 @@ export default (app: Hono) =>
         zValidator("query", schemas.query, handleZodError),
         zValidator("form", schemas.form, handleZodError),
         async (context) => {
-            const {
-                scope,
-                redirect_uri,
-                response_type,
-                client_id,
-                state,
-                code_challenge,
-                code_challenge_method,
-            } = context.req.valid("form");
+            const { scope, redirect_uri, response_type, client_id, state } =
+                context.req.valid("form");
 
             const body = context.req.valid("form");
 
@@ -234,7 +227,6 @@ export default (app: Hono) =>
             const scopeIncludesProfile = scope?.split(" ").includes("profile");
             const scopeIncludesEmail = scope?.split(" ").includes("email");
             if (scope) {
-                const scopes = scope.split(" ");
                 if (scopeIncludesOpenID) {
                     // Include the standard OpenID claims
                     idTokenPayload = {

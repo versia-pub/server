@@ -28,7 +28,7 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
     };
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(UserDelete);
+        const { flags } = await this.parse(UserDelete);
 
         const users = await this.findUsers();
 

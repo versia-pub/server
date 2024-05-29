@@ -46,7 +46,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
     };
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(EmojiImport);
+        const { args } = await this.parse(EmojiImport);
 
         // Check if path ends in .zip, warn the user if it doesn't
         if (!args.path.endsWith(".zip")) {

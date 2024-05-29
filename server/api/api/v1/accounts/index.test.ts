@@ -1,18 +1,10 @@
-import {
-    afterAll,
-    afterEach,
-    beforeAll,
-    describe,
-    expect,
-    test,
-} from "bun:test";
+import { afterEach, describe, expect, test } from "bun:test";
 import { randomBytes } from "node:crypto";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Account as APIAccount } from "~/types/mastodon/account";
+import { sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 const username = randomBytes(10).toString("hex");

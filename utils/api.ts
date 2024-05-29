@@ -1,4 +1,3 @@
-import { consoleLogger } from "@/loggers";
 import { errorResponse } from "@/response";
 import chalk from "chalk";
 import { config } from "config-manager";

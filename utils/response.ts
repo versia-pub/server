@@ -27,19 +27,6 @@ export const response = (
     });
 };
 
-export const clientResponse = (
-    data: BodyInit | null = null,
-    status = 200,
-    headers: Record<string, string> = {},
-) => {
-    return response(data, status, {
-        "Content-Security-Policy":
-            "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src *; font-src 'self'; connect-src 'self'; media-src *; object-src 'none'; prefetch-src 'none'; child-src 'none'; frame-src 'none'; worker-src 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content; base-uri 'self'; manifest-src 'self'",
-        "Access-Control-Allow-Origin": "null",
-        ...headers,
-    });
-};
-
 export const jsonResponse = (
     data: object,
     status = 200,

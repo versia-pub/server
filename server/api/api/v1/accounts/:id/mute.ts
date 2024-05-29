@@ -48,7 +48,8 @@ export default (app: Hono) =>
         async (context) => {
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
-            const { notifications, duration } = context.req.valid("json");
+            // TODO: Add duration support
+            const { notifications } = context.req.valid("json");
 
             if (!user) return errorResponse("Unauthorized", 401);
 

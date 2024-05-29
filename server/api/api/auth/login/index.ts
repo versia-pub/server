@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, redirect, response } from "@/response";
+import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq, or } from "drizzle-orm";
 import type { Hono } from "hono";

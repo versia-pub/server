@@ -42,7 +42,6 @@ export default (app: Hono) =>
         auth(meta.auth),
         async (context) => {
             const { id } = context.req.valid("param");
-            const { user } = context.req.valid("header");
             const { max_id, since_id, min_id, limit } =
                 context.req.valid("query");
 

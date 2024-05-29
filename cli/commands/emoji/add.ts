@@ -30,7 +30,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
     static override flags = {};
 
     public async run(): Promise<void> {
-        const { flags, args } = await this.parse(EmojiAdd);
+        const { args } = await this.parse(EmojiAdd);
 
         // Check if emoji already exists
         const existingEmoji = await db.query.Emojis.findFirst({

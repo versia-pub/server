@@ -46,7 +46,7 @@ export default (app: Hono) =>
         auth(meta.auth),
         async (context) => {
             const form = context.req.valid("form");
-            const { username, email, password, agreement, locale, reason } =
+            const { username, email, password, agreement, locale } =
                 context.req.valid("form");
 
             if (!config.signups.registration) {
