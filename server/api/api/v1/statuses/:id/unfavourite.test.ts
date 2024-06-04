@@ -88,4 +88,27 @@ describe(meta.route, () => {
         expect(json.favourited).toBe(false);
         expect(json.favourites_count).toBe(0);
     });
+
+    test("post should not be favourited when fetched", async () => {
+        const response = await sendTestRequest(
+            new Request(
+                new URL(
+                    `/api/v1/statuses/${timeline[1].id}`,
+                    config.http.base_url,
+                ),
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[1].accessToken}`,
+                    },
+                },
+            ),
+        );
+
+        expect(response.status).toBe(200);
+
+        const json = (await response.json()) as APIStatus;
+
+        expect(json.favourited).toBe(false);
+        expect(json.favourites_count).toBe(0);
+    });
 });
