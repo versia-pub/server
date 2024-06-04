@@ -5,7 +5,6 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { deleteLike } from "~/database/entities/Like";
 import { Note } from "~/packages/database-interface/note";
-import type { Status as APIStatus } from "~/types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -44,10 +43,10 @@ export default (app: Hono) =>
 
             await deleteLike(user, note);
 
-            return jsonResponse({
-                ...(await note.toAPI(user)),
-                favourited: false,
-                favourites_count: note.getStatus().likeCount - 1,
-            } as APIStatus);
+            const newNote = await Note.fromId(id, user.id);
+
+            if (!newNote) return errorResponse("Record not found", 404);
+
+            return jsonResponse(await newNote.toAPI(user));
         },
     );

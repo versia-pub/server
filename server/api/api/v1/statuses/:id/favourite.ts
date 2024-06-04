@@ -6,7 +6,6 @@ import { z } from "zod";
 import { createLike } from "~/database/entities/Like";
 import { db } from "~/drizzle/db";
 import { Note } from "~/packages/database-interface/note";
-import type { Status as APIStatus } from "~/types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -56,10 +55,10 @@ export default (app: Hono) =>
                 await createLike(user, note);
             }
 
-            return jsonResponse({
-                ...(await note.toAPI(user)),
-                favourited: true,
-                favourites_count: note.getStatus().likeCount + 1,
-            } as APIStatus);
+            const newNote = await Note.fromId(id, user.id);
+
+            if (!newNote) return errorResponse("Record not found", 404);
+
+            return jsonResponse(await newNote.toAPI(user));
         },
     );

@@ -6,7 +6,6 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { Notes } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
-import type { Status as APIStatus } from "~/types/mastodon/status";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -59,10 +58,10 @@ export default (app: Hono) =>
 
             await existingReblog.delete();
 
-            return jsonResponse({
-                ...(await foundStatus.toAPI(user)),
-                reblogged: false,
-                reblogs_count: foundStatus.getStatus().reblogCount - 1,
-            } as APIStatus);
+            const newNote = await Note.fromId(id, user.id);
+
+            if (!newNote) return errorResponse("Record not found", 404);
+
+            return jsonResponse(await newNote.toAPI(user));
         },
     );
