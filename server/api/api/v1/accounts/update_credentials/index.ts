@@ -14,7 +14,7 @@ import { getUrl } from "~/database/entities/Attachment";
 import { type EmojiWithInstance, parseEmojis } from "~/database/entities/Emoji";
 import { contentToHtml } from "~/database/entities/Status";
 import { db } from "~/drizzle/db";
-import { EmojiToUser, Users } from "~/drizzle/schema";
+import { EmojiToUser } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -283,22 +283,8 @@ export default (app: Hono) =>
                     self.findIndex((e) => e.id === emoji.id) === index,
             );
 
-            await db
-                .update(Users)
-                .set({
-                    displayName: self.displayName,
-                    note: self.note,
-                    avatar: self.avatar,
-                    header: self.header,
-                    fields: self.fields,
-                    isLocked: self.isLocked,
-                    isBot: self.isBot,
-                    isDiscoverable: self.isDiscoverable,
-                    source: self.source || undefined,
-                })
-                .where(eq(Users.id, self.id));
-
             // Connect emojis, if any
+            // Do it before updating user, so that federation takes that into account
             for (const emoji of self.emojis) {
                 await db
                     .delete(EmojiToUser)
@@ -318,6 +304,18 @@ export default (app: Hono) =>
                     })
                     .execute();
             }
+
+            await user.update({
+                displayName: self.displayName,
+                note: self.note,
+                avatar: self.avatar,
+                header: self.header,
+                fields: self.fields,
+                isLocked: self.isLocked,
+                isBot: self.isBot,
+                isDiscoverable: self.isDiscoverable,
+                source: self.source || undefined,
+            });
 
             const output = await User.fromId(self.id);
             if (!output) return errorResponse("Couldn't edit user", 500);

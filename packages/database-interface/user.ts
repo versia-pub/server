@@ -521,7 +521,7 @@ export class User {
         ) {
             // Get followers
             const followers = await User.manyFromSql(
-                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${this.id} AND "Relationships"."following" = true)`,
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
             );
 
             for (const follower of followers) {
