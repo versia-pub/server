@@ -520,27 +520,31 @@ export class User {
             data.endpoints ||
             data.isDiscoverable
         ) {
-            // Get followers
-            const followers = await User.manyFromSql(
-                and(
-                    sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
-                    isNotNull(Users.instanceId),
-                ),
-            );
-
-            for (const follower of followers) {
-                const federationRequest = await objectToInboxRequest(
-                    this.toLysand(),
-                    this,
-                    follower,
-                );
-
-                // FIXME: Add to new queue system when it's implemented
-                fetch(federationRequest);
-            }
+            await this.federateToFollowers(this.toLysand());
         }
 
         return this;
+    }
+
+    async federateToFollowers(object: typeof EntityValidator.$Entity) {
+        // Get followers
+        const followers = await User.manyFromSql(
+            and(
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
+                isNotNull(Users.instanceId),
+            ),
+        );
+
+        for (const follower of followers) {
+            const federationRequest = await objectToInboxRequest(
+                object,
+                this,
+                follower,
+            );
+
+            // FIXME: Add to new queue system when it's implemented
+            fetch(federationRequest);
+        }
     }
 
     toAPI(isOwnAccount = false): APIAccount {

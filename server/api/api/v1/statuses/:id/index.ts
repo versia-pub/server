@@ -11,6 +11,7 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { undoFederationRequest } from "~/database/entities/Federation";
 import { db } from "~/drizzle/db";
 import { Note } from "~/packages/database-interface/note";
 
@@ -98,6 +99,10 @@ export default (app: Hono) =>
                 // TODO: Delete and redraft
 
                 await foundStatus.delete();
+
+                await user.federateToFollowers(
+                    undoFederationRequest(user, foundStatus.getURI()),
+                );
 
                 return jsonResponse(await foundStatus.toAPI(user), 200);
             }

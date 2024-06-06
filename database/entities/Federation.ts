@@ -67,3 +67,18 @@ export const objectToInboxRequest = async (
 
     return signed;
 };
+
+export const undoFederationRequest = (
+    undoer: User,
+    uri: string,
+): typeof EntityValidator.$Undo => {
+    const id = crypto.randomUUID();
+    return {
+        type: "Undo",
+        id,
+        author: undoer.getUri(),
+        created_at: new Date().toISOString(),
+        object: uri,
+        uri: new URL(`/undos/${id}`, config.http.base_url).toString(),
+    };
+};

@@ -4,6 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
+import { undoFederationRequest } from "~/database/entities/Federation";
 import { Notes } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
@@ -57,6 +58,10 @@ export default (app: Hono) =>
             }
 
             await existingReblog.delete();
+
+            await user.federateToFollowers(
+                undoFederationRequest(user, existingReblog.getURI()),
+            );
 
             const newNote = await Note.fromId(id, user.id);
 
