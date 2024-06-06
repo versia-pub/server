@@ -373,13 +373,21 @@ export class Note {
         }
 
         // Set attachment parents
-        if (media_attachments && media_attachments.length > 0) {
+        if (media_attachments) {
             await db
                 .update(Attachments)
                 .set({
-                    noteId: this.status.id,
+                    noteId: null,
                 })
-                .where(inArray(Attachments.id, media_attachments));
+                .where(eq(Attachments.noteId, this.status.id));
+
+            if (media_attachments.length > 0)
+                await db
+                    .update(Attachments)
+                    .set({
+                        noteId: this.status.id,
+                    })
+                    .where(inArray(Attachments.id, media_attachments));
         }
 
         return await Note.fromId(newNote.id, newNote.authorId);
