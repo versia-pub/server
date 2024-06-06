@@ -28,14 +28,17 @@ import markdownItAnchor from "markdown-it-anchor";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { db } from "~/drizzle/db";
-import { type Attachments, Instances, Notes, Users } from "~/drizzle/schema";
-import { Note } from "~/packages/database-interface/note";
+import {
+    type Attachments,
+    Instances,
+    type Notes,
+    Users,
+} from "~/drizzle/schema";
+import type { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel } from "~/packages/log-manager";
-import type { Status as APIStatus } from "~/types/mastodon/status";
 import type { Application } from "./Application";
-import { attachmentFromLysand } from "./Attachment";
-import { type EmojiWithInstance, fetchEmoji } from "./Emoji";
+import type { EmojiWithInstance } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
 import {
     type UserWithInstance,
@@ -247,121 +250,6 @@ export const findManyNotes = async (
         muted: Boolean(post.muted),
         liked: Boolean(post.liked),
     }));
-};
-
-export const resolveNote = async (
-    uri?: string,
-    providedNote?: typeof EntityValidator.$Note,
-): Promise<Note> => {
-    if (!uri && !providedNote) {
-        throw new Error("No URI or note provided");
-    }
-
-    const foundStatus = await Note.fromSql(
-        eq(Notes.uri, uri ?? providedNote?.uri ?? ""),
-    );
-
-    if (foundStatus) return foundStatus;
-
-    let note = providedNote ?? null;
-
-    if (uri) {
-        if (!URL.canParse(uri)) {
-            throw new Error(`Invalid URI to parse ${uri}`);
-        }
-
-        const response = await fetch(uri, {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-            },
-        });
-
-        note = (await response.json()) as typeof EntityValidator.$Note;
-    }
-
-    if (!note) {
-        throw new Error("No note was able to be fetched");
-    }
-
-    if (note.type !== "Note") {
-        throw new Error("Invalid object type");
-    }
-
-    if (!note.author) {
-        throw new Error("Invalid object author");
-    }
-
-    const author = await User.resolve(note.author);
-
-    if (!author) {
-        throw new Error("Invalid object author");
-    }
-
-    const attachments = [];
-
-    for (const attachment of note.attachments ?? []) {
-        const resolvedAttachment = await attachmentFromLysand(attachment).catch(
-            (e) => {
-                dualLogger.logError(
-                    LogLevel.ERROR,
-                    "Federation.StatusResolver",
-                    e,
-                );
-                return null;
-            },
-        );
-
-        if (resolvedAttachment) {
-            attachments.push(resolvedAttachment);
-        }
-    }
-
-    const emojis = [];
-
-    for (const emoji of note.extensions?.["org.lysand:custom_emojis"]?.emojis ??
-        []) {
-        const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
-            dualLogger.logError(LogLevel.ERROR, "Federation.StatusResolver", e);
-            return null;
-        });
-
-        if (resolvedEmoji) {
-            emojis.push(resolvedEmoji);
-        }
-    }
-
-    const createdNote = await Note.fromData(
-        author,
-        note.content ?? {
-            "text/plain": {
-                content: "",
-            },
-        },
-        note.visibility as APIStatus["visibility"],
-        note.is_sensitive ?? false,
-        note.subject ?? "",
-        emojis,
-        note.uri,
-        await Promise.all(
-            (note.mentions ?? [])
-                .map((mention) => User.resolve(mention))
-                .filter((mention) => mention !== null) as Promise<User>[],
-        ),
-        attachments.map((a) => a.id),
-        note.replies_to
-            ? (await resolveNote(note.replies_to)).getStatus().id
-            : undefined,
-        note.quotes
-            ? (await resolveNote(note.quotes)).getStatus().id
-            : undefined,
-    );
-
-    if (!createdNote) {
-        throw new Error("Failed to create status");
-    }
-
-    return createdNote;
 };
 
 /**

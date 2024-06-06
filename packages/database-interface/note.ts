@@ -1,3 +1,5 @@
+import { idValidator } from "@/api";
+import { dualLogger } from "@/loggers";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import type { EntityValidator } from "@lysand-org/federation";
@@ -13,12 +15,14 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
+import { LogLevel } from "log-manager";
 import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
     applicationToAPI,
 } from "~/database/entities/Application";
 import {
+    attachmentFromLysand,
     attachmentToAPI,
     attachmentToLysand,
 } from "~/database/entities/Attachment";
@@ -26,6 +30,7 @@ import {
     type EmojiWithInstance,
     emojiToAPI,
     emojiToLysand,
+    fetchEmoji,
     parseEmojis,
 } from "~/database/entities/Emoji";
 import { localObjectURI } from "~/database/entities/Federation";
@@ -208,6 +213,26 @@ export class Note {
         return (await db.insert(Notes).values(values).returning())[0];
     }
 
+    async isRemote() {
+        return this.getAuthor().isRemote();
+    }
+
+    async updateFromRemote() {
+        if (!this.isRemote()) {
+            throw new Error("Cannot refetch a local note (it is not remote)");
+        }
+
+        const updated = await Note.saveFromRemote(this.getURI());
+
+        if (!updated) {
+            throw new Error("Note not found after update");
+        }
+
+        this.status = updated.getStatus();
+
+        return this;
+    }
+
     static async fromData(
         author: User,
         content: typeof EntityValidator.$ContentFormat,
@@ -311,6 +336,9 @@ export class Note {
         mentions: User[] = [],
         /** List of IDs of database Attachment objects */
         media_attachments: string[] = [],
+        replyId?: string,
+        quoteId?: string,
+        application?: Application,
     ) {
         const htmlContent = content
             ? await contentToHtml(content, mentions)
@@ -340,6 +368,9 @@ export class Note {
             visibility,
             sensitive: is_sensitive,
             spoilerText: spoiler_text,
+            replyId,
+            quotingId: quoteId,
+            applicationId: application?.id,
         });
 
         // Connect emojis
@@ -391,6 +422,178 @@ export class Note {
         }
 
         return await Note.fromId(newNote.id, newNote.authorId);
+    }
+
+    static async resolve(
+        uri?: string,
+        providedNote?: typeof EntityValidator.$Note,
+    ): Promise<Note | null> {
+        // Check if note not already in database
+        const foundNote = uri && (await Note.fromSql(eq(Notes.uri, uri)));
+
+        if (foundNote) return foundNote;
+
+        // Check if URI is of a local note
+        if (uri?.startsWith(config.http.base_url)) {
+            const uuid = uri.match(idValidator);
+
+            if (!uuid || !uuid[0]) {
+                throw new Error(
+                    `URI ${uri} is of a local note, but it could not be parsed`,
+                );
+            }
+
+            return await Note.fromId(uuid[0]);
+        }
+
+        return await Note.saveFromRemote(uri, providedNote);
+    }
+
+    static async saveFromRemote(
+        uri?: string,
+        providedNote?: typeof EntityValidator.$Note,
+    ): Promise<Note | null> {
+        if (!uri && !providedNote) {
+            throw new Error("No URI or note provided");
+        }
+
+        const foundStatus = await Note.fromSql(
+            eq(Notes.uri, uri ?? providedNote?.uri ?? ""),
+        );
+
+        let note = providedNote || null;
+
+        if (uri) {
+            if (!URL.canParse(uri)) {
+                throw new Error(`Invalid URI to parse ${uri}`);
+            }
+
+            const response = await fetch(uri, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                },
+            });
+
+            note = (await response.json()) as typeof EntityValidator.$Note;
+        }
+
+        if (!note) {
+            throw new Error("No note was able to be fetched");
+        }
+
+        if (note.type !== "Note") {
+            throw new Error("Invalid object type");
+        }
+
+        if (!note.author) {
+            throw new Error("Invalid object author");
+        }
+
+        const author = await User.resolve(note.author);
+
+        if (!author) {
+            throw new Error("Invalid object author");
+        }
+
+        const attachments = [];
+
+        for (const attachment of note.attachments ?? []) {
+            const resolvedAttachment = await attachmentFromLysand(
+                attachment,
+            ).catch((e) => {
+                dualLogger.logError(
+                    LogLevel.ERROR,
+                    "Federation.StatusResolver",
+                    e,
+                );
+                return null;
+            });
+
+            if (resolvedAttachment) {
+                attachments.push(resolvedAttachment);
+            }
+        }
+
+        const emojis = [];
+
+        for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
+            ?.emojis ?? []) {
+            const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
+                dualLogger.logError(
+                    LogLevel.ERROR,
+                    "Federation.StatusResolver",
+                    e,
+                );
+                return null;
+            });
+
+            if (resolvedEmoji) {
+                emojis.push(resolvedEmoji);
+            }
+        }
+
+        if (foundStatus) {
+            return await foundStatus.updateFromData(
+                note.content ?? {
+                    "text/plain": {
+                        content: "",
+                    },
+                },
+                note.visibility as APIStatus["visibility"],
+                note.is_sensitive ?? false,
+                note.subject ?? "",
+                emojis,
+                note.mentions
+                    ? await Promise.all(
+                          (note.mentions ?? [])
+                              .map((mention) => User.resolve(mention))
+                              .filter(
+                                  (mention) => mention !== null,
+                              ) as Promise<User>[],
+                      )
+                    : [],
+                attachments.map((a) => a.id),
+                note.replies_to
+                    ? (await Note.resolve(note.replies_to))?.getStatus().id
+                    : undefined,
+                note.quotes
+                    ? (await Note.resolve(note.quotes))?.getStatus().id
+                    : undefined,
+            );
+        }
+
+        const createdNote = await Note.fromData(
+            author,
+            note.content ?? {
+                "text/plain": {
+                    content: "",
+                },
+            },
+            note.visibility as APIStatus["visibility"],
+            note.is_sensitive ?? false,
+            note.subject ?? "",
+            emojis,
+            note.uri,
+            await Promise.all(
+                (note.mentions ?? [])
+                    .map((mention) => User.resolve(mention))
+                    .filter((mention) => mention !== null) as Promise<User>[],
+            ),
+            attachments.map((a) => a.id),
+            note.replies_to
+                ? (await Note.resolve(note.replies_to))?.getStatus().id
+                : undefined,
+            note.quotes
+                ? (await Note.resolve(note.quotes))?.getStatus().id
+                : undefined,
+        );
+
+        if (!createdNote) {
+            throw new Error("Failed to create status");
+        }
+
+        return createdNote;
     }
 
     async delete() {

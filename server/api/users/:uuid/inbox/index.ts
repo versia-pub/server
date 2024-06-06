@@ -8,7 +8,6 @@ import type { Hono } from "hono";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";
-import { resolveNote } from "~/database/entities/Status";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
@@ -204,7 +203,7 @@ export default (app: Hono) =>
                             return errorResponse("Author not found", 404);
                         }
 
-                        const newStatus = await resolveNote(
+                        const newStatus = await Note.resolve(
                             undefined,
                             note,
                         ).catch((e) => {
@@ -365,6 +364,24 @@ export default (app: Hono) =>
                         }
 
                         return response("User refreshed", 200);
+                    },
+                    patch: async (patch) => {
+                        // Update the specified note in the database, if it exists and belongs to the user
+                        const toPatch = patch.patched_id;
+
+                        const note = await Note.fromSql(
+                            eq(Notes.uri, toPatch),
+                            eq(Notes.authorId, user.id),
+                        );
+
+                        // Refetch note
+                        if (!note) {
+                            return errorResponse("Note not found", 404);
+                        }
+
+                        await note.updateFromRemote();
+
+                        return response("Note updated", 200);
                     },
                 });
 
