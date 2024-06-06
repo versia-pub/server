@@ -45,6 +45,11 @@ export default (app: Hono) =>
                 },
             });
 
+            const realFilename =
+                media.headers
+                    .get("Content-Disposition")
+                    ?.match(/filename="(.+)"/)?.[1] || id.split("/").pop();
+
             return response(media.body, media.status, {
                 "Content-Type":
                     media.headers.get("Content-Type") ||
@@ -52,6 +57,8 @@ export default (app: Hono) =>
                 "Content-Length": media.headers.get("Content-Length") || "0",
                 "Content-Security-Policy": "",
                 "Content-Encoding": "",
+                // Real filename
+                "Content-Disposition": `inline; filename="${realFilename}"`,
             });
         },
     );
