@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse } from "@/response";
+import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
@@ -39,12 +39,18 @@ export default (app: Hono) =>
                     400,
                 );
 
-            const media = fetch(id, {
+            const media = await fetch(id, {
                 headers: {
-                    ...context.req.raw.headers,
+                    "Accept-Encoding": "identity",
                 },
             });
 
-            return media;
+            return response(media.body, media.status, {
+                "Content-Type":
+                    media.headers.get("Content-Type") ||
+                    "application/octet-stream",
+                "Content-Length": media.headers.get("Content-Length") || "0",
+                "Content-Security-Policy": "",
+            });
         },
     );
