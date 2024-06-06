@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, response } from "@/response";
+import { errorResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
@@ -39,12 +39,12 @@ export default (app: Hono) =>
                     400,
                 );
 
-            return fetch(id, {
+            const media = fetch(id, {
                 headers: {
-                    "Accept-Encoding": "identity",
+                    ...context.req.raw.headers,
                 },
-            }).then((res) => {
-                return response(res.body, res.status, res.headers.toJSON());
             });
+
+            return media;
         },
     );
