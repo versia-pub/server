@@ -14,6 +14,7 @@ import {
     gte,
     inArray,
     isNull,
+    sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import {
@@ -21,6 +22,7 @@ import {
     emojiToLysand,
     fetchEmoji,
 } from "~/database/entities/Emoji";
+import { objectToInboxRequest } from "~/database/entities/Federation";
 import { addInstanceIfNotExists } from "~/database/entities/Instance";
 import {
     type UserWithRelations,
@@ -202,7 +204,9 @@ export class User {
 
     async updateFromRemote() {
         if (!this.isRemote()) {
-            throw new Error("Cannot update local user from remote");
+            throw new Error(
+                "Cannot refetch a local user (they are not remote)",
+            );
         }
 
         const updated = await User.saveFromRemote(this.getUri());
@@ -499,6 +503,38 @@ export class User {
         if (!newUser) throw new Error("User not found after update");
 
         this.user = newUser.getUser();
+
+        // If something important is updated, federate it
+        if (
+            data.username ||
+            data.displayName ||
+            data.note ||
+            data.avatar ||
+            data.header ||
+            data.fields ||
+            data.publicKey ||
+            data.isAdmin ||
+            data.isBot ||
+            data.isLocked ||
+            data.endpoints ||
+            data.isDiscoverable
+        ) {
+            // Get followers
+            const followers = await User.manyFromSql(
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${this.id} AND "Relationships"."following" = true)`,
+            );
+
+            for (const follower of followers) {
+                const federationRequest = await objectToInboxRequest(
+                    this.toLysand(),
+                    this,
+                    follower,
+                );
+
+                // FIXME: Add to new queue system when it's implemented
+                fetch(federationRequest);
+            }
+        }
 
         return this;
     }
