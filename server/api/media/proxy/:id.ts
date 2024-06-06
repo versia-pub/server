@@ -45,12 +45,13 @@ export default (app: Hono) =>
                 },
             });
 
-            return response(await media.arrayBuffer(), media.status, {
+            return response(media.body, media.status, {
                 "Content-Type":
                     media.headers.get("Content-Type") ||
                     "application/octet-stream",
                 "Content-Length": media.headers.get("Content-Length") || "0",
                 "Content-Security-Policy": "",
+                "Content-Encoding": "",
             });
         },
     );
