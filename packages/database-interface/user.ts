@@ -13,6 +13,7 @@ import {
     eq,
     gte,
     inArray,
+    isNotNull,
     isNull,
     sql,
 } from "drizzle-orm";
@@ -522,6 +523,7 @@ export class User {
             // Get followers
             const followers = await User.manyFromSql(
                 sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
+                isNotNull(Users.instanceId),
             );
 
             for (const follower of followers) {
