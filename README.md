@@ -14,7 +14,7 @@
 - **Configurability**: High configurability is a key feature of Lysand. Almost every aspect of the server can be configured to suit your needs. If you feel like something is missing, please open an issue.
 - **Security**: Lysand is designed with security in mind. It is built with modern security practices and technologies, and is constantly updated to ensure the highest level of security.
 - **Performance**: Efficiency and speed are a key focus of Lysand. The design is non-monolithic, and is built to be as fast as possible.
-- **Mastodon API compatibility**: Lysand is designed to be compatible with the Mastodon API, with Glitch-SOC extensions.
+- **Mastodon API compatibility**: Lysand is designed to be compatible with the Mastodon API, with [`glitch-soc`](https://github.com/glitch-soc/mastodon) extensions.
 
 ### Anti-Goals
 
@@ -69,7 +69,7 @@ The following extensions are currently supported or being worked on:
 
 ## API
 
-Lysand implements the Mastodon API (as well as Glitch-Soc extensions). The API is currently almost fully complete, with some fringe functionality still being worked on.
+Lysand implements the Mastodon API (as well as `glitch-soc` extensions). The API is currently almost fully complete, with some fringe functionality still being worked on.
 
 Working endpoints are:
 
