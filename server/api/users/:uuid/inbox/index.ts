@@ -14,8 +14,9 @@ import {
     sendFollowAccept,
 } from "~/database/entities/User";
 import { db } from "~/drizzle/db";
-import { Notifications, Relationships } from "~/drizzle/schema";
+import { Notes, Notifications, Relationships } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
 import {
@@ -313,6 +314,57 @@ export default (app: Hono) =>
                             .where(eq(Relationships.id, foundRelationship.id));
 
                         return response("Follow request rejected", 200);
+                    },
+                    undo: async (undo) => {
+                        // Delete the specified object from database, if it exists and belongs to the user
+                        const toDelete = undo.object;
+
+                        // Try and find a follow, note, or user with the given URI
+                        // Note
+                        const note = await Note.fromSql(
+                            eq(Notes.uri, toDelete),
+                            eq(Notes.authorId, user.id),
+                        );
+
+                        if (note) {
+                            await note.delete();
+                            return response("Note deleted", 200);
+                        }
+
+                        // Follow (unfollow/cancel follow request)
+                        // TODO: Remember to store URIs of follow requests/objects in the future
+
+                        // User
+                        const otherUser = await User.resolve(toDelete);
+
+                        if (otherUser) {
+                            if (otherUser.id === user.id) {
+                                // Delete own account
+                                await user.delete();
+                                return response("Account deleted", 200);
+                            }
+                            return errorResponse(
+                                "Cannot delete other users than self",
+                                400,
+                            );
+                        }
+
+                        return errorResponse(
+                            `Deletion of object ${toDelete} not implemented`,
+                            400,
+                        );
+                    },
+                    user: async (user) => {
+                        // Refetch user to ensure we have the latest data
+                        const updatedAccount = await User.saveFromRemote(
+                            user.uri,
+                        );
+
+                        if (!updatedAccount) {
+                            return errorResponse("Failed to update user", 500);
+                        }
+
+                        return response("User refreshed", 200);
                     },
                 });
 

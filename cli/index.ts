@@ -7,6 +7,7 @@ import Start from "./commands/start";
 import UserCreate from "./commands/user/create";
 import UserDelete from "./commands/user/delete";
 import UserList from "./commands/user/list";
+import UserRefetch from "./commands/user/refetch";
 import UserReset from "./commands/user/reset";
 
 // Use "explicit" oclif strategy to avoid issues with oclif's module resolver and bundling
@@ -15,6 +16,7 @@ export const commands = {
     "user:delete": UserDelete,
     "user:create": UserCreate,
     "user:reset": UserReset,
+    "user:refetch": UserRefetch,
     "emoji:add": EmojiAdd,
     "emoji:delete": EmojiDelete,
     "emoji:list": EmojiList,

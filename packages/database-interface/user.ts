@@ -3,7 +3,7 @@ import { idValidator } from "@/api";
 import { getBestContentType, urlToContentFormat } from "@/content_types";
 import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
-import type { EntityValidator } from "@lysand-org/federation";
+import { EntityValidator } from "@lysand-org/federation";
 import {
     type SQL,
     and,
@@ -187,25 +187,36 @@ export class User {
         )[0];
     }
 
-    static async resolve(uri: string): Promise<User | null> {
-        // Check if user not already in database
-        const foundUser = await User.fromSql(eq(Users.uri, uri));
+    async save() {
+        return (
+            await db
+                .update(Users)
+                .set({
+                    ...this.user,
+                    updatedAt: new Date().toISOString(),
+                })
+                .where(eq(Users.id, this.id))
+                .returning()
+        )[0];
+    }
 
-        if (foundUser) return foundUser;
-
-        // Check if URI is of a local user
-        if (uri.startsWith(config.http.base_url)) {
-            const uuid = uri.match(idValidator);
-
-            if (!uuid || !uuid[0]) {
-                throw new Error(
-                    `URI ${uri} is of a local user, but it could not be parsed`,
-                );
-            }
-
-            return await User.fromId(uuid[0]);
+    async updateFromRemote() {
+        if (!this.isRemote()) {
+            throw new Error("Cannot update local user from remote");
         }
 
+        const updated = await User.saveFromRemote(this.getUri());
+
+        if (!updated) {
+            throw new Error("User not found after update");
+        }
+
+        this.user = updated.getUser();
+
+        return this;
+    }
+
+    static async saveFromRemote(uri: string): Promise<User | null> {
         if (!URL.canParse(uri)) {
             throw new Error(`Invalid URI to parse ${uri}`);
         }
@@ -217,28 +228,13 @@ export class User {
             },
         });
 
-        const data = (await response.json()) as Partial<
+        const json = (await response.json()) as Partial<
             typeof EntityValidator.$User
         >;
 
-        if (
-            !(
-                data.id &&
-                data.username &&
-                data.uri &&
-                data.created_at &&
-                data.dislikes &&
-                data.featured &&
-                data.likes &&
-                data.followers &&
-                data.following &&
-                data.inbox &&
-                data.outbox &&
-                data.public_key
-            )
-        ) {
-            throw new Error("Invalid user data");
-        }
+        const validator = new EntityValidator();
+
+        const data = await validator.User(json);
 
         // Parse emojis and add them to database
         const userEmojis =
@@ -250,6 +246,50 @@ export class User {
 
         for (const emoji of userEmojis) {
             emojis.push(await fetchEmoji(emoji));
+        }
+
+        // Check if new user already exists
+        const foundUser = await User.fromSql(eq(Users.uri, data.uri));
+
+        // If it exists, simply update it
+        if (foundUser) {
+            await foundUser.update({
+                updatedAt: new Date().toISOString(),
+                endpoints: {
+                    dislikes: data.dislikes,
+                    featured: data.featured,
+                    likes: data.likes,
+                    followers: data.followers,
+                    following: data.following,
+                    inbox: data.inbox,
+                    outbox: data.outbox,
+                },
+                avatar: data.avatar
+                    ? Object.entries(data.avatar)[0][1].content
+                    : "",
+                header: data.header
+                    ? Object.entries(data.header)[0][1].content
+                    : "",
+                displayName: data.display_name ?? "",
+                note: getBestContentType(data.bio).content,
+                publicKey: data.public_key.public_key,
+            });
+
+            // Add emojis
+            if (emojis.length > 0) {
+                await db
+                    .delete(EmojiToUser)
+                    .where(eq(EmojiToUser.userId, foundUser.id));
+
+                await db.insert(EmojiToUser).values(
+                    emojis.map((emoji) => ({
+                        emojiId: emoji.id,
+                        userId: foundUser.id,
+                    })),
+                );
+            }
+
+            return foundUser;
         }
 
         const newUser = (
@@ -309,6 +349,28 @@ export class User {
         await addUserToMeilisearch(finalUser);
 
         return finalUser;
+    }
+
+    static async resolve(uri: string): Promise<User | null> {
+        // Check if user not already in database
+        const foundUser = await User.fromSql(eq(Users.uri, uri));
+
+        if (foundUser) return foundUser;
+
+        // Check if URI is of a local user
+        if (uri.startsWith(config.http.base_url)) {
+            const uuid = uri.match(idValidator);
+
+            if (!uuid || !uuid[0]) {
+                throw new Error(
+                    `URI ${uri} is of a local user, but it could not be parsed`,
+                );
+            }
+
+            return await User.fromId(uuid[0]);
+        }
+
+        return await User.saveFromRemote(uri);
     }
 
     /**
