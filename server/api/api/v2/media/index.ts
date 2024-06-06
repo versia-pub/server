@@ -112,11 +112,9 @@ export default (app: Hono) =>
                     throw new Error("Invalid media backend");
             }
 
-            if (isImage) {
-                const { path } = await mediaManager.addFile(file);
+            const { path } = await mediaManager.addFile(file);
 
-                url = getUrl(path, config);
-            }
+            url = getUrl(path, config);
 
             let thumbnailUrl = "";
 

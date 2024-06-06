@@ -39,7 +39,7 @@ export const attachmentToAPI = (
                     ? `${attachment.width}x${attachment.height}`
                     : undefined,
             duration: attachment.duration || undefined,
-            length: attachment.size?.toString() || undefined,
+            length: undefined,
             aspect:
                 attachment.width && attachment.height
                     ? attachment.width / attachment.height
