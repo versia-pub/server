@@ -41,11 +41,11 @@ export default (app: Hono) =>
 
             const media = await fetch(id, {
                 headers: {
-                    "Accept-Encoding": "identity",
+                    "Accept-Encoding": "br",
                 },
             });
 
-            return response(media.body, media.status, {
+            return response(await media.arrayBuffer(), media.status, {
                 "Content-Type":
                     media.headers.get("Content-Type") ||
                     "application/octet-stream",
