@@ -154,6 +154,12 @@ app.all("*", async (context) => {
         .replace(config.http.base_url, config.frontend.url)
         .replace(base_url_with_http, config.frontend.url);
 
+    await dualLogger.log(
+        LogLevel.DEBUG,
+        "Server.Proxy",
+        `Proxying ${replacedUrl}`,
+    );
+
     const proxy = await fetch(replacedUrl, {
         headers: {
             // Include for SSR
