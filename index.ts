@@ -166,6 +166,7 @@ app.all("*", async (context) => {
             "X-Forwarded-Host": `${config.http.bind}:${config.http.bind_port}`,
             "Accept-Encoding": "identity",
         },
+        redirect: "manual",
     }).catch(async (e) => {
         await dualLogger.logError(LogLevel.ERROR, "Server.Proxy", e as Error);
         await dualLogger.log(
