@@ -194,9 +194,7 @@ createServer(config, app);
 await dualServerLogger.log(
     LogLevel.INFO,
     "Server",
-    `Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(
-        performance.now() - timeAtStart
-    ).toFixed(0)}ms`,
+    `Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`,
 );
 
 await dualServerLogger.log(
