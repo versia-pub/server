@@ -2,6 +2,7 @@ import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "hono";
 import { getFromToken } from "~/database/entities/Application";
+import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -13,13 +14,16 @@ export const meta = applyConfig({
     auth: {
         required: true,
     },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_APPS],
+    },
 });
 
 export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user, token } = context.req.valid("header");
 

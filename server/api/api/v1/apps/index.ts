@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { Applications } from "~/drizzle/schema";
+import { Applications, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -16,6 +16,9 @@ export const meta = applyConfig({
     },
     auth: {
         required: false,
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_APPS],
     },
 });
 

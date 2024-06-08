@@ -5,6 +5,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { createLike } from "~/database/entities/Like";
 import { db } from "~/drizzle/db";
+import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -16,6 +17,12 @@ export const meta = applyConfig({
     route: "/api/v1/statuses/:id/favourite",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_LIKES,
+            RolePermissions.VIEW_NOTES,
+        ],
     },
 });
 
@@ -30,7 +37,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
 

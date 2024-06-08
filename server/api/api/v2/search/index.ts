@@ -8,7 +8,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { resolveWebFinger } from "~/database/entities/User";
 import { db } from "~/drizzle/db";
-import { Instances, Notes, Users } from "~/drizzle/schema";
+import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
@@ -24,6 +24,13 @@ export const meta = applyConfig({
     auth: {
         required: false,
         oauthPermissions: ["read:search"],
+    },
+    permissions: {
+        required: [
+            RolePermissions.SEARCH,
+            RolePermissions.VIEW_ACCOUNTS,
+            RolePermissions.VIEW_NOTES,
+        ],
     },
 });
 
@@ -46,7 +53,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user: self } = context.req.valid("header");
             const { q, type, resolve, following, account_id, limit, offset } =

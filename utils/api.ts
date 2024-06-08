@@ -101,13 +101,44 @@ export const handleZodError = (
     }
 };
 
-export const auth = (authData: APIRouteMetadata["auth"]) =>
+export const auth = (
+    authData: APIRouteMetadata["auth"],
+    permissionData?: APIRouteMetadata["permissions"],
+) =>
     validator("header", async (value, context) => {
         const auth = value.authorization
             ? await getFromHeader(value.authorization)
             : null;
 
         const error = errorResponse("Unauthorized", 401);
+
+        // Permissions check
+        if (permissionData) {
+            const userPerms = auth?.user
+                ? auth.user.getAllPermissions()
+                : config.permissions.anonymous;
+
+            const requiredPerms =
+                permissionData.methodOverrides?.[
+                    context.req.method as HttpVerb
+                ] ?? permissionData.required;
+
+            if (!requiredPerms.every((perm) => userPerms.includes(perm))) {
+                const missingPerms = requiredPerms.filter(
+                    (perm) => !userPerms.includes(perm),
+                );
+
+                return context.json(
+                    {
+                        error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(
+                            ", ",
+                        )}`,
+                    },
+                    403,
+                    error.headers.toJSON(),
+                );
+            }
+        }
 
         if (!auth?.user) {
             if (authData.required) {
@@ -133,6 +164,8 @@ export const auth = (authData: APIRouteMetadata["auth"]) =>
                     error.headers.toJSON(),
                 );
             }
+
+            // Check role permissions
         } else {
             return {
                 user: auth.user as User,

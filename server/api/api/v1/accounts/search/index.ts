@@ -17,7 +17,7 @@ import {
 import stringComparison from "string-comparison";
 import { z } from "zod";
 import { resolveWebFinger } from "~/database/entities/User";
-import { Users } from "~/drizzle/schema";
+import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -30,6 +30,9 @@ export const meta = applyConfig({
     auth: {
         required: false,
         oauthPermissions: ["read:accounts"],
+    },
+    permissions: {
+        required: [RolePermissions.SEARCH, RolePermissions.VIEW_ACCOUNTS],
     },
 });
 
@@ -72,7 +75,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { q, limit, offset, resolve, following } =
                 context.req.valid("query");

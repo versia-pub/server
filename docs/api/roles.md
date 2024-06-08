@@ -22,15 +22,27 @@ Roles can be visible or invisible. Invisible roles are not shown to users in the
 
 ## Permissions
 
+Default permissions for anonymous users, logged-in users and admins can be set in config. These are always applied in addition to the permissions granted by roles. You may set them to empty arrays to exclusively use roles for permissions (make sure your roles are set up correctly).
+
 ```ts
 // Last updated: 2024-06-07
 // Search for "RolePermissions" in the source code (GitHub search bar) for the most up-to-date version
-enum RolePermissions {
+export enum RolePermissions {
     MANAGE_NOTES = "notes",
     MANAGE_OWN_NOTES = "owner:note",
+    VIEW_NOTES = "read:note",
+    VIEW_NOTE_LIKES = "read:note_likes",
+    VIEW_NOTE_BOOSTS = "read:note_boosts",
     MANAGE_ACCOUNTS = "accounts",
     MANAGE_OWN_ACCOUNT = "owner:account",
+    VIEW_ACCOUNT_FOLLOWS = "read:account_follows",
+    MANAGE_LIKES = "likes",
+    MANAGE_OWN_LIKES = "owner:like",
+    MANAGE_BOOSTS = "boosts",
+    MANAGE_OWN_BOOSTS = "owner:boost",
+    VIEW_ACCOUNTS = "read:account",
     MANAGE_EMOJIS = "emojis",
+    VIEW_EMOJIS = "read:emoji",
     MANAGE_OWN_EMOJIS = "owner:emoji",
     MANAGE_MEDIA = "media",
     MANAGE_OWN_MEDIA = "owner:media",
@@ -45,6 +57,14 @@ enum RolePermissions {
     MANAGE_SETTINGS = "settings",
     MANAGE_OWN_SETTINGS = "owner:settings",
     MANAGE_ROLES = "roles",
+    MANAGE_NOTIFICATIONS = "notifications",
+    MANAGE_OWN_NOTIFICATIONS = "owner:notification",
+    MANAGE_FOLLOWS = "follows",
+    MANAGE_OWN_FOLLOWS = "owner:follow",
+    MANAGE_OWN_APPS = "owner:app",
+    SEARCH = "search",
+    VIEW_PUBLIC_TIMELINES = "public_timelines",
+    VIEW_PRIVATE_TIMELINES = "private_timelines",
     IGNORE_RATE_LIMITS = "ignore_rate_limits",
     IMPERSONATE = "impersonate",
     MANAGE_INSTANCE = "instance",

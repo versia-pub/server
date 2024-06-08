@@ -35,6 +35,7 @@ import {
     EmojiToUser,
     NoteToMentions,
     Notes,
+    type RolePermissions,
     UserToPinnedNotes,
     Users,
 } from "~/drizzle/schema";
@@ -115,6 +116,25 @@ export class User {
 
     static getUri(id: string, uri: string | null, baseUrl: string) {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
+    }
+
+    public hasPermission(permission: RolePermissions) {
+        return this.getAllPermissions().includes(permission);
+    }
+
+    public getAllPermissions() {
+        return (
+            this.user.roles
+                .flatMap((role) => role.permissions)
+                // Add default permissions
+                .concat(config.permissions.default)
+                // If admin, add admin permissions
+                .concat(this.user.isAdmin ? config.permissions.admin : [])
+                .reduce((acc, permission) => {
+                    if (!acc.includes(permission)) acc.push(permission);
+                    return acc;
+                }, [] as RolePermissions[])
+        );
     }
 
     static async getCount() {

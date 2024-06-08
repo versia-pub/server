@@ -7,7 +7,7 @@ import { z } from "zod";
 import { relationshipToAPI } from "~/database/entities/Relationship";
 import { getRelationshipToOtherUser } from "~/database/entities/User";
 import { db } from "~/drizzle/db";
-import { Relationships } from "~/drizzle/schema";
+import { Relationships, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -20,6 +20,12 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["write:accounts"],
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_ACCOUNT,
+            RolePermissions.VIEW_ACCOUNTS,
+        ],
     },
 });
 
@@ -34,7 +40,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
             const { user: self } = context.req.valid("header");

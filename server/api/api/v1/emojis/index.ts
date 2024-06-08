@@ -13,7 +13,7 @@ import { z } from "zod";
 import { getUrl } from "~/database/entities/Attachment";
 import { emojiToAPI } from "~/database/entities/Emoji";
 import { db } from "~/drizzle/db";
-import { Emojis } from "~/drizzle/schema";
+import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -26,6 +26,12 @@ export const meta = applyConfig({
     },
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_EMOJIS,
+            RolePermissions.VIEW_EMOJIS,
+        ],
     },
 });
 
@@ -63,7 +69,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { shortcode, element, alt, global, category } =
                 context.req.valid("form");
@@ -73,9 +79,9 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            if (!user.getUser().isAdmin && global) {
+            if (!user.hasPermission(RolePermissions.MANAGE_EMOJIS) && global) {
                 return errorResponse(
-                    "Only administrators can upload global emojis",
+                    `Only users with the '${RolePermissions.MANAGE_EMOJIS}' permission can upload global emojis`,
                     401,
                 );
             }

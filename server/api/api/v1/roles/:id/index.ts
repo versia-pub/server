@@ -16,6 +16,13 @@ export const meta = applyConfig({
         max: 20,
     },
     route: "/api/v1/roles/:id",
+    permissions: {
+        required: [],
+        methodOverrides: {
+            POST: [RolePermissions.MANAGE_ROLES],
+            DELETE: [RolePermissions.MANAGE_ROLES],
+        },
+    },
 });
 
 export const schemas = {
@@ -29,7 +36,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
             const { id } = context.req.valid("param");
@@ -51,22 +58,6 @@ export default (app: Hono) =>
                 }
 
                 case "POST": {
-                    // Check if user has MANAGE_ROLES permission
-                    if (
-                        !userRoles.some((r) =>
-                            r
-                                .getRole()
-                                .permissions.includes(
-                                    RolePermissions.MANAGE_ROLES,
-                                ),
-                        )
-                    ) {
-                        return errorResponse(
-                            "You do not have permission to manage roles",
-                            403,
-                        );
-                    }
-
                     const userHighestRole = userRoles.reduce((prev, current) =>
                         prev.getRole().priority > current.getRole().priority
                             ? prev
@@ -94,22 +85,6 @@ export default (app: Hono) =>
                     return response(null, 204);
                 }
                 case "DELETE": {
-                    // Check if user has MANAGE_ROLES permission
-                    if (
-                        !userRoles.some((r) =>
-                            r
-                                .getRole()
-                                .permissions.includes(
-                                    RolePermissions.MANAGE_ROLES,
-                                ),
-                        )
-                    ) {
-                        return errorResponse(
-                            "You do not have permission to manage roles",
-                            403,
-                        );
-                    }
-
                     const userHighestRole = userRoles.reduce((prev, current) =>
                         prev.getRole().priority > current.getRole().priority
                             ? prev

@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, gt, gte, lt, or, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { Notes } from "~/drizzle/schema";
+import { Notes, RolePermissions } from "~/drizzle/schema";
 import { Timeline } from "~/packages/database-interface/timeline";
 
 export const meta = applyConfig({
@@ -16,6 +16,14 @@ export const meta = applyConfig({
     route: "/api/v1/timelines/home",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_NOTES,
+            RolePermissions.VIEW_NOTES,
+            RolePermissions.VIEW_ACCOUNTS,
+            RolePermissions.VIEW_PRIVATE_TIMELINES,
+        ],
     },
 });
 
@@ -33,7 +41,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { max_id, since_id, min_id, limit } =
                 context.req.valid("query");

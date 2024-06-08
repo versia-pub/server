@@ -1,5 +1,6 @@
 import { types as mimeTypes } from "mime-types";
 import { z } from "zod";
+import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
 
 export enum MediaBackendType {
     LOCAL = "local",
@@ -479,6 +480,21 @@ export const configValidator = z.object({
             extended_description_path: undefined,
             logo: undefined,
             banner: undefined,
+        }),
+    permissions: z
+        .object({
+            anonymous: z
+                .array(z.nativeEnum(RolePermissions))
+                .default(DEFAULT_ROLES),
+            default: z
+                .array(z.nativeEnum(RolePermissions))
+                .default(DEFAULT_ROLES),
+            admin: z.array(z.nativeEnum(RolePermissions)).default(ADMIN_ROLES),
+        })
+        .default({
+            anonymous: DEFAULT_ROLES,
+            default: DEFAULT_ROLES,
+            admin: ADMIN_ROLES,
         }),
     filters: z.object({
         note_content: z.array(z.string()).default([]),

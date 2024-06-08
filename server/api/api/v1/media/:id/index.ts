@@ -10,7 +10,7 @@ import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { attachmentToAPI, getUrl } from "~/database/entities/Attachment";
 import { db } from "~/drizzle/db";
-import { Attachments } from "~/drizzle/schema";
+import { Attachments, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],
@@ -22,6 +22,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["write:media"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_MEDIA],
     },
 });
 
@@ -45,7 +48,7 @@ export default (app: Hono) =>
         meta.route,
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
 

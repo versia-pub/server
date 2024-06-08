@@ -3,6 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
+import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -14,6 +15,12 @@ export const meta = applyConfig({
     route: "/api/v1/statuses/:id/unpin",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_NOTES,
+            RolePermissions.VIEW_NOTES,
+        ],
     },
 });
 
@@ -28,7 +35,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");

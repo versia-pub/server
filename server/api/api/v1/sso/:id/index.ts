@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { OpenIdAccounts } from "~/drizzle/schema";
+import { OpenIdAccounts, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -18,6 +18,9 @@ export const meta = applyConfig({
         max: 20,
     },
     route: "/api/v1/sso/:id",
+    permissions: {
+        required: [RolePermissions.OAUTH],
+    },
 });
 
 export const schemas = {
@@ -36,7 +39,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id: issuerId } = context.req.valid("param");
             const { user } = context.req.valid("header");

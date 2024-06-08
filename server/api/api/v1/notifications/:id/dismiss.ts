@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { Notifications } from "~/drizzle/schema";
+import { Notifications, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -17,6 +17,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["write:notifications"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_NOTIFICATIONS],
     },
 });
 
@@ -31,7 +34,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
 

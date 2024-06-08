@@ -144,7 +144,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "You do not have permission to manage roles",
+            error: "You do not have the required permissions to access this route. Missing: roles",
         });
     });
 

@@ -11,7 +11,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { attachmentToAPI, getUrl } from "~/database/entities/Attachment";
 import { db } from "~/drizzle/db";
-import { Attachments } from "~/drizzle/schema";
+import { Attachments, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -23,6 +23,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["write:media"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_MEDIA],
     },
 });
 
@@ -43,7 +46,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { file, thumbnail, description } = context.req.valid("form");
 

@@ -43,7 +43,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const form = context.req.valid("form");
             const { username, email, password, agreement, locale } =

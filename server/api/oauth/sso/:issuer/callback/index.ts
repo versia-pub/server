@@ -7,7 +7,7 @@ import { SignJWT } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/database/entities/Token";
 import { db } from "~/drizzle/db";
-import { Tokens } from "~/drizzle/schema";
+import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { OAuthManager } from "~/packages/database-interface/oauth";
 import { User } from "~/packages/database-interface/user";
@@ -136,6 +136,19 @@ export default (app: Hono) =>
                     },
                     "invalid_request",
                     "No user found with that account",
+                );
+            }
+
+            if (!user.hasPermission(RolePermissions.OAUTH)) {
+                return returnError(
+                    {
+                        redirect_uri: flow.application?.redirectUri,
+                        client_id: flow.application?.clientId,
+                        response_type: "code",
+                        scope: flow.application?.scopes,
+                    },
+                    "invalid_request",
+                    `User does not have the '${RolePermissions.OAUTH}' permission`,
                 );
             }
 

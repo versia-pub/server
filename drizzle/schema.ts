@@ -493,9 +493,19 @@ export const ModTags = pgTable("ModTags", {
 export enum RolePermissions {
     MANAGE_NOTES = "notes",
     MANAGE_OWN_NOTES = "owner:note",
+    VIEW_NOTES = "read:note",
+    VIEW_NOTE_LIKES = "read:note_likes",
+    VIEW_NOTE_BOOSTS = "read:note_boosts",
     MANAGE_ACCOUNTS = "accounts",
     MANAGE_OWN_ACCOUNT = "owner:account",
+    VIEW_ACCOUNT_FOLLOWS = "read:account_follows",
+    MANAGE_LIKES = "likes",
+    MANAGE_OWN_LIKES = "owner:like",
+    MANAGE_BOOSTS = "boosts",
+    MANAGE_OWN_BOOSTS = "owner:boost",
+    VIEW_ACCOUNTS = "read:account",
     MANAGE_EMOJIS = "emojis",
+    VIEW_EMOJIS = "read:emoji",
     MANAGE_OWN_EMOJIS = "owner:emoji",
     MANAGE_MEDIA = "media",
     MANAGE_OWN_MEDIA = "owner:media",
@@ -510,6 +520,14 @@ export enum RolePermissions {
     MANAGE_SETTINGS = "settings",
     MANAGE_OWN_SETTINGS = "owner:settings",
     MANAGE_ROLES = "roles",
+    MANAGE_NOTIFICATIONS = "notifications",
+    MANAGE_OWN_NOTIFICATIONS = "owner:notification",
+    MANAGE_FOLLOWS = "follows",
+    MANAGE_OWN_FOLLOWS = "owner:follow",
+    MANAGE_OWN_APPS = "owner:app",
+    SEARCH = "search",
+    VIEW_PUBLIC_TIMELINES = "public_timelines",
+    VIEW_PRIVATE_TIMELINES = "private_timelines",
     IGNORE_RATE_LIMITS = "ignore_rate_limits",
     IMPERSONATE = "impersonate",
     MANAGE_INSTANCE = "instance",
@@ -521,14 +539,28 @@ export enum RolePermissions {
 
 export const DEFAULT_ROLES = [
     RolePermissions.MANAGE_OWN_NOTES,
+    RolePermissions.VIEW_NOTES,
+    RolePermissions.VIEW_NOTE_LIKES,
+    RolePermissions.VIEW_NOTE_BOOSTS,
     RolePermissions.MANAGE_OWN_ACCOUNT,
+    RolePermissions.VIEW_ACCOUNT_FOLLOWS,
+    RolePermissions.MANAGE_OWN_LIKES,
+    RolePermissions.MANAGE_OWN_BOOSTS,
+    RolePermissions.VIEW_ACCOUNTS,
     RolePermissions.MANAGE_OWN_EMOJIS,
+    RolePermissions.VIEW_EMOJIS,
     RolePermissions.MANAGE_OWN_MEDIA,
     RolePermissions.MANAGE_OWN_BLOCKS,
     RolePermissions.MANAGE_OWN_FILTERS,
     RolePermissions.MANAGE_OWN_MUTES,
     RolePermissions.MANAGE_OWN_REPORTS,
     RolePermissions.MANAGE_OWN_SETTINGS,
+    RolePermissions.MANAGE_OWN_NOTIFICATIONS,
+    RolePermissions.MANAGE_OWN_FOLLOWS,
+    RolePermissions.MANAGE_OWN_APPS,
+    RolePermissions.SEARCH,
+    RolePermissions.VIEW_PUBLIC_TIMELINES,
+    RolePermissions.VIEW_PRIVATE_TIMELINES,
     RolePermissions.OAUTH,
 ];
 
@@ -536,6 +568,8 @@ export const ADMIN_ROLES = [
     ...DEFAULT_ROLES,
     RolePermissions.MANAGE_NOTES,
     RolePermissions.MANAGE_ACCOUNTS,
+    RolePermissions.MANAGE_LIKES,
+    RolePermissions.MANAGE_BOOSTS,
     RolePermissions.MANAGE_EMOJIS,
     RolePermissions.MANAGE_MEDIA,
     RolePermissions.MANAGE_BLOCKS,
@@ -544,6 +578,8 @@ export const ADMIN_ROLES = [
     RolePermissions.MANAGE_REPORTS,
     RolePermissions.MANAGE_SETTINGS,
     RolePermissions.MANAGE_ROLES,
+    RolePermissions.MANAGE_NOTIFICATIONS,
+    RolePermissions.MANAGE_FOLLOWS,
     RolePermissions.IMPERSONATE,
     RolePermissions.IGNORE_RATE_LIMITS,
     RolePermissions.MANAGE_INSTANCE,
@@ -563,6 +599,10 @@ export const Roles = pgTable("Roles", {
     visible: boolean("visible").notNull().default(false),
     icon: text("icon"),
 });
+
+export const RolesRelations = relations(Roles, ({ many }) => ({
+    users: many(RoleToUsers),
+}));
 
 export const RoleToUsers = pgTable("RoleToUsers", {
     roleId: uuid("roleId")
@@ -733,6 +773,7 @@ export const UsersRelations = relations(Users, ({ many, one }) => ({
         references: [Instances.id],
     }),
     mentionedIn: many(NoteToMentions),
+    roles: many(RoleToUsers),
 }));
 
 export const RelationshipsRelations = relations(Relationships, ({ one }) => ({

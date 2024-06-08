@@ -14,7 +14,7 @@ import { getUrl } from "~/database/entities/Attachment";
 import { type EmojiWithInstance, parseEmojis } from "~/database/entities/Emoji";
 import { contentToHtml } from "~/database/entities/Status";
 import { db } from "~/drizzle/db";
-import { EmojiToUser } from "~/drizzle/schema";
+import { EmojiToUser, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -27,6 +27,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["write:accounts"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
     },
 });
 
@@ -98,7 +101,7 @@ export default (app: Hono) =>
         meta.route,
         qs(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
             const {

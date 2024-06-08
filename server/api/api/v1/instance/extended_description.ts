@@ -19,30 +19,41 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, auth(meta.auth), async () => {
-        let extended_description = (await getMarkdownRenderer()).render(
-            "This is a [Lysand](https://lysand.org) server with the default extended description.",
-        );
-        let lastModified = new Date(2024, 0, 0);
+    app.on(
+        meta.allowedMethods,
+        meta.route,
+        auth(meta.auth, meta.permissions),
+        async () => {
+            let extended_description = (await getMarkdownRenderer()).render(
+                "This is a [Lysand](https://lysand.org) server with the default extended description.",
+            );
+            let lastModified = new Date(2024, 0, 0);
 
-        const extended_description_file = Bun.file(
-            config.instance.extended_description_path || "",
-        );
+            const extended_description_file = Bun.file(
+                config.instance.extended_description_path || "",
+            );
 
-        if (await extended_description_file.exists()) {
-            extended_description =
-                (await getMarkdownRenderer()).render(
-                    (await extended_description_file.text().catch(async (e) => {
-                        await dualLogger.logError(LogLevel.ERROR, "Routes", e);
-                        return "";
-                    })) ||
-                        "This is a [Lysand](https://lysand.org) server with the default extended description.",
-                ) || "";
-            lastModified = new Date(extended_description_file.lastModified);
-        }
+            if (await extended_description_file.exists()) {
+                extended_description =
+                    (await getMarkdownRenderer()).render(
+                        (await extended_description_file
+                            .text()
+                            .catch(async (e) => {
+                                await dualLogger.logError(
+                                    LogLevel.ERROR,
+                                    "Routes",
+                                    e,
+                                );
+                                return "";
+                            })) ||
+                            "This is a [Lysand](https://lysand.org) server with the default extended description.",
+                    ) || "";
+                lastModified = new Date(extended_description_file.lastModified);
+            }
 
-        return jsonResponse({
-            updated_at: lastModified.toISOString(),
-            content: extended_description,
-        });
-    });
+            return jsonResponse({
+                updated_at: lastModified.toISOString(),
+                content: extended_description,
+            });
+        },
+    );

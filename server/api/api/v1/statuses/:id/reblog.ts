@@ -5,7 +5,7 @@ import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { Notes, Notifications } from "~/drizzle/schema";
+import { Notes, Notifications, RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -17,6 +17,12 @@ export const meta = applyConfig({
     route: "/api/v1/statuses/:id/reblog",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_BOOSTS,
+            RolePermissions.VIEW_NOTES,
+        ],
     },
 });
 
@@ -36,7 +42,7 @@ export default (app: Hono) =>
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
             const { visibility } = context.req.valid("form");

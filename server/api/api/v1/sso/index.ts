@@ -12,7 +12,11 @@ import {
 } from "oauth4webapi";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { Applications, OpenIdLoginFlows } from "~/drizzle/schema";
+import {
+    Applications,
+    OpenIdLoginFlows,
+    RolePermissions,
+} from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -25,6 +29,9 @@ export const meta = applyConfig({
         max: 20,
     },
     route: "/api/v1/sso",
+    permissions: {
+        required: [RolePermissions.OAUTH],
+    },
 });
 
 export const schemas = {
@@ -46,7 +53,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const form = context.req.valid("form");
             const { user } = context.req.valid("header");

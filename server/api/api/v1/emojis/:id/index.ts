@@ -14,7 +14,7 @@ import { z } from "zod";
 import { getUrl } from "~/database/entities/Attachment";
 import { emojiToAPI } from "~/database/entities/Emoji";
 import { db } from "~/drizzle/db";
-import { Emojis } from "~/drizzle/schema";
+import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -27,6 +27,12 @@ export const meta = applyConfig({
     },
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_EMOJIS,
+            RolePermissions.VIEW_EMOJIS,
+        ],
     },
 });
 
@@ -71,7 +77,7 @@ export default (app: Hono) =>
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
@@ -91,12 +97,12 @@ export default (app: Hono) =>
 
             // Check if user is admin
             if (
-                !user.getUser().isAdmin &&
+                !user.hasPermission(RolePermissions.MANAGE_EMOJIS) &&
                 emoji.ownerId !== user.getUser().id
             ) {
                 return jsonResponse(
                     {
-                        error: "You do not have permission to modify this emoji, as it is either global or not owned by you",
+                        error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.MANAGE_EMOJIS}' permission to manage global emojis`,
                     },
                     403,
                 );
@@ -139,9 +145,12 @@ export default (app: Hono) =>
                         );
                     }
 
-                    if (!user.getUser().isAdmin && form.global) {
+                    if (
+                        !user.hasPermission(RolePermissions.MANAGE_EMOJIS) &&
+                        form.global
+                    ) {
                         return errorResponse(
-                            "Only administrators can make an emoji global or not",
+                            `Only users with the '${RolePermissions.MANAGE_EMOJIS}' permission can make an emoji global or not`,
                             401,
                         );
                     }

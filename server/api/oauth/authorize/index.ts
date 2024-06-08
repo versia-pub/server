@@ -7,7 +7,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/database/entities/Token";
 import { db } from "~/drizzle/db";
-import { Tokens } from "~/drizzle/schema";
+import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
@@ -157,6 +157,14 @@ export default (app: Hono) =>
 
             if (!user)
                 return returnError(body, "invalid_request", "Invalid sub");
+
+            if (!user.hasPermission(RolePermissions.OAUTH)) {
+                return returnError(
+                    body,
+                    "invalid_request",
+                    `User is missing the ${RolePermissions.OAUTH} permission`,
+                );
+            }
 
             const responseTypes = response_type.split(" ");
 

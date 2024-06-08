@@ -10,6 +10,7 @@ import {
     notificationToAPI,
 } from "~/database/entities/Notification";
 import type { NotificationWithRelations } from "~/database/entities/Notification";
+import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -21,6 +22,12 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["read:notifications"],
+    },
+    permissions: {
+        required: [
+            RolePermissions.MANAGE_OWN_NOTIFICATIONS,
+            RolePermissions.VIEW_PRIVATE_TIMELINES,
+        ],
     },
 });
 
@@ -89,7 +96,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
             if (!user) return errorResponse("Unauthorized", 401);

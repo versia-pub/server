@@ -19,7 +19,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             // TODO: Add checks for disabled/unverified accounts
             const { user } = context.req.valid("header");

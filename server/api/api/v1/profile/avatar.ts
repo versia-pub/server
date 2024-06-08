@@ -1,6 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "hono";
+import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE"],
@@ -12,13 +13,16 @@ export const meta = applyConfig({
     auth: {
         required: true,
     },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
+    },
 });
 
 export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user: self } = context.req.valid("header");
 

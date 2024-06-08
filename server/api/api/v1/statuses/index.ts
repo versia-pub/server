@@ -7,6 +7,7 @@ import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { federateNote, parseTextMentions } from "~/database/entities/Status";
 import { db } from "~/drizzle/db";
+import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -18,6 +19,9 @@ export const meta = applyConfig({
     route: "/api/v1/statuses",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_NOTES],
     },
 });
 
@@ -85,7 +89,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user, application } = context.req.valid("header");
 

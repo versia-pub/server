@@ -5,7 +5,7 @@ import { and, count, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { Markers } from "~/drizzle/schema";
+import { Markers, RolePermissions } from "~/drizzle/schema";
 import type { Marker as APIMarker } from "~/types/mastodon/marker";
 
 export const meta = applyConfig({
@@ -18,6 +18,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["read:blocks"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
     },
 });
 
@@ -38,7 +41,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { "timeline[]": timelines } = context.req.valid("query");
             const { user } = context.req.valid("header");

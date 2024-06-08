@@ -312,6 +312,22 @@ description = "A Lysand instance"
 # URL to your instance banner
 # banner = ""
 
+[permissions]
+# Control default permissions for users
+# Note that an anonymous user having a permission will not allow them
+# to do things that require authentication (e.g. 'owner:notes' -> posting a note will need
+# auth, but viewing a note will not)
+# See docs/api/roles.md in source code for a list of all permissions
+
+# Defaults to being able to login and manage their own content
+# anonymous = []
+
+# Defaults to identical to anonymous
+# default = []
+
+# Defaults to being able to manage all instance data, content, and users
+# admin = []
+
 
 [filters]
 # Regex filters for federated and local data

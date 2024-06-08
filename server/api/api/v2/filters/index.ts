@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { FilterKeywords, Filters } from "~/drizzle/schema";
+import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],
     route: "/api/v2/filters",
@@ -14,6 +14,9 @@ export const meta = applyConfig({
     },
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_FILTERS],
     },
 });
 
@@ -62,7 +65,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
 

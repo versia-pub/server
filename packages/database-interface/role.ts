@@ -52,7 +52,7 @@ export class Role {
         orderBy: SQL<unknown> | undefined = desc(Roles.id),
         limit?: number,
         offset?: number,
-        extra?: Parameters<typeof db.query.Users.findMany>[0],
+        extra?: Parameters<typeof db.query.Roles.findMany>[0],
     ) {
         const found = await db.query.Roles.findMany({
             where: sql,

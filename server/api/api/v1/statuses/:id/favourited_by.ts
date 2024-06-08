@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { Users } from "~/drizzle/schema";
+import { RolePermissions, Users } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 import { Timeline } from "~/packages/database-interface/timeline";
 
@@ -17,6 +17,9 @@ export const meta = applyConfig({
     route: "/api/v1/statuses/:id/favourited_by",
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [RolePermissions.VIEW_NOTES, RolePermissions.VIEW_NOTE_LIKES],
     },
 });
 
@@ -38,7 +41,7 @@ export default (app: Hono) =>
         meta.route,
         zValidator("query", schemas.query, handleZodError),
         zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { max_id, since_id, min_id, limit } =
                 context.req.valid("query");

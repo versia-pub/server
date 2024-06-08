@@ -8,6 +8,7 @@ import {
     Instances,
     Notifications,
     Relationships,
+    type Roles,
     Tokens,
     Users,
 } from "~/drizzle/schema";
@@ -31,6 +32,7 @@ export type UserWithRelations = UserType & {
     followerCount: number;
     followingCount: number;
     statusCount: number;
+    roles: InferSelectModel<typeof Roles>[];
 };
 
 export const userRelations: {
@@ -44,6 +46,11 @@ export const userRelations: {
             };
         };
     };
+    roles: {
+        with: {
+            role: true;
+        };
+    };
 } = {
     instance: true,
     emojis: {
@@ -53,6 +60,11 @@ export const userRelations: {
                     instance: true,
                 },
             },
+        },
+    },
+    roles: {
+        with: {
+            role: true,
         },
     },
 };
@@ -242,6 +254,11 @@ export const transformOutputToUserWithRelations = (
             emoji?: EmojiWithInstance;
         }[];
         instance: InferSelectModel<typeof Instances> | null;
+        roles: {
+            userId: string;
+            roleId: string;
+            role?: InferSelectModel<typeof Roles>;
+        }[];
         endpoints: unknown;
     },
 ): UserWithRelations => {
@@ -266,6 +283,9 @@ export const transformOutputToUserWithRelations = (
                 (emoji as unknown as Record<string, object>)
                     .emoji as EmojiWithInstance,
         ),
+        roles: user.roles
+            .map((role) => role.role)
+            .filter(Boolean) as InferSelectModel<typeof Roles>[],
     };
 };
 

@@ -5,7 +5,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
-import { FilterKeywords, Filters } from "~/drizzle/schema";
+import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT", "DELETE"],
@@ -16,6 +16,9 @@ export const meta = applyConfig({
     },
     auth: {
         required: true,
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_FILTERS],
     },
 });
 
@@ -73,7 +76,7 @@ export default (app: Hono) =>
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
             const { id } = context.req.valid("param");

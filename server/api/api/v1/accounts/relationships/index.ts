@@ -8,6 +8,7 @@ import {
     relationshipToAPI,
 } from "~/database/entities/Relationship";
 import { db } from "~/drizzle/db";
+import { RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -20,6 +21,9 @@ export const meta = applyConfig({
     auth: {
         required: true,
         oauthPermissions: ["read:follows"],
+    },
+    permissions: {
+        required: [RolePermissions.MANAGE_OWN_FOLLOWS],
     },
 });
 
@@ -35,7 +39,7 @@ export default (app: Hono) =>
         meta.route,
         qsQuery(),
         zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { user: self } = context.req.valid("header");
             const { id } = context.req.valid("query");

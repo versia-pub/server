@@ -13,6 +13,7 @@ import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { undoFederationRequest } from "~/database/entities/Federation";
 import { db } from "~/drizzle/db";
+import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -25,6 +26,16 @@ export const meta = applyConfig({
     auth: {
         required: false,
         requiredOnMethods: ["DELETE", "PUT"],
+    },
+    permissions: {
+        required: [RolePermissions.VIEW_NOTES],
+        methodOverrides: {
+            DELETE: [
+                RolePermissions.MANAGE_OWN_NOTES,
+                RolePermissions.VIEW_NOTES,
+            ],
+            PUT: [RolePermissions.MANAGE_OWN_NOTES, RolePermissions.VIEW_NOTES],
+        },
     },
 });
 
@@ -78,7 +89,7 @@ export default (app: Hono) =>
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth),
+        auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
