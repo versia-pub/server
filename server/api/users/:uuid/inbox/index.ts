@@ -2,6 +2,11 @@ import { applyConfig, debugRequest, handleZodError } from "@/api";
 import { dualLogger } from "@/loggers";
 import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import {
+    EntityValidator,
+    RequestParserHandler,
+    SignatureValidator,
+} from "@lysand-org/federation";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -18,11 +23,6 @@ import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
-import {
-    EntityValidator,
-    RequestParserHandler,
-    SignatureValidator,
-} from "~/packages/lysand-api/federation";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
