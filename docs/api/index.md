@@ -6,14 +6,18 @@ Some more information about the Mastodon API can be found in the [Mastodon API d
 
 ## Emoji API
 
-For administrators. Please read [the documentation](./emojis.md).
+For client developers. Please read [the documentation](./emojis.md).
+
+## Roles API
+
+For client developers. Please read [the documentation](./roles.md).
 
 ## Moderation API
 
 > [!WARNING]
 > **Not implemented.**
 
-For administrators. Please read [the documentation](./moderation.md).
+For client developers. Please read [the documentation](./moderation.md).
 
 ## Frontend API
 

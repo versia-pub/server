@@ -484,6 +484,112 @@ export const ModTags = pgTable("ModTags", {
         .notNull(),
 });
 
+/**
+ * Permissions not prefixed with `owner:` let the role manage all instances of the resource.
+ * For example, a user with the `notes` permission can manage all notes of every user
+ * - Manage: Delete, Update, Create
+ * - Owner: Only manage their own resources
+ */
+export enum RolePermissions {
+    MANAGE_NOTES = "notes",
+    MANAGE_OWN_NOTES = "owner:note",
+    MANAGE_ACCOUNTS = "accounts",
+    MANAGE_OWN_ACCOUNT = "owner:account",
+    MANAGE_EMOJIS = "emojis",
+    MANAGE_OWN_EMOJIS = "owner:emoji",
+    MANAGE_MEDIA = "media",
+    MANAGE_OWN_MEDIA = "owner:media",
+    MANAGE_BLOCKS = "blocks",
+    MANAGE_OWN_BLOCKS = "owner:block",
+    MANAGE_FILTERS = "filters",
+    MANAGE_OWN_FILTERS = "owner:filter",
+    MANAGE_MUTES = "mutes",
+    MANAGE_OWN_MUTES = "owner:mute",
+    MANAGE_REPORTS = "reports",
+    MANAGE_OWN_REPORTS = "owner:report",
+    MANAGE_SETTINGS = "settings",
+    MANAGE_OWN_SETTINGS = "owner:settings",
+    MANAGE_ROLES = "roles",
+    IGNORE_RATE_LIMITS = "ignore_rate_limits",
+    IMPERSONATE = "impersonate",
+    MANAGE_INSTANCE = "instance",
+    MANAGE_INSTANCE_FEDERATION = "instance:federation",
+    MANAGE_INSTANCE_SETTINGS = "instance:settings",
+    /** Users who do not have this permission will not be able to login! */
+    OAUTH = "oauth",
+}
+
+export const DEFAULT_ROLES = [
+    RolePermissions.MANAGE_OWN_NOTES,
+    RolePermissions.MANAGE_OWN_ACCOUNT,
+    RolePermissions.MANAGE_OWN_EMOJIS,
+    RolePermissions.MANAGE_OWN_MEDIA,
+    RolePermissions.MANAGE_OWN_BLOCKS,
+    RolePermissions.MANAGE_OWN_FILTERS,
+    RolePermissions.MANAGE_OWN_MUTES,
+    RolePermissions.MANAGE_OWN_REPORTS,
+    RolePermissions.MANAGE_OWN_SETTINGS,
+    RolePermissions.OAUTH,
+];
+
+export const ADMIN_ROLES = [
+    ...DEFAULT_ROLES,
+    RolePermissions.MANAGE_NOTES,
+    RolePermissions.MANAGE_ACCOUNTS,
+    RolePermissions.MANAGE_EMOJIS,
+    RolePermissions.MANAGE_MEDIA,
+    RolePermissions.MANAGE_BLOCKS,
+    RolePermissions.MANAGE_FILTERS,
+    RolePermissions.MANAGE_MUTES,
+    RolePermissions.MANAGE_REPORTS,
+    RolePermissions.MANAGE_SETTINGS,
+    RolePermissions.MANAGE_ROLES,
+    RolePermissions.IMPERSONATE,
+    RolePermissions.IGNORE_RATE_LIMITS,
+    RolePermissions.MANAGE_INSTANCE,
+    RolePermissions.MANAGE_INSTANCE_FEDERATION,
+    RolePermissions.MANAGE_INSTANCE_SETTINGS,
+];
+
+export const Roles = pgTable("Roles", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    name: text("name").notNull(),
+    permissions: text("permissions")
+        .array()
+        .notNull()
+        .$type<RolePermissions[]>(),
+    priority: integer("priority").notNull().default(0),
+    description: text("description"),
+    visible: boolean("visible").notNull().default(false),
+    icon: text("icon"),
+});
+
+export const RoleToUsers = pgTable("RoleToUsers", {
+    roleId: uuid("roleId")
+        .notNull()
+        .references(() => Roles.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    userId: uuid("userId")
+        .notNull()
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+});
+
+export const RoleToUsersRelations = relations(RoleToUsers, ({ one }) => ({
+    role: one(Roles, {
+        fields: [RoleToUsers.roleId],
+        references: [Roles.id],
+    }),
+    user: one(Users, {
+        fields: [RoleToUsers.userId],
+        references: [Users.id],
+    }),
+}));
+
 export const EmojiToUser = pgTable(
     "EmojiToUser",
     {

@@ -1,5 +1,5 @@
 {
-    "version": "6",
+    "version": "7",
     "dialect": "postgresql",
     "tables": {
         "public.Applications": {
@@ -58,9 +58,18 @@
             },
             "indexes": {
                 "Applications_client_id_index": {
+                    "columns": [
+                        {
+                            "expression": "client_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Applications_client_id_index",
-                    "columns": ["client_id"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {},
@@ -191,14 +200,38 @@
             },
             "indexes": {
                 "EmojiToNote_emojiId_noteId_index": {
+                    "columns": [
+                        {
+                            "expression": "emojiId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "noteId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "EmojiToNote_emojiId_noteId_index",
-                    "columns": ["emojiId", "noteId"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "EmojiToNote_noteId_index": {
+                    "columns": [
+                        {
+                            "expression": "noteId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "EmojiToNote_noteId_index",
-                    "columns": ["noteId"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -243,14 +276,38 @@
             },
             "indexes": {
                 "EmojiToUser_emojiId_userId_index": {
+                    "columns": [
+                        {
+                            "expression": "emojiId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "userId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "EmojiToUser_emojiId_userId_index",
-                    "columns": ["emojiId", "userId"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "EmojiToUser_userId_index": {
+                    "columns": [
+                        {
+                            "expression": "userId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "EmojiToUser_userId_index",
-                    "columns": ["userId"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -670,14 +727,32 @@
             },
             "indexes": {
                 "LysandObject_remote_id_index": {
+                    "columns": [
+                        {
+                            "expression": "remote_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "LysandObject_remote_id_index",
-                    "columns": ["remote_id"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "LysandObject_uri_index": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "LysandObject_uri_index",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -941,14 +1016,38 @@
             },
             "indexes": {
                 "NoteToMentions_noteId_userId_index": {
+                    "columns": [
+                        {
+                            "expression": "noteId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "userId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "NoteToMentions_noteId_userId_index",
-                    "columns": ["noteId", "userId"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "NoteToMentions_userId_index": {
+                    "columns": [
+                        {
+                            "expression": "userId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "NoteToMentions_userId_index",
-                    "columns": ["userId"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1078,9 +1177,18 @@
             },
             "indexes": {
                 "Notes_uri_index": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Notes_uri_index",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1562,14 +1670,38 @@
             },
             "indexes": {
                 "UserToPinnedNotes_userId_noteId_index": {
+                    "columns": [
+                        {
+                            "expression": "userId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "noteId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "UserToPinnedNotes_userId_noteId_index",
-                    "columns": ["userId", "noteId"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "UserToPinnedNotes_noteId_index": {
+                    "columns": [
+                        {
+                            "expression": "noteId",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "UserToPinnedNotes_noteId_index",
-                    "columns": ["noteId"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1743,19 +1875,46 @@
             },
             "indexes": {
                 "Users_uri_index": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Users_uri_index",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "Users_username_index": {
+                    "columns": [
+                        {
+                            "expression": "username",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Users_username_index",
-                    "columns": ["username"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "Users_email_index": {
+                    "columns": [
+                        {
+                            "expression": "email",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Users_email_index",
-                    "columns": ["email"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {

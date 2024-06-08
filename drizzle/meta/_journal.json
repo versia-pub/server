@@ -169,6 +169,13 @@
             "when": 1715932436792,
             "tag": "0023_lazy_wolfsbane",
             "breakpoints": true
+        },
+        {
+            "idx": 24,
+            "version": "7",
+            "when": 1717810992701,
+            "tag": "0024_lush_aaron_stack",
+            "breakpoints": true
         }
     ]
 }

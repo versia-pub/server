@@ -1,5 +1,5 @@
 {
-    "version": "6",
+    "version": "7",
     "dialect": "postgresql",
     "tables": {
         "public.Application": {
@@ -58,9 +58,18 @@
             },
             "indexes": {
                 "Application_client_id_key": {
+                    "columns": [
+                        {
+                            "expression": "client_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Application_client_id_key",
-                    "columns": ["client_id"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {},
@@ -254,14 +263,38 @@
             },
             "indexes": {
                 "_EmojiToStatus_AB_unique": {
+                    "columns": [
+                        {
+                            "expression": "A",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_EmojiToStatus_AB_unique",
-                    "columns": ["A", "B"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "_EmojiToStatus_B_index": {
+                    "columns": [
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_EmojiToStatus_B_index",
-                    "columns": ["B"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -306,14 +339,38 @@
             },
             "indexes": {
                 "_EmojiToUser_AB_unique": {
+                    "columns": [
+                        {
+                            "expression": "A",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_EmojiToUser_AB_unique",
-                    "columns": ["A", "B"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "_EmojiToUser_B_index": {
+                    "columns": [
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_EmojiToUser_B_index",
-                    "columns": ["B"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -561,14 +618,32 @@
             },
             "indexes": {
                 "LysandObject_remote_id_key": {
+                    "columns": [
+                        {
+                            "expression": "remote_id",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "LysandObject_remote_id_key",
-                    "columns": ["remote_id"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "LysandObject_uri_key": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "LysandObject_uri_key",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1151,9 +1226,18 @@
             },
             "indexes": {
                 "Status_uri_key": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "Status_uri_key",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1234,14 +1318,38 @@
             },
             "indexes": {
                 "_StatusToUser_AB_unique": {
+                    "columns": [
+                        {
+                            "expression": "A",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_StatusToUser_AB_unique",
-                    "columns": ["A", "B"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "_StatusToUser_B_index": {
+                    "columns": [
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_StatusToUser_B_index",
-                    "columns": ["B"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1494,19 +1602,46 @@
             },
             "indexes": {
                 "User_uri_key": {
+                    "columns": [
+                        {
+                            "expression": "uri",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "User_uri_key",
-                    "columns": ["uri"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "User_username_key": {
+                    "columns": [
+                        {
+                            "expression": "username",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "User_username_key",
-                    "columns": ["username"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "User_email_key": {
+                    "columns": [
+                        {
+                            "expression": "email",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "User_email_key",
-                    "columns": ["email"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {
@@ -1542,14 +1677,38 @@
             },
             "indexes": {
                 "_UserPinnedNotes_AB_unique": {
+                    "columns": [
+                        {
+                            "expression": "A",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        },
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_UserPinnedNotes_AB_unique",
-                    "columns": ["A", "B"],
-                    "isUnique": true
+                    "isUnique": true,
+                    "method": "btree",
+                    "concurrently": false
                 },
                 "_UserPinnedNotes_B_index": {
+                    "columns": [
+                        {
+                            "expression": "B",
+                            "isExpression": false,
+                            "asc": true,
+                            "nulls": "last"
+                        }
+                    ],
                     "name": "_UserPinnedNotes_B_index",
-                    "columns": ["B"],
-                    "isUnique": false
+                    "isUnique": false,
+                    "method": "btree",
+                    "concurrently": false
                 }
             },
             "foreignKeys": {

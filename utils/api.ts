@@ -297,6 +297,7 @@ export const jsonOrForm = () => {
                 ...Object.fromEntries(files),
             };
         }
+
         await next();
     });
 };
