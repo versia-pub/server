@@ -299,10 +299,10 @@ export default (app: Hono) =>
 
             if (state) searchParams.append("state", state);
 
+            redirectUri.search = searchParams.toString();
+
             return response(null, 302, {
-                Location: `${redirectUri.origin}${
-                    redirectUri.pathname
-                }?${searchParams.toString()}`,
+                Location: redirectUri.toString(),
                 "Cache-Control": "no-store",
                 Pragma: "no-cache",
             });
