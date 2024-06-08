@@ -1,4 +1,4 @@
 PATH=$PATH:~/.bun/bin
 bun install
-bun lint --apply
+bun lint --write
 bun check
