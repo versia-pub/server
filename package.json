@@ -86,7 +86,7 @@
         "@types/mime-types": "^2.1.4",
         "@types/pg": "^8.11.6",
         "@types/qs": "^6.9.15",
-        "drizzle-kit": "^0.22.5",
+        "drizzle-kit": "^0.22.6",
         "oclif": "^4.13.1",
         "ts-prune": "^0.10.3",
         "typescript": "^5.4.5"
