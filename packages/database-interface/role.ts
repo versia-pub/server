@@ -1,3 +1,4 @@
+import { config } from "config-manager";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -36,15 +37,48 @@ export class Role {
         return new Role(found);
     }
 
-    public static async getUserRoles(userId: string) {
+    public static async getUserRoles(userId: string, isAdmin: boolean) {
         return (
             await db.query.RoleToUsers.findMany({
                 where: (role, { eq }) => eq(role.userId, userId),
                 with: {
                     role: true,
+                    user: {
+                        columns: {
+                            isAdmin: true,
+                        },
+                    },
                 },
             })
-        ).map((r) => new Role(r.role));
+        )
+            .map((r) => new Role(r.role))
+            .concat(
+                new Role({
+                    id: "default",
+                    name: "Default",
+                    permissions: config.permissions.default,
+                    priority: 0,
+                    description: "Default role for all users",
+                    visible: false,
+                    icon: null,
+                }),
+            )
+            .concat(
+                isAdmin
+                    ? [
+                          new Role({
+                              id: "admin",
+                              name: "Admin",
+                              permissions: config.permissions.admin,
+                              priority: 2 ** 31 - 1,
+                              description:
+                                  "Default role for all administrators",
+                              visible: false,
+                              icon: null,
+                          }),
+                      ]
+                    : [],
+            );
     }
 
     public static async manyFromSql(

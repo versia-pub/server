@@ -49,7 +49,7 @@ describe(meta.route, () => {
 
         expect(response.ok).toBe(true);
         const roles = await response.json();
-        expect(roles).toHaveLength(1);
+        expect(roles).toHaveLength(2);
         expect(roles[0]).toMatchObject({
             name: "test",
             permissions: ADMIN_ROLES,
@@ -57,6 +57,15 @@ describe(meta.route, () => {
             description: "test",
             visible: true,
             icon: "test",
+        });
+
+        expect(roles[1]).toMatchObject({
+            name: "Default",
+            permissions: config.permissions.default,
+            priority: 0,
+            description: "Default role for all users",
+            visible: false,
+            icon: null,
         });
     });
 });

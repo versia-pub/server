@@ -45,7 +45,10 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            const userRoles = await Role.getUserRoles(user.id);
+            const userRoles = await Role.getUserRoles(
+                user.id,
+                user.getUser().isAdmin,
+            );
             const role = await Role.fromId(id);
 
             if (!role) {

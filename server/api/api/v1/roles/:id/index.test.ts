@@ -182,7 +182,8 @@ describe(meta.route, () => {
 
         expect(response2.ok).toBe(true);
         const roles = await response2.json();
-        expect(roles).toHaveLength(2);
+        // The default role will still be there
+        expect(roles).toHaveLength(3);
         expect(roles).toContainEqual({
             id: roleNotLinked.id,
             name: "test2",
@@ -228,7 +229,8 @@ describe(meta.route, () => {
 
         expect(response2.ok).toBe(true);
         const roles = await response2.json();
-        expect(roles).toHaveLength(1);
+        // The default role will still be there
+        expect(roles).toHaveLength(2);
         expect(roles).not.toContainEqual({
             name: "test",
             permissions: ADMIN_ROLES,
