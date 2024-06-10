@@ -723,7 +723,7 @@ export class Note {
             sensitive: data.sensitive,
             spoiler_text: data.spoilerText,
             tags: [],
-            uri: data.uri || this.getMastoURI(),
+            uri: data.uri || this.getURI(),
             visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoURI(),
             bookmarked: false,
@@ -747,7 +747,10 @@ export class Note {
     }
 
     getMastoURI() {
-        return `/@${this.getAuthor().getUser().username}/${this.id}`;
+        return new URL(
+            `/@${this.getAuthor().getUser().username}/${this.id}`,
+            config.http.base_url,
+        ).toString();
     }
 
     toLysand(): typeof EntityValidator.$Note {
