@@ -24,7 +24,6 @@ import {
     letter,
 } from "magic-regexp";
 import MarkdownIt from "markdown-it";
-import markdownItAnchor from "markdown-it-anchor";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { db } from "~/drizzle/db";
@@ -417,13 +416,6 @@ export const getMarkdownRenderer = async () => {
     const renderer = MarkdownIt({
         html: true,
         linkify: true,
-    });
-
-    renderer.use(markdownItAnchor, {
-        permalink: markdownItAnchor.permalink.ariaHidden({
-            symbol: "",
-            placement: "before",
-        }),
     });
 
     renderer.use(markdownItTocDoneRight, {
