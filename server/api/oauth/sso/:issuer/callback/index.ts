@@ -76,6 +76,7 @@ export default (app: Hono) =>
             redirectUrl.searchParams.delete("state");
             // Remove issuer query parameter from URL (can cause redirect URI mismatches)
             redirectUrl.searchParams.delete("iss");
+            redirectUrl.searchParams.delete("code");
             const { issuer: issuerParam } = context.req.valid("param");
             const { flow: flowId, user_id, link } = context.req.valid("query");
 
