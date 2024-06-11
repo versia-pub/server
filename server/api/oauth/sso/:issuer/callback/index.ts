@@ -69,11 +69,13 @@ export default (app: Hono) =>
         zValidator("param", schemas.param, handleZodError),
         async (context) => {
             const currentUrl = new URL(context.req.url);
+            const redirectUrl = new URL(context.req.url);
 
             // Remove state query parameter from URL
             currentUrl.searchParams.delete("state");
+            redirectUrl.searchParams.delete("state");
             // Remove issuer query parameter from URL (can cause redirect URI mismatches)
-            currentUrl.searchParams.delete("iss");
+            redirectUrl.searchParams.delete("iss");
             const { issuer: issuerParam } = context.req.valid("param");
             const { flow: flowId, user_id, link } = context.req.valid("query");
 
@@ -82,7 +84,7 @@ export default (app: Hono) =>
             const userInfo = await manager.automaticOidcFlow(
                 flowId,
                 currentUrl,
-                currentUrl,
+                redirectUrl,
                 (error, message, app) =>
                     returnError(
                         {
