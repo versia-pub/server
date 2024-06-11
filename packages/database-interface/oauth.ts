@@ -1,4 +1,3 @@
-import { oauthRedirectUri } from "@/constants";
 import { response } from "@/response";
 import type { InferInsertModel } from "drizzle-orm";
 import {
@@ -201,6 +200,7 @@ export class OAuthManager {
     async automaticOidcFlow(
         flowId: string,
         currentUrl: URL,
+        redirectUrl: URL,
         errorFn: (
             error: string,
             message: string,
@@ -234,7 +234,7 @@ export class OAuthManager {
         const oidcResponse = await this.getOIDCResponse(
             authServer,
             this.issuer,
-            `${oauthRedirectUri(this.issuer.id)}?flow=${flow.id}`,
+            redirectUrl.toString(),
             flow.codeVerifier,
             parameters,
         );

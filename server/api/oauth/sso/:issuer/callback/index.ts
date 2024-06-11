@@ -80,11 +80,15 @@ export default (app: Hono) =>
             const userInfo = await manager.automaticOidcFlow(
                 flowId,
                 currentUrl,
+                currentUrl,
                 (error, message, app) =>
                     returnError(
                         {
+                            redirect_uri: flow.application?.redirectUri,
+                            client_id: flow.application?.clientId,
+                            response_type: "code",
+                            scope: flow.application?.scopes,
                             ...manager.processOAuth2Error(app),
-                            link: link ? "true" : undefined,
                         },
                         error,
                         message,
