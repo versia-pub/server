@@ -84,10 +84,6 @@ export default (app: Hono) =>
                 (error, message, app) =>
                     returnError(
                         {
-                            redirect_uri: flow.application?.redirectUri,
-                            client_id: flow.application?.clientId,
-                            response_type: "code",
-                            scope: flow.application?.scopes,
                             ...manager.processOAuth2Error(app),
                         },
                         error,
