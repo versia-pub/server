@@ -30,7 +30,7 @@ The URL of the instance's banner image. `null` if there is no banner set.
 
 The version of the Lysand instance.
 
-The normal `version` field is always set to `"4.3.0+glitch"` or similar to not confuse clients that expect a Mastodon instance.
+The normal `version` field is always set to `"4.3.0+glitch"` or similar, to not confuse clients that expect a Mastodon instance.
 
 ### `sso`
 

@@ -6,7 +6,7 @@ import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/api/v1/instance/extended_description",
+    route: "/api/v1/instance/privacy_policy",
     ratelimits: {
         max: 300,
         duration: 60,
@@ -23,8 +23,8 @@ export default (app: Hono) =>
         auth(meta.auth, meta.permissions),
         async () => {
             const { content, lastModified } = await renderMarkdownInPath(
-                config.instance.extended_description_path ?? "",
-                "This is a [Lysand](https://lysand.org) server with the default extended description.",
+                config.instance.privacy_policy_path ?? "",
+                "This instance has not provided any privacy policy.",
             );
 
             return jsonResponse({

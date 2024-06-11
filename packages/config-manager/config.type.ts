@@ -88,7 +88,6 @@ export const configValidator = z.object({
         enabled: z.boolean().default(false),
     }),
     signups: z.object({
-        tos_url: z.string().min(1).optional(),
         registration: z.boolean().default(true),
         rules: z.array(z.string()).default([]),
     }),
@@ -475,6 +474,8 @@ export const configValidator = z.object({
             name: z.string().min(1).default("Lysand"),
             description: z.string().min(1).default("A Lysand instance"),
             extended_description_path: z.string().optional(),
+            tos_path: z.string().optional(),
+            privacy_policy_path: z.string().optional(),
             logo: zUrl.optional(),
             banner: zUrl.optional(),
         })
@@ -482,6 +483,8 @@ export const configValidator = z.object({
             name: "Lysand",
             description: "A Lysand instance",
             extended_description_path: undefined,
+            tos_path: undefined,
+            privacy_policy_path: undefined,
             logo: undefined,
             banner: undefined,
         }),

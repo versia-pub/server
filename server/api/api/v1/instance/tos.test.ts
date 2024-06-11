@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { sendTestRequest } from "~/tests/utils";
-import { meta } from "./extended_description";
+import { meta } from "./tos";
 
-// /api/v1/instance/extended_description
+// /api/v1/instance/tos
 describe(meta.route, () => {
-    test("should return extended description", async () => {
+    test("should return terms of service", async () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url)),
         );
@@ -15,9 +15,9 @@ describe(meta.route, () => {
         const json = await response.json();
         expect(json).toEqual({
             updated_at: new Date(1970, 0, 0).toISOString(),
-            // This is a [Lysand](https://lysand.org) server with the default extended description.
+            // This instance has not provided any terms of service.
             content:
-                '<p>This is a <a href="https://lysand.org">Lysand</a> server with the default extended description.</p>\n',
+                "<p>This instance has not provided any terms of service.</p>\n",
         });
     });
 });

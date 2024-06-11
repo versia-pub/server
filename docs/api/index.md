@@ -26,3 +26,7 @@ For frontend developers. Please read [the documentation](./frontend.md).
 ## Mastodon API Extensions
 
 Extra attributes have been added to some Mastodon API routes. Those changes are [documented in this document](./mastodon.md)
+
+## Instance API
+
+Extra endpoints have been added to the API to provide additional information about the instance. Please read [the documentation](./instance.md).

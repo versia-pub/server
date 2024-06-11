@@ -306,7 +306,13 @@ name = "Lysand"
 description = "A Lysand instance"
 # Path to a file containing a longer description of your instance
 # This will be parsed as Markdown
-# extended_description_path = "config/description.md"
+# extended_description_path = "config/extended_description.md"
+# Path to a file containing the terms of service of your instance
+# This will be parsed as Markdown
+# tos_path = "config/tos.md"
+# Path to a file containing the privacy policy of your instance
+# This will be parsed as Markdown
+# privacy_policy_path = "config/privacy_policy.md"
 # URL to your instance logo
 # logo = ""
 # URL to your instance banner
