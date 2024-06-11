@@ -71,6 +71,16 @@ export default (app: Hono) =>
             const currentUrl = new URL(context.req.url);
             const redirectUrl = new URL(context.req.url);
 
+            // Correct some reverse proxies incorrectly setting the protocol as http, even if the original request was https
+            // Looking at you, Traefik
+            if (
+                new URL(config.http.base_url).protocol === "https:" &&
+                currentUrl.protocol === "http:"
+            ) {
+                currentUrl.protocol = "https:";
+                redirectUrl.protocol = "https:";
+            }
+
             // Remove state query parameter from URL
             currentUrl.searchParams.delete("state");
             redirectUrl.searchParams.delete("state");
