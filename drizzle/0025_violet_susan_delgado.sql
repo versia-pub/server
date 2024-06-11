@@ -1,0 +1,1 @@
+ALTER TABLE "Relationships" ADD COLUMN "requested_by" boolean DEFAULT false NOT NULL;

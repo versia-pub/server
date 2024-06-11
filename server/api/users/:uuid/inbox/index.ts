@@ -8,7 +8,7 @@ import {
     SignatureValidator,
 } from "@lysand-org/federation";
 import type { SocketAddress } from "bun";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { matches } from "ip-matching";
 import { z } from "zod";
@@ -246,6 +246,19 @@ export default (app: Hono) =>
                             })
                             .where(eq(Relationships.id, foundRelationship.id));
 
+                        // Update other user's requested_by
+                        await db
+                            .update(Relationships)
+                            .set({
+                                requestedBy: user.getUser().isLocked,
+                            })
+                            .where(
+                                and(
+                                    eq(Relationships.subjectId, account.id),
+                                    eq(Relationships.ownerId, user.id),
+                                ),
+                            );
+
                         await db.insert(Notifications).values({
                             accountId: account.id,
                             type: user.getUser().isLocked
@@ -285,6 +298,20 @@ export default (app: Hono) =>
                             })
                             .where(eq(Relationships.id, foundRelationship.id));
 
+                        // Update other user's data
+                        await db
+                            .update(Relationships)
+                            .set({
+                                followedBy: true,
+                                requestedBy: false,
+                            })
+                            .where(
+                                and(
+                                    eq(Relationships.subjectId, account.id),
+                                    eq(Relationships.ownerId, user.id),
+                                ),
+                            );
+
                         return response("Follow request accepted", 200);
                     },
                     followReject: async (followReject) => {
@@ -311,6 +338,20 @@ export default (app: Hono) =>
                                 following: false,
                             })
                             .where(eq(Relationships.id, foundRelationship.id));
+
+                        // Update other user's data
+                        await db
+                            .update(Relationships)
+                            .set({
+                                followedBy: false,
+                                requestedBy: false,
+                            })
+                            .where(
+                                and(
+                                    eq(Relationships.subjectId, account.id),
+                                    eq(Relationships.ownerId, user.id),
+                                ),
+                            );
 
                         return response("Follow request rejected", 200);
                     },

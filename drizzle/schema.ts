@@ -169,6 +169,7 @@ export const Relationships = pgTable("Relationships", {
     muting: boolean("muting").notNull(),
     mutingNotifications: boolean("muting_notifications").notNull(),
     requested: boolean("requested").notNull(),
+    requestedBy: boolean("requested_by").notNull().default(false),
     domainBlocking: boolean("domain_blocking").notNull(),
     endorsed: boolean("endorsed").notNull(),
     languages: text("languages").array(),

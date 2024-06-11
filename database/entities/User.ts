@@ -17,7 +17,11 @@ import { LogLevel } from "~/packages/log-manager";
 import type { Application } from "./Application";
 import type { EmojiWithInstance } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
-import { type Relationship, createNewRelationship } from "./Relationship";
+import {
+    type Relationship,
+    checkForBidirectionalRelationships,
+    createNewRelationship,
+} from "./Relationship";
 import type { Token } from "./Token";
 
 export type UserType = InferSelectModel<typeof Users>;
@@ -135,14 +139,22 @@ export const followRequestUser = async (
         })
         .where(eq(Relationships.id, relationshipId));
 
+    // Set requested_by on other side
+    await db
+        .update(Relationships)
+        .set({
+            requestedBy: isRemote ? true : followee.getUser().isLocked,
+            followedBy: isRemote ? false : followee.getUser().isLocked,
+        })
+        .where(
+            and(
+                eq(Relationships.ownerId, followee.id),
+                eq(Relationships.subjectId, follower.id),
+            ),
+        );
+
     const updatedRelationship = await db.query.Relationships.findFirst({
         where: (rel, { eq }) => eq(rel.id, relationshipId),
-        extras: {
-            requestedBy:
-                sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${followee.id} AND "Relationships"."subjectId" = ${follower.id})`.as(
-                    "requested_by",
-                ),
-        },
     });
 
     if (!updatedRelationship) {
@@ -186,12 +198,6 @@ export const followRequestUser = async (
 
             const result = await db.query.Relationships.findFirst({
                 where: (rel, { eq }) => eq(rel.id, relationshipId),
-                extras: {
-                    requestedBy:
-                        sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${followee.id} AND "Relationships"."subjectId" = ${follower.id})`.as(
-                            "requested_by",
-                        ),
-                },
             });
 
             if (!result) {
@@ -483,18 +489,14 @@ export const getRelationshipToOtherUser = async (
     user: User,
     other: User,
 ): Promise<Relationship> => {
+    await checkForBidirectionalRelationships(user, other);
+
     const foundRelationship = await db.query.Relationships.findFirst({
         where: (relationship, { and, eq }) =>
             and(
                 eq(relationship.ownerId, user.id),
                 eq(relationship.subjectId, other.id),
             ),
-        extras: {
-            requestedBy:
-                sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${other.id} AND "Relationships"."subjectId" = ${user.id})`.as(
-                    "requested_by",
-                ),
-        },
     });
 
     if (!foundRelationship) {

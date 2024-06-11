@@ -76,6 +76,7 @@ export default (app: Hono) =>
                 .update(Relationships)
                 .set({
                     followedBy: false,
+                    requestedBy: false,
                 })
                 .where(
                     and(

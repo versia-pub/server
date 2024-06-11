@@ -61,8 +61,11 @@ export const checkForBidirectionalRelationships = async (
             and(eq(rel.ownerId, user2.id), eq(rel.subjectId, user1.id)),
     });
 
-    if (!relationship1 && !relationship2 && createIfNotExists) {
+    if (!relationship1 && createIfNotExists) {
         await createNewRelationship(user1, user2);
+    }
+
+    if (!relationship2 && createIfNotExists) {
         await createNewRelationship(user2, user1);
     }
 
