@@ -1,6 +1,7 @@
 import { applyConfig, auth, handleZodError, qsQuery } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import {
@@ -8,7 +9,7 @@ import {
     relationshipToAPI,
 } from "~/database/entities/Relationship";
 import { db } from "~/drizzle/db";
-import { RolePermissions } from "~/drizzle/schema";
+import { Relationships, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -54,6 +55,12 @@ export default (app: Hono) =>
                         inArray(relationship.subjectId, ids),
                         eq(relationship.ownerId, self.id),
                     ),
+                extras: {
+                    requestedBy:
+                        sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${Relationships.id} AND "Relationships"."subjectId" = ${self.id})`.as(
+                            "requested_by",
+                        ),
+                },
             });
 
             const missingIds = ids.filter(

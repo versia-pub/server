@@ -4,7 +4,9 @@ import { Relationships } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
 import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
 
-export type Relationship = InferSelectModel<typeof Relationships>;
+export type Relationship = InferSelectModel<typeof Relationships> & {
+    requestedBy: boolean;
+};
 
 /**
  * Creates a new relationship between two users.
@@ -16,29 +18,32 @@ export const createNewRelationship = async (
     owner: User,
     other: User,
 ): Promise<Relationship> => {
-    return (
-        await db
-            .insert(Relationships)
-            .values({
-                ownerId: owner.id,
-                subjectId: other.id,
-                languages: [],
-                following: false,
-                showingReblogs: false,
-                notifying: false,
-                followedBy: false,
-                blocking: false,
-                blockedBy: false,
-                muting: false,
-                mutingNotifications: false,
-                requested: false,
-                domainBlocking: false,
-                endorsed: false,
-                note: "",
-                updatedAt: new Date().toISOString(),
-            })
-            .returning()
-    )[0];
+    return {
+        ...(
+            await db
+                .insert(Relationships)
+                .values({
+                    ownerId: owner.id,
+                    subjectId: other.id,
+                    languages: [],
+                    following: false,
+                    showingReblogs: false,
+                    notifying: false,
+                    followedBy: false,
+                    blocking: false,
+                    blockedBy: false,
+                    muting: false,
+                    mutingNotifications: false,
+                    requested: false,
+                    domainBlocking: false,
+                    endorsed: false,
+                    note: "",
+                    updatedAt: new Date().toISOString(),
+                })
+                .returning()
+        )[0],
+        requestedBy: false,
+    };
 };
 
 export const checkForBidirectionalRelationships = async (
@@ -81,6 +86,7 @@ export const relationshipToAPI = (rel: Relationship): APIRelationship => {
         muting_notifications: rel.mutingNotifications,
         notifying: rel.notifying,
         requested: rel.requested,
+        requested_by: rel.requestedBy,
         showing_reblogs: rel.showingReblogs,
         note: rel.note,
     };

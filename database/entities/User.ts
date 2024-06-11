@@ -17,7 +17,7 @@ import { LogLevel } from "~/packages/log-manager";
 import type { Application } from "./Application";
 import type { EmojiWithInstance } from "./Emoji";
 import { objectToInboxRequest } from "./Federation";
-import { createNewRelationship } from "./Relationship";
+import { type Relationship, createNewRelationship } from "./Relationship";
 import type { Token } from "./Token";
 
 export type UserType = InferSelectModel<typeof Users>;
@@ -121,22 +121,33 @@ export const followRequestUser = async (
     reblogs = false,
     notify = false,
     languages: string[] = [],
-): Promise<InferSelectModel<typeof Relationships>> => {
+): Promise<Relationship> => {
     const isRemote = followee.isRemote();
 
-    const updatedRelationship = (
-        await db
-            .update(Relationships)
-            .set({
-                following: isRemote ? false : !followee.getUser().isLocked,
-                requested: isRemote ? true : followee.getUser().isLocked,
-                showingReblogs: reblogs,
-                notifying: notify,
-                languages: languages,
-            })
-            .where(eq(Relationships.id, relationshipId))
-            .returning()
-    )[0];
+    await db
+        .update(Relationships)
+        .set({
+            following: isRemote ? false : !followee.getUser().isLocked,
+            requested: isRemote ? true : followee.getUser().isLocked,
+            showingReblogs: reblogs,
+            notifying: notify,
+            languages: languages,
+        })
+        .where(eq(Relationships.id, relationshipId));
+
+    const updatedRelationship = await db.query.Relationships.findFirst({
+        where: (rel, { eq }) => eq(rel.id, relationshipId),
+        extras: {
+            requestedBy:
+                sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${followee.id} AND "Relationships"."subjectId" = ${follower.id})`.as(
+                    "requested_by",
+                ),
+        },
+    });
+
+    if (!updatedRelationship) {
+        throw new Error("Failed to update relationship");
+    }
 
     if (isRemote) {
         // Federate
@@ -165,16 +176,29 @@ export const followRequestUser = async (
                 } to ${followee.getUri()}`,
             );
 
-            return (
-                await db
-                    .update(Relationships)
-                    .set({
-                        following: false,
-                        requested: false,
-                    })
-                    .where(eq(Relationships.id, relationshipId))
-                    .returning()
-            )[0];
+            await db
+                .update(Relationships)
+                .set({
+                    following: false,
+                    requested: false,
+                })
+                .where(eq(Relationships.id, relationshipId));
+
+            const result = await db.query.Relationships.findFirst({
+                where: (rel, { eq }) => eq(rel.id, relationshipId),
+                extras: {
+                    requestedBy:
+                        sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${followee.id} AND "Relationships"."subjectId" = ${follower.id})`.as(
+                            "requested_by",
+                        ),
+                },
+            });
+
+            if (!result) {
+                throw new Error("Failed to update relationship");
+            }
+
+            return result;
         }
     } else {
         await db.insert(Notifications).values({
@@ -458,13 +482,19 @@ export const retrieveToken = async (
 export const getRelationshipToOtherUser = async (
     user: User,
     other: User,
-): Promise<InferSelectModel<typeof Relationships>> => {
+): Promise<Relationship> => {
     const foundRelationship = await db.query.Relationships.findFirst({
         where: (relationship, { and, eq }) =>
             and(
                 eq(relationship.ownerId, user.id),
                 eq(relationship.subjectId, other.id),
             ),
+        extras: {
+            requestedBy:
+                sql<boolean>`(SELECT "requested" FROM "Relationships" WHERE "Relationships"."ownerId" = ${other.id} AND "Relationships"."subjectId" = ${user.id})`.as(
+                    "requested_by",
+                ),
+        },
     });
 
     if (!foundRelationship) {

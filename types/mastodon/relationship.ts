@@ -7,6 +7,7 @@ export type Relationship = {
     muting: boolean;
     muting_notifications: boolean;
     requested: boolean;
+    requested_by: boolean;
     domain_blocking: boolean;
     showing_reblogs: boolean;
     endorsed: boolean;
