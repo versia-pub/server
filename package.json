@@ -75,7 +75,7 @@
         "flexibleTaxonomy": true
     },
     "devDependencies": {
-        "@biomejs/biome": "^1.8.0",
+        "@biomejs/biome": "^1.8.1",
         "@types/bun": "^1.1.3",
         "@types/cli-progress": "^3.11.5",
         "@types/cli-table": "^0.3.4",
@@ -86,8 +86,8 @@
         "@types/mime-types": "^2.1.4",
         "@types/pg": "^8.11.6",
         "@types/qs": "^6.9.15",
-        "drizzle-kit": "^0.22.6",
-        "oclif": "^4.13.4",
+        "drizzle-kit": "^0.22.7",
+        "oclif": "^4.13.5",
         "ts-prune": "^0.10.3",
         "typescript": "^5.4.5"
     },
@@ -110,7 +110,7 @@
         "config-manager": "workspace:*",
         "drizzle-orm": "^0.31.2",
         "extract-zip": "^2.0.1",
-        "hono": "^4.4.4",
+        "hono": "^4.4.5",
         "html-to-text": "^9.0.5",
         "husky": "^9.0.11",
         "ioredis": "^5.4.1",
