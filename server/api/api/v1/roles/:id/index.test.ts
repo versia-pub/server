@@ -121,7 +121,7 @@ describe(meta.route, () => {
             priority: 2,
             description: "test",
             visible: true,
-            icon: "test",
+            icon: expect.any(String),
         });
     });
 
@@ -191,7 +191,7 @@ describe(meta.route, () => {
             priority: 0,
             description: "test2",
             visible: true,
-            icon: "test2",
+            icon: expect.any(String),
         });
 
         await role.save({

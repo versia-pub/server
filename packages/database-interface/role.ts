@@ -1,3 +1,4 @@
+import { proxyUrl } from "@/response";
 import { config } from "config-manager";
 import {
     type InferInsertModel,
@@ -159,7 +160,7 @@ export class Role {
             priority: this.role.priority,
             description: this.role.description,
             visible: this.role.visible,
-            icon: this.role.icon,
+            icon: proxyUrl(this.role.icon),
         };
     }
 }

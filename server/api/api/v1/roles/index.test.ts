@@ -56,7 +56,7 @@ describe(meta.route, () => {
             priority: 0,
             description: "test",
             visible: true,
-            icon: "test",
+            icon: expect.any(String),
         });
 
         expect(roles[1]).toMatchObject({
