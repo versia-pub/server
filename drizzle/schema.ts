@@ -1,4 +1,5 @@
 import type { EntityValidator } from "@lysand-org/federation";
+import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
     type AnyPgColumn,
@@ -14,6 +15,21 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import type { Source as APISource } from "~/types/mastodon/source";
+
+export const CaptchaChallenges = pgTable("CaptchaChallenges", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    challenge: jsonb("challenge").notNull().$type<Challenge>(),
+    expiresAt: timestamp("expires_at", {
+        precision: 3,
+        mode: "string",
+    }).default(
+        // 5 minutes
+        sql`NOW() + INTERVAL '5 minutes'`,
+    ),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+        .defaultNow()
+        .notNull(),
+});
 
 export const Emojis = pgTable("Emojis", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
