@@ -6,12 +6,12 @@
   - Lysand will work on lower versions than 1.1.13, but only the latest version is supported
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
-- (Optional if you want search) A working Meiliseach instance
+- (Optional if you want search) A working Meilisearch instance
 
 > [!WARNING]
-> Lysand has not been tested on Windows or MacOS. It is recommended to use a Linux-based operating system to run Lysand.
+> Lysand has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run Lysand.
 > 
-> We will not be offerring support to Windows or MacOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
+> We will not be offering support to Windows or macOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
 ### With Docker/Podman
 
