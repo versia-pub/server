@@ -83,6 +83,16 @@ describe(meta.route, () => {
             limited: false,
             noindex: false,
             suspended: false,
+            roles: expect.arrayContaining([
+                expect.objectContaining({
+                    id: "default",
+                    name: "Default",
+                    priority: 0,
+                    description: "Default role for all users",
+                    visible: false,
+                    icon: null,
+                }),
+            ]),
         } satisfies APIAccount);
     });
 });

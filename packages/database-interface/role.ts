@@ -14,6 +14,10 @@ import { RoleToUsers, Roles } from "~/drizzle/schema";
 export class Role {
     private constructor(private role: InferSelectModel<typeof Roles>) {}
 
+    public static fromRole(role: InferSelectModel<typeof Roles>) {
+        return new Role(role);
+    }
+
     public static async fromId(id: string | null): Promise<Role | null> {
         if (!id) return null;
 

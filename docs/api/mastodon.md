@@ -45,3 +45,20 @@ Single Sign-On (SSO) settings for the instance. This object contains two fields:
 ## `/api/v2/instance`
 
 Contains the same extensions as `/api/v1/instance`, except `banner` which uses the normal Mastodon API attribute.
+
+## `Account`
+
+(`/api/v1/accounts/:id`, `/api/v1/accounts/verify_credentials`, ...)
+
+An extra attribute has been adding to all returned account objects:
+
+```ts
+{
+    // ...
+    roles: LysandRoles[];
+}
+```
+
+### `roles`
+
+An array of roles from [Lysand Roles](./roles.md).

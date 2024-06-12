@@ -43,6 +43,7 @@ import { type Config, config } from "~/packages/config-manager";
 import type { Account as APIAccount } from "~/types/mastodon/account";
 import type { Mention as APIMention } from "~/types/mastodon/mention";
 import type { Note } from "./note";
+import { Role } from "./role";
 
 /**
  * Gives helpers to fetch users from database in a nice format
@@ -602,6 +603,36 @@ export class User {
             suspended: false,
             discoverable: undefined,
             mute_expires_at: undefined,
+            roles: user.roles
+                .map((role) => Role.fromRole(role))
+                .concat(
+                    Role.fromRole({
+                        id: "default",
+                        name: "Default",
+                        permissions: config.permissions.default,
+                        priority: 0,
+                        description: "Default role for all users",
+                        visible: false,
+                        icon: null,
+                    }),
+                )
+                .concat(
+                    user.isAdmin
+                        ? [
+                              Role.fromRole({
+                                  id: "admin",
+                                  name: "Admin",
+                                  permissions: config.permissions.admin,
+                                  priority: 2 ** 31 - 1,
+                                  description:
+                                      "Default role for all administrators",
+                                  visible: false,
+                                  icon: null,
+                              }),
+                          ]
+                        : [],
+                )
+                .map((r) => r.toAPI()),
             group: false,
         };
     }
