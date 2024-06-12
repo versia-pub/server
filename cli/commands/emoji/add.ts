@@ -1,7 +1,7 @@
 import { Args } from "@oclif/core";
 import chalk from "chalk";
 import ora from "ora";
-import { BaseCommand } from "~//cli/base";
+import { BaseCommand } from "~/cli/base";
 import { getUrl } from "~/database/entities/Attachment";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
