@@ -20,13 +20,13 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type { Application } from "~/database/entities/Application";
-import { getFromHeader } from "~/database/entities/User";
+import type { Application } from "~/database/entities/application";
+import { type AuthData, getFromHeader } from "~/database/entities/user";
 import type { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
-import type { APIRouteMetadata, HttpVerb } from "~/types/api";
+import type { ApiRouteMetadata, HttpVerb } from "~/types/api";
 
-export const applyConfig = (routeMeta: APIRouteMetadata) => {
+export const applyConfig = (routeMeta: ApiRouteMetadata) => {
     const newMeta = routeMeta;
 
     // Apply ratelimits from config
@@ -94,16 +94,113 @@ export const handleZodError = (
     result:
         | { success: true; data?: object }
         | { success: false; error: z.ZodError<z.AnyZodObject>; data?: object },
-    context: Context,
+    _context: Context,
 ) => {
     if (!result.success) {
         return errorResponse(fromZodError(result.error).message, 422);
     }
 };
 
+const getAuth = async (value: Record<string, string>) => {
+    return value.authorization
+        ? await getFromHeader(value.authorization)
+        : null;
+};
+
+const checkPermissions = (
+    auth: AuthData | null,
+    permissionData: ApiRouteMetadata["permissions"],
+    context: Context,
+) => {
+    const userPerms = auth?.user
+        ? auth.user.getAllPermissions()
+        : config.permissions.anonymous;
+    const requiredPerms =
+        permissionData?.methodOverrides?.[context.req.method as HttpVerb] ??
+        permissionData?.required ??
+        [];
+    const error = errorResponse("Unauthorized", 401);
+
+    if (!requiredPerms.every((perm) => userPerms.includes(perm))) {
+        const missingPerms = requiredPerms.filter(
+            (perm) => !userPerms.includes(perm),
+        );
+        return context.json(
+            {
+                error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
+            },
+            403,
+            error.headers.toJSON(),
+        );
+    }
+};
+
+const checkRouteNeedsAuth = (
+    auth: AuthData | null,
+    authData: ApiRouteMetadata["auth"],
+    context: Context,
+) => {
+    const error = errorResponse("Unauthorized", 401);
+
+    if (auth?.user) {
+        return {
+            user: auth.user as User,
+            token: auth.token as string,
+            application: auth.application as Application | null,
+        };
+    }
+    if (authData.required) {
+        return context.json(
+            {
+                error: "Unauthorized",
+            },
+            401,
+            error.headers.toJSON(),
+        );
+    }
+
+    if (authData.requiredOnMethods?.includes(context.req.method as HttpVerb)) {
+        return context.json(
+            {
+                error: "Unauthorized",
+            },
+            401,
+            error.headers.toJSON(),
+        );
+    }
+
+    return {
+        user: null,
+        token: null,
+        application: null,
+    };
+};
+
 export const auth = (
-    authData: APIRouteMetadata["auth"],
-    permissionData?: APIRouteMetadata["permissions"],
+    authData: ApiRouteMetadata["auth"],
+    permissionData?: ApiRouteMetadata["permissions"],
+) =>
+    validator("header", async (value, context) => {
+        const auth = await getAuth(value);
+
+        // Permissions check
+        if (permissionData) {
+            const permissionCheck = checkPermissions(
+                auth,
+                permissionData,
+                context,
+            );
+            if (permissionCheck) {
+                return permissionCheck;
+            }
+        }
+
+        return checkRouteNeedsAuth(auth, authData, context);
+    });
+
+/* export const auth = (
+    authData: ApiRouteMetadata["auth"],
+    permissionData?: ApiRouteMetadata["permissions"],
 ) =>
     validator("header", async (value, context) => {
         const auth = value.authorization
@@ -140,38 +237,33 @@ export const auth = (
             }
         }
 
-        if (!auth?.user) {
-            if (authData.required) {
-                return context.json(
-                    {
-                        error: "Unauthorized",
-                    },
-                    401,
-                    error.headers.toJSON(),
-                );
-            }
-
-            if (
-                authData.requiredOnMethods?.includes(
-                    context.req.method as HttpVerb,
-                )
-            ) {
-                return context.json(
-                    {
-                        error: "Unauthorized",
-                    },
-                    401,
-                    error.headers.toJSON(),
-                );
-            }
-
-            // Check role permissions
-        } else {
+        if (auth?.user) {
             return {
                 user: auth.user as User,
                 token: auth.token as string,
                 application: auth.application as Application | null,
             };
+        }
+        if (authData.required) {
+            return context.json(
+                {
+                    error: "Unauthorized",
+                },
+                401,
+                error.headers.toJSON(),
+            );
+        }
+
+        if (
+            authData.requiredOnMethods?.includes(context.req.method as HttpVerb)
+        ) {
+            return context.json(
+                {
+                    error: "Unauthorized",
+                },
+                401,
+                error.headers.toJSON(),
+            );
         }
 
         return {
@@ -179,7 +271,7 @@ export const auth = (
             token: null,
             application: null,
         };
-    });
+    }); */
 
 /**
  * Middleware to magically unfuck forms
@@ -200,12 +292,12 @@ export const qs = () => {
                     for (const val of value) {
                         urlparams.append(key, val);
                     }
-                } else if (!(value instanceof File)) {
-                    urlparams.append(key, String(value));
-                } else {
+                } else if (value instanceof File) {
                     if (!files.has(key)) {
                         files.set(key, value);
                     }
+                } else {
+                    urlparams.append(key, String(value));
                 }
             }
 
@@ -297,12 +389,12 @@ export const jsonOrForm = () => {
                     for (const val of value) {
                         urlparams.append(key, val);
                     }
-                } else if (!(value instanceof File)) {
-                    urlparams.append(key, String(value));
-                } else {
+                } else if (value instanceof File) {
                     if (!files.has(key)) {
                         files.set(key, value);
                     }
+                } else {
+                    urlparams.append(key, String(value));
                 }
             }
 
@@ -341,7 +433,7 @@ export const debugRequest = async (
 ) => {
     const body = await req.clone().text();
     await logger.log(
-        LogLevel.DEBUG,
+        LogLevel.Debug,
         "RequestDebugger",
         `\n${chalk.green(req.method)} ${chalk.blue(req.url)}\n${chalk.bold(
             "Hash",

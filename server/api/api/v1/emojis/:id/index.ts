@@ -11,8 +11,8 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/Attachment";
-import { emojiToAPI } from "~/database/entities/Emoji";
+import { getUrl } from "~/database/entities/attachment";
+import { emojiToApi } from "~/database/entities/emoji";
 import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -29,10 +29,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_EMOJIS,
-            RolePermissions.VIEW_EMOJIS,
-        ],
+        required: [RolePermissions.ManageOwnEmojis, RolePermissions.ViewEmojis],
     },
 });
 
@@ -93,16 +90,18 @@ export default (app: Hono) =>
                 },
             });
 
-            if (!emoji) return errorResponse("Emoji not found", 404);
+            if (!emoji) {
+                return errorResponse("Emoji not found", 404);
+            }
 
             // Check if user is admin
             if (
-                !user.hasPermission(RolePermissions.MANAGE_EMOJIS) &&
+                !user.hasPermission(RolePermissions.ManageEmojis) &&
                 emoji.ownerId !== user.data.id
             ) {
                 return jsonResponse(
                     {
-                        error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.MANAGE_EMOJIS}' permission to manage global emojis`,
+                        error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
                     },
                     403,
                 );
@@ -133,10 +132,12 @@ export default (app: Hono) =>
                     }
 
                     if (
-                        !form.shortcode &&
-                        !form.element &&
-                        !form.alt &&
-                        !form.category &&
+                        !(
+                            form.shortcode ||
+                            form.element ||
+                            form.alt ||
+                            form.category
+                        ) &&
                         form.global === undefined
                     ) {
                         return errorResponse(
@@ -146,11 +147,11 @@ export default (app: Hono) =>
                     }
 
                     if (
-                        !user.hasPermission(RolePermissions.MANAGE_EMOJIS) &&
+                        !user.hasPermission(RolePermissions.ManageEmojis) &&
                         form.global
                     ) {
                         return errorResponse(
-                            `Only users with the '${RolePermissions.MANAGE_EMOJIS}' permission can make an emoji global or not`,
+                            `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
                             401,
                         );
                     }
@@ -207,7 +208,7 @@ export default (app: Hono) =>
                     )[0];
 
                     return jsonResponse(
-                        emojiToAPI({
+                        emojiToApi({
                             ...newEmoji,
                             instance: null,
                         }),
@@ -215,7 +216,7 @@ export default (app: Hono) =>
                 }
 
                 case "GET": {
-                    return jsonResponse(emojiToAPI(emoji));
+                    return jsonResponse(emojiToApi(emoji));
                 }
             }
         },

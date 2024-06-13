@@ -16,7 +16,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FILTERS],
+        required: [RolePermissions.ManageOwnFilters],
     },
 });
 
@@ -69,7 +69,9 @@ export default (app: Hono) =>
         async (context) => {
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
             switch (context.req.method) {
                 case "GET": {
                     const userFilters = await db.query.Filters.findMany({
@@ -138,8 +140,9 @@ export default (app: Hono) =>
                             .returning()
                     )[0];
 
-                    if (!newFilter)
+                    if (!newFilter) {
                         return errorResponse("Failed to create filter", 500);
+                    }
 
                     const insertedKeywords =
                         keywords_attributes && keywords_attributes.length > 0

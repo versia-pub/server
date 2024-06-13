@@ -1,7 +1,7 @@
 export type Filter = {
     id: string;
     phrase: string;
-    context: Array<FilterContext>;
+    context: FilterContext[];
     expires_at: string | null;
     irreversible: boolean;
     whole_word: boolean;

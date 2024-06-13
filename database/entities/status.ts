@@ -36,9 +36,9 @@ import {
 import type { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel } from "~/packages/log-manager";
-import type { Application } from "./Application";
-import type { EmojiWithInstance } from "./Emoji";
-import { objectToInboxRequest } from "./Federation";
+import type { Application } from "./application";
+import type { EmojiWithInstance } from "./emoji";
+import { objectToInboxRequest } from "./federation";
 import {
     type UserWithInstance,
     type UserWithRelations,
@@ -46,7 +46,7 @@ import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
-} from "./User";
+} from "./user";
 
 export type Status = InferSelectModel<typeof Notes>;
 
@@ -258,7 +258,9 @@ export const findManyNotes = async (
  */
 export const parseTextMentions = async (text: string): Promise<User[]> => {
     const mentionedPeople = [...text.matchAll(mentionValidator)] ?? [];
-    if (mentionedPeople.length === 0) return [];
+    if (mentionedPeople.length === 0) {
+        return [];
+    }
 
     const baseUrlHost = new URL(config.http.base_url).host;
 
@@ -287,11 +289,13 @@ export const parseTextMentions = async (text: string): Promise<User[]> => {
 
     const notFoundRemoteUsers = mentionedPeople.filter(
         (person) =>
-            !isLocal(person?.[2]) &&
-            !foundUsers.find(
-                (user) =>
-                    user.username === person?.[1] &&
-                    user.baseUrl === person?.[2],
+            !(
+                isLocal(person?.[2]) ||
+                foundUsers.find(
+                    (user) =>
+                        user.username === person?.[1] &&
+                        user.baseUrl === person?.[2],
+                )
             ),
     );
 
@@ -320,7 +324,7 @@ export const parseTextMentions = async (text: string): Promise<User[]> => {
     return finalList;
 };
 
-export const replaceTextMentions = async (text: string, mentions: User[]) => {
+export const replaceTextMentions = (text: string, mentions: User[]) => {
     let finalText = text;
     for (const mention of mentions) {
         const user = mention.data;
@@ -412,7 +416,7 @@ export const markdownParse = async (content: string) => {
     return (await getMarkdownRenderer()).render(content);
 };
 
-export const getMarkdownRenderer = async () => {
+export const getMarkdownRenderer = () => {
     const renderer = MarkdownIt({
         html: true,
         linkify: true,
@@ -448,12 +452,12 @@ export const federateNote = async (note: Note) => {
 
         if (!response.ok) {
             dualLogger.log(
-                LogLevel.DEBUG,
+                LogLevel.Debug,
                 "Federation.Status",
                 await response.text(),
             );
             dualLogger.log(
-                LogLevel.ERROR,
+                LogLevel.Error,
                 "Federation.Status",
                 `Failed to federate status ${note.data.id} to ${user.getUri()}`,
             );

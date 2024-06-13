@@ -18,7 +18,7 @@ export const meta = applyConfig({
         required: false,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_APPS],
+        required: [RolePermissions.ManageOwnApps],
     },
 });
 

@@ -16,7 +16,7 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { resolveWebFinger } from "~/database/entities/User";
+import { resolveWebFinger } from "~/database/entities/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
@@ -32,7 +32,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:accounts"],
     },
     permissions: {
-        required: [RolePermissions.SEARCH, RolePermissions.VIEW_ACCOUNTS],
+        required: [RolePermissions.Search, RolePermissions.ViewAccounts],
     },
 });
 
@@ -81,7 +81,9 @@ export default (app: Hono) =>
                 context.req.valid("query");
             const { user: self } = context.req.valid("header");
 
-            if (!self && following) return errorResponse("Unauthorized", 401);
+            if (!self && following) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const [username, host] = q.replace(/^@/, "").split("@");
 
@@ -120,6 +122,6 @@ export default (app: Hono) =>
 
             const result = indexOfCorrectSort.map((index) => accounts[index]);
 
-            return jsonResponse(result.map((acct) => acct.toAPI()));
+            return jsonResponse(result.map((acct) => acct.toApi()));
         },
     );

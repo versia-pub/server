@@ -19,7 +19,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.VIEW_NOTES, RolePermissions.VIEW_NOTE_LIKES],
+        required: [RolePermissions.ViewNotes, RolePermissions.ViewNoteLikes],
     },
 });
 
@@ -49,12 +49,15 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const status = await Note.fromId(id, user?.id);
 
-            if (!status?.isViewableByUser(user))
+            if (!status?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             const { objects, link } = await Timeline.getUserTimeline(
                 and(
@@ -68,7 +71,7 @@ export default (app: Hono) =>
             );
 
             return jsonResponse(
-                objects.map((user) => user.toAPI()),
+                objects.map((user) => user.toApi()),
                 200,
                 {
                     Link: link,

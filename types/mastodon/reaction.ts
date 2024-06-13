@@ -6,6 +6,6 @@ export type Reaction = {
     name: string;
     url?: string;
     static_url?: string;
-    accounts?: Array<Account>;
-    account_ids?: Array<string>;
+    accounts?: Account[];
+    account_ids?: string[];
 };

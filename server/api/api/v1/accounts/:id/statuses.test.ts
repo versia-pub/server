@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Status as APIStatus } from "~/types/mastodon/status";
+import type { Status as apiStatus } from "~/types/mastodon/status";
 import { meta } from "./statuses";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -50,7 +50,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as APIStatus[];
+        const data = (await response.json()) as apiStatus[];
 
         expect(data.length).toBe(20);
         // Should have reblogs
@@ -77,7 +77,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as APIStatus[];
+        const data = (await response.json()) as apiStatus[];
 
         expect(data.length).toBe(20);
         // Should not have reblogs
@@ -121,7 +121,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as APIStatus[];
+        const data = (await response.json()) as apiStatus[];
 
         expect(data.length).toBe(20);
         // Should not have replies
@@ -145,7 +145,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as APIStatus[];
+        const data = (await response.json()) as apiStatus[];
 
         expect(data.length).toBe(0);
 
@@ -183,7 +183,7 @@ describe(meta.route, () => {
 
         expect(response2.status).toBe(200);
 
-        const data2 = (await response2.json()) as APIStatus[];
+        const data2 = (await response2.json()) as apiStatus[];
 
         expect(data2.length).toBe(1);
     });

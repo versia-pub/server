@@ -7,7 +7,7 @@ export const sanitizedHtmlStrip = (html: string) => {
     });
 };
 
-export const sanitizeHtmlInline = async (
+export const sanitizeHtmlInline = (
     html: string,
     extraConfig?: IFilterXSSOptions,
 ) => {

@@ -36,7 +36,7 @@ describe("MediaBackend", () => {
     describe("fromBackendType", () => {
         it("should return a LocalMediaBackend instance for LOCAL backend type", async () => {
             const backend = await MediaBackend.fromBackendType(
-                MediaBackendType.LOCAL,
+                MediaBackendType.Local,
                 mockConfig,
             );
             expect(backend).toBeInstanceOf(LocalMediaBackend);
@@ -62,8 +62,8 @@ describe("MediaBackend", () => {
         it("should throw an error for unknown backend type", () => {
             expect(
                 // @ts-expect-error This is a test
-                MediaBackend.fromBackendType("unknown", mockConfig),
-            ).rejects.toThrow("Unknown backend type: unknown");
+                () => MediaBackend.fromBackendType("unknown", mockConfig),
+            ).toThrow("Unknown backend type: unknown");
         });
     });
 
@@ -228,7 +228,7 @@ describe("LocalMediaBackend", () => {
 
     it("should initialize with correct type", () => {
         expect(localMediaBackend.getBackendType()).toEqual(
-            MediaBackendType.LOCAL,
+            MediaBackendType.Local,
         );
     });
 

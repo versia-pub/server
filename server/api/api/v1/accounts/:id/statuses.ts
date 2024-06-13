@@ -20,7 +20,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:statuses"],
     },
     permissions: {
-        required: [RolePermissions.VIEW_NOTES, RolePermissions.VIEW_ACCOUNTS],
+        required: [RolePermissions.ViewNotes, RolePermissions.ViewAccounts],
     },
 });
 
@@ -69,7 +69,9 @@ export default (app: Hono) =>
 
             const otherUser = await User.fromId(id);
 
-            if (!otherUser) return errorResponse("User not found", 404);
+            if (!otherUser) {
+                return errorResponse("User not found", 404);
+            }
 
             const {
                 max_id,
@@ -103,7 +105,7 @@ export default (app: Hono) =>
             );
 
             return jsonResponse(
-                await Promise.all(objects.map((note) => note.toAPI(otherUser))),
+                await Promise.all(objects.map((note) => note.toApi(otherUser))),
                 200,
                 {
                     Link: link,

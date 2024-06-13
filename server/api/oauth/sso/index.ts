@@ -41,8 +41,9 @@ const returnError = (query: object, error: string, description: string) => {
 
     // Add all data that is not undefined except email and password
     for (const [key, value] of Object.entries(query)) {
-        if (key !== "email" && key !== "password" && value !== undefined)
+        if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
+        }
     }
 
     searchParams.append("error", error);

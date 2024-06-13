@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.6.4/schema.json",
+    "$schema": "https://biomejs.dev/schemas/1.8.1/schema.json",
     "organizeImports": {
         "enabled": true,
         "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
@@ -7,7 +7,48 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true
+            "all": true,
+            "correctness": {
+                "noNodejsModules": "off"
+            },
+            "style": {
+                "noDefaultExport": "off",
+                "noParameterProperties": "off",
+                "noNamespaceImport": "off",
+                "useFilenamingConvention": "off",
+                "useNamingConvention": {
+                    "level": "warn",
+                    "options": {
+                        "requireAscii": false,
+                        "strictCase": false,
+                        "conventions": [
+                            {
+                                "selector": {
+                                    "kind": "typeProperty"
+                                },
+                                "formats": [
+                                    "camelCase",
+                                    "CONSTANT_CASE",
+                                    "PascalCase",
+                                    "snake_case"
+                                ]
+                            },
+                            {
+                                "selector": {
+                                    "kind": "objectLiteralProperty",
+                                    "scope": "any"
+                                },
+                                "formats": [
+                                    "camelCase",
+                                    "CONSTANT_CASE",
+                                    "PascalCase",
+                                    "snake_case"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
         },
         "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
     },
@@ -16,5 +57,8 @@
         "indentStyle": "space",
         "indentWidth": 4,
         "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
+    },
+    "javascript": {
+        "globals": ["Bun", "HTMLRewriter"]
     }
 }

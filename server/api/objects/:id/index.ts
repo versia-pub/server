@@ -5,7 +5,7 @@ import type { EntityValidator } from "@lysand-org/federation";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { type Like, likeToLysand } from "~/database/entities/Like";
+import { type Like, likeToLysand } from "~/database/entities/like";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
@@ -59,7 +59,7 @@ export default (app: Hono) =>
                 apiObject = foundObject ? likeToLysand(foundObject) : null;
             }
 
-            if (!foundObject || !apiObject) {
+            if (!(foundObject && apiObject)) {
                 return errorResponse("Object not found", 404);
             }
 

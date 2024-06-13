@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Account as APIAccount } from "~/types/mastodon/account";
+import type { Account as apiAccount } from "~/types/mastodon/account";
 import { meta } from "./favourited_by";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -63,7 +63,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIAccount[];
+        const objects = (await response.json()) as apiAccount[];
 
         expect(objects.length).toBe(1);
         for (const [, status] of objects.entries()) {

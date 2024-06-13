@@ -18,7 +18,7 @@ export const meta = applyConfig({
         oauthPermissions: [],
     },
     permissions: {
-        required: [RolePermissions.VIEW_ACCOUNTS],
+        required: [RolePermissions.ViewAccounts],
     },
 });
 
@@ -40,8 +40,10 @@ export default (app: Hono) =>
 
             const foundUser = await User.fromId(id);
 
-            if (!foundUser) return errorResponse("User not found", 404);
+            if (!foundUser) {
+                return errorResponse("User not found", 404);
+            }
 
-            return jsonResponse(foundUser.toAPI(user?.id === foundUser.id));
+            return jsonResponse(foundUser.toApi(user?.id === foundUser.id));
         },
     );

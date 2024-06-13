@@ -19,10 +19,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_BOOSTS,
-            RolePermissions.VIEW_NOTES,
-        ],
+        required: [RolePermissions.ManageOwnBoosts, RolePermissions.ViewNotes],
     },
 });
 
@@ -48,12 +45,15 @@ export default (app: Hono) =>
             const { visibility } = context.req.valid("form");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const foundStatus = await Note.fromId(id, user.id);
 
-            if (!foundStatus?.isViewableByUser(user))
+            if (!foundStatus?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             const existingReblog = await Note.fromSql(
                 and(
@@ -94,6 +94,6 @@ export default (app: Hono) =>
                 });
             }
 
-            return jsonResponse(await finalNewReblog.toAPI(user));
+            return jsonResponse(await finalNewReblog.toApi(user));
         },
     );

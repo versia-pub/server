@@ -105,12 +105,13 @@ export default (app: Hono) =>
             }
 
             // Check if username is valid
-            if (!username?.match(/^[a-z0-9_]+$/))
+            if (!username?.match(/^[a-z0-9_]+$/)) {
                 errors.details.username.push({
                     error: "ERR_INVALID",
                     description:
                         "must only contain lowercase letters, numbers, and underscores",
                 });
+            }
 
             // Check if username doesnt match filters
             if (
@@ -125,25 +126,28 @@ export default (app: Hono) =>
             }
 
             // Check if username is too long
-            if ((username?.length ?? 0) > config.validation.max_username_size)
+            if ((username?.length ?? 0) > config.validation.max_username_size) {
                 errors.details.username.push({
                     error: "ERR_TOO_LONG",
                     description: `is too long (maximum is ${config.validation.max_username_size} characters)`,
                 });
+            }
 
             // Check if username is too short
-            if ((username?.length ?? 0) < 3)
+            if ((username?.length ?? 0) < 3) {
                 errors.details.username.push({
                     error: "ERR_TOO_SHORT",
                     description: "is too short (minimum is 3 characters)",
                 });
+            }
 
             // Check if username is reserved
-            if (config.validation.username_blacklist.includes(username ?? ""))
+            if (config.validation.username_blacklist.includes(username ?? "")) {
                 errors.details.username.push({
                     error: "ERR_RESERVED",
                     description: "is reserved",
                 });
+            }
 
             // Check if username is taken
             if (await User.fromSql(eq(Users.username, username))) {
@@ -158,11 +162,12 @@ export default (app: Hono) =>
                 !email?.match(
                     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
                 )
-            )
+            ) {
                 errors.details.email.push({
                     error: "ERR_INVALID",
                     description: "must be a valid email address",
                 });
+            }
 
             // Check if email is blocked
             if (
@@ -171,37 +176,42 @@ export default (app: Hono) =>
                     tempmailDomains.domains.includes(
                         (email ?? "").split("@")[1],
                     ))
-            )
+            ) {
                 errors.details.email.push({
                     error: "ERR_BLOCKED",
                     description: "is from a blocked email provider",
                 });
+            }
 
             // Check if email is taken
-            if (await User.fromSql(eq(Users.email, email)))
+            if (await User.fromSql(eq(Users.email, email))) {
                 errors.details.email.push({
                     error: "ERR_TAKEN",
                     description: "is already taken",
                 });
+            }
 
             // Check if agreement is accepted
-            if (!agreement)
+            if (!agreement) {
                 errors.details.agreement.push({
                     error: "ERR_ACCEPTED",
                     description: "must be accepted",
                 });
+            }
 
-            if (!locale)
+            if (!locale) {
                 errors.details.locale.push({
                     error: "ERR_BLANK",
                     description: `can't be blank`,
                 });
+            }
 
-            if (!ISO6391.validate(locale ?? ""))
+            if (!ISO6391.validate(locale ?? "")) {
                 errors.details.locale.push({
                     error: "ERR_INVALID",
                     description: "must be a valid ISO 639-1 code",
                 });
+            }
 
             // If any errors are present, return them
             if (

@@ -23,13 +23,14 @@ export const setupDatabase = async (
         if (
             (e as Error).message ===
             "Client has already been connected. You cannot reuse a client."
-        )
+        ) {
             return;
+        }
 
-        await logger.logError(LogLevel.CRITICAL, "Database", e as Error);
+        await logger.logError(LogLevel.Critical, "Database", e as Error);
 
         await logger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Database",
             "Failed to connect to database. Please check your configuration.",
         );
@@ -38,23 +39,23 @@ export const setupDatabase = async (
 
     // Migrate the database
     info &&
-        (await logger.log(LogLevel.INFO, "Database", "Migrating database..."));
+        (await logger.log(LogLevel.Info, "Database", "Migrating database..."));
 
     try {
         await migrate(db, {
             migrationsFolder: "./drizzle/migrations",
         });
     } catch (e) {
-        await logger.logError(LogLevel.CRITICAL, "Database", e as Error);
+        await logger.logError(LogLevel.Critical, "Database", e as Error);
         await logger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Database",
             "Failed to migrate database. Please check your configuration.",
         );
         process.exit(1);
     }
 
-    info && (await logger.log(LogLevel.INFO, "Database", "Database migrated"));
+    info && (await logger.log(LogLevel.Info, "Database", "Database migrated"));
 };
 
 export const db = drizzle(client, { schema });

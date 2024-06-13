@@ -27,7 +27,9 @@ export class Role extends BaseInterface<typeof Roles> {
     }
 
     public static async fromId(id: string | null): Promise<Role | null> {
-        if (!id) return null;
+        if (!id) {
+            return null;
+        }
 
         return await Role.fromSql(eq(Roles.id, id));
     }
@@ -45,7 +47,9 @@ export class Role extends BaseInterface<typeof Roles> {
             orderBy,
         });
 
-        if (!found) return null;
+        if (!found) {
+            return null;
+        }
         return new Role(found);
     }
 
@@ -123,7 +127,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return updated.data;
     }
 
-    async save(): Promise<RoleType> {
+    save(): Promise<RoleType> {
         return this.update(this.data);
     }
 
@@ -173,7 +177,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return this.data.id;
     }
 
-    public toAPI() {
+    public toApi() {
         return {
             id: this.id,
             name: this.data.name,

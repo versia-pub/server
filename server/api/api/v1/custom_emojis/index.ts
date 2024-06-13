@@ -1,7 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { jsonResponse } from "@/response";
 import type { Hono } from "hono";
-import { emojiToAPI } from "~/database/entities/Emoji";
+import { emojiToApi } from "~/database/entities/emoji";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 
@@ -16,7 +16,7 @@ export const meta = applyConfig({
         required: false,
     },
     permissions: {
-        required: [RolePermissions.VIEW_EMOJIS],
+        required: [RolePermissions.ViewEmojis],
     },
 });
 
@@ -43,7 +43,7 @@ export default (app: Hono) =>
             });
 
             return jsonResponse(
-                await Promise.all(emojis.map((emoji) => emojiToAPI(emoji))),
+                await Promise.all(emojis.map((emoji) => emojiToApi(emoji))),
             );
         },
     );

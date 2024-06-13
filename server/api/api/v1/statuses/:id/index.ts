@@ -11,7 +11,7 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { undoFederationRequest } from "~/database/entities/Federation";
+import { undoFederationRequest } from "~/database/entities/federation";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
@@ -28,13 +28,10 @@ export const meta = applyConfig({
         requiredOnMethods: ["DELETE", "PUT"],
     },
     permissions: {
-        required: [RolePermissions.VIEW_NOTES],
+        required: [RolePermissions.ViewNotes],
         methodOverrides: {
-            DELETE: [
-                RolePermissions.MANAGE_OWN_NOTES,
-                RolePermissions.VIEW_NOTES,
-            ],
-            PUT: [RolePermissions.MANAGE_OWN_NOTES, RolePermissions.VIEW_NOTES],
+            DELETE: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
+            PUT: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
         },
     },
 });
@@ -96,11 +93,12 @@ export default (app: Hono) =>
 
             const foundStatus = await Note.fromId(id, user?.id);
 
-            if (!foundStatus?.isViewableByUser(user))
+            if (!foundStatus?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             if (context.req.method === "GET") {
-                return jsonResponse(await foundStatus.toAPI(user));
+                return jsonResponse(await foundStatus.toApi(user));
             }
             if (context.req.method === "DELETE") {
                 if (foundStatus.author.id !== user?.id) {
@@ -115,7 +113,7 @@ export default (app: Hono) =>
                     undoFederationRequest(user, foundStatus.getUri()),
                 );
 
-                return jsonResponse(await foundStatus.toAPI(user), 200);
+                return jsonResponse(await foundStatus.toApi(user), 200);
             }
 
             // TODO: Polls
@@ -128,7 +126,7 @@ export default (app: Hono) =>
                 sensitive,
             } = context.req.valid("form");
 
-            if (!statusText && !(media_ids && media_ids.length > 0)) {
+            if (!(statusText || (media_ids && media_ids.length > 0))) {
                 return errorResponse(
                     "Status is required unless media is attached",
                     422,
@@ -181,6 +179,6 @@ export default (app: Hono) =>
                 return errorResponse("Failed to update status", 500);
             }
 
-            return jsonResponse(await newNote.toAPI(user));
+            return jsonResponse(await newNote.toApi(user));
         },
     );

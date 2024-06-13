@@ -5,5 +5,5 @@ export type Source = {
     sensitive: boolean | null;
     language: string | null;
     note: string;
-    fields: Array<Field>;
+    fields: Field[];
 };

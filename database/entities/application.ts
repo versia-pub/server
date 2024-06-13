@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import type { Applications } from "~/drizzle/schema";
-import type { Application as APIApplication } from "~/types/mastodon/application";
+import type { Application as apiApplication } from "~/types/mastodon/application";
 
 export type Application = InferSelectModel<typeof Applications>;
 
@@ -27,7 +27,7 @@ export const getFromToken = async (
  * Converts this application to an API application.
  * @returns The API application representation of this application.
  */
-export const applicationToAPI = (app: Application): APIApplication => {
+export const applicationToApi = (app: Application): apiApplication => {
     return {
         name: app.name,
         website: app.website,

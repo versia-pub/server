@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/Token";
+import { TokenType } from "~/database/entities/token";
 import { db } from "~/drizzle/db";
 import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -44,8 +44,9 @@ const returnError = (query: object, error: string, description: string) => {
 
     // Add all data that is not undefined except email and password
     for (const [key, value] of Object.entries(query)) {
-        if (key !== "email" && key !== "password" && value !== undefined)
+        if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
+        }
     }
 
     searchParams.append("error", error);
@@ -106,7 +107,9 @@ export default (app: Hono) =>
                     ),
             );
 
-            if (userInfo instanceof Response) return userInfo;
+            if (userInfo instanceof Response) {
+                return userInfo;
+            }
 
             const { sub } = userInfo.userInfo;
             const flow = userInfo.flow;
@@ -154,7 +157,7 @@ export default (app: Hono) =>
                 );
             }
 
-            if (!user.hasPermission(RolePermissions.OAUTH)) {
+            if (!user.hasPermission(RolePermissions.OAuth)) {
                 return returnError(
                     {
                         redirect_uri: flow.application?.redirectUri,
@@ -163,12 +166,13 @@ export default (app: Hono) =>
                         scope: flow.application?.scopes,
                     },
                     "invalid_request",
-                    `User does not have the '${RolePermissions.OAUTH}' permission`,
+                    `User does not have the '${RolePermissions.OAuth}' permission`,
                 );
             }
 
-            if (!flow.application)
+            if (!flow.application) {
                 return errorResponse("Application not found", 500);
+            }
 
             const code = randomBytes(32).toString("hex");
 
@@ -176,7 +180,7 @@ export default (app: Hono) =>
                 accessToken: randomBytes(64).toString("base64url"),
                 code: code,
                 scope: flow.application.scopes,
-                tokenType: TokenType.BEARER,
+                tokenType: TokenType.Bearer,
                 userId: user.id,
                 applicationId: flow.application.id,
             });

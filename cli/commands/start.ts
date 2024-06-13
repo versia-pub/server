@@ -33,14 +33,14 @@ export default class Start extends BaseCommand<typeof Start> {
     public async run(): Promise<void> {
         const { flags } = await this.parse(Start);
 
-        const numCPUs = flags["all-threads"] ? os.cpus().length : flags.threads;
+        const numCpUs = flags["all-threads"] ? os.cpus().length : flags.threads;
 
         // Check if index is a JS or TS file (depending on the environment)
         const index = (await Bun.file("index.ts").exists())
             ? "index.ts"
             : "index.js";
 
-        for (let i = 0; i < numCPUs; i++) {
+        for (let i = 0; i < numCpUs; i++) {
             const args = ["bun", index];
             if (i !== 0 || flags.silent) {
                 args.push("--silent");

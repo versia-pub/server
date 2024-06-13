@@ -20,7 +20,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:follows"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FOLLOWS],
+        required: [RolePermissions.ManageOwnFollows],
     },
 });
 
@@ -41,7 +41,9 @@ export default (app: Hono) =>
             const { user: self } = context.req.valid("header");
             const { id: ids } = context.req.valid("query");
 
-            if (!self) return errorResponse("Unauthorized", 401);
+            if (!self) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const idFollowerRelationships =
                 await db.query.Relationships.findMany({
@@ -91,6 +93,6 @@ export default (app: Hono) =>
                 ),
             );
 
-            return jsonResponse(finalUsers.map((o) => o.toAPI()));
+            return jsonResponse(finalUsers.map((o) => o.toApi()));
         },
     );

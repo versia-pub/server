@@ -16,7 +16,7 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import { resolveWebFinger } from "~/database/entities/User";
+import { resolveWebFinger } from "~/database/entities/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel } from "~/packages/log-manager";
@@ -33,7 +33,7 @@ export const meta = applyConfig({
         oauthPermissions: [],
     },
     permissions: {
-        required: [RolePermissions.SEARCH],
+        required: [RolePermissions.Search],
     },
 });
 
@@ -84,7 +84,7 @@ export default (app: Hono) =>
                     domain,
                 ).catch((e) => {
                     dualLogger.logError(
-                        LogLevel.ERROR,
+                        LogLevel.Error,
                         "WebFinger.Resolve",
                         e as Error,
                     );
@@ -92,7 +92,7 @@ export default (app: Hono) =>
                 });
 
                 if (foundAccount) {
-                    return jsonResponse(foundAccount.toAPI());
+                    return jsonResponse(foundAccount.toApi());
                 }
 
                 return errorResponse("Account not found", 404);
@@ -106,7 +106,7 @@ export default (app: Hono) =>
             const account = await User.fromSql(eq(Users.username, username));
 
             if (account) {
-                return jsonResponse(account.toAPI());
+                return jsonResponse(account.toApi());
             }
 
             return errorResponse(

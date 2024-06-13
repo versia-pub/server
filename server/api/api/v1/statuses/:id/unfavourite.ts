@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { deleteLike } from "~/database/entities/Like";
+import { deleteLike } from "~/database/entities/like";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
@@ -18,10 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_NOTES,
-            RolePermissions.VIEW_NOTES,
-        ],
+        required: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
     },
 });
 
@@ -41,19 +38,24 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const note = await Note.fromId(id, user.id);
 
-            if (!note?.isViewableByUser(user))
+            if (!note?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             await deleteLike(user, note);
 
             const newNote = await Note.fromId(id, user.id);
 
-            if (!newNote) return errorResponse("Record not found", 404);
+            if (!newNote) {
+                return errorResponse("Record not found", 404);
+            }
 
-            return jsonResponse(await newNote.toAPI(user));
+            return jsonResponse(await newNote.toApi(user));
         },
     );

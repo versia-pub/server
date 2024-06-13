@@ -1,7 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "hono";
-import { getFromToken } from "~/database/entities/Application";
+import { getFromToken } from "~/database/entities/application";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
@@ -15,7 +15,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_APPS],
+        required: [RolePermissions.ManageOwnApps],
     },
 });
 
@@ -27,12 +27,18 @@ export default (app: Hono) =>
         async (context) => {
             const { user, token } = context.req.valid("header");
 
-            if (!token) return errorResponse("Unauthorized", 401);
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!token) {
+                return errorResponse("Unauthorized", 401);
+            }
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const application = await getFromToken(token);
 
-            if (!application) return errorResponse("Unauthorized", 401);
+            if (!application) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             return jsonResponse({
                 name: application.name,

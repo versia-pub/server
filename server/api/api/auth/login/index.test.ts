@@ -108,7 +108,7 @@ describe(meta.route, () => {
         expect(response.headers.get("Set-Cookie")).toMatch(/jwt=[^;]+;/);
     });
 
-    describe("should reject invalid credentials", async () => {
+    describe("should reject invalid credentials", () => {
         // Redirects to /oauth/authorize on invalid
         test("invalid email", async () => {
             const formData = new FormData();

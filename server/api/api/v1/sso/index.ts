@@ -30,7 +30,7 @@ export const meta = applyConfig({
     },
     route: "/api/v1/sso",
     permissions: {
-        required: [RolePermissions.OAUTH],
+        required: [RolePermissions.OAuth],
     },
 });
 

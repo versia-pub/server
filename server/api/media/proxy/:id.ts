@@ -33,11 +33,12 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
 
             // Check if URL is valid
-            if (!URL.canParse(id))
+            if (!URL.canParse(id)) {
                 return errorResponse(
                     "Invalid URL (it should be encoded as base64url",
                     400,
                 );
+            }
 
             const media = await fetch(id, {
                 headers: {

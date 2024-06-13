@@ -18,7 +18,7 @@ export const meta = applyConfig({
  * Mastodon-FE logout route
  */
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
+    app.on(meta.allowedMethods, meta.route, () => {
         return new Response(null, {
             headers: {
                 Location: "/",

@@ -150,7 +150,7 @@ describe(meta.route, () => {
 
     test("should assign new role", async () => {
         await role.update({
-            permissions: [RolePermissions.MANAGE_ROLES],
+            permissions: [RolePermissions.ManageRoles],
         });
 
         const response = await sendTestRequest(
@@ -244,7 +244,7 @@ describe(meta.route, () => {
     test("should return 403 if user tries to add role with higher priority", async () => {
         // Add MANAGE_ROLES permission to user
         await role.update({
-            permissions: [RolePermissions.MANAGE_ROLES],
+            permissions: [RolePermissions.ManageRoles],
         });
 
         const response = await sendTestRequest(

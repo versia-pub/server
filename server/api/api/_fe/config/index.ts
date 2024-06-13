@@ -16,7 +16,7 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async (context) => {
+    app.on(meta.allowedMethods, meta.route, (_context) => {
         return jsonResponse({
             http: {
                 bind: config.http.bind,

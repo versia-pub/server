@@ -4,18 +4,18 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
-import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
-import type { Context as APIContext } from "~/types/mastodon/context";
-import type { Status as APIStatus } from "~/types/mastodon/status";
+import type { AsyncAttachment as apiAsyncAttachment } from "~/types/mastodon/async_attachment";
+import type { Context as apiContext } from "~/types/mastodon/context";
+import type { Status as apiStatus } from "~/types/mastodon/status";
 
-const base_url = config.http.base_url;
+const baseUrl = config.http.base_url;
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 const user = users[0];
 const token = tokens[0];
-let status: APIStatus | null = null;
-let status2: APIStatus | null = null;
-let media1: APIAsyncAttachment | null = null;
+let status: apiStatus | null = null;
+let status2: apiStatus | null = null;
+let media1: apiAsyncAttachment | null = null;
 
 describe("API Tests", () => {
     afterAll(async () => {
@@ -29,7 +29,7 @@ describe("API Tests", () => {
 
             const response = await sendTestRequest(
                 new Request(
-                    wrapRelativeUrl(`${base_url}/api/v2/media`, base_url),
+                    wrapRelativeUrl(`${baseUrl}/api/v2/media`, baseUrl),
                     {
                         method: "POST",
                         headers: {
@@ -45,7 +45,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            media1 = (await response.json()) as APIAsyncAttachment;
+            media1 = (await response.json()) as apiAsyncAttachment;
 
             expect(media1.id).toBeDefined();
             expect(media1.type).toBe("unknown");
@@ -57,7 +57,7 @@ describe("API Tests", () => {
         test("should create a new status and return an APIStatus object", async () => {
             const response = await sendTestRequest(
                 new Request(
-                    wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
+                    wrapRelativeUrl(`${baseUrl}/api/v1/statuses`, baseUrl),
                     {
                         method: "POST",
                         headers: {
@@ -78,7 +78,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            status = (await response.json()) as APIStatus;
+            status = (await response.json()) as apiStatus;
             expect(status.content).toContain("Hello, world!");
             expect(status.visibility).toBe("public");
             expect(status.account.id).toBe(user.id);
@@ -104,7 +104,7 @@ describe("API Tests", () => {
         test("should create a new status in reply to the previous one", async () => {
             const response = await sendTestRequest(
                 new Request(
-                    wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
+                    wrapRelativeUrl(`${baseUrl}/api/v1/statuses`, baseUrl),
                     {
                         method: "POST",
                         headers: {
@@ -125,7 +125,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            status2 = (await response.json()) as APIStatus;
+            status2 = (await response.json()) as apiStatus;
             expect(status2.content).toContain("This is a reply!");
             expect(status2.visibility).toBe("public");
             expect(status2.account.id).toBe(user.id);
@@ -154,8 +154,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}`,
+                        baseUrl,
                     ),
                     {
                         headers: {
@@ -170,7 +170,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const statusJson = (await response.json()) as APIStatus;
+            const statusJson = (await response.json()) as apiStatus;
 
             expect(statusJson.id).toBe(status?.id || "");
             expect(statusJson.content).toBeDefined();
@@ -203,8 +203,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/reblog`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}/reblog`,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -220,7 +220,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const rebloggedStatus = (await response.json()) as APIStatus;
+            const rebloggedStatus = (await response.json()) as apiStatus;
 
             expect(rebloggedStatus.id).toBeDefined();
             expect(rebloggedStatus.reblog?.id).toEqual(status?.id ?? "");
@@ -233,8 +233,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/unreblog`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}/unreblog`,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -250,7 +250,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const unrebloggedStatus = (await response.json()) as APIStatus;
+            const unrebloggedStatus = (await response.json()) as apiStatus;
 
             expect(unrebloggedStatus.id).toBeDefined();
             expect(unrebloggedStatus.reblogged).toBe(false);
@@ -262,8 +262,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/context`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}/context`,
+                        baseUrl,
                     ),
                     {
                         headers: {
@@ -278,7 +278,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const context = (await response.json()) as APIContext;
+            const context = (await response.json()) as apiContext;
 
             expect(context.ancestors.length).toBe(0);
             expect(context.descendants.length).toBe(1);
@@ -293,8 +293,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/accounts/${user.id}/statuses`,
-                        base_url,
+                        `${baseUrl}/api/v1/accounts/${user.id}/statuses`,
+                        baseUrl,
                     ),
                     {
                         method: "GET",
@@ -310,7 +310,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const statuses = (await response.json()) as APIStatus[];
+            const statuses = (await response.json()) as apiStatus[];
 
             expect(statuses.length).toBe(2);
 
@@ -328,8 +328,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/favourite`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}/favourite`,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -350,8 +350,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}/unfavourite`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}/unfavourite`,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -367,7 +367,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const updatedStatus = (await response.json()) as APIStatus;
+            const updatedStatus = (await response.json()) as apiStatus;
 
             expect(updatedStatus.favourited).toBe(false);
             expect(updatedStatus.favourites_count).toBe(0);
@@ -379,8 +379,8 @@ describe("API Tests", () => {
             const response = await sendTestRequest(
                 new Request(
                     wrapRelativeUrl(
-                        `${base_url}/api/v1/statuses/${status?.id}`,
-                        base_url,
+                        `${baseUrl}/api/v1/statuses/${status?.id}`,
+                        baseUrl,
                     ),
                     {
                         method: "DELETE",

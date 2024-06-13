@@ -19,7 +19,7 @@ export const meta = applyConfig({
         oauthPermissions: ["write:notifications"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_NOTIFICATIONS],
+        required: [RolePermissions.ManageOwnNotifications],
     },
 });
 
@@ -38,7 +38,9 @@ export default (app: Hono) =>
         async (context) => {
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { "ids[]": ids } = context.req.valid("query");
 

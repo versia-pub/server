@@ -65,8 +65,9 @@ const returnError = (query: object, error: string, description: string) => {
 
     // Add all data that is not undefined except email and password
     for (const [key, value] of Object.entries(query)) {
-        if (key !== "email" && key !== "password" && value !== undefined)
+        if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
+        }
     }
 
     searchParams.append("error", error);
@@ -107,14 +108,20 @@ export default (app: Hono) =>
             );
 
             if (
-                !user ||
-                !(await Bun.password.verify(password, user.data.password || ""))
-            )
+                !(
+                    user &&
+                    (await Bun.password.verify(
+                        password,
+                        user.data.password || "",
+                    ))
+                )
+            ) {
                 return returnError(
                     context.req.query(),
                     "invalid_grant",
                     "Invalid identifier or password",
                 );
+            }
 
             if (user.data.passwordResetToken) {
                 return response(null, 302, {
@@ -163,8 +170,9 @@ export default (app: Hono) =>
                 application: application.name,
             });
 
-            if (application.website)
+            if (application.website) {
                 searchParams.append("website", application.website);
+            }
 
             // Add all data that is not undefined except email and password
             for (const [key, value] of Object.entries(context.req.query())) {
@@ -172,8 +180,9 @@ export default (app: Hono) =>
                     key !== "email" &&
                     key !== "password" &&
                     value !== undefined
-                )
+                ) {
                     searchParams.append(key, String(value));
+                }
             }
 
             // Redirect to OAuth authorize with JWT

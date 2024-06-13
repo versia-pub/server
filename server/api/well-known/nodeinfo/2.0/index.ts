@@ -16,7 +16,7 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
+    app.on(meta.allowedMethods, meta.route, () => {
         return jsonResponse({
             version: "2.0",
             software: { name: "lysand", version: manifest.version },

@@ -21,8 +21,8 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.VIEW_ACCOUNT_FOLLOWS,
-            RolePermissions.VIEW_ACCOUNTS,
+            RolePermissions.ViewAccountFollows,
+            RolePermissions.ViewAccounts,
         ],
     },
 });
@@ -52,7 +52,9 @@ export default (app: Hono) =>
 
             const otherUser = await User.fromId(id);
 
-            if (!otherUser) return errorResponse("User not found", 404);
+            if (!otherUser) {
+                return errorResponse("User not found", 404);
+            }
 
             // TODO: Add follower/following privacy settings
 
@@ -68,7 +70,7 @@ export default (app: Hono) =>
             );
 
             return jsonResponse(
-                await Promise.all(objects.map((object) => object.toAPI())),
+                await Promise.all(objects.map((object) => object.toApi())),
                 200,
                 {
                     Link: link,

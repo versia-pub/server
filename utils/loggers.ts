@@ -4,11 +4,11 @@ import { config } from "~/packages/config-manager";
 const noColors = process.env.NO_COLORS === "true";
 const noFancyDates = process.env.NO_FANCY_DATES === "true";
 
-const requests_log = Bun.file(config.logging.storage.requests);
+const requestsLog = Bun.file(config.logging.storage.requests);
 const isEntry = true;
 
 export const logger = new LogManager(
-    isEntry ? requests_log : Bun.file("/dev/null"),
+    isEntry ? requestsLog : Bun.file("/dev/null"),
 );
 
 export const consoleLogger = new LogManager(

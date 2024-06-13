@@ -19,9 +19,9 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.VIEW_NOTES,
-            RolePermissions.VIEW_ACCOUNTS,
-            RolePermissions.VIEW_PUBLIC_TIMELINES,
+            RolePermissions.ViewNotes,
+            RolePermissions.ViewAccounts,
+            RolePermissions.ViewPublicTimelines,
         ],
     },
 });
@@ -91,7 +91,7 @@ export default (app: Hono) =>
 
             return jsonResponse(
                 await Promise.all(
-                    objects.map(async (note) => note.toAPI(user)),
+                    objects.map(async (note) => note.toApi(user)),
                 ),
                 200,
                 {

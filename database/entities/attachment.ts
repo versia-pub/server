@@ -2,7 +2,7 @@ import { MediaBackendType } from "media-manager";
 import type { Config } from "~/packages/config-manager";
 
 export const getUrl = (name: string, config: Config) => {
-    if (config.media.backend === MediaBackendType.LOCAL) {
+    if (config.media.backend === MediaBackendType.Local) {
         return new URL(`/media/${name}`, config.http.base_url).toString();
     }
     if (config.media.backend === MediaBackendType.S3) {

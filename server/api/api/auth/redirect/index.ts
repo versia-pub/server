@@ -63,8 +63,9 @@ export default (app: Hono) =>
                 )
                 .limit(1);
 
-            if (!foundToken || foundToken.length <= 0)
+            if (!foundToken || foundToken.length <= 0) {
                 return redirectToLogin("Invalid code");
+            }
 
             // Redirect back to application
             return Response.redirect(`${redirect_uri}?code=${code}`, 302);

@@ -4,7 +4,7 @@ import type { z } from "zod";
 import type { RolePermissions } from "~/drizzle/schema";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
-export interface APIRouteMetadata {
+export interface ApiRouteMetadata {
     allowedMethods: HttpVerb[];
     ratelimits: {
         max: number;
@@ -19,13 +19,13 @@ export interface APIRouteMetadata {
     permissions?: {
         required: RolePermissions[];
         methodOverrides?: {
-            [key in HttpVerb]?: RolePermissions[];
+            [Key in HttpVerb]?: RolePermissions[];
         };
     };
 }
 
-export interface APIRouteExports {
-    meta: APIRouteMetadata;
+export interface ApiRouteExports {
+    meta: ApiRouteMetadata;
     schemas?: {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;

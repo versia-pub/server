@@ -7,9 +7,9 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import {
     findManyNotifications,
-    notificationToAPI,
-} from "~/database/entities/Notification";
-import type { NotificationWithRelations } from "~/database/entities/Notification";
+    notificationToApi,
+} from "~/database/entities/notification";
+import type { NotificationWithRelations } from "~/database/entities/notification";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
@@ -25,8 +25,8 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.MANAGE_OWN_NOTIFICATIONS,
-            RolePermissions.VIEW_PRIVATE_TIMELINES,
+            RolePermissions.ManageOwnNotifications,
+            RolePermissions.ViewPrimateTimelines,
         ],
     },
 });
@@ -99,7 +99,9 @@ export default (app: Hono) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const {
                 account_id,
@@ -185,7 +187,7 @@ export default (app: Hono) =>
                 );
 
             return jsonResponse(
-                await Promise.all(objects.map((n) => notificationToAPI(n))),
+                await Promise.all(objects.map((n) => notificationToApi(n))),
                 200,
                 {
                     Link: link,

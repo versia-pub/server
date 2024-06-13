@@ -19,7 +19,7 @@ export const meta = applyConfig({
     },
     route: "/api/v1/sso/:id",
     permissions: {
-        required: [RolePermissions.OAUTH],
+        required: [RolePermissions.OAuth],
     },
 });
 

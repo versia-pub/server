@@ -16,7 +16,7 @@ import { type ValidationError, isValidationError } from "zod-validation-error";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
-} from "~/database/entities/User";
+} from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import { Notes, Notifications, Relationships } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -93,7 +93,7 @@ export default (app: Hono) =>
             }
 
             // @ts-expect-error IP attribute is not in types
-            const request_ip = context.env?.ip as
+            const requestIp = context.env?.ip as
                 | SocketAddress
                 | undefined
                 | null;
@@ -111,12 +111,13 @@ export default (app: Hono) =>
                         );
                     }
 
-                    if (request_ip?.address) {
-                        if (config.federation.bridge.allowed_ips.length > 0)
+                    if (requestIp?.address) {
+                        if (config.federation.bridge.allowed_ips.length > 0) {
                             checkSignature = false;
+                        }
 
                         for (const ip of config.federation.bridge.allowed_ips) {
-                            if (matches(ip, request_ip?.address)) {
+                            if (matches(ip, requestIp?.address)) {
                                 checkSignature = false;
                                 break;
                             }
@@ -146,7 +147,7 @@ export default (app: Hono) =>
                 if (config.debug.federation) {
                     // Log public key
                     new LogManager(Bun.stdout).log(
-                        LogLevel.DEBUG,
+                        LogLevel.Debug,
                         "Inbox.Signature",
                         `Sender public key: ${sender.data.publicKey}`,
                     );
@@ -179,7 +180,7 @@ export default (app: Hono) =>
                     )
                     .catch((e) => {
                         new LogManager(Bun.stdout).logError(
-                            LogLevel.ERROR,
+                            LogLevel.Error,
                             "Inbox.Signature",
                             e as Error,
                         );
@@ -208,7 +209,7 @@ export default (app: Hono) =>
                             note,
                         ).catch((e) => {
                             dualLogger.logError(
-                                LogLevel.ERROR,
+                                LogLevel.Error,
                                 "Inbox.NoteResolve",
                                 e as Error,
                             );
@@ -435,7 +436,7 @@ export default (app: Hono) =>
                 if (isValidationError(e)) {
                     return errorResponse((e as ValidationError).message, 400);
                 }
-                dualLogger.logError(LogLevel.ERROR, "Inbox", e as Error);
+                dualLogger.logError(LogLevel.Error, "Inbox", e as Error);
                 return jsonResponse(
                     {
                         error: "Failed to process request",

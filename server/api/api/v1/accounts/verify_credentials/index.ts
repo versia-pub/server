@@ -20,12 +20,14 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async (context) => {
+        (context) => {
             // TODO: Add checks for disabled/unverified accounts
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
-            return jsonResponse(user.toAPI(true));
+            return jsonResponse(user.toApi(true));
         },
     );

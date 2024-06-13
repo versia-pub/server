@@ -4,8 +4,8 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { relationshipToAPI } from "~/database/entities/Relationship";
-import { getRelationshipToOtherUser } from "~/database/entities/User";
+import { relationshipToApi } from "~/database/entities/relationship";
+import { getRelationshipToOtherUser } from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import { Relationships, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
@@ -23,8 +23,8 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.MANAGE_OWN_BLOCKS,
-            RolePermissions.VIEW_ACCOUNTS,
+            RolePermissions.ManageOwnBlocks,
+            RolePermissions.ViewAccounts,
         ],
     },
 });
@@ -45,11 +45,15 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const otherUser = await User.fromId(id);
 
-            if (!otherUser) return errorResponse("User not found", 404);
+            if (!otherUser) {
+                return errorResponse("User not found", 404);
+            }
 
             const foundRelationship = await getRelationshipToOtherUser(
                 user,
@@ -67,6 +71,6 @@ export default (app: Hono) =>
                     .where(eq(Relationships.id, foundRelationship.id));
             }
 
-            return jsonResponse(relationshipToAPI(foundRelationship));
+            return jsonResponse(relationshipToApi(foundRelationship));
         },
     );

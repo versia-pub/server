@@ -49,8 +49,9 @@ export default (app: Hono) =>
 
             const buffer = await file.arrayBuffer();
 
-            if (!(await file.exists()))
+            if (!(await file.exists())) {
                 return errorResponse("File not found", 404);
+            }
 
             // Can't directly copy file into Response because this crashes Bun for now
             return response(buffer, 200, {

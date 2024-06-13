@@ -5,6 +5,8 @@ import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
 import { EntityValidator } from "@lysand-org/federation";
 import {
+    type InferInsertModel,
+    type InferSelectModel,
     type SQL,
     and,
     count,
@@ -19,20 +21,21 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import {
-    emojiToAPI,
+    emojiToApi,
     emojiToLysand,
     fetchEmoji,
-} from "~/database/entities/Emoji";
-import { objectToInboxRequest } from "~/database/entities/Federation";
-import { addInstanceIfNotExists } from "~/database/entities/Instance";
+} from "~/database/entities/emoji";
+import { objectToInboxRequest } from "~/database/entities/federation";
+import { addInstanceIfNotExists } from "~/database/entities/instance";
 import {
     type UserWithRelations,
     findFirstUser,
     findManyUsers,
-} from "~/database/entities/User";
+} from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import {
     EmojiToUser,
+    type Instances,
     NoteToMentions,
     Notes,
     type RolePermissions,
@@ -40,8 +43,8 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
-import type { Account as APIAccount } from "~/types/mastodon/account";
-import type { Mention as APIMention } from "~/types/mastodon/mention";
+import type { Account as apiAccount } from "~/types/mastodon/account";
+import type { Mention as apiMention } from "~/types/mastodon/mention";
 import { BaseInterface } from "./base";
 import type { Note } from "./note";
 import { Role } from "./role";
@@ -61,7 +64,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     static async fromId(id: string | null): Promise<User | null> {
-        if (!id) return null;
+        if (!id) {
+            return null;
+        }
 
         return await User.fromSql(eq(Users.id, id));
     }
@@ -79,7 +84,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             orderBy,
         });
 
-        if (!found) return null;
+        if (!found) {
+            return null;
+        }
         return new User(found);
     }
 
@@ -137,7 +144,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 // If admin, add admin permissions
                 .concat(this.data.isAdmin ? config.permissions.admin : [])
                 .reduce((acc, permission) => {
-                    if (!acc.includes(permission)) acc.push(permission);
+                    if (!acc.includes(permission)) {
+                        acc.push(permission);
+                    }
                     return acc;
                 }, [] as RolePermissions[])
         );
@@ -220,11 +229,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         )[0];
     }
 
-    async save(): Promise<UserWithRelations> {
+    save(): Promise<UserWithRelations> {
         return this.update(this.data);
     }
 
-    async updateFromRemote() {
+    async updateFromRemote(): Promise<User> {
         if (!this.isRemote()) {
             throw new Error(
                 "Cannot refetch a local user (they are not remote)",
@@ -233,16 +242,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const updated = await User.saveFromRemote(this.getUri());
 
-        if (!updated) {
-            throw new Error("User not found after update");
-        }
-
         this.data = updated.data;
 
         return this;
     }
 
-    static async saveFromRemote(uri: string): Promise<User | null> {
+    static async saveFromRemote(uri: string): Promise<User> {
         if (!URL.canParse(uri)) {
             throw new Error(`Invalid URI to parse ${uri}`);
         }
@@ -274,102 +279,25 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             emojis.push(await fetchEmoji(emoji));
         }
 
-        // Check if new user already exists
-        const foundUser = await User.fromSql(eq(Users.uri, data.uri));
-
-        // If it exists, simply update it
-        if (foundUser) {
-            await foundUser.update({
-                updatedAt: new Date().toISOString(),
-                endpoints: {
-                    dislikes: data.dislikes,
-                    featured: data.featured,
-                    likes: data.likes,
-                    followers: data.followers,
-                    following: data.following,
-                    inbox: data.inbox,
-                    outbox: data.outbox,
-                },
-                avatar: data.avatar
-                    ? Object.entries(data.avatar)[0][1].content
-                    : "",
-                header: data.header
-                    ? Object.entries(data.header)[0][1].content
-                    : "",
-                displayName: data.display_name ?? "",
-                note: getBestContentType(data.bio).content,
-                publicKey: data.public_key.public_key,
-            });
-
-            // Add emojis
-            if (emojis.length > 0) {
-                await db
-                    .delete(EmojiToUser)
-                    .where(eq(EmojiToUser.userId, foundUser.id));
-
-                await db.insert(EmojiToUser).values(
-                    emojis.map((emoji) => ({
-                        emojiId: emoji.id,
-                        userId: foundUser.id,
-                    })),
-                );
-            }
-
-            return foundUser;
-        }
-
-        const newUser = (
-            await db
-                .insert(Users)
-                .values({
-                    username: data.username,
-                    uri: data.uri,
-                    createdAt: new Date(data.created_at).toISOString(),
-                    endpoints: {
-                        dislikes: data.dislikes,
-                        featured: data.featured,
-                        likes: data.likes,
-                        followers: data.followers,
-                        following: data.following,
-                        inbox: data.inbox,
-                        outbox: data.outbox,
-                    },
-                    fields: data.fields ?? [],
-                    updatedAt: new Date(data.created_at).toISOString(),
-                    instanceId: instance.id,
-                    avatar: data.avatar
-                        ? Object.entries(data.avatar)[0][1].content
-                        : "",
-                    header: data.header
-                        ? Object.entries(data.header)[0][1].content
-                        : "",
-                    displayName: data.display_name ?? "",
-                    note: getBestContentType(data.bio).content,
-                    publicKey: data.public_key.public_key,
-                    source: {
-                        language: null,
-                        note: "",
-                        privacy: "public",
-                        sensitive: false,
-                        fields: [],
-                    },
-                })
-                .returning()
-        )[0];
+        const user = await User.fromLysand(data, instance);
 
         // Add emojis to user
         if (emojis.length > 0) {
+            await db.delete(EmojiToUser).where(eq(EmojiToUser.userId, user.id));
+
             await db.insert(EmojiToUser).values(
                 emojis.map((emoji) => ({
                     emojiId: emoji.id,
-                    userId: newUser.id,
+                    userId: user.id,
                 })),
             );
         }
 
-        const finalUser = await User.fromId(newUser.id);
+        const finalUser = await User.fromId(user.id);
 
-        if (!finalUser) return null;
+        if (!finalUser) {
+            throw new Error("Failed to save user from remote");
+        }
 
         // Add to Meilisearch
         await addUserToMeilisearch(finalUser);
@@ -377,17 +305,86 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return finalUser;
     }
 
+    static async fromLysand(
+        user: typeof EntityValidator.$User,
+        instance: InferSelectModel<typeof Instances>,
+    ): Promise<User> {
+        const data = {
+            username: user.username,
+            uri: user.uri,
+            createdAt: new Date(user.created_at).toISOString(),
+            endpoints: {
+                dislikes: user.dislikes,
+                featured: user.featured,
+                likes: user.likes,
+                followers: user.followers,
+                following: user.following,
+                inbox: user.inbox,
+                outbox: user.outbox,
+            },
+            fields: user.fields ?? [],
+            updatedAt: new Date(user.created_at).toISOString(),
+            instanceId: instance.id,
+            avatar: user.avatar
+                ? Object.entries(user.avatar)[0][1].content
+                : "",
+            header: user.header
+                ? Object.entries(user.header)[0][1].content
+                : "",
+            displayName: user.display_name ?? "",
+            note: getBestContentType(user.bio).content,
+            publicKey: user.public_key.public_key,
+            source: {
+                language: null,
+                note: "",
+                privacy: "public",
+                sensitive: false,
+                fields: [],
+            },
+        };
+
+        // Check if new user already exists
+
+        const foundUser = await User.fromSql(eq(Users.uri, user.uri));
+
+        // If it exists, simply update it
+        if (foundUser) {
+            await foundUser.update(data);
+
+            return foundUser;
+        }
+
+        // Else, create a new user
+        return await User.insert(data);
+    }
+
+    public static async insert(
+        data: InferInsertModel<typeof Users>,
+    ): Promise<User> {
+        const inserted = (await db.insert(Users).values(data).returning())[0];
+
+        const user = await User.fromId(inserted.id);
+
+        if (!user) {
+            throw new Error("Failed to insert user");
+        }
+
+        return user;
+    }
+
     static async resolve(uri: string): Promise<User | null> {
         // Check if user not already in database
         const foundUser = await User.fromSql(eq(Users.uri, uri));
 
-        if (foundUser) return foundUser;
+        if (foundUser) {
+            return foundUser;
+        }
 
         // Check if URI is of a local user
         if (uri.startsWith(config.http.base_url)) {
             const uuid = uri.match(idValidator);
 
-            if (!uuid || !uuid[0]) {
+            if (!uuid?.[0]) {
                 throw new Error(
                     `URI ${uri} is of a local user, but it could not be parsed`,
                 );
@@ -405,11 +402,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The raw URL for the user's avatar
      */
     getAvatarUrl(config: Config) {
-        if (!this.data.avatar)
+        if (!this.data.avatar) {
             return (
                 config.defaults.avatar ||
                 `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`
             );
+        }
         return this.data.avatar;
     }
 
@@ -480,7 +478,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const finalUser = await User.fromId(newUser.id);
 
-        if (!finalUser) return null;
+        if (!finalUser) {
+            return null;
+        }
 
         // Add to Meilisearch
         await addUserToMeilisearch(finalUser);
@@ -494,7 +494,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The raw URL for the user's header
      */
     getHeaderUrl(config: Config) {
-        if (!this.data.header) return config.defaults.header || "";
+        if (!this.data.header) {
+            return config.defaults.header || "";
+        }
         return this.data.header;
     }
 
@@ -561,7 +563,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    toAPI(isOwnAccount = false): APIAccount {
+    toApi(isOwnAccount = false): apiAccount {
         const user = this.data;
         return {
             id: user.id,
@@ -578,7 +580,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             followers_count: user.followerCount,
             following_count: user.followingCount,
             statuses_count: user.statusCount,
-            emojis: user.emojis.map((emoji) => emojiToAPI(emoji)),
+            emojis: user.emojis.map((emoji) => emojiToApi(emoji)),
             fields: user.fields.map((field) => ({
                 name: htmlToText(getBestContentType(field.key).content),
                 value: getBestContentType(field.value).content,
@@ -625,7 +627,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                           ]
                         : [],
                 )
-                .map((r) => r.toAPI()),
+                .map((r) => r.toApi()),
             group: false,
         };
     }
@@ -699,7 +701,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toMention(): APIMention {
+    toMention(): apiMention {
         return {
             url: this.getUri(),
             username: this.data.username,

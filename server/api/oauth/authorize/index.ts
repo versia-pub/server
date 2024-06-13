@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/Token";
+import { TokenType } from "~/database/entities/token";
 import { db } from "~/drizzle/db";
 import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -64,8 +64,9 @@ const returnError = (query: object, error: string, description: string) => {
 
     // Add all data that is not undefined except email and password
     for (const [key, value] of Object.entries(query)) {
-        if (key !== "email" && key !== "password" && value !== undefined)
+        if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
+        }
     }
 
     searchParams.append("error", error);
@@ -91,24 +92,26 @@ export default (app: Hono) =>
 
             const cookie = context.req.header("Cookie");
 
-            if (!cookie)
+            if (!cookie) {
                 return returnError(
                     body,
                     "invalid_request",
                     "No cookies were sent with the request",
                 );
+            }
 
             const jwt = cookie
                 .split(";")
                 .find((c) => c.trim().startsWith("jwt="))
                 ?.split("=")[1];
 
-            if (!jwt)
+            if (!jwt) {
                 return returnError(
                     body,
                     "invalid_request",
                     "No jwt cookie was sent in the request",
                 );
+            }
 
             // Try and import the key
             const privateKey = await crypto.subtle.importKey(
@@ -136,33 +139,38 @@ export default (app: Hono) =>
                 return null;
             });
 
-            if (!result)
+            if (!result) {
                 return returnError(
                     body,
                     "invalid_request",
                     "Invalid JWT, could not verify",
                 );
+            }
 
             const payload = result.payload;
 
-            if (!payload.sub)
+            if (!payload.sub) {
                 return returnError(body, "invalid_request", "Invalid sub");
-            if (!payload.aud)
+            }
+            if (!payload.aud) {
                 return returnError(body, "invalid_request", "Invalid aud");
-            if (!payload.exp)
+            }
+            if (!payload.exp) {
                 return returnError(body, "invalid_request", "Invalid exp");
+            }
 
             // Check if the user is authenticated
             const user = await User.fromId(payload.sub);
 
-            if (!user)
+            if (!user) {
                 return returnError(body, "invalid_request", "Invalid sub");
+            }
 
-            if (!user.hasPermission(RolePermissions.OAUTH)) {
+            if (!user.hasPermission(RolePermissions.OAuth)) {
                 return returnError(
                     body,
                     "invalid_request",
-                    `User is missing the ${RolePermissions.OAUTH} permission`,
+                    `User is missing the ${RolePermissions.OAuth} permission`,
                 );
             }
 
@@ -172,19 +180,21 @@ export default (app: Hono) =>
             const asksToken = responseTypes.includes("token");
             const asksIdToken = responseTypes.includes("id_token");
 
-            if (!asksCode && !asksToken && !asksIdToken)
+            if (!(asksCode || asksToken || asksIdToken)) {
                 return returnError(
                     body,
                     "invalid_request",
                     "Invalid response_type, must ask for code, token, or id_token",
                 );
+            }
 
-            if (asksCode && !redirect_uri)
+            if (asksCode && !redirect_uri) {
                 return returnError(
                     body,
                     "invalid_request",
                     "Redirect URI is required for code flow (can be urn:ietf:wg:oauth:2.0:oob)",
                 );
+            }
 
             /* if (asksCode && !code_challenge)
                 return returnError(
@@ -203,19 +213,21 @@ export default (app: Hono) =>
                 where: (app, { eq }) => eq(app.clientId, client_id),
             });
 
-            if (!application)
+            if (!application) {
                 return returnError(
                     body,
                     "invalid_client",
                     "Invalid client_id or client_secret",
                 );
+            }
 
-            if (application.redirectUri !== redirect_uri)
+            if (application.redirectUri !== redirect_uri) {
                 return returnError(
                     body,
                     "invalid_request",
                     "Redirect URI does not match client_id",
                 );
+            }
 
             // Validate scopes, they can either be equal or a subset of the application's scopes
             const applicationScopes = application.scopes.split(" ");
@@ -223,19 +235,20 @@ export default (app: Hono) =>
             if (
                 scope &&
                 !scope.split(" ").every((s) => applicationScopes.includes(s))
-            )
+            ) {
                 return returnError(body, "invalid_scope", "Invalid scope");
+            }
 
             // Generate tokens
             const code = randomBytes(256).toString("base64url");
 
             // Handle the requested scopes
             let idTokenPayload = {};
-            const scopeIncludesOpenID = scope?.split(" ").includes("openid");
+            const scopeIncludesOpenId = scope?.split(" ").includes("openid");
             const scopeIncludesProfile = scope?.split(" ").includes("profile");
             const scopeIncludesEmail = scope?.split(" ").includes("email");
             if (scope) {
-                if (scopeIncludesOpenID) {
+                if (scopeIncludesOpenId) {
                     // Include the standard OpenID claims
                     idTokenPayload = {
                         ...idTokenPayload,
@@ -277,14 +290,14 @@ export default (app: Hono) =>
                 accessToken: randomBytes(64).toString("base64url"),
                 code: code,
                 scope: scope ?? application.scopes,
-                tokenType: TokenType.BEARER,
+                tokenType: TokenType.Bearer,
                 applicationId: application.id,
                 redirectUri: redirect_uri ?? application.redirectUri,
                 expiresAt: new Date(
                     Date.now() + 60 * 60 * 24 * 14,
                 ).toISOString(),
                 idToken:
-                    scopeIncludesOpenID ||
+                    scopeIncludesOpenId ||
                     scopeIncludesEmail ||
                     scopeIncludesProfile
                         ? idToken
@@ -303,7 +316,9 @@ export default (app: Hono) =>
                 code: code,
             });
 
-            if (state) searchParams.append("state", state);
+            if (state) {
+                searchParams.append("state", state);
+            }
 
             redirectUri.search = searchParams.toString();
 

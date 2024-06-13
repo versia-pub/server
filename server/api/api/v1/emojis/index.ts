@@ -10,8 +10,8 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/Attachment";
-import { emojiToAPI } from "~/database/entities/Emoji";
+import { getUrl } from "~/database/entities/attachment";
+import { emojiToApi } from "~/database/entities/emoji";
 import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -28,10 +28,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_EMOJIS,
-            RolePermissions.VIEW_EMOJIS,
-        ],
+        required: [RolePermissions.ManageOwnEmojis, RolePermissions.ViewEmojis],
     },
 });
 
@@ -79,9 +76,9 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            if (!user.hasPermission(RolePermissions.MANAGE_EMOJIS) && global) {
+            if (!user.hasPermission(RolePermissions.ManageEmojis) && global) {
                 return errorResponse(
-                    `Only users with the '${RolePermissions.MANAGE_EMOJIS}' permission can upload global emojis`,
+                    `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
                     401,
                 );
             }
@@ -148,7 +145,7 @@ export default (app: Hono) =>
             )[0];
 
             return jsonResponse(
-                emojiToAPI({
+                emojiToApi({
                     ...emoji,
                     instance: null,
                 }),

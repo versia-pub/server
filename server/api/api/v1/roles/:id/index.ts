@@ -19,8 +19,8 @@ export const meta = applyConfig({
     permissions: {
         required: [],
         methodOverrides: {
-            POST: [RolePermissions.MANAGE_ROLES],
-            DELETE: [RolePermissions.MANAGE_ROLES],
+            POST: [RolePermissions.ManageRoles],
+            DELETE: [RolePermissions.ManageRoles],
         },
     },
 });
@@ -57,7 +57,7 @@ export default (app: Hono) =>
 
             switch (context.req.method) {
                 case "GET": {
-                    return jsonResponse(role.toAPI());
+                    return jsonResponse(role.toApi());
                 }
 
                 case "POST": {

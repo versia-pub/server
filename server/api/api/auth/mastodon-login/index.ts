@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/Token";
+import { TokenType } from "~/database/entities/token";
 import { db } from "~/drizzle/db";
 import { Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -56,10 +56,16 @@ export default (app: Hono) =>
             const user = await User.fromSql(eq(Users.email, email));
 
             if (
-                !user ||
-                !(await Bun.password.verify(password, user.data.password || ""))
-            )
+                !(
+                    user &&
+                    (await Bun.password.verify(
+                        password,
+                        user.data.password || "",
+                    ))
+                )
+            ) {
                 return redirectToLogin("Invalid email or password");
+            }
 
             if (user.data.passwordResetToken) {
                 return response(null, 302, {
@@ -82,7 +88,7 @@ export default (app: Hono) =>
                 accessToken,
                 code: code,
                 scope: "read write follow push",
-                tokenType: TokenType.BEARER,
+                tokenType: TokenType.Bearer,
                 applicationId: null,
                 userId: user.id,
             });

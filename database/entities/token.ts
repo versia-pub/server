@@ -5,7 +5,7 @@ import type { Tokens } from "~/drizzle/schema";
  * The type of token.
  */
 export enum TokenType {
-    BEARER = "Bearer",
+    Bearer = "Bearer",
 }
 
 export type Token = InferSelectModel<typeof Tokens>;

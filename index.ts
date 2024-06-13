@@ -15,7 +15,7 @@ import { Note } from "~/packages/database-interface/note";
 import { handleGlitchRequest } from "~/packages/glitch-server/main";
 import { routes } from "~/routes";
 import { createServer } from "~/server";
-import type { APIRouteExports } from "~/types/api";
+import type { ApiRouteExports } from "~/types/api";
 
 const timeAtStart = performance.now();
 
@@ -30,7 +30,7 @@ if (isEntry) {
     dualServerLogger = dualLogger;
 }
 
-await dualServerLogger.log(LogLevel.INFO, "Lysand", "Starting Lysand...");
+await dualServerLogger.log(LogLevel.Info, "Lysand", "Starting Lysand...");
 
 await setupDatabase(dualServerLogger);
 
@@ -45,12 +45,12 @@ if (isEntry) {
     // Check if JWT private key is set in config
     if (!config.oidc.jwt_key) {
         await dualServerLogger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Server",
             "The JWT private key is not set in the config",
         );
         await dualServerLogger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Server",
             "Below is a generated key for you to copy in the config at oidc.jwt_key",
         );
@@ -69,7 +69,7 @@ if (isEntry) {
         ).toString("base64");
 
         await dualServerLogger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Server",
             chalk.gray(`${privateKey};${publicKey}`),
         );
@@ -100,7 +100,7 @@ if (isEntry) {
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
         await dualServerLogger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Server",
             "The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).",
         );
@@ -123,16 +123,16 @@ app.use(boundaryCheck);
 // Inject own filesystem router
 for (const [, path] of Object.entries(routes)) {
     // use app.get(path, handler) to add routes
-    const route: APIRouteExports = await import(path);
+    const route: ApiRouteExports = await import(path);
 
-    if (!route.meta || !route.default) {
+    if (!(route.meta && route.default)) {
         throw new Error(`Route ${path} does not have the correct exports.`);
     }
 
     route.default(app);
 }
 
-app.options("*", async () => {
+app.options("*", () => {
     return response(null);
 });
 
@@ -145,17 +145,14 @@ app.all("*", async (context) => {
         }
     }
 
-    const base_url_with_http = config.http.base_url.replace(
-        "https://",
-        "http://",
-    );
+    const baseUrlWithHttp = config.http.base_url.replace("https://", "http://");
 
     const replacedUrl = context.req.url
         .replace(config.http.base_url, config.frontend.url)
-        .replace(base_url_with_http, config.frontend.url);
+        .replace(baseUrlWithHttp, config.frontend.url);
 
     await dualLogger.log(
-        LogLevel.DEBUG,
+        LogLevel.Debug,
         "Server.Proxy",
         `Proxying ${replacedUrl}`,
     );
@@ -168,9 +165,9 @@ app.all("*", async (context) => {
         },
         redirect: "manual",
     }).catch(async (e) => {
-        await dualLogger.logError(LogLevel.ERROR, "Server.Proxy", e as Error);
+        await dualLogger.logError(LogLevel.Error, "Server.Proxy", e as Error);
         await dualLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Server.Proxy",
             `The Frontend is not running or the route is not found: ${replacedUrl}`,
         );
@@ -192,13 +189,13 @@ app.all("*", async (context) => {
 createServer(config, app);
 
 await dualServerLogger.log(
-    LogLevel.INFO,
+    LogLevel.Info,
     "Server",
     `Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`,
 );
 
 await dualServerLogger.log(
-    LogLevel.INFO,
+    LogLevel.Info,
     "Database",
     `Database is online, now serving ${postCount} posts`,
 );
@@ -206,7 +203,7 @@ await dualServerLogger.log(
 if (config.frontend.enabled) {
     if (!URL.canParse(config.frontend.url)) {
         await dualServerLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Server",
             `Frontend URL is not a valid URL: ${config.frontend.url}`,
         );
@@ -220,19 +217,19 @@ if (config.frontend.enabled) {
 
     if (!response) {
         await dualServerLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Server",
             `Frontend is unreachable at ${config.frontend.url}`,
         );
         await dualServerLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Server",
             "Please ensure the frontend is online and reachable",
         );
     }
 } else {
     await dualServerLogger.log(
-        LogLevel.WARNING,
+        LogLevel.Warning,
         "Server",
         "Frontend is disabled, skipping check",
     );

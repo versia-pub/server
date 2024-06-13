@@ -7,14 +7,14 @@ import { config } from "~/packages/config-manager";
 import { LogLevel } from "~/packages/log-manager";
 
 export const bait = createMiddleware(async (context, next) => {
-    const request_ip = context.env?.ip as SocketAddress | undefined | null;
+    const requestIp = context.env?.ip as SocketAddress | undefined | null;
 
     if (config.http.bait.enabled) {
         // Check for bait IPs
-        if (request_ip?.address) {
+        if (requestIp?.address) {
             for (const ip of config.http.bait.bait_ips) {
                 try {
-                    if (matches(ip, request_ip.address)) {
+                    if (matches(ip, requestIp.address)) {
                         const file = Bun.file(
                             config.http.bait.send_file || "./beemovie.txt",
                         );
@@ -23,19 +23,19 @@ export const bait = createMiddleware(async (context, next) => {
                             return response(file);
                         }
                         await logger.log(
-                            LogLevel.ERROR,
+                            LogLevel.Error,
                             "Server.Bait",
                             `Bait file not found: ${config.http.bait.send_file}`,
                         );
                     }
                 } catch (e) {
                     logger.log(
-                        LogLevel.ERROR,
+                        LogLevel.Error,
                         "Server.IPCheck",
                         `Error while parsing bait IP "${ip}" `,
                     );
                     logger.logError(
-                        LogLevel.ERROR,
+                        LogLevel.Error,
                         "Server.IPCheck",
                         e as Error,
                     );
@@ -61,7 +61,7 @@ export const bait = createMiddleware(async (context, next) => {
                     return response(file);
                 }
                 await logger.log(
-                    LogLevel.ERROR,
+                    LogLevel.Error,
                     "Server.Bait",
                     `Bait file not found: ${config.http.bait.send_file}`,
                 );

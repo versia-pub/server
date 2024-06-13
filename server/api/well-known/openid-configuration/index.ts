@@ -16,14 +16,14 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
-        const base_url = new URL(config.http.base_url);
+    app.on(meta.allowedMethods, meta.route, () => {
+        const baseUrl = new URL(config.http.base_url);
         return jsonResponse({
-            issuer: base_url.origin.toString(),
-            authorization_endpoint: `${base_url.origin}/oauth/authorize`,
-            token_endpoint: `${base_url.origin}/oauth/token`,
-            userinfo_endpoint: `${base_url.origin}/api/v1/accounts/verify_credentials`,
-            jwks_uri: `${base_url.origin}/.well-known/jwks`,
+            issuer: baseUrl.origin.toString(),
+            authorization_endpoint: `${baseUrl.origin}/oauth/authorize`,
+            token_endpoint: `${baseUrl.origin}/oauth/token`,
+            userinfo_endpoint: `${baseUrl.origin}/api/v1/accounts/verify_credentials`,
+            jwks_uri: `${baseUrl.origin}/.well-known/jwks`,
             response_types_supported: ["code"],
             subject_types_supported: ["public"],
             id_token_signing_alg_values_supported: ["EdDSA"],

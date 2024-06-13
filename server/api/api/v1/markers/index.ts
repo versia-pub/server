@@ -6,7 +6,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Markers, RolePermissions } from "~/drizzle/schema";
-import type { Marker as APIMarker } from "~/types/mastodon/marker";
+import type { Marker as apiMarker } from "~/types/mastodon/marker";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],
@@ -20,7 +20,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:blocks"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
+        required: [RolePermissions.ManageOwnAccount],
     },
 });
 
@@ -58,7 +58,7 @@ export default (app: Hono) =>
                         return jsonResponse({});
                     }
 
-                    const markers: APIMarker = {
+                    const markers: apiMarker = {
                         home: undefined,
                         notifications: undefined,
                     };
@@ -132,23 +132,23 @@ export default (app: Hono) =>
 
                 case "POST": {
                     const {
-                        "home[last_read_id]": home_id,
-                        "notifications[last_read_id]": notifications_id,
+                        "home[last_read_id]": homeId,
+                        "notifications[last_read_id]": notificationsId,
                     } = context.req.valid("query");
 
-                    const markers: APIMarker = {
+                    const markers: apiMarker = {
                         home: undefined,
                         notifications: undefined,
                     };
 
-                    if (home_id) {
+                    if (homeId) {
                         const insertedMarker = (
                             await db
                                 .insert(Markers)
                                 .values({
                                     userId: user.id,
                                     timeline: "home",
-                                    noteId: home_id,
+                                    noteId: homeId,
                                 })
                                 .returning()
                         )[0];
@@ -166,7 +166,7 @@ export default (app: Hono) =>
                             );
 
                         markers.home = {
-                            last_read_id: home_id,
+                            last_read_id: homeId,
                             version: totalCount[0].count,
                             updated_at: new Date(
                                 insertedMarker.createdAt,
@@ -174,14 +174,14 @@ export default (app: Hono) =>
                         };
                     }
 
-                    if (notifications_id) {
+                    if (notificationsId) {
                         const insertedMarker = (
                             await db
                                 .insert(Markers)
                                 .values({
                                     userId: user.id,
                                     timeline: "notifications",
-                                    notificationId: notifications_id,
+                                    notificationId: notificationsId,
                                 })
                                 .returning()
                         )[0];
@@ -199,7 +199,7 @@ export default (app: Hono) =>
                             );
 
                         markers.notifications = {
-                            last_read_id: notifications_id,
+                            last_read_id: notificationsId,
                             version: totalCount[0].count,
                             updated_at: new Date(
                                 insertedMarker.createdAt,

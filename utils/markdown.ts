@@ -1,4 +1,4 @@
-import { markdownParse } from "~/database/entities/Status";
+import { markdownParse } from "~/database/entities/status";
 import { LogLevel } from "~/packages/log-manager";
 import { dualLogger } from "./loggers";
 
@@ -9,19 +9,19 @@ export const renderMarkdownInPath = async (
     let content = await markdownParse(defaultText ?? "");
     let lastModified = new Date(1970, 0, 0);
 
-    const extended_description_file = Bun.file(path || "");
+    const extendedDescriptionFile = Bun.file(path || "");
 
-    if (path && (await extended_description_file.exists())) {
+    if (path && (await extendedDescriptionFile.exists())) {
         content =
             (await markdownParse(
-                (await extended_description_file.text().catch(async (e) => {
-                    await dualLogger.logError(LogLevel.ERROR, "Routes", e);
+                (await extendedDescriptionFile.text().catch(async (e) => {
+                    await dualLogger.logError(LogLevel.Error, "Routes", e);
                     return "";
                 })) ||
                     defaultText ||
                     "",
             )) || "";
-        lastModified = new Date(extended_description_file.lastModified);
+        lastModified = new Date(extendedDescriptionFile.lastModified);
     }
 
     return {

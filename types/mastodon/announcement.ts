@@ -11,11 +11,11 @@ export type Announcement = {
     published_at: string;
     updated_at: string | null;
     read: boolean | null;
-    mentions: Array<AnnouncementAccount>;
-    statuses: Array<AnnouncementStatus>;
-    tags: Array<StatusTag>;
-    emojis: Array<Emoji>;
-    reactions: Array<AnnouncementReaction>;
+    mentions: AnnouncementAccount[];
+    statuses: AnnouncementStatus[];
+    tags: StatusTag[];
+    emojis: Emoji[];
+    reactions: AnnouncementReaction[];
 };
 
 export type AnnouncementAccount = {

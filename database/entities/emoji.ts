@@ -4,8 +4,8 @@ import type { EntityValidator } from "@lysand-org/federation";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
-import type { Emoji as APIEmoji } from "~/types/mastodon/emoji";
-import { addInstanceIfNotExists } from "./Instance";
+import type { Emoji as apiEmoji } from "~/types/mastodon/emoji";
+import { addInstanceIfNotExists } from "./instance";
 
 export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
     instance: InferSelectModel<typeof Instances> | null;
@@ -18,7 +18,9 @@ export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
  */
 export const parseEmojis = async (text: string) => {
     const matches = text.match(emojiValidatorWithColons);
-    if (!matches) return [];
+    if (!matches) {
+        return [];
+    }
     const emojis = await db.query.Emojis.findMany({
         where: (emoji, { eq, or }) =>
             or(
@@ -56,11 +58,12 @@ export const fetchEmoji = async (
         )
         .limit(1);
 
-    if (existingEmoji[0])
+    if (existingEmoji[0]) {
         return {
             ...existingEmoji[0].Emojis,
             instance: existingEmoji[0].Instances,
         };
+    }
 
     const foundInstance = host ? await addInstanceIfNotExists(host) : null;
 
@@ -90,7 +93,7 @@ export const fetchEmoji = async (
  * Converts the emoji to an APIEmoji object.
  * @returns The APIEmoji object.
  */
-export const emojiToAPI = (emoji: EmojiWithInstance): APIEmoji => {
+export const emojiToApi = (emoji: EmojiWithInstance): apiEmoji => {
     return {
         // @ts-expect-error ID is not in regular Mastodon API
         id: emoji.id,

@@ -18,7 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FOLLOWS],
+        required: [RolePermissions.ManageOwnFollows],
     },
 });
 
@@ -43,7 +43,9 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { objects: followRequests, link } =
                 await Timeline.getUserTimeline(
@@ -58,7 +60,7 @@ export default (app: Hono) =>
                 );
 
             return jsonResponse(
-                followRequests.map((u) => u.toAPI()),
+                followRequests.map((u) => u.toApi()),
                 200,
                 {
                     Link: link,

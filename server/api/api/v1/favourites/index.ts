@@ -18,7 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_LIKES],
+        required: [RolePermissions.ManageOwnLikes],
     },
 });
 
@@ -43,7 +43,9 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { objects: favourites, link } =
                 await Timeline.getNoteTimeline(
@@ -60,7 +62,7 @@ export default (app: Hono) =>
 
             return jsonResponse(
                 await Promise.all(
-                    favourites.map(async (note) => note.toAPI(user)),
+                    favourites.map(async (note) => note.toApi(user)),
                 ),
                 200,
                 {

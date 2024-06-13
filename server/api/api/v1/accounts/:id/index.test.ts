@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Account as APIAccount } from "~/types/mastodon/account";
+import type { Account as apiAccount } from "~/types/mastodon/account";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -58,7 +58,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as APIAccount;
+        const data = (await response.json()) as apiAccount;
         expect(data).toMatchObject({
             id: users[0].id,
             username: users[0].data.username,
@@ -93,6 +93,6 @@ describe(meta.route, () => {
                     icon: null,
                 }),
             ]),
-        } satisfies APIAccount);
+        } satisfies apiAccount);
     });
 });

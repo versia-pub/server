@@ -25,9 +25,9 @@ export type Account = {
     avatar_static: string;
     header: string;
     header_static: string;
-    emojis: Array<Emoji>;
+    emojis: Emoji[];
     moved: Account | null;
-    fields: Array<Field>;
+    fields: Field[];
     bot: boolean | null;
     source?: Source;
     role?: Role;

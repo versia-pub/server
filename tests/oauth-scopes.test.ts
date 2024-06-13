@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { checkIfOauthIsValid } from "@/oauth";
-import type { Application } from "~/database/entities/Application";
+import type { Application } from "~/database/entities/application";
 
 describe("checkIfOauthIsValid", () => {
     it("should return true when routeScopes and application.scopes are empty", () => {

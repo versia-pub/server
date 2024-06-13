@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
-import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
+import type { AsyncAttachment as apiAsyncAttachment } from "~/types/mastodon/async_attachment";
 import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 import { BaseInterface } from "./base";
 
@@ -28,7 +28,9 @@ export class Attachment extends BaseInterface<typeof Attachments> {
     }
 
     public static async fromId(id: string | null): Promise<Attachment | null> {
-        if (!id) return null;
+        if (!id) {
+            return null;
+        }
 
         return await Attachment.fromSql(eq(Attachments.id, id));
     }
@@ -46,7 +48,9 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             orderBy,
         });
 
-        if (!found) return null;
+        if (!found) {
+            return null;
+        }
         return new Attachment(found);
     }
 
@@ -86,7 +90,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return updated.data;
     }
 
-    async save(): Promise<AttachmentType> {
+    save(): Promise<AttachmentType> {
         return this.update(this.data);
     }
 
@@ -120,52 +124,60 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return this.data.id;
     }
 
-    public toAPI(): APIAttachment | APIAsyncAttachment {
-        let type = "unknown";
-
+    public getMastodonType(): APIAttachment["type"] {
         if (this.data.mimeType.startsWith("image/")) {
-            type = "image";
-        } else if (this.data.mimeType.startsWith("video/")) {
-            type = "video";
-        } else if (this.data.mimeType.startsWith("audio/")) {
-            type = "audio";
+            return "image";
+        }
+        if (this.data.mimeType.startsWith("video/")) {
+            return "video";
+        }
+        if (this.data.mimeType.startsWith("audio/")) {
+            return "audio";
         }
 
+        return "unknown";
+    }
+
+    public toApiMeta(): APIAttachment["meta"] {
         return {
-            id: this.data.id,
-            type: type as "image" | "video" | "audio" | "unknown",
-            url: proxyUrl(this.data.url) ?? "",
-            remote_url: proxyUrl(this.data.remoteUrl),
-            preview_url: proxyUrl(this.data.thumbnailUrl || this.data.url),
-            text_url: null,
-            meta: {
+            width: this.data.width || undefined,
+            height: this.data.height || undefined,
+            fps: this.data.fps || undefined,
+            size:
+                this.data.width && this.data.height
+                    ? `${this.data.width}x${this.data.height}`
+                    : undefined,
+            duration: this.data.duration || undefined,
+            length: undefined,
+            aspect:
+                this.data.width && this.data.height
+                    ? this.data.width / this.data.height
+                    : undefined,
+            original: {
                 width: this.data.width || undefined,
                 height: this.data.height || undefined,
-                fps: this.data.fps || undefined,
                 size:
                     this.data.width && this.data.height
                         ? `${this.data.width}x${this.data.height}`
                         : undefined,
-                duration: this.data.duration || undefined,
-                length: undefined,
                 aspect:
                     this.data.width && this.data.height
                         ? this.data.width / this.data.height
                         : undefined,
-                original: {
-                    width: this.data.width || undefined,
-                    height: this.data.height || undefined,
-                    size:
-                        this.data.width && this.data.height
-                            ? `${this.data.width}x${this.data.height}`
-                            : undefined,
-                    aspect:
-                        this.data.width && this.data.height
-                            ? this.data.width / this.data.height
-                            : undefined,
-                },
-                // Idk whether size or length is the right value
             },
+            // Idk whether size or length is the right value
+        };
+    }
+
+    public toApi(): APIAttachment | apiAsyncAttachment {
+        return {
+            id: this.data.id,
+            type: this.getMastodonType(),
+            url: proxyUrl(this.data.url) ?? "",
+            remote_url: proxyUrl(this.data.remoteUrl),
+            preview_url: proxyUrl(this.data.thumbnailUrl || this.data.url),
+            text_url: null,
+            meta: this.toApiMeta(),
             description: this.data.description,
             blurhash: this.data.blurhash,
         };

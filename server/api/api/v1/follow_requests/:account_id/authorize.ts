@@ -6,12 +6,12 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import {
     checkForBidirectionalRelationships,
-    relationshipToAPI,
-} from "~/database/entities/Relationship";
+    relationshipToApi,
+} from "~/database/entities/relationship";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
-} from "~/database/entities/User";
+} from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import { Relationships, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
@@ -27,7 +27,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FOLLOWS],
+        required: [RolePermissions.ManageOwnFollows],
     },
 });
 
@@ -46,13 +46,17 @@ export default (app: Hono) =>
         async (context) => {
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { account_id } = context.req.valid("param");
 
             const account = await User.fromId(account_id);
 
-            if (!account) return errorResponse("Account not found", 404);
+            if (!account) {
+                return errorResponse("Account not found", 404);
+            }
 
             // Check if there is a relationship on both sides
             await checkForBidirectionalRelationships(user, account);
@@ -90,8 +94,9 @@ export default (app: Hono) =>
                 account,
             );
 
-            if (!foundRelationship)
+            if (!foundRelationship) {
                 return errorResponse("Relationship not found", 404);
+            }
 
             // Check if accepting remote follow
             if (account.isRemote()) {
@@ -99,6 +104,6 @@ export default (app: Hono) =>
                 await sendFollowAccept(account, user);
             }
 
-            return jsonResponse(relationshipToAPI(foundRelationship));
+            return jsonResponse(relationshipToApi(foundRelationship));
         },
     );

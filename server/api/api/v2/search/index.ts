@@ -6,7 +6,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { resolveWebFinger } from "~/database/entities/User";
+import { resolveWebFinger } from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -27,9 +27,9 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.SEARCH,
-            RolePermissions.VIEW_ACCOUNTS,
-            RolePermissions.VIEW_NOTES,
+            RolePermissions.Search,
+            RolePermissions.ViewAccounts,
+            RolePermissions.ViewNotes,
         ],
     },
 });
@@ -110,7 +110,7 @@ export default (app: Hono) =>
 
                     if (account) {
                         return jsonResponse({
-                            accounts: [account.toAPI()],
+                            accounts: [account.toApi()],
                             statuses: [],
                             hashtags: [],
                         });
@@ -122,7 +122,7 @@ export default (app: Hono) =>
                             domain,
                         ).catch((e) => {
                             dualLogger.logError(
-                                LogLevel.ERROR,
+                                LogLevel.Error,
                                 "WebFinger.Resolve",
                                 e,
                             );
@@ -131,7 +131,7 @@ export default (app: Hono) =>
 
                         if (newUser) {
                             return jsonResponse({
-                                accounts: [newUser.toAPI()],
+                                accounts: [newUser.toApi()],
                                 statuses: [],
                                 hashtags: [],
                             });
@@ -200,9 +200,9 @@ export default (app: Hono) =>
             );
 
             return jsonResponse({
-                accounts: accounts.map((account) => account.toAPI()),
+                accounts: accounts.map((account) => account.toApi()),
                 statuses: await Promise.all(
-                    statuses.map((status) => status.toAPI(self)),
+                    statuses.map((status) => status.toApi(self)),
                 ),
                 hashtags: [],
             });

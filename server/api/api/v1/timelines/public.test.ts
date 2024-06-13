@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Status as APIStatus } from "~/types/mastodon/status";
+import type { Status as apiStatus } from "~/types/mastodon/status";
 import { meta } from "./public";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -27,7 +27,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIStatus[];
+        const objects = (await response.json()) as apiStatus[];
 
         expect(objects.length).toBe(5);
     });
@@ -44,7 +44,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIStatus[];
+        const objects = (await response.json()) as apiStatus[];
 
         expect(objects.length).toBe(20);
         for (const [index, status] of objects.entries()) {
@@ -74,7 +74,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIStatus[];
+        const objects = (await response.json()) as apiStatus[];
 
         expect(objects.length).toBe(20);
         for (const [index, status] of objects.entries()) {
@@ -104,12 +104,12 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIStatus[];
+        const objects = (await response.json()) as apiStatus[];
 
         expect(objects).toBeArray();
     });
 
-    describe("should paginate properly", async () => {
+    describe("should paginate properly", () => {
         test("should send correct Link header", async () => {
             const response = await sendTestRequest(
                 new Request(
@@ -147,7 +147,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const objects = (await response.json()) as APIStatus[];
+            const objects = (await response.json()) as apiStatus[];
 
             expect(objects.length).toBe(20);
             for (const [index, status] of objects.entries()) {
@@ -199,7 +199,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const objects = (await response.json()) as APIStatus[];
+            const objects = (await response.json()) as apiStatus[];
 
             expect(objects.length).toBe(20);
             for (const [index, status] of objects.entries()) {
@@ -247,7 +247,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as APIStatus[];
+        const objects = (await response.json()) as apiStatus[];
 
         expect(objects.length).toBe(20);
         // There should be no element with id of timeline[0].id

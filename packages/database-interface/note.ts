@@ -19,21 +19,21 @@ import { LogLevel } from "log-manager";
 import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
-    applicationToAPI,
-} from "~/database/entities/Application";
+    applicationToApi,
+} from "~/database/entities/application";
 import {
     type EmojiWithInstance,
-    emojiToAPI,
+    emojiToApi,
     emojiToLysand,
     fetchEmoji,
     parseEmojis,
-} from "~/database/entities/Emoji";
-import { localObjectURI } from "~/database/entities/Federation";
+} from "~/database/entities/emoji";
+import { localObjectUri } from "~/database/entities/federation";
 import {
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
-} from "~/database/entities/Status";
+} from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import {
     Attachments,
@@ -44,8 +44,8 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
-import type { Status as APIStatus } from "~/types/mastodon/status";
+import type { Attachment as apiAttachment } from "~/types/mastodon/attachment";
+import type { Status as apiStatus } from "~/types/mastodon/status";
 import { Attachment } from "./attachment";
 import { BaseInterface } from "./base";
 import { User } from "./user";
@@ -54,7 +54,7 @@ import { User } from "./user";
  * Gives helpers to fetch notes from database in a nice format
  */
 export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
-    async save(): Promise<StatusWithRelations> {
+    save(): Promise<StatusWithRelations> {
         return this.update(this.data);
     }
 
@@ -87,7 +87,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         id: string | null,
         userRequestingNoteId?: string,
     ): Promise<Note | null> {
-        if (!id) return null;
+        if (!id) {
+            return null;
+        }
 
         return await Note.fromSql(
             eq(Notes.id, id),
@@ -123,7 +125,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             userId,
         );
 
-        if (!found[0]) return null;
+        if (!found[0]) {
+            return null;
+        }
         return new Note(found[0]);
     }
 
@@ -225,7 +229,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         );
     }
 
-    async isRemote() {
+    isRemote() {
         return this.author.isRemote();
     }
 
@@ -248,14 +252,14 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     static async fromData(
         author: User,
         content: typeof EntityValidator.$ContentFormat,
-        visibility: APIStatus["visibility"],
-        is_sensitive: boolean,
-        spoiler_text: string,
+        visibility: apiStatus["visibility"],
+        isSensitive: boolean,
+        spoilerText: string,
         emojis: EmojiWithInstance[],
         uri?: string,
         mentions?: User[],
         /** List of IDs of database Attachment objects */
-        media_attachments?: string[],
+        mediaAttachments?: string[],
         replyId?: string,
         quoteId?: string,
         application?: Application,
@@ -284,8 +288,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 "",
             contentType: "text/html",
             visibility,
-            sensitive: is_sensitive,
-            spoilerText: await sanitizedHtmlStrip(spoiler_text),
+            sensitive: isSensitive,
+            spoilerText: await sanitizedHtmlStrip(spoilerText),
             uri: uri || null,
             replyId: replyId ?? null,
             quotingId: quoteId ?? null,
@@ -315,13 +319,13 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
 
         // Set attachment parents
-        if (media_attachments && media_attachments.length > 0) {
+        if (mediaAttachments && mediaAttachments.length > 0) {
             await db
                 .update(Attachments)
                 .set({
                     noteId: newNote.id,
                 })
-                .where(inArray(Attachments.id, media_attachments));
+                .where(inArray(Attachments.id, mediaAttachments));
         }
 
         // Send notifications for mentioned local users
@@ -341,13 +345,13 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
     async updateFromData(
         content?: typeof EntityValidator.$ContentFormat,
-        visibility?: APIStatus["visibility"],
-        is_sensitive?: boolean,
-        spoiler_text?: string,
+        visibility?: apiStatus["visibility"],
+        isSensitive?: boolean,
+        spoilerText?: string,
         emojis: EmojiWithInstance[] = [],
         mentions: User[] = [],
         /** List of IDs of database Attachment objects */
-        media_attachments: string[] = [],
+        mediaAttachments: string[] = [],
         replyId?: string,
         quoteId?: string,
         application?: Application,
@@ -378,8 +382,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 : undefined,
             contentType: "text/html",
             visibility,
-            sensitive: is_sensitive,
-            spoilerText: spoiler_text,
+            sensitive: isSensitive,
+            spoilerText: spoilerText,
             replyId,
             quotingId: quoteId,
             applicationId: application?.id,
@@ -416,7 +420,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
 
         // Set attachment parents
-        if (media_attachments) {
+        if (mediaAttachments) {
             await db
                 .update(Attachments)
                 .set({
@@ -424,13 +428,14 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 })
                 .where(eq(Attachments.noteId, this.data.id));
 
-            if (media_attachments.length > 0)
+            if (mediaAttachments.length > 0) {
                 await db
                     .update(Attachments)
                     .set({
                         noteId: this.data.id,
                     })
-                    .where(inArray(Attachments.id, media_attachments));
+                    .where(inArray(Attachments.id, mediaAttachments));
+            }
         }
 
         return await Note.fromId(newNote.id, newNote.authorId);
@@ -443,13 +448,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         // Check if note not already in database
         const foundNote = uri && (await Note.fromSql(eq(Notes.uri, uri)));
 
-        if (foundNote) return foundNote;
+        if (foundNote) {
+            return foundNote;
+        }
 
         // Check if URI is of a local note
         if (uri?.startsWith(config.http.base_url)) {
             const uuid = uri.match(idValidator);
 
-            if (!uuid || !uuid[0]) {
+            if (!uuid?.[0]) {
                 throw new Error(
                     `URI ${uri} is of a local note, but it could not be parsed`,
                 );
@@ -465,7 +472,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         uri?: string,
         providedNote?: typeof EntityValidator.$Note,
     ): Promise<Note | null> {
-        if (!uri && !providedNote) {
+        if (!(uri || providedNote)) {
             throw new Error("No URI or note provided");
         }
 
@@ -515,7 +522,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 attachment,
             ).catch((e) => {
                 dualLogger.logError(
-                    LogLevel.ERROR,
+                    LogLevel.Error,
                     "Federation.StatusResolver",
                     e,
                 );
@@ -533,7 +540,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             ?.emojis ?? []) {
             const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
                 dualLogger.logError(
-                    LogLevel.ERROR,
+                    LogLevel.Error,
                     "Federation.StatusResolver",
                     e,
                 );
@@ -552,7 +559,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                         content: "",
                     },
                 },
-                note.visibility as APIStatus["visibility"],
+                note.visibility as apiStatus["visibility"],
                 note.is_sensitive ?? false,
                 note.subject ?? "",
                 emojis,
@@ -582,7 +589,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                     content: "",
                 },
             },
-            note.visibility as APIStatus["visibility"],
+            note.visibility as apiStatus["visibility"],
             note.is_sensitive ?? false,
             note.subject ?? "",
             emojis,
@@ -638,9 +645,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @returns Whether this status is viewable by the user.
      */
     async isViewableByUser(user: User | null) {
-        if (this.author.id === user?.id) return true;
-        if (this.data.visibility === "public") return true;
-        if (this.data.visibility === "unlisted") return true;
+        if (this.author.id === user?.id) {
+            return true;
+        }
+        if (this.data.visibility === "public") {
+            return true;
+        }
+        if (this.data.visibility === "unlisted") {
+            return true;
+        }
         if (this.data.visibility === "private") {
             return user
                 ? await db.query.Relationships.findFirst({
@@ -658,7 +671,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         );
     }
 
-    async toAPI(userFetching?: User | null): Promise<APIStatus> {
+    async toApi(userFetching?: User | null): Promise<apiStatus> {
         const data = this.data;
 
         // Convert mentions of local users from @username@host to @username
@@ -696,18 +709,18 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             id: data.id,
             in_reply_to_id: data.replyId || null,
             in_reply_to_account_id: data.reply?.authorId || null,
-            account: this.author.toAPI(userFetching?.id === data.authorId),
+            account: this.author.toApi(userFetching?.id === data.authorId),
             created_at: new Date(data.createdAt).toISOString(),
             application: data.application
-                ? applicationToAPI(data.application)
+                ? applicationToApi(data.application)
                 : null,
             card: null,
             content: replacedContent,
-            emojis: data.emojis.map((emoji) => emojiToAPI(emoji)),
+            emojis: data.emojis.map((emoji) => emojiToApi(emoji)),
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
-                (a) => new Attachment(a).toAPI() as APIAttachment,
+                (a) => new Attachment(a).toApi() as apiAttachment,
             ),
             mentions: data.mentions.map((mention) => ({
                 id: mention.id,
@@ -725,7 +738,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             // TODO: Add polls
             poll: null,
             reblog: data.reblog
-                ? await new Note(data.reblog as StatusWithRelations).toAPI(
+                ? await new Note(data.reblog as StatusWithRelations).toApi(
                       userFetching,
                   )
                 : null,
@@ -736,13 +749,13 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             spoiler_text: data.spoilerText,
             tags: [],
             uri: data.uri || this.getUri(),
-            visibility: data.visibility as APIStatus["visibility"],
+            visibility: data.visibility as apiStatus["visibility"],
             url: data.uri || this.getMastoUri(),
             bookmarked: false,
             // @ts-expect-error Glitch-SOC extension
             quote: data.quotingId
                 ? (await Note.fromId(data.quotingId, userFetching?.id).then(
-                      (n) => n?.toAPI(userFetching),
+                      (n) => n?.toApi(userFetching),
                   )) ?? null
                 : null,
             quote_id: data.quotingId || undefined,
@@ -750,12 +763,14 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     }
 
     getUri() {
-        return localObjectURI(this.data.id);
+        return localObjectUri(this.data.id);
     }
 
     static getUri(id?: string | null) {
-        if (!id) return null;
-        return localObjectURI(id);
+        if (!id) {
+            return null;
+        }
+        return localObjectUri(id);
     }
 
     getMastoUri() {

@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { findManyNotifications } from "~/database/entities/Notification";
+import { findManyNotifications } from "~/database/entities/notification";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
@@ -18,7 +18,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:notifications"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_NOTIFICATIONS],
+        required: [RolePermissions.ManageOwnNotifications],
     },
 });
 
@@ -38,7 +38,9 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
 
             const { user } = context.req.valid("header");
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const notification = (
                 await findManyNotifications(
@@ -51,8 +53,9 @@ export default (app: Hono) =>
                 )
             )[0];
 
-            if (!notification)
+            if (!notification) {
                 return errorResponse("Notification not found", 404);
+            }
 
             return jsonResponse(notification);
         },

@@ -3,17 +3,17 @@
  */
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "~/packages/config-manager";
-import type { Application as APIApplication } from "~/types/mastodon/application";
-import type { Token as APIToken } from "~/types/mastodon/token";
+import type { Application as apiApplication } from "~/types/mastodon/application";
+import type { Token as apiToken } from "~/types/mastodon/token";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
-const base_url = config.http.base_url;
+const baseUrl = config.http.base_url;
 
-let client_id: string;
-let client_secret: string;
+let clientId: string;
+let clientSecret: string;
 let code: string;
 let jwt: string;
-let token: APIToken;
+let token: apiToken;
 const { users, passwords, deleteUsers } = await getTestUsers(1);
 
 afterAll(async () => {
@@ -59,8 +59,8 @@ describe("POST /api/v1/apps/", () => {
             vapid_link: null,
         });
 
-        client_id = json.client_id;
-        client_secret = json.client_secret;
+        clientId = json.client_id;
+        clientSecret = json.client_secret;
     });
 });
 
@@ -74,8 +74,8 @@ describe("POST /api/auth/login/", () => {
         const response = await sendTestRequest(
             new Request(
                 new URL(
-                    `/api/auth/login?client_id=${client_id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-                    base_url,
+                    `/api/auth/login?client_id=${clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                    baseUrl,
                 ),
                 {
                     method: "POST",
@@ -95,14 +95,14 @@ describe("POST /api/auth/login/", () => {
 describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
         const response = await sendTestRequest(
-            new Request(new URL("/oauth/authorize", base_url), {
+            new Request(new URL("/oauth/authorize", baseUrl), {
                 method: "POST",
                 headers: {
                     Cookie: `jwt=${jwt}`,
                 },
                 body: new URLSearchParams({
-                    client_id,
-                    client_secret,
+                    client_id: clientId,
+                    client_secret: clientSecret,
                     redirect_uri: "https://example.com",
                     response_type: "code",
                     scope: "read write",
@@ -127,7 +127,7 @@ describe("GET /oauth/authorize/", () => {
 describe("POST /oauth/token/", () => {
     test("should get an access token", async () => {
         const response = await sendTestRequest(
-            new Request(wrapRelativeUrl("/oauth/token", base_url), {
+            new Request(wrapRelativeUrl("/oauth/token", baseUrl), {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${jwt}`,
@@ -137,8 +137,8 @@ describe("POST /oauth/token/", () => {
                     grant_type: "authorization_code",
                     code,
                     redirect_uri: "https://example.com",
-                    client_id,
-                    client_secret,
+                    client_id: clientId,
+                    client_secret: clientSecret,
                     scope: "read write",
                 }),
             }),
@@ -166,7 +166,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
     test("should return the authenticated application's credentials", async () => {
         const response = await sendTestRequest(
             new Request(
-                wrapRelativeUrl("/api/v1/apps/verify_credentials", base_url),
+                wrapRelativeUrl("/api/v1/apps/verify_credentials", baseUrl),
                 {
                     headers: {
                         Authorization: `Bearer ${token.access_token}`,
@@ -178,7 +178,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const credentials = (await response.json()) as Partial<APIApplication>;
+        const credentials = (await response.json()) as Partial<apiApplication>;
 
         expect(credentials.name).toBe("Test Application");
         expect(credentials.website).toBe("https://example.com");

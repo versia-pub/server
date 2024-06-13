@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
 
 export enum MediaBackendType {
-    LOCAL = "local",
+    Local = "local",
     S3 = "s3",
 }
 
@@ -220,7 +220,7 @@ export const configValidator = z.object({
         .object({
             backend: z
                 .nativeEnum(MediaBackendType)
-                .default(MediaBackendType.LOCAL),
+                .default(MediaBackendType.Local),
             deduplicate_media: z.boolean().default(true),
             local_uploads_folder: z.string().min(1).default("uploads"),
             conversion: z
@@ -234,7 +234,7 @@ export const configValidator = z.object({
                 }),
         })
         .default({
-            backend: MediaBackendType.LOCAL,
+            backend: MediaBackendType.Local,
             deduplicate_media: true,
             local_uploads_folder: "uploads",
             conversion: {

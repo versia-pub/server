@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { consoleLogger } from "@/loggers";
 import { asc, inArray, like } from "drizzle-orm";
-import type { Status } from "~/database/entities/Status";
+import type { Status } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { setupDatabase } from "~/drizzle/db";
 import { Notes, Tokens, Users } from "~/drizzle/schema";
@@ -16,13 +16,13 @@ await setupDatabase(consoleLogger);
  * @param req Request to send
  * @returns Response from the server
  */
-export async function sendTestRequest(req: Request) {
+export function sendTestRequest(req: Request): Promise<Response> {
     // return fetch(req);
-    return app.fetch(req);
+    return Promise.resolve(app.fetch(req));
 }
 
-export function wrapRelativeUrl(url: string, base_url: string) {
-    return new URL(url, base_url);
+export function wrapRelativeUrl(url: string, baseUrl: string) {
+    return new URL(url, baseUrl);
 }
 
 export const deleteOldTestUsers = async () => {

@@ -9,7 +9,7 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/Attachment";
+import { getUrl } from "~/database/entities/attachment";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 
@@ -25,7 +25,7 @@ export const meta = applyConfig({
         oauthPermissions: ["write:media"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_MEDIA],
+        required: [RolePermissions.ManageOwnMedia],
     },
 });
 
@@ -104,7 +104,7 @@ export default (app: Hono) =>
             let mediaManager: MediaBackend;
 
             switch (config.media.backend as MediaBackendType) {
-                case MediaBackendType.LOCAL:
+                case MediaBackendType.Local:
                     mediaManager = new LocalMediaBackend(config);
                     break;
                 case MediaBackendType.S3:
@@ -141,6 +141,6 @@ export default (app: Hono) =>
 
             // TODO: Add job to process videos and other media
 
-            return jsonResponse(newAttachment.toAPI());
+            return jsonResponse(newAttachment.toApi());
         },
     );

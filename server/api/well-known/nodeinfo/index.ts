@@ -16,7 +16,7 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
+    app.on(meta.allowedMethods, meta.route, () => {
         return redirect(
             new URL("/.well-known/nodeinfo/2.0", config.http.base_url),
             301,

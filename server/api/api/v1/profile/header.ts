@@ -14,7 +14,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
+        required: [RolePermissions.ManageOwnAccount],
     },
 });
 
@@ -26,12 +26,14 @@ export default (app: Hono) =>
         async (context) => {
             const { user: self } = context.req.valid("header");
 
-            if (!self) return errorResponse("Unauthorized", 401);
+            if (!self) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             await self.update({
                 header: "",
             });
 
-            return jsonResponse(self.toAPI(true));
+            return jsonResponse(self.toApi(true));
         },
     );

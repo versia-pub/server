@@ -5,7 +5,7 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
-import type { StatusSource as APIStatusSource } from "~/types/mastodon/status_source";
+import type { StatusSource as apiStatusSource } from "~/types/mastodon/status_source";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -18,10 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_NOTES,
-            RolePermissions.VIEW_NOTES,
-        ],
+        required: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
     },
 });
 
@@ -41,18 +38,21 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const status = await Note.fromId(id, user.id);
 
-            if (!status?.isViewableByUser(user))
+            if (!status?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             return jsonResponse({
                 id: status.id,
                 // TODO: Give real source for spoilerText
                 spoiler_text: status.data.spoilerText,
                 text: status.data.contentSource,
-            } as APIStatusSource);
+            } as apiStatusSource);
         },
     );

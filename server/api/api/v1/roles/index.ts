@@ -32,6 +32,6 @@ export default (app: Hono) =>
                 user.data.isAdmin,
             );
 
-            return jsonResponse(userRoles.map((r) => r.toAPI()));
+            return jsonResponse(userRoles.map((r) => r.toApi()));
         },
     );

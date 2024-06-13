@@ -4,7 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { undoFederationRequest } from "~/database/entities/Federation";
+import { undoFederationRequest } from "~/database/entities/federation";
 import { Notes, RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
@@ -19,10 +19,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_NOTES,
-            RolePermissions.VIEW_NOTES,
-        ],
+        required: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
     },
 });
 
@@ -42,13 +39,16 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const foundStatus = await Note.fromId(id, user.id);
 
             // Check if user is authorized to view this status (if it's private)
-            if (!foundStatus?.isViewableByUser(user))
+            if (!foundStatus?.isViewableByUser(user)) {
                 return errorResponse("Record not found", 404);
+            }
 
             const existingReblog = await Note.fromSql(
                 and(
@@ -71,8 +71,10 @@ export default (app: Hono) =>
 
             const newNote = await Note.fromId(id, user.id);
 
-            if (!newNote) return errorResponse("Record not found", 404);
+            if (!newNote) {
+                return errorResponse("Record not found", 404);
+            }
 
-            return jsonResponse(await newNote.toAPI(user));
+            return jsonResponse(await newNote.toApi(user));
         },
     );

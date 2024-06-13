@@ -19,7 +19,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:blocks"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_BLOCKS],
+        required: [RolePermissions.ManageOwnBlocks],
     },
 });
 
@@ -44,7 +44,9 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { objects: blocks, link } = await Timeline.getUserTimeline(
                 and(
@@ -58,7 +60,7 @@ export default (app: Hono) =>
             );
 
             return jsonResponse(
-                blocks.map((u) => u.toAPI()),
+                blocks.map((u) => u.toApi()),
                 200,
                 {
                     Link: link,

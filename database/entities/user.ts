@@ -14,15 +14,15 @@ import {
 } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 import { LogLevel } from "~/packages/log-manager";
-import type { Application } from "./Application";
-import type { EmojiWithInstance } from "./Emoji";
-import { objectToInboxRequest } from "./Federation";
+import type { Application } from "./application";
+import type { EmojiWithInstance } from "./emoji";
+import { objectToInboxRequest } from "./federation";
 import {
     type Relationship,
     checkForBidirectionalRelationships,
     createNewRelationship,
-} from "./Relationship";
-import type { Token } from "./Token";
+} from "./relationship";
+import type { Token } from "./token";
 
 export type UserType = InferSelectModel<typeof Users>;
 
@@ -175,13 +175,13 @@ export const followRequestUser = async (
 
         if (!response.ok) {
             dualLogger.log(
-                LogLevel.DEBUG,
+                LogLevel.Debug,
                 "Federation.FollowRequest",
                 await response.text(),
             );
 
             dualLogger.log(
-                LogLevel.ERROR,
+                LogLevel.Error,
                 "Federation.FollowRequest",
                 `Failed to federate follow request from ${
                     follower.id
@@ -230,13 +230,13 @@ export const sendFollowAccept = async (follower: User, followee: User) => {
 
     if (!response.ok) {
         dualLogger.log(
-            LogLevel.DEBUG,
+            LogLevel.Debug,
             "Federation.FollowAccept",
             await response.text(),
         );
 
         dualLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Federation.FollowAccept",
             `Failed to federate follow accept from ${
                 followee.id
@@ -258,13 +258,13 @@ export const sendFollowReject = async (follower: User, followee: User) => {
 
     if (!response.ok) {
         dualLogger.log(
-            LogLevel.DEBUG,
+            LogLevel.Debug,
             "Federation.FollowReject",
             await response.text(),
         );
 
         dualLogger.log(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "Federation.FollowReject",
             `Failed to federate follow reject from ${
                 followee.id
@@ -352,7 +352,9 @@ export const findFirstUser = async (
         },
     });
 
-    if (!output) return null;
+    if (!output) {
+        return null;
+    }
 
     return transformOutputToUserWithRelations(output);
 };
@@ -373,7 +375,9 @@ export const resolveWebFinger = async (
         .where(and(eq(Users.username, identifier), eq(Instances.baseUrl, host)))
         .limit(1);
 
-    if (foundUser[0]) return await User.fromId(foundUser[0].Users.id);
+    if (foundUser[0]) {
+        return await User.fromId(foundUser[0].Users.id);
+    }
 
     const hostWithProtocol = host.startsWith("http") ? host : `https://${host}`;
 
@@ -405,7 +409,7 @@ export const resolveWebFinger = async (
         }[];
     };
 
-    if (!data.subject || !data.links) {
+    if (!(data.subject && data.links)) {
         throw new Error(
             "Invalid WebFinger data (missing subject or links from response)",
         );
@@ -428,13 +432,17 @@ export const resolveWebFinger = async (
  * @returns The user associated with the given access token.
  */
 export const retrieveUserFromToken = async (
-    access_token: string,
+    accessToken: string,
 ): Promise<User | null> => {
-    if (!access_token) return null;
+    if (!accessToken) {
+        return null;
+    }
 
-    const token = await retrieveToken(access_token);
+    const token = await retrieveToken(accessToken);
 
-    if (!token || !token.userId) return null;
+    if (!token?.userId) {
+        return null;
+    }
 
     const user = await User.fromId(token.userId);
 
@@ -442,12 +450,14 @@ export const retrieveUserFromToken = async (
 };
 
 export const retrieveUserAndApplicationFromToken = async (
-    access_token: string,
+    accessToken: string,
 ): Promise<{
     user: User | null;
     application: Application | null;
 }> => {
-    if (!access_token) return { user: null, application: null };
+    if (!accessToken) {
+        return { user: null, application: null };
+    }
 
     const output = (
         await db
@@ -457,11 +467,13 @@ export const retrieveUserAndApplicationFromToken = async (
             })
             .from(Tokens)
             .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
-            .where(eq(Tokens.accessToken, access_token))
+            .where(eq(Tokens.accessToken, accessToken))
             .limit(1)
     )[0];
 
-    if (!output?.token.userId) return { user: null, application: null };
+    if (!output?.token.userId) {
+        return { user: null, application: null };
+    }
 
     const user = await User.fromId(output.token.userId);
 
@@ -469,13 +481,15 @@ export const retrieveUserAndApplicationFromToken = async (
 };
 
 export const retrieveToken = async (
-    access_token: string,
+    accessToken: string,
 ): Promise<Token | null> => {
-    if (!access_token) return null;
+    if (!accessToken) {
+        return null;
+    }
 
     return (
         (await db.query.Tokens.findFirst({
-            where: (tokens, { eq }) => eq(tokens.accessToken, access_token),
+            where: (tokens, { eq }) => eq(tokens.accessToken, accessToken),
         })) ?? null
     );
 };

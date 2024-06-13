@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import { config } from "config-manager";
 import { count } from "drizzle-orm";
 import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
@@ -13,7 +12,9 @@ export const meilisearch = new Meilisearch({
 });
 
 export const connectMeili = async (logger: MultiLogManager | LogManager) => {
-    if (!config.meilisearch.enabled) return;
+    if (!config.meilisearch.enabled) {
+        return;
+    }
 
     if (await meilisearch.isHealthy()) {
         await meilisearch
@@ -33,13 +34,13 @@ export const connectMeili = async (logger: MultiLogManager | LogManager) => {
             .updateSearchableAttributes(["content"]);
 
         await logger.log(
-            LogLevel.INFO,
+            LogLevel.Info,
             "Meilisearch",
             "Connected to Meilisearch",
         );
     } else {
         await logger.log(
-            LogLevel.CRITICAL,
+            LogLevel.Critical,
             "Meilisearch",
             "Error while connecting to Meilisearch",
         );
@@ -53,7 +54,9 @@ export enum MeiliIndexType {
 }
 
 export const addUserToMeilisearch = async (user: User) => {
-    if (!config.meilisearch.enabled) return;
+    if (!config.meilisearch.enabled) {
+        return;
+    }
 
     await meilisearch.index(MeiliIndexType.Accounts).addDocuments([
         {
@@ -116,25 +119,19 @@ export const rebuildSearchIndexes = async (
         for (let i = 0; i < accountCount / batchSize; i++) {
             const accounts = await getNthDatabaseAccountBatch(i, batchSize);
 
-            const progress = Math.round((i / (accountCount / batchSize)) * 100);
-
-            console.log(`${chalk.green("✓")} ${progress}%`);
-
+            /* const _progress = Math.round(
+                (i / (accountCount / batchSize)) * 100,
+            );
+ */
             // Sync with Meilisearch
             await meilisearch
                 .index(MeiliIndexType.Accounts)
                 .addDocuments(accounts);
         }
 
-        const meiliAccountCount = (
+        /* const _meiliAccountCount = (
             await meilisearch.index(MeiliIndexType.Accounts).getStats()
-        ).numberOfDocuments;
-
-        console.log(
-            `${chalk.green("✓")} ${chalk.bold(
-                `Done! ${meiliAccountCount} accounts indexed`,
-            )}`,
-        );
+        ).numberOfDocuments; */
     }
 
     if (indexes.includes(MeiliIndexType.Statuses)) {
@@ -149,9 +146,7 @@ export const rebuildSearchIndexes = async (
         for (let i = 0; i < statusCount / batchSize; i++) {
             const statuses = await getNthDatabaseStatusBatch(i, batchSize);
 
-            const progress = Math.round((i / (statusCount / batchSize)) * 100);
-
-            console.log(`${chalk.green("✓")} ${progress}%`);
+            /* const _progress = Math.round((i / (statusCount / batchSize)) * 100); */
 
             // Sync with Meilisearch
             await meilisearch
@@ -159,14 +154,8 @@ export const rebuildSearchIndexes = async (
                 .addDocuments(statuses);
         }
 
-        const meiliStatusCount = (
+        /* const _meiliStatusCount = (
             await meilisearch.index(MeiliIndexType.Statuses).getStats()
-        ).numberOfDocuments;
-
-        console.log(
-            `${chalk.green("✓")} ${chalk.bold(
-                `Done! ${meiliStatusCount} statuses indexed`,
-            )}`,
-        );
+        ).numberOfDocuments; */
     }
 };

@@ -17,7 +17,7 @@ export const meta = applyConfig({
         required: false,
     },
     permissions: {
-        required: [RolePermissions.VIEW_NOTES],
+        required: [RolePermissions.ViewNotes],
     },
 });
 
@@ -40,7 +40,9 @@ export default (app: Hono) =>
 
             const foundStatus = await Note.fromId(id, user?.id);
 
-            if (!foundStatus) return errorResponse("Record not found", 404);
+            if (!foundStatus) {
+                return errorResponse("Record not found", 404);
+            }
 
             const ancestors = await foundStatus.getAncestors(user ?? null);
 
@@ -48,10 +50,10 @@ export default (app: Hono) =>
 
             return jsonResponse({
                 ancestors: await Promise.all(
-                    ancestors.map((status) => status.toAPI(user)),
+                    ancestors.map((status) => status.toApi(user)),
                 ),
                 descendants: await Promise.all(
-                    descendants.map((status) => status.toAPI(user)),
+                    descendants.map((status) => status.toApi(user)),
                 ),
             });
         },

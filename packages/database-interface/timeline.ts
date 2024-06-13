@@ -5,20 +5,20 @@ import { Note } from "./note";
 import { User } from "./user";
 
 enum TimelineType {
-    NOTE = "Note",
-    USER = "User",
+    Note = "Note",
+    User = "User",
 }
 
-export class Timeline {
+export class Timeline<Type extends Note | User> {
     constructor(private type: TimelineType) {}
 
-    static async getNoteTimeline(
+    static getNoteTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
         userId?: string,
     ) {
-        return new Timeline(TimelineType.NOTE).fetchTimeline<Note>(
+        return new Timeline<Note>(TimelineType.Note).fetchTimeline(
             sql,
             limit,
             url,
@@ -26,19 +26,158 @@ export class Timeline {
         );
     }
 
-    static async getUserTimeline(
+    static getUserTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
     ) {
-        return new Timeline(TimelineType.USER).fetchTimeline<User>(
+        return new Timeline<User>(TimelineType.User).fetchTimeline(
             sql,
             limit,
             url,
         );
     }
 
-    private async fetchTimeline<T>(
+    private async fetchObjects(
+        sql: SQL<unknown> | undefined,
+        limit: number,
+        userId?: string,
+    ): Promise<Type[]> {
+        switch (this.type) {
+            case TimelineType.Note:
+                return (await Note.manyFromSql(
+                    sql,
+                    undefined,
+                    limit,
+                    undefined,
+                    userId,
+                )) as Type[];
+            case TimelineType.User:
+                return (await User.manyFromSql(
+                    sql,
+                    undefined,
+                    limit,
+                )) as Type[];
+        }
+    }
+
+    private async fetchLinkHeader(
+        objects: Type[],
+        url: string,
+        limit: number,
+    ): Promise<string> {
+        const linkHeader = [];
+        const urlWithoutQuery = new URL(
+            new URL(url).pathname,
+            config.http.base_url,
+        ).toString();
+
+        if (objects.length > 0) {
+            switch (this.type) {
+                case TimelineType.Note:
+                    linkHeader.push(
+                        ...(await this.fetchNoteLinkHeader(
+                            objects as Note[],
+                            urlWithoutQuery,
+                            limit,
+                        )),
+                    );
+                    break;
+                case TimelineType.User:
+                    linkHeader.push(
+                        ...(await this.fetchUserLinkHeader(
+                            objects as User[],
+                            urlWithoutQuery,
+                            limit,
+                        )),
+                    );
+                    break;
+            }
+        }
+
+        return linkHeader.join(", ");
+    }
+
+    private async fetchNoteLinkHeader(
+        notes: Note[],
+        urlWithoutQuery: string,
+        limit: number,
+    ): Promise<string[]> {
+        const linkHeader = [];
+
+        const objectBefore = await Note.fromSql(gt(Notes.id, notes[0].data.id));
+        if (objectBefore) {
+            linkHeader.push(
+                `<${urlWithoutQuery}?limit=${limit ?? 20}&min_id=${notes[0].data.id}>; rel="prev"`,
+            );
+        }
+
+        if (notes.length >= (limit ?? 20)) {
+            const objectAfter = await Note.fromSql(
+                gt(Notes.id, notes[notes.length - 1].data.id),
+            );
+            if (objectAfter) {
+                linkHeader.push(
+                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${notes[notes.length - 1].data.id}>; rel="next"`,
+                );
+            }
+        }
+
+        return linkHeader;
+    }
+
+    private async fetchUserLinkHeader(
+        users: User[],
+        urlWithoutQuery: string,
+        limit: number,
+    ): Promise<string[]> {
+        const linkHeader = [];
+
+        const objectBefore = await User.fromSql(gt(Users.id, users[0].id));
+        if (objectBefore) {
+            linkHeader.push(
+                `<${urlWithoutQuery}?limit=${limit ?? 20}&min_id=${users[0].id}>; rel="prev"`,
+            );
+        }
+
+        if (users.length >= (limit ?? 20)) {
+            const objectAfter = await User.fromSql(
+                gt(Users.id, users[users.length - 1].id),
+            );
+            if (objectAfter) {
+                linkHeader.push(
+                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${users[users.length - 1].id}>; rel="next"`,
+                );
+            }
+        }
+
+        return linkHeader;
+    }
+
+    private async fetchTimeline(
+        sql: SQL<unknown> | undefined,
+        limit: number,
+        url: string,
+        userId?: string,
+    ): Promise<{ link: string; objects: Type[] }> {
+        const objects = await this.fetchObjects(sql, limit, userId);
+        const link = await this.fetchLinkHeader(objects, url, limit);
+
+        switch (this.type) {
+            case TimelineType.Note:
+                return {
+                    link,
+                    objects: objects,
+                };
+            case TimelineType.User:
+                return {
+                    link,
+                    objects: objects,
+                };
+        }
+    }
+
+    /* private async fetchTimeline<T>(
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
@@ -48,7 +187,7 @@ export class Timeline {
         const users: User[] = [];
 
         switch (this.type) {
-            case TimelineType.NOTE:
+            case TimelineType.Note:
                 notes.push(
                     ...(await Note.manyFromSql(
                         sql,
@@ -59,7 +198,7 @@ export class Timeline {
                     )),
                 );
                 break;
-            case TimelineType.USER:
+            case TimelineType.User:
                 users.push(...(await User.manyFromSql(sql, undefined, limit)));
                 break;
         }
@@ -72,7 +211,7 @@ export class Timeline {
 
         if (notes.length > 0) {
             switch (this.type) {
-                case TimelineType.NOTE: {
+                case TimelineType.Note: {
                     const objectBefore = await Note.fromSql(
                         gt(Notes.id, notes[0].data.id),
                     );
@@ -102,7 +241,7 @@ export class Timeline {
                     }
                     break;
                 }
-                case TimelineType.USER: {
+                case TimelineType.User: {
                     const objectBefore = await User.fromSql(
                         gt(Users.id, users[0].id),
                     );
@@ -136,16 +275,16 @@ export class Timeline {
         }
 
         switch (this.type) {
-            case TimelineType.NOTE:
+            case TimelineType.Note:
                 return {
                     link: linkHeader.join(", "),
                     objects: notes as T[],
                 };
-            case TimelineType.USER:
+            case TimelineType.User:
                 return {
                     link: linkHeader.join(", "),
                     objects: users as T[],
                 };
         }
-    }
+    } */
 }

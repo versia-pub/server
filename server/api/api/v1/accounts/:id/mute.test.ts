@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
+import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 import { meta } from "./mute";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
@@ -73,7 +73,7 @@ describe(meta.route, () => {
         );
         expect(response.status).toBe(200);
 
-        const relationship = (await response.json()) as APIRelationship;
+        const relationship = (await response.json()) as apiRelationship;
         expect(relationship.muting).toBe(true);
     });
 
@@ -96,7 +96,7 @@ describe(meta.route, () => {
         );
         expect(response.status).toBe(200);
 
-        const relationship = (await response.json()) as APIRelationship;
+        const relationship = (await response.json()) as apiRelationship;
         expect(relationship.muting).toBe(true);
     });
 });

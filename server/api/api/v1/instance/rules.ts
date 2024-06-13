@@ -20,7 +20,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async (context) => {
+        async (_context) => {
             return jsonResponse(
                 config.signups.rules.map((rule, index) => ({
                     id: String(index),

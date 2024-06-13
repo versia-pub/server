@@ -19,10 +19,10 @@ export const meta = applyConfig({
     },
     permissions: {
         required: [
-            RolePermissions.MANAGE_OWN_NOTES,
-            RolePermissions.VIEW_NOTES,
-            RolePermissions.VIEW_ACCOUNTS,
-            RolePermissions.VIEW_PRIVATE_TIMELINES,
+            RolePermissions.ManageOwnNotes,
+            RolePermissions.ViewNotes,
+            RolePermissions.ViewAccounts,
+            RolePermissions.ViewPrimateTimelines,
         ],
     },
 });
@@ -48,7 +48,9 @@ export default (app: Hono) =>
 
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { objects, link } = await Timeline.getNoteTimeline(
                 and(
@@ -71,7 +73,7 @@ export default (app: Hono) =>
 
             return jsonResponse(
                 await Promise.all(
-                    objects.map(async (note) => note.toAPI(user)),
+                    objects.map(async (note) => note.toApi(user)),
                 ),
                 200,
                 {

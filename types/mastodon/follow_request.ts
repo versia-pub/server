@@ -20,6 +20,6 @@ export type FollowRequest = {
     followers_count: number;
     following_count: number;
     statuses_count: number;
-    emojis: Array<Emoji>;
-    fields: Array<Field>;
+    emojis: Emoji[];
+    fields: Field[];
 };

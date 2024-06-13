@@ -36,7 +36,7 @@ describe("LogManager", () => {
     });
  */
     it("should log message with timestamp", async () => {
-        await logManager.log(LogLevel.INFO, "TestEntity", "Test message");
+        await logManager.log(LogLevel.Info, "TestEntity", "Test message");
         expect(mockAppend).toHaveBeenCalledWith(
             mockOutput.name,
             expect.stringContaining("[INFO] TestEntity: Test message"),
@@ -45,7 +45,7 @@ describe("LogManager", () => {
 
     it("should log message without timestamp", async () => {
         await logManager.log(
-            LogLevel.INFO,
+            LogLevel.Info,
             "TestEntity",
             "Test message",
             false,
@@ -56,9 +56,10 @@ describe("LogManager", () => {
         );
     });
 
+    // biome-ignore lint/suspicious/noSkippedTests: I need to fix this :sob:
     test.skip("should write to stdout", async () => {
         logManager = new LogManager(Bun.stdout);
-        await logManager.log(LogLevel.INFO, "TestEntity", "Test message");
+        await logManager.log(LogLevel.Info, "TestEntity", "Test message");
 
         const writeMock = jest.fn();
 
@@ -75,7 +76,7 @@ describe("LogManager", () => {
 
     it("should log error message", async () => {
         const error = new Error("Test error");
-        await logManager.logError(LogLevel.ERROR, "TestEntity", error);
+        await logManager.logError(LogLevel.Error, "TestEntity", error);
         expect(mockAppend).toHaveBeenCalledWith(
             mockOutput.name,
             expect.stringContaining("[ERROR] TestEntity: Test error"),
@@ -191,10 +192,10 @@ describe("MultiLogManager", () => {
     });
 
     it("should log message to all logManagers", async () => {
-        await multiLogManager.log(LogLevel.INFO, "TestEntity", "Test message");
+        await multiLogManager.log(LogLevel.Info, "TestEntity", "Test message");
         expect(mockLog).toHaveBeenCalledTimes(2);
         expect(mockLog).toHaveBeenCalledWith(
-            LogLevel.INFO,
+            LogLevel.Info,
             "TestEntity",
             "Test message",
             true,
@@ -203,10 +204,10 @@ describe("MultiLogManager", () => {
 
     it("should log error to all logManagers", async () => {
         const error = new Error("Test error");
-        await multiLogManager.logError(LogLevel.ERROR, "TestEntity", error);
+        await multiLogManager.logError(LogLevel.Error, "TestEntity", error);
         expect(mockLogError).toHaveBeenCalledTimes(2);
         expect(mockLogError).toHaveBeenCalledWith(
-            LogLevel.ERROR,
+            LogLevel.Error,
             "TestEntity",
             error,
         );

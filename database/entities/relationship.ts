@@ -2,7 +2,7 @@ import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Relationships } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
-import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
+import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 
 export type Relationship = InferSelectModel<typeof Relationships> & {
     requestedBy: boolean;
@@ -76,7 +76,7 @@ export const checkForBidirectionalRelationships = async (
  * Converts the relationship to an API-friendly format.
  * @returns The API-friendly relationship.
  */
-export const relationshipToAPI = (rel: Relationship): APIRelationship => {
+export const relationshipToApi = (rel: Relationship): apiRelationship => {
     return {
         blocked_by: rel.blockedBy,
         blocking: rel.blocking,

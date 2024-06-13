@@ -13,7 +13,7 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import type { Application } from "~/database/entities/Application";
+import type { Application } from "~/database/entities/application";
 import { db } from "~/drizzle/db";
 import { type Applications, OpenIdAccounts } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -21,13 +21,13 @@ import { config } from "~/packages/config-manager";
 export class OAuthManager {
     public issuer: (typeof config.oidc.providers)[0];
 
-    constructor(public issuer_id: string) {
+    constructor(public issuerId: string) {
         const found = config.oidc.providers.find(
-            (provider) => provider.id === this.issuer_id,
+            (provider) => provider.id === this.issuerId,
         );
 
         if (!found) {
-            throw new Error(`Issuer ${this.issuer_id} not found`);
+            throw new Error(`Issuer ${this.issuerId} not found`);
         }
 
         this.issuer = found;
@@ -48,7 +48,7 @@ export class OAuthManager {
         }).then((res) => processDiscoveryResponse(issuerUrl, res));
     }
 
-    async getParameters(
+    getParameters(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
         currentUrl: URL,
@@ -101,7 +101,7 @@ export class OAuthManager {
     async getUserInfo(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
-        access_token: string,
+        accessToken: string,
         sub: string,
     ) {
         return await userInfoRequest(
@@ -110,7 +110,7 @@ export class OAuthManager {
                 client_id: issuer.client_id,
                 client_secret: issuer.client_secret,
             },
-            access_token,
+            accessToken,
         ).then(
             async (res) =>
                 await processUserInfoResponse(
@@ -125,7 +125,7 @@ export class OAuthManager {
         );
     }
 
-    async processOAuth2Error(
+    processOAuth2Error(
         application: InferInsertModel<typeof Applications> | null,
     ) {
         return {

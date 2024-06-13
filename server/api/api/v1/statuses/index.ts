@@ -5,7 +5,7 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { federateNote, parseTextMentions } from "~/database/entities/Status";
+import { federateNote, parseTextMentions } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
@@ -21,7 +21,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_NOTES],
+        required: [RolePermissions.ManageOwnNotes],
     },
 });
 
@@ -93,7 +93,9 @@ export default (app: Hono) =>
         async (context) => {
             const { user, application } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const {
                 status,
@@ -110,7 +112,7 @@ export default (app: Hono) =>
             } = context.req.valid("form");
 
             // Validate status
-            if (!status && !(media_ids && media_ids.length > 0)) {
+            if (!(status || (media_ids && media_ids.length > 0))) {
                 return errorResponse(
                     "Status is required unless media is attached",
                     422,
@@ -202,6 +204,6 @@ export default (app: Hono) =>
                 await federateNote(newNote);
             }
 
-            return jsonResponse(await newNote.toAPI(user));
+            return jsonResponse(await newNote.toApi(user));
         },
     );

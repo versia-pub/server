@@ -5,5 +5,5 @@ export type ScheduledStatus = {
     id: string;
     scheduled_at: string;
     params: StatusParams;
-    media_attachments: Array<Attachment> | null;
+    media_attachments: Attachment[] | null;
 };

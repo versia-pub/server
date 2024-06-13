@@ -4,10 +4,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
-import type { Account as APIAccount } from "~/types/mastodon/account";
-import type { Relationship as APIRelationship } from "~/types/mastodon/relationship";
+import type { Account as apiAccount } from "~/types/mastodon/account";
+import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 
-const base_url = config.http.base_url;
+const baseUrl = config.http.base_url;
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const user = users[0];
@@ -31,7 +31,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         "/api/v1/accounts/update_credentials",
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "PATCH",
@@ -50,7 +50,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const user = (await response.json()) as APIAccount;
+            const user = (await response.json()) as apiAccount;
 
             expect(user.display_name).toBe("New Display Name");
         });
@@ -62,7 +62,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         "/api/v1/accounts/verify_credentials",
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         headers: {
@@ -77,7 +77,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIAccount;
+            const account = (await response.json()) as apiAccount;
 
             expect(account.username).toBe(user.data.username);
             expect(account.bot).toBe(false);
@@ -113,7 +113,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/remove_from_followers`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -131,7 +131,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIRelationship;
+            const account = (await response.json()) as apiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.followed_by).toBe(false);
@@ -144,7 +144,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/block`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -162,7 +162,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIRelationship;
+            const account = (await response.json()) as apiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(true);
@@ -172,7 +172,7 @@ describe("API Tests", () => {
     describe("GET /api/v1/blocks", () => {
         test("should return an array of APIAccount objects for the user's blocked accounts", async () => {
             const response = await sendTestRequest(
-                new Request(wrapRelativeUrl("/api/v1/blocks", base_url), {
+                new Request(wrapRelativeUrl("/api/v1/blocks", baseUrl), {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${token.accessToken}`,
@@ -184,7 +184,7 @@ describe("API Tests", () => {
             expect(response.headers.get("content-type")).toBe(
                 "application/json",
             );
-            const body = (await response.json()) as APIAccount[];
+            const body = (await response.json()) as apiAccount[];
 
             expect(Array.isArray(body)).toBe(true);
             expect(body.length).toBe(1);
@@ -198,7 +198,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/unblock`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -216,7 +216,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIRelationship;
+            const account = (await response.json()) as apiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(false);
@@ -229,7 +229,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/pin`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -247,7 +247,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIRelationship;
+            const account = (await response.json()) as apiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(true);
@@ -260,7 +260,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/unpin`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -278,7 +278,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIRelationship;
+            const account = (await response.json()) as apiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(false);
@@ -291,7 +291,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/note`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -309,7 +309,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIAccount;
+            const account = (await response.json()) as apiAccount;
 
             expect(account.id).toBe(user2.id);
             expect(account.note).toBe("This is a new note");
@@ -322,7 +322,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/relationships?id[]=${user2.id}`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "GET",
@@ -338,7 +338,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const relationships = (await response.json()) as APIRelationship[];
+            const relationships = (await response.json()) as apiRelationship[];
 
             expect(Array.isArray(relationships)).toBe(true);
             expect(relationships.length).toBeGreaterThan(0);
@@ -358,7 +358,7 @@ describe("API Tests", () => {
         test("should delete the avatar of the authenticated user and return the updated account object", async () => {
             const response = await sendTestRequest(
                 new Request(
-                    wrapRelativeUrl("/api/v1/profile/avatar", base_url),
+                    wrapRelativeUrl("/api/v1/profile/avatar", baseUrl),
                     {
                         method: "DELETE",
                         headers: {
@@ -373,7 +373,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIAccount;
+            const account = (await response.json()) as apiAccount;
 
             expect(account.id).toBeDefined();
             expect(account.avatar).toBeDefined();
@@ -384,7 +384,7 @@ describe("API Tests", () => {
         test("should delete the header of the authenticated user and return the updated account object", async () => {
             const response = await sendTestRequest(
                 new Request(
-                    wrapRelativeUrl("/api/v1/profile/header", base_url),
+                    wrapRelativeUrl("/api/v1/profile/header", baseUrl),
                     {
                         method: "DELETE",
                         headers: {
@@ -399,7 +399,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as APIAccount;
+            const account = (await response.json()) as apiAccount;
 
             expect(account.id).toBeDefined();
             expect(account.header).toBe("");
@@ -412,7 +412,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/${user2.id}/follow`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "POST",
@@ -436,7 +436,7 @@ describe("API Tests", () => {
                 new Request(
                     wrapRelativeUrl(
                         `/api/v1/accounts/familiar_followers?id[]=${user2.id}`,
-                        base_url,
+                        baseUrl,
                     ),
                     {
                         method: "GET",
@@ -454,7 +454,7 @@ describe("API Tests", () => {
 
             const familiarFollowers = (await response.json()) as {
                 id: string;
-                accounts: APIAccount[];
+                accounts: apiAccount[];
             }[];
 
             expect(Array.isArray(familiarFollowers)).toBe(true);

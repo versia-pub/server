@@ -18,7 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FILTERS],
+        required: [RolePermissions.ManageOwnFilters],
     },
 });
 
@@ -57,6 +57,7 @@ export const schemas = {
                             ["true", "1", "on"].includes(v.toLowerCase()),
                         )
                         .optional(),
+                    // biome-ignore lint/style/useNamingConvention: _destroy is a Mastodon API imposed variable name
                     _destroy: z
                         .string()
                         .transform((v) =>
@@ -81,7 +82,9 @@ export default (app: Hono) =>
             const { user } = context.req.valid("header");
             const { id } = context.req.valid("param");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const userFilter = await db.query.Filters.findFirst({
                 where: (filter, { eq, and }) =>
@@ -91,7 +94,9 @@ export default (app: Hono) =>
                 },
             });
 
-            if (!userFilter) return errorResponse("Filter not found", 404);
+            if (!userFilter) {
+                return errorResponse("Filter not found", 404);
+            }
 
             switch (context.req.method) {
                 case "GET": {
@@ -182,8 +187,9 @@ export default (app: Hono) =>
                         },
                     });
 
-                    if (!updatedFilter)
+                    if (!updatedFilter) {
                         return errorResponse("Failed to update filter", 500);
+                    }
 
                     return jsonResponse({
                         id: updatedFilter.id,

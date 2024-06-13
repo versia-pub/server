@@ -7,7 +7,7 @@ import { config } from "config-manager";
 import type { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
 
-export const localObjectURI = (id: string) =>
+export const localObjectUri = (id: string) =>
     new URL(`/objects/${id}`, config.http.base_url).toString();
 
 export const objectToInboxRequest = async (
@@ -52,14 +52,14 @@ export const objectToInboxRequest = async (
 
         // Log public key
         new LogManager(Bun.stdout).log(
-            LogLevel.DEBUG,
+            LogLevel.Debug,
             "Inbox.Signature",
             `Sender public key: ${author.data.publicKey}`,
         );
 
         // Log signed string
         new LogManager(Bun.stdout).log(
-            LogLevel.DEBUG,
+            LogLevel.Debug,
             "Inbox.Signature",
             `Signed string:\n${signedString}`,
         );

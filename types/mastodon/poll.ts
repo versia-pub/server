@@ -4,7 +4,7 @@ export type Poll = {
     expired: boolean;
     multiple: boolean;
     votes_count: number;
-    options: Array<PollOption>;
+    options: PollOption[];
     voted: boolean;
 };
 

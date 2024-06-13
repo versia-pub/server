@@ -19,7 +19,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:mutes"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_MUTES],
+        required: [RolePermissions.ManageOwnMutes],
     },
 });
 
@@ -43,7 +43,9 @@ export default (app: Hono) =>
                 context.req.valid("query");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const { objects: mutes, link } = await Timeline.getUserTimeline(
                 and(
@@ -57,7 +59,7 @@ export default (app: Hono) =>
             );
 
             return jsonResponse(
-                mutes.map((u) => u.toAPI()),
+                mutes.map((u) => u.toApi()),
                 200,
                 {
                     Link: link,

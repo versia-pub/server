@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Status as APIStatus } from "~/types/mastodon/status";
+import type { Status as apiStatus } from "~/types/mastodon/status";
 import { meta } from "./favourite";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -47,7 +47,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const json = (await response.json()) as APIStatus;
+        const json = (await response.json()) as apiStatus;
 
         expect(json.favourited).toBe(true);
         expect(json.favourites_count).toBe(1);
@@ -70,7 +70,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const json = (await response.json()) as APIStatus;
+        const json = (await response.json()) as apiStatus;
 
         expect(json.favourited).toBe(true);
         expect(json.favourites_count).toBe(1);

@@ -1,5 +1,4 @@
 import { $ } from "bun";
-import chalk from "chalk";
 import ora from "ora";
 import { routes } from "~/routes";
 
@@ -21,7 +20,6 @@ await Bun.build({
     external: ["unzipit"],
 }).then((output) => {
     if (!output.success) {
-        console.log(output.logs);
         process.exit(1);
     }
 });
@@ -56,9 +54,3 @@ await $`cp package.json dist/package.json`;
 await $`cp cli/theme.json dist/cli/theme.json`;
 
 buildSpinner.stop();
-
-console.log(
-    `${chalk.green("✓")} Built project. You can now run it with ${chalk.green(
-        "bun run dist/index.js",
-    )}`,
-);

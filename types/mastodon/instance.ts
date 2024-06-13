@@ -11,7 +11,7 @@ export type Instance = {
     thumbnail: string | null;
     urls: URLs | null;
     stats: Stats;
-    languages: Array<string>;
+    languages: string[];
     registrations: boolean;
     approval_required: boolean;
     invites_enabled?: boolean;
@@ -29,7 +29,7 @@ export type Instance = {
         };
     };
     contact_account?: Account;
-    rules?: Array<InstanceRule>;
+    rules?: InstanceRule[];
 };
 
 export type InstanceRule = {

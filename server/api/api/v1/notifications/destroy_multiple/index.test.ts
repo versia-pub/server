@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Notification as APINotification } from "~/types/mastodon/notification";
+import type { Notification as apiNotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const statuses = await getTestStatuses(40, users[0]);
-let notifications: APINotification[] = [];
+let notifications: apiNotification[] = [];
 
 // Create some test notifications
 beforeAll(async () => {

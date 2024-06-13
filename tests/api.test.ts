@@ -2,7 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
-const base_url = config.http.base_url;
+const baseUrl = config.http.base_url;
 
 const { tokens, deleteUsers } = await getTestUsers(1);
 
@@ -17,7 +17,7 @@ describe("API Tests", () => {
 
         const response = await sendTestRequest(
             new Request(
-                wrapRelativeUrl(`${base_url}/api/v1/statuses`, base_url),
+                wrapRelativeUrl(`${baseUrl}/api/v1/statuses`, baseUrl),
                 {
                     method: "POST",
                     headers: {

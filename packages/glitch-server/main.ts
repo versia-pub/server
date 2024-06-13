@@ -2,12 +2,12 @@ import { join } from "node:path";
 import { redirect } from "@/response";
 import type { BunFile } from "bun";
 import { config } from "config-manager";
-import { retrieveUserFromToken } from "~/database/entities/User";
+import { retrieveUserFromToken } from "~/database/entities/user";
 import type { User } from "~/packages/database-interface/user";
 import type { LogManager, MultiLogManager } from "~/packages/log-manager";
 import { languages } from "./glitch-languages";
 
-const handleManifestRequest = async () => {
+const handleManifestRequest = () => {
     const manifest = {
         id: "/home",
         name: config.instance.name,
@@ -99,7 +99,7 @@ const handleManifestRequest = async () => {
 
 const handleSignInRequest = async (
     req: Request,
-    path: string,
+    _path: string,
     url: URL,
     user: User | null,
     accessToken: string,
@@ -156,7 +156,7 @@ const handleSignInRequest = async (
     );
 };
 
-const handleSignOutRequest = async (req: Request) => {
+const handleSignOutRequest = (req: Request) => {
     if (req.method === "POST") {
         return redirect("/api/auth/mastodon-logout", 307);
     }
@@ -176,7 +176,7 @@ const returnFile = async (file: BunFile, content?: string) => {
 };
 
 const handleDefaultRequest = async (
-    req: Request,
+    _req: Request,
     path: string,
     user: User | null,
     accessToken: string,
@@ -198,10 +198,10 @@ const handleDefaultRequest = async (
     return null;
 };
 
-const brandingTransforms = async (
+const brandingTransforms = (
     fileContents: string,
-    accessToken: string,
-    user: User | null,
+    _accessToken: string,
+    _user: User | null,
 ) => {
     let newFileContents = fileContents;
     for (const server of config.frontend.glitch.server) {
@@ -287,7 +287,7 @@ const htmlTransforms = async (
                               },
                         accounts: user
                             ? {
-                                  [user.id]: user.toAPI(true),
+                                  [user.id]: user.toApi(true),
                               }
                             : {},
                         media_attachments: {
@@ -327,7 +327,7 @@ const htmlTransforms = async (
 
 export const handleGlitchRequest = async (
     req: Request,
-    logger: LogManager | MultiLogManager,
+    _logger: LogManager | MultiLogManager,
 ): Promise<Response | null> => {
     const url = new URL(req.url);
     let path = url.pathname;
@@ -336,7 +336,9 @@ export const handleGlitchRequest = async (
     const user = await retrieveUserFromToken(accessToken ?? "");
 
     // Strip leading /web from path
-    if (path.startsWith("/web")) path = path.slice(4);
+    if (path.startsWith("/web")) {
+        path = path.slice(4);
+    }
 
     if (path === "/manifest") {
         return handleManifestRequest();

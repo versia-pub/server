@@ -18,10 +18,7 @@ export const meta = applyConfig({
         required: true,
     },
     permissions: {
-        required: [
-            RolePermissions.MANAGE_OWN_NOTES,
-            RolePermissions.VIEW_NOTES,
-        ],
+        required: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
     },
 });
 
@@ -41,14 +38,19 @@ export default (app: Hono) =>
             const { id } = context.req.valid("param");
             const { user } = context.req.valid("header");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const foundStatus = await Note.fromId(id, user?.id);
 
-            if (!foundStatus) return errorResponse("Record not found", 404);
+            if (!foundStatus) {
+                return errorResponse("Record not found", 404);
+            }
 
-            if (foundStatus.author.id !== user.id)
+            if (foundStatus.author.id !== user.id) {
                 return errorResponse("Unauthorized", 401);
+            }
 
             if (
                 await db.query.UserToPinnedNotes.findFirst({
@@ -64,6 +66,6 @@ export default (app: Hono) =>
 
             await user.pin(foundStatus);
 
-            return jsonResponse(await foundStatus.toAPI(user));
+            return jsonResponse(await foundStatus.toApi(user));
         },
     );

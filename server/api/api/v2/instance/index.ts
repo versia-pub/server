@@ -20,7 +20,7 @@ export const meta = applyConfig({
 });
 
 export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async (context) => {
+    app.on(meta.allowedMethods, meta.route, async (_context) => {
         // Get software version from package.json
         const version = manifest.version;
 
@@ -93,7 +93,7 @@ export default (app: Hono) =>
             },
             contact: {
                 email: contactAccount?.data.email || null,
-                account: contactAccount?.toAPI() || null,
+                account: contactAccount?.toApi() || null,
             },
             rules: config.signups.rules.map((rule, index) => ({
                 id: String(index),

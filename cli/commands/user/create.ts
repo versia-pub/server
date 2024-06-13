@@ -137,7 +137,7 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             ),
         );
 
-        if (!flags.format && !flags["set-password"]) {
+        if (!(flags.format || flags["set-password"])) {
             const link = "";
 
             this.log(

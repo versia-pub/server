@@ -4,7 +4,7 @@ import type { Config } from "config-manager";
 import { MediaConverter } from "./media-converter";
 
 export enum MediaBackendType {
-    LOCAL = "local",
+    Local = "local",
     S3 = "s3",
 }
 
@@ -35,12 +35,12 @@ export class MediaBackend {
         public backend: MediaBackendType,
     ) {}
 
-    static async fromBackendType(
+    public static fromBackendType(
         backend: MediaBackendType,
         config: Config,
-    ): Promise<MediaBackend> {
+    ): MediaBackend {
         switch (backend) {
-            case MediaBackendType.LOCAL:
+            case MediaBackendType.Local:
                 return new LocalMediaBackend(config);
             case MediaBackendType.S3:
                 return new S3MediaBackend(config);
@@ -64,15 +64,15 @@ export class MediaBackend {
      * @returns The file as a File object
      */
     public getFileByHash(
-        file: string,
-        databaseHashFetcher: (sha256: string) => Promise<string>,
+        _file: string,
+        _databaseHashFetcher: (sha256: string) => Promise<string>,
     ): Promise<File | null> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),
         );
     }
 
-    public deleteFileByUrl(url: string): Promise<void> {
+    public deleteFileByUrl(_url: string): Promise<void> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),
         );
@@ -83,7 +83,7 @@ export class MediaBackend {
      * @param filename File name
      * @returns The file as a File object
      */
-    public getFile(filename: string): Promise<File | null> {
+    public getFile(_filename: string): Promise<File | null> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),
         );
@@ -94,7 +94,7 @@ export class MediaBackend {
      * @param file File to add
      * @returns Metadata about the uploaded file
      */
-    public addFile(file: File): Promise<UploadedFileMetadata> {
+    public addFile(_file: File): Promise<UploadedFileMetadata> {
         return Promise.reject(
             new Error("Do not call MediaBackend directly: use a subclass"),
         );
@@ -103,7 +103,7 @@ export class MediaBackend {
 
 export class LocalMediaBackend extends MediaBackend {
     constructor(config: Config) {
-        super(config, MediaBackendType.LOCAL);
+        super(config, MediaBackendType.Local);
     }
 
     public async addFile(file: File) {
@@ -164,7 +164,9 @@ export class LocalMediaBackend extends MediaBackend {
     ): Promise<File | null> {
         const filename = await databaseHashFetcher(hash);
 
-        if (!filename) return null;
+        if (!filename) {
+            return null;
+        }
 
         return this.getFile(filename);
     }
@@ -174,7 +176,9 @@ export class LocalMediaBackend extends MediaBackend {
             `${this.config.media.local_uploads_folder}/${filename}`,
         );
 
-        if (!(await file.exists())) return null;
+        if (!(await file.exists())) {
+            return null;
+        }
 
         return new File([await file.arrayBuffer()], filename, {
             type: file.type,
@@ -243,7 +247,9 @@ export class S3MediaBackend extends MediaBackend {
     ): Promise<File | null> {
         const filename = await databaseHashFetcher(hash);
 
-        if (!filename) return null;
+        if (!filename) {
+            return null;
+        }
 
         return this.getFile(filename);
     }

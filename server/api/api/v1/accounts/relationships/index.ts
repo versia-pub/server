@@ -5,8 +5,8 @@ import type { Hono } from "hono";
 import { z } from "zod";
 import {
     createNewRelationship,
-    relationshipToAPI,
-} from "~/database/entities/Relationship";
+    relationshipToApi,
+} from "~/database/entities/relationship";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
@@ -23,7 +23,7 @@ export const meta = applyConfig({
         oauthPermissions: ["read:follows"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_FOLLOWS],
+        required: [RolePermissions.ManageOwnFollows],
     },
 });
 
@@ -46,7 +46,9 @@ export default (app: Hono) =>
 
             const ids = Array.isArray(id) ? id : [id];
 
-            if (!self) return errorResponse("Unauthorized", 401);
+            if (!self) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const relationships = await db.query.Relationships.findMany({
                 where: (relationship, { inArray, and, eq }) =>
@@ -62,7 +64,9 @@ export default (app: Hono) =>
 
             for (const id of missingIds) {
                 const user = await User.fromId(id);
-                if (!user) continue;
+                if (!user) {
+                    continue;
+                }
                 const relationship = await createNewRelationship(self, user);
 
                 relationships.push(relationship);
@@ -72,6 +76,6 @@ export default (app: Hono) =>
                 (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
             );
 
-            return jsonResponse(relationships.map((r) => relationshipToAPI(r)));
+            return jsonResponse(relationships.map((r) => relationshipToApi(r)));
         },
     );

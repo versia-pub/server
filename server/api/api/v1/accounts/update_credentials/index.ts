@@ -10,9 +10,9 @@ import { MediaBackendType } from "media-manager";
 import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/Attachment";
-import { type EmojiWithInstance, parseEmojis } from "~/database/entities/Emoji";
-import { contentToHtml } from "~/database/entities/Status";
+import { getUrl } from "~/database/entities/attachment";
+import { type EmojiWithInstance, parseEmojis } from "~/database/entities/emoji";
+import { contentToHtml } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
@@ -29,7 +29,7 @@ export const meta = applyConfig({
         oauthPermissions: ["write:accounts"],
     },
     permissions: {
-        required: [RolePermissions.MANAGE_OWN_ACCOUNT],
+        required: [RolePermissions.ManageOwnAccount],
     },
 });
 
@@ -116,7 +116,9 @@ export default (app: Hono) =>
                 fields_attributes,
             } = context.req.valid("form");
 
-            if (!user) return errorResponse("Unauthorized", 401);
+            if (!user) {
+                return errorResponse("Unauthorized", 401);
+            }
 
             const self = user.data;
 
@@ -127,7 +129,7 @@ export default (app: Hono) =>
             let mediaManager: MediaBackend;
 
             switch (config.media.backend as MediaBackendType) {
-                case MediaBackendType.LOCAL:
+                case MediaBackendType.Local:
                     mediaManager = new LocalMediaBackend(config);
                     break;
                 case MediaBackendType.S3:
@@ -321,8 +323,10 @@ export default (app: Hono) =>
             });
 
             const output = await User.fromId(self.id);
-            if (!output) return errorResponse("Couldn't edit user", 500);
+            if (!output) {
+                return errorResponse("Couldn't edit user", 500);
+            }
 
-            return jsonResponse(output.toAPI());
+            return jsonResponse(output.toApi());
         },
     );
