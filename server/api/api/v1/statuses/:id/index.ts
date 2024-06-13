@@ -159,21 +159,18 @@ export default (app: Hono) =>
                 }
             }
 
-            const newNote = await foundStatus.updateFromData(
-                statusText
+            const newNote = await foundStatus.updateFromData({
+                content: statusText
                     ? {
                           [content_type]: {
                               content: statusText,
                           },
                       }
                     : undefined,
-                undefined,
-                sensitive,
-                spoiler_text,
-                undefined,
-                undefined,
-                media_ids,
-            );
+                isSensitive: sensitive,
+                spoilerText: spoiler_text,
+                mediaAttachments: media_ids,
+            });
 
             if (!newNote) {
                 return errorResponse("Failed to update status", 500);

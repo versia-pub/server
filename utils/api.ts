@@ -3,7 +3,6 @@ import chalk from "chalk";
 import { config } from "config-manager";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
-import type { BodyData } from "hono/utils/body";
 import { validator } from "hono/validator";
 import {
     anyOf,
@@ -198,148 +197,45 @@ export const auth = (
         return checkRouteNeedsAuth(auth, authData, context);
     });
 
-/* export const auth = (
-    authData: ApiRouteMetadata["auth"],
-    permissionData?: ApiRouteMetadata["permissions"],
-) =>
-    validator("header", async (value, context) => {
-        const auth = value.authorization
-            ? await getFromHeader(value.authorization)
-            : null;
-
-        const error = errorResponse("Unauthorized", 401);
-
-        // Permissions check
-        if (permissionData) {
-            const userPerms = auth?.user
-                ? auth.user.getAllPermissions()
-                : config.permissions.anonymous;
-
-            const requiredPerms =
-                permissionData.methodOverrides?.[
-                    context.req.method as HttpVerb
-                ] ?? permissionData.required;
-
-            if (!requiredPerms.every((perm) => userPerms.includes(perm))) {
-                const missingPerms = requiredPerms.filter(
-                    (perm) => !userPerms.includes(perm),
-                );
-
-                return context.json(
-                    {
-                        error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(
-                            ", ",
-                        )}`,
-                    },
-                    403,
-                    error.headers.toJSON(),
-                );
+// Helper function to parse form data
+async function parseFormData(context: Context) {
+    const formData = await context.req.formData();
+    const urlparams = new URLSearchParams();
+    const files = new Map<string, File>();
+    for (const [key, value] of [...formData.entries()]) {
+        if (Array.isArray(value)) {
+            for (const val of value) {
+                urlparams.append(key, val);
             }
-        }
-
-        if (auth?.user) {
-            return {
-                user: auth.user as User,
-                token: auth.token as string,
-                application: auth.application as Application | null,
-            };
-        }
-        if (authData.required) {
-            return context.json(
-                {
-                    error: "Unauthorized",
-                },
-                401,
-                error.headers.toJSON(),
-            );
-        }
-
-        if (
-            authData.requiredOnMethods?.includes(context.req.method as HttpVerb)
-        ) {
-            return context.json(
-                {
-                    error: "Unauthorized",
-                },
-                401,
-                error.headers.toJSON(),
-            );
-        }
-
-        return {
-            user: null,
-            token: null,
-            application: null,
-        };
-    }); */
-
-/**
- * Middleware to magically unfuck forms
- * Add it to random Hono routes and hope it works
- * @returns
- */
-export const qs = () => {
-    return createMiddleware(async (context, next) => {
-        const contentType = context.req.header("content-type");
-
-        if (contentType?.includes("multipart/form-data")) {
-            // Get it as a query format to pass on to qs, then insert back files
-            const formData = await context.req.formData();
-            const urlparams = new URLSearchParams();
-            const files = new Map<string, File>();
-            for (const [key, value] of [...formData.entries()]) {
-                if (Array.isArray(value)) {
-                    for (const val of value) {
-                        urlparams.append(key, val);
-                    }
-                } else if (value instanceof File) {
-                    if (!files.has(key)) {
-                        files.set(key, value);
-                    }
-                } else {
-                    urlparams.append(key, String(value));
-                }
+        } else if (value instanceof File) {
+            if (!files.has(key)) {
+                files.set(key, value);
             }
-
-            const parsed = parse(urlparams.toString(), {
-                parseArrays: true,
-                interpretNumericEntities: true,
-            });
-
-            // @ts-ignore Very bad hack
-            context.req.parseBody = <T extends BodyData = BodyData>() =>
-                Promise.resolve({
-                    ...parsed,
-                    ...Object.fromEntries(files),
-                } as T);
-
-            context.req.formData = () =>
-                // @ts-ignore I'm so sorry for this
-                Promise.resolve({
-                    ...parsed,
-                    ...Object.fromEntries(files),
-                });
-            // @ts-ignore I'm so sorry for this
-            context.req.bodyCache.formData = {
-                ...parsed,
-                ...Object.fromEntries(files),
-            };
-        } else if (contentType?.includes("application/x-www-form-urlencoded")) {
-            const parsed = parse(await context.req.text(), {
-                parseArrays: true,
-                interpretNumericEntities: true,
-            });
-
-            context.req.parseBody = <T extends BodyData = BodyData>() =>
-                Promise.resolve(parsed as T);
-            // @ts-ignore Very bad hack
-            context.req.formData = () => Promise.resolve(parsed);
-            // @ts-ignore I'm so sorry for this
-            context.req.bodyCache.formData = parsed;
+        } else {
+            urlparams.append(key, String(value));
         }
-        await next();
+    }
+
+    const parsed = parse(urlparams.toString(), {
+        parseArrays: true,
+        interpretNumericEntities: true,
     });
-};
+
+    return {
+        parsed,
+        files,
+    };
+}
+
+// Helper function to parse urlencoded data
+async function parseUrlEncoded(context: Context) {
+    const parsed = parse(await context.req.text(), {
+        parseArrays: true,
+        interpretNumericEntities: true,
+    });
+
+    return parsed;
+}
 
 export const qsQuery = () => {
     return createMiddleware(async (context, next) => {
@@ -350,77 +246,49 @@ export const qsQuery = () => {
 
         // @ts-ignore Very bad hack
         context.req.query = () => parsed;
+
         // @ts-ignore I'm so sorry for this
         context.req.queries = () => parsed;
         await next();
     });
 };
 
-// Fill in queries, formData and json
+export const setContextFormDataToObject = (
+    context: Context,
+    setTo: object,
+): Context => {
+    // @ts-expect-error HACK
+    context.req.bodyCache.formData = setTo;
+    context.req.parseBody = async () =>
+        context.req.bodyCache.formData as FormData;
+    context.req.formData = async () =>
+        context.req.bodyCache.formData as FormData;
+
+    return context;
+};
+
+/*
+ * Middleware to magically unfuck forms
+ * Add it to random Hono routes and hope it works
+ * @returns
+ */
 export const jsonOrForm = () => {
     return createMiddleware(async (context, next) => {
         const contentType = context.req.header("content-type");
 
         if (contentType?.includes("application/json")) {
-            context.req.parseBody = async <T extends BodyData = BodyData>() =>
-                (await context.req.json()) as T;
-            context.req.bodyCache.formData = await context.req.json();
-            context.req.formData = async () =>
-                context.req.bodyCache.formData as FormData;
+            setContextFormDataToObject(context, await context.req.json());
         } else if (contentType?.includes("application/x-www-form-urlencoded")) {
-            const parsed = parse(await context.req.text(), {
-                parseArrays: true,
-                interpretNumericEntities: true,
-            });
+            const parsed = await parseUrlEncoded(context);
 
-            context.req.parseBody = <T extends BodyData = BodyData>() =>
-                Promise.resolve(parsed as T);
-            // @ts-ignore Very bad hack
-            context.req.formData = () => Promise.resolve(parsed);
-            // @ts-ignore I'm so sorry for this
-            context.req.bodyCache.formData = parsed;
+            setContextFormDataToObject(context, parsed);
         } else if (contentType?.includes("multipart/form-data")) {
-            // Get it as a query format to pass on to qs, then insert back files
-            const formData = await context.req.formData();
-            const urlparams = new URLSearchParams();
-            const files = new Map<string, File>();
-            for (const [key, value] of [...formData.entries()]) {
-                if (Array.isArray(value)) {
-                    for (const val of value) {
-                        urlparams.append(key, val);
-                    }
-                } else if (value instanceof File) {
-                    if (!files.has(key)) {
-                        files.set(key, value);
-                    }
-                } else {
-                    urlparams.append(key, String(value));
-                }
-            }
+            const { parsed, files } = await parseFormData(context);
 
-            const parsed = parse(urlparams.toString(), {
-                parseArrays: true,
-                interpretNumericEntities: true,
-            });
-
-            // @ts-ignore Very bad hack
-            context.req.parseBody = <T extends BodyData = BodyData>() =>
-                Promise.resolve({
-                    ...parsed,
-                    ...Object.fromEntries(files),
-                } as T);
-
-            context.req.formData = () =>
-                // @ts-ignore I'm so sorry for this
-                Promise.resolve({
-                    ...parsed,
-                    ...Object.fromEntries(files),
-                });
-            // @ts-ignore I'm so sorry for this
-            context.req.bodyCache.formData = {
+            setContextFormDataToObject(context, {
                 ...parsed,
                 ...Object.fromEntries(files),
-            };
+            });
         }
 
         await next();

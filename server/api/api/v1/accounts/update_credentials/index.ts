@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError, qs } from "@/api";
+import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { zValidator } from "@hono/zod-validator";
@@ -99,7 +99,7 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        qs(),
+        jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {

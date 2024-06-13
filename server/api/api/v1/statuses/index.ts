@@ -5,7 +5,7 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { federateNote, parseTextMentions } from "~/database/entities/status";
+import { federateNote } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
@@ -175,26 +175,21 @@ export default (app: Hono) =>
                 }
             }
 
-            const mentions = await parseTextMentions(status ?? "");
-
-            const newNote = await Note.fromData(
-                user,
-                {
+            const newNote = await Note.fromData({
+                author: user,
+                content: {
                     [content_type]: {
                         content: status ?? "",
                     },
                 },
                 visibility,
-                sensitive ?? false,
-                spoiler_text ?? "",
-                [],
-                undefined,
-                mentions,
-                media_ids,
-                in_reply_to_id ?? undefined,
-                quote_id ?? undefined,
-                application ?? undefined,
-            );
+                isSensitive: sensitive ?? false,
+                spoilerText: spoiler_text ?? "",
+                mediaAttachments: media_ids,
+                replyId: in_reply_to_id ?? undefined,
+                quoteId: quote_id ?? undefined,
+                application: application ?? undefined,
+            });
 
             if (!newNote) {
                 return errorResponse("Failed to create status", 500);

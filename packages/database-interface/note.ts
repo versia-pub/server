@@ -2,7 +2,7 @@ import { idValidator } from "@/api";
 import { dualLogger } from "@/loggers";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import type { EntityValidator } from "@lysand-org/federation";
+import { EntityValidator } from "@lysand-org/federation";
 import {
     type InferInsertModel,
     type SQL,
@@ -33,6 +33,7 @@ import {
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
+    parseTextMentions,
 } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import {
@@ -249,90 +250,79 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this;
     }
 
-    static async fromData(
-        author: User,
-        content: typeof EntityValidator.$ContentFormat,
-        visibility: apiStatus["visibility"],
-        isSensitive: boolean,
-        spoilerText: string,
-        emojis: EmojiWithInstance[],
-        uri?: string,
-        mentions?: User[],
+    static async fromData(data: {
+        author: User;
+        content: typeof EntityValidator.$ContentFormat;
+        visibility: apiStatus["visibility"];
+        isSensitive: boolean;
+        spoilerText: string;
+        emojis?: EmojiWithInstance[];
+        uri?: string;
+        mentions?: User[];
         /** List of IDs of database Attachment objects */
-        mediaAttachments?: string[],
-        replyId?: string,
-        quoteId?: string,
-        application?: Application,
-    ): Promise<Note | null> {
-        const htmlContent = await contentToHtml(content, mentions);
+        mediaAttachments?: string[];
+        replyId?: string;
+        quoteId?: string;
+        application?: Application;
+    }): Promise<Note> {
+        const plaintextContent =
+            data.content["text/plain"]?.content ??
+            Object.entries(data.content)[0][1].content;
 
-        // Parse emojis and fuse with existing emojis
-        let foundEmojis = emojis;
+        const parsedMentions = [
+            ...(data.mentions ?? []),
+            ...(await parseTextMentions(plaintextContent)),
+            // Deduplicate by .id
+        ].filter(
+            (mention, index, self) =>
+                index === self.findIndex((t) => t.id === mention.id),
+        );
 
-        if (author.isLocal()) {
-            const parsedEmojis = await parseEmojis(htmlContent);
-            // Fuse and deduplicate
-            foundEmojis = [...emojis, ...parsedEmojis].filter(
-                (emoji, index, self) =>
-                    index === self.findIndex((t) => t.id === emoji.id),
-            );
-        }
+        const parsedEmojis = [
+            ...(data.emojis ?? []),
+            ...(await parseEmojis(plaintextContent)),
+            // Deduplicate by .id
+        ].filter(
+            (emoji, index, self) =>
+                index === self.findIndex((t) => t.id === emoji.id),
+        );
+
+        const htmlContent = await contentToHtml(data.content, parsedMentions);
 
         const newNote = await Note.insert({
-            authorId: author.id,
+            authorId: data.author.id,
             content: htmlContent,
             contentSource:
-                content["text/plain"]?.content ||
-                content["text/markdown"]?.content ||
-                Object.entries(content)[0][1].content ||
+                data.content["text/plain"]?.content ||
+                data.content["text/markdown"]?.content ||
+                Object.entries(data.content)[0][1].content ||
                 "",
             contentType: "text/html",
-            visibility,
-            sensitive: isSensitive,
-            spoilerText: await sanitizedHtmlStrip(spoilerText),
-            uri: uri || null,
-            replyId: replyId ?? null,
-            quotingId: quoteId ?? null,
-            applicationId: application?.id ?? null,
+            visibility: data.visibility,
+            sensitive: data.isSensitive,
+            spoilerText: await sanitizedHtmlStrip(data.spoilerText),
+            uri: data.uri || null,
+            replyId: data.replyId ?? null,
+            quotingId: data.quoteId ?? null,
+            applicationId: data.application?.id ?? null,
         });
 
         // Connect emojis
-        for (const emoji of foundEmojis) {
-            await db
-                .insert(EmojiToNote)
-                .values({
-                    emojiId: emoji.id,
-                    noteId: newNote.id,
-                })
-                .execute();
-        }
+        await newNote.recalculateDatabaseEmojis(parsedEmojis);
 
         // Connect mentions
-        for (const mention of mentions ?? []) {
-            await db
-                .insert(NoteToMentions)
-                .values({
-                    noteId: newNote.id,
-                    userId: mention.id,
-                })
-                .execute();
-        }
+        await newNote.recalculateDatabaseMentions(parsedMentions);
 
         // Set attachment parents
-        if (mediaAttachments && mediaAttachments.length > 0) {
-            await db
-                .update(Attachments)
-                .set({
-                    noteId: newNote.id,
-                })
-                .where(inArray(Attachments.id, mediaAttachments));
-        }
+        await newNote.recalculateDatabaseAttachments(
+            data.mediaAttachments ?? [],
+        );
 
         // Send notifications for mentioned local users
-        for (const mention of mentions ?? []) {
+        for (const mention of parsedMentions ?? []) {
             if (mention.isLocal()) {
                 await db.insert(Notifications).values({
-                    accountId: author.id,
+                    accountId: data.author.id,
                     notifiedId: mention.id,
                     type: "mention",
                     noteId: newNote.id,
@@ -340,61 +330,101 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             }
         }
 
-        return await Note.fromId(newNote.id, newNote.data.authorId);
+        await newNote.reload();
+
+        return newNote;
     }
 
-    async updateFromData(
-        content?: typeof EntityValidator.$ContentFormat,
-        visibility?: apiStatus["visibility"],
-        isSensitive?: boolean,
-        spoilerText?: string,
-        emojis: EmojiWithInstance[] = [],
-        mentions: User[] = [],
+    async updateFromData(data: {
+        author?: User;
+        content?: typeof EntityValidator.$ContentFormat;
+        visibility?: apiStatus["visibility"];
+        isSensitive?: boolean;
+        spoilerText?: string;
+        emojis?: EmojiWithInstance[];
+        uri?: string;
+        mentions?: User[];
         /** List of IDs of database Attachment objects */
-        mediaAttachments: string[] = [],
-        replyId?: string,
-        quoteId?: string,
-        application?: Application,
-    ) {
-        const htmlContent = content
-            ? await contentToHtml(content, mentions)
+        mediaAttachments?: string[];
+        replyId?: string;
+        quoteId?: string;
+        application?: Application;
+    }): Promise<Note> {
+        const plaintextContent = data.content
+            ? data.content["text/plain"]?.content ??
+              Object.entries(data.content)[0][1].content
             : undefined;
 
-        // Parse emojis and fuse with existing emojis
-        let foundEmojis = emojis;
+        const parsedMentions = [
+            ...(data.mentions ?? []),
+            ...(plaintextContent
+                ? await parseTextMentions(plaintextContent)
+                : []),
+            // Deduplicate by .id
+        ].filter(
+            (mention, index, self) =>
+                index === self.findIndex((t) => t.id === mention.id),
+        );
 
-        if (this.author.isLocal() && htmlContent) {
-            const parsedEmojis = await parseEmojis(htmlContent);
-            // Fuse and deduplicate
-            foundEmojis = [...emojis, ...parsedEmojis].filter(
-                (emoji, index, self) =>
-                    index === self.findIndex((t) => t.id === emoji.id),
-            );
-        }
+        const parsedEmojis = [
+            ...(data.emojis ?? []),
+            ...(plaintextContent ? await parseEmojis(plaintextContent) : []),
+            // Deduplicate by .id
+        ].filter(
+            (emoji, index, self) =>
+                index === self.findIndex((t) => t.id === emoji.id),
+        );
 
-        const newNote = await this.update({
+        const htmlContent = data.content
+            ? await contentToHtml(data.content, parsedMentions)
+            : undefined;
+
+        await this.update({
             content: htmlContent,
-            contentSource: content
-                ? content["text/plain"]?.content ||
-                  content["text/markdown"]?.content ||
-                  Object.entries(content)[0][1].content ||
+            contentSource: data.content
+                ? data.content["text/plain"]?.content ||
+                  data.content["text/markdown"]?.content ||
+                  Object.entries(data.content)[0][1].content ||
                   ""
                 : undefined,
             contentType: "text/html",
-            visibility,
-            sensitive: isSensitive,
-            spoilerText: spoilerText,
-            replyId,
-            quotingId: quoteId,
-            applicationId: application?.id,
+            visibility: data.visibility,
+            sensitive: data.isSensitive,
+            spoilerText: data.spoilerText,
+            replyId: data.replyId,
+            quotingId: data.quoteId,
+            applicationId: data.application?.id,
         });
+
+        // Connect emojis
+        await this.recalculateDatabaseEmojis(parsedEmojis);
+
+        // Connect mentions
+        await this.recalculateDatabaseMentions(parsedMentions);
+
+        // Set attachment parents
+        await this.recalculateDatabaseAttachments(data.mediaAttachments ?? []);
+
+        await this.reload();
+
+        return this;
+    }
+
+    public async recalculateDatabaseEmojis(
+        emojis: EmojiWithInstance[],
+    ): Promise<void> {
+        // Fuse and deduplicate
+        const fusedEmojis = emojis.filter(
+            (emoji, index, self) =>
+                index === self.findIndex((t) => t.id === emoji.id),
+        );
 
         // Connect emojis
         await db
             .delete(EmojiToNote)
             .where(eq(EmojiToNote.noteId, this.data.id));
 
-        for (const emoji of foundEmojis) {
+        for (const emoji of fusedEmojis) {
             await db
                 .insert(EmojiToNote)
                 .values({
@@ -403,13 +433,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 })
                 .execute();
         }
+    }
 
+    public async recalculateDatabaseMentions(mentions: User[]): Promise<void> {
         // Connect mentions
         await db
             .delete(NoteToMentions)
             .where(eq(NoteToMentions.noteId, this.data.id));
 
-        for (const mention of mentions ?? []) {
+        for (const mention of mentions) {
             await db
                 .insert(NoteToMentions)
                 .values({
@@ -418,27 +450,27 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 })
                 .execute();
         }
+    }
 
+    public async recalculateDatabaseAttachments(
+        mediaAttachments: string[],
+    ): Promise<void> {
         // Set attachment parents
-        if (mediaAttachments) {
+        await db
+            .update(Attachments)
+            .set({
+                noteId: null,
+            })
+            .where(eq(Attachments.noteId, this.data.id));
+
+        if (mediaAttachments.length > 0) {
             await db
                 .update(Attachments)
                 .set({
-                    noteId: null,
+                    noteId: this.data.id,
                 })
-                .where(eq(Attachments.noteId, this.data.id));
-
-            if (mediaAttachments.length > 0) {
-                await db
-                    .update(Attachments)
-                    .set({
-                        noteId: this.data.id,
-                    })
-                    .where(inArray(Attachments.id, mediaAttachments));
-            }
+                .where(inArray(Attachments.id, mediaAttachments));
         }
-
-        return await Note.fromId(newNote.id, newNote.authorId);
     }
 
     static async resolve(
@@ -476,10 +508,6 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             throw new Error("No URI or note provided");
         }
 
-        const foundStatus = await Note.fromSql(
-            eq(Notes.uri, uri ?? providedNote?.uri ?? ""),
-        );
-
         let note = providedNote || null;
 
         if (uri) {
@@ -494,25 +522,42 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 },
             });
 
-            note = (await response.json()) as typeof EntityValidator.$Note;
+            note = await new EntityValidator().Note(await response.json());
         }
 
         if (!note) {
             throw new Error("No note was able to be fetched");
         }
 
-        if (note.type !== "Note") {
-            throw new Error("Invalid object type");
-        }
-
-        if (!note.author) {
-            throw new Error("Invalid object author");
-        }
-
         const author = await User.resolve(note.author);
 
         if (!author) {
             throw new Error("Invalid object author");
+        }
+
+        return await Note.fromLysand(note, author);
+    }
+
+    static async fromLysand(
+        note: typeof EntityValidator.$Note,
+        author: User,
+    ): Promise<Note> {
+        const emojis = [];
+
+        for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
+            ?.emojis ?? []) {
+            const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
+                dualLogger.logError(
+                    LogLevel.Error,
+                    "Federation.StatusResolver",
+                    e,
+                );
+                return null;
+            });
+
+            if (resolvedEmoji) {
+                emojis.push(resolvedEmoji);
+            }
         }
 
         const attachments = [];
@@ -534,85 +579,45 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             }
         }
 
-        const emojis = [];
-
-        for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
-            ?.emojis ?? []) {
-            const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
-                dualLogger.logError(
-                    LogLevel.Error,
-                    "Federation.StatusResolver",
-                    e,
-                );
-                return null;
-            });
-
-            if (resolvedEmoji) {
-                emojis.push(resolvedEmoji);
-            }
-        }
-
-        if (foundStatus) {
-            return await foundStatus.updateFromData(
-                note.content ?? {
-                    "text/plain": {
-                        content: "",
-                    },
-                },
-                note.visibility as apiStatus["visibility"],
-                note.is_sensitive ?? false,
-                note.subject ?? "",
-                emojis,
-                note.mentions
-                    ? await Promise.all(
-                          (note.mentions ?? [])
-                              .map((mention) => User.resolve(mention))
-                              .filter(
-                                  (mention) => mention !== null,
-                              ) as Promise<User>[],
-                      )
-                    : [],
-                attachments.map((a) => a.id),
-                note.replies_to
-                    ? (await Note.resolve(note.replies_to))?.data.id
-                    : undefined,
-                note.quotes
-                    ? (await Note.resolve(note.quotes))?.data.id
-                    : undefined,
-            );
-        }
-
-        const createdNote = await Note.fromData(
+        const newData = {
             author,
-            note.content ?? {
+            content: note.content ?? {
                 "text/plain": {
                     content: "",
                 },
             },
-            note.visibility as apiStatus["visibility"],
-            note.is_sensitive ?? false,
-            note.subject ?? "",
+            visibility: note.visibility as apiStatus["visibility"],
+            isSensitive: note.is_sensitive ?? false,
+            spoilerText: note.subject ?? "",
             emojis,
-            note.uri,
-            await Promise.all(
+            uri: note.uri,
+            mentions: await Promise.all(
                 (note.mentions ?? [])
                     .map((mention) => User.resolve(mention))
                     .filter((mention) => mention !== null) as Promise<User>[],
             ),
-            attachments.map((a) => a.id),
-            note.replies_to
+            mediaAttachments: attachments.map((a) => a.id),
+            replyId: note.replies_to
                 ? (await Note.resolve(note.replies_to))?.data.id
                 : undefined,
-            note.quotes
+            quoteId: note.quotes
                 ? (await Note.resolve(note.quotes))?.data.id
                 : undefined,
-        );
+        };
 
-        if (!createdNote) {
-            throw new Error("Failed to create status");
+        // Check if new note already exists
+
+        const foundNote = await Note.fromSql(eq(Notes.uri, note.uri));
+
+        // If it exists, simply update it
+        if (foundNote) {
+            await foundNote.updateFromData(newData);
+
+            return foundNote;
         }
 
-        return createdNote;
+        // Else, create a new note
+        return await Note.fromData(newData);
     }
 
     async delete(ids: string[]): Promise<void>;
