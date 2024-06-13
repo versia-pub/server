@@ -69,7 +69,7 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             this.exit(1);
         }
 
-        let password = null;
+        let password: string | null = null;
 
         if (flags["set-password"]) {
             const password1 = await input({

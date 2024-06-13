@@ -25,7 +25,7 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
     const objects = (await model(args, userId)) as T[];
 
     // Constuct HTTP Link header (next and prev) only if there are more statuses
-    const linkHeader = [];
+    const linkHeader: string[] = [];
     const urlWithoutQuery = new URL(
         new URL(req.url).pathname,
         config.http.base_url,

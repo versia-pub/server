@@ -48,6 +48,16 @@
                         ]
                     }
                 }
+            },
+            "nursery": {
+                "noDuplicateElseIf": "warn",
+                "noDuplicateJsonKeys": "warn",
+                "noEvolvingTypes": "warn",
+                "noYodaExpression": "warn",
+                "useConsistentBuiltinInstantiation": "warn",
+                "useErrorMessage": "warn",
+                "useImportExtensions": "off",
+                "useThrowNewError": "warn"
             }
         },
         "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]

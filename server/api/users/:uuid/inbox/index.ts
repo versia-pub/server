@@ -204,9 +204,9 @@ export default (app: Hono) =>
                             return errorResponse("Author not found", 404);
                         }
 
-                        const newStatus = await Note.resolve(
-                            undefined,
+                        const newStatus = await Note.fromLysand(
                             note,
+                            account,
                         ).catch((e) => {
                             dualLogger.logError(
                                 LogLevel.Error,

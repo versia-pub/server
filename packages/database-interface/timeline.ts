@@ -66,7 +66,7 @@ export class Timeline<Type extends Note | User> {
         url: string,
         limit: number,
     ): Promise<string> {
-        const linkHeader = [];
+        const linkHeader: string[] = [];
         const urlWithoutQuery = new URL(
             new URL(url).pathname,
             config.http.base_url,
@@ -103,7 +103,7 @@ export class Timeline<Type extends Note | User> {
         urlWithoutQuery: string,
         limit: number,
     ): Promise<string[]> {
-        const linkHeader = [];
+        const linkHeader: string[] = [];
 
         const objectBefore = await Note.fromSql(gt(Notes.id, notes[0].data.id));
         if (objectBefore) {
@@ -131,7 +131,7 @@ export class Timeline<Type extends Note | User> {
         urlWithoutQuery: string,
         limit: number,
     ): Promise<string[]> {
-        const linkHeader = [];
+        const linkHeader: string[] = [];
 
         const objectBefore = await User.fromSql(gt(Users.id, users[0].id));
         if (objectBefore) {

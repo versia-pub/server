@@ -40,7 +40,7 @@ import {
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import type { Attachment as apiAttachment } from "~/types/mastodon/attachment";
-import type { Status as apiStatus } from "~/types/mastodon/status";
+import type { Status as APIStatus } from "~/types/mastodon/status";
 import { Attachment } from "./attachment";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
@@ -64,6 +64,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         this.data = reloaded.data;
     }
 
+    /**
+     * Insert a new note into the database
+     * @param data - The data to insert
+     * @param userRequestingNoteId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns The inserted note
+     */
     public static async insert(
         data: InferInsertModel<typeof Notes>,
         userRequestingNoteId?: string,
@@ -79,6 +85,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return note;
     }
 
+    /**
+     * Fetch a note from the database by its ID
+     * @param id - The ID of the note to fetch
+     * @param userRequestingNoteId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns The fetched note
+     */
     static async fromId(
         id: string | null,
         userRequestingNoteId?: string,
@@ -93,7 +105,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             userRequestingNoteId,
         );
     }
-
+    /**
+     * Fetch multiple notes from the database by their IDs
+     * @param ids - The IDs of the notes to fetch
+     * @param userRequestingNoteId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns The fetched notes
+     */
     static async fromIds(
         ids: string[],
         userRequestingNoteId?: string,
@@ -107,11 +124,18 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         );
     }
 
+    /**
+     * Fetch a note from the database by a SQL query
+     * @param sql - The SQL query to fetch the note with
+     * @param orderBy - The SQL query to order the results by
+     * @param userId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns The fetched note
+     */
     static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Notes.id),
         userId?: string,
-    ) {
+    ): Promise<Note | null> {
         const found = await findManyNotes(
             {
                 where: sql,
@@ -127,13 +151,22 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return new Note(found[0]);
     }
 
+    /**
+     * Fetch multiple notes from the database by a SQL query
+     * @param sql - The SQL query to fetch the notes with
+     * @param orderBy - The SQL query to order the results by
+     * @param limit - The maximum number of notes to fetch
+     * @param offset - The number of notes to skip
+     * @param userId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns - The fetched notes
+     */
     static async manyFromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Notes.id),
         limit?: number,
         offset?: number,
         userId?: string,
-    ) {
+    ): Promise<Note[]> {
         const found = await findManyNotes(
             {
                 where: sql,
@@ -151,7 +184,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this.data.id;
     }
 
-    async getUsersToFederateTo() {
+    /**
+     * Fetch the users that should be federated to for this note
+     *
+     * This includes:
+     * - Users mentioned in the note
+     * - Users that can see the note
+     * @returns The users that should be federated to
+     */
+    async getUsersToFederateTo(): Promise<User[]> {
         // Mentioned users
         const mentionedUsers =
             this.data.mentions.length > 0
@@ -194,15 +235,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return deduplicatedUsersById;
     }
 
-    isNull() {
-        return this.data === null;
-    }
-
     get author() {
         return new User(this.data.author);
     }
 
-    static async getCount() {
+    /**
+     * Get the number of notes in the database (excluding remote notes)
+     * @returns The number of notes in the database
+     */
+    static async getCount(): Promise<number> {
         return (
             await db
                 .select({
@@ -215,7 +256,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         )[0].count;
     }
 
-    async getReplyChildren(userId?: string) {
+    /**
+     * Get the children of this note (replies)
+     * @param userId - The ID of the user requesting the note (used to check visibility of the note)
+     * @returns The children of this note
+     */
+    private async getReplyChildren(userId?: string): Promise<Note[]> {
         return await Note.manyFromSql(
             eq(Notes.replyId, this.data.id),
             undefined,
@@ -229,7 +275,11 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this.author.isRemote();
     }
 
-    async updateFromRemote() {
+    /**
+     * Update a note from remote federated servers
+     * @returns The updated note
+     */
+    async updateFromRemote(): Promise<Note> {
         if (!this.isRemote()) {
             throw new Error("Cannot refetch a local note (it is not remote)");
         }
@@ -245,10 +295,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this;
     }
 
+    /**
+     * Create a new note from user input
+     * @param data - The data to create the note from
+     * @returns The created note
+     */
     static async fromData(data: {
         author: User;
         content: typeof EntityValidator.$ContentFormat;
-        visibility: apiStatus["visibility"];
+        visibility: APIStatus["visibility"];
         isSensitive: boolean;
         spoilerText: string;
         emojis?: Emoji[];
@@ -330,10 +385,15 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return newNote;
     }
 
+    /**
+     * Update a note from user input
+     * @param data - The data to update the note from
+     * @returns The updated note
+     */
     async updateFromData(data: {
         author?: User;
         content?: typeof EntityValidator.$ContentFormat;
-        visibility?: apiStatus["visibility"];
+        visibility?: APIStatus["visibility"];
         isSensitive?: boolean;
         spoilerText?: string;
         emojis?: Emoji[];
@@ -405,6 +465,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this;
     }
 
+    /**
+     * Updates the emojis associated with this note in the database
+     *
+     * Deletes all existing emojis associated with this note, then replaces them with the provided emojis.
+     * @param emojis - The emojis to associate with this note
+     */
     public async recalculateDatabaseEmojis(emojis: Emoji[]): Promise<void> {
         // Fuse and deduplicate
         const fusedEmojis = emojis.filter(
@@ -428,6 +494,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
     }
 
+    /**
+     * Updates the mentions associated with this note in the database
+     *
+     * Deletes all existing mentions associated with this note, then replaces them with the provided mentions.
+     * @param mentions - The mentions to associate with this note
+     */
     public async recalculateDatabaseMentions(mentions: User[]): Promise<void> {
         // Connect mentions
         await db
@@ -445,6 +517,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
     }
 
+    /**
+     * Updates the attachments associated with this note in the database
+     *
+     * Deletes all existing attachments associated with this note, then replaces them with the provided attachments.
+     * @param mediaAttachments - The IDs of the attachments to associate with this note
+     */
     public async recalculateDatabaseAttachments(
         mediaAttachments: string[],
     ): Promise<void> {
@@ -466,19 +544,21 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
     }
 
-    static async resolve(
-        uri?: string,
-        providedNote?: typeof EntityValidator.$Note,
-    ): Promise<Note | null> {
+    /**
+     * Resolve a note from a URI
+     * @param uri - The URI of the note to resolve
+     * @returns The resolved note
+     */
+    static async resolve(uri: string): Promise<Note | null> {
         // Check if note not already in database
-        const foundNote = uri && (await Note.fromSql(eq(Notes.uri, uri)));
+        const foundNote = await Note.fromSql(eq(Notes.uri, uri));
 
         if (foundNote) {
             return foundNote;
         }
 
         // Check if URI is of a local note
-        if (uri?.startsWith(config.http.base_url)) {
+        if (uri.startsWith(config.http.base_url)) {
             const uuid = uri.match(idValidator);
 
             if (!uuid?.[0]) {
@@ -490,18 +570,16 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             return await Note.fromId(uuid[0]);
         }
 
-        return await Note.saveFromRemote(uri, providedNote);
+        return await Note.saveFromRemote(uri);
     }
 
-    static async saveFromRemote(
-        uri?: string,
-        providedNote?: typeof EntityValidator.$Note,
-    ): Promise<Note | null> {
-        if (!(uri || providedNote)) {
-            throw new Error("No URI or note provided");
-        }
-
-        let note = providedNote || null;
+    /**
+     * Save a note from a remote server
+     * @param uri - The URI of the note to save
+     * @returns The saved note, or null if the note could not be fetched
+     */
+    static async saveFromRemote(uri: string): Promise<Note | null> {
+        let note: typeof EntityValidator.$Note | null = null;
 
         if (uri) {
             if (!URL.canParse(uri)) {
@@ -531,11 +609,17 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return await Note.fromLysand(note, author);
     }
 
+    /**
+     * Turns a Lysand Note into a database note (saved)
+     * @param note Lysand Note
+     * @param author Author of the note
+     * @returns The saved note
+     */
     static async fromLysand(
         note: typeof EntityValidator.$Note,
         author: User,
     ): Promise<Note> {
-        const emojis = [];
+        const emojis: Emoji[] = [];
 
         for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
             ?.emojis ?? []) {
@@ -555,7 +639,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             }
         }
 
-        const attachments = [];
+        const attachments: Attachment[] = [];
 
         for (const attachment of note.attachments ?? []) {
             const resolvedAttachment = await Attachment.fromLysand(
@@ -581,7 +665,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                     content: "",
                 },
             },
-            visibility: note.visibility as apiStatus["visibility"],
+            visibility: note.visibility as APIStatus["visibility"],
             isSensitive: note.is_sensitive ?? false,
             spoilerText: note.subject ?? "",
             emojis,
@@ -644,7 +728,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @param user The user to check.
      * @returns Whether this status is viewable by the user.
      */
-    async isViewableByUser(user: User | null) {
+    async isViewableByUser(user: User | null): Promise<boolean> {
         if (this.author.id === user?.id) {
             return true;
         }
@@ -656,22 +740,28 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         }
         if (this.data.visibility === "private") {
             return user
-                ? await db.query.Relationships.findFirst({
+                ? !!(await db.query.Relationships.findFirst({
                       where: (relationship, { and, eq }) =>
                           and(
                               eq(relationship.ownerId, user?.id),
                               eq(relationship.subjectId, Notes.authorId),
                               eq(relationship.following, true),
                           ),
-                  })
+                  }))
                 : false;
         }
         return (
-            user && this.data.mentions.find((mention) => mention.id === user.id)
+            !!user &&
+            !!this.data.mentions.find((mention) => mention.id === user.id)
         );
     }
 
-    async toApi(userFetching?: User | null): Promise<apiStatus> {
+    /**
+     * Convert a note to the Mastodon API format
+     * @param userFetching - The user fetching the note (used to check if the note is favourite and such)
+     * @returns The note in the Mastodon API format
+     */
+    async toApi(userFetching?: User | null): Promise<APIStatus> {
         const data = this.data;
 
         // Convert mentions of local users from @username@host to @username
@@ -749,7 +839,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             spoiler_text: data.spoilerText,
             tags: [],
             uri: data.uri || this.getUri(),
-            visibility: data.visibility as apiStatus["visibility"],
+            visibility: data.visibility as APIStatus["visibility"],
             url: data.uri || this.getMastoUri(),
             bookmarked: false,
             // @ts-expect-error Glitch-SOC extension
@@ -762,24 +852,32 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         };
     }
 
-    getUri() {
+    getUri(): string {
         return localObjectUri(this.data.id);
     }
 
-    static getUri(id?: string | null) {
+    static getUri(id?: string | null): string | null {
         if (!id) {
             return null;
         }
         return localObjectUri(id);
     }
 
-    getMastoUri() {
+    /**
+     * Get the frontend URI of this note
+     * @returns The frontend URI of this note
+     */
+    getMastoUri(): string {
         return new URL(
             `/@${this.author.data.username}/${this.id}`,
             config.http.base_url,
         ).toString();
     }
 
+    /**
+     * Convert a note to the Lysand format
+     * @returns The note in the Lysand format
+     */
     toLysand(): typeof EntityValidator.$Note {
         const status = this.data;
         return {
@@ -822,8 +920,11 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
     /**
      * Return all the ancestors of this post,
+     * i.e. all the posts that this post is a reply to
+     * @param fetcher - The user fetching the ancestors
+     * @returns The ancestors of this post
      */
-    async getAncestors(fetcher: User | null) {
+    async getAncestors(fetcher: User | null): Promise<Note[]> {
         const ancestors: Note[] = [];
 
         let currentStatus: Note = this;
@@ -854,8 +955,11 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     /**
      * Return all the descendants of this post (recursive)
      * Temporary implementation, will be replaced with a recursive SQL query when I get to it
+     * @param fetcher - The user fetching the descendants
+     * @param depth - The depth of the recursion (internal)
+     * @returns The descendants of this post
      */
-    async getDescendants(fetcher: User | null, depth = 0) {
+    async getDescendants(fetcher: User | null, depth = 0): Promise<Note[]> {
         const descendants: Note[] = [];
         for (const child of await this.getReplyChildren(fetcher?.id)) {
             descendants.push(child);

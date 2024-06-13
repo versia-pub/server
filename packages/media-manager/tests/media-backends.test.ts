@@ -7,7 +7,7 @@ import {
     MediaBackendType,
     MediaHasher,
     S3MediaBackend,
-} from "..";
+} from "../index";
 import { MediaConverter } from "../media-converter";
 
 type DeepPartial<T> = {
