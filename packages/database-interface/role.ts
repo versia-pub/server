@@ -26,10 +26,6 @@ export class Role extends BaseInterface<typeof Roles> {
         this.data = reloaded.data;
     }
 
-    public static fromRole(role: InferSelectModel<typeof Roles>) {
-        return new Role(role);
-    }
-
     public static async fromId(id: string | null): Promise<Role | null> {
         if (!id) return null;
 

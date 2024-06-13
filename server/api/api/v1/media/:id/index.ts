@@ -2,15 +2,14 @@ import { applyConfig, auth, handleZodError, idValidator } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
-import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import type { MediaBackend } from "media-manager";
 import { MediaBackendType } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
-import { attachmentToAPI, getUrl } from "~/database/entities/Attachment";
-import { db } from "~/drizzle/db";
-import { Attachments, RolePermissions } from "~/drizzle/schema";
+import { getUrl } from "~/database/entities/Attachment";
+import { RolePermissions } from "~/drizzle/schema";
+import { Attachment } from "~/packages/database-interface/attachment";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],
@@ -56,18 +55,16 @@ export default (app: Hono) =>
                 return errorResponse("Invalid ID, must be of type UUIDv7", 404);
             }
 
-            const foundAttachment = await db.query.Attachments.findFirst({
-                where: (attachment, { eq }) => eq(attachment.id, id),
-            });
+            const attachment = await Attachment.fromId(id);
 
-            if (!foundAttachment) {
+            if (!attachment) {
                 return errorResponse("Media not found", 404);
             }
 
             switch (context.req.method) {
                 case "GET": {
-                    if (foundAttachment.url) {
-                        return jsonResponse(attachmentToAPI(foundAttachment));
+                    if (attachment.data.url) {
+                        return jsonResponse(attachment.toAPI());
                     }
                     return response(null, 206);
                 }
@@ -75,7 +72,7 @@ export default (app: Hono) =>
                     const { description, thumbnail } =
                         context.req.valid("form");
 
-                    let thumbnailUrl = foundAttachment.thumbnailUrl;
+                    let thumbnailUrl = attachment.data.thumbnailUrl;
 
                     let mediaManager: MediaBackend;
 
@@ -97,27 +94,21 @@ export default (app: Hono) =>
                     }
 
                     const descriptionText =
-                        description || foundAttachment.description;
+                        description || attachment.data.description;
 
                     if (
-                        descriptionText !== foundAttachment.description ||
-                        thumbnailUrl !== foundAttachment.thumbnailUrl
+                        descriptionText !== attachment.data.description ||
+                        thumbnailUrl !== attachment.data.thumbnailUrl
                     ) {
-                        const newAttachment = (
-                            await db
-                                .update(Attachments)
-                                .set({
-                                    description: descriptionText,
-                                    thumbnailUrl,
-                                })
-                                .where(eq(Attachments.id, id))
-                                .returning()
-                        )[0];
+                        await attachment.update({
+                            description: descriptionText,
+                            thumbnailUrl,
+                        });
 
-                        return jsonResponse(attachmentToAPI(newAttachment));
+                        return jsonResponse(attachment.toAPI());
                     }
 
-                    return jsonResponse(attachmentToAPI(foundAttachment));
+                    return jsonResponse(attachment.toAPI());
                 }
             }
 

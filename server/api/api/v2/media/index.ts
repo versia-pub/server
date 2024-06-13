@@ -9,9 +9,9 @@ import { MediaBackendType } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
-import { attachmentToAPI, getUrl } from "~/database/entities/Attachment";
-import { db } from "~/drizzle/db";
-import { Attachments, RolePermissions } from "~/drizzle/schema";
+import { getUrl } from "~/database/entities/Attachment";
+import { RolePermissions } from "~/drizzle/schema";
+import { Attachment } from "~/packages/database-interface/attachment";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -127,34 +127,27 @@ export default (app: Hono) =>
                 thumbnailUrl = getUrl(path, config);
             }
 
-            const newAttachment = (
-                await db
-                    .insert(Attachments)
-                    .values({
-                        url,
-                        thumbnailUrl,
-                        sha256: sha256
-                            .update(await file.arrayBuffer())
-                            .digest("hex"),
-                        mimeType: file.type,
-                        description: description ?? "",
-                        size: file.size,
-                        blurhash: blurhash ?? undefined,
-                        width: metadata?.width ?? undefined,
-                        height: metadata?.height ?? undefined,
-                    })
-                    .returning()
-            )[0];
+            const newAttachment = await Attachment.insert({
+                url,
+                thumbnailUrl,
+                sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
+                mimeType: file.type,
+                description: description ?? "",
+                size: file.size,
+                blurhash: blurhash ?? undefined,
+                width: metadata?.width ?? undefined,
+                height: metadata?.height ?? undefined,
+            });
 
             // TODO: Add job to process videos and other media
 
             if (isImage) {
-                return jsonResponse(attachmentToAPI(newAttachment));
+                return jsonResponse(newAttachment.toAPI());
             }
 
             return jsonResponse(
                 {
-                    ...attachmentToAPI(newAttachment),
+                    ...newAttachment.toAPI(),
                     url: null,
                 },
                 202,

@@ -597,9 +597,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             discoverable: undefined,
             mute_expires_at: undefined,
             roles: user.roles
-                .map((role) => Role.fromRole(role))
+                .map((role) => new Role(role))
                 .concat(
-                    Role.fromRole({
+                    new Role({
                         id: "default",
                         name: "Default",
                         permissions: config.permissions.default,
@@ -612,7 +612,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 .concat(
                     user.isAdmin
                         ? [
-                              Role.fromRole({
+                              new Role({
                                   id: "admin",
                                   name: "Admin",
                                   permissions: config.permissions.admin,

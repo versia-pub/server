@@ -22,11 +22,6 @@ import {
     applicationToAPI,
 } from "~/database/entities/Application";
 import {
-    attachmentFromLysand,
-    attachmentToAPI,
-    attachmentToLysand,
-} from "~/database/entities/Attachment";
-import {
     type EmojiWithInstance,
     emojiToAPI,
     emojiToLysand,
@@ -51,6 +46,7 @@ import {
 import { config } from "~/packages/config-manager";
 import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 import type { Status as APIStatus } from "~/types/mastodon/status";
+import { Attachment } from "./attachment";
 import { BaseInterface } from "./base";
 import { User } from "./user";
 
@@ -515,7 +511,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         const attachments = [];
 
         for (const attachment of note.attachments ?? []) {
-            const resolvedAttachment = await attachmentFromLysand(
+            const resolvedAttachment = await Attachment.fromLysand(
                 attachment,
             ).catch((e) => {
                 dualLogger.logError(
@@ -711,7 +707,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
-                (a) => attachmentToAPI(a) as APIAttachment,
+                (a) => new Attachment(a).toAPI() as APIAttachment,
             ),
             mentions: data.mentions.map((mention) => ({
                 id: mention.id,
@@ -786,7 +782,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 },
             },
             attachments: (status.attachments ?? []).map((attachment) =>
-                attachmentToLysand(attachment),
+                new Attachment(attachment).toLysand(),
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) => mention.uri || ""),
