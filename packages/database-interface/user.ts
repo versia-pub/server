@@ -42,14 +42,23 @@ import {
 import { type Config, config } from "~/packages/config-manager";
 import type { Account as APIAccount } from "~/types/mastodon/account";
 import type { Mention as APIMention } from "~/types/mastodon/mention";
+import { BaseInterface } from "./base";
 import type { Note } from "./note";
 import { Role } from "./role";
 
 /**
  * Gives helpers to fetch users from database in a nice format
  */
-export class User {
-    constructor(private user: UserWithRelations) {}
+export class User extends BaseInterface<typeof Users, UserWithRelations> {
+    async reload(): Promise<void> {
+        const reloaded = await User.fromId(this.data.id);
+
+        if (!reloaded) {
+            throw new Error("Failed to reload user");
+        }
+
+        this.data = reloaded.data;
+    }
 
     static async fromId(id: string | null): Promise<User | null> {
         if (!id) return null;
@@ -93,15 +102,11 @@ export class User {
     }
 
     get id() {
-        return this.user.id;
-    }
-
-    getUser() {
-        return this.user;
+        return this.data.id;
     }
 
     isLocal() {
-        return this.user.instanceId === null;
+        return this.data.instanceId === null;
     }
 
     isRemote() {
@@ -110,8 +115,8 @@ export class User {
 
     getUri() {
         return (
-            this.user.uri ||
-            new URL(`/users/${this.user.id}`, config.http.base_url).toString()
+            this.data.uri ||
+            new URL(`/users/${this.data.id}`, config.http.base_url).toString()
         );
     }
 
@@ -125,12 +130,12 @@ export class User {
 
     public getAllPermissions() {
         return (
-            this.user.roles
+            this.data.roles
                 .flatMap((role) => role.permissions)
                 // Add default permissions
                 .concat(config.permissions.default)
                 // If admin, add admin permissions
-                .concat(this.user.isAdmin ? config.permissions.admin : [])
+                .concat(this.data.isAdmin ? config.permissions.admin : [])
                 .reduce((acc, permission) => {
                     if (!acc.includes(permission)) acc.push(permission);
                     return acc;
@@ -169,10 +174,14 @@ export class User {
         )[0].count;
     }
 
-    async delete() {
-        return (
-            await db.delete(Users).where(eq(Users.id, this.id)).returning()
-        )[0];
+    async delete(ids: string[]): Promise<void>;
+    async delete(): Promise<void>;
+    async delete(ids?: unknown): Promise<void> {
+        if (Array.isArray(ids)) {
+            await db.delete(Users).where(inArray(Users.id, ids));
+        } else {
+            await db.delete(Users).where(eq(Users.id, this.id));
+        }
     }
 
     async resetPassword() {
@@ -211,17 +220,8 @@ export class User {
         )[0];
     }
 
-    async save() {
-        return (
-            await db
-                .update(Users)
-                .set({
-                    ...this.user,
-                    updatedAt: new Date().toISOString(),
-                })
-                .where(eq(Users.id, this.id))
-                .returning()
-        )[0];
+    async save(): Promise<UserWithRelations> {
+        return this.update(this.data);
     }
 
     async updateFromRemote() {
@@ -237,7 +237,7 @@ export class User {
             throw new Error("User not found after update");
         }
 
-        this.user = updated.getUser();
+        this.data = updated.data;
 
         return this;
     }
@@ -405,12 +405,12 @@ export class User {
      * @returns The raw URL for the user's avatar
      */
     getAvatarUrl(config: Config) {
-        if (!this.user.avatar)
+        if (!this.data.avatar)
             return (
                 config.defaults.avatar ||
-                `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.user.username}`
+                `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`
             );
-        return this.user.avatar;
+        return this.data.avatar;
     }
 
     static async generateKeys() {
@@ -494,57 +494,50 @@ export class User {
      * @returns The raw URL for the user's header
      */
     getHeaderUrl(config: Config) {
-        if (!this.user.header) return config.defaults.header || "";
-        return this.user.header;
+        if (!this.data.header) return config.defaults.header || "";
+        return this.data.header;
     }
 
     getAcct() {
         return this.isLocal()
-            ? this.user.username
-            : `${this.user.username}@${this.user.instance?.baseUrl}`;
+            ? this.data.username
+            : `${this.data.username}@${this.data.instance?.baseUrl}`;
     }
 
     static getAcct(isLocal: boolean, username: string, baseUrl?: string) {
         return isLocal ? username : `${username}@${baseUrl}`;
     }
 
-    async update(data: Partial<typeof Users.$inferSelect>) {
-        const updated = (
-            await db
-                .update(Users)
-                .set({
-                    ...data,
-                    updatedAt: new Date().toISOString(),
-                })
-                .where(eq(Users.id, this.id))
-                .returning()
-        )[0];
+    async update(
+        newUser: Partial<UserWithRelations>,
+    ): Promise<UserWithRelations> {
+        await db.update(Users).set(newUser).where(eq(Users.id, this.id));
 
-        const newUser = await User.fromId(updated.id);
+        const updated = await User.fromId(this.data.id);
 
-        if (!newUser) throw new Error("User not found after update");
-
-        this.user = newUser.getUser();
+        if (!updated) {
+            throw new Error("Failed to update user");
+        }
 
         // If something important is updated, federate it
         if (
-            data.username ||
-            data.displayName ||
-            data.note ||
-            data.avatar ||
-            data.header ||
-            data.fields ||
-            data.publicKey ||
-            data.isAdmin ||
-            data.isBot ||
-            data.isLocked ||
-            data.endpoints ||
-            data.isDiscoverable
+            newUser.username ||
+            newUser.displayName ||
+            newUser.note ||
+            newUser.avatar ||
+            newUser.header ||
+            newUser.fields ||
+            newUser.publicKey ||
+            newUser.isAdmin ||
+            newUser.isBot ||
+            newUser.isLocked ||
+            newUser.endpoints ||
+            newUser.isDiscoverable
         ) {
             await this.federateToFollowers(this.toLysand());
         }
 
-        return this;
+        return updated.data;
     }
 
     async federateToFollowers(object: typeof EntityValidator.$Entity) {
@@ -569,7 +562,7 @@ export class User {
     }
 
     toAPI(isOwnAccount = false): APIAccount {
-        const user = this.getUser();
+        const user = this.data;
         return {
             id: user.id,
             username: user.username,
@@ -642,7 +635,7 @@ export class User {
             throw new Error("Cannot convert remote user to Lysand format");
         }
 
-        const user = this.getUser();
+        const user = this.data;
 
         return {
             id: user.id,
@@ -709,7 +702,7 @@ export class User {
     toMention(): APIMention {
         return {
             url: this.getUri(),
-            username: this.getUser().username,
+            username: this.data.username,
             acct: this.getAcct(),
             id: this.id,
         };

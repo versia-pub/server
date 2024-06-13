@@ -50,7 +50,7 @@ export default class UserDelete extends UserFinderCommand<typeof UserDelete> {
         flags.print &&
             this.log(
                 formatArray(
-                    users.map((u) => u.getUser()),
+                    users.map((u) => u.data),
                     [
                         "id",
                         "username",

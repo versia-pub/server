@@ -51,8 +51,8 @@ export default (app: Hono) =>
             return jsonResponse({
                 id: status.id,
                 // TODO: Give real source for spoilerText
-                spoiler_text: status.getStatus().spoilerText,
-                text: status.getStatus().contentSource,
+                spoiler_text: status.data.spoilerText,
+                text: status.data.contentSource,
             } as APIStatusSource);
         },
     );

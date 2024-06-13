@@ -15,7 +15,7 @@ export const objectToInboxRequest = async (
     author: User,
     userToSendTo: User,
 ): Promise<Request> => {
-    if (userToSendTo.isLocal() || !userToSendTo.getUser().endpoints?.inbox) {
+    if (userToSendTo.isLocal() || !userToSendTo.data.endpoints?.inbox) {
         throw new Error("UserToSendTo has no inbox or is a local user");
     }
 
@@ -25,7 +25,7 @@ export const objectToInboxRequest = async (
 
     const privateKey = await crypto.subtle.importKey(
         "pkcs8",
-        Buffer.from(author.getUser().privateKey ?? "", "base64"),
+        Buffer.from(author.data.privateKey ?? "", "base64"),
         "Ed25519",
         false,
         ["sign"],
@@ -33,7 +33,7 @@ export const objectToInboxRequest = async (
 
     const ctor = new SignatureConstructor(privateKey, author.getUri());
 
-    const userInbox = new URL(userToSendTo.getUser().endpoints?.inbox ?? "");
+    const userInbox = new URL(userToSendTo.data.endpoints?.inbox ?? "");
 
     const request = new Request(userInbox, {
         method: "POST",
@@ -54,7 +54,7 @@ export const objectToInboxRequest = async (
         new LogManager(Bun.stdout).log(
             LogLevel.DEBUG,
             "Inbox.Signature",
-            `Sender public key: ${author.getUser().publicKey}`,
+            `Sender public key: ${author.data.publicKey}`,
         );
 
         // Log signed string

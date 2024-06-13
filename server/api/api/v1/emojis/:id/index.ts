@@ -98,7 +98,7 @@ export default (app: Hono) =>
             // Check if user is admin
             if (
                 !user.hasPermission(RolePermissions.MANAGE_EMOJIS) &&
-                emoji.ownerId !== user.getUser().id
+                emoji.ownerId !== user.data.id
             ) {
                 return jsonResponse(
                     {

@@ -35,7 +35,7 @@ describe(meta.route, () => {
     test("should login with normal password", async () => {
         const formData = new FormData();
 
-        formData.append("identifier", users[0]?.getUser().username ?? "");
+        formData.append("identifier", users[0]?.data.username ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
@@ -62,7 +62,7 @@ describe(meta.route, () => {
 
         const formData = new FormData();
 
-        formData.append("identifier", users[0]?.getUser().username ?? "");
+        formData.append("identifier", users[0]?.data.username ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
@@ -108,7 +108,7 @@ describe(meta.route, () => {
 
         const loginFormData = new FormData();
 
-        loginFormData.append("identifier", users[0]?.getUser().username ?? "");
+        loginFormData.append("identifier", users[0]?.data.username ?? "");
         loginFormData.append("password", newPassword);
 
         const loginResponse = await sendTestRequest(

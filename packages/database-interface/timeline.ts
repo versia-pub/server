@@ -74,23 +74,20 @@ export class Timeline {
             switch (this.type) {
                 case TimelineType.NOTE: {
                     const objectBefore = await Note.fromSql(
-                        gt(Notes.id, notes[0].getStatus().id),
+                        gt(Notes.id, notes[0].data.id),
                     );
 
                     if (objectBefore) {
                         linkHeader.push(
                             `<${urlWithoutQuery}?limit=${limit ?? 20}&min_id=${
-                                notes[0].getStatus().id
+                                notes[0].data.id
                             }>; rel="prev"`,
                         );
                     }
 
                     if (notes.length >= (limit ?? 20)) {
                         const objectAfter = await Note.fromSql(
-                            gt(
-                                Notes.id,
-                                notes[notes.length - 1].getStatus().id,
-                            ),
+                            gt(Notes.id, notes[notes.length - 1].data.id),
                         );
 
                         if (objectAfter) {
@@ -98,7 +95,7 @@ export class Timeline {
                                 `<${urlWithoutQuery}?limit=${
                                     limit ?? 20
                                 }&max_id=${
-                                    notes[notes.length - 1].getStatus().id
+                                    notes[notes.length - 1].data.id
                                 }>; rel="next"`,
                             );
                         }

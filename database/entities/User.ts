@@ -131,8 +131,8 @@ export const followRequestUser = async (
     await db
         .update(Relationships)
         .set({
-            following: isRemote ? false : !followee.getUser().isLocked,
-            requested: isRemote ? true : followee.getUser().isLocked,
+            following: isRemote ? false : !followee.data.isLocked,
+            requested: isRemote ? true : followee.data.isLocked,
             showingReblogs: reblogs,
             notifying: notify,
             languages: languages,
@@ -143,8 +143,8 @@ export const followRequestUser = async (
     await db
         .update(Relationships)
         .set({
-            requestedBy: isRemote ? true : followee.getUser().isLocked,
-            followedBy: isRemote ? false : followee.getUser().isLocked,
+            requestedBy: isRemote ? true : followee.data.isLocked,
+            followedBy: isRemote ? false : followee.data.isLocked,
         })
         .where(
             and(
@@ -209,7 +209,7 @@ export const followRequestUser = async (
     } else {
         await db.insert(Notifications).values({
             accountId: follower.id,
-            type: followee.getUser().isLocked ? "follow_request" : "follow",
+            type: followee.data.isLocked ? "follow_request" : "follow",
             notifiedId: followee.id,
         });
     }
@@ -522,7 +522,7 @@ export const followRequestToLysand = (
         throw new Error("Followee must be a remote user");
     }
 
-    if (!followee.getUser().uri) {
+    if (!followee.data.uri) {
         throw new Error("Followee must have a URI in database");
     }
 
@@ -550,7 +550,7 @@ export const followAcceptToLysand = (
         throw new Error("Followee must be a local user");
     }
 
-    if (!follower.getUser().uri) {
+    if (!follower.data.uri) {
         throw new Error("Follower must have a URI in database");
     }
 

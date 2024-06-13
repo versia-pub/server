@@ -11,9 +11,20 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { RoleToUsers, Roles } from "~/drizzle/schema";
+import { BaseInterface } from "./base";
 
-export class Role {
-    private constructor(private role: InferSelectModel<typeof Roles>) {}
+export type RoleType = InferSelectModel<typeof Roles>;
+
+export class Role extends BaseInterface<typeof Roles> {
+    async reload(): Promise<void> {
+        const reloaded = await Role.fromId(this.data.id);
+
+        if (!reloaded) {
+            throw new Error("Failed to reload role");
+        }
+
+        this.data = reloaded.data;
+    }
 
     public static fromRole(role: InferSelectModel<typeof Roles>) {
         return new Role(role);
@@ -104,26 +115,44 @@ export class Role {
         return found.map((s) => new Role(s));
     }
 
-    public async save(
-        role: Partial<InferSelectModel<typeof Roles>> = this.role,
-    ) {
-        return new Role(
-            (
-                await db
-                    .update(Roles)
-                    .set(role)
-                    .where(eq(Roles.id, this.id))
-                    .returning()
-            )[0],
-        );
+    async update(newRole: Partial<RoleType>): Promise<RoleType> {
+        await db.update(Roles).set(newRole).where(eq(Roles.id, this.id));
+
+        const updated = await Role.fromId(this.data.id);
+
+        if (!updated) {
+            throw new Error("Failed to update role");
+        }
+
+        return updated.data;
     }
 
-    public async delete() {
-        await db.delete(Roles).where(eq(Roles.id, this.id));
+    async save(): Promise<RoleType> {
+        return this.update(this.data);
     }
 
-    public static async new(role: InferInsertModel<typeof Roles>) {
-        return new Role((await db.insert(Roles).values(role).returning())[0]);
+    async delete(ids: string[]): Promise<void>;
+    async delete(): Promise<void>;
+    async delete(ids?: unknown): Promise<void> {
+        if (Array.isArray(ids)) {
+            await db.delete(Roles).where(inArray(Roles.id, ids));
+        } else {
+            await db.delete(Roles).where(eq(Roles.id, this.id));
+        }
+    }
+
+    public static async insert(
+        data: InferInsertModel<typeof Roles>,
+    ): Promise<Role> {
+        const inserted = (await db.insert(Roles).values(data).returning())[0];
+
+        const role = await Role.fromId(inserted.id);
+
+        if (!role) {
+            throw new Error("Failed to insert role");
+        }
+
+        return role;
     }
 
     public async linkUser(userId: string) {
@@ -145,22 +174,18 @@ export class Role {
     }
 
     get id() {
-        return this.role.id;
-    }
-
-    public getRole() {
-        return this.role;
+        return this.data.id;
     }
 
     public toAPI() {
         return {
             id: this.id,
-            name: this.role.name,
-            permissions: this.role.permissions,
-            priority: this.role.priority,
-            description: this.role.description,
-            visible: this.role.visible,
-            icon: proxyUrl(this.role.icon),
+            name: this.data.name,
+            permissions: this.data.permissions,
+            priority: this.data.priority,
+            description: this.data.description,
+            visible: this.data.visible,
+            icon: proxyUrl(this.data.icon),
         };
     }
 }

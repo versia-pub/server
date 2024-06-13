@@ -60,7 +60,7 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
             flags.print &&
             this.log(
                 formatArray(
-                    users.map((u) => u.getUser()),
+                    users.map((u) => u.data),
                     [
                         "id",
                         "username",
@@ -108,7 +108,7 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
                 flags.raw
                     ? link
                     : `\nPassword reset link for ${chalk.bold(
-                          `@${user.getUser().username}`,
+                          `@${user.data.username}`,
                       )}: ${chalk.underline(chalk.blue(link))}\n`,
             );
 

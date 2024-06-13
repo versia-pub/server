@@ -108,10 +108,7 @@ export default (app: Hono) =>
 
             if (
                 !user ||
-                !(await Bun.password.verify(
-                    password,
-                    user.getUser().password || "",
-                ))
+                !(await Bun.password.verify(password, user.data.password || ""))
             )
                 return returnError(
                     context.req.query(),
@@ -119,13 +116,13 @@ export default (app: Hono) =>
                     "Invalid identifier or password",
                 );
 
-            if (user.getUser().passwordResetToken) {
+            if (user.data.passwordResetToken) {
                 return response(null, 302, {
                     Location: new URL(
                         `${
                             config.frontend.routes.password_reset
                         }?${new URLSearchParams({
-                            token: user.getUser().passwordResetToken ?? "",
+                            token: user.data.passwordResetToken ?? "",
                             login_reset: "true",
                         }).toString()}`,
                         config.http.base_url,

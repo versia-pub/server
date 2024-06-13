@@ -72,7 +72,7 @@ export default class UserList extends BaseCommand<typeof UserList> {
 
         this.log(
             formatArray(
-                users.map((u) => u.getUser()),
+                users.map((u) => u.data),
                 keys,
                 flags.format as "json" | "csv" | undefined,
                 flags["pretty-dates"],

@@ -29,7 +29,7 @@ export default (app: Hono) =>
 
             const userRoles = await Role.getUserRoles(
                 user.id,
-                user.getUser().isAdmin,
+                user.data.isAdmin,
             );
 
             return jsonResponse(userRoles.map((r) => r.toAPI()));

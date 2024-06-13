@@ -33,7 +33,7 @@ describe(meta.route, () => {
     test("should get a JWT with email", async () => {
         const formData = new FormData();
 
-        formData.append("identifier", users[0]?.getUser().email ?? "");
+        formData.append("identifier", users[0]?.data.email ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
@@ -72,7 +72,7 @@ describe(meta.route, () => {
     test("should get a JWT with username", async () => {
         const formData = new FormData();
 
-        formData.append("identifier", users[0]?.getUser().username ?? "");
+        formData.append("identifier", users[0]?.data.username ?? "");
         formData.append("password", passwords[0]);
 
         const response = await sendTestRequest(
@@ -187,7 +187,7 @@ describe(meta.route, () => {
         test("invalid password", async () => {
             const formData = new FormData();
 
-            formData.append("identifier", users[0]?.getUser().email ?? "");
+            formData.append("identifier", users[0]?.data.email ?? "");
             formData.append("password", "password");
 
             const response = await sendTestRequest(

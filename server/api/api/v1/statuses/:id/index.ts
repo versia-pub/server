@@ -103,7 +103,7 @@ export default (app: Hono) =>
                 return jsonResponse(await foundStatus.toAPI(user));
             }
             if (context.req.method === "DELETE") {
-                if (foundStatus.getAuthor().id !== user?.id) {
+                if (foundStatus.author.id !== user?.id) {
                     return errorResponse("Unauthorized", 401);
                 }
 
@@ -112,7 +112,7 @@ export default (app: Hono) =>
                 await foundStatus.delete();
 
                 await user.federateToFollowers(
-                    undoFederationRequest(user, foundStatus.getURI()),
+                    undoFederationRequest(user, foundStatus.getUri()),
                 );
 
                 return jsonResponse(await foundStatus.toAPI(user), 200);

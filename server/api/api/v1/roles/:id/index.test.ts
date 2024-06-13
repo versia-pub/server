@@ -12,7 +12,7 @@ let higherPriorityRole: Role;
 
 beforeAll(async () => {
     // Create new role
-    role = await Role.new({
+    role = await Role.insert({
         name: "test",
         permissions: DEFAULT_ROLES,
         priority: 2,
@@ -27,7 +27,7 @@ beforeAll(async () => {
     await role.linkUser(users[0].id);
 
     // Create new role
-    roleNotLinked = await Role.new({
+    roleNotLinked = await Role.insert({
         name: "test2",
         permissions: ADMIN_ROLES,
         priority: 0,
@@ -39,7 +39,7 @@ beforeAll(async () => {
     expect(roleNotLinked).toBeDefined();
 
     // Create a role with higher priority than the user's role
-    higherPriorityRole = await Role.new({
+    higherPriorityRole = await Role.insert({
         name: "higherPriorityRole",
         permissions: DEFAULT_ROLES,
         priority: 3, // Higher priority than the user's role
@@ -149,7 +149,7 @@ describe(meta.route, () => {
     });
 
     test("should assign new role", async () => {
-        await role.save({
+        await role.update({
             permissions: [RolePermissions.MANAGE_ROLES],
         });
 
@@ -194,7 +194,7 @@ describe(meta.route, () => {
             icon: expect.any(String),
         });
 
-        await role.save({
+        await role.update({
             permissions: [],
         });
     });
@@ -243,7 +243,7 @@ describe(meta.route, () => {
 
     test("should return 403 if user tries to add role with higher priority", async () => {
         // Add MANAGE_ROLES permission to user
-        await role.save({
+        await role.update({
             permissions: [RolePermissions.MANAGE_ROLES],
         });
 
@@ -268,7 +268,7 @@ describe(meta.route, () => {
             error: "Cannot assign role 'higherPriorityRole' with priority 3 to user with highest role priority 0",
         });
 
-        await role.save({
+        await role.update({
             permissions: [],
         });
     });

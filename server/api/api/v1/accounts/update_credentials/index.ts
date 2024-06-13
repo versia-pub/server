@@ -118,7 +118,7 @@ export default (app: Hono) =>
 
             if (!user) return errorResponse("Unauthorized", 401);
 
-            const self = user.getUser();
+            const self = user.data;
 
             const sanitizedDisplayName = await sanitizedHtmlStrip(
                 display_name ?? "",

@@ -10,7 +10,7 @@ let role: Role;
 
 beforeAll(async () => {
     // Create new role
-    role = await Role.new({
+    role = await Role.insert({
         name: "test",
         permissions: ADMIN_ROLES,
         priority: 0,

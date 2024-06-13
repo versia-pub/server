@@ -53,7 +53,7 @@ export default class UserRefetch extends UserFinderCommand<typeof UserRefetch> {
         flags.print &&
             this.log(
                 formatArray(
-                    users.map((u) => u.getUser()),
+                    users.map((u) => u.data),
                     [
                         "id",
                         "username",
@@ -85,7 +85,7 @@ export default class UserRefetch extends UserFinderCommand<typeof UserRefetch> {
                 this.log(
                     chalk.bold(
                         `${chalk.red("✗")} Failed to refetch user ${
-                            user.getUser().username
+                            user.data.username
                         }`,
                     ),
                 );

@@ -47,7 +47,7 @@ export default (app: Hono) =>
 
             const userRoles = await Role.getUserRoles(
                 user.id,
-                user.getUser().isAdmin,
+                user.data.isAdmin,
             );
             const role = await Role.fromId(id);
 
@@ -62,22 +62,19 @@ export default (app: Hono) =>
 
                 case "POST": {
                     const userHighestRole = userRoles.reduce((prev, current) =>
-                        prev.getRole().priority > current.getRole().priority
+                        prev.data.priority > current.data.priority
                             ? prev
                             : current,
                     );
 
-                    if (
-                        role.getRole().priority >
-                        userHighestRole.getRole().priority
-                    ) {
+                    if (role.data.priority > userHighestRole.data.priority) {
                         return errorResponse(
                             `Cannot assign role '${
-                                role.getRole().name
+                                role.data.name
                             }' with priority ${
-                                role.getRole().priority
+                                role.data.priority
                             } to user with highest role priority ${
-                                userHighestRole.getRole().priority
+                                userHighestRole.data.priority
                             }`,
                             403,
                         );
@@ -89,22 +86,19 @@ export default (app: Hono) =>
                 }
                 case "DELETE": {
                     const userHighestRole = userRoles.reduce((prev, current) =>
-                        prev.getRole().priority > current.getRole().priority
+                        prev.data.priority > current.data.priority
                             ? prev
                             : current,
                     );
 
-                    if (
-                        role.getRole().priority >
-                        userHighestRole.getRole().priority
-                    ) {
+                    if (role.data.priority > userHighestRole.data.priority) {
                         return errorResponse(
                             `Cannot remove role '${
-                                role.getRole().name
+                                role.data.name
                             }' with priority ${
-                                role.getRole().priority
+                                role.data.priority
                             } from user with highest role priority ${
-                                userHighestRole.getRole().priority
+                                userHighestRole.data.priority
                             }`,
                             403,
                         );

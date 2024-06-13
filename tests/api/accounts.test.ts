@@ -79,7 +79,7 @@ describe("API Tests", () => {
 
             const account = (await response.json()) as APIAccount;
 
-            expect(account.username).toBe(user.getUser().username);
+            expect(account.username).toBe(user.data.username);
             expect(account.bot).toBe(false);
             expect(account.locked).toBe(false);
             expect(account.created_at).toBeDefined();
@@ -89,7 +89,7 @@ describe("API Tests", () => {
             expect(account.note).toBe("");
             expect(account.url).toBe(
                 new URL(
-                    `/@${user.getUser().username}`,
+                    `/@${user.data.username}`,
                     config.http.base_url,
                 ).toString(),
             );

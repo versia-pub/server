@@ -53,7 +53,7 @@ export default (app: Hono) =>
             const existingLike = await db.query.Likes.findFirst({
                 where: (like, { and, eq }) =>
                     and(
-                        eq(like.likedId, note.getStatus().id),
+                        eq(like.likedId, note.data.id),
                         eq(like.likerId, user.id),
                     ),
             });

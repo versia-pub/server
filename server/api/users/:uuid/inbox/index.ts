@@ -148,12 +148,12 @@ export default (app: Hono) =>
                     new LogManager(Bun.stdout).log(
                         LogLevel.DEBUG,
                         "Inbox.Signature",
-                        `Sender public key: ${sender.getUser().publicKey}`,
+                        `Sender public key: ${sender.data.publicKey}`,
                     );
                 }
 
                 const validator = await SignatureValidator.fromStringKey(
-                    sender.getUser().publicKey,
+                    sender.data.publicKey,
                 );
 
                 // If base_url uses https and request uses http, rewrite request to use https
@@ -238,8 +238,8 @@ export default (app: Hono) =>
                         await db
                             .update(Relationships)
                             .set({
-                                following: !user.getUser().isLocked,
-                                requested: user.getUser().isLocked,
+                                following: !user.data.isLocked,
+                                requested: user.data.isLocked,
                                 showingReblogs: true,
                                 notifying: true,
                                 languages: [],
@@ -250,7 +250,7 @@ export default (app: Hono) =>
                         await db
                             .update(Relationships)
                             .set({
-                                requestedBy: user.getUser().isLocked,
+                                requestedBy: user.data.isLocked,
                             })
                             .where(
                                 and(
@@ -261,13 +261,13 @@ export default (app: Hono) =>
 
                         await db.insert(Notifications).values({
                             accountId: account.id,
-                            type: user.getUser().isLocked
+                            type: user.data.isLocked
                                 ? "follow_request"
                                 : "follow",
                             notifiedId: user.id,
                         });
 
-                        if (!user.getUser().isLocked) {
+                        if (!user.data.isLocked) {
                             await sendFollowAccept(account, user);
                         }
 

@@ -58,10 +58,10 @@ export const addUserToMeilisearch = async (user: User) => {
     await meilisearch.index(MeiliIndexType.Accounts).addDocuments([
         {
             id: user.id,
-            username: user.getUser().username,
-            displayName: user.getUser().displayName,
-            note: user.getUser().note,
-            createdAt: user.getUser().createdAt,
+            username: user.data.username,
+            displayName: user.data.displayName,
+            note: user.data.note,
+            createdAt: user.data.createdAt,
         },
     ]);
 };

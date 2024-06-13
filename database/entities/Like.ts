@@ -35,12 +35,12 @@ export const createLike = async (user: User, note: Note) => {
         likerId: user.id,
     });
 
-    if (note.getAuthor().getUser().instanceId === user.getUser().instanceId) {
+    if (note.author.data.instanceId === user.data.instanceId) {
         // Notify the user that their post has been favourited
         await db.insert(Notifications).values({
             accountId: user.id,
             type: "favourite",
-            notifiedId: note.getAuthor().id,
+            notifiedId: note.author.id,
             noteId: note.id,
         });
     } else {
@@ -65,12 +65,12 @@ export const deleteLike = async (user: User, note: Note) => {
             and(
                 eq(Notifications.accountId, user.id),
                 eq(Notifications.type, "favourite"),
-                eq(Notifications.notifiedId, note.getAuthor().id),
+                eq(Notifications.notifiedId, note.author.id),
                 eq(Notifications.noteId, note.id),
             ),
         );
 
-    if (user.isLocal() && note.getAuthor().isRemote()) {
+    if (user.isLocal() && note.author.isRemote()) {
         // User is local, federate the delete
         // TODO: Federate this
     }

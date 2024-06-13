@@ -77,7 +77,7 @@ beforeAll(async () => {
                 Authorization: `Bearer ${tokens[1].accessToken}`,
             },
             body: new URLSearchParams({
-                status: `@${users[0].getUser().username} test mention`,
+                status: `@${users[0].data.username} test mention`,
                 visibility: "direct",
                 local_only: "true",
             }),

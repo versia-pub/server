@@ -46,7 +46,7 @@ export default (app: Hono) =>
 
             if (!status) return errorResponse("Record not found", 404);
 
-            if (status.getAuthor().id !== user.id)
+            if (status.author.id !== user.id)
                 return errorResponse("Unauthorized", 401);
 
             await user.unpin(status);

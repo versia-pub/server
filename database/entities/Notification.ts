@@ -43,8 +43,7 @@ export const findManyNotifications = async (
         output.map(async (notif) => ({
             ...notif,
             account: transformOutputToUserWithRelations(notif.account),
-            status:
-                (await Note.fromId(notif.noteId, userId))?.getStatus() ?? null,
+            status: (await Note.fromId(notif.noteId, userId))?.data ?? null,
         })),
     );
 };
@@ -59,7 +58,7 @@ export const notificationToAPI = async (
         id: notification.id,
         type: notification.type,
         status: notification.status
-            ? await Note.fromStatus(notification.status).toAPI(account)
+            ? await new Note(notification.status).toAPI(account)
             : undefined,
     };
 };

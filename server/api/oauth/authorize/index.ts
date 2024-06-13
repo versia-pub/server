@@ -250,19 +250,17 @@ export default (app: Hono) =>
                     // Include the user's profile information
                     idTokenPayload = {
                         ...idTokenPayload,
-                        name: user.getUser().displayName,
-                        preferred_username: user.getUser().username,
+                        name: user.data.displayName,
+                        preferred_username: user.data.username,
                         picture: user.getAvatarUrl(config),
-                        updated_at: new Date(
-                            user.getUser().updatedAt,
-                        ).toISOString(),
+                        updated_at: new Date(user.data.updatedAt).toISOString(),
                     };
                 }
                 if (scopeIncludesEmail) {
                     // Include the user's email address
                     idTokenPayload = {
                         ...idTokenPayload,
-                        email: user.getUser().email,
+                        email: user.data.email,
                         // TODO: Add verification system
                         email_verified: true,
                     };

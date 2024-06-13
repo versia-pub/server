@@ -85,7 +85,7 @@ export const getTestStatuses = async (
     user: User,
     partial?: Partial<Status>,
 ) => {
-    const statuses: Status[] = [];
+    const statuses: Note[] = [];
 
     for (let i = 0; i < count; i++) {
         const newStatus = await Note.insert({
@@ -116,5 +116,5 @@ export const getTestStatuses = async (
             undefined,
             user.id,
         )
-    ).map((n) => n.getStatus());
+    ).map((n) => n.data);
 };

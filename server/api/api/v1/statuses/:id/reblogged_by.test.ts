@@ -68,7 +68,7 @@ describe(meta.route, () => {
         expect(objects.length).toBe(1);
         for (const [, status] of objects.entries()) {
             expect(status.id).toBe(users[1].id);
-            expect(status.username).toBe(users[1].getUser().username);
+            expect(status.username).toBe(users[1].data.username);
         }
     });
 });

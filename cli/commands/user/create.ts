@@ -118,13 +118,13 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
         !flags.format &&
             this.log(
                 `${chalk.green("✓")} Created user ${chalk.green(
-                    user.getUser().username,
+                    user.data.username,
                 )} with id ${chalk.green(user.id)}`,
             );
 
         this.log(
             formatArray(
-                [user.getUser()],
+                [user.data],
                 [
                     "id",
                     "username",
@@ -144,7 +144,7 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
                 flags.format
                     ? link
                     : `\nPassword reset link for ${chalk.bold(
-                          `@${user.getUser().username}`,
+                          `@${user.data.username}`,
                       )}: ${chalk.underline(chalk.blue(link))}\n`,
             );
 

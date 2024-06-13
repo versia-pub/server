@@ -35,7 +35,6 @@ import {
 } from "~/database/entities/Emoji";
 import { localObjectURI } from "~/database/entities/Federation";
 import {
-    type Status,
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
@@ -52,30 +51,65 @@ import {
 import { config } from "~/packages/config-manager";
 import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 import type { Status as APIStatus } from "~/types/mastodon/status";
+import { BaseInterface } from "./base";
 import { User } from "./user";
 
 /**
  * Gives helpers to fetch notes from database in a nice format
  */
-export class Note {
-    private constructor(private status: StatusWithRelations) {}
+export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
+    async save(): Promise<StatusWithRelations> {
+        return this.update(this.data);
+    }
+
+    async reload(): Promise<void> {
+        const reloaded = await Note.fromId(this.data.id);
+
+        if (!reloaded) {
+            throw new Error("Failed to reload status");
+        }
+
+        this.data = reloaded.data;
+    }
+
+    public static async insert(
+        data: InferInsertModel<typeof Notes>,
+        userRequestingNoteId?: string,
+    ): Promise<Note> {
+        const inserted = (await db.insert(Notes).values(data).returning())[0];
+
+        const note = await Note.fromId(inserted.id, userRequestingNoteId);
+
+        if (!note) {
+            throw new Error("Failed to insert status");
+        }
+
+        return note;
+    }
 
     static async fromId(
         id: string | null,
-        userId?: string,
+        userRequestingNoteId?: string,
     ): Promise<Note | null> {
         if (!id) return null;
 
-        return await Note.fromSql(eq(Notes.id, id), undefined, userId);
+        return await Note.fromSql(
+            eq(Notes.id, id),
+            undefined,
+            userRequestingNoteId,
+        );
     }
 
-    static async fromIds(ids: string[], userId?: string): Promise<Note[]> {
+    static async fromIds(
+        ids: string[],
+        userRequestingNoteId?: string,
+    ): Promise<Note[]> {
         return await Note.manyFromSql(
             inArray(Notes.id, ids),
             undefined,
             undefined,
             undefined,
-            userId,
+            userRequestingNoteId,
         );
     }
 
@@ -118,21 +152,19 @@ export class Note {
     }
 
     get id() {
-        return this.status.id;
+        return this.data.id;
     }
 
     async getUsersToFederateTo() {
         // Mentioned users
         const mentionedUsers =
-            this.getStatus().mentions.length > 0
+            this.data.mentions.length > 0
                 ? await User.manyFromSql(
                       and(
                           isNotNull(Users.instanceId),
                           inArray(
                               Users.id,
-                              this.getStatus().mentions.map(
-                                  (mention) => mention.id,
-                              ),
+                              this.data.mentions.map((mention) => mention.id),
                           ),
                       ),
                   )
@@ -166,24 +198,12 @@ export class Note {
         return deduplicatedUsersById;
     }
 
-    static fromStatus(status: StatusWithRelations) {
-        return new Note(status);
-    }
-
-    static fromStatuses(statuses: StatusWithRelations[]) {
-        return statuses.map((s) => new Note(s));
-    }
-
     isNull() {
-        return this.status === null;
+        return this.data === null;
     }
 
-    getStatus() {
-        return this.status;
-    }
-
-    getAuthor() {
-        return new User(this.status.author);
+    get author() {
+        return new User(this.data.author);
     }
 
     static async getCount() {
@@ -201,7 +221,7 @@ export class Note {
 
     async getReplyChildren(userId?: string) {
         return await Note.manyFromSql(
-            eq(Notes.replyId, this.status.id),
+            eq(Notes.replyId, this.data.id),
             undefined,
             undefined,
             undefined,
@@ -209,12 +229,8 @@ export class Note {
         );
     }
 
-    static async insert(values: InferInsertModel<typeof Notes>) {
-        return (await db.insert(Notes).values(values).returning())[0];
-    }
-
     async isRemote() {
-        return this.getAuthor().isRemote();
+        return this.author.isRemote();
     }
 
     async updateFromRemote() {
@@ -222,13 +238,13 @@ export class Note {
             throw new Error("Cannot refetch a local note (it is not remote)");
         }
 
-        const updated = await Note.saveFromRemote(this.getURI());
+        const updated = await Note.saveFromRemote(this.getUri());
 
         if (!updated) {
             throw new Error("Note not found after update");
         }
 
-        this.status = updated.getStatus();
+        this.data = updated.data;
 
         return this;
     }
@@ -324,7 +340,7 @@ export class Note {
             }
         }
 
-        return await Note.fromId(newNote.id, newNote.authorId);
+        return await Note.fromId(newNote.id, newNote.data.authorId);
     }
 
     async updateFromData(
@@ -347,7 +363,7 @@ export class Note {
         // Parse emojis and fuse with existing emojis
         let foundEmojis = emojis;
 
-        if (this.getAuthor().isLocal() && htmlContent) {
+        if (this.author.isLocal() && htmlContent) {
             const parsedEmojis = await parseEmojis(htmlContent);
             // Fuse and deduplicate
             foundEmojis = [...emojis, ...parsedEmojis].filter(
@@ -376,14 +392,14 @@ export class Note {
         // Connect emojis
         await db
             .delete(EmojiToNote)
-            .where(eq(EmojiToNote.noteId, this.status.id));
+            .where(eq(EmojiToNote.noteId, this.data.id));
 
         for (const emoji of foundEmojis) {
             await db
                 .insert(EmojiToNote)
                 .values({
                     emojiId: emoji.id,
-                    noteId: this.status.id,
+                    noteId: this.data.id,
                 })
                 .execute();
         }
@@ -391,13 +407,13 @@ export class Note {
         // Connect mentions
         await db
             .delete(NoteToMentions)
-            .where(eq(NoteToMentions.noteId, this.status.id));
+            .where(eq(NoteToMentions.noteId, this.data.id));
 
         for (const mention of mentions ?? []) {
             await db
                 .insert(NoteToMentions)
                 .values({
-                    noteId: this.status.id,
+                    noteId: this.data.id,
                     userId: mention.id,
                 })
                 .execute();
@@ -410,13 +426,13 @@ export class Note {
                 .set({
                     noteId: null,
                 })
-                .where(eq(Attachments.noteId, this.status.id));
+                .where(eq(Attachments.noteId, this.data.id));
 
             if (media_attachments.length > 0)
                 await db
                     .update(Attachments)
                     .set({
-                        noteId: this.status.id,
+                        noteId: this.data.id,
                     })
                     .where(inArray(Attachments.id, media_attachments));
         }
@@ -555,10 +571,10 @@ export class Note {
                     : [],
                 attachments.map((a) => a.id),
                 note.replies_to
-                    ? (await Note.resolve(note.replies_to))?.getStatus().id
+                    ? (await Note.resolve(note.replies_to))?.data.id
                     : undefined,
                 note.quotes
-                    ? (await Note.resolve(note.quotes))?.getStatus().id
+                    ? (await Note.resolve(note.quotes))?.data.id
                     : undefined,
             );
         }
@@ -582,10 +598,10 @@ export class Note {
             ),
             attachments.map((a) => a.id),
             note.replies_to
-                ? (await Note.resolve(note.replies_to))?.getStatus().id
+                ? (await Note.resolve(note.replies_to))?.data.id
                 : undefined,
             note.quotes
-                ? (await Note.resolve(note.quotes))?.getStatus().id
+                ? (await Note.resolve(note.quotes))?.data.id
                 : undefined,
         );
 
@@ -596,27 +612,28 @@ export class Note {
         return createdNote;
     }
 
-    async delete() {
-        return (
-            await db
-                .delete(Notes)
-                .where(eq(Notes.id, this.status.id))
-                .returning()
-        )[0];
+    async delete(ids: string[]): Promise<void>;
+    async delete(): Promise<void>;
+    async delete(ids?: unknown): Promise<void> {
+        if (Array.isArray(ids)) {
+            await db.delete(Notes).where(inArray(Notes.id, ids));
+        } else {
+            await db.delete(Notes).where(eq(Notes.id, this.id));
+        }
     }
 
-    async update(newStatus: Partial<Status>) {
-        return (
-            await db
-                .update(Notes)
-                .set(newStatus)
-                .where(eq(Notes.id, this.status.id))
-                .returning()
-        )[0];
-    }
+    async update(
+        newStatus: Partial<StatusWithRelations>,
+    ): Promise<StatusWithRelations> {
+        await db.update(Notes).set(newStatus).where(eq(Notes.id, this.data.id));
 
-    static async deleteMany(ids: string[]) {
-        return await db.delete(Notes).where(inArray(Notes.id, ids)).returning();
+        const updated = await Note.fromId(this.data.id);
+
+        if (!updated) {
+            throw new Error("Failed to update status");
+        }
+
+        return updated.data;
     }
 
     /**
@@ -625,10 +642,10 @@ export class Note {
      * @returns Whether this status is viewable by the user.
      */
     async isViewableByUser(user: User | null) {
-        if (this.getAuthor().id === user?.id) return true;
-        if (this.getStatus().visibility === "public") return true;
-        if (this.getStatus().visibility === "unlisted") return true;
-        if (this.getStatus().visibility === "private") {
+        if (this.author.id === user?.id) return true;
+        if (this.data.visibility === "public") return true;
+        if (this.data.visibility === "unlisted") return true;
+        if (this.data.visibility === "private") {
             return user
                 ? await db.query.Relationships.findFirst({
                       where: (relationship, { and, eq }) =>
@@ -641,13 +658,12 @@ export class Note {
                 : false;
         }
         return (
-            user &&
-            this.getStatus().mentions.find((mention) => mention.id === user.id)
+            user && this.data.mentions.find((mention) => mention.id === user.id)
         );
     }
 
     async toAPI(userFetching?: User | null): Promise<APIStatus> {
-        const data = this.getStatus();
+        const data = this.data;
 
         // Convert mentions of local users from @username@host to @username
         const mentionedLocalUsers = data.mentions.filter(
@@ -684,7 +700,7 @@ export class Note {
             id: data.id,
             in_reply_to_id: data.replyId || null,
             in_reply_to_account_id: data.reply?.authorId || null,
-            account: this.getAuthor().toAPI(userFetching?.id === data.authorId),
+            account: this.author.toAPI(userFetching?.id === data.authorId),
             created_at: new Date(data.createdAt).toISOString(),
             application: data.application
                 ? applicationToAPI(data.application)
@@ -713,9 +729,9 @@ export class Note {
             // TODO: Add polls
             poll: null,
             reblog: data.reblog
-                ? await Note.fromStatus(
-                      data.reblog as StatusWithRelations,
-                  ).toAPI(userFetching)
+                ? await new Note(data.reblog as StatusWithRelations).toAPI(
+                      userFetching,
+                  )
                 : null,
             reblogged: data.reblogged,
             reblogs_count: data.reblogCount,
@@ -723,9 +739,9 @@ export class Note {
             sensitive: data.sensitive,
             spoiler_text: data.spoilerText,
             tags: [],
-            uri: data.uri || this.getURI(),
+            uri: data.uri || this.getUri(),
             visibility: data.visibility as APIStatus["visibility"],
-            url: data.uri || this.getMastoURI(),
+            url: data.uri || this.getMastoUri(),
             bookmarked: false,
             // @ts-expect-error Glitch-SOC extension
             quote: data.quotingId
@@ -737,30 +753,30 @@ export class Note {
         };
     }
 
-    getURI() {
-        return localObjectURI(this.getStatus().id);
+    getUri() {
+        return localObjectURI(this.data.id);
     }
 
-    static getURI(id?: string | null) {
+    static getUri(id?: string | null) {
         if (!id) return null;
         return localObjectURI(id);
     }
 
-    getMastoURI() {
+    getMastoUri() {
         return new URL(
-            `/@${this.getAuthor().getUser().username}/${this.id}`,
+            `/@${this.author.data.username}/${this.id}`,
             config.http.base_url,
         ).toString();
     }
 
     toLysand(): typeof EntityValidator.$Note {
-        const status = this.getStatus();
+        const status = this.data;
         return {
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: this.getAuthor().getUri(),
-            uri: this.getURI(),
+            author: this.author.getUri(),
+            uri: this.getUri(),
             content: {
                 "text/html": {
                     content: status.content,
@@ -774,8 +790,8 @@ export class Note {
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) => mention.uri || ""),
-            quotes: Note.getURI(status.quotingId) ?? undefined,
-            replies_to: Note.getURI(status.replyId) ?? undefined,
+            quotes: Note.getUri(status.quotingId) ?? undefined,
+            replies_to: Note.getUri(status.replyId) ?? undefined,
             subject: status.spoilerText,
             visibility: status.visibility as
                 | "public"
@@ -799,9 +815,9 @@ export class Note {
 
         let currentStatus: Note = this;
 
-        while (currentStatus.getStatus().replyId) {
+        while (currentStatus.data.replyId) {
             const parent = await Note.fromId(
-                currentStatus.getStatus().replyId,
+                currentStatus.data.replyId,
                 fetcher?.id,
             );
 

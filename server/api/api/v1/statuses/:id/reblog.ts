@@ -58,7 +58,7 @@ export default (app: Hono) =>
             const existingReblog = await Note.fromSql(
                 and(
                     eq(Notes.authorId, user.id),
-                    eq(Notes.reblogId, foundStatus.getStatus().id),
+                    eq(Notes.reblogId, foundStatus.data.id),
                 ),
             );
 
@@ -68,7 +68,7 @@ export default (app: Hono) =>
 
             const newReblog = await Note.insert({
                 authorId: user.id,
-                reblogId: foundStatus.getStatus().id,
+                reblogId: foundStatus.data.id,
                 visibility,
                 sensitive: false,
                 updatedAt: new Date().toISOString(),
@@ -85,12 +85,12 @@ export default (app: Hono) =>
                 return errorResponse("Failed to reblog", 500);
             }
 
-            if (foundStatus.getAuthor().isLocal() && user.isLocal()) {
+            if (foundStatus.author.isLocal() && user.isLocal()) {
                 await db.insert(Notifications).values({
                     accountId: user.id,
-                    notifiedId: foundStatus.getAuthor().id,
+                    notifiedId: foundStatus.author.id,
                     type: "reblog",
-                    noteId: newReblog.reblogId,
+                    noteId: newReblog.data.reblogId,
                 });
             }
 

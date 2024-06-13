@@ -92,7 +92,7 @@ export default (app: Hono) =>
                 url: null,
             },
             contact: {
-                email: contactAccount?.getUser().email || null,
+                email: contactAccount?.data.email || null,
                 account: contactAccount?.toAPI() || null,
             },
             rules: config.signups.rules.map((rule, index) => ({

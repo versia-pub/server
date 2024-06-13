@@ -53,7 +53,7 @@ export default (app: Hono) =>
             const existingReblog = await Note.fromSql(
                 and(
                     eq(Notes.authorId, user.id),
-                    eq(Notes.reblogId, foundStatus.getStatus().id),
+                    eq(Notes.reblogId, foundStatus.data.id),
                 ),
                 undefined,
                 user?.id,
@@ -66,7 +66,7 @@ export default (app: Hono) =>
             await existingReblog.delete();
 
             await user.federateToFollowers(
-                undoFederationRequest(user, existingReblog.getURI()),
+                undoFederationRequest(user, existingReblog.getUri()),
             );
 
             const newNote = await Note.fromId(id, user.id);

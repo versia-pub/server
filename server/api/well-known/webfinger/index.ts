@@ -72,7 +72,7 @@ export default (app: Hono) =>
 
             return jsonResponse({
                 subject: `acct:${
-                    isUuid ? user.id : user.getUser().username
+                    isUuid ? user.id : user.data.username
                 }@${host}`,
 
                 links: [

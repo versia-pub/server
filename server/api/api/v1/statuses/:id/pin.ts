@@ -47,17 +47,14 @@ export default (app: Hono) =>
 
             if (!foundStatus) return errorResponse("Record not found", 404);
 
-            if (foundStatus.getAuthor().id !== user.id)
+            if (foundStatus.author.id !== user.id)
                 return errorResponse("Unauthorized", 401);
 
             if (
                 await db.query.UserToPinnedNotes.findFirst({
                     where: (userPinnedNote, { and, eq }) =>
                         and(
-                            eq(
-                                userPinnedNote.noteId,
-                                foundStatus.getStatus().id,
-                            ),
+                            eq(userPinnedNote.noteId, foundStatus.data.id),
                             eq(userPinnedNote.userId, user.id),
                         ),
                 })

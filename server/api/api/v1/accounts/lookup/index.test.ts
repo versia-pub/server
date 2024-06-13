@@ -16,7 +16,7 @@ describe(meta.route, () => {
         const response = await sendTestRequest(
             new Request(
                 new URL(
-                    `${meta.route}?acct=${users[0].getUser().username}`,
+                    `${meta.route}?acct=${users[0].data.username}`,
                     config.http.base_url,
                 ),
                 {
@@ -33,8 +33,8 @@ describe(meta.route, () => {
         expect(data).toEqual(
             expect.objectContaining({
                 id: users[0].id,
-                username: users[0].getUser().username,
-                display_name: users[0].getUser().displayName,
+                username: users[0].data.username,
+                display_name: users[0].data.displayName,
                 avatar: expect.any(String),
                 header: expect.any(String),
             }),

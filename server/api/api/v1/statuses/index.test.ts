@@ -320,7 +320,7 @@ describe(meta.route, () => {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
                     body: new URLSearchParams({
-                        status: `Hello, @${users[1].getUser().username}!`,
+                        status: `Hello, @${users[1].data.username}!`,
                         local_only: "true",
                     }),
                 }),
@@ -336,8 +336,8 @@ describe(meta.route, () => {
             expect(object.mentions).toBeArrayOfSize(1);
             expect(object.mentions[0]).toMatchObject({
                 id: users[1].id,
-                username: users[1].getUser().username,
-                acct: users[1].getUser().username,
+                username: users[1].data.username,
+                acct: users[1].data.username,
             });
         });
 
@@ -349,7 +349,7 @@ describe(meta.route, () => {
                         Authorization: `Bearer ${tokens[0].accessToken}`,
                     },
                     body: new URLSearchParams({
-                        status: `Hello, @${users[1].getUser().username}@${
+                        status: `Hello, @${users[1].data.username}@${
                             new URL(config.http.base_url).host
                         }!`,
                         local_only: "true",
@@ -367,8 +367,8 @@ describe(meta.route, () => {
             expect(object.mentions).toBeArrayOfSize(1);
             expect(object.mentions[0]).toMatchObject({
                 id: users[1].id,
-                username: users[1].getUser().username,
-                acct: users[1].getUser().username,
+                username: users[1].data.username,
+                acct: users[1].data.username,
             });
         });
     });

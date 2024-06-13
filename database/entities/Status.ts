@@ -323,7 +323,7 @@ export const parseTextMentions = async (text: string): Promise<User[]> => {
 export const replaceTextMentions = async (text: string, mentions: User[]) => {
     let finalText = text;
     for (const mention of mentions) {
-        const user = mention.getUser();
+        const user = mention.data;
         // Replace @username and @username@domain
         if (user.instance) {
             finalText = finalText.replace(
@@ -439,7 +439,7 @@ export const federateNote = async (note: Note) => {
         // TODO: Add queue system
         const request = await objectToInboxRequest(
             note.toLysand(),
-            note.getAuthor(),
+            note.author,
             user,
         );
 
@@ -455,9 +455,7 @@ export const federateNote = async (note: Note) => {
             dualLogger.log(
                 LogLevel.ERROR,
                 "Federation.Status",
-                `Failed to federate status ${
-                    note.getStatus().id
-                } to ${user.getUri()}`,
+                `Failed to federate status ${note.data.id} to ${user.getUri()}`,
             );
         }
     }
