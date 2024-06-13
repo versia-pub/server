@@ -898,7 +898,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 new Attachment(attachment).toLysand(),
             ),
             is_sensitive: status.sensitive,
-            mentions: status.mentions.map((mention) => mention.uri || ""),
+            mentions: status.mentions.map((mention) =>
+                User.getUri(mention.id, mention.uri, config.http.base_url),
+            ),
             quotes: Note.getUri(status.quotingId) ?? undefined,
             replies_to: Note.getUri(status.replyId) ?? undefined,
             subject: status.spoilerText,
