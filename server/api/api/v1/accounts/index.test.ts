@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { randomBytes } from "node:crypto";
+import { randomString } from "@/math";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
@@ -7,8 +7,8 @@ import { Users } from "~/drizzle/schema";
 import { sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
-const username = randomBytes(10).toString("hex");
-const username2 = randomBytes(10).toString("hex");
+const username = randomString(10, "hex");
+const username2 = randomString(10, "hex");
 
 afterEach(async () => {
     await db.delete(Users).where(eq(Users.username, username));

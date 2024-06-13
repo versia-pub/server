@@ -1,5 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
+import { randomString } from "@/math";
 import { jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
@@ -54,8 +54,8 @@ export default (app: Hono) =>
                         redirectUri: decodeURIComponent(redirect_uris) || "",
                         scopes: scopes || "read",
                         website: website || null,
-                        clientId: randomBytes(32).toString("base64url"),
-                        secret: randomBytes(64).toString("base64url"),
+                        clientId: randomString(32, "base64url"),
+                        secret: randomString(64, "base64url"),
                     })
                     .returning()
             )[0];

@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { randomBytes } from "node:crypto";
+import { randomString } from "@/math";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Applications } from "~/drizzle/schema";
@@ -15,7 +15,7 @@ const application = (
         .insert(Applications)
         .values({
             name: "Test Application",
-            clientId: randomBytes(32).toString("hex"),
+            clientId: randomString(32, "hex"),
             secret: "test",
             redirectUri: "https://example.com",
             scopes: "read write",

@@ -1,5 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError } from "@/api";
+import { randomString } from "@/math";
 import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
@@ -174,10 +174,10 @@ export default (app: Hono) =>
                 return errorResponse("Application not found", 500);
             }
 
-            const code = randomBytes(32).toString("hex");
+            const code = randomString(32, "hex");
 
             await db.insert(Tokens).values({
-                accessToken: randomBytes(64).toString("base64url"),
+                accessToken: randomString(64, "base64url"),
                 code: code,
                 scope: flow.application.scopes,
                 tokenType: TokenType.Bearer,

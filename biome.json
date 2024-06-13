@@ -59,6 +59,6 @@
         "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
     },
     "javascript": {
-        "globals": ["Bun", "HTMLRewriter"]
+        "globals": ["Bun", "HTMLRewriter", "BufferEncoding"]
     }
 }

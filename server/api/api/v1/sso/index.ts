@@ -1,6 +1,6 @@
-import { randomBytes } from "node:crypto";
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { oauthRedirectUri } from "@/constants";
+import { randomString } from "@/math";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
@@ -134,9 +134,7 @@ export default (app: Hono) =>
                         await db
                             .insert(Applications)
                             .values({
-                                clientId:
-                                    user.id +
-                                    randomBytes(32).toString("base64url"),
+                                clientId: user.id + randomString(32, "base64"),
                                 name: "Lysand",
                                 redirectUri: `${oauthRedirectUri(issuerId)}`,
                                 scopes: "openid profile email",

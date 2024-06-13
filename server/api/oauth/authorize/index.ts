@@ -1,5 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
+import { randomString } from "@/math";
 import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
@@ -240,7 +240,7 @@ export default (app: Hono) =>
             }
 
             // Generate tokens
-            const code = randomBytes(256).toString("base64url");
+            const code = randomString(256, "base64url");
 
             // Handle the requested scopes
             let idTokenPayload = {};
@@ -287,7 +287,7 @@ export default (app: Hono) =>
                 .sign(privateKey);
 
             await db.insert(Tokens).values({
-                accessToken: randomBytes(64).toString("base64url"),
+                accessToken: randomString(64, "base64url"),
                 code: code,
                 scope: scope ?? application.scopes,
                 tokenType: TokenType.Bearer,

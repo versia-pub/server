@@ -1,6 +1,6 @@
-import { randomBytes } from "node:crypto";
 import { idValidator } from "@/api";
 import { getBestContentType, urlToContentFormat } from "@/content_types";
+import { randomString } from "@/math";
 import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
 import { EntityValidator } from "@lysand-org/federation";
@@ -190,7 +190,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     async resetPassword() {
-        const resetToken = await randomBytes(32).toString("hex");
+        const resetToken = randomString(32, "hex");
 
         await this.update({
             passwordResetToken: resetToken,

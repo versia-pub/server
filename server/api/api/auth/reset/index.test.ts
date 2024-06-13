@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { randomBytes } from "node:crypto";
+import { randomString } from "@/math";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Applications } from "~/drizzle/schema";
@@ -8,8 +8,8 @@ import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
-const token = randomBytes(32).toString("hex");
-const newPassword = randomBytes(16).toString("hex");
+const token = randomString(32, "hex");
+const newPassword = randomString(16, "hex");
 
 // Create application
 const application = (
@@ -17,7 +17,7 @@ const application = (
         .insert(Applications)
         .values({
             name: "Test Application",
-            clientId: randomBytes(32).toString("hex"),
+            clientId: randomString(32, "hex"),
             secret: "test",
             redirectUri: "https://example.com",
             scopes: "read write",

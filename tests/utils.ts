@@ -1,5 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { consoleLogger } from "@/loggers";
+import { randomString } from "@/math";
 import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
@@ -35,11 +35,11 @@ export const getTestUsers = async (count: number) => {
     const passwords: string[] = [];
 
     for (let i = 0; i < count; i++) {
-        const password = randomBytes(32).toString("hex");
+        const password = randomString(32, "hex");
 
         const user = await User.fromDataLocal({
-            username: `test-${randomBytes(32).toString("hex")}`,
-            email: `${randomBytes(32).toString("hex")}@test.com`,
+            username: `test-${randomString(32, "hex")}`,
+            email: `${randomString(32, "hex")}@test.com`,
             password,
         });
 
@@ -55,11 +55,11 @@ export const getTestUsers = async (count: number) => {
         .insert(Tokens)
         .values(
             users.map((u) => ({
-                accessToken: randomBytes(32).toString("hex"),
+                accessToken: randomString(32, "hex"),
                 tokenType: "bearer",
                 userId: u.id,
                 applicationId: null,
-                code: randomBytes(32).toString("hex"),
+                code: randomString(32, "hex"),
                 scope: "read write follow push",
             })),
         )
@@ -89,7 +89,7 @@ export const getTestStatuses = async (
 
     for (let i = 0; i < count; i++) {
         const newStatus = await Note.insert({
-            content: `${i} ${randomBytes(32).toString("hex")}`,
+            content: `${i} ${randomString(32, "hex")}`,
             authorId: user.id,
             sensitive: false,
             updatedAt: new Date().toISOString(),

@@ -1,5 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { applyConfig, handleZodError } from "@/api";
+import { randomString } from "@/math";
 import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
@@ -81,8 +81,8 @@ export default (app: Hono) =>
                 });
             }
 
-            const code = randomBytes(32).toString("hex");
-            const accessToken = randomBytes(64).toString("base64url");
+            const code = randomString(32, "hex");
+            const accessToken = randomString(64, "base64url");
 
             await db.insert(Tokens).values({
                 accessToken,
