@@ -337,28 +337,6 @@ export const findManyUsers = async (
     return output.map((user) => transformOutputToUserWithRelations(user));
 };
 
-export const findFirstUser = async (
-    query: Parameters<typeof db.query.Users.findFirst>[0],
-): Promise<UserWithRelations | null> => {
-    const output = await db.query.Users.findFirst({
-        ...query,
-        with: {
-            ...userRelations,
-            ...query?.with,
-        },
-        extras: {
-            ...userExtras,
-            ...query?.extras,
-        },
-    });
-
-    if (!output) {
-        return null;
-    }
-
-    return transformOutputToUserWithRelations(output);
-};
-
 /**
  * Resolves a WebFinger identifier to a user.
  * @param identifier Either a UUID or a username

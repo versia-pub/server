@@ -226,66 +226,6 @@ export class LogManager {
         }
         await this.log(LogLevel.Info, "Request", string);
     }
-
-    /*
-     * Logs a request to the output
-     * @param req Request to log
-     * @param ip IP of the request
-     * @param logAllDetails Whether to log all details of the request
-     */
-    /**async logRequest(req: Request, ip?: string, logAllDetails = false) {
-        let string = ip ? `${ip}: ` : "";
-
-        string += `${req.method} ${req.url}`;
-
-        if (logAllDetails) {
-            string += "\n";
-            string += "  [Headers]\n";
-            // Pretty print headers
-            for (const [key, value] of req.headers.entries()) {
-                string += `    ${key}: ${value}\n`;
-            }
-
-            // Pretty print body
-            string += "  [Body]\n";
-            const contentType = req.headers.get("Content-Type");
-
-            if (contentType?.includes("application/json")) {
-                try {
-                    const json = await req.clone().json();
-                    const stringified = JSON.stringify(json, null, 4)
-                        .split("\n")
-                        .map((line) => `    ${line}`)
-                        .join("\n");
-
-                    string += `${stringified}\n`;
-                } catch {
-                    string += `    [Invalid JSON] (raw: ${await req
-                        .clone()
-                        .text()})\n`;
-                }
-            } else if (
-                contentType &&
-                (contentType.includes("application/x-www-form-urlencoded") ||
-                    contentType.includes("multipart/form-data"))
-            ) {
-                const formData = await req.clone().formData();
-                for (const [key, value] of formData.entries()) {
-                    if (value.toString().length < 300) {
-                        string += `    ${key}: ${value.toString()}\n`;
-                    } else {
-                        string += `    ${key}: <${
-                            value.toString().length
-                        } bytes>\n`;
-                    }
-                }
-            } else {
-                const text = await req.text();
-                string += `    ${text}\n`;
-            }
-        }
-        await this.log(LogLevel.Info, "Request", string);
-    } */
 }
 
 /**

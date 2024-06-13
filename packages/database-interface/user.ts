@@ -24,7 +24,6 @@ import { objectToInboxRequest } from "~/database/entities/federation";
 import { addInstanceIfNotExists } from "~/database/entities/instance";
 import {
     type UserWithRelations,
-    findFirstUser,
     findManyUsers,
 } from "~/database/entities/user";
 import { db } from "~/drizzle/db";
@@ -75,15 +74,15 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Users.id),
     ) {
-        const found = await findFirstUser({
+        const found = await findManyUsers({
             where: sql,
             orderBy,
         });
 
-        if (!found) {
+        if (!found[0]) {
             return null;
         }
-        return new User(found);
+        return new User(found[0]);
     }
 
     static async manyFromSql(
