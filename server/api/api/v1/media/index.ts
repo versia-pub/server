@@ -4,9 +4,7 @@ import { zValidator } from "@hono/zod-validator";
 import { encode } from "blurhash";
 import { config } from "config-manager";
 import type { Hono } from "hono";
-import { MediaBackendType } from "media-manager";
-import type { MediaBackend } from "media-manager";
-import { LocalMediaBackend, S3MediaBackend } from "media-manager";
+import { MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
 import { getUrl } from "~/database/entities/attachment";
@@ -101,19 +99,10 @@ export default (app: Hono) =>
 
             let url = "";
 
-            let mediaManager: MediaBackend;
-
-            switch (config.media.backend as MediaBackendType) {
-                case MediaBackendType.Local:
-                    mediaManager = new LocalMediaBackend(config);
-                    break;
-                case MediaBackendType.S3:
-                    mediaManager = new S3MediaBackend(config);
-                    break;
-                default:
-                    // TODO: Replace with logger
-                    throw new Error("Invalid media backend");
-            }
+            const mediaManager = await MediaBackend.fromBackendType(
+                config.media.backend,
+                config,
+            );
 
             const { path } = await mediaManager.addFile(file);
 

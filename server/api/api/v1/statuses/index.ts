@@ -6,8 +6,8 @@ import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { federateNote } from "~/database/entities/status";
-import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
+import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";
 
 export const meta = applyConfig({
@@ -26,61 +26,81 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
-        status: z
-            .string()
-            .max(config.validation.max_note_size)
-            .trim()
-            .optional(),
-        // TODO: Add regex to validate
-        content_type: z.string().optional().default("text/plain"),
-        media_ids: z
-            .array(z.string().uuid())
-            .max(config.validation.max_media_attachments)
-            .optional(),
-        spoiler_text: z.string().max(255).trim().optional(),
-        sensitive: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
-            .optional(),
-        language: z
-            .enum(ISO6391.getAllCodes() as [string, ...string[]])
-            .optional(),
-        "poll[options]": z
-            .array(z.string().max(config.validation.max_poll_option_size))
-            .max(config.validation.max_poll_options)
-            .optional(),
-        "poll[expires_in]": z.coerce
-            .number()
-            .int()
-            .min(config.validation.min_poll_duration)
-            .max(config.validation.max_poll_duration)
-            .optional(),
-        "poll[multiple]": z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
-            .optional(),
-        "poll[hide_totals]": z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
-            .optional(),
-        in_reply_to_id: z.string().uuid().optional().nullable(),
-        quote_id: z.string().uuid().optional().nullable(),
-        visibility: z
-            .enum(["public", "unlisted", "private", "direct"])
-            .optional()
-            .default("public"),
-        scheduled_at: z.string().optional().nullable(),
-        local_only: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
-            .optional()
-            .default(false),
-    }),
+    form: z
+        .object({
+            status: z
+                .string()
+                .max(config.validation.max_note_size)
+                .trim()
+                .refine(
+                    (s) =>
+                        !config.filters.note_content.some((filter) =>
+                            s.match(filter),
+                        ),
+                    "Status contains blocked words",
+                )
+                .optional(),
+            // TODO: Add regex to validate
+            content_type: z.string().optional().default("text/plain"),
+            media_ids: z
+                .array(z.string().uuid())
+                .max(config.validation.max_media_attachments)
+                .default([]),
+            spoiler_text: z.string().max(255).trim().optional(),
+            sensitive: z
+                .string()
+                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+                .or(z.boolean())
+                .optional(),
+            language: z
+                .enum(ISO6391.getAllCodes() as [string, ...string[]])
+                .optional(),
+            "poll[options]": z
+                .array(z.string().max(config.validation.max_poll_option_size))
+                .max(config.validation.max_poll_options)
+                .optional(),
+            "poll[expires_in]": z.coerce
+                .number()
+                .int()
+                .min(config.validation.min_poll_duration)
+                .max(config.validation.max_poll_duration)
+                .optional(),
+            "poll[multiple]": z
+                .string()
+                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+                .or(z.boolean())
+                .optional(),
+            "poll[hide_totals]": z
+                .string()
+                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+                .or(z.boolean())
+                .optional(),
+            in_reply_to_id: z.string().uuid().optional().nullable(),
+            quote_id: z.string().uuid().optional().nullable(),
+            visibility: z
+                .enum(["public", "unlisted", "private", "direct"])
+                .optional()
+                .default("public"),
+            scheduled_at: z.coerce
+                .date()
+                .min(new Date(), "Scheduled time must be in the future")
+                .optional()
+                .nullable(),
+            local_only: z
+                .string()
+                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+                .or(z.boolean())
+                .optional()
+                .default(false),
+        })
+        .refine(
+            (obj) => obj.status || obj.media_ids.length > 0,
+            "Status is required unless media is attached",
+        )
+        .refine(
+            (obj) => !(obj.media_ids.length > 0 && obj["poll[options]"]),
+            "Cannot attach poll to media",
+        ),
 };
 
 export default (app: Hono) =>
@@ -100,10 +120,8 @@ export default (app: Hono) =>
             const {
                 status,
                 media_ids,
-                "poll[options]": options,
                 in_reply_to_id,
                 quote_id,
-                scheduled_at,
                 sensitive,
                 spoiler_text,
                 visibility,
@@ -111,68 +129,22 @@ export default (app: Hono) =>
                 local_only,
             } = context.req.valid("form");
 
-            // Validate status
-            if (!(status || (media_ids && media_ids.length > 0))) {
-                return errorResponse(
-                    "Status is required unless media is attached",
-                    422,
-                );
-            }
-
-            if (media_ids && media_ids.length > 0 && options) {
-                // Disallow poll
-                return errorResponse("Cannot attach poll to media", 422);
-            }
-
-            if (scheduled_at) {
-                if (
-                    Number.isNaN(new Date(scheduled_at).getTime()) ||
-                    new Date(scheduled_at).getTime() < Date.now()
-                ) {
-                    return errorResponse(
-                        "Scheduled time must be in the future",
-                        422,
-                    );
-                }
-            }
-
-            // Check if status body doesnt match filters
-            if (
-                config.filters.note_content.some((filter) =>
-                    status?.match(filter),
-                )
-            ) {
-                return errorResponse("Status contains blocked words", 422);
-            }
-
             // Check if media attachments are all valid
-            if (media_ids && media_ids.length > 0) {
-                const foundAttachments = await db.query.Attachments.findMany({
-                    where: (attachment, { inArray }) =>
-                        inArray(attachment.id, media_ids),
-                }).catch(() => []);
+            if (media_ids.length > 0) {
+                const foundAttachments = await Attachment.fromIds(media_ids);
 
-                if (foundAttachments.length !== (media_ids ?? []).length) {
+                if (foundAttachments.length !== media_ids.length) {
                     return errorResponse("Invalid media IDs", 422);
                 }
             }
 
             // Check that in_reply_to_id and quote_id are real posts if provided
-            if (in_reply_to_id) {
-                const foundReply = await Note.fromId(in_reply_to_id);
-                if (!foundReply) {
-                    return errorResponse(
-                        "Invalid in_reply_to_id (not found)",
-                        422,
-                    );
-                }
+            if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
+                return errorResponse("Invalid in_reply_to_id (not found)", 422);
             }
 
-            if (quote_id) {
-                const foundQuote = await Note.fromId(quote_id);
-                if (!foundQuote) {
-                    return errorResponse("Invalid quote_id (not found)", 422);
-                }
+            if (quote_id && !(await Note.fromId(quote_id))) {
+                return errorResponse("Invalid quote_id (not found)", 422);
             }
 
             const newNote = await Note.fromData({
@@ -190,10 +162,6 @@ export default (app: Hono) =>
                 quoteId: quote_id ?? undefined,
                 application: application ?? undefined,
             });
-
-            if (!newNote) {
-                return errorResponse("Failed to create status", 500);
-            }
 
             if (!local_only) {
                 await federateNote(newNote);

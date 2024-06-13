@@ -6,9 +6,7 @@ import { config } from "config-manager";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
-import { MediaBackendType } from "media-manager";
-import type { MediaBackend } from "media-manager";
-import { LocalMediaBackend, S3MediaBackend } from "media-manager";
+import { MediaBackend } from "media-manager";
 import { z } from "zod";
 import { getUrl } from "~/database/entities/attachment";
 import { parseEmojis } from "~/database/entities/emoji";
@@ -127,19 +125,10 @@ export default (app: Hono) =>
                 display_name ?? "",
             );
 
-            let mediaManager: MediaBackend;
-
-            switch (config.media.backend as MediaBackendType) {
-                case MediaBackendType.Local:
-                    mediaManager = new LocalMediaBackend(config);
-                    break;
-                case MediaBackendType.S3:
-                    mediaManager = new S3MediaBackend(config);
-                    break;
-                default:
-                    // TODO: Replace with logger
-                    throw new Error("Invalid media backend");
-            }
+            const mediaManager = await MediaBackend.fromBackendType(
+                config.media.backend,
+                config,
+            );
 
             if (display_name) {
                 // Check if display name doesnt match filters

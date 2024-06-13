@@ -28,7 +28,9 @@ describe(meta.route, () => {
         const response = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
                 method: "POST",
-                body: new URLSearchParams(),
+                body: new URLSearchParams({
+                    status: "Hello, world!",
+                }),
             }),
         );
 
