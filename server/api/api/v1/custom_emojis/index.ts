@@ -1,9 +1,9 @@
 import { applyConfig, auth } from "@/api";
 import { jsonResponse } from "@/response";
+import { and, eq, isNull, or } from "drizzle-orm";
 import type { Hono } from "hono";
-import { emojiToApi } from "~/database/entities/emoji";
-import { db } from "~/drizzle/db";
-import { RolePermissions } from "~/drizzle/schema";
+import { Emojis, RolePermissions } from "~/drizzle/schema";
+import { Emoji } from "~/packages/database-interface/emoji";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -28,22 +28,16 @@ export default (app: Hono) =>
         async (context) => {
             const { user } = context.req.valid("header");
 
-            const emojis = await db.query.Emojis.findMany({
-                where: (emoji, { isNull, and, eq, or }) =>
-                    and(
-                        isNull(emoji.instanceId),
-                        or(
-                            isNull(emoji.ownerId),
-                            user ? eq(emoji.ownerId, user.id) : undefined,
-                        ),
+            const emojis = await Emoji.manyFromSql(
+                and(
+                    isNull(Emojis.instanceId),
+                    or(
+                        isNull(Emojis.ownerId),
+                        user ? eq(Emojis.ownerId, user.id) : undefined,
                     ),
-                with: {
-                    instance: true,
-                },
-            });
-
-            return jsonResponse(
-                await Promise.all(emojis.map((emoji) => emojiToApi(emoji))),
+                ),
             );
+
+            return jsonResponse(emojis.map((emoji) => emoji.toApi()));
         },
     );

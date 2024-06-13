@@ -21,13 +21,7 @@ import {
     type Application,
     applicationToApi,
 } from "~/database/entities/application";
-import {
-    type EmojiWithInstance,
-    emojiToApi,
-    emojiToLysand,
-    fetchEmoji,
-    parseEmojis,
-} from "~/database/entities/emoji";
+import { parseEmojis } from "~/database/entities/emoji";
 import { localObjectUri } from "~/database/entities/federation";
 import {
     type StatusWithRelations,
@@ -49,6 +43,7 @@ import type { Attachment as apiAttachment } from "~/types/mastodon/attachment";
 import type { Status as apiStatus } from "~/types/mastodon/status";
 import { Attachment } from "./attachment";
 import { BaseInterface } from "./base";
+import { Emoji } from "./emoji";
 import { User } from "./user";
 
 /**
@@ -256,7 +251,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         visibility: apiStatus["visibility"];
         isSensitive: boolean;
         spoilerText: string;
-        emojis?: EmojiWithInstance[];
+        emojis?: Emoji[];
         uri?: string;
         mentions?: User[];
         /** List of IDs of database Attachment objects */
@@ -341,7 +336,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         visibility?: apiStatus["visibility"];
         isSensitive?: boolean;
         spoilerText?: string;
-        emojis?: EmojiWithInstance[];
+        emojis?: Emoji[];
         uri?: string;
         mentions?: User[];
         /** List of IDs of database Attachment objects */
@@ -410,9 +405,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this;
     }
 
-    public async recalculateDatabaseEmojis(
-        emojis: EmojiWithInstance[],
-    ): Promise<void> {
+    public async recalculateDatabaseEmojis(emojis: Emoji[]): Promise<void> {
         // Fuse and deduplicate
         const fusedEmojis = emojis.filter(
             (emoji, index, self) =>
@@ -546,14 +539,16 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
         for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
             ?.emojis ?? []) {
-            const resolvedEmoji = await fetchEmoji(emoji).catch((e) => {
-                dualLogger.logError(
-                    LogLevel.Error,
-                    "Federation.StatusResolver",
-                    e,
-                );
-                return null;
-            });
+            const resolvedEmoji = await Emoji.fetchFromRemote(emoji).catch(
+                (e) => {
+                    dualLogger.logError(
+                        LogLevel.Error,
+                        "Federation.StatusResolver",
+                        e,
+                    );
+                    return null;
+                },
+            );
 
             if (resolvedEmoji) {
                 emojis.push(resolvedEmoji);
@@ -721,7 +716,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 : null,
             card: null,
             content: replacedContent,
-            emojis: data.emojis.map((emoji) => emojiToApi(emoji)),
+            emojis: data.emojis.map((emoji) => new Emoji(emoji).toApi()),
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
@@ -816,7 +811,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 | "direct",
             extensions: {
                 "org.lysand:custom_emojis": {
-                    emojis: status.emojis.map((emoji) => emojiToLysand(emoji)),
+                    emojis: status.emojis.map((emoji) =>
+                        new Emoji(emoji).toLysand(),
+                    ),
                 },
                 // TODO: Add polls and reactions
             },

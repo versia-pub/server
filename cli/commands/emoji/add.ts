@@ -1,11 +1,12 @@
 import { Args } from "@oclif/core";
 import chalk from "chalk";
+import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
 import { BaseCommand } from "~/cli/base";
 import { getUrl } from "~/database/entities/attachment";
-import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
@@ -33,13 +34,12 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
         const { args } = await this.parse(EmojiAdd);
 
         // Check if emoji already exists
-        const existingEmoji = await db.query.Emojis.findFirst({
-            where: (Emojis, { eq, and, isNull }) =>
-                and(
-                    eq(Emojis.shortcode, args.shortcode),
-                    isNull(Emojis.instanceId),
-                ),
-        });
+        const existingEmoji = await Emoji.fromSql(
+            and(
+                eq(Emojis.shortcode, args.shortcode),
+                isNull(Emojis.instanceId),
+            ),
+        );
 
         if (existingEmoji) {
             this.log(
@@ -115,24 +115,12 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
 
         spinner.succeed();
 
-        const emoji = await db
-            .insert(Emojis)
-            .values({
-                shortcode: args.shortcode,
-                url: getUrl(uploaded.path, config),
-                visibleInPicker: true,
-                contentType: uploaded.uploadedFile.type,
-            })
-            .returning();
-
-        if (!emoji || emoji.length === 0) {
-            this.log(
-                `${chalk.red("✗")} Failed to create emoji ${chalk.red(
-                    args.shortcode,
-                )}`,
-            );
-            this.exit(1);
-        }
+        await Emoji.insert({
+            shortcode: args.shortcode,
+            url: getUrl(uploaded.path, config),
+            visibleInPicker: true,
+            contentType: uploaded.uploadedFile.type,
+        });
 
         this.log(
             `${chalk.green("✓")} Created emoji ${chalk.green(

@@ -11,10 +11,11 @@ import type { MediaBackend } from "media-manager";
 import { LocalMediaBackend, S3MediaBackend } from "media-manager";
 import { z } from "zod";
 import { getUrl } from "~/database/entities/attachment";
-import { type EmojiWithInstance, parseEmojis } from "~/database/entities/emoji";
+import { parseEmojis } from "~/database/entities/emoji";
 import { contentToHtml } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions } from "~/drizzle/schema";
+import type { Emoji } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -222,7 +223,7 @@ export default (app: Hono) =>
                 self.isDiscoverable = discoverable;
             }
 
-            const fieldEmojis: EmojiWithInstance[] = [];
+            const fieldEmojis: Emoji[] = [];
 
             if (fields_attributes) {
                 self.fields = [];
@@ -280,7 +281,11 @@ export default (app: Hono) =>
             const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
             const noteEmojis = await parseEmojis(self.note);
 
-            self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis];
+            self.emojis = [
+                ...displaynameEmojis,
+                ...noteEmojis,
+                ...fieldEmojis,
+            ].map((e) => e.data);
 
             // Deduplicate emojis
             self.emojis = self.emojis.filter(

@@ -20,11 +20,6 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import {
-    emojiToApi,
-    emojiToLysand,
-    fetchEmoji,
-} from "~/database/entities/emoji";
 import { objectToInboxRequest } from "~/database/entities/federation";
 import { addInstanceIfNotExists } from "~/database/entities/instance";
 import {
@@ -46,6 +41,7 @@ import { type Config, config } from "~/packages/config-manager";
 import type { Account as apiAccount } from "~/types/mastodon/account";
 import type { Mention as apiMention } from "~/types/mastodon/mention";
 import { BaseInterface } from "./base";
+import { Emoji } from "./emoji";
 import type { Note } from "./note";
 import { Role } from "./role";
 
@@ -273,11 +269,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const instance = await addInstanceIfNotExists(data.uri);
 
-        const emojis = [];
-
-        for (const emoji of userEmojis) {
-            emojis.push(await fetchEmoji(emoji));
-        }
+        const emojis = await Promise.all(
+            userEmojis.map((emoji) => Emoji.fromLysand(emoji, instance.id)),
+        );
 
         const user = await User.fromLysand(data, instance);
 
@@ -580,7 +574,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             followers_count: user.followerCount,
             following_count: user.followingCount,
             statuses_count: user.statusCount,
-            emojis: user.emojis.map((emoji) => emojiToApi(emoji)),
+            emojis: user.emojis.map((emoji) => new Emoji(emoji).toApi()),
             fields: user.fields.map((field) => ({
                 name: htmlToText(getBestContentType(field.key).content),
                 value: getBestContentType(field.value).content,
@@ -695,7 +689,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             },
             extensions: {
                 "org.lysand:custom_emojis": {
-                    emojis: user.emojis.map((emoji) => emojiToLysand(emoji)),
+                    emojis: user.emojis.map((emoji) =>
+                        new Emoji(emoji).toLysand(),
+                    ),
                 },
             },
         };

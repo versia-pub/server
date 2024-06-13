@@ -6,9 +6,9 @@ import ora from "ora";
 import { unzip } from "unzipit";
 import { BaseCommand } from "~/cli/base";
 import { getUrl } from "~/database/entities/attachment";
-import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
 type MetaType = {
@@ -130,28 +130,28 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
               } as MetaType);
 
         // Get all emojis that already exist
-        const existingEmojis = await db
-            .select()
-            .from(Emojis)
-            .where(
-                and(
-                    isNull(Emojis.instanceId),
-                    inArray(
-                        Emojis.shortcode,
-                        meta.emojis.map((e) => e.emoji.name),
-                    ),
+        const existingEmojis = await Emoji.manyFromSql(
+            and(
+                isNull(Emojis.instanceId),
+                inArray(
+                    Emojis.shortcode,
+                    meta.emojis.map((e) => e.emoji.name),
                 ),
-            );
+            ),
+        );
 
         // Filter out existing emojis
         const newEmojis = meta.emojis.filter(
-            (e) => !existingEmojis.find((ee) => ee.shortcode === e.emoji.name),
+            (e) =>
+                !existingEmojis.find(
+                    (ee) => ee.data.shortcode === e.emoji.name,
+                ),
         );
 
         existingEmojis.length > 0 &&
             this.log(
                 `${chalk.yellow("⚠")} Emojis with shortcode ${chalk.yellow(
-                    existingEmojis.map((e) => e.shortcode).join(", "),
+                    existingEmojis.map((e) => e.data.shortcode).join(", "),
                 )} already exist in the database and will not be imported`,
             );
 
@@ -212,15 +212,12 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
                 continue;
             }
 
-            await db
-                .insert(Emojis)
-                .values({
-                    shortcode: emoji.emoji.name,
-                    url: getUrl(uploaded.path, config),
-                    visibleInPicker: true,
-                    contentType: uploaded.uploadedFile.type,
-                })
-                .execute();
+            await Emoji.insert({
+                shortcode: emoji.emoji.name,
+                url: getUrl(uploaded.path, config),
+                visibleInPicker: true,
+                contentType: uploaded.uploadedFile.type,
+            });
 
             successfullyImported.push(emoji);
         }

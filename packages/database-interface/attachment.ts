@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
-import type { AsyncAttachment as apiAsyncAttachment } from "~/types/mastodon/async_attachment";
+import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
 import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 import { BaseInterface } from "./base";
 
@@ -21,7 +21,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         const reloaded = await Attachment.fromId(this.data.id);
 
         if (!reloaded) {
-            throw new Error("Failed to reload role");
+            throw new Error("Failed to reload attachment");
         }
 
         this.data = reloaded.data;
@@ -83,7 +83,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         const updated = await Attachment.fromId(this.data.id);
 
         if (!updated) {
-            throw new Error("Failed to update role");
+            throw new Error("Failed to update attachment");
         }
 
         this.data = updated.data;
@@ -111,13 +111,13 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             await db.insert(Attachments).values(data).returning()
         )[0];
 
-        const role = await Attachment.fromId(inserted.id);
+        const attachment = await Attachment.fromId(inserted.id);
 
-        if (!role) {
-            throw new Error("Failed to insert role");
+        if (!attachment) {
+            throw new Error("Failed to insert attachment");
         }
 
-        return role;
+        return attachment;
     }
 
     get id() {
@@ -169,7 +169,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public toApi(): APIAttachment | apiAsyncAttachment {
+    public toApi(): APIAttachment | APIAsyncAttachment {
         return {
             id: this.data.id,
             type: this.getMastodonType(),

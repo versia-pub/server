@@ -12,10 +12,10 @@ import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { getUrl } from "~/database/entities/attachment";
-import { emojiToApi } from "~/database/entities/emoji";
 import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
 export const meta = applyConfig({
@@ -83,12 +83,7 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            const emoji = await db.query.Emojis.findFirst({
-                where: (emoji, { eq }) => eq(emoji.id, id),
-                with: {
-                    instance: true,
-                },
-            });
+            const emoji = await Emoji.fromId(id);
 
             if (!emoji) {
                 return errorResponse("Emoji not found", 404);
@@ -97,7 +92,7 @@ export default (app: Hono) =>
             // Check if user is admin
             if (
                 !user.hasPermission(RolePermissions.ManageEmojis) &&
-                emoji.ownerId !== user.data.id
+                emoji.data.ownerId !== user.data.id
             ) {
                 return jsonResponse(
                     {
@@ -114,7 +109,7 @@ export default (app: Hono) =>
                         config,
                     );
 
-                    await mediaBackend.deleteFileByUrl(emoji.url);
+                    await mediaBackend.deleteFileByUrl(emoji.data.url);
 
                     await db.delete(Emojis).where(eq(Emojis.id, id));
 
@@ -156,6 +151,8 @@ export default (app: Hono) =>
                         );
                     }
 
+                    const modified = structuredClone(emoji.data);
+
                     if (form.element) {
                         // Check of emoji is an image
                         let contentType =
@@ -188,35 +185,22 @@ export default (app: Hono) =>
                             url = form.element;
                         }
 
-                        emoji.url = getUrl(url, config);
-                        emoji.contentType = contentType;
+                        modified.url = getUrl(url, config);
+                        modified.contentType = contentType;
                     }
 
-                    const newEmoji = (
-                        await db
-                            .update(Emojis)
-                            .set({
-                                shortcode: form.shortcode ?? emoji.shortcode,
-                                alt: form.alt ?? emoji.alt,
-                                url: emoji.url,
-                                ownerId: form.global ? null : user.id,
-                                contentType: emoji.contentType,
-                                category: form.category ?? emoji.category,
-                            })
-                            .where(eq(Emojis.id, id))
-                            .returning()
-                    )[0];
+                    modified.shortcode = form.shortcode ?? modified.shortcode;
+                    modified.alt = form.alt ?? modified.alt;
+                    modified.category = form.category ?? modified.category;
+                    modified.ownerId = form.global ? null : user.data.id;
 
-                    return jsonResponse(
-                        emojiToApi({
-                            ...newEmoji,
-                            instance: null,
-                        }),
-                    );
+                    await emoji.update(modified);
+
+                    return jsonResponse(emoji.toApi());
                 }
 
                 case "GET": {
-                    return jsonResponse(emojiToApi(emoji));
+                    return jsonResponse(emoji.toApi());
                 }
             }
         },

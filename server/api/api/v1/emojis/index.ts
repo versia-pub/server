@@ -8,13 +8,13 @@ import {
 import { mimeLookup } from "@/content_types";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { and, eq, isNull, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { getUrl } from "~/database/entities/attachment";
-import { emojiToApi } from "~/database/entities/emoji";
-import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
 export const meta = applyConfig({
@@ -84,14 +84,13 @@ export default (app: Hono) =>
             }
 
             // Check if emoji already exists
-            const existing = await db.query.Emojis.findFirst({
-                where: (emoji, { eq, and, isNull, or }) =>
-                    and(
-                        eq(emoji.shortcode, shortcode),
-                        isNull(emoji.instanceId),
-                        or(eq(emoji.ownerId, user.id), isNull(emoji.ownerId)),
-                    ),
-            });
+            const existing = await Emoji.fromSql(
+                and(
+                    eq(Emojis.shortcode, shortcode),
+                    isNull(Emojis.instanceId),
+                    or(eq(Emojis.ownerId, user.id), isNull(Emojis.ownerId)),
+                ),
+            );
 
             if (existing) {
                 return errorResponse(
@@ -129,26 +128,16 @@ export default (app: Hono) =>
                 url = element;
             }
 
-            const emoji = (
-                await db
-                    .insert(Emojis)
-                    .values({
-                        shortcode,
-                        url: getUrl(url, config),
-                        visibleInPicker: true,
-                        ownerId: global ? null : user.id,
-                        category,
-                        contentType,
-                        alt,
-                    })
-                    .returning()
-            )[0];
+            const emoji = await Emoji.insert({
+                shortcode,
+                url: getUrl(url, config),
+                visibleInPicker: true,
+                ownerId: global ? null : user.id,
+                category,
+                contentType,
+                alt,
+            });
 
-            return jsonResponse(
-                emojiToApi({
-                    ...emoji,
-                    instance: null,
-                }),
-            );
+            return jsonResponse(emoji.toApi());
         },
     );
