@@ -98,11 +98,7 @@ export const configValidator = z.object({
                 z.object({
                     name: z.string().min(1),
                     id: z.string().min(1),
-                    url: z
-                        .string()
-                        .min(1)
-                        // Remove trailing slashes
-                        .transform((arg) => arg.replace(/\/$/, "")),
+                    url: z.string().min(1),
                     client_id: z.string().min(1),
                     client_secret: z.string().min(1),
                     icon: z.string().min(1).optional(),
