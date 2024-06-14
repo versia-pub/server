@@ -1,6 +1,6 @@
 # Installation
 
-### Requirements
+## Requirements
 
 - The [Bun Runtime](https://bun.sh), version 1.1.13 or later (usage of the latest version is recommended)
   - Lysand will work on lower versions than 1.1.13, but only the latest version is supported
@@ -13,7 +13,7 @@
 > 
 > We will not be offering support to Windows or macOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
 
-### With Docker/Podman
+## With Docker/Podman
 
 Docker is the recommended way to run Lysand (podman also works). To run Lysand with Docker, follow these steps:
 
@@ -23,12 +23,12 @@ Docker is the recommended way to run Lysand (podman also works). To run Lysand w
 curl -o docker-compose.yml https://raw.githubusercontent.com/lysand-org/lysand/main/docker-compose.yml
 ```
 2. Edit the `docker-compose.yml` file to set up the database connection and other settings
-3. Download the `config.toml.example` file from the repository
+3. Download the `config.example.toml` file from the repository
 
 ```bash
-curl -o config.toml.example https://raw.githubusercontent.com/lysand-org/lysand/main/config.toml.example
+curl -o config.example/toml https://raw.githubusercontent.com/lysand-org/lysand/main/config/config.example.toml
 ```
-4. Edit the `config.toml.example` file to set up the database connection and other settings, then place it inside `config/` (create the `config/` directory if it does not exist)
+4. Edit the `config.example.toml` file to set up the database connection and other settings, rename it to `config.toml`, then place it inside `config/` (create the `config/` directory if it does not exist)
 5. Run the following command to start the server:
 
 ```bash
@@ -37,7 +37,7 @@ docker-compose up
 
 You may need root privileges to run Docker commands.
 
-### From Source
+## From Source
 
 1. Clone this repository
 
@@ -68,7 +68,7 @@ bun prod-build
 
 You may now start the server with `bun start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
 
-### Running the Server
+## Running the Server
 
 Database migrations are run automatically on startup.
 
@@ -81,7 +81,7 @@ Please see the [CLI documentation](cli.md) for more information on how to use th
 >
 > This is possible by following the instructions in [this file](glitch-soc.md).
 
-### Updating the server
+## Updating the server
 
 Updating the server is as simple as pulling the latest changes from the repository and running `bun prod-build` again. You may need to run `bun install` again if there are new dependencies.
 

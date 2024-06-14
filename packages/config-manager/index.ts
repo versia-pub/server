@@ -6,6 +6,7 @@
  */
 
 import { loadConfig, watchConfig } from "c12";
+import { fromZodError } from "zod-validation-error";
 import { type Config, configValidator } from "./config.type";
 
 const { config } = await watchConfig({
@@ -21,7 +22,9 @@ const { config } = await watchConfig({
 const parsed = await configValidator.safeParseAsync(config);
 
 if (!parsed.success) {
-    process.exit(1);
+    console.error("Invalid config file:");
+    console.error(fromZodError(parsed.error).message);
+    process.exit();
 }
 
 const exportedConfig = parsed.data;

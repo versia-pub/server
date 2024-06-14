@@ -34,7 +34,7 @@ export const setupDatabase = async (
             "Database",
             "Failed to connect to database. Please check your configuration.",
         );
-        process.exit(1);
+        process.exit();
     }
 
     // Migrate the database
@@ -52,7 +52,7 @@ export const setupDatabase = async (
             "Database",
             "Failed to migrate database. Please check your configuration.",
         );
-        process.exit(1);
+        process.exit();
     }
 
     info && (await logger.log(LogLevel.Info, "Database", "Database migrated"));

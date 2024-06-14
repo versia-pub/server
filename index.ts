@@ -73,7 +73,7 @@ if (isEntry) {
             "Server",
             chalk.gray(`${privateKey};${publicKey}`),
         );
-        process.exit(1);
+        process.exit();
     }
 
     // Try and import the key
@@ -104,7 +104,7 @@ if (isEntry) {
             "Server",
             "The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).",
         );
-        process.exit(1);
+        process.exit();
     }
 
     if (
@@ -142,7 +142,7 @@ if (isEntry) {
             `Generated key: ${chalk.gray(base64)}`,
         );
 
-        process.exit(1);
+        process.exit();
     }
 }
 
@@ -245,7 +245,7 @@ if (config.frontend.enabled) {
             "Server",
             `Frontend URL is not a valid URL: ${config.frontend.url}`,
         );
-        process.exit(1);
+        process.exit();
     }
 
     // Check if frontend is reachable

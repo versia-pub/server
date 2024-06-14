@@ -11,7 +11,7 @@ services:
         command: "cli start --all-threads"
         networks:
             - lysand-net
-        depends-on:
+        depends_on:
             - db
             - redis
             - meilisearch
