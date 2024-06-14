@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
-    route: "/media/:id/:name",
+    route: "/media/:hash/:name",
     ratelimits: {
         max: 100,
         duration: 60,
@@ -18,7 +18,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     param: z.object({
-        id: z.string(),
+        hash: z.string(),
         name: z.string(),
     }),
     header: z.object({
@@ -33,7 +33,7 @@ export default (app: Hono) =>
         zValidator("param", schemas.param, handleZodError),
         zValidator("header", schemas.header, handleZodError),
         async (context) => {
-            const { id, name } = context.req.valid("param");
+            const { hash, name } = context.req.valid("param");
             const { range } = context.req.valid("header");
 
             // parse `Range` header
@@ -46,7 +46,7 @@ export default (app: Hono) =>
                 .map(Number); // [0, 100]
 
             // Serve file from filesystem
-            const file = Bun.file(`./uploads/${id}/${name}`);
+            const file = Bun.file(`./uploads/${hash}/${name}`);
 
             const buffer = await file.arrayBuffer();
 
