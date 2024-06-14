@@ -32,8 +32,6 @@ api_key = ""
 enabled = true
 
 [signups]
-# URL of your Terms of Service
-tos_url = "https://social.lysand.org/tos"
 # Whether to enable registrations or not
 registration = true
 rules = [
