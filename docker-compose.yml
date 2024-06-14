@@ -1,6 +1,6 @@
 services:
     lysand:
-        build: ghcr.io/lysand-org/lysand:latest
+        image: ghcr.io/lysand-org/lysand:latest
         volumes:
             - ./logs:/app/dist/logs
             - ./config:/app/dist/config
@@ -8,6 +8,7 @@ services:
             - ./glitch:/app/dist/glitch
         restart: unless-stopped
         container_name: lysand
+        command: "cli start --all-threads"
         networks:
             - lysand-net
         depends-on:
