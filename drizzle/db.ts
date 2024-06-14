@@ -34,7 +34,9 @@ export const setupDatabase = async (
             "Database",
             "Failed to connect to database. Please check your configuration.",
         );
-        process.exit();
+
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 
     // Migrate the database
@@ -52,7 +54,9 @@ export const setupDatabase = async (
             "Database",
             "Failed to migrate database. Please check your configuration.",
         );
-        process.exit();
+
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 
     info && (await logger.log(LogLevel.Info, "Database", "Database migrated"));

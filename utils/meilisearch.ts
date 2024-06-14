@@ -44,7 +44,8 @@ export const connectMeili = async (logger: MultiLogManager | LogManager) => {
             "Meilisearch",
             "Error while connecting to Meilisearch",
         );
-        process.exit();
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 };
 
