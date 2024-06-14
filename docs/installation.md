@@ -31,11 +31,16 @@ curl -o config.example/toml https://raw.githubusercontent.com/lysand-org/lysand/
 4. Edit the `config.example.toml` file to set up the database connection and other settings, rename it to `config.toml`, then place it inside `config/` (create the `config/` directory if it does not exist)
 5. Run the following command to start the server:
 
+> [!WARNING]
+> The first time you start the server, it will generate keys which will be printed in logs. The server will not start until you put these keys in the config file.
+
 ```bash
-docker-compose up
+docker compose up
 ```
 
 You may need root privileges to run Docker commands.
+
+To check server logs, run `docker compose logs lysand`. The server will likely stop if there is an error, so you can check the logs to see what went wrong.
 
 ## From Source
 
