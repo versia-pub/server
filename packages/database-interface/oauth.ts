@@ -136,6 +136,14 @@ export class OAuthManager {
         };
     }
 
+    async linkUserInDatabase(userId: string, sub: string): Promise<void> {
+        await db.insert(OpenIdAccounts).values({
+            serverId: sub,
+            issuerId: this.issuer.id,
+            userId: userId,
+        });
+    }
+
     async linkUser(
         userId: string,
         // Return value of automaticOidcFlow
@@ -182,11 +190,7 @@ export class OAuthManager {
         }
 
         // Link the account
-        await db.insert(OpenIdAccounts).values({
-            serverId: userInfo.sub,
-            issuerId: this.issuer.id,
-            userId: userId,
-        });
+        await this.linkUserInDatabase(userId, userInfo.sub);
 
         return response(null, 302, {
             Location: `${config.http.base_url}${

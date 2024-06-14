@@ -436,7 +436,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         header?: string;
         admin?: boolean;
         skipPasswordHash?: boolean;
-    }): Promise<User | null> {
+    }): Promise<User> {
         const keys = await User.generateKeys();
 
         const newUser = (
@@ -472,7 +472,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const finalUser = await User.fromId(newUser.id);
 
         if (!finalUser) {
-            return null;
+            throw new Error("Failed to create user");
         }
 
         // Add to Meilisearch

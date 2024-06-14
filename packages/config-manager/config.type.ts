@@ -93,6 +93,7 @@ export const configValidator = z.object({
     }),
     oidc: z.object({
         forced: z.boolean().default(false),
+        allow_registration: z.boolean().default(true),
         providers: z
             .array(
                 z.object({

@@ -48,10 +48,11 @@ rules = [
 jwt_key = ""
 
 # If enabled, Lysand will require users to log in with an OAuth provider
-# Note that registering with an OAuth provider is not supported yet, so
-# this will lock out users who are not already registered or who do not have
-# an OAuth account linked
 forced = false
+
+# Allow registration with OAuth providers
+# Overriden by the signups.registration setting
+allow_registration = true
 
 # Delete this section if you don't want to use custom OAuth providers
 # This is an example configuration

@@ -2,12 +2,13 @@ import { applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
 import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/database/entities/token";
 import { db } from "~/drizzle/db";
-import { RolePermissions, Tokens } from "~/drizzle/schema";
+import { RolePermissions, Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { OAuthManager } from "~/packages/database-interface/oauth";
 import { User } from "~/packages/database-interface/user";
@@ -111,7 +112,8 @@ export default (app: Hono) =>
                 return userInfo;
             }
 
-            const { sub } = userInfo.userInfo;
+            const { sub, email, preferred_username, picture } =
+                userInfo.userInfo;
             const flow = userInfo.flow;
 
             // If linking account
@@ -119,7 +121,7 @@ export default (app: Hono) =>
                 return await manager.linkUser(user_id, userInfo);
             }
 
-            const userId = (
+            let userId = (
                 await db.query.OpenIdAccounts.findFirst({
                     where: (account, { eq, and }) =>
                         and(
@@ -130,16 +132,76 @@ export default (app: Hono) =>
             )?.userId;
 
             if (!userId) {
-                return returnError(
-                    {
-                        redirect_uri: flow.application?.redirectUri,
-                        client_id: flow.application?.clientId,
-                        response_type: "code",
-                        scope: flow.application?.scopes,
-                    },
-                    "invalid_request",
-                    "No user found with that account",
-                );
+                // Register new user
+                if (
+                    config.signups.registration &&
+                    config.oidc.allow_registration
+                ) {
+                    let username =
+                        preferred_username ??
+                        email?.split("@")[0] ??
+                        randomString(8, "hex");
+
+                    const usernameValidator = z
+                        .string()
+                        .regex(/^[a-z0-9_]+$/)
+                        .min(3)
+                        .max(config.validation.max_username_size)
+                        .refine(
+                            (value) =>
+                                !config.validation.username_blacklist.includes(
+                                    value,
+                                ),
+                        )
+                        .refine((value) =>
+                            config.filters.username.some((filter) =>
+                                value.match(filter),
+                            ),
+                        )
+                        .refine(
+                            async (value) =>
+                                !(await User.fromSql(
+                                    and(
+                                        eq(Users.username, value),
+                                        isNull(Users.instanceId),
+                                    ),
+                                )),
+                        );
+
+                    try {
+                        await usernameValidator.parseAsync(username);
+                    } catch {
+                        username = randomString(8, "hex");
+                    }
+
+                    const doesEmailExist = email
+                        ? !!(await User.fromSql(eq(Users.email, email)))
+                        : false;
+
+                    // Create new user
+                    const user = await User.fromDataLocal({
+                        email: doesEmailExist ? undefined : email,
+                        username,
+                        avatar: picture,
+                        password: undefined,
+                    });
+
+                    // Link account
+                    await manager.linkUserInDatabase(user.id, sub);
+
+                    userId = user.id;
+                } else {
+                    return returnError(
+                        {
+                            redirect_uri: flow.application?.redirectUri,
+                            client_id: flow.application?.clientId,
+                            response_type: "code",
+                            scope: flow.application?.scopes,
+                        },
+                        "invalid_request",
+                        "No user found with that account",
+                    );
+                }
             }
 
             const user = await User.fromId(userId);

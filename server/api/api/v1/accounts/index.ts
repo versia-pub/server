@@ -2,7 +2,7 @@ import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { jsonResponse, response } from "@/response";
 import { tempmailDomains } from "@/tempmail";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -30,7 +30,7 @@ export const schemas = {
     form: z.object({
         username: z.string(),
         email: z.string().toLowerCase(),
-        password: z.string(),
+        password: z.string().optional(),
         agreement: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
@@ -153,7 +153,12 @@ export default (app: Hono) =>
             }
 
             // Check if username is taken
-            if (await User.fromSql(eq(Users.username, username))) {
+            if (
+                await User.fromSql(
+                    and(eq(Users.username, username)),
+                    isNull(Users.instanceId),
+                )
+            ) {
                 errors.details.username.push({
                     error: "ERR_TAKEN",
                     description: "is already taken",
