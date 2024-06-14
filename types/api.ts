@@ -13,7 +13,9 @@ export interface ApiRouteMetadata {
     route: string;
     auth: {
         required: boolean;
-        requiredOnMethods?: HttpVerb[];
+        methodOverrides?: {
+            [Key in HttpVerb]?: boolean;
+        };
         oauthPermissions?: string[];
     };
     permissions?: {

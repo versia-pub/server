@@ -158,7 +158,7 @@ const checkRouteNeedsAuth = (
         );
     }
 
-    if (authData.requiredOnMethods?.includes(context.req.method as HttpVerb)) {
+    if (authData.methodOverrides?.[context.req.method as HttpVerb]) {
         return context.json(
             {
                 error: "Unauthorized",

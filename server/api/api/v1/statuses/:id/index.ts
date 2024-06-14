@@ -25,7 +25,10 @@ export const meta = applyConfig({
     route: "/api/v1/statuses/:id",
     auth: {
         required: false,
-        requiredOnMethods: ["DELETE", "PUT"],
+        methodOverrides: {
+            DELETE: true,
+            PUT: true,
+        },
     },
     permissions: {
         required: [RolePermissions.ViewNotes],
