@@ -15,7 +15,7 @@
 
 ## With Docker/Podman
 
-Docker is the recommended way to run Lysand (podman also works). To run Lysand with Docker, follow these steps:
+Docker is the recommended way to run Lysand (Podman also works). To run Lysand with Docker, follow these steps:
 
 1. Download the `docker-compose.yml` file from the repository
 
