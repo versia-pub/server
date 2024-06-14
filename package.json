@@ -111,7 +111,7 @@
         "config-manager": "workspace:*",
         "drizzle-orm": "^0.31.2",
         "extract-zip": "^2.0.1",
-        "hono": "^4.4.5",
+        "hono": "^4.4.6",
         "html-to-text": "^9.0.5",
         "husky": "^9.0.11",
         "ioredis": "^5.4.1",
