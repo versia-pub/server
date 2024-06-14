@@ -59,19 +59,19 @@ bun install
 1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](database.md))
 
 2. (If you want search)
-Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](docker-compose.yml) file.
+Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](../docker-compose.yml) file.
 
-Set up Meiliseach's API key by passing the `MEILI_MASTER_KEY` environment variable to the server. Then, enable and configure search in the config file.
-
-3. Build everything:
+1. Build everything:
 
 ```bash
-bun prod-build
+bun run build
 ```
 
-4. Copy the `config.toml.example` file to `config.toml` inside `dist/config/` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
+4. Copy the `config.example.toml` file to `config.toml` inside `dist/config/` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
 
-You may now start the server with `bun start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
+CD to the `dist/` directory: `cd dist`
+
+You may now start the server with `bun run cli/index.js start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
 
 ## Running the Server
 

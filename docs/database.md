@@ -5,6 +5,3 @@ Lysand uses a special PostgreSQL extension called `pg_uuidv7` to generate UUIDs.
 ## Using the Docker image
 
 Lysand offers a pre-made Docker image for PostgreSQL with the extension already installed. Use `ghcr.io/lysand-org/postgres:main` as your Docker image name to use it.
-
-## Manual installation
-
