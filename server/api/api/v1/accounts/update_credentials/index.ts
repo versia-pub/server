@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { MediaBackend } from "media-manager";
@@ -12,7 +12,7 @@ import { getUrl } from "~/database/entities/attachment";
 import { parseEmojis } from "~/database/entities/emoji";
 import { contentToHtml } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
-import { EmojiToUser, RolePermissions } from "~/drizzle/schema";
+import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
 import type { Emoji } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 
@@ -191,6 +191,15 @@ export default (app: Hono) =>
             }
 
             if (username) {
+                // Check if username is already taken
+                const existingUser = await User.fromSql(
+                    and(isNull(Users.instanceId), eq(Users.username, username)),
+                );
+
+                if (existingUser) {
+                    return errorResponse("Username is already taken", 400);
+                }
+
                 self.username = username;
             }
 

@@ -62,3 +62,10 @@ An extra attribute has been adding to all returned account objects:
 ### `roles`
 
 An array of roles from [Lysand Roles](./roles.md).
+
+### `/api/v1/accounts/update_credentials`
+
+The `username` parameter can now (optionally) be set to change the user's handle.
+
+> [!WARNING]
+> Clients should indicate to users that changing their handle will break existing links to their profile. This is reversible, but the old handle will be available for anyone to claim.
