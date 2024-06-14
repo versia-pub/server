@@ -21,6 +21,9 @@ export const meta = applyConfig({
         required: false,
         oauthPermissions: ["write:accounts"],
     },
+    challenge: {
+        required: true,
+    },
 });
 
 export const schemas = {
@@ -41,9 +44,9 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
+        auth(meta.auth, meta.permissions, meta.challenge),
         jsonOrForm(),
         zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth, meta.permissions),
         async (context) => {
             const form = context.req.valid("form");
             const { username, email, password, agreement, locale } =

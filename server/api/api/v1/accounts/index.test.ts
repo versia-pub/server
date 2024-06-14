@@ -4,7 +4,7 @@ import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
-import { sendTestRequest } from "~/tests/utils";
+import { getSolvedChallenge, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 const username = randomString(10, "hex");
@@ -23,6 +23,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username,
@@ -44,6 +45,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username,
@@ -65,6 +67,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username,
@@ -85,6 +88,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username,
@@ -102,6 +106,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username2,
@@ -123,6 +128,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username,
@@ -140,6 +146,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: username2,
@@ -161,6 +168,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: "bob$",
@@ -180,6 +188,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: "bob-markey",
@@ -199,6 +208,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: "bob markey",
@@ -218,6 +228,7 @@ describe(meta.route, () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
+                    "X-Challenge-Solution": await getSolvedChallenge(),
                 },
                 body: JSON.stringify({
                     username: "BOB",

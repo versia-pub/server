@@ -53,7 +53,7 @@ describe(meta.route, () => {
         expect(response.headers.get("location")).toBeDefined();
         const locationHeader = new URL(
             response.headers.get("Location") ?? "",
-            "",
+            config.http.base_url,
         );
 
         expect(locationHeader.pathname).toBe("/oauth/consent");
@@ -92,7 +92,7 @@ describe(meta.route, () => {
         expect(response.headers.get("location")).toBeDefined();
         const locationHeader = new URL(
             response.headers.get("Location") ?? "",
-            "",
+            config.http.base_url,
         );
 
         expect(locationHeader.pathname).toBe("/oauth/consent");

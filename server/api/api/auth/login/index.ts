@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, response } from "@/response";
+import { errorResponse, redirect } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq, or } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -73,12 +73,12 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error", error);
     searchParams.append("error_description", description);
 
-    return response(null, 302, {
-        Location: new URL(
+    return redirect(
+        new URL(
             `${config.frontend.routes.login}?${searchParams.toString()}`,
             config.http.base_url,
-        ).toString(),
-    });
+        ),
+    );
 };
 
 export default (app: Hono) =>
@@ -124,17 +124,14 @@ export default (app: Hono) =>
             }
 
             if (user.data.passwordResetToken) {
-                return response(null, 302, {
-                    Location: new URL(
-                        `${
-                            config.frontend.routes.password_reset
-                        }?${new URLSearchParams({
-                            token: user.data.passwordResetToken ?? "",
-                            login_reset: "true",
-                        }).toString()}`,
-                        config.http.base_url,
-                    ).toString(),
-                });
+                return redirect(
+                    `${
+                        config.frontend.routes.password_reset
+                    }?${new URLSearchParams({
+                        token: user.data.passwordResetToken ?? "",
+                        login_reset: "true",
+                    }).toString()}`,
+                );
             }
 
             // Try and import the key
@@ -186,17 +183,14 @@ export default (app: Hono) =>
             }
 
             // Redirect to OAuth authorize with JWT
-            return response(null, 302, {
-                Location: new URL(
-                    `${
-                        config.frontend.routes.consent
-                    }?${searchParams.toString()}`,
-                    config.http.base_url,
-                ).toString(),
-                // Set cookie with JWT
-                "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
-                    60 * 60
-                }`,
-            });
+            return redirect(
+                `${config.frontend.routes.consent}?${searchParams.toString()}`,
+                302,
+                {
+                    "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
+                        60 * 60
+                    }`,
+                },
+            );
         },
     );

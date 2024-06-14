@@ -330,6 +330,19 @@ export const configValidator = z.object({
             allowed_mime_types: z
                 .array(z.string())
                 .default(Object.values(mimeTypes)),
+            challenges: z
+                .object({
+                    enabled: z.boolean().default(true),
+                    difficulty: z.number().int().positive().default(50000),
+                    expiration: z.number().int().positive().default(300),
+                    key: z.string().default(""),
+                })
+                .default({
+                    enabled: true,
+                    difficulty: 50000,
+                    expiration: 300,
+                    key: "",
+                }),
         })
         .default({
             max_displayname_size: 50,
@@ -399,6 +412,12 @@ export const configValidator = z.object({
             ],
             enforce_mime_types: false,
             allowed_mime_types: Object.values(mimeTypes),
+            challenges: {
+                enabled: true,
+                difficulty: 50000,
+                expiration: 300,
+                key: "",
+            },
         }),
     defaults: z
         .object({

@@ -12,6 +12,10 @@ For client developers. Please read [the documentation](./emojis.md).
 
 For client developers. Please read [the documentation](./roles.md).
 
+## Challenges API
+
+For client developers. Please read [the documentation](./challenges.md).
+
 ## Moderation API
 
 > [!WARNING]

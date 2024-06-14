@@ -39,15 +39,49 @@ export const schemas = {
             .min(3)
             .trim()
             .max(config.validation.max_displayname_size)
+            .refine(
+                (s) =>
+                    !config.filters.displayname.some((filter) =>
+                        s.match(filter),
+                    ),
+                "Display name contains blocked words",
+            )
+            .optional(),
+        username: z
+            .string()
+            .min(3)
+            .trim()
+            .max(config.validation.max_username_size)
+            .refine(
+                (s) =>
+                    !config.filters.username.some((filter) => s.match(filter)),
+                "Username contains blocked words",
+            )
             .optional(),
         note: z
             .string()
             .min(0)
             .max(config.validation.max_bio_size)
             .trim()
+            .refine(
+                (s) => !config.filters.bio.some((filter) => s.match(filter)),
+                "Bio contains blocked words",
+            )
             .optional(),
-        avatar: z.instanceof(File).optional(),
-        header: z.instanceof(File).optional(),
+        avatar: z
+            .instanceof(File)
+            .refine(
+                (v) => v.size <= config.validation.max_avatar_size,
+                `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+            )
+            .optional(),
+        header: z
+            .instanceof(File)
+            .refine(
+                (v) => v.size <= config.validation.max_header_size,
+                `Header must be less than ${config.validation.max_header_size} bytes`,
+            )
+            .optional(),
         locked: z
             .string()
             .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
@@ -105,6 +139,7 @@ export default (app: Hono) =>
             const { user } = context.req.valid("header");
             const {
                 display_name,
+                username,
                 note,
                 avatar,
                 header,
@@ -131,27 +166,10 @@ export default (app: Hono) =>
             );
 
             if (display_name) {
-                // Check if display name doesnt match filters
-                if (
-                    config.filters.displayname.some((filter) =>
-                        sanitizedDisplayName.match(filter),
-                    )
-                ) {
-                    return errorResponse(
-                        "Display name contains blocked words",
-                        422,
-                    );
-                }
-
                 self.displayName = sanitizedDisplayName;
             }
 
             if (note && self.source) {
-                // Check if bio doesnt match filters
-                if (config.filters.bio.some((filter) => note.match(filter))) {
-                    return errorResponse("Bio contains blocked words", 422);
-                }
-
                 self.source.note = note;
                 self.note = await contentToHtml({
                     "text/markdown": {
@@ -172,29 +190,17 @@ export default (app: Hono) =>
                 self.source.language = source.language;
             }
 
-            if (avatar) {
-                // Check if within allowed avatar length (avatar is an image)
-                if (avatar.size > config.validation.max_avatar_size) {
-                    return errorResponse(
-                        `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
-                        422,
-                    );
-                }
+            if (username) {
+                self.username = username;
+            }
 
+            if (avatar) {
                 const { path } = await mediaManager.addFile(avatar);
 
                 self.avatar = getUrl(path, config);
             }
 
             if (header) {
-                // Check if within allowed header length (header is an image)
-                if (header.size > config.validation.max_header_size) {
-                    return errorResponse(
-                        `Header must be less than ${config.validation.max_avatar_size} bytes`,
-                        422,
-                    );
-                }
-
                 const { path } = await mediaManager.addFile(header);
 
                 self.header = getUrl(path, config);

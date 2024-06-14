@@ -1,5 +1,7 @@
+import { generateChallenge } from "@/challenges";
 import { consoleLogger } from "@/loggers";
 import { randomString } from "@/math";
+import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import type { Status } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
@@ -117,4 +119,35 @@ export const getTestStatuses = async (
             user.id,
         )
     ).map((n) => n.data);
+};
+
+/**
+ * Generates a solved challenge (with tiny difficulty)
+ *
+ * Only to be used in tests
+ * @returns Base64 encoded payload
+ */
+export const getSolvedChallenge = async () => {
+    const { challenge } = await generateChallenge(100);
+
+    const solution = await solveChallenge(
+        challenge.challenge,
+        challenge.salt,
+        challenge.algorithm,
+        challenge.maxnumber,
+    ).promise;
+
+    if (!solution) {
+        throw new Error("Failed to solve challenge");
+    }
+
+    return Buffer.from(
+        JSON.stringify({
+            number: solution.number,
+            algorithm: challenge.algorithm,
+            challenge: challenge.challenge,
+            salt: challenge.salt,
+            signature: challenge.signature,
+        }),
+    ).toString("base64");
 };

@@ -1,0 +1,1 @@
+ALTER TABLE "CaptchaChallenges" RENAME TO "Challenges";

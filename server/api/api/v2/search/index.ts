@@ -1,4 +1,4 @@
-import { applyConfig, auth, handleZodError } from "@/api";
+import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
 import { dualLogger } from "@/loggers";
 import { MeiliIndexType, meilisearch } from "@/meilisearch";
 import { errorResponse, jsonResponse } from "@/response";
@@ -75,9 +75,7 @@ export default (app: Hono) =>
 
             if (!type || type === "accounts") {
                 // Check if q is matching format username@domain.com or @username@domain.com
-                const accountMatches = q
-                    ?.trim()
-                    .match(/@?[a-zA-Z0-9_]+(@[a-zA-Z0-9_.:]+)/g);
+                const accountMatches = q?.trim().match(userAddressValidator);
                 if (accountMatches) {
                     // Remove leading @ if it exists
                     if (accountMatches[0].startsWith("@")) {

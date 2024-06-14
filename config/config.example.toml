@@ -252,6 +252,19 @@ enforce_mime_types = false
 # Defaults to all valid MIME types
 # allowed_mime_types = []
 
+[validation.challenges]
+# "Challenges" (aka captchas) are a way to verify that a user is human
+# Lysand's challenges use no external services, and are Proof of Work based
+# This means that they do not require any user interaction, instead
+# they require the user's computer to do a small amount of work
+enabled = false
+# The difficulty of the challenge, higher is will take more time to solve
+difficulty = 50000
+# Challenge expiration time in seconds
+expiration = 300 # 5 minutes
+# Leave this empty to generate a new key
+key = ""
+
 [defaults]
 # Default visibility for new notes
 # Can be public, unlisted, private or direct

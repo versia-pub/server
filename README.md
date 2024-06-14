@@ -47,6 +47,7 @@
 - [x] Fully written in TypeScript and thoroughly unit tested
 - [x] Automatic signed container builds for easy deployment
 - [x] Docker and Podman supported
+- [x] Invisible, Proof-of-Work local CAPTCHA for API requests
 
 ## Screenshots
 

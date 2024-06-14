@@ -108,7 +108,7 @@ export default (app: Hono) =>
                 await Promise.all(objects.map((note) => note.toApi(otherUser))),
                 200,
                 {
-                    Link: link,
+                    link,
                 },
             );
         },

@@ -106,6 +106,44 @@ if (isEntry) {
         );
         process.exit(1);
     }
+
+    if (
+        config.validation.challenges.enabled &&
+        !config.validation.challenges.key
+    ) {
+        await dualServerLogger.log(
+            LogLevel.Critical,
+            "Server",
+            "Challenges are enabled, but the challenge key is not set in the config",
+        );
+
+        await dualServerLogger.log(
+            LogLevel.Critical,
+            "Server",
+            "Below is a generated key for you to copy in the config at validation.challenges.key",
+        );
+
+        const key = await crypto.subtle.generateKey(
+            {
+                name: "HMAC",
+                hash: "SHA-256",
+            },
+            true,
+            ["sign"],
+        );
+
+        const exported = await crypto.subtle.exportKey("raw", key);
+
+        const base64 = Buffer.from(exported).toString("base64");
+
+        await dualServerLogger.log(
+            LogLevel.Critical,
+            "Server",
+            `Generated key: ${chalk.gray(base64)}`,
+        );
+
+        process.exit(1);
+    }
 }
 
 const app = new Hono({

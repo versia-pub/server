@@ -16,16 +16,18 @@ import {
 } from "drizzle-orm/pg-core";
 import type { Source as apiSource } from "~/types/mastodon/source";
 
-export const CaptchaChallenges = pgTable("CaptchaChallenges", {
+export const Challenges = pgTable("Challenges", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     challenge: jsonb("challenge").notNull().$type<Challenge>(),
     expiresAt: timestamp("expires_at", {
         precision: 3,
         mode: "string",
-    }).default(
-        // 5 minutes
-        sql`NOW() + INTERVAL '5 minutes'`,
-    ),
+    })
+        .default(
+            // 5 minutes
+            sql`NOW() + INTERVAL '5 minutes'`,
+        )
+        .notNull(),
     createdAt: timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull(),

@@ -18,6 +18,12 @@ export interface ApiRouteMetadata {
         };
         oauthPermissions?: string[];
     };
+    challenge?: {
+        required: boolean;
+        methodOverrides?: {
+            [Key in HttpVerb]?: boolean;
+        };
+    };
     permissions?: {
         required: RolePermissions[];
         methodOverrides?: {

@@ -53,9 +53,14 @@ export const errorResponse = (error: string, status = 500) => {
     );
 };
 
-export const redirect = (url: string | URL, status = 302) => {
+export const redirect = (
+    url: string | URL,
+    status = 302,
+    extraHeaders: Record<string, string> = {},
+) => {
     return response(null, status, {
         Location: url.toString(),
+        ...extraHeaders,
     });
 };
 

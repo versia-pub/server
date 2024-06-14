@@ -1,8 +1,11 @@
 import { errorResponse } from "@/response";
+import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { config } from "config-manager";
+import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { createMiddleware } from "hono/factory";
+import type { StatusCode } from "hono/utils/http-status";
 import { validator } from "hono/validator";
 import {
     anyOf,
@@ -21,6 +24,8 @@ import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import type { Application } from "~/database/entities/application";
 import { type AuthData, getFromHeader } from "~/database/entities/user";
+import { db } from "~/drizzle/db";
+import { Challenges } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
 import type { ApiRouteMetadata, HttpVerb } from "~/types/api";
@@ -79,6 +84,18 @@ export const mentionValidator = createRegExp(
     [global],
 );
 
+export const userAddressValidator = createRegExp(
+    maybe("@"),
+    oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
+        "username",
+    ),
+    maybe(
+        exactly("@"),
+        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
+    ),
+    [global],
+);
+
 export const webfingerMention = createRegExp(
     exactly("acct:"),
     oneOrMore(anyOf(letter, digit, charIn("-"))).groupedAs("username"),
@@ -106,6 +123,22 @@ const getAuth = async (value: Record<string, string>) => {
         : null;
 };
 
+const returnContextError = (
+    context: Context,
+    error: string,
+    code?: StatusCode,
+) => {
+    const templateError = errorResponse(error, code);
+
+    return context.json(
+        {
+            error,
+        },
+        code,
+        templateError.headers.toJSON(),
+    );
+};
+
 const checkPermissions = (
     auth: AuthData | null,
     permissionData: ApiRouteMetadata["permissions"],
@@ -118,18 +151,15 @@ const checkPermissions = (
         permissionData?.methodOverrides?.[context.req.method as HttpVerb] ??
         permissionData?.required ??
         [];
-    const error = errorResponse("Unauthorized", 401);
 
     if (!requiredPerms.every((perm) => userPerms.includes(perm))) {
         const missingPerms = requiredPerms.filter(
             (perm) => !userPerms.includes(perm),
         );
-        return context.json(
-            {
-                error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
-            },
+        return returnContextError(
+            context,
+            `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
             403,
-            error.headers.toJSON(),
         );
     }
 };
@@ -139,8 +169,6 @@ const checkRouteNeedsAuth = (
     authData: ApiRouteMetadata["auth"],
     context: Context,
 ) => {
-    const error = errorResponse("Unauthorized", 401);
-
     if (auth?.user) {
         return {
             user: auth.user as User,
@@ -148,23 +176,14 @@ const checkRouteNeedsAuth = (
             application: auth.application as Application | null,
         };
     }
-    if (authData.required) {
-        return context.json(
-            {
-                error: "Unauthorized",
-            },
+    if (
+        authData.required ||
+        authData.methodOverrides?.[context.req.method as HttpVerb]
+    ) {
+        return returnContextError(
+            context,
+            "This route requires authentication.",
             401,
-            error.headers.toJSON(),
-        );
-    }
-
-    if (authData.methodOverrides?.[context.req.method as HttpVerb]) {
-        return context.json(
-            {
-                error: "Unauthorized",
-            },
-            401,
-            error.headers.toJSON(),
         );
     }
 
@@ -175,9 +194,80 @@ const checkRouteNeedsAuth = (
     };
 };
 
+export const checkRouteNeedsChallenge = async (
+    challengeData: ApiRouteMetadata["challenge"],
+    context: Context,
+) => {
+    if (!challengeData) {
+        return true;
+    }
+
+    const challengeSolution = context.req.header("X-Challenge-Solution");
+
+    if (!challengeSolution) {
+        return returnContextError(
+            context,
+            "This route requires a challenge solution to be sent to it via the X-Challenge-Solution header. Please check the documentation for more information.",
+            401,
+        );
+    }
+
+    const { challenge_id } = extractParams(challengeSolution);
+
+    if (!challenge_id) {
+        return returnContextError(
+            context,
+            "The challenge solution provided is invalid.",
+            401,
+        );
+    }
+
+    const challenge = await db.query.Challenges.findFirst({
+        where: (c, { eq }) => eq(c.id, challenge_id),
+    });
+
+    if (!challenge) {
+        return returnContextError(
+            context,
+            "The challenge solution provided is invalid.",
+            401,
+        );
+    }
+
+    if (new Date(challenge.expiresAt) < new Date()) {
+        return returnContextError(
+            context,
+            "The challenge provided has expired.",
+            401,
+        );
+    }
+
+    const isValid = await verifySolution(
+        challengeSolution,
+        config.validation.challenges.key,
+    );
+
+    if (!isValid) {
+        return returnContextError(
+            context,
+            "The challenge solution provided is incorrect.",
+            401,
+        );
+    }
+
+    // Expire the challenge
+    await db
+        .update(Challenges)
+        .set({ expiresAt: new Date().toISOString() })
+        .where(eq(Challenges.id, challenge_id));
+
+    return true;
+};
+
 export const auth = (
     authData: ApiRouteMetadata["auth"],
     permissionData?: ApiRouteMetadata["permissions"],
+    challengeData?: ApiRouteMetadata["challenge"],
 ) =>
     validator("header", async (value, context) => {
         const auth = await getAuth(value);
@@ -191,6 +281,16 @@ export const auth = (
             );
             if (permissionCheck) {
                 return permissionCheck;
+            }
+        }
+
+        if (challengeData) {
+            const challengeCheck = await checkRouteNeedsChallenge(
+                challengeData,
+                context,
+            );
+            if (challengeCheck !== true) {
+                return challengeCheck;
             }
         }
 
