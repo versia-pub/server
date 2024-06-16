@@ -80,7 +80,9 @@ export class MediaConverter {
             );
         }
 
-        const sharpCommand = sharp(await media.arrayBuffer());
+        const sharpCommand = sharp(await media.arrayBuffer(), {
+            animated: true,
+        });
 
         const commandName = toMime.split("/")[1] as
             | "jpeg"
