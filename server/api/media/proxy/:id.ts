@@ -46,6 +46,15 @@ export default (app: Hono) =>
                 },
             });
 
+            // Check if file extension ends in svg or svg
+            // Cloudflare R2 serves those as application/xml
+            if (
+                media.headers.get("Content-Type") === "application/xml" &&
+                id.endsWith(".svg")
+            ) {
+                media.headers.set("Content-Type", "image/svg+xml");
+            }
+
             const realFilename =
                 media.headers
                     .get("Content-Disposition")
