@@ -284,7 +284,7 @@ export const auth = (
             }
         }
 
-        if (challengeData) {
+        if (challengeData && config.validation.challenges.enabled) {
             const challengeCheck = await checkRouteNeedsChallenge(
                 challengeData,
                 context,
