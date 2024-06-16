@@ -3,6 +3,7 @@
  * @module MediaManager
  * @description Handles media conversion between formats
  */
+import { config } from "config-manager";
 import sharp from "sharp";
 
 export const supportedMediaFormats = [
@@ -33,6 +34,13 @@ export class MediaConverter {
      * @returns Whether the media is convertable
      */
     public isConvertable(file: File) {
+        if (
+            file.type === "image/svg+xml" &&
+            !config.media.conversion.convert_vector
+        ) {
+            return false;
+        }
+
         return supportedMediaFormats.includes(file.type);
     }
 

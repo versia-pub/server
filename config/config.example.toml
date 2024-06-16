@@ -160,6 +160,8 @@ convert_images = true
 # Can be: "image/jxl", "image/webp", "image/avif", "image/png", "image/jpeg", "image/heif", "image/gif"
 # JXL support will likely not work
 convert_to = "image/webp"
+# Also convert SVG images?
+convert_vector = false
 
 # [s3]
 # Can be left blank if you don't use the S3 media backend

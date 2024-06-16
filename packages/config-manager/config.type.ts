@@ -224,10 +224,12 @@ export const configValidator = z.object({
                 .object({
                     convert_images: z.boolean().default(false),
                     convert_to: z.string().default("image/webp"),
+                    convert_vector: z.boolean().default(false),
                 })
                 .default({
                     convert_images: false,
                     convert_to: "image/webp",
+                    convert_vector: false,
                 }),
         })
         .default({
