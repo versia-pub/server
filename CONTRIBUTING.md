@@ -39,7 +39,7 @@ bun install
 
 3. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](database.md))
 
-4. Copy the `config/config.toml.example` file to `config/config.toml` and edit it to set up the database connection and other settings.
+4. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
 ## Testing your changes
 
