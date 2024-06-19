@@ -321,6 +321,7 @@ export default (app: Hono) =>
 
             await user.update({
                 displayName: self.displayName,
+                username: self.username,
                 note: self.note,
                 avatar: self.avatar,
                 header: self.header,
