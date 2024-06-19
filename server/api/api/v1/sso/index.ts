@@ -66,7 +66,7 @@ export default (app: Hono) =>
                 case "GET": {
                     // Get all linked accounts
                     const accounts = await db.query.OpenIdAccounts.findMany({
-                        where: (user, { eq }) => eq(user.userId, user.id),
+                        where: (User, { eq }) => eq(User.userId, user.id),
                     });
 
                     return jsonResponse(
