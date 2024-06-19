@@ -4,6 +4,7 @@ import { randomString } from "@/math";
 import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
 import { EntityValidator } from "@lysand-org/federation";
+import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -254,9 +255,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             },
         });
 
-        const json = (await response.json()) as Partial<
-            typeof EntityValidator.$User
-        >;
+        const json = (await response.json()) as Partial<LysandUser>;
 
         const validator = new EntityValidator();
 
@@ -299,7 +298,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     static async fromLysand(
-        user: typeof EntityValidator.$User,
+        user: LysandUser,
         instance: InferSelectModel<typeof Instances>,
     ): Promise<User> {
         const data = {
@@ -535,7 +534,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return updated.data;
     }
 
-    async federateToFollowers(object: typeof EntityValidator.$Entity) {
+    async federateToFollowers(object: Entity) {
         // Get followers
         const followers = await User.manyFromSql(
             and(
@@ -625,7 +624,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toLysand(): typeof EntityValidator.$User {
+    toLysand(): LysandUser {
         if (this.isRemote()) {
             throw new Error("Cannot convert remote user to Lysand format");
         }

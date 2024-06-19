@@ -1,9 +1,7 @@
-import type { EntityValidator } from "@lysand-org/federation";
+import type { ContentFormat } from "@lysand-org/federation/types";
 import { lookup } from "mime-types";
 
-export const getBestContentType = (
-    content?: typeof EntityValidator.$ContentFormat,
-) => {
+export const getBestContentType = (content?: ContentFormat) => {
     if (!content) {
         return { content: "", format: "text/plain" };
     }
@@ -24,9 +22,7 @@ export const getBestContentType = (
     return { content: "", format: "text/plain" };
 };
 
-export const urlToContentFormat = (
-    url?: string,
-): typeof EntityValidator.$ContentFormat | null => {
+export const urlToContentFormat = (url?: string): ContentFormat | null => {
     if (!url) {
         return null;
     }

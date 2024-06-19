@@ -3,6 +3,10 @@ import { dualLogger } from "@/loggers";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { EntityValidator } from "@lysand-org/federation";
+import type {
+    ContentFormat,
+    Note as LysandNote,
+} from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
     type SQL,
@@ -302,7 +306,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      */
     static async fromData(data: {
         author: User;
-        content: typeof EntityValidator.$ContentFormat;
+        content: ContentFormat;
         visibility: APIStatus["visibility"];
         isSensitive: boolean;
         spoilerText: string;
@@ -392,7 +396,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      */
     async updateFromData(data: {
         author?: User;
-        content?: typeof EntityValidator.$ContentFormat;
+        content?: ContentFormat;
         visibility?: APIStatus["visibility"];
         isSensitive?: boolean;
         spoilerText?: string;
@@ -579,7 +583,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @returns The saved note, or null if the note could not be fetched
      */
     static async saveFromRemote(uri: string): Promise<Note | null> {
-        let note: typeof EntityValidator.$Note | null = null;
+        let note: LysandNote | null = null;
 
         if (uri) {
             if (!URL.canParse(uri)) {
@@ -615,10 +619,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @param author Author of the note
      * @returns The saved note
      */
-    static async fromLysand(
-        note: typeof EntityValidator.$Note,
-        author: User,
-    ): Promise<Note> {
+    static async fromLysand(note: LysandNote, author: User): Promise<Note> {
         const emojis: Emoji[] = [];
 
         for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
@@ -878,7 +879,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * Convert a note to the Lysand format
      * @returns The note in the Lysand format
      */
-    toLysand(): typeof EntityValidator.$Note {
+    toLysand(): LysandNote {
         const status = this.data;
         return {
             type: "Note",

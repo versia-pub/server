@@ -1,4 +1,4 @@
-import type { EntityValidator } from "@lysand-org/federation";
+import type { ServerMetadata } from "@lysand-org/federation/types";
 import { db } from "~/drizzle/db";
 import { Instances } from "~/drizzle/schema";
 
@@ -26,7 +26,7 @@ export const addInstanceIfNotExists = async (url: string) => {
     // Fetch the instance configuration
     const metadata = (await fetch(new URL("/.well-known/lysand", origin)).then(
         (res) => res.json(),
-    )) as typeof EntityValidator.$ServerMetadata;
+    )) as ServerMetadata;
 
     if (metadata.type !== "ServerMetadata") {
         throw new Error("Invalid instance metadata (wrong type)");

@@ -1,8 +1,6 @@
 import { debugRequest } from "@/api";
-import {
-    type EntityValidator,
-    SignatureConstructor,
-} from "@lysand-org/federation";
+import { SignatureConstructor } from "@lysand-org/federation";
+import type { Entity, Undo } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import type { User } from "~/packages/database-interface/user";
 import { LogLevel, LogManager } from "~/packages/log-manager";
@@ -11,7 +9,7 @@ export const localObjectUri = (id: string) =>
     new URL(`/objects/${id}`, config.http.base_url).toString();
 
 export const objectToInboxRequest = async (
-    object: typeof EntityValidator.$Entity,
+    object: Entity,
     author: User,
     userToSendTo: User,
 ): Promise<Request> => {
@@ -68,10 +66,7 @@ export const objectToInboxRequest = async (
     return signed;
 };
 
-export const undoFederationRequest = (
-    undoer: User,
-    uri: string,
-): typeof EntityValidator.$Undo => {
+export const undoFederationRequest = (undoer: User, uri: string): Undo => {
     const id = crypto.randomUUID();
     return {
         type: "Undo",

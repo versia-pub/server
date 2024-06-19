@@ -1,4 +1,4 @@
-import type { EntityValidator } from "@lysand-org/federation";
+import type { ContentFormat } from "@lysand-org/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -375,8 +375,8 @@ export const Users = pgTable(
         passwordResetToken: text("password_reset_token"),
         fields: jsonb("fields").notNull().default("[]").$type<
             {
-                key: typeof EntityValidator.$ContentFormat;
-                value: typeof EntityValidator.$ContentFormat;
+                key: ContentFormat;
+                value: ContentFormat;
             }[]
         >(),
         endpoints: jsonb("endpoints").$type<Partial<{

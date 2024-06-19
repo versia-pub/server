@@ -100,7 +100,7 @@
         "@inquirer/confirm": "^3.1.10",
         "@inquirer/input": "^2.1.10",
         "@json2csv/plainjs": "^7.0.6",
-        "@lysand-org/federation": "^1.2.0",
+        "@lysand-org/federation": "^2.0.0",
         "@oclif/core": "^4.0.6",
         "@tufjs/canonical-json": "^2.0.0",
         "altcha-lib": "^0.3.0",

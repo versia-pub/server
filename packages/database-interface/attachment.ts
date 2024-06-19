@@ -1,5 +1,5 @@
 import { proxyUrl } from "@/response";
-import type { EntityValidator } from "@lysand-org/federation";
+import type { ContentFormat } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -183,7 +183,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public toLysand(): typeof EntityValidator.$ContentFormat {
+    public toLysand(): ContentFormat {
         return {
             [this.data.mimeType]: {
                 content: this.data.url,
@@ -204,7 +204,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
     }
 
     public static fromLysand(
-        attachmentToConvert: typeof EntityValidator.$ContentFormat,
+        attachmentToConvert: ContentFormat,
     ): Promise<Attachment> {
         const key = Object.keys(attachmentToConvert)[0];
         const value = attachmentToConvert[key];

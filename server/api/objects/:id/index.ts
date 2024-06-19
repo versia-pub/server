@@ -1,11 +1,11 @@
 import { applyConfig, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import type { EntityValidator } from "@lysand-org/federation";
+import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { type Like, likeToLysand } from "~/database/entities/like";
+import { type LikeType, likeToLysand } from "~/database/entities/like";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
@@ -36,8 +36,8 @@ export default (app: Hono) =>
         async (context) => {
             const { id } = context.req.valid("param");
 
-            let foundObject: Note | Like | null = null;
-            let apiObject: typeof EntityValidator.$Entity | null = null;
+            let foundObject: Note | LikeType | null = null;
+            let apiObject: Entity | null = null;
 
             foundObject = await Note.fromSql(
                 and(

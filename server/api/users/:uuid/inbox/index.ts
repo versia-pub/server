@@ -7,6 +7,7 @@ import {
     RequestParserHandler,
     SignatureValidator,
 } from "@lysand-org/federation";
+import type { Entity } from "@lysand-org/federation/types";
 import type { SocketAddress } from "bun";
 import { and, eq } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -72,8 +73,7 @@ export default (app: Hono) =>
                 return response(null, 201);
             }
 
-            const body: typeof EntityValidator.$Entity =
-                await context.req.valid("json");
+            const body: Entity = await context.req.valid("json");
 
             if (config.debug.federation) {
                 // Debug request

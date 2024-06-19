@@ -2,7 +2,7 @@ import { mentionValidator } from "@/api";
 import { dualLogger } from "@/loggers";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import type { EntityValidator } from "@lysand-org/federation";
+import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import {
     type InferSelectModel,
@@ -373,7 +373,7 @@ export const replaceTextMentions = (text: string, mentions: User[]) => {
 };
 
 export const contentToHtml = async (
-    content: typeof EntityValidator.$ContentFormat,
+    content: ContentFormat,
     mentions: User[] = [],
     inline = false,
 ): Promise<string> => {

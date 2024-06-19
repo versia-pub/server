@@ -1,5 +1,5 @@
 import { proxyUrl } from "@/response";
-import type { EntityValidator } from "@lysand-org/federation";
+import type { CustomEmojiExtension } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
     type SQL,
@@ -118,7 +118,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
     }
 
     public static async fetchFromRemote(
-        emojiToFetch: (typeof EntityValidator.$CustomEmojiExtension)["emojis"][0],
+        emojiToFetch: CustomEmojiExtension["emojis"][0],
         host?: string,
     ): Promise<Emoji> {
         const existingEmoji = await db
@@ -164,7 +164,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         };
     }
 
-    public toLysand(): (typeof EntityValidator.$CustomEmojiExtension)["emojis"][0] {
+    public toLysand(): CustomEmojiExtension["emojis"][0] {
         return {
             name: this.data.shortcode,
             url: {
@@ -177,7 +177,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
     }
 
     public static fromLysand(
-        emoji: (typeof EntityValidator.$CustomEmojiExtension)["emojis"][0],
+        emoji: CustomEmojiExtension["emojis"][0],
         instanceId: string | null,
     ): Promise<Emoji> {
         return Emoji.insert({

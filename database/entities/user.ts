@@ -1,5 +1,9 @@
 import { dualLogger } from "@/loggers";
-import type { EntityValidator } from "@lysand-org/federation";
+import type {
+    Follow,
+    FollowAccept,
+    FollowReject,
+} from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db";
@@ -505,7 +509,7 @@ export const getRelationshipToOtherUser = async (
 export const followRequestToLysand = (
     follower: User,
     followee: User,
-): typeof EntityValidator.$Follow => {
+): Follow => {
     if (follower.isRemote()) {
         throw new Error("Follower must be a local user");
     }
@@ -533,7 +537,7 @@ export const followRequestToLysand = (
 export const followAcceptToLysand = (
     follower: User,
     followee: User,
-): typeof EntityValidator.$FollowAccept => {
+): FollowAccept => {
     if (!follower.isRemote()) {
         throw new Error("Follower must be a remote user");
     }
@@ -561,7 +565,7 @@ export const followAcceptToLysand = (
 export const followRejectToLysand = (
     follower: User,
     followee: User,
-): typeof EntityValidator.$FollowReject => {
+): FollowReject => {
     return {
         ...followAcceptToLysand(follower, followee),
         type: "FollowReject",
