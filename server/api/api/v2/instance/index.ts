@@ -104,7 +104,7 @@ export default (app: Hono) =>
                 forced: false,
                 providers: config.oidc.providers.map((p) => ({
                     name: p.name,
-                    icon: p.icon,
+                    icon: proxyUrl(p.icon) || undefined,
                     id: p.id,
                 })),
             },

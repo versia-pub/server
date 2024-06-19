@@ -1,7 +1,7 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { randomString } from "@/math";
-import { errorResponse, jsonResponse } from "@/response";
+import { errorResponse, jsonResponse, proxyUrl } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import {
@@ -84,7 +84,7 @@ export default (app: Hono) =>
                                 return {
                                     id: issuer.id,
                                     name: issuer.name,
-                                    icon: issuer.icon,
+                                    icon: proxyUrl(issuer.icon) || undefined,
                                 };
                             })
                             .filter(Boolean) as {

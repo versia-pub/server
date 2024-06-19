@@ -1,5 +1,5 @@
 import { applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { errorResponse, jsonResponse, proxyUrl, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
@@ -77,7 +77,7 @@ export default (app: Hono) =>
                     return jsonResponse({
                         id: issuer.id,
                         name: issuer.name,
-                        icon: issuer.icon,
+                        icon: proxyUrl(issuer.icon) || undefined,
                     });
                 }
                 case "DELETE": {
