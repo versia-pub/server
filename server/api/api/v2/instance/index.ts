@@ -59,6 +59,18 @@ export default (app: Hono) =>
                 },
                 accounts: {
                     max_featured_tags: 100,
+                    max_note_characters: config.validation.max_bio_size,
+                    max_displayname_characters:
+                        config.validation.max_displayname_size,
+                    avatar_size_limit: config.validation.max_avatar_size,
+                    header_size_limit: config.validation.max_header_size,
+                    max_fields_name_characters:
+                        config.validation.max_field_name_size,
+                    max_fields_value_characters:
+                        config.validation.max_field_value_size,
+                    max_fields: config.validation.max_field_count,
+                    max_username_characters:
+                        config.validation.max_username_size,
                 },
                 statuses: {
                     max_characters: config.validation.max_note_size,
@@ -73,6 +85,8 @@ export default (app: Hono) =>
                     video_size_limit: config.validation.max_media_size,
                     video_frame_rate_limit: config.validation.max_media_size,
                     video_matrix_limit: config.validation.max_media_size,
+                    max_description_characters:
+                        config.validation.max_media_description_size,
                 },
                 polls: {
                     max_characters_per_option:
