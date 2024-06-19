@@ -27,7 +27,7 @@
                 "EditorConfig.EditorConfig",
                 "tamasfe.even-better-toml",
                 "YoavBls.pretty-ts-errors",
-                "ms-vscode-remote.remote-containers"
+                "eamodio.gitlens"
             ]
         }
     }

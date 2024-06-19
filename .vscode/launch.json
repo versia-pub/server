@@ -8,7 +8,6 @@
             "cwd": "/home/jessew/Dev/lysand",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
-            "disableOptimisticBPs": true,
             "program": "/home/jessew/.bun/bin/bun"
         }
     ]

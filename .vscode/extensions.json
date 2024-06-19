@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "biomejs.biome",
+        "ms-vscode-remote.remote-containers",
+        "oven.bun-vscode",
+        "vivaxy.vscode-conventional-commits",
+        "EditorConfig.EditorConfig",
+        "tamasfe.even-better-toml",
+        "YoavBls.pretty-ts-errors",
+        "eamodio.gitlens"
+    ],
+    "unwantedRecommendations": []
+}
