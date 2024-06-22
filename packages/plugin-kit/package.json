@@ -1,0 +1,41 @@
+{
+    "name": "@lysand-org/kit",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.0.0",
+    "description": "Framework for building Lysand Server plugins",
+    "author": {
+        "email": "contact@cpluspatch.com",
+        "name": "CPlusPatch",
+        "url": "https://cpluspatch.com"
+    },
+    "bugs": {
+        "url": "https://github.com/lysand-org/lysand/issues"
+    },
+    "icon": "https://github.com/lysand-org/lysand",
+    "license": "AGPL-3.0-or-later",
+    "keywords": ["federated", "activitypub", "bun"],
+    "maintainers": [
+        {
+            "email": "contact@cpluspatch.com",
+            "name": "CPlusPatch",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/lysand-org/lysand.git"
+    },
+    "private": true,
+    "dependencies": {
+        "mitt": "^3.0.1",
+        "zod": "^3.23.8",
+        "zod-validation-error": "^3.3.0"
+    },
+    "exports": {
+        ".": {
+            "import": "./index.ts",
+            "default": "./index.ts"
+        }
+    }
+}
