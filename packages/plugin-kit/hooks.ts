@@ -1,4 +1,9 @@
+export enum Hooks {
+    Request = "request",
+    Response = "response",
+}
+
 export type ServerHooks = {
-    request: (request: Request) => Request;
-    response: (response: Response) => Response;
+    [Hooks.Request]: (request: Request) => Request;
+    [Hooks.Response]: (response: Response) => Response;
 };
