@@ -123,7 +123,7 @@ export const configValidator = z.object({
         proxy: z
             .object({
                 enabled: z.boolean().default(false),
-                address: zUrl,
+                address: zUrl.or(z.literal("")),
             })
             .default({
                 enabled: false,
