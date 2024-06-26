@@ -123,6 +123,16 @@ app.all("*", async (context) => {
         );
     }
 
+    // Disable CSP upgrade-insecure-requests if an .onion domain is used
+    if (new URL(context.req.url).hostname.endsWith(".onion")) {
+        proxy.headers.set(
+            "Content-Security-Policy",
+            proxy.headers
+                .get("Content-Security-Policy")
+                ?.replace("upgrade-insecure-requests;", "") ?? "",
+        );
+    }
+
     return proxy;
 });
 
