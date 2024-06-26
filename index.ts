@@ -86,11 +86,10 @@ app.all("*", async (context) => {
         }
     }
 
-    const baseUrlWithHttp = config.http.base_url.replace("https://", "http://");
-
-    const replacedUrl = context.req.url
-        .replace(config.http.base_url, config.frontend.url)
-        .replace(baseUrlWithHttp, config.frontend.url);
+    const replacedUrl = new URL(
+        new URL(context.req.url).pathname,
+        config.frontend.url,
+    ).toString();
 
     await dualLogger.log(
         LogLevel.Debug,
