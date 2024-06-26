@@ -1,5 +1,6 @@
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { lookup } from "mime-types";
+import { config } from "~/packages/config-manager";
 
 export const getBestContentType = (content?: ContentFormat) => {
     if (!content) {
@@ -51,9 +52,10 @@ export const mimeLookup = async (url: string) => {
         return naiveLookup;
     }
 
-    const fetchLookup = fetch(url, { method: "HEAD" }).then(
-        (response) => response.headers.get("content-type") || "",
-    );
+    const fetchLookup = fetch(url, {
+        method: "HEAD",
+        proxy: config.http.proxy.address,
+    }).then((response) => response.headers.get("content-type") || "");
 
     return fetchLookup;
 };

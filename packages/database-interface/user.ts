@@ -253,6 +253,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             headers: {
                 Accept: "application/json",
             },
+            proxy: config.http.proxy.address,
         });
 
         const json = (await response.json()) as Partial<LysandUser>;
@@ -551,7 +552,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
 
             // FIXME: Add to new queue system when it's implemented
-            fetch(federationRequest);
+            fetch(federationRequest, {
+                proxy: config.http.proxy.address,
+            });
         }
     }
 

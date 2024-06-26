@@ -63,6 +63,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
                 headers: {
                     "Accept-Encoding": "identity",
                 },
+                proxy: config.http.proxy.address,
             });
 
             if (!response.ok) {

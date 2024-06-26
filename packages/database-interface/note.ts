@@ -595,6 +595,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 headers: {
                     Accept: "application/json",
                 },
+                proxy: config.http.proxy.address,
             });
 
             note = await new EntityValidator().Note(await response.json());

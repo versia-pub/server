@@ -70,6 +70,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
                 headers: {
                     "Accept-Encoding": "identity",
                 },
+                proxy: config.http.proxy.address,
             });
 
             if (!response.ok) {

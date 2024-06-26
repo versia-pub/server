@@ -3,6 +3,7 @@ import { errorResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -44,6 +45,7 @@ export default (app: Hono) =>
                 headers: {
                     "Accept-Encoding": "br",
                 },
+                proxy: config.http.proxy.address,
             });
 
             // Check if file extension ends in svg or svg

@@ -84,13 +84,10 @@ banned_user_agents = [
 ]
 
 [http.proxy]
-# For SOCKS proxies (e.g. Tor)
+# For HTTP proxies (e.g. Tor proxies)
 # Will be used for all outgoing requests
 enabled = false
-host = "127.0.0.1"
-port = 9050
-# Can be socks4, socks4a or socks5
-type = "socks5"
+address = "http://localhost:8118"
 
 [http.tls]
 # If these values are set, Lysand will use these files for TLS

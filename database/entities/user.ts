@@ -175,7 +175,9 @@ export const followRequestUser = async (
         );
 
         // Send request
-        const response = await fetch(request);
+        const response = await fetch(request, {
+            proxy: config.http.proxy.address,
+        });
 
         if (!response.ok) {
             dualLogger.log(
@@ -230,7 +232,9 @@ export const sendFollowAccept = async (follower: User, followee: User) => {
     );
 
     // Send request
-    const response = await fetch(request);
+    const response = await fetch(request, {
+        proxy: config.http.proxy.address,
+    });
 
     if (!response.ok) {
         dualLogger.log(
@@ -258,7 +262,9 @@ export const sendFollowReject = async (follower: User, followee: User) => {
     );
 
     // Send request
-    const response = await fetch(request);
+    const response = await fetch(request, {
+        proxy: config.http.proxy.address,
+    });
 
     if (!response.ok) {
         dualLogger.log(
@@ -375,6 +381,7 @@ export const resolveWebFinger = async (
             headers: {
                 Accept: "application/json",
             },
+            proxy: config.http.proxy.address,
         },
     );
 

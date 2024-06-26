@@ -1,6 +1,7 @@
 import type { ServerMetadata } from "@lysand-org/federation/types";
 import { db } from "~/drizzle/db";
 import { Instances } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
 
 /**
  * Represents an instance in the database.
@@ -24,9 +25,9 @@ export const addInstanceIfNotExists = async (url: string) => {
     }
 
     // Fetch the instance configuration
-    const metadata = (await fetch(new URL("/.well-known/lysand", origin)).then(
-        (res) => res.json(),
-    )) as ServerMetadata;
+    const metadata = (await fetch(new URL("/.well-known/lysand", origin), {
+        proxy: config.http.proxy.address,
+    }).then((res) => res.json())) as ServerMetadata;
 
     if (metadata.type !== "ServerMetadata") {
         throw new Error("Invalid instance metadata (wrong type)");

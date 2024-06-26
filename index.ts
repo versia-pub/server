@@ -1,7 +1,7 @@
+import { checkConfig } from "@/init";
 import { dualLogger } from "@/loggers";
 import { connectMeili } from "@/meilisearch";
 import { errorResponse, response } from "@/response";
-import chalk from "chalk";
 import { config } from "config-manager";
 import { Hono } from "hono";
 import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
@@ -46,113 +46,7 @@ process.on("SIGINT", () => {
 const postCount = await Note.getCount();
 
 if (isEntry) {
-    // Check if JWT private key is set in config
-    if (!config.oidc.jwt_key) {
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            "The JWT private key is not set in the config",
-        );
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            "Below is a generated key for you to copy in the config at oidc.jwt_key",
-        );
-        // Generate a key for them
-        const keys = await crypto.subtle.generateKey("Ed25519", true, [
-            "sign",
-            "verify",
-        ]);
-
-        const privateKey = Buffer.from(
-            await crypto.subtle.exportKey("pkcs8", keys.privateKey),
-        ).toString("base64");
-
-        const publicKey = Buffer.from(
-            await crypto.subtle.exportKey("spki", keys.publicKey),
-        ).toString("base64");
-
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            chalk.gray(`${privateKey};${publicKey}`),
-        );
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
-
-    // Try and import the key
-    const privateKey = await crypto.subtle
-        .importKey(
-            "pkcs8",
-            Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
-            "Ed25519",
-            false,
-            ["sign"],
-        )
-        .catch((e) => e as Error);
-
-    // Try and import the key
-    const publicKey = await crypto.subtle
-        .importKey(
-            "spki",
-            Buffer.from(config.oidc.jwt_key.split(";")[1], "base64"),
-            "Ed25519",
-            false,
-            ["verify"],
-        )
-        .catch((e) => e as Error);
-
-    if (privateKey instanceof Error || publicKey instanceof Error) {
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            "The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).",
-        );
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
-
-    if (
-        config.validation.challenges.enabled &&
-        !config.validation.challenges.key
-    ) {
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            "Challenges are enabled, but the challenge key is not set in the config",
-        );
-
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            "Below is a generated key for you to copy in the config at validation.challenges.key",
-        );
-
-        const key = await crypto.subtle.generateKey(
-            {
-                name: "HMAC",
-                hash: "SHA-256",
-            },
-            true,
-            ["sign"],
-        );
-
-        const exported = await crypto.subtle.exportKey("raw", key);
-
-        const base64 = Buffer.from(exported).toString("base64");
-
-        await dualServerLogger.log(
-            LogLevel.Critical,
-            "Server",
-            `Generated key: ${chalk.gray(base64)}`,
-        );
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
+    await checkConfig(config, dualServerLogger);
 }
 
 const app = new Hono({

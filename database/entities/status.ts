@@ -448,7 +448,9 @@ export const federateNote = async (note: Note) => {
         );
 
         // Send request
-        const response = await fetch(request);
+        const response = await fetch(request, {
+            proxy: config.http.proxy.address,
+        });
 
         if (!response.ok) {
             dualLogger.log(

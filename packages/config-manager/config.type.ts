@@ -123,21 +123,16 @@ export const configValidator = z.object({
         proxy: z
             .object({
                 enabled: z.boolean().default(false),
-                host: z.string().min(1).default("localhost"),
-                port: z
-                    .number()
-                    .int()
-                    .min(1)
-                    .max(2 ** 16 - 1)
-                    .default(9050),
-                type: z.enum(["socks4", "socks4a", "socks5"]).default("socks5"),
+                address: zUrl,
             })
             .default({
                 enabled: false,
-                host: "localhost",
-                port: 9050,
-                type: "socks5",
-            }),
+                address: "",
+            })
+            .transform((arg) => ({
+                ...arg,
+                address: arg.enabled ? arg.address : undefined,
+            })),
         tls: z
             .object({
                 enabled: z.boolean().default(false),
