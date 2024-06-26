@@ -1,7 +1,7 @@
 import { mentionValidator } from "@/api";
-import { dualLogger } from "@/loggers";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
+import { getLogger } from "@logtape/logtape";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import {
@@ -35,7 +35,6 @@ import {
 } from "~/drizzle/schema";
 import type { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import { LogLevel } from "~/packages/log-manager";
 import type { Application } from "./application";
 import type { EmojiWithInstance } from "./emoji";
 import { objectToInboxRequest } from "./federation";
@@ -453,16 +452,10 @@ export const federateNote = async (note: Note) => {
         });
 
         if (!response.ok) {
-            dualLogger.log(
-                LogLevel.Debug,
-                "Federation.Status",
-                await response.text(),
-            );
-            dualLogger.log(
-                LogLevel.Error,
-                "Federation.Status",
-                `Failed to federate status ${note.data.id} to ${user.getUri()}`,
-            );
+            const logger = getLogger("federation");
+
+            logger.debug`${await response.text()}`;
+            logger.error`Failed to federate status ${note.data.id} to ${user.getUri()}`;
         }
     }
 };

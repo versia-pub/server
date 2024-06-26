@@ -1,10 +1,10 @@
 import { checkConfig } from "@/init";
-import { dualLogger } from "@/loggers";
+import { configureLoggers } from "@/loggers";
 import { connectMeili } from "@/meilisearch";
 import { errorResponse, response } from "@/response";
+import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
 import { Hono } from "hono";
-import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { setupDatabase } from "~/drizzle/db";
 import { agentBans } from "~/middlewares/agent-bans";
 import { bait } from "~/middlewares/bait";
@@ -21,21 +21,16 @@ const timeAtStart = performance.now();
 
 const isEntry =
     import.meta.path === Bun.main && !process.argv.includes("--silent");
+await configureLoggers(isEntry);
 
-let dualServerLogger: LogManager | MultiLogManager = new LogManager(
-    Bun.file("/dev/null"),
-);
+const serverLogger = getLogger("server");
 
-if (isEntry) {
-    dualServerLogger = dualLogger;
-}
+serverLogger.info`Starting Lysand...`;
 
-await dualServerLogger.log(LogLevel.Info, "Lysand", "Starting Lysand...");
-
-await setupDatabase(dualServerLogger);
+await setupDatabase();
 
 if (config.meilisearch.enabled) {
-    await connectMeili(dualServerLogger);
+    await connectMeili();
 }
 
 process.on("SIGINT", () => {
@@ -46,7 +41,7 @@ process.on("SIGINT", () => {
 const postCount = await Note.getCount();
 
 if (isEntry) {
-    await checkConfig(config, dualServerLogger);
+    await checkConfig(config);
 }
 
 const app = new Hono({
@@ -79,7 +74,7 @@ app.options("*", () => {
 
 app.all("*", async (context) => {
     if (config.frontend.glitch.enabled) {
-        const glitch = await handleGlitchRequest(context.req.raw, dualLogger);
+        const glitch = await handleGlitchRequest(context.req.raw);
 
         if (glitch) {
             return glitch;
@@ -91,11 +86,7 @@ app.all("*", async (context) => {
         config.frontend.url,
     ).toString();
 
-    await dualLogger.log(
-        LogLevel.Debug,
-        "Server.Proxy",
-        `Proxying ${replacedUrl}`,
-    );
+    serverLogger.debug`Proxying ${replacedUrl}`;
 
     const proxy = await fetch(replacedUrl, {
         headers: {
@@ -104,13 +95,9 @@ app.all("*", async (context) => {
             "Accept-Encoding": "identity",
         },
         redirect: "manual",
-    }).catch(async (e) => {
-        await dualLogger.logError(LogLevel.Error, "Server.Proxy", e as Error);
-        await dualLogger.log(
-            LogLevel.Error,
-            "Server.Proxy",
-            `The Frontend is not running or the route is not found: ${replacedUrl}`,
-        );
+    }).catch((e) => {
+        serverLogger.error`${e}`;
+        serverLogger.error`The Frontend is not running or the route is not found: ${replacedUrl}`;
         return null;
     });
 
@@ -138,25 +125,13 @@ app.all("*", async (context) => {
 
 createServer(config, app);
 
-await dualServerLogger.log(
-    LogLevel.Info,
-    "Server",
-    `Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`,
-);
+serverLogger.info`Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`;
 
-await dualServerLogger.log(
-    LogLevel.Info,
-    "Database",
-    `Database is online, now serving ${postCount} posts`,
-);
+serverLogger.info`Database is online, now serving ${postCount} posts`;
 
 if (config.frontend.enabled) {
     if (!URL.canParse(config.frontend.url)) {
-        await dualServerLogger.log(
-            LogLevel.Error,
-            "Server",
-            `Frontend URL is not a valid URL: ${config.frontend.url}`,
-        );
+        serverLogger.error`Frontend URL is not a valid URL: ${config.frontend.url}`;
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }
@@ -167,23 +142,11 @@ if (config.frontend.enabled) {
         .catch(() => false);
 
     if (!response) {
-        await dualServerLogger.log(
-            LogLevel.Error,
-            "Server",
-            `Frontend is unreachable at ${config.frontend.url}`,
-        );
-        await dualServerLogger.log(
-            LogLevel.Error,
-            "Server",
-            "Please ensure the frontend is online and reachable",
-        );
+        serverLogger.error`Frontend is unreachable at ${config.frontend.url}`;
+        serverLogger.error`Please ensure the frontend is online and reachable`;
     }
 } else {
-    await dualServerLogger.log(
-        LogLevel.Warning,
-        "Server",
-        "Frontend is disabled, skipping check",
-    );
+    serverLogger.warn`Frontend is disabled, skipping check`;
 }
 
 export { app };

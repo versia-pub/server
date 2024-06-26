@@ -1,4 +1,5 @@
 import { errorResponse } from "@/response";
+import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { config } from "config-manager";
@@ -27,7 +28,6 @@ import { type AuthData, getFromHeader } from "~/database/entities/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
-import { LogLevel, LogManager } from "~/packages/log-manager";
 import type { ApiRouteMetadata, HttpVerb } from "~/types/api";
 
 export const applyConfig = (routeMeta: ApiRouteMetadata) => {
@@ -395,23 +395,27 @@ export const jsonOrForm = () => {
     });
 };
 
-export const debugRequest = async (
-    req: Request,
-    logger = new LogManager(Bun.stdout),
-) => {
+export const debugRequest = async (req: Request) => {
     const body = await req.clone().text();
-    await logger.log(
-        LogLevel.Debug,
-        "RequestDebugger",
-        `\n${chalk.green(req.method)} ${chalk.blue(req.url)}\n${chalk.bold(
-            "Hash",
-        )}: ${chalk.yellow(
-            new Bun.SHA256().update(body).digest("hex"),
-        )}\n${chalk.bold("Headers")}:\n${Array.from(req.headers.entries())
-            .map(
-                ([key, value]) =>
-                    ` - ${chalk.cyan(key)}: ${chalk.white(value)}`,
-            )
-            .join("\n")}\n${chalk.bold("Body")}: ${chalk.gray(body)}`,
-    );
+    const logger = getLogger("server");
+
+    const urlAndMethod = `${chalk.green(req.method)} ${chalk.blue(req.url)}`;
+
+    const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
+        new Bun.SHA256().update(body).digest("hex"),
+    )}`;
+
+    const headers = `${chalk.bold("Headers")}:\n${Array.from(
+        req.headers.entries(),
+    )
+        .map(([key, value]) => ` - ${chalk.cyan(key)}: ${chalk.white(value)}`)
+        .join("\n")}`;
+
+    const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
+
+    if (config.logging.log_requests_verbose) {
+        logger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
+    } else {
+        logger.debug`${urlAndMethod}`;
+    }
 };

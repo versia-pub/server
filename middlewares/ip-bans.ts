@@ -1,10 +1,9 @@
-import { logger } from "@/loggers";
 import { errorResponse } from "@/response";
+import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
 import { config } from "~/packages/config-manager";
-import { LogLevel } from "~/packages/log-manager";
 
 export const ipBans = createMiddleware(async (context, next) => {
     // Check for banned IPs
@@ -22,12 +21,10 @@ export const ipBans = createMiddleware(async (context, next) => {
                 return errorResponse("Forbidden", 403);
             }
         } catch (e) {
-            logger.log(
-                LogLevel.Error,
-                "Server.IPCheck",
-                `Error while parsing banned IP "${ip}" `,
-            );
-            logger.logError(LogLevel.Error, "Server.IPCheck", e as Error);
+            const logger = getLogger("server");
+
+            logger.error`Error while parsing banned IP "${ip}" `;
+            logger.error`${e}`;
 
             return errorResponse(
                 `A server error occured: ${(e as Error).message}`,

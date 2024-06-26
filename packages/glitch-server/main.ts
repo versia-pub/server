@@ -4,7 +4,6 @@ import type { BunFile } from "bun";
 import { config } from "config-manager";
 import { retrieveUserFromToken } from "~/database/entities/user";
 import type { User } from "~/packages/database-interface/user";
-import type { LogManager, MultiLogManager } from "~/packages/log-manager";
 import { languages } from "./glitch-languages";
 
 const handleManifestRequest = () => {
@@ -327,7 +326,6 @@ const htmlTransforms = async (
 
 export const handleGlitchRequest = async (
     req: Request,
-    _logger: LogManager | MultiLogManager,
 ): Promise<Response | null> => {
     const url = new URL(req.url);
     let path = url.pathname;

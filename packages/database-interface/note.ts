@@ -1,7 +1,7 @@
 import { idValidator } from "@/api";
-import { dualLogger } from "@/loggers";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
+import { getLogger } from "@logtape/logtape";
 import { EntityValidator } from "@lysand-org/federation";
 import type {
     ContentFormat,
@@ -19,7 +19,6 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import { LogLevel } from "log-manager";
 import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
@@ -622,16 +621,13 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      */
     static async fromLysand(note: LysandNote, author: User): Promise<Note> {
         const emojis: Emoji[] = [];
+        const logger = getLogger("federation");
 
         for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
             ?.emojis ?? []) {
             const resolvedEmoji = await Emoji.fetchFromRemote(emoji).catch(
                 (e) => {
-                    dualLogger.logError(
-                        LogLevel.Error,
-                        "Federation.StatusResolver",
-                        e,
-                    );
+                    logger.error`${e}`;
                     return null;
                 },
             );
@@ -647,11 +643,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             const resolvedAttachment = await Attachment.fromLysand(
                 attachment,
             ).catch((e) => {
-                dualLogger.logError(
-                    LogLevel.Error,
-                    "Federation.StatusResolver",
-                    e,
-                );
+                logger.error`${e}`;
                 return null;
             });
 

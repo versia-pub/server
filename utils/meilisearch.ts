@@ -1,6 +1,6 @@
+import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
 import { count } from "drizzle-orm";
-import { LogLevel, type LogManager, type MultiLogManager } from "log-manager";
 import { Meilisearch } from "meilisearch";
 import { db } from "~/drizzle/db";
 import { Notes, Users } from "~/drizzle/schema";
@@ -11,7 +11,8 @@ export const meilisearch = new Meilisearch({
     apiKey: config.meilisearch.api_key,
 });
 
-export const connectMeili = async (logger: MultiLogManager | LogManager) => {
+export const connectMeili = async () => {
+    const logger = getLogger("meilisearch");
     if (!config.meilisearch.enabled) {
         return;
     }
@@ -33,17 +34,9 @@ export const connectMeili = async (logger: MultiLogManager | LogManager) => {
             .index(MeiliIndexType.Statuses)
             .updateSearchableAttributes(["content"]);
 
-        await logger.log(
-            LogLevel.Info,
-            "Meilisearch",
-            "Connected to Meilisearch",
-        );
+        logger.info`Connected to Meilisearch`;
     } else {
-        await logger.log(
-            LogLevel.Critical,
-            "Meilisearch",
-            "Error while connecting to Meilisearch",
-        );
+        logger.fatal`Error while connecting to Meilisearch`;
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }

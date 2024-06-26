@@ -1,7 +1,7 @@
 import { applyConfig, debugRequest, handleZodError } from "@/api";
-import { dualLogger } from "@/loggers";
 import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { getLogger } from "@logtape/logtape";
 import {
     EntityValidator,
     RequestParserHandler,
@@ -23,7 +23,6 @@ import { Notes, Notifications, Relationships } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import { LogLevel, LogManager } from "~/packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -61,6 +60,7 @@ export default (app: Hono) =>
             const { uuid } = context.req.valid("param");
             const { signature, date, authorization, origin } =
                 context.req.valid("header");
+            const logger = getLogger(["federation", "inbox"]);
 
             // Check if Origin is defederated
             if (
@@ -146,11 +146,7 @@ export default (app: Hono) =>
 
                 if (config.debug.federation) {
                     // Log public key
-                    new LogManager(Bun.stdout).log(
-                        LogLevel.Debug,
-                        "Inbox.Signature",
-                        `Sender public key: ${sender.data.publicKey}`,
-                    );
+                    logger.debug`Sender public key: ${sender.data.publicKey}`;
                 }
 
                 const validator = await SignatureValidator.fromStringKey(
@@ -179,11 +175,7 @@ export default (app: Hono) =>
                         }),
                     )
                     .catch((e) => {
-                        new LogManager(Bun.stdout).logError(
-                            LogLevel.Error,
-                            "Inbox.Signature",
-                            e as Error,
-                        );
+                        logger.error`${e}`;
                         return false;
                     });
 
@@ -208,11 +200,7 @@ export default (app: Hono) =>
                             note,
                             account,
                         ).catch((e) => {
-                            dualLogger.logError(
-                                LogLevel.Error,
-                                "Inbox.NoteResolve",
-                                e as Error,
-                            );
+                            logger.error`${e}`;
                             return null;
                         });
 
@@ -436,7 +424,7 @@ export default (app: Hono) =>
                 if (isValidationError(e)) {
                     return errorResponse((e as ValidationError).message, 400);
                 }
-                dualLogger.logError(LogLevel.Error, "Inbox", e as Error);
+                logger.error`${e}`;
                 return jsonResponse(
                     {
                         error: "Failed to process request",

@@ -1,8 +1,8 @@
 import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
-import { dualLogger } from "@/loggers";
 import { MeiliIndexType, meilisearch } from "@/meilisearch";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { getLogger } from "@logtape/logtape";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
@@ -12,7 +12,6 @@ import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import { LogLevel } from "~/packages/log-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -119,11 +118,7 @@ export default (app: Hono) =>
                             username,
                             domain,
                         ).catch((e) => {
-                            dualLogger.logError(
-                                LogLevel.Error,
-                                "WebFinger.Resolve",
-                                e,
-                            );
+                            getLogger("webfinger").error`${e}`;
                             return null;
                         });
 

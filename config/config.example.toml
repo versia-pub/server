@@ -375,7 +375,7 @@ bio = []
 log_requests = false
 # Log request and their contents (warning: this is a lot of data)
 log_requests_verbose = false
-# Available levels: debug, info, warning, error, critical
+# Available levels: debug, info, warning, error, fatal
 log_level = "debug"
 # For GDPR compliance, you can disable logging of IPs
 log_ip = false

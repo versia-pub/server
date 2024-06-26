@@ -1,5 +1,4 @@
 import { generateChallenge } from "@/challenges";
-import { consoleLogger } from "@/loggers";
 import { randomString } from "@/math";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
@@ -11,7 +10,7 @@ import { app } from "~/index";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 
-await setupDatabase(consoleLogger);
+await setupDatabase();
 
 /**
  * This allows us to send a test request to the server even when it isnt running

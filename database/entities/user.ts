@@ -1,4 +1,4 @@
-import { dualLogger } from "@/loggers";
+import { getLogger } from "@logtape/logtape";
 import type {
     Follow,
     FollowAccept,
@@ -17,7 +17,6 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
-import { LogLevel } from "~/packages/log-manager";
 import type { Application } from "./application";
 import type { EmojiWithInstance } from "./emoji";
 import { objectToInboxRequest } from "./federation";
@@ -180,19 +179,10 @@ export const followRequestUser = async (
         });
 
         if (!response.ok) {
-            dualLogger.log(
-                LogLevel.Debug,
-                "Federation.FollowRequest",
-                await response.text(),
-            );
+            const logger = getLogger("federation");
 
-            dualLogger.log(
-                LogLevel.Error,
-                "Federation.FollowRequest",
-                `Failed to federate follow request from ${
-                    follower.id
-                } to ${followee.getUri()}`,
-            );
+            logger.debug`${await response.text()}`;
+            logger.error`Failed to federate follow request from ${follower.id} to ${followee.getUri()}`;
 
             await db
                 .update(Relationships)
@@ -237,19 +227,10 @@ export const sendFollowAccept = async (follower: User, followee: User) => {
     });
 
     if (!response.ok) {
-        dualLogger.log(
-            LogLevel.Debug,
-            "Federation.FollowAccept",
-            await response.text(),
-        );
+        const logger = getLogger("federation");
 
-        dualLogger.log(
-            LogLevel.Error,
-            "Federation.FollowAccept",
-            `Failed to federate follow accept from ${
-                followee.id
-            } to ${follower.getUri()}`,
-        );
+        logger.debug`${await response.text()}`;
+        logger.error`Failed to federate follow accept from ${followee.id} to ${follower.getUri()}`;
     }
 };
 
@@ -267,19 +248,10 @@ export const sendFollowReject = async (follower: User, followee: User) => {
     });
 
     if (!response.ok) {
-        dualLogger.log(
-            LogLevel.Debug,
-            "Federation.FollowReject",
-            await response.text(),
-        );
+        const logger = getLogger("federation");
 
-        dualLogger.log(
-            LogLevel.Error,
-            "Federation.FollowReject",
-            `Failed to federate follow reject from ${
-                followee.id
-            } to ${follower.getUri()}`,
-        );
+        logger.debug`${await response.text()}`;
+        logger.error`Failed to federate follow reject from ${followee.id} to ${follower.getUri()}`;
     }
 };
 

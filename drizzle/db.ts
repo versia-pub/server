@@ -1,6 +1,6 @@
+import { getLogger } from "@logtape/logtape";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { LogLevel, LogManager, type MultiLogManager } from "log-manager";
 import { Client } from "pg";
 import { config } from "~/packages/config-manager";
 import * as schema from "./schema";
@@ -13,10 +13,9 @@ export const client = new Client({
     database: config.database.database,
 });
 
-export const setupDatabase = async (
-    logger: LogManager | MultiLogManager = new LogManager(Bun.stdout),
-    info = true,
-) => {
+export const setupDatabase = async (info = true) => {
+    const logger = getLogger("database");
+
     try {
         await client.connect();
     } catch (e) {
@@ -27,39 +26,29 @@ export const setupDatabase = async (
             return;
         }
 
-        await logger.logError(LogLevel.Critical, "Database", e as Error);
-
-        await logger.log(
-            LogLevel.Critical,
-            "Database",
-            "Failed to connect to database. Please check your configuration.",
-        );
+        logger.fatal`${e}`;
+        logger.fatal`Failed to connect to database. Please check your configuration.`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 
     // Migrate the database
-    info &&
-        (await logger.log(LogLevel.Info, "Database", "Migrating database..."));
+    info && logger.info`Migrating database...`;
 
     try {
         await migrate(db, {
             migrationsFolder: "./drizzle/migrations",
         });
     } catch (e) {
-        await logger.logError(LogLevel.Critical, "Database", e as Error);
-        await logger.log(
-            LogLevel.Critical,
-            "Database",
-            "Failed to migrate database. Please check your configuration.",
-        );
+        logger.fatal`${e}`;
+        logger.fatal`Failed to migrate database. Please check your configuration.`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 
-    info && (await logger.log(LogLevel.Info, "Database", "Database migrated"));
+    info && logger.info`Database migrated`;
 };
 
 export const db = drizzle(client, { schema });

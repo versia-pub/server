@@ -1,43 +1,27 @@
+import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import type { Config } from "~/packages/config-manager";
-import {
-    LogLevel,
-    type LogManager,
-    type MultiLogManager,
-} from "~/packages/log-manager";
 
-export const checkConfig = async (
-    config: Config,
-    logger: LogManager | MultiLogManager,
-) => {
-    await checkOidcConfig(config, logger);
+export const checkConfig = async (config: Config) => {
+    await checkOidcConfig(config);
 
-    await checkHttpProxyConfig(config, logger);
+    await checkHttpProxyConfig(config);
 
-    await checkChallengeConfig(config, logger);
+    await checkChallengeConfig(config);
 };
 
-const checkHttpProxyConfig = async (
-    config: Config,
-    logger: LogManager | MultiLogManager,
-) => {
+const checkHttpProxyConfig = async (config: Config) => {
+    const logger = getLogger("server");
+
     if (config.http.proxy.enabled) {
         if (!config.http.proxy.address) {
-            await logger.log(
-                LogLevel.Critical,
-                "Server",
-                "The HTTP proxy is enabled, but the proxy address is not set in the config",
-            );
+            logger.fatal`The HTTP proxy is enabled, but the proxy address is not set in the config`;
 
             // Hang until Ctrl+C is pressed
             await Bun.sleep(Number.POSITIVE_INFINITY);
         }
 
-        await logger.log(
-            LogLevel.Info,
-            "Server",
-            `HTTP proxy enabled at ${chalk.gray(config.http.proxy.address)}, testing...`,
-        );
+        logger.info`HTTP proxy enabled at ${chalk.gray(config.http.proxy.address)}, testing...`;
 
         // Test the proxy
         const response = await fetch("https://api.ipify.org?format=json", {
@@ -46,18 +30,10 @@ const checkHttpProxyConfig = async (
 
         const ip = (await response.json()).ip;
 
-        await logger.log(
-            LogLevel.Info,
-            "Server",
-            `Your IPv4 address is ${chalk.gray(ip)}`,
-        );
+        logger.info`Your IPv4 address is ${chalk.gray(ip)}`;
 
         if (!response.ok) {
-            await logger.log(
-                LogLevel.Critical,
-                "Server",
-                "The HTTP proxy is enabled, but the proxy address is not reachable",
-            );
+            logger.fatal`The HTTP proxy is enabled, but the proxy address is not reachable`;
 
             // Hang until Ctrl+C is pressed
             await Bun.sleep(Number.POSITIVE_INFINITY);
@@ -65,25 +41,15 @@ const checkHttpProxyConfig = async (
     }
 };
 
-const checkChallengeConfig = async (
-    config: Config,
-    logger: LogManager | MultiLogManager,
-) => {
+const checkChallengeConfig = async (config: Config) => {
+    const logger = getLogger("server");
+
     if (
         config.validation.challenges.enabled &&
         !config.validation.challenges.key
     ) {
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            "Challenges are enabled, but the challenge key is not set in the config",
-        );
-
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            "Below is a generated key for you to copy in the config at validation.challenges.key",
-        );
+        logger.fatal`Challenges are enabled, but the challenge key is not set in the config`;
+        logger.fatal`Below is a generated key for you to copy in the config at validation.challenges.key`;
 
         const key = await crypto.subtle.generateKey(
             {
@@ -98,32 +64,20 @@ const checkChallengeConfig = async (
 
         const base64 = Buffer.from(exported).toString("base64");
 
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            `Generated key: ${chalk.gray(base64)}`,
-        );
+        logger.fatal`Generated key: ${chalk.gray(base64)}`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }
 };
 
-const checkOidcConfig = async (
-    config: Config,
-    logger: LogManager | MultiLogManager,
-) => {
+const checkOidcConfig = async (config: Config) => {
+    const logger = getLogger("server");
+
     if (!config.oidc.jwt_key) {
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            "The JWT private key is not set in the config",
-        );
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            "Below is a generated key for you to copy in the config at oidc.jwt_key",
-        );
+        logger.fatal`The JWT private key is not set in the config`;
+        logger.fatal`Below is a generated key for you to copy in the config at oidc.jwt_key`;
+
         // Generate a key for them
         const keys = await crypto.subtle.generateKey("Ed25519", true, [
             "sign",
@@ -138,11 +92,7 @@ const checkOidcConfig = async (
             await crypto.subtle.exportKey("spki", keys.publicKey),
         ).toString("base64");
 
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            chalk.gray(`${privateKey};${publicKey}`),
-        );
+        logger.fatal`Generated key: ${chalk.gray(`${privateKey};${publicKey}`)}`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
@@ -171,11 +121,7 @@ const checkOidcConfig = async (
         .catch((e) => e as Error);
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
-        await logger.log(
-            LogLevel.Critical,
-            "Server",
-            "The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).",
-        );
+        logger.fatal`The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);

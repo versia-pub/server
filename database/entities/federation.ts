@@ -1,9 +1,9 @@
 import { debugRequest } from "@/api";
+import { getLogger } from "@logtape/logtape";
 import { SignatureConstructor } from "@lysand-org/federation";
 import type { Entity, Undo } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import type { User } from "~/packages/database-interface/user";
-import { LogLevel, LogManager } from "~/packages/log-manager";
 
 export const localObjectUri = (id: string) =>
     new URL(`/objects/${id}`, config.http.base_url).toString();
@@ -48,19 +48,13 @@ export const objectToInboxRequest = async (
         // Debug request
         await debugRequest(signed);
 
+        const logger = getLogger("federation");
+
         // Log public key
-        new LogManager(Bun.stdout).log(
-            LogLevel.Debug,
-            "Inbox.Signature",
-            `Sender public key: ${author.data.publicKey}`,
-        );
+        logger.debug`Sender public key: ${author.data.publicKey}`;
 
         // Log signed string
-        new LogManager(Bun.stdout).log(
-            LogLevel.Debug,
-            "Inbox.Signature",
-            `Signed string:\n${signedString}`,
-        );
+        logger.debug`Signed string:\n${signedString}`;
     }
 
     return signed;

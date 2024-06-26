@@ -1,6 +1,5 @@
+import { getLogger } from "@logtape/logtape";
 import { markdownParse } from "~/database/entities/status";
-import { LogLevel } from "~/packages/log-manager";
-import { dualLogger } from "./loggers";
 
 export const renderMarkdownInPath = async (
     path: string,
@@ -15,7 +14,7 @@ export const renderMarkdownInPath = async (
         content =
             (await markdownParse(
                 (await extendedDescriptionFile.text().catch(async (e) => {
-                    await dualLogger.logError(LogLevel.Error, "Routes", e);
+                    await getLogger("server").error`${e}`;
                     return "";
                 })) ||
                     defaultText ||

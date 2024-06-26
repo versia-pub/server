@@ -1,10 +1,9 @@
-import { logger } from "@/loggers";
 import { response } from "@/response";
+import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
 import { config } from "~/packages/config-manager";
-import { LogLevel } from "~/packages/log-manager";
 
 const baitFile = async () => {
     const file = Bun.file(config.http.bait.send_file || "./beemovie.txt");
@@ -13,11 +12,9 @@ const baitFile = async () => {
         return file;
     }
 
-    await logger.log(
-        LogLevel.Error,
-        "Server.Bait",
-        `Bait file not found: ${config.http.bait.send_file}`,
-    );
+    const logger = getLogger("server");
+
+    logger.error`Bait file not found: ${config.http.bait.send_file}`;
 };
 
 export const bait = createMiddleware(async (context, next) => {
