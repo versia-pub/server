@@ -32,7 +32,15 @@ export const schemas = {
             .url()
             .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
         scopes: z.string().min(1).max(200),
-        website: z.string().min(0).max(2000).url().optional(),
+        website: z
+            .string()
+            .min(0)
+            .max(2000)
+            .url()
+            .optional()
+            // Allow empty websites because Traewelling decides to give an empty
+            // value instead of not providing anything at all
+            .or(z.literal("").transform(() => undefined)),
     }),
 };
 
