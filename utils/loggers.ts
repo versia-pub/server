@@ -177,6 +177,7 @@ export const nodeDriver: RotatingFileSinkDriver<number> = {
 
 export const configureLoggers = (silent = false) =>
     configure({
+        reset: true,
         sinks: {
             console: getConsoleSink({
                 formatter: defaultConsoleFormatter,

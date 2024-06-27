@@ -1,3 +1,4 @@
+import { configureLoggers } from "@/loggers";
 import { createServer } from "@/server";
 import { config } from "config-manager";
 import { appFactory } from "~/app";
@@ -8,5 +9,6 @@ if (import.meta.main) {
 }
 
 await setupDatabase();
+await configureLoggers();
 
 createServer(config, await appFactory());
