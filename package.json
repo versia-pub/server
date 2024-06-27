@@ -38,6 +38,7 @@
         "cli": "bun run cli/index.ts",
         "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'",
         "check": "bunx tsc -p .",
+        "postinstall": "bun run patches/patch.ts",
         "prepare": "bunx husky"
     },
     "trustedDependencies": [
