@@ -2,11 +2,11 @@ import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
+import { appFactory } from "~/app";
 import type { Status } from "~/database/entities/status";
 import { db } from "~/drizzle/db";
 import { setupDatabase } from "~/drizzle/db";
 import { Notes, Tokens, Users } from "~/drizzle/schema";
-import { app } from "~/index";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 
@@ -17,9 +17,9 @@ await setupDatabase();
  * @param req Request to send
  * @returns Response from the server
  */
-export function sendTestRequest(req: Request): Promise<Response> {
+export async function sendTestRequest(req: Request): Promise<Response> {
     // return fetch(req);
-    return Promise.resolve(app.fetch(req));
+    return Promise.resolve((await appFactory()).fetch(req));
 }
 
 export function wrapRelativeUrl(url: string, baseUrl: string) {

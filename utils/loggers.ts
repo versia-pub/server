@@ -10,6 +10,8 @@ import {
 import {
     type LogLevel,
     type LogRecord,
+    type RotatingFileSinkOptions,
+    type Sink,
     configure,
     getConsoleSink,
     getLevelFilter,
@@ -21,9 +23,48 @@ import { config } from "~/packages/config-manager";
 // HACK: This is a workaround for the lack of type exports in the Logtape package.
 type RotatingFileSinkDriver<T> =
     import("../node_modules/@logtape/logtape/logtape/sink").RotatingFileSinkDriver<T>;
-const getBaseRotatingFileSink = (
-    await import("../node_modules/@logtape/logtape/logtape/sink")
-).getRotatingFileSink;
+
+// HACK: Stolen
+export function getBaseRotatingFileSink<TFile>(
+    path: string,
+    options: RotatingFileSinkOptions & RotatingFileSinkDriver<TFile>,
+): Sink & Disposable {
+    const formatter = options.formatter ?? defaultTextFormatter;
+    const encoder = options.encoder ?? new TextEncoder();
+    const maxSize = options.maxSize ?? 1024 * 1024;
+    const maxFiles = options.maxFiles ?? 5;
+    let { size: offset } = options.statSync(path);
+    let fd = options.openSync(path);
+    function shouldRollover(bytes: Uint8Array): boolean {
+        return offset + bytes.length > maxSize;
+    }
+    function performRollover(): void {
+        options.closeSync(fd);
+        for (let i = maxFiles - 1; i > 0; i--) {
+            const oldPath = `${path}.${i}`;
+            const newPath = `${path}.${i + 1}`;
+            try {
+                options.renameSync(oldPath, newPath);
+            } catch (_) {
+                // Continue if the file does not exist.
+            }
+        }
+        options.renameSync(path, `${path}.1`);
+        offset = 0;
+        fd = options.openSync(path);
+    }
+    const sink: Sink & Disposable = (record: LogRecord) => {
+        const bytes = encoder.encode(formatter(record));
+        if (shouldRollover(bytes)) {
+            performRollover();
+        }
+        options.writeSync(fd, bytes);
+        options.flushSync(fd);
+        offset += bytes.length;
+    };
+    sink[Symbol.dispose] = () => options.closeSync(fd);
+    return sink;
+}
 
 const levelAbbreviations: Record<LogLevel, string> = {
     debug: "DBG",
@@ -149,8 +190,8 @@ export const configureLoggers = (silent = false) =>
         },
         filters: {
             configFilter: silent
-                ? getLevelFilter(config.logging.log_level)
-                : getLevelFilter(null),
+                ? getLevelFilter(null)
+                : getLevelFilter(config.logging.log_level),
         },
         loggers: [
             {
