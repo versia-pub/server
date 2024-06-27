@@ -108,6 +108,46 @@ describe(meta.route, () => {
         expect(response.headers.get("Set-Cookie")).toMatch(/jwt=[^;]+;/);
     });
 
+    test("should have state in the URL", async () => {
+        const formData = new FormData();
+
+        formData.append("identifier", users[0]?.data.email ?? "");
+        formData.append("password", passwords[0]);
+
+        const response = await sendTestRequest(
+            new Request(
+                new URL(
+                    `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write&state=abc`,
+                    config.http.base_url,
+                ),
+                {
+                    method: "POST",
+                    body: formData,
+                },
+            ),
+        );
+
+        expect(response.status).toBe(302);
+        expect(response.headers.get("location")).toBeDefined();
+        const locationHeader = new URL(
+            response.headers.get("Location") ?? "",
+            config.http.base_url,
+        );
+
+        expect(locationHeader.pathname).toBe("/oauth/consent");
+        expect(locationHeader.searchParams.get("client_id")).toBe(
+            application.clientId,
+        );
+        expect(locationHeader.searchParams.get("redirect_uri")).toBe(
+            "https://example.com",
+        );
+        expect(locationHeader.searchParams.get("response_type")).toBe("code");
+        expect(locationHeader.searchParams.get("scope")).toBe("read write");
+        expect(locationHeader.searchParams.get("state")).toBe("abc");
+
+        expect(response.headers.get("Set-Cookie")).toMatch(/jwt=[^;]+;/);
+    });
+
     describe("should reject invalid credentials", () => {
         // Redirects to /oauth/authorize on invalid
         test("invalid email", async () => {
