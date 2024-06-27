@@ -4,7 +4,7 @@ import { config } from "~/packages/config-manager";
 
 export const logger = createMiddleware(async (context, next) => {
     if (config.logging.log_requests) {
-        await debugRequest(context.req.raw);
+        await debugRequest(context.req.raw, await context.req.text());
     }
 
     await next();
