@@ -344,10 +344,10 @@ export const qsQuery = () => {
             interpretNumericEntities: true,
         });
 
-        // @ts-ignore Very bad hack
+        // @ts-expect-error Very bad hack
         context.req.query = () => parsed;
 
-        // @ts-ignore I'm so sorry for this
+        // @ts-expect-error I'm so sorry for this
         context.req.queries = () => parsed;
         await next();
     });

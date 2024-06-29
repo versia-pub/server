@@ -36,7 +36,7 @@ describe("DiskMediaDriver", () => {
         }))();
 
         diskDriver = new DiskMediaDriver(mockConfig);
-        // @ts-ignore: Replacing private property for testing
+        // @ts-expect-error: Replacing private property for testing
         diskDriver.mediaHasher = mockMediaHasher;
 
         // Mock fs.promises methods

@@ -43,9 +43,9 @@ describe("S3MediaDriver", () => {
         }))();
 
         s3Driver = new S3MediaDriver(mockConfig);
-        // @ts-ignore: Replacing private property for testing
+        // @ts-expect-error: Replacing private property for testing
         s3Driver.s3Client = mockS3Client;
-        // @ts-ignore: Replacing private property for testing
+        // @ts-expect-error: Replacing private property for testing
         s3Driver.mediaHasher = mockMediaHasher;
     });
 
