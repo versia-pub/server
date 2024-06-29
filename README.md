@@ -36,18 +36,22 @@
 - [x] Automatic image conversion to WebP or other formats
 - [x] Scripting-compatible CLI with JSON and CSV outputs
 - [x] Markdown support just about everywhere: posts, profiles, profile fields, etc. Code blocks, tables, and more are supported.
-- [ ] Moderation tools
+- [ ] Advanced moderation tools (work in progress)
 - [x] Fully compliant Mastodon API support (partial)
 - [x] Glitch-SOC extensions
 - [x] Full compatibility with many clients such as Megalodon
 - [x] Ability to use your own frontends
 - [x] Non-monolithic architecture, microservices can be hosted in infinite amounts on infinite servers
 - [x] Ability to use all your threads
-- [x] Support for SSO providers (and disabling password logins)
+- [x] Support for SSO providers, as well as SSO-only registration.
 - [x] Fully written in TypeScript and thoroughly unit tested
 - [x] Automatic signed container builds for easy deployment
 - [x] Docker and Podman supported
 - [x] Invisible, Proof-of-Work local CAPTCHA for API requests
+- [x] Advanced Roles and Permissions API.
+- [x] HTTP proxy support
+- [x] Tor hidden service support
+- [x] Ability to change the domain name in a single config change, without any database edits
 
 ## Screenshots
 
