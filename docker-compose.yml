@@ -53,6 +53,10 @@ services:
           - ./config.cfg:/etc/sonic.cfg
           - ./store/:/var/lib/sonic/store/
         image: valeriansaliou/sonic:v1.4.9
+        container_name: lysand-sonic
+        restart: unless-stopped
+        networks:
+            - lysand-net
 
 networks:
     lysand-net:

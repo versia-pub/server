@@ -36,6 +36,8 @@ await $`sed -i 's|/temp/node_modules|./node_modules|g' dist/**/*.js`;
 // Replace 'export { toFilter, getLevelFilter, getConsoleSink };' to remove getConsoleSink
 // Because Bun duplicates the export and it causes a runtime error
 await $`sed -i 's|export { toFilter, getLevelFilter, getConsoleSink };|export { toFilter, getLevelFilter };|g' dist/**/*.js`;
+// Delete "var list;"
+await $`sed -i 's|var list;||g' dist/**/*.js`;
 
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
