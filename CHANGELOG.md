@@ -7,6 +7,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 ## Features
 
 - Upgrade Bun to `1.1.17`. This brings performance upgrades and better stability.
+- Added support for the [Sonic](https://github.com/valeriansaliou/sonic) search indexer.
 - Note deletions are now federated.
 - Note edits are now federated.
 - Added option for more federation debug logging.
@@ -38,6 +39,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 ## Removals
 
 - Remove old logging system, to be replaced by a new one.
+- Removed Meilisearch support, in favor of Sonic. Follow instructions in the [installation guide](docs/installation.md) to set up Sonic.
 
 ## Miscellaneous
 

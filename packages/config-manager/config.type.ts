@@ -76,7 +76,7 @@ export const configValidator = z.object({
                 enabled: false,
             }),
     }),
-    meilisearch: z.object({
+    sonic: z.object({
         host: z.string().min(1).default("localhost"),
         port: z
             .number()
@@ -84,7 +84,7 @@ export const configValidator = z.object({
             .min(1)
             .max(2 ** 16 - 1)
             .default(7700),
-        api_key: z.string(),
+        password: z.string(),
         enabled: z.boolean().default(false),
     }),
     signups: z.object({

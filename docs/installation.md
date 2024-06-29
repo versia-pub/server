@@ -6,7 +6,7 @@
   - Lysand will work on lower versions than 1.1.17, but only the latest version is supported
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
-- (Optional if you want search) A working Meilisearch instance
+- (Optional if you want search) A working [Sonic](https://github.com/valeriansaliou/sonic) instance
 
 > [!WARNING]
 > Lysand has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run Lysand.
@@ -59,7 +59,7 @@ bun install
 1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](database.md))
 
 2. (If you want search)
-Create a Meilisearch instance (using Docker is recommended). For a [`docker-compose`] file, copy the `meilisearch` service from the [`docker-compose.yml`](../docker-compose.yml) file.
+Create a [Sonic](https://github.com/valeriansaliou/sonic) instance (using Docker is recommended). For a [`docker-compose`] file, copy the `sonic` service from the [`docker-compose.yml`](../docker-compose.yml) file. Don't forget to fill in the `config.cfg` for Sonic!
 
 1. Build everything:
 

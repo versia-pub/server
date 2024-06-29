@@ -24,11 +24,11 @@ password = ""
 database = 1
 enabled = false
 
-[meilisearch]
-# If Meilisearch is not configured, search will not be enabled
+[sonic]
+# If Sonic is not configured, search will not be enabled
 host = "localhost"
 port = 40007
-api_key = ""
+password = ""
 enabled = true
 
 [signups]

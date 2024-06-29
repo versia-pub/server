@@ -1,7 +1,6 @@
 import { idValidator } from "@/api";
 import { getBestContentType, urlToContentFormat } from "@/content_types";
 import { randomString } from "@/math";
-import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
 import type {
     Account as ApiAccount,
@@ -31,6 +30,7 @@ import {
     type UserWithRelations,
     findManyUsers,
 } from "~/classes/functions/user";
+import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import {
     EmojiToUser,
@@ -294,8 +294,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             throw new Error("Failed to save user from remote");
         }
 
-        // Add to Meilisearch
-        await addUserToMeilisearch(finalUser);
+        // Add to search index
+        await searchManager.addUser(finalUser);
 
         return finalUser;
     }
@@ -477,8 +477,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             throw new Error("Failed to create user");
         }
 
-        // Add to Meilisearch
-        await addUserToMeilisearch(finalUser);
+        // Add to search index
+        await searchManager.addUser(finalUser);
 
         return finalUser;
     }

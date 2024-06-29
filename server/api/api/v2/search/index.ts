@@ -1,5 +1,4 @@
 import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
-import { MeiliIndexType, meilisearch } from "@/meilisearch";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
@@ -7,6 +6,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { resolveWebFinger } from "~/classes/functions/user";
+import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -65,12 +65,19 @@ export default (app: Hono) =>
                 );
             }
 
-            if (!config.meilisearch.enabled) {
-                return errorResponse("Meilisearch is not enabled", 501);
+            if (!q) {
+                return errorResponse("Query is required", 400);
             }
 
-            let accountResults: { id: string }[] = [];
-            let statusResults: { id: string }[] = [];
+            if (!config.sonic.enabled) {
+                return errorResponse(
+                    "Search is not enabled by your server administrator",
+                    501,
+                );
+            }
+
+            let accountResults: string[] = [];
+            let statusResults: string[] = [];
 
             if (!type || type === "accounts") {
                 // Check if q is matching format username@domain.com or @username@domain.com
@@ -132,34 +139,26 @@ export default (app: Hono) =>
                     }
                 }
 
-                accountResults = (
-                    await meilisearch.index(MeiliIndexType.Accounts).search<{
-                        id: string;
-                    }>(q, {
-                        limit: Number(limit) || 10,
-                        offset: Number(offset) || 0,
-                        sort: ["createdAt:desc"],
-                    })
-                ).hits;
+                accountResults = await searchManager.searchAccounts(
+                    q,
+                    Number(limit) || 10,
+                    Number(offset) || 0,
+                );
             }
 
             if (!type || type === "statuses") {
-                statusResults = (
-                    await meilisearch.index(MeiliIndexType.Statuses).search<{
-                        id: string;
-                    }>(q, {
-                        limit: Number(limit) || 10,
-                        offset: Number(offset) || 0,
-                        sort: ["createdAt:desc"],
-                    })
-                ).hits;
+                statusResults = await searchManager.searchStatuses(
+                    q,
+                    Number(limit) || 10,
+                    Number(offset) || 0,
+                );
             }
 
             const accounts = await User.manyFromSql(
                 and(
                     inArray(
                         Users.id,
-                        accountResults.map((hit) => hit.id),
+                        accountResults.map((hit) => hit),
                     ),
                     self
                         ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
@@ -175,7 +174,7 @@ export default (app: Hono) =>
                 and(
                     inArray(
                         Notes.id,
-                        statusResults.map((hit) => hit.id),
+                        statusResults.map((hit) => hit),
                     ),
                     account_id ? eq(Notes.authorId, account_id) : undefined,
                     self

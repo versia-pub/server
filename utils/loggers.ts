@@ -221,7 +221,7 @@ export const configureLoggers = (silent = false) =>
                 filters: ["configFilter"],
             },
             {
-                category: "meilisearch",
+                category: "sonic",
                 sinks: ["console", "file"],
                 filters: ["configFilter"],
             },

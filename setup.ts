@@ -1,10 +1,10 @@
 import { checkConfig } from "@/init";
 import { configureLoggers } from "@/loggers";
-import { connectMeili } from "@/meilisearch";
 import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
 import { setupDatabase } from "~/drizzle/db";
 import { Note } from "~/packages/database-interface/note";
+import { searchManager } from "./classes/search/search-manager";
 
 const timeAtStart = performance.now();
 
@@ -16,8 +16,8 @@ serverLogger.info`Starting Lysand...`;
 
 await setupDatabase();
 
-if (config.meilisearch.enabled) {
-    await connectMeili();
+if (config.sonic.enabled) {
+    await searchManager.connect();
 }
 
 process.on("SIGINT", () => {

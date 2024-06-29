@@ -19,10 +19,10 @@ password = ""
 database = 1
 enabled = false
 
-[meilisearch]
+[sonic]
 host = "localhost"
 port = 40007
-api_key = ""
+password = ""
 enabled = false
 
 [signups]
