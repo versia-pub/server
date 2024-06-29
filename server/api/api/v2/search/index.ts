@@ -154,42 +154,50 @@ export default (app: Hono) =>
                 );
             }
 
-            const accounts = await User.manyFromSql(
-                and(
-                    inArray(
-                        Users.id,
-                        accountResults.map((hit) => hit),
-                    ),
-                    self
-                        ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
-                              self?.id
-                          } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
-                              Users.id
-                          })`
-                        : undefined,
-                ),
-            );
+            const accounts =
+                accountResults.length > 0
+                    ? await User.manyFromSql(
+                          and(
+                              inArray(
+                                  Users.id,
+                                  accountResults.map((hit) => hit),
+                              ),
+                              self && following
+                                  ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${
+                                        self?.id
+                                    } AND "Relationships".following = ${!!following} AND "Relationships"."ownerId" = ${
+                                        Users.id
+                                    })`
+                                  : undefined,
+                          ),
+                      )
+                    : [];
 
-            const statuses = await Note.manyFromSql(
-                and(
-                    inArray(
-                        Notes.id,
-                        statusResults.map((hit) => hit),
-                    ),
-                    account_id ? eq(Notes.authorId, account_id) : undefined,
-                    self
-                        ? sql`EXISTS (SELECT 1 FROM Relationships WHERE Relationships.subjectId = ${
-                              self?.id
-                          } AND Relationships.following = ${!!following} AND Relationships.ownerId = ${
-                              Notes.authorId
-                          })`
-                        : undefined,
-                ),
-                undefined,
-                undefined,
-                undefined,
-                self?.id,
-            );
+            const statuses =
+                statusResults.length > 0
+                    ? await Note.manyFromSql(
+                          and(
+                              inArray(
+                                  Notes.id,
+                                  statusResults.map((hit) => hit),
+                              ),
+                              account_id
+                                  ? eq(Notes.authorId, account_id)
+                                  : undefined,
+                              self && following
+                                  ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${
+                                        self?.id
+                                    } AND "Relationships".following = ${!!following} AND "Relationships"."ownerId" = ${
+                                        Notes.authorId
+                                    })`
+                                  : undefined,
+                          ),
+                          undefined,
+                          undefined,
+                          undefined,
+                          self?.id,
+                      )
+                    : [];
 
             return jsonResponse({
                 accounts: accounts.map((account) => account.toApi()),
