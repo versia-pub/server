@@ -41,6 +41,35 @@ bun install
 
 4. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
+## HTTPS development
+
+To develop with HTTPS, you need to generate a self-signed certificate. We will use [`mkcert`](https://github.com/FiloSottile/mkcert) for this purpose.
+
+1. Install `mkcert`:
+2. Generate a certificate for the domain you are using:
+```sh
+mkcert -install
+# You can change the domain to whatever you want, but it must resolve via /etc/hosts
+# *.localhost domains are automatically aliased to localhost by DNS
+mkcert -key-file config/lysand.localhost-key.pem -cert-file config/lysand.localhost.pem lysand.localhost
+```
+3. Edit the config:
+```toml
+[http]
+base_url = "https://lysand.localhost:9900"
+bind = "lysand.localhost"
+bind_port = 9900 # Change the port to whatever you want
+
+[http.tls]
+enabled = true
+key = "config/lysand.localhost-key.pem"
+cert = "config/lysand.localhost.pem"
+passphrase = ""
+ca = ""
+```
+
+Now, running the server will use the certificate you generated.
+
 ## Testing your changes
 
 To start the live server on the address and port specified on the config file, run:
@@ -57,7 +86,7 @@ To run the tests, run:
 bun test
 ```
 
-The tests are located in the `tests/` directory and follow a Jest-like syntax. The server should be shut down before running the tests.
+The tests are located all around the codebase (filename `*.test.ts`) and follow a Jest-like syntax. The server should be shut down before running the tests.
 
 ## Code style
 
@@ -69,7 +98,7 @@ bun lint
 
 To automatically fix the issues, run:
 ```sh
-bun lint --apply
+bun lint --write
 ```
 
 You can also install the Biome Visual Studio Code extension and have it format your code automatically on save.
@@ -79,6 +108,11 @@ You can also install the Biome Visual Studio Code extension and have it format y
 Linting should not be ignored, except if they are false positives, in which case you can use a comment to disable the rule for the line or the file. If you need to disable a rule, please add a comment explaining why.
 
 TypeScript errors should be ignored with `// @ts-expect-error` comments, as well as with a reason for being ignored.
+
+To scan for all TypeScript errors, run:
+```sh
+bun check
+```
 
 ### Commit messages
 
