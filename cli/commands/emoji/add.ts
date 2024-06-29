@@ -3,9 +3,9 @@ import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
 import { BaseCommand } from "~/cli/base";
-import { getUrl } from "~/database/entities/attachment";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -118,7 +118,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
 
         await Emoji.insert({
             shortcode: args.shortcode,
-            url: getUrl(uploaded.path, config),
+            url: Attachment.getUrl(uploaded.path),
             visibleInPicker: true,
             contentType: uploaded.uploadedFile.type,
         });
@@ -127,7 +127,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
             `${chalk.green("✓")} Created emoji ${chalk.green(
                 args.shortcode,
             )} with url ${chalk.blue(
-                chalk.underline(getUrl(uploaded.path, config)),
+                chalk.underline(Attachment.getUrl(uploaded.path)),
             )}`,
         );
 

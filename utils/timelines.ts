@@ -2,9 +2,9 @@ import { config } from "config-manager";
 import type {
     Notification,
     findManyNotifications,
-} from "~/database/entities/notification";
-import type { Status, findManyNotes } from "~/database/entities/status";
-import type { UserType, findManyUsers } from "~/database/entities/user";
+} from "~/classes/functions/notification";
+import type { Status, findManyNotes } from "~/classes/functions/status";
+import type { UserType, findManyUsers } from "~/classes/functions/user";
 import type { db } from "~/drizzle/db";
 
 export async function fetchTimeline<T extends UserType | Status | Notification>(

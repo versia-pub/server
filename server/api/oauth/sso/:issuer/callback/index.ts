@@ -6,7 +6,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/token";
+import { TokenType } from "~/classes/functions/token";
 import { db } from "~/drizzle/db";
 import { RolePermissions, Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

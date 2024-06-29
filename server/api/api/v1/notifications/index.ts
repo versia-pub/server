@@ -8,8 +8,8 @@ import { z } from "zod";
 import {
     findManyNotifications,
     notificationToApi,
-} from "~/database/entities/notification";
-import type { NotificationWithRelations } from "~/database/entities/notification";
+} from "~/classes/functions/notification";
+import type { NotificationWithRelations } from "~/classes/functions/notification";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({

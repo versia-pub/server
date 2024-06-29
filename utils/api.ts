@@ -23,8 +23,8 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type { Application } from "~/database/entities/application";
-import { type AuthData, getFromHeader } from "~/database/entities/user";
+import type { Application } from "~/classes/functions/application";
+import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";

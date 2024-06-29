@@ -1,4 +1,4 @@
-import type { Application } from "~/database/entities/application";
+import type { Application } from "~/classes/functions/application";
 
 /**
  * Check if an OAuth application is valid for a route

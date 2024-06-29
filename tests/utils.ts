@@ -3,7 +3,7 @@ import { randomString } from "@/math";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
-import type { Status } from "~/database/entities/status";
+import type { Status } from "~/classes/functions/status";
 import { db } from "~/drizzle/db";
 import { setupDatabase } from "~/drizzle/db";
 import { Notes, Tokens, Users } from "~/drizzle/schema";

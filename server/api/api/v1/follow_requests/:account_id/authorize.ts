@@ -7,11 +7,11 @@ import { z } from "zod";
 import {
     checkForBidirectionalRelationships,
     relationshipToApi,
-} from "~/database/entities/relationship";
+} from "~/classes/functions/relationship";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
-} from "~/database/entities/user";
+} from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Relationships, RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";

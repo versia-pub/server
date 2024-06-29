@@ -7,7 +7,6 @@ import type { Hono } from "hono";
 import { MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/attachment";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 
@@ -106,14 +105,14 @@ export default (app: Hono) =>
 
             const { path } = await mediaManager.addFile(file);
 
-            url = getUrl(path, config);
+            url = Attachment.getUrl(path);
 
             let thumbnailUrl = "";
 
             if (thumbnail) {
                 const { path } = await mediaManager.addFile(thumbnail);
 
-                thumbnailUrl = getUrl(path, config);
+                thumbnailUrl = Attachment.getUrl(path);
             }
 
             const newAttachment = await Attachment.insert({

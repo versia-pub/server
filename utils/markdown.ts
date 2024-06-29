@@ -1,5 +1,5 @@
 import { getLogger } from "@logtape/logtape";
-import { markdownParse } from "~/database/entities/status";
+import { markdownParse } from "~/classes/functions/status";
 
 export const renderMarkdownInPath = async (
     path: string,

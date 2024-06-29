@@ -11,10 +11,10 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/attachment";
 import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -185,7 +185,7 @@ export default (app: Hono) =>
                             url = form.element;
                         }
 
-                        modified.url = getUrl(url, config);
+                        modified.url = Attachment.getUrl(url);
                         modified.contentType = contentType;
                     }
 

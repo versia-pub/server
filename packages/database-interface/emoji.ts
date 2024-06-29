@@ -8,8 +8,8 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import type { EmojiWithInstance } from "~/database/entities/emoji";
-import { addInstanceIfNotExists } from "~/database/entities/instance";
+import type { EmojiWithInstance } from "~/classes/functions/emoji";
+import { addInstanceIfNotExists } from "~/classes/functions/instance";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
 import type { Emoji as APIEmoji } from "~/types/mastodon/emoji";

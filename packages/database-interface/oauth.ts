@@ -13,7 +13,7 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import type { Application } from "~/database/entities/application";
+import type { Application } from "~/classes/functions/application";
 import { db } from "~/drizzle/db";
 import { type Applications, OpenIdAccounts } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

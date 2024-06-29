@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/token";
+import { TokenType } from "~/classes/functions/token";
 import { db } from "~/drizzle/db";
 import { Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

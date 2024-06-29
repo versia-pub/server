@@ -11,9 +11,9 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/attachment";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -130,7 +130,7 @@ export default (app: Hono) =>
 
             const emoji = await Emoji.insert({
                 shortcode,
-                url: getUrl(url, config),
+                url: Attachment.getUrl(url),
                 visibleInPicker: true,
                 ownerId: global ? null : user.id,
                 category,

@@ -11,7 +11,7 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { undoFederationRequest } from "~/database/entities/federation";
+import { undoFederationRequest } from "~/classes/functions/federation";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";

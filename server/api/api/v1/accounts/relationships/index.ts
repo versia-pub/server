@@ -6,7 +6,7 @@ import { z } from "zod";
 import {
     createNewRelationship,
     relationshipToApi,
-} from "~/database/entities/relationship";
+} from "~/classes/functions/relationship";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";

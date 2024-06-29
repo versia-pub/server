@@ -5,7 +5,7 @@ import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { type LikeType, likeToLysand } from "~/database/entities/like";
+import { type LikeType, likeToLysand } from "~/classes/functions/like";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";

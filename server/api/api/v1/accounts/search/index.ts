@@ -16,7 +16,7 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { resolveWebFinger } from "~/database/entities/user";
+import { resolveWebFinger } from "~/classes/functions/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 

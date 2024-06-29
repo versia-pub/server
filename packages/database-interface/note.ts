@@ -23,15 +23,15 @@ import { createRegExp, exactly, global } from "magic-regexp";
 import {
     type Application,
     applicationToApi,
-} from "~/database/entities/application";
-import { parseEmojis } from "~/database/entities/emoji";
-import { localObjectUri } from "~/database/entities/federation";
+} from "~/classes/functions/application";
+import { parseEmojis } from "~/classes/functions/emoji";
+import { localObjectUri } from "~/classes/functions/federation";
 import {
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
     parseTextMentions,
-} from "~/database/entities/status";
+} from "~/classes/functions/status";
 import { db } from "~/drizzle/db";
 import {
     Attachments,

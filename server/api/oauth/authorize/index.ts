@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
-import { TokenType } from "~/database/entities/token";
+import { TokenType } from "~/classes/functions/token";
 import { db } from "~/drizzle/db";
 import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

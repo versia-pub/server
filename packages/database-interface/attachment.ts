@@ -1,5 +1,6 @@
 import { proxyUrl } from "@/response";
 import type { ContentFormat } from "@lysand-org/federation/types";
+import { config } from "config-manager";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -8,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import { MediaBackendType } from "media-manager";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
 import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
@@ -122,6 +124,16 @@ export class Attachment extends BaseInterface<typeof Attachments> {
 
     get id() {
         return this.data.id;
+    }
+
+    public static getUrl(name: string) {
+        if (config.media.backend === MediaBackendType.Local) {
+            return new URL(`/media/${name}`, config.http.base_url).toString();
+        }
+        if (config.media.backend === MediaBackendType.S3) {
+            return new URL(`/${name}`, config.s3.public_url).toString();
+        }
+        return "";
     }
 
     public getMastodonType(): APIAttachment["type"] {

@@ -5,7 +5,6 @@ import { config } from "config-manager";
 import type { Hono } from "hono";
 import { MediaBackend } from "media-manager";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/attachment";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 
@@ -79,7 +78,7 @@ export default (app: Hono) =>
 
                     if (thumbnail) {
                         const { path } = await mediaManager.addFile(thumbnail);
-                        thumbnailUrl = getUrl(path, config);
+                        thumbnailUrl = Attachment.getUrl(path);
                     }
 
                     const descriptionText =

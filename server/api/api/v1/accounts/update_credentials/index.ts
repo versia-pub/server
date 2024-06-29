@@ -8,11 +8,11 @@ import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { MediaBackend } from "media-manager";
 import { z } from "zod";
-import { getUrl } from "~/database/entities/attachment";
-import { parseEmojis } from "~/database/entities/emoji";
-import { contentToHtml } from "~/database/entities/status";
+import { parseEmojis } from "~/classes/functions/emoji";
+import { contentToHtml } from "~/classes/functions/status";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
+import { Attachment } from "~/packages/database-interface/attachment";
 import type { Emoji } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 
@@ -206,13 +206,13 @@ export default (app: Hono) =>
             if (avatar) {
                 const { path } = await mediaManager.addFile(avatar);
 
-                self.avatar = getUrl(path, config);
+                self.avatar = Attachment.getUrl(path);
             }
 
             if (header) {
                 const { path } = await mediaManager.addFile(header);
 
-                self.header = getUrl(path, config);
+                self.header = Attachment.getUrl(path);
             }
 
             if (locked) {

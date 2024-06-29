@@ -17,7 +17,7 @@ import { type ValidationError, isValidationError } from "zod-validation-error";
 import {
     getRelationshipToOtherUser,
     sendFollowAccept,
-} from "~/database/entities/user";
+} from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Notes, Notifications, Relationships } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

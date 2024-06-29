@@ -5,9 +5,9 @@ import { lookup } from "mime-types";
 import ora from "ora";
 import { unzip } from "unzipit";
 import { BaseCommand } from "~/cli/base";
-import { getUrl } from "~/database/entities/attachment";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
 import { MediaBackend } from "~/packages/media-manager";
 
@@ -215,7 +215,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
 
             await Emoji.insert({
                 shortcode: emoji.emoji.name,
-                url: getUrl(uploaded.path, config),
+                url: Attachment.getUrl(uploaded.path),
                 visibleInPicker: true,
                 contentType: uploaded.uploadedFile.type,
             });

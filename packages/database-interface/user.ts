@@ -21,12 +21,12 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import { objectToInboxRequest } from "~/database/entities/federation";
-import { addInstanceIfNotExists } from "~/database/entities/instance";
+import { objectToInboxRequest } from "~/classes/functions/federation";
+import { addInstanceIfNotExists } from "~/classes/functions/instance";
 import {
     type UserWithRelations,
     findManyUsers,
-} from "~/database/entities/user";
+} from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import {
     EmojiToUser,

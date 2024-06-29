@@ -6,7 +6,7 @@ import { getLogger } from "@logtape/logtape";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { resolveWebFinger } from "~/database/entities/user";
+import { resolveWebFinger } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

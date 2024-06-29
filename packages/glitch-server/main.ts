@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { redirect } from "@/response";
 import type { BunFile } from "bun";
 import { config } from "config-manager";
-import { retrieveUserFromToken } from "~/database/entities/user";
+import { retrieveUserFromToken } from "~/classes/functions/user";
 import type { User } from "~/packages/database-interface/user";
 import { languages } from "./glitch-languages";
 

@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { findManyNotifications } from "~/database/entities/notification";
+import { findManyNotifications } from "~/classes/functions/notification";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({

@@ -4,11 +4,11 @@ import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { relationshipToApi } from "~/database/entities/relationship";
+import { relationshipToApi } from "~/classes/functions/relationship";
 import {
     followRequestUser,
     getRelationshipToOtherUser,
-} from "~/database/entities/user";
+} from "~/classes/functions/user";
 import { RolePermissions } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 

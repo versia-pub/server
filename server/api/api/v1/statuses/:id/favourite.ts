@@ -3,7 +3,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { createLike } from "~/database/entities/like";
+import { createLike } from "~/classes/functions/like";
 import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
