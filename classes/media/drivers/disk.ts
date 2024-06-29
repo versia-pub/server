@@ -30,8 +30,11 @@ export class DiskMediaDriver implements MediaDriver {
     public async addFile(
         file: File,
     ): Promise<Omit<UploadedFileMetadata, "blurhash">> {
+        // Sometimes the file name is not available, so we generate a random name
+        const fileName = file.name ?? crypto.randomUUID();
+
         const hash = await this.mediaHasher.getMediaHash(file);
-        const path = join(hash, file.name);
+        const path = join(hash, fileName);
         const fullPath = join(this.config.media.local_uploads_folder, path);
 
         await Bun.write(fullPath, await file.arrayBuffer());

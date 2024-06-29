@@ -77,6 +77,22 @@ describe("DiskMediaDriver", () => {
         });
     });
 
+    it("should properly handle a Blob instead of a File", async () => {
+        const file = new Blob(["test"], { type: "image/webp" });
+        const result = await diskDriver.addFile(file as File);
+
+        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(bunWriteSpy).toHaveBeenCalledWith(
+            expect.stringContaining("testhash"),
+            expect.any(ArrayBuffer),
+        );
+        expect(result).toEqual({
+            uploadedFile: expect.any(Blob),
+            path: expect.stringContaining("testhash"),
+            hash: "testhash",
+        });
+    });
+
     it("should get a file by hash", async () => {
         const hash = "testhash";
         const databaseHashFetcher = mock(() => Promise.resolve("test.webp"));

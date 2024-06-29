@@ -38,8 +38,11 @@ export class S3MediaDriver implements MediaDriver {
     public async addFile(
         file: File,
     ): Promise<Omit<UploadedFileMetadata, "blurhash">> {
+        // Sometimes the file name is not available, so we generate a random name
+        const fileName = file.name ?? crypto.randomUUID();
+
         const hash = await this.mediaHasher.getMediaHash(file);
-        const path = `${hash}/${file.name}`;
+        const path = `${hash}/${fileName}`;
 
         await this.s3Client.putObject(path, file.stream(), {
             size: file.size,

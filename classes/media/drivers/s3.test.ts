@@ -66,6 +66,23 @@ describe("S3MediaDriver", () => {
         });
     });
 
+    it("should handle a Blob instead of a File", async () => {
+        const file = new Blob(["test"], { type: "image/webp" });
+        const result = await s3Driver.addFile(file as File);
+
+        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(mockS3Client.putObject).toHaveBeenCalledWith(
+            expect.stringContaining("testhash"),
+            expect.any(ReadableStream),
+            { size: file.size },
+        );
+        expect(result).toEqual({
+            uploadedFile: expect.any(Blob),
+            path: expect.stringContaining("testhash"),
+            hash: "testhash",
+        });
+    });
+
     it("should get a file by hash", async () => {
         const hash = "testhash";
         const databaseHashFetcher = mock(() => Promise.resolve("test.webp"));
