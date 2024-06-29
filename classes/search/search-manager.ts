@@ -184,16 +184,18 @@ export class SonicSearchManager {
      * Rebuild search indexes
      * @param indexes Indexes to rebuild
      * @param batchSize Size of each batch
+     * @param progressCallback Callback for progress updates
      */
     async rebuildSearchIndexes(
         indexes: SonicIndexType[],
         batchSize = 100,
+        progressCallback?: (progress: number) => void,
     ): Promise<void> {
         for (const index of indexes) {
             if (index === SonicIndexType.Accounts) {
-                await this.rebuildAccountsIndex(batchSize);
+                await this.rebuildAccountsIndex(batchSize, progressCallback);
             } else if (index === SonicIndexType.Statuses) {
-                await this.rebuildStatusesIndex(batchSize);
+                await this.rebuildStatusesIndex(batchSize, progressCallback);
             }
         }
     }
@@ -201,8 +203,12 @@ export class SonicSearchManager {
     /**
      * Rebuild accounts index
      * @param batchSize Size of each batch
+     * @param progressCallback Callback for progress updates
      */
-    private async rebuildAccountsIndex(batchSize: number): Promise<void> {
+    private async rebuildAccountsIndex(
+        batchSize: number,
+        progressCallback?: (progress: number) => void,
+    ): Promise<void> {
         const accountCount = await User.getCount();
         const batchCount = Math.ceil(accountCount / batchSize);
 
@@ -221,15 +227,19 @@ export class SonicSearchManager {
                     ),
                 ),
             );
-            this.logger.info`Indexed accounts batch ${i + 1}/${batchCount}`;
+            progressCallback?.((i + 1) / batchCount);
         }
     }
 
     /**
      * Rebuild statuses index
      * @param batchSize Size of each batch
+     * @param progressCallback Callback for progress updates
      */
-    private async rebuildStatusesIndex(batchSize: number): Promise<void> {
+    private async rebuildStatusesIndex(
+        batchSize: number,
+        progressCallback?: (progress: number) => void,
+    ): Promise<void> {
         const statusCount = await Note.getCount();
         const batchCount = Math.ceil(statusCount / batchSize);
 
@@ -245,7 +255,7 @@ export class SonicSearchManager {
                     ),
                 ),
             );
-            this.logger.info`Indexed statuses batch ${i + 1}/${batchCount}`;
+            progressCallback?.((i + 1) / batchCount);
         }
     }
 
