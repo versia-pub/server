@@ -4,12 +4,12 @@ import { and, inArray, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import ora from "ora";
 import { unzip } from "unzipit";
+import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
-import { MediaBackend } from "~/packages/media-manager";
 
 type MetaType = {
     emojis: {
@@ -169,10 +169,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
 
         const importSpinner = ora("Importing emojis").start();
 
-        const media = await MediaBackend.fromBackendType(
-            config.media.backend,
-            config,
-        );
+        const mediaManager = new MediaManager(config);
 
         const successfullyImported: MetaType["emojis"] = [];
 
@@ -200,14 +197,16 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
                 type: contentType,
             });
 
-            const uploaded = await media.addFile(newFile).catch((e: Error) => {
-                this.log(
-                    `${chalk.red("✗")} Error uploading ${chalk.red(
-                        emoji.emoji.name,
-                    )}: ${chalk.red(e.message)}`,
-                );
-                return null;
-            });
+            const uploaded = await mediaManager
+                .addFile(newFile)
+                .catch((e: Error) => {
+                    this.log(
+                        `${chalk.red("✗")} Error uploading ${chalk.red(
+                            emoji.emoji.name,
+                        )}: ${chalk.red(e.message)}`,
+                    );
+                    return null;
+                });
 
             if (!uploaded) {
                 continue;

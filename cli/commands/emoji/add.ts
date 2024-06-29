@@ -2,12 +2,12 @@ import { Args } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
+import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
-import { MediaBackend } from "~/packages/media-manager";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
     static override args = {
@@ -97,14 +97,11 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
             );
         }
 
-        const media = await MediaBackend.fromBackendType(
-            config.media.backend,
-            config,
-        );
+        const mediaManager = new MediaManager(config);
 
         const spinner = ora("Uploading emoji").start();
 
-        const uploaded = await media.addFile(file).catch((e: Error) => {
+        const uploaded = await mediaManager.addFile(file).catch((e: Error) => {
             spinner.fail();
             this.log(`${chalk.red("✗")} Error: ${chalk.red(e.message)}`);
             return null;

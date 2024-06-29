@@ -6,10 +6,10 @@ import { config } from "config-manager";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
-import { MediaBackend } from "media-manager";
 import { z } from "zod";
 import { parseEmojis } from "~/classes/functions/emoji";
 import { contentToHtml } from "~/classes/functions/status";
+import { MediaManager } from "~/classes/media/media-manager";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
@@ -160,10 +160,7 @@ export default (app: Hono) =>
                 display_name ?? "",
             );
 
-            const mediaManager = await MediaBackend.fromBackendType(
-                config.media.backend,
-                config,
-            );
+            const mediaManager = new MediaManager(config);
 
             if (display_name) {
                 self.displayName = sanitizedDisplayName;

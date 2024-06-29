@@ -11,11 +11,11 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull, or } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
+import { MediaManager } from "~/classes/media/media-manager";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
-import { MediaBackend } from "~/packages/media-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -115,12 +115,9 @@ export default (app: Hono) =>
             }
 
             if (element instanceof File) {
-                const media = await MediaBackend.fromBackendType(
-                    config.media.backend,
-                    config,
-                );
+                const mediaManager = new MediaManager(config);
 
-                const uploaded = await media.addFile(element);
+                const uploaded = await mediaManager.addFile(element);
 
                 url = uploaded.path;
                 contentType = uploaded.uploadedFile.type;

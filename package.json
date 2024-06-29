@@ -128,7 +128,6 @@
         "markdown-it-anchor": "^9.0.1",
         "markdown-it-container": "^4.0.0",
         "markdown-it-toc-done-right": "^4.2.0",
-        "media-manager": "workspace:*",
         "meilisearch": "^0.40.0",
         "mime-types": "^2.1.35",
         "oauth4webapi": "^2.11.1",

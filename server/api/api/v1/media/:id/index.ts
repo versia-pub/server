@@ -3,8 +3,8 @@ import { errorResponse, jsonResponse, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
 import type { Hono } from "hono";
-import { MediaBackend } from "media-manager";
 import { z } from "zod";
+import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 
@@ -71,10 +71,7 @@ export default (app: Hono) =>
 
                     let thumbnailUrl = attachment.data.thumbnailUrl;
 
-                    const mediaManager = await MediaBackend.fromBackendType(
-                        config.media.backend,
-                        config,
-                    );
+                    const mediaManager = new MediaManager(config);
 
                     if (thumbnail) {
                         const { path } = await mediaManager.addFile(thumbnail);

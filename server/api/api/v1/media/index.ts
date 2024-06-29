@@ -1,12 +1,11 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { encode } from "blurhash";
 import { config } from "config-manager";
 import type { Hono } from "hono";
-import { MediaBackend } from "media-manager";
 import sharp from "sharp";
 import { z } from "zod";
+import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 
@@ -69,43 +68,11 @@ export default (app: Hono) =>
                 ? await sharp(await file.arrayBuffer()).metadata()
                 : null;
 
-            const blurhash = await new Promise<string | null>((resolve) => {
-                (async () =>
-                    sharp(await file.arrayBuffer())
-                        .raw()
-                        .ensureAlpha()
-                        .toBuffer((err, buffer) => {
-                            if (err) {
-                                resolve(null);
-                                return;
-                            }
+            const mediaManager = new MediaManager(config);
 
-                            try {
-                                resolve(
-                                    encode(
-                                        new Uint8ClampedArray(buffer),
-                                        metadata?.width ?? 0,
-                                        metadata?.height ?? 0,
-                                        4,
-                                        4,
-                                    ) as string,
-                                );
-                            } catch {
-                                resolve(null);
-                            }
-                        }))();
-            });
+            const { path, blurhash } = await mediaManager.addFile(file);
 
-            let url = "";
-
-            const mediaManager = await MediaBackend.fromBackendType(
-                config.media.backend,
-                config,
-            );
-
-            const { path } = await mediaManager.addFile(file);
-
-            url = Attachment.getUrl(path);
+            const url = Attachment.getUrl(path);
 
             let thumbnailUrl = "";
 

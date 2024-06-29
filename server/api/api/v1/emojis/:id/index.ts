@@ -11,12 +11,12 @@ import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
+import { MediaManager } from "~/classes/media/media-manager";
 import { db } from "~/drizzle/db";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
-import { MediaBackend } from "~/packages/media-manager";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE", "GET", "PATCH"],
@@ -102,14 +102,11 @@ export default (app: Hono) =>
                 );
             }
 
+            const mediaManager = new MediaManager(config);
+
             switch (context.req.method) {
                 case "DELETE": {
-                    const mediaBackend = await MediaBackend.fromBackendType(
-                        config.media.backend,
-                        config,
-                    );
-
-                    await mediaBackend.deleteFileByUrl(emoji.data.url);
+                    await mediaManager.deleteFileByUrl(emoji.data.url);
 
                     await db.delete(Emojis).where(eq(Emojis.id, id));
 
@@ -172,12 +169,9 @@ export default (app: Hono) =>
                         let url = "";
 
                         if (form.element instanceof File) {
-                            const media = await MediaBackend.fromBackendType(
-                                config.media.backend,
-                                config,
+                            const uploaded = await mediaManager.addFile(
+                                form.element,
                             );
-
-                            const uploaded = await media.addFile(form.element);
 
                             url = uploaded.path;
                             contentType = uploaded.uploadedFile.type;

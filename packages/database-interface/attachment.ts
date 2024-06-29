@@ -1,6 +1,7 @@
 import { proxyUrl } from "@/response";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
+import { MediaBackendType } from "config-manager/config.type";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -9,7 +10,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { MediaBackendType } from "media-manager";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
 import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";

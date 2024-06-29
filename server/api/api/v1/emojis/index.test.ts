@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { inArray } from "drizzle-orm";
+import sharp from "sharp";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
@@ -20,6 +21,23 @@ afterAll(async () => {
         .delete(Emojis)
         .where(inArray(Emojis.shortcode, ["test1", "test2", "test3", "test4"]));
 });
+
+const createImage = async (name: string): Promise<File> => {
+    const inputBuffer = await sharp({
+        create: {
+            width: 100,
+            height: 100,
+            channels: 3,
+            background: { r: 255, g: 0, b: 0 },
+        },
+    })
+        .png()
+        .toBuffer();
+
+    return new File([inputBuffer], name, {
+        type: "image/png",
+    });
+};
 
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
@@ -43,7 +61,7 @@ describe(meta.route, () => {
         test("should upload a file and create an emoji", async () => {
             const formData = new FormData();
             formData.append("shortcode", "test1");
-            formData.append("element", Bun.file("tests/test-image.webp"));
+            formData.append("element", await createImage("test.png"));
             formData.append("global", "true");
 
             const response = await sendTestRequest(
@@ -104,7 +122,7 @@ describe(meta.route, () => {
         test("should fail when uploading an already existing emoji", async () => {
             const formData = new FormData();
             formData.append("shortcode", "test1");
-            formData.append("element", Bun.file("tests/test-image.webp"));
+            formData.append("element", await createImage("test-image.png"));
 
             const response = await sendTestRequest(
                 new Request(new URL(meta.route, config.http.base_url), {
@@ -124,7 +142,7 @@ describe(meta.route, () => {
         test("should upload a file and create an emoji", async () => {
             const formData = new FormData();
             formData.append("shortcode", "test4");
-            formData.append("element", Bun.file("tests/test-image.webp"));
+            formData.append("element", await createImage("test-image.png"));
 
             const response = await sendTestRequest(
                 new Request(new URL(meta.route, config.http.base_url), {
@@ -145,7 +163,7 @@ describe(meta.route, () => {
         test("should fail when uploading an already existing global emoji", async () => {
             const formData = new FormData();
             formData.append("shortcode", "test1");
-            formData.append("element", Bun.file("tests/test-image.webp"));
+            formData.append("element", await createImage("test-image.png"));
 
             const response = await sendTestRequest(
                 new Request(new URL(meta.route, config.http.base_url), {
@@ -163,7 +181,7 @@ describe(meta.route, () => {
         test("should create an emoji as another user with the same shortcode", async () => {
             const formData = new FormData();
             formData.append("shortcode", "test4");
-            formData.append("element", Bun.file("tests/test-image.webp"));
+            formData.append("element", await createImage("test-image.png"));
 
             const response = await sendTestRequest(
                 new Request(new URL(meta.route, config.http.base_url), {
