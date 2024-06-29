@@ -20,6 +20,7 @@ await Bun.build({
     external: ["unzipit"],
 }).then((output) => {
     if (!output.success) {
+        console.error(output.logs);
         process.exit(1);
     }
 });

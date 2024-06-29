@@ -1,6 +1,6 @@
 # Use 1.1.4 for building to prevent a Unicode bug with 1.1.5+
 # Temporary until they fix it
-FROM oven/bun:1.1.4-alpine as base
+FROM oven/bun:1.1.4-alpine AS base
 
 RUN apk add --no-cache libstdc++
 
@@ -13,7 +13,7 @@ COPY . /temp
 WORKDIR /temp
 RUN bun install --production
 
-FROM base as build
+FROM base AS build
 
 # Copy the project
 RUN mkdir -p /temp
@@ -35,12 +35,12 @@ RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
 COPY entrypoint.sh /app
 
-LABEL org.opencontainers.image.authors "Gaspard Wierzbinski (https://cpluspatch.dev)"
-LABEL org.opencontainers.image.source "https://github.com/lysand-org/lysand"
-LABEL org.opencontainers.image.vendor "Lysand Org"
-LABEL org.opencontainers.image.licenses "AGPL-3.0-or-later"
-LABEL org.opencontainers.image.title "Lysand Server"
-LABEL org.opencontainers.image.description "Lysand Server docker image"
+LABEL org.opencontainers.image.authors="Gaspard Wierzbinski (https://cpluspatch.dev)"
+LABEL org.opencontainers.image.source="https://github.com/lysand-org/lysand"
+LABEL org.opencontainers.image.vendor="Lysand Org"
+LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
+LABEL org.opencontainers.image.title="Lysand Server"
+LABEL org.opencontainers.image.description="Lysand Server docker image"
 
 # CD to app
 WORKDIR /app

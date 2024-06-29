@@ -3,7 +3,7 @@
  * @module MediaManager/Drivers
  */
 
-import { S3Client } from "@jsr/bradenmacdonald__s3-lite-client";
+import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import type { Config } from "config-manager";
 import { MediaHasher } from "../media-hasher";
 import type { UploadedFileMetadata } from "../media-manager";
