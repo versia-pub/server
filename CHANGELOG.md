@@ -6,7 +6,6 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 ## Features
 
-- Switched over to [**`@lysand-org/federation`**](https://github.com/lysand-org/api), our new federation library, for the federation logic.
 - Upgrade Bun to `1.1.17`. This brings performance upgrades and better stability.
 - Note deletions are now federated.
 - Note edits are now federated.

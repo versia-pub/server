@@ -1,3 +1,4 @@
+import type { Source as ApiSource } from "@lysand-org/client/types";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
@@ -14,7 +15,6 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type { Source as apiSource } from "~/types/mastodon/source";
 
 export const Challenges = pgTable("Challenges", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
@@ -388,7 +388,7 @@ export const Users = pgTable(
             inbox: string;
             outbox: string;
         }> | null>(),
-        source: jsonb("source").notNull().$type<apiSource>(),
+        source: jsonb("source").notNull().$type<ApiSource>(),
         avatar: text("avatar").notNull(),
         header: text("header").notNull(),
         createdAt: timestamp("created_at", { precision: 3, mode: "string" })

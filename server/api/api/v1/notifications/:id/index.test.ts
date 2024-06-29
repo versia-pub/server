@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Notification as ApiNotification } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Notification as apiNotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
-let notifications: apiNotification[] = [];
+let notifications: ApiNotification[] = [];
 
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
@@ -114,7 +114,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const notification = (await response.json()) as apiNotification;
+        const notification = (await response.json()) as ApiNotification;
 
         expect(notification).toBeDefined();
         expect(notification.id).toBe(notifications[0].id);

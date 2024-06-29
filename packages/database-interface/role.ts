@@ -1,4 +1,5 @@
 import { proxyUrl } from "@/response";
+import type { RolePermission } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import {
     type InferInsertModel,
@@ -181,7 +182,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return {
             id: this.id,
             name: this.data.name,
-            permissions: this.data.permissions,
+            permissions: this.data.permissions as unknown as RolePermission[],
             priority: this.data.priority,
             description: this.data.description,
             visible: this.data.visible,

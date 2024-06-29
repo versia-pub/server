@@ -102,6 +102,7 @@
         "@inquirer/input": "^2.1.11",
         "@json2csv/plainjs": "^7.0.6",
         "@logtape/logtape": "npm:@jsr/logtape__logtape",
+        "@lysand-org/client": "^0.2.3",
         "@lysand-org/federation": "^2.0.0",
         "@oclif/core": "^4.0.7",
         "@tufjs/canonical-json": "^2.0.0",

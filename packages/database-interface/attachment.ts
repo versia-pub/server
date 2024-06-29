@@ -1,4 +1,8 @@
 import { proxyUrl } from "@/response";
+import type {
+    AsyncAttachment as ApiAsyncAttachment,
+    Attachment as ApiAttachment,
+} from "@lysand-org/client/types";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import { MediaBackendType } from "config-manager/config.type";
@@ -12,8 +16,6 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
-import type { AsyncAttachment as APIAsyncAttachment } from "~/types/mastodon/async_attachment";
-import type { Attachment as APIAttachment } from "~/types/mastodon/attachment";
 import { BaseInterface } from "./base";
 
 export type AttachmentType = InferSelectModel<typeof Attachments>;
@@ -136,7 +138,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return "";
     }
 
-    public getMastodonType(): APIAttachment["type"] {
+    public getMastodonType(): ApiAttachment["type"] {
         if (this.data.mimeType.startsWith("image/")) {
             return "image";
         }
@@ -150,7 +152,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return "unknown";
     }
 
-    public toApiMeta(): APIAttachment["meta"] {
+    public toApiMeta(): ApiAttachment["meta"] {
         return {
             width: this.data.width || undefined,
             height: this.data.height || undefined,
@@ -181,7 +183,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public toApi(): APIAttachment | APIAsyncAttachment {
+    public toApi(): ApiAttachment | ApiAsyncAttachment {
         return {
             id: this.data.id,
             type: this.getMastodonType(),

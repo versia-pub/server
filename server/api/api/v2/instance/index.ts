@@ -1,5 +1,6 @@
 import { applyConfig } from "@/api";
 import { jsonResponse, proxyUrl } from "@/response";
+import type { Instance as ApiInstance } from "@lysand-org/client/types";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
 import { Users } from "~/drizzle/schema";
@@ -59,7 +60,6 @@ export default (app: Hono) =>
                 },
                 accounts: {
                     max_featured_tags: 100,
-                    max_note_characters: config.validation.max_bio_size,
                     max_displayname_characters:
                         config.validation.max_displayname_size,
                     avatar_size_limit: config.validation.max_avatar_size,
@@ -71,6 +71,7 @@ export default (app: Hono) =>
                     max_fields: config.validation.max_field_count,
                     max_username_characters:
                         config.validation.max_username_size,
+                    max_note_characters: config.validation.max_bio_size,
                 },
                 statuses: {
                     max_characters: config.validation.max_note_size,
@@ -118,9 +119,9 @@ export default (app: Hono) =>
                 forced: false,
                 providers: config.oidc.providers.map((p) => ({
                     name: p.name,
-                    icon: proxyUrl(p.icon) || undefined,
+                    icon: proxyUrl(p.icon) ?? "",
                     id: p.id,
                 })),
             },
-        });
+        } satisfies ApiInstance);
     });

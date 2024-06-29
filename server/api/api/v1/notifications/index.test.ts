@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Notification as ApiNotification } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Notification as apiNotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const getFormData = (object: Record<string, string | number | boolean>) =>
@@ -113,7 +113,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiNotification[];
+        const objects = (await response.json()) as ApiNotification[];
 
         expect(objects.length).toBe(4);
         for (const [index, notification] of objects.entries()) {
@@ -165,7 +165,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiNotification[];
+        const objects = (await response.json()) as ApiNotification[];
 
         expect(objects.length).toBe(2);
         // There should be no element with a status with id of timeline[0].id

@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Notification as ApiNotification } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Notification as apiNotification } from "~/types/mastodon/notification";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const statuses = await getTestStatuses(40, users[0]);
-let notifications: apiNotification[] = [];
+let notifications: ApiNotification[] = [];
 
 // Create some test notifications
 beforeAll(async () => {

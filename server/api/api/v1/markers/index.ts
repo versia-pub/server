@@ -1,12 +1,12 @@
 import { applyConfig, auth, handleZodError, idValidator } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import type { Marker as ApiMarker } from "@lysand-org/client/types";
 import { and, count, eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Markers, RolePermissions } from "~/drizzle/schema";
-import type { Marker as apiMarker } from "~/types/mastodon/marker";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "POST"],
@@ -58,7 +58,7 @@ export default (app: Hono) =>
                         return jsonResponse({});
                     }
 
-                    const markers: apiMarker = {
+                    const markers: ApiMarker = {
                         home: undefined,
                         notifications: undefined,
                     };
@@ -136,7 +136,7 @@ export default (app: Hono) =>
                         "notifications[last_read_id]": notificationsId,
                     } = context.req.valid("query");
 
-                    const markers: apiMarker = {
+                    const markers: ApiMarker = {
                         home: undefined,
                         notifications: undefined,
                     };

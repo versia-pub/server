@@ -1,11 +1,11 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import type { StatusSource as ApiStatusSource } from "@lysand-org/client/types";
 import type { Hono } from "hono";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
-import type { StatusSource as apiStatusSource } from "~/types/mastodon/status_source";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -53,6 +53,6 @@ export default (app: Hono) =>
                 // TODO: Give real source for spoilerText
                 spoiler_text: status.data.spoilerText,
                 text: status.data.contentSource,
-            } as apiStatusSource);
+            } as ApiStatusSource);
         },
     );

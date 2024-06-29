@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
+import type { Status as ApiStatus } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Status as apiStatus } from "~/types/mastodon/status";
 import { meta } from "./public";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -27,7 +27,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiStatus[];
+        const objects = (await response.json()) as ApiStatus[];
 
         expect(objects.length).toBe(5);
     });
@@ -44,7 +44,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiStatus[];
+        const objects = (await response.json()) as ApiStatus[];
 
         expect(objects.length).toBe(20);
         for (const [index, status] of objects.entries()) {
@@ -74,7 +74,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiStatus[];
+        const objects = (await response.json()) as ApiStatus[];
 
         expect(objects.length).toBe(20);
         for (const [index, status] of objects.entries()) {
@@ -104,7 +104,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiStatus[];
+        const objects = (await response.json()) as ApiStatus[];
 
         expect(objects).toBeArray();
     });
@@ -147,7 +147,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const objects = (await response.json()) as apiStatus[];
+            const objects = (await response.json()) as ApiStatus[];
 
             expect(objects.length).toBe(20);
             for (const [index, status] of objects.entries()) {
@@ -199,7 +199,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const objects = (await response.json()) as apiStatus[];
+            const objects = (await response.json()) as ApiStatus[];
 
             expect(objects.length).toBe(20);
             for (const [index, status] of objects.entries()) {
@@ -247,7 +247,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const objects = (await response.json()) as apiStatus[];
+        const objects = (await response.json()) as ApiStatus[];
 
         expect(objects.length).toBe(20);
         // There should be no element with id of timeline[0].id

@@ -1,8 +1,8 @@
+import type { Relationship as ApiRelationship } from "@lysand-org/client/types";
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Relationships } from "~/drizzle/schema";
 import type { User } from "~/packages/database-interface/user";
-import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 
 export type Relationship = InferSelectModel<typeof Relationships> & {
     requestedBy: boolean;
@@ -76,7 +76,7 @@ export const checkForBidirectionalRelationships = async (
  * Converts the relationship to an API-friendly format.
  * @returns The API-friendly relationship.
  */
-export const relationshipToApi = (rel: Relationship): apiRelationship => {
+export const relationshipToApi = (rel: Relationship): ApiRelationship => {
     return {
         blocked_by: rel.blockedBy,
         blocking: rel.blocking,

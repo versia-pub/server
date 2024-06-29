@@ -1,9 +1,9 @@
+import type { Notification as ApiNotification } from "@lysand-org/client/types";
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import type { Notifications } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import type { Notification as apiNotification } from "~/types/mastodon/notification";
 import type { StatusWithRelations } from "./status";
 import {
     type UserWithRelations,
@@ -50,7 +50,7 @@ export const findManyNotifications = async (
 
 export const notificationToApi = async (
     notification: NotificationWithRelations,
-): Promise<apiNotification> => {
+): Promise<ApiNotification> => {
     const account = new User(notification.account);
     return {
         account: account.toApi(),

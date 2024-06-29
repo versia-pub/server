@@ -2,6 +2,10 @@ import { idValidator } from "@/api";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { getLogger } from "@logtape/logtape";
+import type {
+    Attachment as ApiAttachment,
+    Status as ApiStatus,
+} from "@lysand-org/client/types";
 import { EntityValidator } from "@lysand-org/federation";
 import type {
     ContentFormat,
@@ -42,8 +46,6 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import type { Attachment as apiAttachment } from "~/types/mastodon/attachment";
-import type { Status as APIStatus } from "~/types/mastodon/status";
 import { Attachment } from "./attachment";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
@@ -306,7 +308,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     static async fromData(data: {
         author: User;
         content: ContentFormat;
-        visibility: APIStatus["visibility"];
+        visibility: ApiStatus["visibility"];
         isSensitive: boolean;
         spoilerText: string;
         emojis?: Emoji[];
@@ -396,7 +398,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     async updateFromData(data: {
         author?: User;
         content?: ContentFormat;
-        visibility?: APIStatus["visibility"];
+        visibility?: ApiStatus["visibility"];
         isSensitive?: boolean;
         spoilerText?: string;
         emojis?: Emoji[];
@@ -659,7 +661,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                     content: "",
                 },
             },
-            visibility: note.visibility as APIStatus["visibility"],
+            visibility: note.visibility as ApiStatus["visibility"],
             isSensitive: note.is_sensitive ?? false,
             spoilerText: note.subject ?? "",
             emojis,
@@ -755,7 +757,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @param userFetching - The user fetching the note (used to check if the note is favourite and such)
      * @returns The note in the Mastodon API format
      */
-    async toApi(userFetching?: User | null): Promise<APIStatus> {
+    async toApi(userFetching?: User | null): Promise<ApiStatus> {
         const data = this.data;
 
         // Convert mentions of local users from @username@host to @username
@@ -804,7 +806,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
-                (a) => new Attachment(a).toApi() as apiAttachment,
+                (a) => new Attachment(a).toApi() as ApiAttachment,
             ),
             mentions: data.mentions.map((mention) => ({
                 id: mention.id,
@@ -833,16 +835,19 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             spoiler_text: data.spoilerText,
             tags: [],
             uri: data.uri || this.getUri(),
-            visibility: data.visibility as APIStatus["visibility"],
+            visibility: data.visibility as ApiStatus["visibility"],
             url: data.uri || this.getMastoUri(),
             bookmarked: false,
-            // @ts-expect-error Glitch-SOC extension
             quote: data.quotingId
                 ? (await Note.fromId(data.quotingId, userFetching?.id).then(
                       (n) => n?.toApi(userFetching),
                   )) ?? null
                 : null,
-            quote_id: data.quotingId || undefined,
+            edited_at: data.updatedAt
+                ? new Date(data.updatedAt).toISOString()
+                : null,
+            emoji_reactions: [],
+            plain_content: data.contentSource,
         };
     }
 

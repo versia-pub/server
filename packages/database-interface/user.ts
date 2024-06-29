@@ -3,6 +3,10 @@ import { getBestContentType, urlToContentFormat } from "@/content_types";
 import { randomString } from "@/math";
 import { addUserToMeilisearch } from "@/meilisearch";
 import { proxyUrl } from "@/response";
+import type {
+    Account as ApiAccount,
+    Mention as ApiMention,
+} from "@lysand-org/client/types";
 import { EntityValidator } from "@lysand-org/federation";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
@@ -38,8 +42,6 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
-import type { Account as apiAccount } from "~/types/mastodon/account";
-import type { Mention as apiMention } from "~/types/mastodon/mention";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
 import type { Note } from "./note";
@@ -558,7 +560,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    toApi(isOwnAccount = false): apiAccount {
+    toApi(isOwnAccount = false): ApiAccount {
         const user = this.data;
         return {
             id: user.id,
@@ -698,7 +700,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toMention(): apiMention {
+    toMention(): ApiMention {
         return {
             url: this.getUri(),
             username: this.data.username,

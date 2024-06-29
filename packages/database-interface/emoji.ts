@@ -1,4 +1,5 @@
 import { proxyUrl } from "@/response";
+import type { Emoji as ApiEmoji } from "@lysand-org/client/types";
 import type { CustomEmojiExtension } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
@@ -12,7 +13,6 @@ import type { EmojiWithInstance } from "~/classes/functions/emoji";
 import { addInstanceIfNotExists } from "~/classes/functions/instance";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
-import type { Emoji as APIEmoji } from "~/types/mastodon/emoji";
 import { BaseInterface } from "./base";
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
@@ -152,7 +152,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return this.data.id;
     }
 
-    public toApi(): APIEmoji {
+    public toApi(): ApiEmoji {
         return {
             // @ts-expect-error ID is not in regular Mastodon API
             id: this.id,

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Account as ApiAccount } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Account as apiAccount } from "~/types/mastodon/account";
 import { meta } from "./followers";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -51,7 +51,7 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(200);
 
-        const data = (await response.json()) as apiAccount[];
+        const data = (await response.json()) as ApiAccount[];
 
         expect(data).toBeInstanceOf(Array);
         expect(data.length).toBe(1);
@@ -93,7 +93,7 @@ describe(meta.route, () => {
 
         expect(response2.status).toBe(200);
 
-        const data = (await response2.json()) as apiAccount[];
+        const data = (await response2.json()) as ApiAccount[];
 
         expect(data).toBeInstanceOf(Array);
         expect(data.length).toBe(0);

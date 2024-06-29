@@ -8,7 +8,6 @@ import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import type { Instance as apiInstance } from "~/types/mastodon/instance";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -97,7 +96,7 @@ export default (app: Hono) =>
                     })),
                 },
                 contact_account: contactAccount?.toApi() || undefined,
-            } satisfies apiInstance & {
+            } satisfies Record<string, unknown> & {
                 banner: string | null;
                 lysand_version: string;
                 sso: {

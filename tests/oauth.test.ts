@@ -2,9 +2,11 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
+import type {
+    Application as ApiApplication,
+    Token as ApiToken,
+} from "@lysand-org/client/types";
 import { config } from "~/packages/config-manager";
-import type { Application as apiApplication } from "~/types/mastodon/application";
-import type { Token as apiToken } from "~/types/mastodon/token";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const baseUrl = config.http.base_url;
@@ -13,7 +15,7 @@ let clientId: string;
 let clientSecret: string;
 let code: string;
 let jwt: string;
-let token: apiToken;
+let token: ApiToken;
 const { users, passwords, deleteUsers } = await getTestUsers(1);
 
 afterAll(async () => {
@@ -178,7 +180,7 @@ describe("GET /api/v1/apps/verify_credentials", () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const credentials = (await response.json()) as Partial<apiApplication>;
+        const credentials = (await response.json()) as Partial<ApiApplication>;
 
         expect(credentials.name).toBe("Test Application");
         expect(credentials.website).toBe("https://example.com");

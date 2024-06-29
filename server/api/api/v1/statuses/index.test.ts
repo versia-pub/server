@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Status as ApiStatus } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Status as apiStatus } from "~/types/mastodon/status";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -175,7 +175,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const object = (await response.json()) as apiStatus;
+        const object = (await response.json()) as ApiStatus;
 
         expect(object.content).toBe("<p>Hello, world!</p>");
     });
@@ -200,7 +200,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const object = (await response.json()) as apiStatus;
+        const object = (await response.json()) as ApiStatus;
 
         expect(object.content).toBe("<p>Hello, world!</p>");
         expect(object.visibility).toBe("unlisted");
@@ -220,7 +220,7 @@ describe(meta.route, () => {
             }),
         );
 
-        const object = (await response.json()) as apiStatus;
+        const object = (await response.json()) as ApiStatus;
 
         const response2 = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
@@ -239,7 +239,7 @@ describe(meta.route, () => {
         expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toBe("application/json");
 
-        const object2 = (await response2.json()) as apiStatus;
+        const object2 = (await response2.json()) as ApiStatus;
 
         expect(object2.content).toBe("<p>Hello, world again!</p>");
         expect(object2.in_reply_to_id).toBe(object.id);
@@ -259,7 +259,7 @@ describe(meta.route, () => {
             }),
         );
 
-        const object = (await response.json()) as apiStatus;
+        const object = (await response.json()) as ApiStatus;
 
         const response2 = await sendTestRequest(
             new Request(new URL(meta.route, config.http.base_url), {
@@ -278,12 +278,9 @@ describe(meta.route, () => {
         expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toBe("application/json");
 
-        const object2 = (await response2.json()) as apiStatus;
+        const object2 = (await response2.json()) as ApiStatus;
 
         expect(object2.content).toBe("<p>Hello, world again!</p>");
-        // @ts-expect-error Pleroma extension
-        expect(object2.quote_id).toBe(object.id);
-        // @ts-expect-error Glitch SOC extension
         expect(object2.quote?.id).toBe(object.id);
     });
 
@@ -304,7 +301,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toBe("application/json");
 
-        const object = (await response.json()) as apiStatus;
+        const object = (await response.json()) as ApiStatus;
 
         expect(object.emojis).toBeArrayOfSize(1);
         expect(object.emojis[0]).toMatchObject({
@@ -333,7 +330,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const object = (await response.json()) as apiStatus;
+            const object = (await response.json()) as ApiStatus;
 
             expect(object.mentions).toBeArrayOfSize(1);
             expect(object.mentions[0]).toMatchObject({
@@ -364,7 +361,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const object = (await response.json()) as apiStatus;
+            const object = (await response.json()) as ApiStatus;
 
             expect(object.mentions).toBeArrayOfSize(1);
             expect(object.mentions[0]).toMatchObject({
@@ -395,7 +392,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const object = (await response.json()) as apiStatus;
+            const object = (await response.json()) as ApiStatus;
 
             expect(object.content).toBe(
                 "<p>Hi! &lt;script&gt;alert('Hello, world!');&lt;/script&gt;</p>",
@@ -423,7 +420,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const object = (await response.json()) as apiStatus;
+            const object = (await response.json()) as ApiStatus;
 
             expect(object.spoiler_text).toBe(
                 "uwu &#x3C;script&#x3E;alert(&#x27;Hello, world!&#x27;);&#x3C;/script&#x3E;",
@@ -449,7 +446,7 @@ describe(meta.route, () => {
                 "application/json",
             );
 
-            const object = (await response.json()) as apiStatus;
+            const object = (await response.json()) as ApiStatus;
             // Proxy url is base_url/media/proxy/<base64url encoded url>
             expect(object.content).toBe(
                 `<p><img src="${config.http.base_url}/media/proxy/${Buffer.from(

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Relationship as ApiRelationship } from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
-import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 import { meta } from "./unmute";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
@@ -82,7 +82,7 @@ describe(meta.route, () => {
         );
         expect(response.status).toBe(200);
 
-        const relationship = (await response.json()) as apiRelationship;
+        const relationship = (await response.json()) as ApiRelationship;
         expect(relationship.muting).toBe(false);
     });
 
@@ -103,7 +103,7 @@ describe(meta.route, () => {
         );
         expect(response.status).toBe(200);
 
-        const relationship = (await response.json()) as apiRelationship;
+        const relationship = (await response.json()) as ApiRelationship;
         expect(relationship.muting).toBe(false);
     });
 });

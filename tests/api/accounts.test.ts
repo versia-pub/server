@@ -2,10 +2,12 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
+import type {
+    Account as ApiAccount,
+    Relationship as ApiRelationship,
+} from "@lysand-org/client/types";
 import { config } from "config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
-import type { Account as apiAccount } from "~/types/mastodon/account";
-import type { Relationship as apiRelationship } from "~/types/mastodon/relationship";
 
 const baseUrl = config.http.base_url;
 
@@ -50,7 +52,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const user = (await response.json()) as apiAccount;
+            const user = (await response.json()) as ApiAccount;
 
             expect(user.display_name).toBe("New Display Name");
         });
@@ -77,7 +79,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiAccount;
+            const account = (await response.json()) as ApiAccount;
 
             expect(account.username).toBe(user.data.username);
             expect(account.bot).toBe(false);
@@ -131,7 +133,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiRelationship;
+            const account = (await response.json()) as ApiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.followed_by).toBe(false);
@@ -162,7 +164,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiRelationship;
+            const account = (await response.json()) as ApiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(true);
@@ -184,7 +186,7 @@ describe("API Tests", () => {
             expect(response.headers.get("content-type")).toBe(
                 "application/json",
             );
-            const body = (await response.json()) as apiAccount[];
+            const body = (await response.json()) as ApiAccount[];
 
             expect(Array.isArray(body)).toBe(true);
             expect(body.length).toBe(1);
@@ -216,7 +218,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiRelationship;
+            const account = (await response.json()) as ApiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(false);
@@ -247,7 +249,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiRelationship;
+            const account = (await response.json()) as ApiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(true);
@@ -278,7 +280,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiRelationship;
+            const account = (await response.json()) as ApiRelationship;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(false);
@@ -309,7 +311,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiAccount;
+            const account = (await response.json()) as ApiAccount;
 
             expect(account.id).toBe(user2.id);
             expect(account.note).toBe("This is a new note");
@@ -338,7 +340,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const relationships = (await response.json()) as apiRelationship[];
+            const relationships = (await response.json()) as ApiRelationship[];
 
             expect(Array.isArray(relationships)).toBe(true);
             expect(relationships.length).toBeGreaterThan(0);
@@ -373,7 +375,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiAccount;
+            const account = (await response.json()) as ApiAccount;
 
             expect(account.id).toBeDefined();
             expect(account.avatar).toBeDefined();
@@ -399,7 +401,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as apiAccount;
+            const account = (await response.json()) as ApiAccount;
 
             expect(account.id).toBeDefined();
             expect(account.header).toBe("");
@@ -454,7 +456,7 @@ describe("API Tests", () => {
 
             const familiarFollowers = (await response.json()) as {
                 id: string;
-                accounts: apiAccount[];
+                accounts: ApiAccount[];
             }[];
 
             expect(Array.isArray(familiarFollowers)).toBe(true);
