@@ -17,7 +17,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["unzipit"],
+    external: ["unzipit", "acorn"],
 }).then((output) => {
     if (!output.success) {
         console.error(output.logs);
@@ -50,6 +50,8 @@ await $`cp -r node_modules/@img/sharp-linux-* dist/node_modules/@img`;
 // Copy unzipit and uzip-module to dist
 await $`cp -r node_modules/unzipit dist/node_modules/unzipit`;
 await $`cp -r node_modules/uzip-module dist/node_modules/uzip-module`;
+// Copy acorn to dist
+await $`cp -r node_modules/acorn dist/node_modules/acorn`;
 
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;
