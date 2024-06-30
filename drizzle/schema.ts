@@ -348,6 +348,10 @@ export const Instances = pgTable("Instances", {
     disableAutomoderation: boolean("disable_automoderation")
         .default(false)
         .notNull(),
+    protocol: text("protocol")
+        .notNull()
+        .$type<"lysand" | "activitypub">()
+        .default("lysand"),
 });
 
 export const OpenIdAccounts = pgTable("OpenIdAccounts", {

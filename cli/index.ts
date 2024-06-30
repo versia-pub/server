@@ -4,6 +4,7 @@ import EmojiAdd from "./commands/emoji/add";
 import EmojiDelete from "./commands/emoji/delete";
 import EmojiImport from "./commands/emoji/import";
 import EmojiList from "./commands/emoji/list";
+import FederationInstanceFetch from "./commands/federation/instance/fetch";
 import IndexRebuild from "./commands/index/rebuild";
 import Start from "./commands/start";
 import UserCreate from "./commands/user/create";
@@ -26,6 +27,7 @@ export const commands = {
     "emoji:list": EmojiList,
     "emoji:import": EmojiImport,
     "index:rebuild": IndexRebuild,
+    "federation:instance:fetch": FederationInstanceFetch,
     start: Start,
 };
 

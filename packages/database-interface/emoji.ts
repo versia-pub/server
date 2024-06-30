@@ -10,10 +10,10 @@ import {
     inArray,
 } from "drizzle-orm";
 import type { EmojiWithInstance } from "~/classes/functions/emoji";
-import { addInstanceIfNotExists } from "~/classes/functions/instance";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
 import { BaseInterface } from "./base";
+import { Instance } from "./instance";
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
     async reload(): Promise<void> {
@@ -143,7 +143,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             return found;
         }
 
-        const foundInstance = host ? await addInstanceIfNotExists(host) : null;
+        const foundInstance = host ? await Instance.resolve(host) : null;
 
         return await Emoji.fromLysand(emojiToFetch, foundInstance?.id ?? null);
     }

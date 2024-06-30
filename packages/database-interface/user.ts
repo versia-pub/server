@@ -10,7 +10,6 @@ import { EntityValidator } from "@lysand-org/federation";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
-    type InferSelectModel,
     type SQL,
     and,
     count,
@@ -25,7 +24,6 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import { objectToInboxRequest } from "~/classes/functions/federation";
-import { addInstanceIfNotExists } from "~/classes/functions/instance";
 import {
     type UserWithRelations,
     findManyUsers,
@@ -34,7 +32,6 @@ import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import {
     EmojiToUser,
-    type Instances,
     NoteToMentions,
     Notes,
     type RolePermissions,
@@ -44,6 +41,7 @@ import {
 import { type Config, config } from "~/packages/config-manager";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
+import { Instance } from "./instance";
 import type { Note } from "./note";
 import { Role } from "./role";
 
@@ -247,39 +245,51 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     static async saveFromRemote(uri: string): Promise<User> {
         if (!URL.canParse(uri)) {
-            throw new Error(`Invalid URI to parse ${uri}`);
+            throw new Error(`Invalid URI: ${uri}`);
         }
 
+        const instance = await Instance.resolve(uri);
+
+        if (instance.data.protocol === "lysand") {
+            return await User.saveFromLysand(uri, instance);
+        }
+
+        if (instance.data.protocol === "activitypub") {
+            // Placeholder for ActivityPub user fetching
+            throw new Error("ActivityPub user fetching not implemented");
+        }
+
+        throw new Error(`Unsupported protocol: ${instance.data.protocol}`);
+    }
+
+    private static async saveFromLysand(
+        uri: string,
+        instance: Instance,
+    ): Promise<User> {
         const response = await fetch(uri, {
             method: "GET",
-            headers: {
-                Accept: "application/json",
-            },
+            headers: { Accept: "application/json" },
             proxy: config.http.proxy.address,
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const json = (await response.json()) as Partial<LysandUser>;
-
         const validator = new EntityValidator();
-
         const data = await validator.User(json);
 
-        // Parse emojis and add them to database
+        const user = await User.fromLysand(data, instance);
+
         const userEmojis =
             data.extensions?.["org.lysand:custom_emojis"]?.emojis ?? [];
-
-        const instance = await addInstanceIfNotExists(data.uri);
-
         const emojis = await Promise.all(
             userEmojis.map((emoji) => Emoji.fromLysand(emoji, instance.id)),
         );
 
-        const user = await User.fromLysand(data, instance);
-
-        // Add emojis to user
         if (emojis.length > 0) {
             await db.delete(EmojiToUser).where(eq(EmojiToUser.userId, user.id));
-
             await db.insert(EmojiToUser).values(
                 emojis.map((emoji) => ({
                     emojiId: emoji.id,
@@ -289,12 +299,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         const finalUser = await User.fromId(user.id);
-
         if (!finalUser) {
             throw new Error("Failed to save user from remote");
         }
 
-        // Add to search index
         await searchManager.addUser(finalUser);
 
         return finalUser;
@@ -302,7 +310,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     static async fromLysand(
         user: LysandUser,
-        instance: InferSelectModel<typeof Instances>,
+        instance: Instance,
     ): Promise<User> {
         const data = {
             username: user.username,
