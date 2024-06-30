@@ -19,14 +19,17 @@ Docker is the recommended way to run Lysand (Podman also works). To run Lysand w
 
 1. Download the `docker-compose.yml` file from the repository
 
+> [!NOTE]
+> You may need to change the image from `ghcr.io/lysand-org/lysand:latest` to `ghcr.io/lysand-org/lysand:main` if you want to use the latest changes from the `main` branch. Make sure to use the config template from the same branch as the server.
+
 ```bash
 curl -o docker-compose.yml https://raw.githubusercontent.com/lysand-org/lysand/main/docker-compose.yml
 ```
-2. Edit the `docker-compose.yml` file to set up the database connection and other settings
-3. Download the `config.example.toml` file from the repository
+1. Edit the `docker-compose.yml` file to set up the database connection and other settings
+2. Download the `config.example.toml` file from the repository
 
 ```bash
-curl -o config.example/toml https://raw.githubusercontent.com/lysand-org/lysand/main/config/config.example.toml
+curl -o config.example.toml https://raw.githubusercontent.com/lysand-org/lysand/main/config/config.example.toml
 ```
 4. Edit the `config.example.toml` file to set up the database connection and other settings, rename it to `config.toml`, then place it inside `config/` (create the `config/` directory if it does not exist)
 5. Run the following command to start the server:
