@@ -1,9 +1,12 @@
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import type { Config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
 
 export const checkConfig = async (config: Config) => {
     await checkOidcConfig(config);
+
+    await checkFederationConfig(config);
 
     await checkHttpProxyConfig(config);
 
@@ -122,6 +125,53 @@ const checkOidcConfig = async (config: Config) => {
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
         logger.fatal`The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).`;
+
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
+    }
+};
+
+const checkFederationConfig = async (config: Config) => {
+    const logger = getLogger("server");
+
+    if (!(config.instance.keys.public && config.instance.keys.private)) {
+        logger.fatal`The federation keys are not set in the config`;
+        logger.fatal`Below are generated keys for you to copy in the config at instance.keys.public and instance.keys.private`;
+
+        // Generate a key for them
+        const { public_key, private_key } = await User.generateKeys();
+
+        logger.fatal`Generated public key: ${chalk.gray(public_key)}`;
+        logger.fatal`Generated private key: ${chalk.gray(private_key)}`;
+
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
+    }
+
+    // Try and import the key
+    const privateKey = await crypto.subtle
+        .importKey(
+            "pkcs8",
+            Buffer.from(config.instance.keys.private, "base64"),
+            "Ed25519",
+            false,
+            ["sign"],
+        )
+        .catch((e) => e as Error);
+
+    // Try and import the key
+    const publicKey = await crypto.subtle
+        .importKey(
+            "spki",
+            Buffer.from(config.instance.keys.public, "base64"),
+            "Ed25519",
+            false,
+            ["verify"],
+        )
+        .catch((e) => e as Error);
+
+    if (privateKey instanceof Error || publicKey instanceof Error) {
+        logger.fatal`The federation keys could not be imported! You may generate new ones by removing the old ones from the config and restarting the server.`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);

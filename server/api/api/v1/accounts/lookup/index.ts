@@ -1,7 +1,8 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { getLogger } from "@logtape/logtape";
+import { SignatureConstructor } from "@lysand-org/federation";
+import { FederationRequester } from "@lysand-org/federation/requester";
 import { eq } from "drizzle-orm";
 import type { Hono } from "hono";
 import {
@@ -16,7 +17,6 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import { resolveWebFinger } from "~/classes/functions/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
@@ -50,6 +50,7 @@ export default (app: Hono) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { acct } = context.req.valid("query");
+            const { user } = context.req.valid("header");
 
             if (!acct) {
                 return errorResponse("Invalid acct parameter", 400);
@@ -78,13 +79,22 @@ export default (app: Hono) =>
                 }
 
                 const [username, domain] = accountMatches[0].split("@");
-                const foundAccount = await resolveWebFinger(
-                    username,
-                    domain,
-                ).catch((e) => {
-                    getLogger("webfinger").error`${e}`;
-                    return null;
-                });
+
+                const requester = user ?? User.getServerActor();
+
+                const signatureConstructor =
+                    await SignatureConstructor.fromStringKey(
+                        requester.data.privateKey ?? "",
+                        requester.getUri(),
+                    );
+                const manager = new FederationRequester(
+                    new URL(`https://${domain}`),
+                    signatureConstructor,
+                );
+
+                const uri = await manager.webFinger(username);
+
+                const foundAccount = await User.resolve(uri);
 
                 if (foundAccount) {
                     return jsonResponse(foundAccount.toApi());

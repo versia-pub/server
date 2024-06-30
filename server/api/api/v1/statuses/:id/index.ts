@@ -144,6 +144,14 @@ export default (app: Hono) =>
                     return jsonResponse(await note.toApi(user), 200);
                 }
                 case "PUT": {
+                    if (!user) {
+                        return errorResponse("Unauthorized", 401);
+                    }
+
+                    if (note.author.id !== user.id) {
+                        return errorResponse("Unauthorized", 401);
+                    }
+
                     if (media_ids.length > 0) {
                         const foundAttachments =
                             await Attachment.fromIds(media_ids);
@@ -154,6 +162,7 @@ export default (app: Hono) =>
                     }
 
                     const newNote = await note.updateFromData({
+                        author: user,
                         content: statusText
                             ? {
                                   [content_type]: {

@@ -509,6 +509,15 @@ export const configValidator = z.object({
             privacy_policy_path: z.string().optional(),
             logo: zUrl.optional(),
             banner: zUrl.optional(),
+            keys: z
+                .object({
+                    public: z.string().min(3).default("").or(z.literal("")),
+                    private: z.string().min(3).default("").or(z.literal("")),
+                })
+                .default({
+                    public: "",
+                    private: "",
+                }),
         })
         .default({
             name: "Lysand",
@@ -518,6 +527,10 @@ export const configValidator = z.object({
             privacy_policy_path: undefined,
             logo: undefined,
             banner: undefined,
+            keys: {
+                public: "",
+                private: "",
+            },
         }),
     permissions: z
         .object({

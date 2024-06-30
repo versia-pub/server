@@ -326,7 +326,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
         const parsedMentions = [
             ...(data.mentions ?? []),
-            ...(await parseTextMentions(plaintextContent)),
+            ...(await parseTextMentions(plaintextContent, data.author)),
             // Deduplicate by .id
         ].filter(
             (mention, index, self) =>
@@ -396,7 +396,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @returns The updated note
      */
     async updateFromData(data: {
-        author?: User;
+        author: User;
         content?: ContentFormat;
         visibility?: ApiStatus["visibility"];
         isSensitive?: boolean;
@@ -418,7 +418,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         const parsedMentions = [
             ...(data.mentions ?? []),
             ...(plaintextContent
-                ? await parseTextMentions(plaintextContent)
+                ? await parseTextMentions(plaintextContent, data.author)
                 : []),
             // Deduplicate by .id
         ].filter(

@@ -9,12 +9,12 @@ import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import {
     Applications,
-    Instances,
+    type Instances,
     Notifications,
     Relationships,
     type Roles,
     Tokens,
-    Users,
+    type Users,
 } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";
@@ -317,74 +317,6 @@ export const findManyUsers = async (
     });
 
     return output.map((user) => transformOutputToUserWithRelations(user));
-};
-
-/**
- * Resolves a WebFinger identifier to a user.
- * @param identifier Either a UUID or a username
- */
-export const resolveWebFinger = async (
-    identifier: string,
-    host: string,
-): Promise<User | null> => {
-    // Check if user not already in database
-    const foundUser = await db
-        .select()
-        .from(Users)
-        .innerJoin(Instances, eq(Users.instanceId, Instances.id))
-        .where(and(eq(Users.username, identifier), eq(Instances.baseUrl, host)))
-        .limit(1);
-
-    if (foundUser[0]) {
-        return await User.fromId(foundUser[0].Users.id);
-    }
-
-    const hostWithProtocol = host.startsWith("http") ? host : `https://${host}`;
-
-    const response = await fetch(
-        new URL(
-            `/.well-known/webfinger?${new URLSearchParams({
-                resource: `acct:${identifier}@${host}`,
-            })}`,
-            hostWithProtocol,
-        ),
-        {
-            method: "GET",
-            headers: {
-                Accept: "application/json",
-            },
-            proxy: config.http.proxy.address,
-        },
-    );
-
-    if (response.status === 404) {
-        return null;
-    }
-
-    const data = (await response.json()) as {
-        subject: string;
-        links: {
-            rel: string;
-            type: string;
-            href: string;
-        }[];
-    };
-
-    if (!(data.subject && data.links)) {
-        throw new Error(
-            "Invalid WebFinger data (missing subject or links from response)",
-        );
-    }
-
-    const relevantLink = data.links.find((link) => link.rel === "self");
-
-    if (!relevantLink) {
-        throw new Error(
-            "Invalid WebFinger data (missing link with rel: 'self')",
-        );
-    }
-
-    return User.resolve(relevantLink.href);
 };
 
 /**

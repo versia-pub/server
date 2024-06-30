@@ -2,6 +2,8 @@ import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { getLogger } from "@logtape/logtape";
+import { SignatureConstructor } from "@lysand-org/federation";
+import { FederationRequester } from "@lysand-org/federation/requester";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import {
@@ -41,7 +43,6 @@ import { objectToInboxRequest } from "./federation";
 import {
     type UserWithInstance,
     type UserWithRelations,
-    resolveWebFinger,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
@@ -255,7 +256,10 @@ export const findManyNotes = async (
  * @param text The text to parse mentions from.
  * @returns An array of users mentioned in the text.
  */
-export const parseTextMentions = async (text: string): Promise<User[]> => {
+export const parseTextMentions = async (
+    text: string,
+    author: User,
+): Promise<User[]> => {
     const mentionedPeople = [...text.matchAll(mentionValidator)] ?? [];
     if (mentionedPeople.length === 0) {
         return [];
@@ -310,10 +314,18 @@ export const parseTextMentions = async (text: string): Promise<User[]> => {
 
     // Attempt to resolve mentions that were not found
     for (const person of notFoundRemoteUsers) {
-        const user = await resolveWebFinger(
-            person?.[1] ?? "",
-            person?.[2] ?? "",
+        const signatureConstructor = await SignatureConstructor.fromStringKey(
+            author.data.privateKey ?? "",
+            author.getUri(),
         );
+        const manager = new FederationRequester(
+            new URL(`https://${person?.[2] ?? ""}`),
+            signatureConstructor,
+        );
+
+        const uri = await manager.webFinger(person?.[1] ?? "");
+
+        const user = await User.resolve(uri);
 
         if (user) {
             finalList.push(user);

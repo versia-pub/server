@@ -1,6 +1,8 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import { SignatureConstructor } from "@lysand-org/federation";
+import { FederationRequester } from "@lysand-org/federation/requester";
 import { eq, like, not, or, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import {
@@ -16,7 +18,6 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { resolveWebFinger } from "~/classes/functions/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 
@@ -90,7 +91,21 @@ export default (app: Hono) =>
             const accounts: User[] = [];
 
             if (resolve && username && host) {
-                const resolvedUser = await resolveWebFinger(username, host);
+                const requester = self ?? User.getServerActor();
+
+                const signatureConstructor =
+                    await SignatureConstructor.fromStringKey(
+                        requester.data.privateKey ?? "",
+                        requester.getUri(),
+                    );
+                const manager = new FederationRequester(
+                    new URL(`https://${host}`),
+                    signatureConstructor,
+                );
+
+                const uri = await manager.webFinger(username);
+
+                const resolvedUser = await User.resolve(uri);
 
                 if (resolvedUser) {
                     accounts.push(resolvedUser);

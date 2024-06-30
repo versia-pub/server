@@ -337,6 +337,11 @@ description = "A Lysand instance"
 # URL to your instance banner
 # banner = ""
 
+# Used for federation. If left empty or missing, the server will generate one for you.
+[instance.keys]
+public = ""
+private = ""
+
 [permissions]
 # Control default permissions for users
 # Note that an anonymous user having a permission will not allow them

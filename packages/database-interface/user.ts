@@ -123,6 +123,56 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
+    static getServerActor(): User {
+        return new User({
+            id: "00000000-0000-0000-0000-000000000000",
+            username: "actor",
+            avatar: "",
+            createdAt: "2024-01-01T00:00:00.000Z",
+            displayName: "Server Actor",
+            note: "This is a system actor used for server-to-server communication. It is not a real user.",
+            updatedAt: "2024-01-01T00:00:00.000Z",
+            instanceId: null,
+            publicKey: config.instance.keys.public,
+            source: {
+                fields: [],
+                language: null,
+                note: "",
+                privacy: "public",
+                sensitive: false,
+            },
+            fields: [],
+            isAdmin: false,
+            isBot: false,
+            isLocked: false,
+            isDiscoverable: false,
+            endpoints: {
+                dislikes: "",
+                featured: "",
+                likes: "",
+                followers: "",
+                following: "",
+                inbox: "",
+                outbox: "",
+            },
+            disableAutomoderation: false,
+            email: "",
+            emailVerificationToken: "",
+            emojis: [],
+            followerCount: 0,
+            followingCount: 0,
+            header: "",
+            instance: null,
+            password: "",
+            passwordResetToken: "",
+            privateKey: config.instance.keys.private,
+            roles: [],
+            sanctions: [],
+            statusCount: 0,
+            uri: "",
+        });
+    }
+
     static getUri(id: string, uri: string | null, baseUrl: string) {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
     }

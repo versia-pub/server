@@ -1,11 +1,11 @@
 import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
-import { getLogger } from "@logtape/logtape";
+import { SignatureConstructor } from "@lysand-org/federation";
+import { FederationRequester } from "@lysand-org/federation/requester";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Hono } from "hono";
 import { z } from "zod";
-import { resolveWebFinger } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
@@ -121,13 +121,21 @@ export default (app: Hono) =>
                     }
 
                     if (resolve) {
-                        const newUser = await resolveWebFinger(
-                            username,
-                            domain,
-                        ).catch((e) => {
-                            getLogger("webfinger").error`${e}`;
-                            return null;
-                        });
+                        const requester = self ?? User.getServerActor();
+
+                        const signatureConstructor =
+                            await SignatureConstructor.fromStringKey(
+                                requester.data.privateKey ?? "",
+                                requester.getUri(),
+                            );
+                        const manager = new FederationRequester(
+                            new URL(`https://${domain}`),
+                            signatureConstructor,
+                        );
+
+                        const uri = await manager.webFinger(username);
+
+                        const newUser = await User.resolve(uri);
 
                         if (newUser) {
                             return jsonResponse({
