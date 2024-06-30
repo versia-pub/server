@@ -576,18 +576,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         // If something important is updated, federate it
         if (
-            newUser.username ||
-            newUser.displayName ||
-            newUser.note ||
-            newUser.avatar ||
-            newUser.header ||
-            newUser.fields ||
-            newUser.publicKey ||
-            newUser.isAdmin ||
-            newUser.isBot ||
-            newUser.isLocked ||
-            newUser.endpoints ||
-            newUser.isDiscoverable
+            this.isLocal() &&
+            (newUser.username ||
+                newUser.displayName ||
+                newUser.note ||
+                newUser.avatar ||
+                newUser.header ||
+                newUser.fields ||
+                newUser.publicKey ||
+                newUser.isAdmin ||
+                newUser.isBot ||
+                newUser.isLocked ||
+                newUser.endpoints ||
+                newUser.isDiscoverable)
         ) {
             await this.federateToFollowers(this.toLysand());
         }

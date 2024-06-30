@@ -1,6 +1,7 @@
 import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
 import chalk from "chalk";
+import ora from "ora";
 import { UserFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
 
@@ -78,8 +79,11 @@ export default class UserRefetch extends UserFinderCommand<typeof UserRefetch> {
             }
         }
 
+        const spinner = ora("Refetching users").start();
+
         for (const user of users) {
             try {
+                spinner.text = `Refetching user ${user.data.username}`;
                 await user.updateFromRemote();
             } catch (error) {
                 this.log(
@@ -92,6 +96,8 @@ export default class UserRefetch extends UserFinderCommand<typeof UserRefetch> {
                 this.log(chalk.red((error as Error).message));
             }
         }
+
+        spinner.succeed("Refetched users");
 
         this.exit(0);
     }

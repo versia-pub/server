@@ -49,19 +49,20 @@ export class SonicSearchManager {
     /**
      * Connect to Sonic
      */
-    async connect(): Promise<void> {
+    async connect(silent = false): Promise<void> {
         if (!this.config.sonic.enabled) {
-            this.logger.info`Sonic search is disabled`;
+            !silent && this.logger.info`Sonic search is disabled`;
             return;
         }
 
-        this.logger.info`Connecting to Sonic...`;
+        !silent && this.logger.info`Connecting to Sonic...`;
 
         // Connect to Sonic
         await new Promise<boolean>((resolve, reject) => {
             this.searchChannel.connect({
                 connected: () => {
-                    this.logger.info`Connected to Sonic Search Channel`;
+                    !silent &&
+                        this.logger.info`Connected to Sonic Search Channel`;
                     resolve(true);
                 },
                 disconnected: () =>
@@ -84,7 +85,8 @@ export class SonicSearchManager {
         await new Promise<boolean>((resolve, reject) => {
             this.ingestChannel.connect({
                 connected: () => {
-                    this.logger.info`Connected to Sonic Ingest Channel`;
+                    !silent &&
+                        this.logger.info`Connected to Sonic Ingest Channel`;
                     resolve(true);
                 },
                 disconnected: () =>
@@ -108,7 +110,7 @@ export class SonicSearchManager {
                 this.searchChannel.ping(),
                 this.ingestChannel.ping(),
             ]);
-            this.logger.info`Connected to Sonic`;
+            !silent && this.logger.info`Connected to Sonic`;
         } catch (error) {
             this.logger.fatal`Error while connecting to Sonic: ${error}`;
             throw error;

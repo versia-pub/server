@@ -33,8 +33,6 @@ export default class IndexRebuild extends BaseCommand<typeof IndexRebuild> {
             this.exit(1);
         }
 
-        await searchManager.connect();
-
         const spinner = ora("Rebuilding search indexes").start();
 
         switch (args.type) {
