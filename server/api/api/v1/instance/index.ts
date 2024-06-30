@@ -1,11 +1,11 @@
 import { applyConfig, auth } from "@/api";
 import { jsonResponse, proxyUrl } from "@/response";
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import type { Hono } from "hono";
-import { db } from "~/drizzle/db";
-import { Instances, Users } from "~/drizzle/schema";
+import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
+import { Instance } from "~/packages/database-interface/instance";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 
@@ -38,13 +38,7 @@ export default (app: Hono) =>
                 and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
             );
 
-            const knownDomainsCount = (
-                await db
-                    .select({
-                        count: count(),
-                    })
-                    .from(Instances)
-            )[0].count;
+            const knownDomainsCount = Instance.getCount();
 
             // TODO: fill in more values
             return jsonResponse({

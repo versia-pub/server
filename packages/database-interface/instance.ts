@@ -7,6 +7,7 @@ import {
     type InferInsertModel,
     type InferSelectModel,
     type SQL,
+    count,
     desc,
     eq,
     inArray,
@@ -234,6 +235,10 @@ export class Instance extends BaseInterface<typeof Instances> {
                 name:
                     metadata.metadata.nodeName || metadata.metadata.title || "",
                 version: metadata.software.version,
+                description:
+                    metadata.metadata.nodeDescription ||
+                    metadata.metadata.description ||
+                    "",
                 logo: undefined,
                 type: "ServerMetadata",
                 supported_extensions: [],
@@ -274,5 +279,15 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.logo,
             protocol: protocol,
         });
+    }
+
+    static async getCount() {
+        return (
+            await db
+                .select({
+                    count: count(),
+                })
+                .from(Instances)
+        )[0].count;
     }
 }
