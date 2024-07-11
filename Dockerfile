@@ -1,9 +1,7 @@
-FROM oven/bun:1.1.18-alpine AS base
+# Node is required for building the project
+FROM imbios/bun-node:1.1.18-20-alpine AS base
 
 RUN apk add --no-cache libstdc++
-
-# Add Node.js
-COPY --from=node:22-alpine /usr/local/bin/node /usr/local/bin/node
 
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
