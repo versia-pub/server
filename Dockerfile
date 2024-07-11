@@ -1,6 +1,4 @@
-# Use 1.1.4 for building to prevent a Unicode bug with 1.1.5+
-# Temporary until they fix it
-FROM oven/bun:1.1.4-alpine AS base
+FROM oven/bun:1.1.18-alpine AS base
 
 RUN apk add --no-cache libstdc++
 
@@ -26,7 +24,7 @@ RUN bun run build
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.1.17-alpine
+FROM oven/bun:1.1.18-alpine
 
 RUN apk add --no-cache libstdc++
 

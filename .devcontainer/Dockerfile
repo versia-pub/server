@@ -1,5 +1,5 @@
 # Bun doesn't run well on Musl but this seems to work
-FROM oven/bun:1.1.17-alpine as base
+FROM oven/bun:1.1.18-alpine as base
 
 RUN apk add --no-cache libstdc++ git bash curl openssh cloc
 
