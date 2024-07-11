@@ -1,6 +1,6 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({

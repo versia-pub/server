@@ -1,8 +1,8 @@
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Tokens } from "~/drizzle/schema";
@@ -20,7 +20,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
+    json: z.object({
         code: z.string().optional(),
         code_verifier: z.string().optional(),
         grant_type: z.enum([
@@ -64,10 +64,10 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         async (context) => {
             const { grant_type, code, redirect_uri, client_id, client_secret } =
-                context.req.valid("form");
+                context.req.valid("json");
 
             switch (grant_type) {
                 case "authorization_code": {

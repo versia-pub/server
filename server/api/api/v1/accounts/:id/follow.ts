@@ -1,7 +1,7 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { relationshipToApi } from "~/classes/functions/relationship";

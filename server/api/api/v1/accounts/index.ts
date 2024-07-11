@@ -1,9 +1,9 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { jsonResponse, response } from "@/response";
 import { tempmailDomains } from "@/tempmail";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { Users } from "~/drizzle/schema";
@@ -27,7 +27,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
+    json: z.object({
         username: z.string(),
         email: z.string().toLowerCase(),
         password: z.string().optional(),
@@ -46,11 +46,11 @@ export default (app: Hono) =>
         meta.route,
         auth(meta.auth, meta.permissions, meta.challenge),
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         async (context) => {
-            const form = context.req.valid("form");
+            const form = context.req.valid("json");
             const { username, email, password, agreement, locale } =
-                context.req.valid("form");
+                context.req.valid("json");
 
             if (!config.signups.registration) {
                 return jsonResponse(

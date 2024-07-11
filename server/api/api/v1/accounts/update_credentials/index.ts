@@ -1,10 +1,10 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { parseEmojis } from "~/classes/functions/emoji";
@@ -33,7 +33,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
+    json: z.object({
         display_name: z
             .string()
             .min(3)
@@ -133,7 +133,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
@@ -148,7 +148,7 @@ export default (app: Hono) =>
                 discoverable,
                 source,
                 fields_attributes,
-            } = context.req.valid("form");
+            } = context.req.valid("json");
 
             if (!user) {
                 return errorResponse("Unauthorized", 401);

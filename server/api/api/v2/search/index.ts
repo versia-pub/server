@@ -1,10 +1,10 @@
 import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { SignatureConstructor } from "@lysand-org/federation";
 import { FederationRequester } from "@lysand-org/federation/requester";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";

@@ -1,13 +1,13 @@
 import { errorResponse } from "@/response";
+import type { Context } from "@hono/hono";
+import { createMiddleware } from "@hono/hono/factory";
+import type { StatusCode } from "@hono/hono/utils/http-status";
+import { validator } from "@hono/hono/validator";
 import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { config } from "config-manager";
 import { eq } from "drizzle-orm";
-import type { Context } from "hono";
-import { createMiddleware } from "hono/factory";
-import type { StatusCode } from "hono/utils/http-status";
-import { validator } from "hono/validator";
 import {
     anyOf,
     caseInsensitive,
@@ -110,7 +110,7 @@ export const handleZodError = (
     result:
         | { success: true; data?: object }
         | { success: false; error: z.ZodError<z.AnyZodObject>; data?: object },
-    _context: Context,
+    _context: unknown,
 ) => {
     if (!result.success) {
         return errorResponse(fromZodError(result.error).message, 422);
@@ -127,7 +127,8 @@ const returnContextError = (
     context: Context,
     error: string,
     code?: StatusCode,
-) => {
+    // @ts-expect-error The return type is too complex for TypeScript to work with, but it's fine since this isn't a library
+): ReturnType<Context["json"]> => {
     const templateError = errorResponse(error, code);
 
     return context.json(
@@ -197,7 +198,7 @@ const checkRouteNeedsAuth = (
 export const checkRouteNeedsChallenge = async (
     challengeData: ApiRouteMetadata["challenge"],
     context: Context,
-) => {
+): Promise<true | ReturnType<typeof returnContextError>> => {
     if (!challengeData) {
         return true;
     }
@@ -357,12 +358,9 @@ export const setContextFormDataToObject = (
     context: Context,
     setTo: object,
 ): Context => {
-    // @ts-expect-error HACK
-    context.req.bodyCache.formData = setTo;
-    context.req.parseBody = async () =>
-        context.req.bodyCache.formData as FormData;
-    context.req.formData = async () =>
-        context.req.bodyCache.formData as FormData;
+    context.req.bodyCache.json = setTo;
+    context.req.parseBody = async () => context.req.bodyCache.json;
+    context.req.json = async () => context.req.bodyCache.json;
 
     return context;
 };
@@ -382,6 +380,7 @@ export const jsonOrForm = () => {
             const parsed = await parseUrlEncoded(context);
 
             setContextFormDataToObject(context, parsed);
+            context.req.raw.headers.set("Content-Type", "application/json");
         } else if (contentType?.includes("multipart/form-data")) {
             const { parsed, files } = await parseFormData(context);
 
@@ -389,6 +388,10 @@ export const jsonOrForm = () => {
                 ...parsed,
                 ...Object.fromEntries(files),
             });
+            context.req.raw.headers.set("Content-Type", "application/json");
+        } else if (!contentType) {
+            setContextFormDataToObject(context, {});
+            context.req.raw.headers.set("Content-Type", "application/json");
         }
 
         await next();

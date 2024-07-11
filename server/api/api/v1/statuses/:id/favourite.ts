@@ -1,7 +1,7 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { createLike } from "~/classes/functions/like";
 import { db } from "~/drizzle/db";

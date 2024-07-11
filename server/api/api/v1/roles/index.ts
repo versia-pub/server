@@ -1,6 +1,6 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { Role } from "~/packages/database-interface/role";
 
 export const meta = applyConfig({

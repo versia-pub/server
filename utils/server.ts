@@ -1,5 +1,5 @@
+import type { Hono } from "@hono/hono";
 import type { Config } from "config-manager";
-import type { Hono } from "hono";
 
 export const createServer = (config: Config, app: Hono) =>
     Bun.serve({

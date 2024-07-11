@@ -2,8 +2,8 @@ import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { randomString } from "@/math";
 import { errorResponse, jsonResponse, proxyUrl } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,
@@ -35,7 +35,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z
+    json: z
         .object({
             issuer: z.string(),
         })
@@ -52,10 +52,10 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
-            const form = context.req.valid("form");
+            const form = context.req.valid("json");
             const { user } = context.req.valid("header");
 
             if (!user) {

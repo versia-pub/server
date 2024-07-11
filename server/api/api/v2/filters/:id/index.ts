@@ -1,8 +1,8 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
@@ -26,7 +26,7 @@ export const schemas = {
     param: z.object({
         id: z.string().uuid(),
     }),
-    form: z.object({
+    json: z.object({
         title: z.string().trim().min(1).max(100).optional(),
         context: z
             .array(
@@ -76,7 +76,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
@@ -123,7 +123,7 @@ export default (app: Hono) =>
                         filter_action,
                         expires_in,
                         keywords_attributes,
-                    } = context.req.valid("form");
+                    } = context.req.valid("json");
 
                     await db
                         .update(Filters)

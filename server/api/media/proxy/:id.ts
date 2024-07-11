@@ -1,7 +1,7 @@
 import { applyConfig, handleZodError } from "@/api";
 import { errorResponse, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
 

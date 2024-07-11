@@ -1,6 +1,6 @@
 import { applyConfig } from "@/api";
 import { redirect } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

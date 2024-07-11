@@ -1,7 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { db } from "~/drizzle/db";
 import { Notifications, RolePermissions } from "~/drizzle/schema";
 

@@ -1,7 +1,7 @@
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Role } from "~/packages/database-interface/role";
@@ -34,7 +34,6 @@ export default (app: Hono) =>
     app.on(
         meta.allowedMethods,
         meta.route,
-        jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {

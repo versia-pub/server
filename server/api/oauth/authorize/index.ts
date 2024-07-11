@@ -1,8 +1,8 @@
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
@@ -35,7 +35,7 @@ export const schemas = {
             .optional()
             .default(60 * 60 * 24 * 7),
     }),
-    form: z.object({
+    json: z.object({
         scope: z.string().optional(),
         redirect_uri: z
             .string()
@@ -83,12 +83,12 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("query", schemas.query, handleZodError),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         async (context) => {
             const { scope, redirect_uri, response_type, client_id, state } =
-                context.req.valid("form");
+                context.req.valid("json");
 
-            const body = context.req.valid("form");
+            const body = context.req.valid("json");
 
             const cookie = context.req.header("Cookie");
 

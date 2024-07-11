@@ -1,7 +1,7 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
@@ -21,7 +21,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z
+    json: z
         .object({
             title: z.string().trim().min(1).max(100).optional(),
             context: z
@@ -64,7 +64,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { user } = context.req.valid("header");
@@ -102,7 +102,7 @@ export default (app: Hono) =>
                     );
                 }
                 case "POST": {
-                    const form = context.req.valid("form");
+                    const form = context.req.valid("json");
                     if (!form) {
                         return errorResponse(
                             "Missing required Form fields",

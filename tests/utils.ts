@@ -17,14 +17,16 @@ if (config.sonic.enabled) {
     await searchManager.connect();
 }
 
+const app = await appFactory();
+
 /**
  * This allows us to send a test request to the server even when it isnt running
  * @param req Request to send
  * @returns Response from the server
  */
-export async function sendTestRequest(req: Request): Promise<Response> {
+export function sendTestRequest(req: Request): Promise<Response> {
     // return fetch(req);
-    return Promise.resolve((await appFactory()).fetch(req));
+    return Promise.resolve(app.fetch(req));
 }
 
 export function wrapRelativeUrl(url: string, baseUrl: string) {

@@ -5,9 +5,9 @@ import {
     webfingerMention,
 } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { lookup } from "mime-types";
 import { z } from "zod";
 import { Users } from "~/drizzle/schema";

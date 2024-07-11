@@ -1,8 +1,8 @@
 import { applyConfig, handleZodError } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { redirect, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,

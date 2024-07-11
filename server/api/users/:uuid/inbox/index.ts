@@ -1,5 +1,6 @@
 import { applyConfig, debugRequest, handleZodError } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import {
@@ -10,7 +11,6 @@ import {
 import type { Entity } from "@lysand-org/federation/types";
 import type { SocketAddress } from "bun";
 import { and, eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";

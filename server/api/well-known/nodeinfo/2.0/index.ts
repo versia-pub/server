@@ -1,6 +1,6 @@
 import { applyConfig } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import manifest from "~/package.json";
 
 export const meta = applyConfig({

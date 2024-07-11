@@ -1,5 +1,5 @@
 import { errorResponse } from "@/response";
-import { createMiddleware } from "hono/factory";
+import { createMiddleware } from "@hono/hono/factory";
 
 export const boundaryCheck = createMiddleware(async (context, next) => {
     // Checks that FormData boundary is present

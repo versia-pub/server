@@ -7,9 +7,9 @@ import {
 } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { errorResponse, jsonResponse, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
 import { db } from "~/drizzle/db";
@@ -37,7 +37,7 @@ export const schemas = {
     param: z.object({
         id: z.string().uuid(),
     }),
-    form: z
+    json: z
         .object({
             shortcode: z
                 .string()
@@ -73,7 +73,7 @@ export default (app: Hono) =>
         meta.route,
         jsonOrForm(),
         zValidator("param", schemas.param, handleZodError),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
@@ -114,7 +114,7 @@ export default (app: Hono) =>
                 }
 
                 case "PATCH": {
-                    const form = context.req.valid("form");
+                    const form = context.req.valid("json");
 
                     if (!form) {
                         return errorResponse(

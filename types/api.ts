@@ -1,5 +1,5 @@
-import type { Hono } from "hono";
-import type { RouterRoute } from "hono/types";
+import type { Hono } from "@hono/hono";
+import type { RouterRoute } from "@hono/hono/types";
 import type { z } from "zod";
 import type { RolePermissions } from "~/drizzle/schema";
 

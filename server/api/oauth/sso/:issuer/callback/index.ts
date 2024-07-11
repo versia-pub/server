@@ -1,9 +1,9 @@
 import { applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
 import { errorResponse, response } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Hono } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";

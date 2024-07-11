@@ -1,7 +1,7 @@
 import { errorResponse, response } from "@/response";
+import { Hono } from "@hono/hono";
 import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
-import { Hono } from "hono";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
 import { boundaryCheck } from "./middlewares/boundary-check";
@@ -95,3 +95,5 @@ export const appFactory = async () => {
 
     return app;
 };
+
+export type App = Awaited<ReturnType<typeof appFactory>>;

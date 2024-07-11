@@ -1,8 +1,8 @@
 import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
-import type { Hono } from "hono";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { federateNote } from "~/classes/functions/status";
@@ -26,7 +26,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z
+    json: z
         .object({
             status: z
                 .string()
@@ -108,7 +108,7 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { user, application } = context.req.valid("header");
@@ -127,7 +127,7 @@ export default (app: Hono) =>
                 visibility,
                 content_type,
                 local_only,
-            } = context.req.valid("form");
+            } = context.req.valid("json");
 
             // Check if media attachments are all valid
             if (media_ids.length > 0) {

@@ -1,8 +1,8 @@
 import { applyConfig, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, count, eq, inArray } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";

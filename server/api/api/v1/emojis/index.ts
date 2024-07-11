@@ -7,9 +7,9 @@ import {
 } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull, or } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
@@ -33,7 +33,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
+    json: z.object({
         shortcode: z
             .string()
             .trim()
@@ -65,11 +65,11 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { shortcode, element, alt, global, category } =
-                context.req.valid("form");
+                context.req.valid("json");
             const { user } = context.req.valid("header");
 
             if (!user) {

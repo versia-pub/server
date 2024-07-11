@@ -1,8 +1,8 @@
 import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { relationshipToApi } from "~/classes/functions/relationship";
 import { getRelationshipToOtherUser } from "~/classes/functions/user";

@@ -1,7 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
 import { jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

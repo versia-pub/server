@@ -1,5 +1,5 @@
 import { errorResponse } from "@/response";
-import { createMiddleware } from "hono/factory";
+import { createMiddleware } from "@hono/hono/factory";
 import { config } from "~/packages/config-manager";
 
 export const agentBans = createMiddleware(async (context, next) => {

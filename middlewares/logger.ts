@@ -1,5 +1,5 @@
 import { debugRequest } from "@/api";
-import { createMiddleware } from "hono/factory";
+import { createMiddleware } from "@hono/hono/factory";
 import { config } from "~/packages/config-manager";
 
 export const logger = createMiddleware(async (context, next) => {

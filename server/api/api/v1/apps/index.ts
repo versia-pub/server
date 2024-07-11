@@ -1,8 +1,8 @@
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import type { Hono } from "hono";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Applications, RolePermissions } from "~/drizzle/schema";
@@ -23,7 +23,7 @@ export const meta = applyConfig({
 });
 
 export const schemas = {
-    form: z.object({
+    json: z.object({
         client_name: z.string().trim().min(1).max(100),
         redirect_uris: z
             .string()
@@ -49,10 +49,10 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         jsonOrForm(),
-        zValidator("form", schemas.form, handleZodError),
+        zValidator("json", schemas.json, handleZodError),
         async (context) => {
             const { client_name, redirect_uris, scopes, website } =
-                context.req.valid("form");
+                context.req.valid("json");
 
             const app = (
                 await db

@@ -1,7 +1,7 @@
 import { applyConfig, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

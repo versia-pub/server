@@ -1,9 +1,9 @@
 import { applyConfig, auth, handleZodError, idValidator } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { fetchTimeline } from "@/timelines";
+import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { sql } from "drizzle-orm";
-import type { Hono } from "hono";
 import { z } from "zod";
 import {
     findManyNotifications,

@@ -1,8 +1,8 @@
 import { applyConfig } from "@/api";
 import { urlToContentFormat } from "@/content_types";
 import { jsonResponse } from "@/response";
+import type { Hono } from "@hono/hono";
 import type { ServerMetadata } from "@lysand-org/federation/types";
-import type { Hono } from "hono";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
 

@@ -1,6 +1,6 @@
 import { applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "hono";
+import type { Hono } from "@hono/hono";
 import { getFromToken } from "~/classes/functions/application";
 import { RolePermissions } from "~/drizzle/schema";
 
