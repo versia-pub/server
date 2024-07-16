@@ -5,7 +5,7 @@ import { Role } from "~/packages/database-interface/role";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
-const { users, tokens } = await getTestUsers(1);
+const { users, tokens, deleteUsers } = await getTestUsers(1);
 let role: Role;
 let roleNotLinked: Role;
 let higherPriorityRole: Role;
@@ -55,6 +55,7 @@ afterAll(async () => {
     await role.delete();
     await roleNotLinked.delete();
     await higherPriorityRole.delete();
+    await deleteUsers();
 });
 
 // /api/v1/roles/:id

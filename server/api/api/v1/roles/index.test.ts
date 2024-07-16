@@ -1,11 +1,11 @@
-import { beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { config } from "config-manager";
 import { ADMIN_ROLES } from "~/drizzle/schema";
 import { Role } from "~/packages/database-interface/role";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 
-const { users, tokens } = await getTestUsers(1);
+const { users, deleteUsers, tokens } = await getTestUsers(1);
 let role: Role;
 
 beforeAll(async () => {
@@ -23,6 +23,10 @@ beforeAll(async () => {
 
     // Link role to user
     await role.linkUser(users[0].id);
+});
+
+afterAll(async () => {
+    await deleteUsers();
 });
 
 // /api/v1/roles
