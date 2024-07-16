@@ -478,7 +478,6 @@ export const configValidator = z.object({
                     software: "lysand-ap",
                     allowed_ips: [],
                     token: "",
-                    url: "",
                 })
                 .refine(
                     (arg) => (arg.enabled ? arg.url : true),
