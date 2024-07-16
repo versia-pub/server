@@ -23,6 +23,10 @@ For client developers. Please read [the documentation](./challenges.md).
 
 For client developers. Please read [the documentation](./moderation.md).
 
+## Federation API
+
+For client developers. Please read [the documentation](./federation.md).
+
 ## Frontend API
 
 For frontend developers. Please read [the documentation](./frontend.md).
