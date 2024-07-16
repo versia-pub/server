@@ -2,7 +2,7 @@ import type { ContentFormat } from "@lysand-org/federation/types";
 import { lookup } from "mime-types";
 import { config } from "~/packages/config-manager";
 
-export const getBestContentType = (content?: ContentFormat) => {
+export const getBestContentType = (content?: ContentFormat | null) => {
     if (!content) {
         return { content: "", format: "text/plain" };
     }
