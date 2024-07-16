@@ -1,4 +1,4 @@
-name: Lint & Format
+name: Check Types
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     permissions:
-      contents: read                
+      contents: read
 
     steps:
       - name: Checkout code
@@ -26,6 +26,6 @@ jobs:
         run: |
           bun install
 
-      - name: Run linting
+      - name: Run typechecks
         run: |
-          bunx @biomejs/biome ci .
+          bun run check
