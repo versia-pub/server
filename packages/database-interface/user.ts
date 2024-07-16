@@ -305,6 +305,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         if (instance.data.protocol === "activitypub") {
+            if (!config.federation.bridge.enabled) {
+                throw new Error("ActivityPub bridge is not enabled");
+            }
+
             const bridgeUri = new URL(
                 `/apbridge/lysand/query?${new URLSearchParams({
                     user_url: uri,
