@@ -1,8 +1,10 @@
+import { parseUserAddress, userAddressValidator } from "@/api";
 import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, getTableColumns, like } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances, Users } from "~/drizzle/schema";
+import { Instance } from "~/packages/database-interface/instance";
 import { User } from "~/packages/database-interface/user";
 import { BaseCommand } from "./base";
 
@@ -25,8 +27,15 @@ export abstract class UserFinderCommand<
         type: Flags.string({
             char: "t",
             description: "Type of identifier",
-            options: ["id", "username", "note", "display-name", "email"],
-            default: "id",
+            options: [
+                "id",
+                "username",
+                "note",
+                "display-name",
+                "email",
+                "address",
+            ],
+            default: "address",
         }),
         limit: Flags.integer({
             char: "n",
@@ -44,7 +53,7 @@ export abstract class UserFinderCommand<
     static baseArgs = {
         identifier: Args.string({
             description:
-                "Identifier of the user (by default this must be an ID)",
+                "Identifier of the user (by default this must be an address, i.e. name@host.com)",
             required: true,
         }),
     };
@@ -78,9 +87,25 @@ export abstract class UserFinderCommand<
 
         const operator = this.flags.pattern ? like : eq;
         // Replace wildcards with an SQL LIKE pattern
-        const identifier = this.flags.pattern
+        const identifier: string = this.flags.pattern
             ? this.args.identifier.replace(/\*/g, "%")
             : this.args.identifier;
+
+        if (this.flags.type === "address") {
+            // Check if the address is valid
+            if (!userAddressValidator.exec(identifier)) {
+                this.log(
+                    "Invalid address. Please check the address format and try again. For example: name@host.com",
+                );
+
+                this.exit(1);
+            }
+
+            // Check instance exists, if not, create it
+            await Instance.resolve(
+                `https://${parseUserAddress(identifier).domain}`,
+            );
+        }
 
         return await User.manyFromSql(
             and(
@@ -98,6 +123,30 @@ export abstract class UserFinderCommand<
                     : undefined,
                 this.flags.type === "email"
                     ? operator(Users.email, identifier)
+                    : undefined,
+                this.flags.type === "address"
+                    ? and(
+                          operator(
+                              Users.username,
+                              parseUserAddress(identifier).username,
+                          ),
+                          operator(
+                              Users.instanceId,
+                              (
+                                  await Instance.fromSql(
+                                      eq(
+                                          Instances.baseUrl,
+                                          new URL(
+                                              `https://${
+                                                  parseUserAddress(identifier)
+                                                      .domain
+                                              }`,
+                                          ).host,
+                                      ),
+                                  )
+                              )?.id ?? "",
+                          ),
+                      )
                     : undefined,
             ),
             undefined,

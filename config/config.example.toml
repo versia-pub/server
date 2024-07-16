@@ -319,6 +319,7 @@ allowed_ips = ["192.168.1.0/24"]
 # Token for the bridge software
 # Bridge must have the same token!
 token = "mycooltoken"
+url = "https://ap.lysand.org"
 
 [instance]
 name = "Lysand"

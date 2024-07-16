@@ -8,8 +8,8 @@ import { BaseCommand } from "~/cli/base";
 import { Instance } from "~/packages/database-interface/instance";
 import { User } from "~/packages/database-interface/user";
 
-export default class FederationUserFetch extends BaseCommand<
-    typeof FederationUserFetch
+export default class FederationUserFinger extends BaseCommand<
+    typeof FederationUserFinger
 > {
     static override args = {
         address: Args.string({
@@ -18,14 +18,14 @@ export default class FederationUserFetch extends BaseCommand<
         }),
     };
 
-    static override description = "Fetch remote users";
+    static override description = "Fetch the URL of remote users via WebFinger";
 
     static override examples = ["<%= config.bin %> <%= command.id %>"];
 
     static override flags = {};
 
     public async run(): Promise<void> {
-        const { args } = await this.parse(FederationUserFetch);
+        const { args } = await this.parse(FederationUserFinger);
 
         // Check if the address is valid
         if (!args.address.match(userAddressValidator)) {
@@ -36,7 +36,7 @@ export default class FederationUserFetch extends BaseCommand<
             this.exit(1);
         }
 
-        const spinner = ora("Fetching user").start();
+        const spinner = ora("Fetching user URI").start();
 
         const { username, domain: host } = parseUserAddress(args.address);
 
@@ -56,15 +56,9 @@ export default class FederationUserFetch extends BaseCommand<
 
         const uri = await manager.webFinger(username);
 
-        const newUser = await User.resolve(uri);
+        spinner.succeed("Fetched user URI");
 
-        if (newUser) {
-            spinner.succeed();
-            this.log(chalk.green(`User found: ${newUser.getUri()}`));
-        } else {
-            spinner.fail();
-            this.log(chalk.red("User not found"));
-        }
+        this.log(`URI: ${chalk.blueBright(uri)}`);
 
         this.exit(0);
     }

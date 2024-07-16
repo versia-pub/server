@@ -1,0 +1,1 @@
+ALTER TABLE "Instances" ALTER COLUMN "logo" DROP NOT NULL;

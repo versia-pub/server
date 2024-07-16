@@ -204,6 +204,13 @@
             "when": 1719726234826,
             "tag": "0028_unique_fat_cobra",
             "breakpoints": true
+        },
+        {
+            "idx": 29,
+            "version": "7",
+            "when": 1721155789219,
+            "tag": "0029_shiny_korvac",
+            "breakpoints": true
         }
     ]
 }

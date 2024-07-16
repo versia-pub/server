@@ -305,8 +305,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         if (instance.data.protocol === "activitypub") {
-            // Placeholder for ActivityPub user fetching
-            throw new Error("ActivityPub user fetching not implemented");
+            const bridgeUri = new URL(
+                `/apbridge/lysand/query?${new URLSearchParams({
+                    user_url: uri,
+                })}`,
+                config.federation.bridge.url,
+            );
+
+            return await User.saveFromLysand(bridgeUri.toString(), instance);
         }
 
         throw new Error(`Unsupported protocol: ${instance.data.protocol}`);

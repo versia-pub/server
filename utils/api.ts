@@ -106,6 +106,17 @@ export const webfingerMention = createRegExp(
     [],
 );
 
+export const parseUserAddress = (address: string) => {
+    let output = address;
+    // Remove leading @ if it exists
+    if (output.startsWith("@")) {
+        output = output.slice(1);
+    }
+
+    const [username, domain] = output.split("@");
+    return { username, domain };
+};
+
 export const handleZodError = (
     result:
         | { success: true; data?: object }

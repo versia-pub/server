@@ -471,13 +471,19 @@ export const configValidator = z.object({
                     software: z.enum(["lysand-ap"]).or(z.string()),
                     allowed_ips: z.array(z.string().trim()).default([]),
                     token: z.string().default(""),
+                    url: zUrl.optional(),
                 })
                 .default({
                     enabled: false,
                     software: "lysand-ap",
                     allowed_ips: [],
                     token: "",
-                }),
+                    url: "",
+                })
+                .refine(
+                    (arg) => (arg.enabled ? arg.url : true),
+                    "When bridge is enabled, url must be set",
+                ),
         })
         .default({
             blocked: [],
@@ -498,6 +504,7 @@ export const configValidator = z.object({
                 software: "lysand-ap",
                 allowed_ips: [],
                 token: "",
+                url: "",
             },
         }),
     instance: z

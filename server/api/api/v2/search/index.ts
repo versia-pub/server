@@ -1,4 +1,10 @@
-import { applyConfig, auth, handleZodError, userAddressValidator } from "@/api";
+import {
+    applyConfig,
+    auth,
+    handleZodError,
+    parseUserAddress,
+    userAddressValidator,
+} from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
@@ -88,7 +94,9 @@ export default (app: Hono) =>
                         accountMatches[0] = accountMatches[0].slice(1);
                     }
 
-                    const [username, domain] = accountMatches[0].split("@");
+                    const { username, domain } = parseUserAddress(
+                        accountMatches[0],
+                    );
 
                     const accountId = (
                         await db
