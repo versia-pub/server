@@ -4,7 +4,7 @@ import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { SignatureConstructor } from "@lysand-org/federation";
 import { FederationRequester } from "@lysand-org/federation/requester";
-import { eq, like, not, or, sql } from "drizzle-orm";
+import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
     anyOf,
     charIn,
@@ -114,8 +114,8 @@ export default (app: Hono) =>
                 accounts.push(
                     ...(await User.manyFromSql(
                         or(
-                            like(Users.displayName, `%${q}%`),
-                            like(Users.username, `%${q}%`),
+                            ilike(Users.displayName, `%${q}%`),
+                            ilike(Users.username, `%${q}%`),
                             following && self
                                 ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${self.id} AND "Relationships"."following" = true)`
                                 : undefined,
