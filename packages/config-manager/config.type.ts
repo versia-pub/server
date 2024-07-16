@@ -503,7 +503,6 @@ export const configValidator = z.object({
                 software: "lysand-ap",
                 allowed_ips: [],
                 token: "",
-                url: "",
             },
         }),
     instance: z
