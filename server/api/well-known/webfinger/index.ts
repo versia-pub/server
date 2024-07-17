@@ -7,6 +7,12 @@ import {
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
+import { getLogger } from "@logtape/logtape";
+import { SignatureConstructor } from "@lysand-org/federation";
+import {
+    FederationRequester,
+    type ResponseError,
+} from "@lysand-org/federation/requester";
 import { eq } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
@@ -70,6 +76,35 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
+            let activityPubUrl = "";
+
+            if (config.federation.bridge.enabled) {
+                const requester = await User.getServerActor();
+
+                const signatureConstructor =
+                    await SignatureConstructor.fromStringKey(
+                        requester.data.privateKey ?? "",
+                        requester.getUri(),
+                    );
+
+                const manager = new FederationRequester(
+                    new URL(config.federation.bridge.url ?? ""),
+                    signatureConstructor,
+                );
+
+                try {
+                    activityPubUrl = await manager.webFinger(
+                        user.data.username,
+                        new URL(config.http.base_url).host,
+                    );
+                } catch (e) {
+                    const error = e as ResponseError;
+
+                    getLogger("federation")
+                        .error`Error from bridge: ${await error.response.data}`;
+                }
+            }
+
             return jsonResponse({
                 subject: `acct:${
                     isUuid ? user.id : user.data.username
@@ -84,12 +119,17 @@ export default (app: Hono) =>
                             config.http.base_url,
                         ).toString(),
                     },
+                    activityPubUrl && {
+                        rel: "self",
+                        type: "application/activity+json",
+                        href: activityPubUrl,
+                    },
                     {
                         rel: "avatar",
                         type: lookup(user.getAvatarUrl(config)),
                         href: user.getAvatarUrl(config),
                     },
-                ],
+                ].filter(Boolean),
             });
         },
     );
