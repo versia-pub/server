@@ -16,6 +16,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Added [**TOS and Privacy Policy**](docs/api/mastodon.md) endpoints.
 - Added [**Challenge API**](docs/api/challenges.md). (basically CAPTCHAS). This can be enabled/disabled by administrators. No `lysand-fe` support yet.
 - Added ability to change the `username` of a user. ([Mastodon API extension](docs/api/mastodon.md)).
+- Added an endpoint to get a user by its username.
 - Add OpenID Connect registration support. Admins can now disable username/password registration entirely and still allow users to sign up via OpenID Connect.
 - Add option to never convert vector images to a raster format.
 - Refactor logging system to be more robust and easier to use. Logfiles are now automatically rotated.

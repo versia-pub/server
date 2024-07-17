@@ -219,3 +219,21 @@ This request is authenticated with the user's Mastodon API access token.
 }
 ```
 
+## Get User By Username
+
+Gets a user by their username.
+
+```http
+GET /api/v1/users/id?username=myCoolUser
+```
+
+### Response
+
+Returns an account object.
+
+```ts
+// 200 OK
+{
+    id: string;
+    // Account object
+}

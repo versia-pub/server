@@ -50,12 +50,13 @@ Contains the same extensions as `/api/v1/instance`, except `banner` which uses t
 
 (`/api/v1/accounts/:id`, `/api/v1/accounts/verify_credentials`, ...)
 
-An extra attribute has been adding to all returned account objects:
+Two extra attributes has been adding to all returned account objects:
 
 ```ts
 {
     // ...
     roles: LysandRoles[];
+    uri: string;
 }
 ```
 
@@ -63,7 +64,11 @@ An extra attribute has been adding to all returned account objects:
 
 An array of roles from [Lysand Roles](./roles.md).
 
-### `/api/v1/accounts/update_credentials`
+### `uri`
+
+The URI of the account's Lysand object (for federation). Similar to Mastodon's `uri` field on notes.
+
+## `/api/v1/accounts/update_credentials`
 
 The `username` parameter can now (optionally) be set to change the user's handle.
 

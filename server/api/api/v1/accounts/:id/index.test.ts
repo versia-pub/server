@@ -72,6 +72,7 @@ describe(meta.route, () => {
             statuses_count: 40,
             note: users[0].data.note,
             acct: users[0].data.username,
+            uri: expect.any(String),
             url: expect.any(String),
             avatar_static: expect.any(String),
             header_static: expect.any(String),

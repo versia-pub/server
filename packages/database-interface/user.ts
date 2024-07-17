@@ -636,6 +636,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             username: user.username,
             display_name: user.displayName,
             note: user.note,
+            uri: this.getUri(),
             url:
                 user.uri ||
                 new URL(`/@${user.username}`, config.http.base_url).toString(),
