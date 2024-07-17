@@ -1,5 +1,5 @@
 # Node is required for building the project
-FROM imbios/bun-node:1.1.18-20-alpine AS base
+FROM imbios/bun-node:1.1.20-20-alpine AS base
 
 RUN apk add --no-cache libstdc++
 
@@ -25,7 +25,7 @@ RUN bun run build
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.1.18-alpine
+FROM oven/bun:1.1.20-alpine
 
 RUN apk add --no-cache libstdc++
 
