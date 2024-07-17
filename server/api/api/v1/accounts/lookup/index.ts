@@ -92,7 +92,7 @@ export default (app: Hono) =>
                     signatureConstructor,
                 );
 
-                const uri = await manager.webFinger(username);
+                const uri = await User.webFinger(manager, username);
 
                 const foundAccount = await User.resolve(uri);
 

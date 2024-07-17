@@ -7,6 +7,7 @@ import type {
     Mention as ApiMention,
 } from "@lysand-org/client/types";
 import { EntityValidator } from "@lysand-org/federation";
+import type { FederationRequester } from "@lysand-org/federation/requester";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
@@ -195,6 +196,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     }
                     return acc;
                 }, [] as RolePermissions[])
+        );
+    }
+
+    static async webFinger(
+        manager: FederationRequester,
+        username: string,
+    ): Promise<string> {
+        return (
+            (await manager.webFinger(username).catch(() => null)) ??
+            (await manager.webFinger(
+                username,
+                manager.url.hostname,
+                "application/activity+json",
+            ))
         );
     }
 

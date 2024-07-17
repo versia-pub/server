@@ -139,7 +139,12 @@ export class Instance extends BaseInterface<typeof Instances> {
                 proxy: config.http.proxy.address,
             });
 
-            if (!response.ok) {
+            if (
+                !(
+                    response.ok &&
+                    response.headers.get("content-type")?.includes("json")
+                )
+            ) {
                 // If the server doesn't have a Lysand well-known endpoint, it's not a Lysand instance
                 // Try to resolve ActivityPub metadata instead
                 const data = await Instance.fetchActivityPubMetadata(url);

@@ -54,7 +54,7 @@ export default class FederationUserFetch extends BaseCommand<
             signatureConstructor,
         );
 
-        const uri = await manager.webFinger(username);
+        const uri = await User.webFinger(manager, username);
 
         const newUser = await User.resolve(uri);
 

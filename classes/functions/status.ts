@@ -323,7 +323,7 @@ export const parseTextMentions = async (
             signatureConstructor,
         );
 
-        const uri = await manager.webFinger(person?.[1] ?? "");
+        const uri = await User.webFinger(manager, person?.[1] ?? "");
 
         const user = await User.resolve(uri);
 

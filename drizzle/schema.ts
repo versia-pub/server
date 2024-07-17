@@ -421,7 +421,7 @@ export const Users = pgTable(
     (table) => {
         return {
             uriKey: uniqueIndex().on(table.uri),
-            usernameKey: uniqueIndex().on(table.username),
+            usernameKey: index().on(table.username),
             emailKey: uniqueIndex().on(table.email),
         };
     },

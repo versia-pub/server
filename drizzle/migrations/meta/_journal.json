@@ -211,6 +211,13 @@
             "when": 1721155789219,
             "tag": "0029_shiny_korvac",
             "breakpoints": true
+        },
+        {
+            "idx": 30,
+            "version": "7",
+            "when": 1721223331975,
+            "tag": "0030_curvy_vulture",
+            "breakpoints": true
         }
     ]
 }

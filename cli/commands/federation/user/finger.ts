@@ -54,7 +54,7 @@ export default class FederationUserFinger extends BaseCommand<
             signatureConstructor,
         );
 
-        const uri = await manager.webFinger(username);
+        const uri = await User.webFinger(manager, username);
 
         spinner.succeed("Fetched user URI");
 
