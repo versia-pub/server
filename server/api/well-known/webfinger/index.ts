@@ -96,6 +96,7 @@ export default (app: Hono) =>
                     activityPubUrl = await manager.webFinger(
                         user.data.username,
                         new URL(config.http.base_url).host,
+                        "application/activity+json",
                     );
                 } catch (e) {
                     const error = e as ResponseError;
@@ -111,6 +112,13 @@ export default (app: Hono) =>
                 }@${host}`,
 
                 links: [
+                    // Keep the ActivityPub link first, because Misskey only searches
+                    // for the first link with rel="self" and doesn't check the type.
+                    activityPubUrl && {
+                        rel: "self",
+                        type: "application/activity+json",
+                        href: activityPubUrl,
+                    },
                     {
                         rel: "self",
                         type: "application/json",
@@ -118,11 +126,6 @@ export default (app: Hono) =>
                             `/users/${user.id}`,
                             config.http.base_url,
                         ).toString(),
-                    },
-                    activityPubUrl && {
-                        rel: "self",
-                        type: "application/activity+json",
-                        href: activityPubUrl,
                     },
                     {
                         rel: "avatar",
