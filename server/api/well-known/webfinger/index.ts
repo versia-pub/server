@@ -13,7 +13,7 @@ import {
     FederationRequester,
     type ResponseError,
 } from "@lysand-org/federation/requester";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
 import { Users } from "~/drizzle/schema";
@@ -66,9 +66,12 @@ export default (app: Hono) =>
             const isUuid = requestedUser.split("@")[0].match(idValidator);
 
             const user = await User.fromSql(
-                eq(
-                    isUuid ? Users.id : Users.username,
-                    requestedUser.split("@")[0],
+                and(
+                    eq(
+                        isUuid ? Users.id : Users.username,
+                        requestedUser.split("@")[0],
+                    ),
+                    isNull(Users.instanceId),
                 ),
             );
 
