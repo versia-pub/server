@@ -92,6 +92,13 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
+            if (user.isRemote()) {
+                return errorResponse(
+                    "Cannot view users from remote instances",
+                    403,
+                );
+            }
+
             // @ts-expect-error IP attribute is not in types
             const requestIp = context.env?.ip as
                 | SocketAddress

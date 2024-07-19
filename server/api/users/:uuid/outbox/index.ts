@@ -48,6 +48,13 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
+            if (author.isRemote()) {
+                return errorResponse(
+                    "Cannot view users from remote instances",
+                    403,
+                );
+            }
+
             const pageNumber = Number(context.req.valid("query").page) || 1;
 
             const notes = await Note.manyFromSql(

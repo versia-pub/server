@@ -37,6 +37,13 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
+            if (user.isRemote()) {
+                return errorResponse(
+                    "Cannot view users from remote instances",
+                    403,
+                );
+            }
+
             return jsonResponse(user.toLysand());
         },
     );
