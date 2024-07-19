@@ -1,4 +1,4 @@
-import { errorResponse, response } from "@/response";
+import { errorResponse, jsonResponse, response } from "@/response";
 import { Hono } from "@hono/hono";
 import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
@@ -91,6 +91,17 @@ export const appFactory = async () => {
         }
 
         return proxy;
+    });
+
+    app.onError((error) => {
+        return jsonResponse(
+            {
+                error: "A server error occured",
+                name: error.name,
+                message: error.message,
+            },
+            500,
+        );
     });
 
     return app;
