@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { errorResponse, jsonResponse, redirect, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -56,6 +56,11 @@ export default (app: Hono) =>
                 return response(JSON.stringify(user.toLysand(), null, 4), 200, {
                     "Content-Type": "application/json",
                 });
+            }
+
+            // Try to detect a web browser and redirect to the user's profile page
+            if (context.req.header("user-agent")?.includes("Mozilla")) {
+                return redirect(user.toApi().url);
             }
 
             return jsonResponse(user.toLysand());
