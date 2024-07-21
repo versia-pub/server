@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
+import { errorResponse, jsonResponse, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import type { Entity } from "@lysand-org/federation/types";
@@ -26,6 +26,12 @@ export const schemas = {
     param: z.object({
         id: z.string().uuid(),
     }),
+    query: z.object({
+        debug: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .optional(),
+    }),
 };
 
 export default (app: Hono) =>
@@ -33,8 +39,10 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
+        zValidator("query", schemas.query, handleZodError),
         async (context) => {
             const { id } = context.req.valid("param");
+            const { debug } = context.req.valid("query");
 
             let foundObject: Note | LikeType | null = null;
             let apiObject: Entity | null = null;
@@ -61,6 +69,12 @@ export default (app: Hono) =>
 
             if (!(foundObject && apiObject)) {
                 return errorResponse("Object not found", 404);
+            }
+
+            if (debug) {
+                return response(JSON.stringify(apiObject, null, 4), 200, {
+                    "Content-Type": "application/json",
+                });
             }
 
             return jsonResponse(apiObject);

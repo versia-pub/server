@@ -1,5 +1,5 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
+import { errorResponse, jsonResponse, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
@@ -21,6 +21,12 @@ export const schemas = {
     param: z.object({
         uuid: z.string().uuid(),
     }),
+    query: z.object({
+        debug: z
+            .string()
+            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+            .optional(),
+    }),
 };
 
 export default (app: Hono) =>
@@ -28,8 +34,10 @@ export default (app: Hono) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
+        zValidator("query", schemas.query, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
+            const { debug } = context.req.valid("query");
 
             const user = await User.fromId(uuid);
 
@@ -42,6 +50,12 @@ export default (app: Hono) =>
                     "Cannot view users from remote instances",
                     403,
                 );
+            }
+
+            if (debug) {
+                return response(JSON.stringify(user.toLysand(), null, 4), 200, {
+                    "Content-Type": "application/json",
+                });
             }
 
             return jsonResponse(user.toLysand());
