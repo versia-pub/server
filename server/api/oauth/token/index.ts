@@ -23,16 +23,18 @@ export const schemas = {
     json: z.object({
         code: z.string().optional(),
         code_verifier: z.string().optional(),
-        grant_type: z.enum([
-            "authorization_code",
-            "refresh_token",
-            "client_credentials",
-            "password",
-            "urn:ietf:params:oauth:grant-type:device_code",
-            "urn:ietf:params:oauth:grant-type:token-exchange",
-            "urn:ietf:params:oauth:grant-type:saml2-bearer",
-            "urn:openid:params:grant-type:ciba",
-        ]),
+        grant_type: z
+            .enum([
+                "authorization_code",
+                "refresh_token",
+                "client_credentials",
+                "password",
+                "urn:ietf:params:oauth:grant-type:device_code",
+                "urn:ietf:params:oauth:grant-type:token-exchange",
+                "urn:ietf:params:oauth:grant-type:saml2-bearer",
+                "urn:openid:params:grant-type:ciba",
+            ])
+            .default("authorization_code"),
         client_id: z.string().optional(),
         client_secret: z.string().optional(),
         username: z.string().trim().optional(),
