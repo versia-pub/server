@@ -24,7 +24,6 @@ export const schemas = {
     form: z.object({
         token: z.string().min(1),
         password: z.string().min(3).max(100),
-        password2: z.string().min(3).max(100),
     }),
 };
 
@@ -51,7 +50,7 @@ export default (app: Hono) =>
         meta.route,
         zValidator("form", schemas.form, handleZodError),
         async (context) => {
-            const { token, password, password2 } = context.req.valid("form");
+            const { token, password } = context.req.valid("form");
 
             const user = await User.fromSql(
                 eq(Users.passwordResetToken, token),
@@ -59,14 +58,6 @@ export default (app: Hono) =>
 
             if (!user) {
                 return returnError(token, "invalid_token", "Invalid token");
-            }
-
-            if (password !== password2) {
-                return returnError(
-                    token,
-                    "password_mismatch",
-                    "Passwords do not match",
-                );
             }
 
             await user.update({
