@@ -2,8 +2,10 @@ import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { SignatureConstructor } from "@lysand-org/federation";
-import { FederationRequester } from "@lysand-org/federation/requester";
+import {
+    FederationRequester,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
     anyOf,

@@ -2,8 +2,10 @@ import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { getLogger } from "@logtape/logtape";
-import { SignatureConstructor } from "@lysand-org/federation";
-import { FederationRequester } from "@lysand-org/federation/requester";
+import {
+    FederationRequester,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import {

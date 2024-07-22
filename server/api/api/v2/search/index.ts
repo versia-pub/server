@@ -8,8 +8,10 @@ import {
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { SignatureConstructor } from "@lysand-org/federation";
-import { FederationRequester } from "@lysand-org/federation/requester";
+import {
+    FederationRequester,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { searchManager } from "~/classes/search/search-manager";

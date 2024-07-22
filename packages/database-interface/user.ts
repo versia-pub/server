@@ -6,8 +6,10 @@ import type {
     Account as ApiAccount,
     Mention as ApiMention,
 } from "@lysand-org/client/types";
-import { EntityValidator } from "@lysand-org/federation";
-import type { FederationRequester } from "@lysand-org/federation/requester";
+import {
+    EntityValidator,
+    type FederationRequester,
+} from "@lysand-org/federation";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,

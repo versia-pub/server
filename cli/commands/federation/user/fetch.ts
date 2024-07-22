@@ -1,6 +1,8 @@
 import { parseUserAddress, userAddressValidator } from "@/api";
-import { SignatureConstructor } from "@lysand-org/federation";
-import { FederationRequester } from "@lysand-org/federation/requester";
+import {
+    FederationRequester,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import { Args } from "@oclif/core";
 import chalk from "chalk";
 import ora from "ora";
