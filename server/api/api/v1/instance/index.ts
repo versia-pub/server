@@ -38,7 +38,7 @@ export default (app: Hono) =>
                 and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
             );
 
-            const knownDomainsCount = Instance.getCount();
+            const knownDomainsCount = await Instance.getCount();
 
             // TODO: fill in more values
             return jsonResponse({

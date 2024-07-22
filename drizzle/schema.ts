@@ -344,7 +344,7 @@ export const Instances = pgTable("Instances", {
     baseUrl: text("base_url").notNull(),
     name: text("name").notNull(),
     version: text("version").notNull(),
-    logo: jsonb("logo"),
+    logo: jsonb("logo").$type<ContentFormat>(),
     disableAutomoderation: boolean("disable_automoderation")
         .default(false)
         .notNull(),

@@ -27,8 +27,17 @@ export const response = (
     });
 };
 
+export type Json =
+    | string
+    | number
+    | boolean
+    | null
+    | undefined
+    | Json[]
+    | { [key: string]: Json };
+
 export const jsonResponse = (
-    data: object,
+    data: Json,
     status = 200,
     headers: Record<string, string> = {},
 ) => {
