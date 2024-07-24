@@ -1,8 +1,10 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, redirect, response } from "@/response";
+import { errorResponse, redirect, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
+import { SignatureConstructor } from "@lysand-org/federation";
 import { z } from "zod";
+import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -63,6 +65,28 @@ export default (app: Hono) =>
                 return redirect(user.toApi().url);
             }
 
-            return jsonResponse(user.toLysand());
+            const userString = JSON.stringify(user.toLysand());
+
+            // If base_url uses https and request uses http, rewrite request to use https
+            // This fixes reverse proxy errors
+            const reqUrl = new URL(context.req.url);
+            if (
+                new URL(config.http.base_url).protocol === "https:" &&
+                reqUrl.protocol === "http:"
+            ) {
+                reqUrl.protocol = "https:";
+            }
+
+            const { headers } = await (
+                await SignatureConstructor.fromStringKey(
+                    user.data.privateKey ?? "",
+                    user.getUri(),
+                )
+            ).sign("POST", reqUrl, userString);
+
+            return response(userString, 200, {
+                "Content-Type": "application/json",
+                ...headers.toJSON(),
+            });
         },
     );

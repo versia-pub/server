@@ -1,14 +1,17 @@
 import { applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { errorResponse, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
+import { SignatureConstructor } from "@lysand-org/federation";
 import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { type LikeType, likeToLysand } from "~/classes/functions/like";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -45,6 +48,7 @@ export default (app: Hono) =>
             const { debug } = context.req.valid("query");
 
             let foundObject: Note | LikeType | null = null;
+            let foundAuthor: User | null = null;
             let apiObject: Entity | null = null;
 
             foundObject = await Note.fromSql(
@@ -54,6 +58,7 @@ export default (app: Hono) =>
                 ),
             );
             apiObject = foundObject ? foundObject.toLysand() : null;
+            foundAuthor = foundObject ? foundObject.author : null;
 
             if (!foundObject) {
                 foundObject =
@@ -65,6 +70,9 @@ export default (app: Hono) =>
                             ),
                     })) ?? null;
                 apiObject = foundObject ? likeToLysand(foundObject) : null;
+                foundAuthor = foundObject
+                    ? await User.fromId(foundObject.likerId)
+                    : null;
             }
 
             if (!(foundObject && apiObject)) {
@@ -77,6 +85,30 @@ export default (app: Hono) =>
                 });
             }
 
-            return jsonResponse(apiObject);
+            const objectString = JSON.stringify(apiObject);
+
+            // If base_url uses https and request uses http, rewrite request to use https
+            // This fixes reverse proxy errors
+            const reqUrl = new URL(context.req.url);
+            if (
+                new URL(config.http.base_url).protocol === "https:" &&
+                reqUrl.protocol === "http:"
+            ) {
+                reqUrl.protocol = "https:";
+            }
+
+            const author = foundAuthor ?? User.getServerActor();
+
+            const { headers } = await (
+                await SignatureConstructor.fromStringKey(
+                    author.data.privateKey ?? "",
+                    author.getUri(),
+                )
+            ).sign("POST", reqUrl, objectString);
+
+            return response(objectString, 200, {
+                "Content-Type": "application/json",
+                ...headers.toJSON(),
+            });
         },
     );
