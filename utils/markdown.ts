@@ -1,5 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { markdownParse } from "~/classes/functions/status";
+import { sentry } from "./sentry";
 
 export const renderMarkdownInPath = async (
     path: string,
@@ -15,6 +16,7 @@ export const renderMarkdownInPath = async (
             (await markdownParse(
                 (await extendedDescriptionFile.text().catch(async (e) => {
                     await getLogger("server").error`${e}`;
+                    sentry?.captureException(e);
                     return "";
                 })) ||
                     defaultText ||

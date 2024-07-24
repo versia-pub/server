@@ -1,5 +1,6 @@
 import { applyConfig, debugRequest, handleZodError } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
+import { sentry } from "@/sentry";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
@@ -183,6 +184,7 @@ export default (app: Hono) =>
                     )
                     .catch((e) => {
                         logger.error`${e}`;
+                        sentry?.captureException(e);
                         return false;
                     });
 
@@ -208,6 +210,7 @@ export default (app: Hono) =>
                             account,
                         ).catch((e) => {
                             logger.error`${e}`;
+                            sentry?.captureException(e);
                             return null;
                         });
 
@@ -432,6 +435,7 @@ export default (app: Hono) =>
                     return errorResponse((e as ValidationError).message, 400);
                 }
                 logger.error`${e}`;
+                sentry?.captureException(e);
                 return jsonResponse(
                     {
                         error: "Failed to process request",

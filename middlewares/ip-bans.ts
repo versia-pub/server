@@ -1,4 +1,5 @@
 import { errorResponse } from "@/response";
+import { sentry } from "@/sentry";
 import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
@@ -25,6 +26,7 @@ export const ipBans = createMiddleware(async (context, next) => {
 
             logger.error`Error while parsing banned IP "${ip}" `;
             logger.error`${e}`;
+            sentry?.captureException(e);
 
             return errorResponse(
                 `A server error occured: ${(e as Error).message}`,

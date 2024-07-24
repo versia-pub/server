@@ -1,6 +1,7 @@
 import { applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { response } from "@/response";
+import { sentry } from "@/sentry";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { SignJWT, jwtVerify } from "jose";
@@ -136,6 +137,7 @@ export default (app: Hono) =>
                 audience: client_id,
             }).catch((e) => {
                 console.error(e);
+                sentry?.captureException(e);
                 return null;
             });
 

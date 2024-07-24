@@ -68,6 +68,7 @@ export const appFactory = async () => {
             redirect: "manual",
         }).catch((e) => {
             serverLogger.error`${e}`;
+            sentry?.captureException(e);
             serverLogger.error`The Frontend is not running or the route is not found: ${replacedUrl}`;
             return null;
         });

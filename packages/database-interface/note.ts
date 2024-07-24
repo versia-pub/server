@@ -1,6 +1,7 @@
 import { idValidator } from "@/api";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
+import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
 import type {
     Attachment as ApiAttachment,
@@ -627,6 +628,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             const resolvedEmoji = await Emoji.fetchFromRemote(emoji).catch(
                 (e) => {
                     logger.error`${e}`;
+                    sentry?.captureException(e);
                     return null;
                 },
             );
@@ -643,6 +645,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 attachment,
             ).catch((e) => {
                 logger.error`${e}`;
+                sentry?.captureException(e);
                 return null;
             });
 
