@@ -6,10 +6,7 @@ import type {
     Account as ApiAccount,
     Mention as ApiMention,
 } from "@lysand-org/client/types";
-import {
-    EntityValidator,
-    type FederationRequester,
-} from "@lysand-org/federation";
+import { EntityValidator, FederationRequester } from "@lysand-org/federation";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
@@ -343,9 +340,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         uri: string,
         instance: Instance,
     ): Promise<User> {
-        const response = await fetch(uri, {
-            method: "GET",
-            headers: { Accept: "application/json" },
+        const { raw: response } = await FederationRequester.get(uri, {
+            // @ts-expect-error Bun extension
             proxy: config.http.proxy.address,
         });
 

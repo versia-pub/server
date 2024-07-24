@@ -6,7 +6,7 @@ import type {
     Attachment as ApiAttachment,
     Status as ApiStatus,
 } from "@lysand-org/client/types";
-import { EntityValidator } from "@lysand-org/federation";
+import { EntityValidator, FederationRequester } from "@lysand-org/federation";
 import type {
     ContentFormat,
     Note as LysandNote,
@@ -591,11 +591,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 throw new Error(`Invalid URI to parse ${uri}`);
             }
 
-            const response = await fetch(uri, {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                },
+            const { raw: response } = await FederationRequester.get(uri, {
+                // @ts-expect-error Bun extension
                 proxy: config.http.proxy.address,
             });
 

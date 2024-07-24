@@ -1,5 +1,9 @@
 import { getLogger } from "@logtape/logtape";
-import { EntityValidator, type ValidationError } from "@lysand-org/federation";
+import {
+    EntityValidator,
+    FederationRequester,
+    type ValidationError,
+} from "@lysand-org/federation";
 import type { ServerMetadata } from "@lysand-org/federation/types";
 import chalk from "chalk";
 import { config } from "config-manager";
@@ -135,9 +139,13 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger("federation");
 
         try {
-            const response = await fetch(wellKnownUrl, {
-                proxy: config.http.proxy.address,
-            });
+            const { raw: response } = await FederationRequester.get(
+                wellKnownUrl,
+                {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                },
+            );
 
             if (
                 !(
@@ -190,9 +198,13 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger("federation");
 
         try {
-            const response = await fetch(wellKnownUrl, {
-                proxy: config.http.proxy.address,
-            });
+            const { raw: response } = await FederationRequester.get(
+                wellKnownUrl,
+                {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                },
+            );
 
             if (!response.ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -223,9 +235,13 @@ export class Instance extends BaseInterface<typeof Instances> {
                 return null;
             }
 
-            const metadataResponse = await fetch(metadataUrl.href, {
-                proxy: config.http.proxy.address,
-            });
+            const { raw: metadataResponse } = await FederationRequester.get(
+                metadataUrl.href,
+                {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                },
+            );
 
             if (!metadataResponse.ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
