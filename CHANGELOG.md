@@ -6,15 +6,18 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 ## Features
 
-- Upgrade Bun to `1.1.17`. This brings performance upgrades and better stability.
+- Upgrade Bun to `1.1.20`. This brings performance upgrades and better stability.
+- Added support for the [ActivityPub Federation Bridge](https://github.com/lysand-org/activitypub).
 - Added support for the [Sonic](https://github.com/valeriansaliou/sonic) search indexer.
 - Note deletions are now federated.
 - Note edits are now federated.
+- Added support for [Sentry](https://sentry.io).
 - Added option for more federation debug logging.
 - Added [**Roles API**](docs/api/roles.md).
 - Added [**Permissions API**](docs/api/roles.md) and enabled it for every route.
 - Added [**TOS and Privacy Policy**](docs/api/mastodon.md) endpoints.
 - Added [**Challenge API**](docs/api/challenges.md). (basically CAPTCHAS). This can be enabled/disabled by administrators. No `lysand-fe` support yet.
+- Added ability to refetch user data from remote instances.
 - Added ability to change the `username` of a user. ([Mastodon API extension](docs/api/mastodon.md)).
 - Added an endpoint to get a user by its username.
 - Add OpenID Connect registration support. Admins can now disable username/password registration entirely and still allow users to sign up via OpenID Connect.
@@ -22,11 +25,13 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Refactor logging system to be more robust and easier to use. Logfiles are now automatically rotated.
 - Add support for HTTP proxies.
 - Add support for serving Lysand over a Tor hidden service.
+- Add global server error handler, to properly return 500 error messages to clients.
 
 ## Bug Fixes
 
 - Fix favouriting/unfavouriting sometimes returning negative counts.
 - Non-images will now properly be uploaded to object storage.
+- Make account searches case-insensitive
 - Fix image decoding error when passing media through proxy.
 - OpenID Connect now correctly remembers and passes `state` parameter.
 - OpenID Connect will not reject some correct but weird redirect URIs.
