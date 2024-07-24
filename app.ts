@@ -1,4 +1,5 @@
 import { errorResponse, jsonResponse, response } from "@/response";
+import { sentry } from "@/sentry";
 import { Hono } from "@hono/hono";
 import { getLogger } from "@logtape/logtape";
 import { config } from "config-manager";
@@ -96,6 +97,7 @@ export const appFactory = async () => {
     app.onError((error) => {
         const serverLogger = getLogger("server");
         serverLogger.error`${error}`;
+        sentry?.captureException(error);
         return jsonResponse(
             {
                 error: "A server error occured",

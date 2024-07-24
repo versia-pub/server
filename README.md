@@ -51,6 +51,7 @@
 - [x] Advanced Roles and Permissions API.
 - [x] HTTP proxy support
 - [x] Tor hidden service support
+- [x] Sentry logging support
 - [x] Ability to change the domain name in a single config change, without any database edits
 
 ## Screenshots

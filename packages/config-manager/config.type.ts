@@ -568,6 +568,20 @@ export const configValidator = z.object({
                 .default("info"),
             log_ip: z.boolean().default(false),
             log_filters: z.boolean().default(true),
+            sentry: z
+                .object({
+                    enabled: z.boolean().default(false),
+                    dsn: z.string().url().or(z.literal("")).optional(),
+                    debug: z.boolean().default(false),
+                    sample_rate: z.number().min(0).max(1.0).default(1.0),
+                    traces_sample_rate: z.number().min(0).max(1.0).default(1.0),
+                    max_breadcrumbs: z.number().default(100),
+                    environment: z.string().optional(),
+                })
+                .refine(
+                    (arg) => (arg.enabled ? !!arg.dsn : true),
+                    "When sentry is enabled, DSN must be set",
+                ),
             storage: z
                 .object({
                     requests: z.string().default("logs/requests.log"),
@@ -582,6 +596,13 @@ export const configValidator = z.object({
             log_level: "info",
             log_ip: false,
             log_filters: true,
+            sentry: {
+                enabled: false,
+                debug: false,
+                sample_rate: 1.0,
+                traces_sample_rate: 1.0,
+                max_breadcrumbs: 100,
+            },
             storage: {
                 requests: "logs/requests.log",
             },

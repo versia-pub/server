@@ -389,6 +389,18 @@ log_ip = false
 # Log all filtered objects
 log_filters = true
 
+[logging.sentry]
+# Whether to enable https://sentry.io error logging
+enabled = false
+# Sentry DSN for error logging
+dsn = ""
+debug = false
+
+sample_rate = 1.0
+traces_sample_rate = 1.0
+max_breadcrumbs = 100
+# environment = "production"
+
 [logging.storage]
 # Path to logfile for requests
 requests = "logs/requests.log"
