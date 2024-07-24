@@ -1,3 +1,6 @@
+/**
+ * Old code that needs to be rewritten
+ */
 import { getLogger } from "@logtape/logtape";
 import type {
     Follow,

@@ -94,6 +94,8 @@ export const appFactory = async () => {
     });
 
     app.onError((error) => {
+        const serverLogger = getLogger("server");
+        serverLogger.error`${error}`;
         return jsonResponse(
             {
                 error: "A server error occured",
