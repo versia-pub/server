@@ -578,6 +578,13 @@ export const configValidator = z.object({
                     max_breadcrumbs: z.number().default(100),
                     environment: z.string().optional(),
                 })
+                .default({
+                    enabled: false,
+                    debug: false,
+                    sample_rate: 1.0,
+                    traces_sample_rate: 1.0,
+                    max_breadcrumbs: 100,
+                })
                 .refine(
                     (arg) => (arg.enabled ? !!arg.dsn : true),
                     "When sentry is enabled, DSN must be set",
