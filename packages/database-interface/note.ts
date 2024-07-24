@@ -592,12 +592,12 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 throw new Error(`Invalid URI to parse ${uri}`);
             }
 
-            const { raw: response } = await FederationRequester.get(uri, {
+            const { data } = await FederationRequester.get(uri, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy.address,
             });
 
-            note = await new EntityValidator().Note(await response.json());
+            note = await new EntityValidator().Note(data);
         }
 
         if (!note) {

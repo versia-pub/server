@@ -139,7 +139,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger("federation");
 
         try {
-            const { raw: response } = await FederationRequester.get(
+            const { ok, raw, data } = await FederationRequester.get(
                 wellKnownUrl,
                 {
                     // @ts-expect-error Bun extension
@@ -147,12 +147,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                 },
             );
 
-            if (
-                !(
-                    response.ok &&
-                    response.headers.get("content-type")?.includes("json")
-                )
-            ) {
+            if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
                 // If the server doesn't have a Lysand well-known endpoint, it's not a Lysand instance
                 // Try to resolve ActivityPub metadata instead
                 const data = await Instance.fetchActivityPubMetadata(url);
@@ -169,7 +164,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
             try {
                 const metadata = await new EntityValidator().ServerMetadata(
-                    await response.json(),
+                    data,
                 );
 
                 return { metadata, protocol: "lysand" };
@@ -198,22 +193,23 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger("federation");
 
         try {
-            const { raw: response } = await FederationRequester.get(
-                wellKnownUrl,
-                {
-                    // @ts-expect-error Bun extension
-                    proxy: config.http.proxy.address,
-                },
-            );
+            const {
+                raw: response,
+                ok,
+                data: wellKnown,
+            } = await FederationRequester.get<{
+                links: { rel: string; href: string }[];
+            }>(wellKnownUrl, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy.address,
+            });
 
-            if (!response.ok) {
+            if (!ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - HTTP ${response.status}`;
                 return null;
             }
-
-            const wellKnown = await response.json();
 
             if (!wellKnown.links) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -235,22 +231,29 @@ export class Instance extends BaseInterface<typeof Instances> {
                 return null;
             }
 
-            const { raw: metadataResponse } = await FederationRequester.get(
-                metadataUrl.href,
-                {
-                    // @ts-expect-error Bun extension
-                    proxy: config.http.proxy.address,
-                },
-            );
+            const {
+                raw: metadataResponse,
+                ok: ok2,
+                data: metadata,
+            } = await FederationRequester.get<{
+                metadata: {
+                    nodeName?: string;
+                    title?: string;
+                    nodeDescription?: string;
+                    description?: string;
+                };
+                software: { version: string };
+            }>(metadataUrl.href, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy.address,
+            });
 
-            if (!metadataResponse.ok) {
+            if (!ok2) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - HTTP ${metadataResponse.status}`;
                 return null;
             }
-
-            const metadata = await metadataResponse.json();
 
             return {
                 name:

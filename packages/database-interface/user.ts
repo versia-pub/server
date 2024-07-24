@@ -340,16 +340,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         uri: string,
         instance: Instance,
     ): Promise<User> {
-        const { raw: response } = await FederationRequester.get(uri, {
+        const {
+            raw: response,
+            data: json,
+            ok,
+        } = await FederationRequester.get<Partial<LysandUser>>(uri, {
             // @ts-expect-error Bun extension
             proxy: config.http.proxy.address,
         });
 
-        if (!response.ok) {
+        if (!ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const json = (await response.json()) as Partial<LysandUser>;
         const validator = new EntityValidator();
         const data = await validator.User(json);
 
