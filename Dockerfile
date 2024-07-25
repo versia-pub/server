@@ -20,10 +20,6 @@ COPY . /temp
 # Copy dependencies
 COPY --from=install /temp/node_modules /temp/node_modules
 
-# Set current Git commit hash as an environment variable
-ARG GIT_COMMIT
-ENV GIT_COMMIT=$GIT_COMMIT
-
 # Build the project
 WORKDIR /temp
 RUN bun run build
@@ -45,6 +41,10 @@ LABEL org.opencontainers.image.vendor="Lysand Org"
 LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 LABEL org.opencontainers.image.title="Lysand Server"
 LABEL org.opencontainers.image.description="Lysand Server docker image"
+
+# Set current Git commit hash as an environment variable
+ARG GIT_COMMIT
+ENV GIT_COMMIT=$GIT_COMMIT
 
 # CD to app
 WORKDIR /app
