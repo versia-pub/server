@@ -1,3 +1,5 @@
+#:schema config.schema.json
+
 [database]
 # Main PostgreSQL database connection
 host = "localhost"
@@ -412,7 +414,7 @@ duration_coeff = 1.0
 # Amount to multiply every route's max requests per [duration] by
 max_coeff = 1.0
 
-[custom_ratelimits]
+[ratelimits.custom]
 # Add in any API route in this style here
 # Applies before the global ratelimit changes
 # "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }

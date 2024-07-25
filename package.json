@@ -89,7 +89,8 @@
         "drizzle-kit": "^0.23.0",
         "oclif": "^4.14.9",
         "ts-prune": "^0.10.3",
-        "typescript": "^5.5.4"
+        "typescript": "^5.5.4",
+        "zod-to-json-schema": "^3.23.1"
     },
     "peerDependencies": {
         "typescript": "^5.3.2"
