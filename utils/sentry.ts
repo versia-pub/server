@@ -13,7 +13,9 @@ const sentryInstance =
         environment: config.logging.sentry.environment,
         tracePropagationTargets:
             config.logging.sentry.trace_propagation_targets,
-        release: pkg.version,
+        release: Bun.env.GIT_COMMIT
+            ? `${pkg.version}-${Bun.env.GIT_COMMIT}`
+            : pkg.version,
     });
 
 export const sentry = sentryInstance || undefined;
