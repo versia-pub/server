@@ -11,7 +11,8 @@ const sentryInstance =
         maxBreadcrumbs: config.logging.sentry.max_breadcrumbs,
         tracesSampleRate: config.logging.sentry.traces_sample_rate,
         environment: config.logging.sentry.environment,
-        tracePropagationTargets: [config.http.bind],
+        tracePropagationTargets:
+            config.logging.sentry.trace_propagation_targets,
         release: pkg.version,
     });
 

@@ -575,6 +575,7 @@ export const configValidator = z.object({
                     debug: z.boolean().default(false),
                     sample_rate: z.number().min(0).max(1.0).default(1.0),
                     traces_sample_rate: z.number().min(0).max(1.0).default(1.0),
+                    trace_propagation_targets: z.array(z.string()).default([]),
                     max_breadcrumbs: z.number().default(100),
                     environment: z.string().optional(),
                 })

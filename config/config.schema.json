@@ -3900,6 +3900,13 @@
                             "maximum": 1,
                             "default": 1
                         },
+                        "trace_propagation_targets": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "default": []
+                        },
                         "max_breadcrumbs": {
                             "type": "number",
                             "default": 100

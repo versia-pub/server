@@ -19,6 +19,11 @@ RUN mkdir -p /temp
 COPY . /temp
 # Copy dependencies
 COPY --from=install /temp/node_modules /temp/node_modules
+
+# Set current Git commit hash as an environment variable
+ARG GIT_COMMIT
+ENV GIT_COMMIT=$GIT_COMMIT
+
 # Build the project
 WORKDIR /temp
 RUN bun run build
