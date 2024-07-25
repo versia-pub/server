@@ -21,7 +21,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     param: z.object({
-        uuid: z.string().uuid(),
+        uuid: z.string().uuid().or(z.literal("actor")),
     }),
     query: z.object({
         debug: z
@@ -41,7 +41,10 @@ export default (app: Hono) =>
             const { uuid } = context.req.valid("param");
             const { debug } = context.req.valid("query");
 
-            const user = await User.fromId(uuid);
+            const user =
+                uuid === "actor"
+                    ? User.getServerActor()
+                    : await User.fromId(uuid);
 
             if (!user) {
                 return errorResponse("User not found", 404);
@@ -61,7 +64,10 @@ export default (app: Hono) =>
             }
 
             // Try to detect a web browser and redirect to the user's profile page
-            if (context.req.header("user-agent")?.includes("Mozilla")) {
+            if (
+                context.req.header("user-agent")?.includes("Mozilla") &&
+                uuid !== "actor"
+            ) {
                 return redirect(user.toApi().url);
             }
 

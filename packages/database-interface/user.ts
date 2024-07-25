@@ -169,7 +169,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             roles: [],
             sanctions: [],
             statusCount: 0,
-            uri: "",
+            uri: "/users/actor",
         });
     }
 
