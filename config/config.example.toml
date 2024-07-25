@@ -400,6 +400,8 @@ debug = false
 
 sample_rate = 1.0
 traces_sample_rate = 1.0
+# Can also be regex
+trace_propagation_targets = []
 max_breadcrumbs = 100
 # environment = "production"
 
