@@ -2,6 +2,7 @@ import { applyConfig, handleZodError } from "@/api";
 import { errorResponse, redirect, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
+import { getLogger } from "@logtape/logtape";
 import { SignatureConstructor } from "@lysand-org/federation";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
@@ -83,12 +84,22 @@ export default (app: Hono) =>
                 reqUrl.protocol = "https:";
             }
 
-            const { headers } = await (
+            const { headers, signedString } = await (
                 await SignatureConstructor.fromStringKey(
                     user.data.privateKey ?? "",
                     user.getUri(),
                 )
             ).sign("POST", reqUrl, userString);
+
+            if (config.debug.federation) {
+                const logger = getLogger("federation");
+
+                // Log public key
+                logger.debug`Sender public key: ${user.data.publicKey}`;
+
+                // Log signed string
+                logger.debug`Signed string:\n${signedString}`;
+            }
 
             return response(userString, 200, {
                 "Content-Type": "application/json",

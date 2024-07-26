@@ -2,6 +2,7 @@ import { applyConfig, handleZodError } from "@/api";
 import { errorResponse, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
+import { getLogger } from "@logtape/logtape";
 import { SignatureConstructor } from "@lysand-org/federation";
 import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
@@ -99,12 +100,22 @@ export default (app: Hono) =>
 
             const author = foundAuthor ?? User.getServerActor();
 
-            const { headers } = await (
+            const { headers, signedString } = await (
                 await SignatureConstructor.fromStringKey(
                     author.data.privateKey ?? "",
                     author.getUri(),
                 )
             ).sign("POST", reqUrl, objectString);
+
+            if (config.debug.federation) {
+                const logger = getLogger("federation");
+
+                // Log public key
+                logger.debug`Sender public key: ${author.data.publicKey}`;
+
+                // Log signed string
+                logger.debug`Signed string:\n${signedString}`;
+            }
 
             return response(objectString, 200, {
                 "Content-Type": "application/json",
