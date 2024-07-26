@@ -2,6 +2,7 @@ import { getLogger } from "@logtape/logtape";
 import {
     EntityValidator,
     FederationRequester,
+    type ResponseError,
     type ValidationError,
 } from "@lysand-org/federation";
 import type { ServerMetadata } from "@lysand-org/federation/types";
@@ -145,7 +146,9 @@ export class Instance extends BaseInterface<typeof Instances> {
                     // @ts-expect-error Bun extension
                     proxy: config.http.proxy.address,
                 },
-            );
+            ).catch((e) => ({
+                ...(e as ResponseError).response,
+            }));
 
             if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
                 // If the server doesn't have a Lysand well-known endpoint, it's not a Lysand instance
@@ -202,7 +205,13 @@ export class Instance extends BaseInterface<typeof Instances> {
             }>(wellKnownUrl, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy.address,
-            });
+            }).catch((e) => ({
+                ...(
+                    e as ResponseError<{
+                        links: { rel: string; href: string }[];
+                    }>
+                ).response,
+            }));
 
             if (!ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -246,7 +255,19 @@ export class Instance extends BaseInterface<typeof Instances> {
             }>(metadataUrl.href, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy.address,
-            });
+            }).catch((e) => ({
+                ...(
+                    e as ResponseError<{
+                        metadata: {
+                            nodeName?: string;
+                            title?: string;
+                            nodeDescription?: string;
+                            description?: string;
+                        };
+                        software: { version: string };
+                    }>
+                ).response,
+            }));
 
             if (!ok2) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
