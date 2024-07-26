@@ -1,7 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import {
     EntityValidator,
-    FederationRequester,
     type ResponseError,
     type ValidationError,
 } from "@lysand-org/federation";
@@ -20,6 +19,7 @@ import {
 import { db } from "~/drizzle/db";
 import { Instances } from "~/drizzle/schema";
 import { BaseInterface } from "./base";
+import { User } from "./user";
 
 export type AttachmentType = InferSelectModel<typeof Instances>;
 
@@ -139,8 +139,10 @@ export class Instance extends BaseInterface<typeof Instances> {
         const wellKnownUrl = new URL("/.well-known/lysand", origin);
         const logger = getLogger("federation");
 
+        const requester = await User.getServerActor().getFederationRequester();
+
         try {
-            const { ok, raw, data } = await new FederationRequester()
+            const { ok, raw, data } = await requester
                 .get(wellKnownUrl, {
                     // @ts-expect-error Bun extension
                     proxy: config.http.proxy.address,
@@ -193,13 +195,14 @@ export class Instance extends BaseInterface<typeof Instances> {
         // Go to endpoint, then follow the links to the actual metadata
 
         const logger = getLogger("federation");
+        const requester = await User.getServerActor().getFederationRequester();
 
         try {
             const {
                 raw: response,
                 ok,
                 data: wellKnown,
-            } = await new FederationRequester()
+            } = await requester
                 .get<{
                     links: { rel: string; href: string }[];
                 }>(wellKnownUrl, {
@@ -245,7 +248,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                 raw: metadataResponse,
                 ok: ok2,
                 data: metadata,
-            } = await new FederationRequester()
+            } = await requester
                 .get<{
                     metadata: {
                         nodeName?: string;

@@ -8,11 +8,7 @@ import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
-import {
-    FederationRequester,
-    type ResponseError,
-    SignatureConstructor,
-} from "@lysand-org/federation";
+import type { ResponseError } from "@lysand-org/federation";
 import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
@@ -84,13 +80,7 @@ export default (app: Hono) =>
             if (config.federation.bridge.enabled) {
                 const requester = await User.getServerActor();
 
-                const signatureConstructor =
-                    await SignatureConstructor.fromStringKey(
-                        requester.data.privateKey ?? "",
-                        requester.getUri(),
-                    );
-
-                const manager = new FederationRequester(signatureConstructor);
+                const manager = await requester.getFederationRequester();
 
                 try {
                     activityPubUrl = await manager.webFinger(

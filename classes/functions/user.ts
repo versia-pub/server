@@ -1,7 +1,3 @@
-/**
- * Old code that needs to be rewritten
- */
-import { getLogger } from "@logtape/logtape";
 import type {
     Follow,
     FollowAccept,
@@ -19,10 +15,9 @@ import {
     Tokens,
     type Users,
 } from "~/drizzle/schema";
+import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";
-import type { EmojiWithInstance } from "./emoji";
-import { objectToInboxRequest } from "./federation";
 import {
     type Relationship,
     checkForBidirectionalRelationships,
@@ -168,25 +163,12 @@ export const followRequestUser = async (
     }
 
     if (isRemote) {
-        // Federate
-        // TODO: Make database job
-        const request = await objectToInboxRequest(
+        const { ok } = await follower.federateToUser(
             followRequestToLysand(follower, followee),
-            follower,
             followee,
         );
 
-        // Send request
-        const response = await fetch(request, {
-            proxy: config.http.proxy.address,
-        });
-
-        if (!response.ok) {
-            const logger = getLogger("federation");
-
-            logger.debug`${await response.text()}`;
-            logger.error`Failed to federate follow request from ${follower.id} to ${followee.getUri()}`;
-
+        if (!ok) {
             await db
                 .update(Relationships)
                 .set({
@@ -217,45 +199,17 @@ export const followRequestUser = async (
 };
 
 export const sendFollowAccept = async (follower: User, followee: User) => {
-    // TODO: Make database job
-    const request = await objectToInboxRequest(
+    await follower.federateToUser(
         followAcceptToLysand(follower, followee),
         followee,
-        follower,
     );
-
-    // Send request
-    const response = await fetch(request, {
-        proxy: config.http.proxy.address,
-    });
-
-    if (!response.ok) {
-        const logger = getLogger("federation");
-
-        logger.debug`${await response.text()}`;
-        logger.error`Failed to federate follow accept from ${followee.id} to ${follower.getUri()}`;
-    }
 };
 
 export const sendFollowReject = async (follower: User, followee: User) => {
-    // TODO: Make database job
-    const request = await objectToInboxRequest(
+    await follower.federateToUser(
         followRejectToLysand(follower, followee),
         followee,
-        follower,
     );
-
-    // Send request
-    const response = await fetch(request, {
-        proxy: config.http.proxy.address,
-    });
-
-    if (!response.ok) {
-        const logger = getLogger("federation");
-
-        logger.debug`${await response.text()}`;
-        logger.error`Failed to federate follow reject from ${followee.id} to ${follower.getUri()}`;
-    }
 };
 
 export const transformOutputToUserWithRelations = (

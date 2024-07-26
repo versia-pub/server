@@ -7,13 +7,12 @@ import { config } from "config-manager";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { parseEmojis } from "~/classes/functions/emoji";
 import { contentToHtml } from "~/classes/functions/status";
 import { MediaManager } from "~/classes/media/media-manager";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
-import type { Emoji } from "~/packages/database-interface/emoji";
+import { Emoji } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -252,8 +251,8 @@ export default (app: Hono) =>
                     );
 
                     // Parse emojis
-                    const nameEmojis = await parseEmojis(parsedName);
-                    const valueEmojis = await parseEmojis(parsedValue);
+                    const nameEmojis = await Emoji.parseFromText(parsedName);
+                    const valueEmojis = await Emoji.parseFromText(parsedValue);
 
                     fieldEmojis.push(...nameEmojis, ...valueEmojis);
 
@@ -279,8 +278,9 @@ export default (app: Hono) =>
             }
 
             // Parse emojis
-            const displaynameEmojis = await parseEmojis(sanitizedDisplayName);
-            const noteEmojis = await parseEmojis(self.note);
+            const displaynameEmojis =
+                await Emoji.parseFromText(sanitizedDisplayName);
+            const noteEmojis = await Emoji.parseFromText(self.note);
 
             self.emojis = [
                 ...displaynameEmojis,

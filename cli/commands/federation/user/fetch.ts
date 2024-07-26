@@ -1,8 +1,4 @@
 import { parseUserAddress, userAddressValidator } from "@/api";
-import {
-    FederationRequester,
-    SignatureConstructor,
-} from "@lysand-org/federation";
 import { Args } from "@oclif/core";
 import chalk from "chalk";
 import ora from "ora";
@@ -47,11 +43,7 @@ export default class FederationUserFetch extends BaseCommand<
 
         const requester = await User.getServerActor();
 
-        const signatureConstructor = await SignatureConstructor.fromStringKey(
-            requester.data.privateKey ?? "",
-            requester.getUri(),
-        );
-        const manager = new FederationRequester(signatureConstructor);
+        const manager = await requester.getFederationRequester();
 
         const uri = await User.webFinger(manager, username, host);
 

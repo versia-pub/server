@@ -5,7 +5,6 @@ import { zValidator } from "@hono/zod-validator";
 import { config } from "config-manager";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { federateNote } from "~/classes/functions/status";
 import { RolePermissions } from "~/drizzle/schema";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";
@@ -164,7 +163,7 @@ export default (app: Hono) =>
             });
 
             if (!local_only) {
-                await federateNote(newNote);
+                await newNote.federateToUsers();
             }
 
             return jsonResponse(await newNote.toApi(user));

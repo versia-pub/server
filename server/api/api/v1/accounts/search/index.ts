@@ -2,10 +2,6 @@ import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import {
-    FederationRequester,
-    SignatureConstructor,
-} from "@lysand-org/federation";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
     anyOf,
@@ -95,12 +91,7 @@ export default (app: Hono) =>
             if (resolve && username && host) {
                 const requester = self ?? User.getServerActor();
 
-                const signatureConstructor =
-                    await SignatureConstructor.fromStringKey(
-                        requester.data.privateKey ?? "",
-                        requester.getUri(),
-                    );
-                const manager = new FederationRequester(signatureConstructor);
+                const manager = await requester.getFederationRequester();
 
                 const uri = await User.webFinger(manager, username, host);
 

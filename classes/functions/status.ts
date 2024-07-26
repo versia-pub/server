@@ -1,11 +1,6 @@
 import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import { getLogger } from "@logtape/logtape";
-import {
-    FederationRequester,
-    SignatureConstructor,
-} from "@lysand-org/federation";
 import type { ContentFormat } from "@lysand-org/federation/types";
 import { config } from "config-manager";
 import {
@@ -37,11 +32,9 @@ import {
     type Notes,
     Users,
 } from "~/drizzle/schema";
-import type { Note } from "~/packages/database-interface/note";
+import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";
-import type { EmojiWithInstance } from "./emoji";
-import { objectToInboxRequest } from "./federation";
 import {
     type UserWithInstance,
     type UserWithRelations,
@@ -316,11 +309,7 @@ export const parseTextMentions = async (
 
     // Attempt to resolve mentions that were not found
     for (const person of notFoundRemoteUsers) {
-        const signatureConstructor = await SignatureConstructor.fromStringKey(
-            author.data.privateKey ?? "",
-            author.getUri(),
-        );
-        const manager = new FederationRequester(signatureConstructor);
+        const manager = await author.getFederationRequester();
 
         const uri = await User.webFinger(
             manager,
@@ -450,27 +439,4 @@ export const getMarkdownRenderer = () => {
     renderer.use(markdownItContainer);
 
     return renderer;
-};
-
-export const federateNote = async (note: Note) => {
-    for (const user of await note.getUsersToFederateTo()) {
-        // TODO: Add queue system
-        const request = await objectToInboxRequest(
-            note.toLysand(),
-            note.author,
-            user,
-        );
-
-        // Send request
-        const response = await fetch(request, {
-            proxy: config.http.proxy.address,
-        });
-
-        if (!response.ok) {
-            const logger = getLogger("federation");
-
-            logger.debug`${await response.text()}`;
-            logger.error`Failed to federate status ${note.data.id} to ${user.getUri()}`;
-        }
-    }
 };

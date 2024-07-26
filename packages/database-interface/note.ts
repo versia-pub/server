@@ -7,7 +7,7 @@ import type {
     Attachment as ApiAttachment,
     Status as ApiStatus,
 } from "@lysand-org/client/types";
-import { EntityValidator, FederationRequester } from "@lysand-org/federation";
+import { EntityValidator } from "@lysand-org/federation";
 import type {
     ContentFormat,
     Note as LysandNote,
@@ -29,7 +29,6 @@ import {
     type Application,
     applicationToApi,
 } from "~/classes/functions/application";
-import { parseEmojis } from "~/classes/functions/emoji";
 import { localObjectUri } from "~/classes/functions/federation";
 import {
     type StatusWithRelations,
@@ -190,6 +189,14 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this.data.id;
     }
 
+    async federateToUsers(): Promise<void> {
+        const users = await this.getUsersToFederateTo();
+
+        for (const user of users) {
+            await this.author.federateToUser(this.toLysand(), user);
+        }
+    }
+
     /**
      * Fetch the users that should be federated to for this note
      *
@@ -336,7 +343,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
         const parsedEmojis = [
             ...(data.emojis ?? []),
-            ...(await parseEmojis(plaintextContent)),
+            ...(await Emoji.parseFromText(plaintextContent)),
             // Deduplicate by .id
         ].filter(
             (emoji, index, self) =>
@@ -429,7 +436,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
 
         const parsedEmojis = [
             ...(data.emojis ?? []),
-            ...(plaintextContent ? await parseEmojis(plaintextContent) : []),
+            ...(plaintextContent
+                ? await Emoji.parseFromText(plaintextContent)
+                : []),
             // Deduplicate by .id
         ].filter(
             (emoji, index, self) =>
@@ -592,7 +601,10 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 throw new Error(`Invalid URI to parse ${uri}`);
             }
 
-            const { data } = await new FederationRequester().get(uri, {
+            const requester =
+                await User.getServerActor().getFederationRequester();
+
+            const { data } = await requester.get(uri, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy.address,
             });

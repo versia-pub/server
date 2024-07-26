@@ -1,19 +1,24 @@
+import { emojiValidatorWithColons } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as ApiEmoji } from "@lysand-org/client/types";
 import type { CustomEmojiExtension } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
+    type InferSelectModel,
     type SQL,
     and,
     desc,
     eq,
     inArray,
 } from "drizzle-orm";
-import type { EmojiWithInstance } from "~/classes/functions/emoji";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
 import { BaseInterface } from "./base";
 import { Instance } from "./instance";
+
+export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
+    instance: InferSelectModel<typeof Instances> | null;
+};
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
     async reload(): Promise<void> {
@@ -150,6 +155,26 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
 
     get id() {
         return this.data.id;
+    }
+
+    /**
+     * Parse emojis from text
+     *
+     * @param text The text to parse
+     * @returns An array of emojis
+     */
+    public static async parseFromText(text: string): Promise<Emoji[]> {
+        const matches = text.match(emojiValidatorWithColons);
+        if (!matches || matches.length === 0) {
+            return [];
+        }
+
+        return Emoji.manyFromSql(
+            inArray(
+                Emojis.shortcode,
+                matches.map((match) => match.replace(/:/g, "")),
+            ),
+        );
     }
 
     public toApi(): ApiEmoji {

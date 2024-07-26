@@ -2,12 +2,20 @@ import { idValidator } from "@/api";
 import { getBestContentType, urlToContentFormat } from "@/content_types";
 import { randomString } from "@/math";
 import { proxyUrl } from "@/response";
+import { sentry } from "@/sentry";
+import { getLogger } from "@logtape/logtape";
 import type {
     Account as ApiAccount,
     Mention as ApiMention,
 } from "@lysand-org/client/types";
-import { EntityValidator, FederationRequester } from "@lysand-org/federation";
+import {
+    EntityValidator,
+    FederationRequester,
+    type HttpVerb,
+    SignatureConstructor,
+} from "@lysand-org/federation";
 import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
+import chalk from "chalk";
 import {
     type InferInsertModel,
     type SQL,
@@ -23,7 +31,6 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import { objectToInboxRequest } from "~/classes/functions/federation";
 import {
     type UserWithRelations,
     findManyUsers,
@@ -341,9 +348,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         uri: string,
         instance: Instance,
     ): Promise<User> {
-        const { data: json } = await new FederationRequester().get<
-            Partial<LysandUser>
-        >(uri, {
+        const requester = await User.getServerActor().getFederationRequester();
+        const { data: json } = await requester.get<Partial<LysandUser>>(uri, {
             // @ts-expect-error Bun extension
             proxy: config.http.proxy.address,
         });
@@ -617,7 +623,66 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return updated.data;
     }
 
-    async federateToFollowers(object: Entity) {
+    /**
+     * Signs a Lysand entity with that user's private key
+     *
+     * @param entity Entity to sign
+     * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
+     * @param signatureMethod HTTP method to embed in signature (default: POST)
+     * @returns The signed string and headers to send with the request
+     */
+    async sign(
+        entity: Entity,
+        signatureUrl: string | URL,
+        signatureMethod: HttpVerb = "POST",
+    ): Promise<{
+        headers: Headers;
+        signedString: string;
+    }> {
+        const signatureConstructor = await SignatureConstructor.fromStringKey(
+            this.data.privateKey ?? "",
+            this.getUri(),
+        );
+
+        const output = await signatureConstructor.sign(
+            signatureMethod,
+            new URL(signatureUrl),
+            JSON.stringify(entity),
+        );
+
+        if (config.debug.federation) {
+            const logger = getLogger("federation");
+
+            // Log public key
+            logger.debug`Sender public key: ${this.data.publicKey}`;
+
+            // Log signed string
+            logger.debug`Signed string:\n${output.signedString}`;
+        }
+
+        return output;
+    }
+
+    /**
+     * Helper to get the appropriate Lysand SDK requester with this user's private key
+     *
+     * @returns The requester
+     */
+    async getFederationRequester(): Promise<FederationRequester> {
+        const signatureConstructor = await SignatureConstructor.fromStringKey(
+            this.data.privateKey ?? "",
+            this.getUri(),
+        );
+
+        return new FederationRequester(signatureConstructor);
+    }
+
+    /**
+     * Federates an entity to all followers of the user
+     *
+     * @param entity Entity to federate
+     */
+    async federateToFollowers(entity: Entity): Promise<void> {
         // Get followers
         const followers = await User.manyFromSql(
             and(
@@ -627,17 +692,43 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
 
         for (const follower of followers) {
-            const federationRequest = await objectToInboxRequest(
-                object,
-                this,
-                follower,
-            );
-
-            // FIXME: Add to new queue system when it's implemented
-            fetch(federationRequest, {
-                proxy: config.http.proxy.address,
-            });
+            await this.federateToUser(entity, follower);
         }
+    }
+
+    /**
+     * Federates an entity to any user.
+     *
+     * @param entity Entity to federate
+     * @param user User to federate to
+     * @returns Whether the federation was successful
+     */
+    async federateToUser(entity: Entity, user: User): Promise<{ ok: boolean }> {
+        const { headers } = await this.sign(
+            entity,
+            user.data.endpoints?.inbox ?? "",
+        );
+
+        try {
+            await new FederationRequester().post(
+                user.data.endpoints?.inbox ?? "",
+                entity,
+                {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                    headers,
+                },
+            );
+        } catch (e) {
+            getLogger("federation")
+                .error`Federating ${chalk.gray(entity.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
+            getLogger("federation").error`${e}`;
+            sentry?.captureException(e);
+
+            return { ok: false };
+        }
+
+        return { ok: true };
     }
 
     toApi(isOwnAccount = false): ApiAccount {
