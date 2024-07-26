@@ -139,11 +139,14 @@ export default (app: Hono) =>
                                 requester.getUri(),
                             );
                         const manager = new FederationRequester(
-                            new URL(`https://${domain}`),
                             signatureConstructor,
                         );
 
-                        const uri = await User.webFinger(manager, username);
+                        const uri = await User.webFinger(
+                            manager,
+                            username,
+                            domain,
+                        );
 
                         const newUser = await User.resolve(uri);
 

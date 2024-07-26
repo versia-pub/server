@@ -201,12 +201,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     static async webFinger(
         manager: FederationRequester,
         username: string,
+        hostname: string,
     ): Promise<string> {
         return (
-            (await manager.webFinger(username).catch(() => null)) ??
+            (await manager.webFinger(username, hostname).catch(() => null)) ??
             (await manager.webFinger(
                 username,
-                manager.url.hostname,
+                hostname,
                 "application/activity+json",
             ))
         );
@@ -340,7 +341,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         uri: string,
         instance: Instance,
     ): Promise<User> {
-        const { data: json } = await FederationRequester.get<
+        const { data: json } = await new FederationRequester().get<
             Partial<LysandUser>
         >(uri, {
             // @ts-expect-error Bun extension

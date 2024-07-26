@@ -320,12 +320,13 @@ export const parseTextMentions = async (
             author.data.privateKey ?? "",
             author.getUri(),
         );
-        const manager = new FederationRequester(
-            new URL(`https://${person?.[2] ?? ""}`),
-            signatureConstructor,
-        );
+        const manager = new FederationRequester(signatureConstructor);
 
-        const uri = await User.webFinger(manager, person?.[1] ?? "");
+        const uri = await User.webFinger(
+            manager,
+            person?.[1] ?? "",
+            person?.[2] ?? "",
+        );
 
         const user = await User.resolve(uri);
 

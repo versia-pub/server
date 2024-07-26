@@ -140,15 +140,14 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger("federation");
 
         try {
-            const { ok, raw, data } = await FederationRequester.get(
-                wellKnownUrl,
-                {
+            const { ok, raw, data } = await new FederationRequester()
+                .get(wellKnownUrl, {
                     // @ts-expect-error Bun extension
                     proxy: config.http.proxy.address,
-                },
-            ).catch((e) => ({
-                ...(e as ResponseError).response,
-            }));
+                })
+                .catch((e) => ({
+                    ...(e as ResponseError).response,
+                }));
 
             if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
                 // If the server doesn't have a Lysand well-known endpoint, it's not a Lysand instance
@@ -200,18 +199,20 @@ export class Instance extends BaseInterface<typeof Instances> {
                 raw: response,
                 ok,
                 data: wellKnown,
-            } = await FederationRequester.get<{
-                links: { rel: string; href: string }[];
-            }>(wellKnownUrl, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
-            }).catch((e) => ({
-                ...(
-                    e as ResponseError<{
-                        links: { rel: string; href: string }[];
-                    }>
-                ).response,
-            }));
+            } = await new FederationRequester()
+                .get<{
+                    links: { rel: string; href: string }[];
+                }>(wellKnownUrl, {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                })
+                .catch((e) => ({
+                    ...(
+                        e as ResponseError<{
+                            links: { rel: string; href: string }[];
+                        }>
+                    ).response,
+                }));
 
             if (!ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -244,30 +245,32 @@ export class Instance extends BaseInterface<typeof Instances> {
                 raw: metadataResponse,
                 ok: ok2,
                 data: metadata,
-            } = await FederationRequester.get<{
-                metadata: {
-                    nodeName?: string;
-                    title?: string;
-                    nodeDescription?: string;
-                    description?: string;
-                };
-                software: { version: string };
-            }>(metadataUrl.href, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
-            }).catch((e) => ({
-                ...(
-                    e as ResponseError<{
-                        metadata: {
-                            nodeName?: string;
-                            title?: string;
-                            nodeDescription?: string;
-                            description?: string;
-                        };
-                        software: { version: string };
-                    }>
-                ).response,
-            }));
+            } = await new FederationRequester()
+                .get<{
+                    metadata: {
+                        nodeName?: string;
+                        title?: string;
+                        nodeDescription?: string;
+                        description?: string;
+                    };
+                    software: { version: string };
+                }>(metadataUrl.href, {
+                    // @ts-expect-error Bun extension
+                    proxy: config.http.proxy.address,
+                })
+                .catch((e) => ({
+                    ...(
+                        e as ResponseError<{
+                            metadata: {
+                                nodeName?: string;
+                                title?: string;
+                                nodeDescription?: string;
+                                description?: string;
+                            };
+                            software: { version: string };
+                        }>
+                    ).response,
+                }));
 
             if (!ok2) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(

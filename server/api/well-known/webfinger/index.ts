@@ -90,16 +90,14 @@ export default (app: Hono) =>
                         requester.getUri(),
                     );
 
-                const manager = new FederationRequester(
-                    new URL(config.federation.bridge.url ?? ""),
-                    signatureConstructor,
-                );
+                const manager = new FederationRequester(signatureConstructor);
 
                 try {
                     activityPubUrl = await manager.webFinger(
                         user.data.username,
                         new URL(config.http.base_url).host,
                         "application/activity+json",
+                        config.federation.bridge.url,
                     );
                 } catch (e) {
                     const error = e as ResponseError;

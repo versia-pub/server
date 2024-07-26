@@ -106,7 +106,7 @@
         "@json2csv/plainjs": "^7.0.6",
         "@logtape/logtape": "npm:@jsr/logtape__logtape@0.4.2",
         "@lysand-org/client": "^0.2.5",
-        "@lysand-org/federation": "^2.1.10",
+        "@lysand-org/federation": "^2.2.0-rc.2",
         "@oclif/core": "^4.0.14",
         "@sentry/bun": "^8.20.0",
         "@tufjs/canonical-json": "^2.0.0",

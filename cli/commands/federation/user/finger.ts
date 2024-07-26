@@ -51,12 +51,9 @@ export default class FederationUserFinger extends BaseCommand<
             requester.data.privateKey ?? "",
             requester.getUri(),
         );
-        const manager = new FederationRequester(
-            new URL(`https://${host}`),
-            signatureConstructor,
-        );
+        const manager = new FederationRequester(signatureConstructor);
 
-        const uri = await User.webFinger(manager, username);
+        const uri = await User.webFinger(manager, username, host);
 
         spinner.succeed("Fetched user URI");
 

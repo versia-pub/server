@@ -89,12 +89,9 @@ export default (app: Hono) =>
                         requester.data.privateKey ?? "",
                         requester.getUri(),
                     );
-                const manager = new FederationRequester(
-                    new URL(`https://${domain}`),
-                    signatureConstructor,
-                );
+                const manager = new FederationRequester(signatureConstructor);
 
-                const uri = await User.webFinger(manager, username);
+                const uri = await User.webFinger(manager, username, domain);
 
                 const foundAccount = await User.resolve(uri);
 
