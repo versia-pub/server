@@ -1,4 +1,5 @@
 import { idValidator } from "@/api";
+import { localObjectUri } from "@/constants";
 import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
@@ -29,7 +30,6 @@ import {
     type Application,
     applicationToApi,
 } from "~/classes/functions/application";
-import { localObjectUri } from "~/classes/functions/federation";
 import {
     type StatusWithRelations,
     contentToHtml,
@@ -230,7 +230,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                     relationships: {
                         where: (relationship, { eq, and }) =>
                             and(
-                                eq(relationship.subjectId, Users.id),
+                                eq(relationship.subjectId, this.data.authorId),
                                 eq(relationship.following, true),
                             ),
                     },
