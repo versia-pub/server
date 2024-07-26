@@ -26,6 +26,9 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Add support for HTTP proxies.
 - Add support for serving Lysand over a Tor hidden service.
 - Add global server error handler, to properly return 500 error messages to clients.
+- Sign all federation HTTP requests.
+- Add JSON schema for configuration file.
+- Rewrite federation stack
 
 ## Bug Fixes
 
@@ -41,6 +44,8 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Make process wait for Ctrl+C to exit on error, instead of exiting immediately. This fixes some issues with Docker restarting endlessly.
 - Animated media will now stay animated when uploaded.
 - Some instance metadata will no longer be missing from `/api/v2/instabnce` endpoint. In fact, it will now be more complete than Mastodon's implementation.
+- The Origin HTTP header will no longer be used to determine the origin of a request. This was a security issue.
+- New notes will no longer incorrectly be federated to *all* remote users at once.
 
 ## Removals
 
