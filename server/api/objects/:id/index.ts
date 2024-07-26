@@ -59,7 +59,11 @@ export default (app: Hono) =>
             apiObject = foundObject ? foundObject.toLysand() : null;
             foundAuthor = foundObject ? foundObject.author : null;
 
-            if (!foundObject) {
+            if (foundObject) {
+                if (!foundObject.isViewableByUser(null)) {
+                    return errorResponse("Object not found", 404);
+                }
+            } else {
                 foundObject =
                     (await db.query.Likes.findFirst({
                         where: (like, { eq, and }) =>
@@ -76,6 +80,13 @@ export default (app: Hono) =>
 
             if (!(foundObject && apiObject)) {
                 return errorResponse("Object not found", 404);
+            }
+
+            if (foundAuthor?.isRemote()) {
+                return errorResponse(
+                    "Cannot view objects from remote instances",
+                    403,
+                );
             }
 
             if (debug) {

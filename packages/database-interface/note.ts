@@ -864,14 +864,14 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     }
 
     getUri(): string {
-        return localObjectUri(this.data.id);
+        return this.data.uri || localObjectUri(this.id);
     }
 
-    static getUri(id?: string | null): string | null {
+    static getUri(id: string | null, uri?: string | null): string | null {
         if (!id) {
             return null;
         }
-        return localObjectUri(id);
+        return uri || localObjectUri(id);
     }
 
     /**
@@ -912,8 +912,10 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             mentions: status.mentions.map((mention) =>
                 User.getUri(mention.id, mention.uri, config.http.base_url),
             ),
-            quotes: Note.getUri(status.quotingId) ?? undefined,
-            replies_to: Note.getUri(status.replyId) ?? undefined,
+            quotes:
+                Note.getUri(status.quotingId, status.quote?.uri) ?? undefined,
+            replies_to:
+                Note.getUri(status.replyId, status.quote?.uri) ?? undefined,
             subject: status.spoilerText,
             visibility: status.visibility as
                 | "public"
