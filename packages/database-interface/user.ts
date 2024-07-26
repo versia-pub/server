@@ -716,7 +716,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 {
                     // @ts-expect-error Bun extension
                     proxy: config.http.proxy.address,
-                    headers: headers.toJSON(),
+                    headers: {
+                        ...headers.toJSON(),
+                        "Content-Type": "application/json; charset=utf-8",
+                    },
                 },
             );
         } catch (e) {
