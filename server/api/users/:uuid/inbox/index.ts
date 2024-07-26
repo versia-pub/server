@@ -45,7 +45,6 @@ export const schemas = {
         signature: z.string(),
         date: z.string(),
         authorization: z.string().optional(),
-        origin: z.string(),
     }),
     body: z.any(),
 };
@@ -59,20 +58,9 @@ export default (app: Hono) =>
         zValidator("json", schemas.body, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
-            const { signature, date, authorization, origin } =
+            const { signature, date, authorization } =
                 context.req.valid("header");
             const logger = getLogger(["federation", "inbox"]);
-
-            // Check if Origin is defederated
-            if (
-                config.federation.blocked.find(
-                    (blocked) =>
-                        blocked.includes(origin) || origin.includes(blocked),
-                )
-            ) {
-                // Pretend to accept request
-                return response(null, 201);
-            }
 
             const body: Entity = await context.req.valid("json");
 
@@ -139,15 +127,27 @@ export default (app: Hono) =>
                 }
             }
 
+            const keyId = signature
+                .split("keyId=")[1]
+                .split(",")[0]
+                .replace(/"/g, "");
+            const sender = await User.resolve(keyId);
+
+            const origin = new URL(keyId).origin;
+
+            // Check if Origin is defederated
+            if (
+                config.federation.blocked.find(
+                    (blocked) =>
+                        blocked.includes(origin) || origin.includes(blocked),
+                )
+            ) {
+                // Pretend to accept request
+                return response(null, 201);
+            }
+
             // Verify request signature
             if (checkSignature) {
-                const keyId = signature
-                    .split("keyId=")[1]
-                    .split(",")[0]
-                    .replace(/"/g, "");
-
-                const sender = await User.resolve(keyId);
-
                 if (!sender) {
                     return errorResponse("Could not resolve keyId", 400);
                 }
