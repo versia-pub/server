@@ -915,7 +915,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             quotes:
                 Note.getUri(status.quotingId, status.quote?.uri) ?? undefined,
             replies_to:
-                Note.getUri(status.replyId, status.quote?.uri) ?? undefined,
+                Note.getUri(status.replyId, status.reply?.uri) ?? undefined,
             subject: status.spoilerText,
             visibility: status.visibility as
                 | "public"
