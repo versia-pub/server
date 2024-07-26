@@ -69,7 +69,7 @@ export default (app: Hono) =>
                         where: (like, { eq, and }) =>
                             and(
                                 eq(like.id, id),
-                                sql`EXISTS (SELECT 1 FROM statuses WHERE statuses.id = ${like.likedId} AND statuses.visibility IN ('public', 'unlisted'))`,
+                                sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${like.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
                             ),
                     })) ?? null;
                 apiObject = foundObject ? likeToLysand(foundObject) : null;
