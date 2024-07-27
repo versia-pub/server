@@ -1,0 +1,13 @@
+diff --git a/src/validator/validator.js b/src/validator/validator.js
+index ebbb41573b66b4150c813ef2919974bb3a96639d..ab93c612f205ecf64cd8ddfa22b87b352dd3cc9c 100755
+--- a/src/validator/validator.js
++++ b/src/validator/validator.js
+@@ -2,7 +2,7 @@ import { getCookie } from "../helper/cookie/index.js";
+ import { HTTPException } from "../http-exception.js";
+ import { bufferToFormData } from "../utils/buffer.js";
+ const jsonRegex = /^application\/([a-z-\.]+\+)?json$/;
+-const multipartRegex = /^multipart\/form-data(; boundary=[A-Za-z0-9'()+_,\-./:=?]+)?$/;
++const multipartRegex = /^multipart\/form-data(; boundary=[A-Za-z0-9'"()+_,\-./:=?]+)?$/;
+ const urlencodedRegex = /^application\/x-www-form-urlencoded$/;
+ export const validator = (target, validationFunc)=>{
+   return async (c, next)=>{

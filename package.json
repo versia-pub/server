@@ -99,7 +99,7 @@
     "dependencies": {
         "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
-        "@hono/hono": "npm:@jsr/hono__hono@4.5.0",
+        "@hono/hono": "npm:@jsr/hono__hono@4.5.2",
         "@hono/zod-validator": "^0.2.2",
         "@inquirer/confirm": "^3.1.17",
         "@inquirer/input": "^2.2.4",
@@ -107,7 +107,7 @@
         "@logtape/logtape": "npm:@jsr/logtape__logtape@0.4.2",
         "@lysand-org/client": "^0.2.5",
         "@lysand-org/federation": "^2.2.0-rc.4",
-        "@oclif/core": "^4.0.14",
+        "@oclif/core": "^4.0.16",
         "@sentry/bun": "^8.20.0",
         "@tufjs/canonical-json": "^2.0.0",
         "altcha-lib": "^0.5.1",
@@ -119,9 +119,9 @@
         "config-manager": "workspace:*",
         "drizzle-orm": "^0.32.1",
         "extract-zip": "^2.0.1",
-        "hono": "npm:@jsr/hono__hono@4.5.0",
+        "hono": "npm:@jsr/hono__hono@4.5.2",
         "html-to-text": "^9.0.5",
-        "husky": "^9.1.2",
+        "husky": "^9.1.3",
         "ioredis": "^5.4.1",
         "ip-matching": "^2.1.2",
         "iso-639-1": "^3.1.2",
@@ -150,5 +150,8 @@
         "xss": "^1.0.15",
         "zod": "^3.23.8",
         "zod-validation-error": "^3.3.0"
+    },
+    "patchedDependencies": {
+        "@jsr/hono__hono@4.5.2": "patches/@jsr%2Fhono__hono@4.5.2.patch"
     }
 }
