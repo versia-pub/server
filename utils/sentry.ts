@@ -16,6 +16,7 @@ const sentryInstance =
         release: Bun.env.GIT_COMMIT
             ? `${pkg.version}-${Bun.env.GIT_COMMIT}`
             : pkg.version,
+        integrations: [Sentry.extraErrorDataIntegration()],
     });
 
 export const sentry = sentryInstance || undefined;
