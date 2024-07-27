@@ -7,7 +7,7 @@ import { setupDatabase } from "./drizzle/db";
 
 if (import.meta.main) {
     await import("./setup");
-    sentry?.captureMessage("Server started");
+    sentry?.captureMessage("Server started", "info");
 }
 
 await setupDatabase();
