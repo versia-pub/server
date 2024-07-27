@@ -2,12 +2,9 @@ import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { relationshipToApi } from "~/classes/functions/relationship";
-import { getRelationshipToOtherUser } from "~/classes/functions/user";
-import { db } from "~/drizzle/db";
-import { Relationships, RolePermissions } from "~/drizzle/schema";
+import { RolePermissions } from "~/drizzle/schema";
+import { Relationship } from "~/packages/database-interface/relationship";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -55,22 +52,17 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
-            const foundRelationship = await getRelationshipToOtherUser(
+            const foundRelationship = await Relationship.fromOwnerAndSubject(
                 self,
                 otherUser,
             );
 
-            if (foundRelationship.endorsed) {
-                foundRelationship.endorsed = false;
-
-                await db
-                    .update(Relationships)
-                    .set({
-                        endorsed: false,
-                    })
-                    .where(eq(Relationships.id, foundRelationship.id));
+            if (foundRelationship.data.endorsed) {
+                await foundRelationship.update({
+                    endorsed: false,
+                });
             }
 
-            return jsonResponse(relationshipToApi(foundRelationship));
+            return jsonResponse(foundRelationship.toApi());
         },
     );

@@ -218,6 +218,13 @@
             "when": 1721223331975,
             "tag": "0030_curvy_vulture",
             "breakpoints": true
+        },
+        {
+            "idx": 31,
+            "version": "7",
+            "when": 1722100203904,
+            "tag": "0031_mature_demogoblin",
+            "breakpoints": true
         }
     ]
 }

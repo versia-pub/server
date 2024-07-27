@@ -4,12 +4,8 @@ import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { relationshipToApi } from "~/classes/functions/relationship";
-import {
-    followRequestUser,
-    getRelationshipToOtherUser,
-} from "~/classes/functions/user";
 import { RolePermissions } from "~/drizzle/schema";
+import { Relationship } from "~/packages/database-interface/relationship";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -69,22 +65,19 @@ export default (app: Hono) =>
                 return errorResponse("User not found", 404);
             }
 
-            let relationship = await getRelationshipToOtherUser(
+            let relationship = await Relationship.fromOwnerAndSubject(
                 user,
                 otherUser,
             );
 
-            if (!relationship.following) {
-                relationship = await followRequestUser(
-                    user,
-                    otherUser,
-                    relationship.id,
+            if (!relationship.data.following) {
+                relationship = await user.followRequest(otherUser, {
                     reblogs,
                     notify,
                     languages,
-                );
+                });
             }
 
-            return jsonResponse(relationshipToApi(relationship));
+            return jsonResponse(relationship.toApi());
         },
     );

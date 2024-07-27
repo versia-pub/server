@@ -3,13 +3,8 @@ import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import {
-    createNewRelationship,
-    relationshipToApi,
-} from "~/classes/functions/relationship";
-import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
-import { User } from "~/packages/database-interface/user";
+import { Relationship } from "~/packages/database-interface/relationship";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -50,32 +45,17 @@ export default (app: Hono) =>
                 return errorResponse("Unauthorized", 401);
             }
 
-            const relationships = await db.query.Relationships.findMany({
-                where: (relationship, { inArray, and, eq }) =>
-                    and(
-                        inArray(relationship.subjectId, ids),
-                        eq(relationship.ownerId, self.id),
-                    ),
-            });
-
-            const missingIds = ids.filter(
-                (id) => !relationships.some((r) => r.subjectId === id),
+            const relationships = await Relationship.fromOwnerAndSubjects(
+                self,
+                ids,
             );
-
-            for (const id of missingIds) {
-                const user = await User.fromId(id);
-                if (!user) {
-                    continue;
-                }
-                const relationship = await createNewRelationship(self, user);
-
-                relationships.push(relationship);
-            }
 
             relationships.sort(
-                (a, b) => ids.indexOf(a.subjectId) - ids.indexOf(b.subjectId),
+                (a, b) =>
+                    ids.indexOf(a.data.subjectId) -
+                    ids.indexOf(b.data.subjectId),
             );
 
-            return jsonResponse(relationships.map((r) => relationshipToApi(r)));
+            return jsonResponse(relationships.map((r) => r.toApi()));
         },
     );

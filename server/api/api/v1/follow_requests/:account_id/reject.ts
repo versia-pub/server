@@ -2,18 +2,10 @@ import { applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import {
-    checkForBidirectionalRelationships,
-    relationshipToApi,
-} from "~/classes/functions/relationship";
-import {
-    getRelationshipToOtherUser,
-    sendFollowReject,
-} from "~/classes/functions/user";
-import { db } from "~/drizzle/db";
-import { Relationships, RolePermissions } from "~/drizzle/schema";
+import { sendFollowReject } from "~/classes/functions/user";
+import { RolePermissions } from "~/drizzle/schema";
+import { Relationship } from "~/packages/database-interface/relationship";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -58,45 +50,20 @@ export default (app: Hono) =>
                 return errorResponse("Account not found", 404);
             }
 
-            // Check if there is a relationship on both sides
-            await checkForBidirectionalRelationships(user, account);
+            const oppositeRelationship = await Relationship.fromOwnerAndSubject(
+                account,
+                user,
+            );
 
-            // Reject follow request
-            await db
-                .update(Relationships)
-                .set({
-                    requested: false,
-                    following: false,
-                })
-                .where(
-                    and(
-                        eq(Relationships.subjectId, user.id),
-                        eq(Relationships.ownerId, account.id),
-                    ),
-                );
+            await oppositeRelationship.update({
+                requested: false,
+                following: false,
+            });
 
-            // Update followedBy for other user
-            await db
-                .update(Relationships)
-                .set({
-                    followedBy: false,
-                    requestedBy: false,
-                })
-                .where(
-                    and(
-                        eq(Relationships.subjectId, account.id),
-                        eq(Relationships.ownerId, user.id),
-                    ),
-                );
-
-            const foundRelationship = await getRelationshipToOtherUser(
+            const foundRelationship = await Relationship.fromOwnerAndSubject(
                 user,
                 account,
             );
-
-            if (!foundRelationship) {
-                return errorResponse("Relationship not found", 404);
-            }
 
             // Check if rejecting remote follow
             if (account.isRemote()) {
@@ -104,6 +71,6 @@ export default (app: Hono) =>
                 await sendFollowReject(account, user);
             }
 
-            return jsonResponse(relationshipToApi(foundRelationship));
+            return jsonResponse(foundRelationship.toApi());
         },
     );

@@ -132,7 +132,7 @@ describe(meta.route, () => {
             expect.arrayContaining([
                 expect.objectContaining({
                     following: false,
-                    followed_by: true,
+                    followed_by: false,
                     blocking: false,
                     muting: false,
                     muting_notifications: false,

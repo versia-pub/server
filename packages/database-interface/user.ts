@@ -34,6 +34,7 @@ import { htmlToText } from "html-to-text";
 import {
     type UserWithRelations,
     findManyUsers,
+    followRequestToLysand,
 } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
@@ -41,6 +42,7 @@ import {
     EmojiToUser,
     NoteToMentions,
     Notes,
+    Notifications,
     type RolePermissions,
     UserToPinnedNotes,
     Users,
@@ -50,6 +52,7 @@ import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
 import { Instance } from "./instance";
 import type { Note } from "./note";
+import { Relationship } from "./relationship";
 import { Role } from "./role";
 
 /**
@@ -203,6 +206,52 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     return acc;
                 }, [] as RolePermissions[])
         );
+    }
+
+    public async followRequest(
+        otherUser: User,
+        options?: {
+            reblogs?: boolean;
+            notify?: boolean;
+            languages?: string[];
+        },
+    ): Promise<Relationship> {
+        const foundRelationship = await Relationship.fromOwnerAndSubject(
+            this,
+            otherUser,
+        );
+
+        await foundRelationship.update({
+            following: otherUser.isRemote() ? false : !otherUser.data.isLocked,
+            requested: otherUser.isRemote() ? true : otherUser.data.isLocked,
+            showingReblogs: options?.reblogs,
+            notifying: options?.notify,
+            languages: options?.languages,
+        });
+
+        if (otherUser.isRemote()) {
+            const { ok } = await this.federateToUser(
+                followRequestToLysand(this, otherUser),
+                otherUser,
+            );
+
+            if (!ok) {
+                await foundRelationship.update({
+                    requested: false,
+                    following: false,
+                });
+
+                return foundRelationship;
+            }
+        } else {
+            await db.insert(Notifications).values({
+                accountId: this.id,
+                type: otherUser.data.isLocked ? "follow_request" : "follow",
+                notifiedId: otherUser.id,
+            });
+        }
+
+        return foundRelationship;
     }
 
     static async webFinger(

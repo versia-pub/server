@@ -4,13 +4,11 @@ import type {
     FollowReject,
 } from "@lysand-org/federation/types";
 import { config } from "config-manager";
-import { type InferSelectModel, and, eq, sql } from "drizzle-orm";
+import { type InferSelectModel, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import {
     Applications,
     type Instances,
-    Notifications,
-    Relationships,
     type Roles,
     Tokens,
     type Users,
@@ -18,11 +16,6 @@ import {
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";
-import {
-    type Relationship,
-    checkForBidirectionalRelationships,
-    createNewRelationship,
-} from "./relationship";
 import type { Token } from "./token";
 
 export type UserType = InferSelectModel<typeof Users>;
@@ -117,85 +110,6 @@ export const getFromHeader = async (value: string): Promise<AuthData> => {
         await retrieveUserAndApplicationFromToken(token);
 
     return { user, token, application };
-};
-
-export const followRequestUser = async (
-    follower: User,
-    followee: User,
-    relationshipId: string,
-    reblogs = false,
-    notify = false,
-    languages: string[] = [],
-): Promise<Relationship> => {
-    const isRemote = followee.isRemote();
-
-    await db
-        .update(Relationships)
-        .set({
-            following: isRemote ? false : !followee.data.isLocked,
-            requested: isRemote ? true : followee.data.isLocked,
-            showingReblogs: reblogs,
-            notifying: notify,
-            languages: languages,
-        })
-        .where(eq(Relationships.id, relationshipId));
-
-    // Set requested_by on other side
-    await db
-        .update(Relationships)
-        .set({
-            requestedBy: isRemote ? true : followee.data.isLocked,
-            followedBy: isRemote ? false : followee.data.isLocked,
-        })
-        .where(
-            and(
-                eq(Relationships.ownerId, followee.id),
-                eq(Relationships.subjectId, follower.id),
-            ),
-        );
-
-    const updatedRelationship = await db.query.Relationships.findFirst({
-        where: (rel, { eq }) => eq(rel.id, relationshipId),
-    });
-
-    if (!updatedRelationship) {
-        throw new Error("Failed to update relationship");
-    }
-
-    if (isRemote) {
-        const { ok } = await follower.federateToUser(
-            followRequestToLysand(follower, followee),
-            followee,
-        );
-
-        if (!ok) {
-            await db
-                .update(Relationships)
-                .set({
-                    following: false,
-                    requested: false,
-                })
-                .where(eq(Relationships.id, relationshipId));
-
-            const result = await db.query.Relationships.findFirst({
-                where: (rel, { eq }) => eq(rel.id, relationshipId),
-            });
-
-            if (!result) {
-                throw new Error("Failed to update relationship");
-            }
-
-            return result;
-        }
-    } else {
-        await db.insert(Notifications).values({
-            accountId: follower.id,
-            type: followee.data.isLocked ? "follow_request" : "follow",
-            notifiedId: followee.id,
-        });
-    }
-
-    return updatedRelationship;
 };
 
 export const sendFollowAccept = async (follower: User, followee: User) => {
@@ -342,36 +256,6 @@ export const retrieveToken = async (
             where: (tokens, { eq }) => eq(tokens.accessToken, accessToken),
         })) ?? null
     );
-};
-
-/**
- * Gets the relationship to another user.
- * @param other The other user to get the relationship to.
- * @returns The relationship to the other user.
- */
-export const getRelationshipToOtherUser = async (
-    user: User,
-    other: User,
-): Promise<Relationship> => {
-    await checkForBidirectionalRelationships(user, other);
-
-    const foundRelationship = await db.query.Relationships.findFirst({
-        where: (relationship, { and, eq }) =>
-            and(
-                eq(relationship.ownerId, user.id),
-                eq(relationship.subjectId, other.id),
-            ),
-    });
-
-    if (!foundRelationship) {
-        // Create new relationship
-
-        const newRelationship = await createNewRelationship(user, other);
-
-        return newRelationship;
-    }
-
-    return foundRelationship;
 };
 
 export const followRequestToLysand = (

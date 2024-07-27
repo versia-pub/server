@@ -11,18 +11,16 @@ import {
 } from "@lysand-org/federation";
 import type { Entity } from "@lysand-org/federation/types";
 import type { SocketAddress } from "bun";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";
-import {
-    getRelationshipToOtherUser,
-    sendFollowAccept,
-} from "~/classes/functions/user";
+import { sendFollowAccept } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
-import { Notes, Notifications, Relationships } from "~/drizzle/schema";
+import { Notes, Notifications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
+import { Relationship } from "~/packages/database-interface/relationship";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -228,35 +226,22 @@ export default (app: Hono) =>
                         }
 
                         const foundRelationship =
-                            await getRelationshipToOtherUser(account, user);
+                            await Relationship.fromOwnerAndSubject(
+                                account,
+                                user,
+                            );
 
-                        if (foundRelationship.following) {
+                        if (foundRelationship.data.following) {
                             return response("Already following", 200);
                         }
 
-                        await db
-                            .update(Relationships)
-                            .set({
-                                following: !user.data.isLocked,
-                                requested: user.data.isLocked,
-                                showingReblogs: true,
-                                notifying: true,
-                                languages: [],
-                            })
-                            .where(eq(Relationships.id, foundRelationship.id));
-
-                        // Update other user's requested_by
-                        await db
-                            .update(Relationships)
-                            .set({
-                                requestedBy: user.data.isLocked,
-                            })
-                            .where(
-                                and(
-                                    eq(Relationships.subjectId, account.id),
-                                    eq(Relationships.ownerId, user.id),
-                                ),
-                            );
+                        await foundRelationship.update({
+                            following: !user.data.isLocked,
+                            requested: user.data.isLocked,
+                            showingReblogs: true,
+                            notifying: true,
+                            languages: [],
+                        });
 
                         await db.insert(Notifications).values({
                             accountId: account.id,
@@ -280,36 +265,22 @@ export default (app: Hono) =>
                         }
 
                         const foundRelationship =
-                            await getRelationshipToOtherUser(user, account);
+                            await Relationship.fromOwnerAndSubject(
+                                user,
+                                account,
+                            );
 
-                        if (!foundRelationship.requested) {
+                        if (!foundRelationship.data.requested) {
                             return response(
                                 "There is no follow request to accept",
                                 200,
                             );
                         }
 
-                        await db
-                            .update(Relationships)
-                            .set({
-                                following: true,
-                                requested: false,
-                            })
-                            .where(eq(Relationships.id, foundRelationship.id));
-
-                        // Update other user's data
-                        await db
-                            .update(Relationships)
-                            .set({
-                                followedBy: true,
-                                requestedBy: false,
-                            })
-                            .where(
-                                and(
-                                    eq(Relationships.subjectId, account.id),
-                                    eq(Relationships.ownerId, user.id),
-                                ),
-                            );
+                        await foundRelationship.update({
+                            requested: false,
+                            following: true,
+                        });
 
                         return response("Follow request accepted", 200);
                     },
@@ -321,36 +292,22 @@ export default (app: Hono) =>
                         }
 
                         const foundRelationship =
-                            await getRelationshipToOtherUser(user, account);
+                            await Relationship.fromOwnerAndSubject(
+                                user,
+                                account,
+                            );
 
-                        if (!foundRelationship.requested) {
+                        if (!foundRelationship.data.requested) {
                             return response(
                                 "There is no follow request to reject",
                                 200,
                             );
                         }
 
-                        await db
-                            .update(Relationships)
-                            .set({
-                                requested: false,
-                                following: false,
-                            })
-                            .where(eq(Relationships.id, foundRelationship.id));
-
-                        // Update other user's data
-                        await db
-                            .update(Relationships)
-                            .set({
-                                followedBy: false,
-                                requestedBy: false,
-                            })
-                            .where(
-                                and(
-                                    eq(Relationships.subjectId, account.id),
-                                    eq(Relationships.ownerId, user.id),
-                                ),
-                            );
+                        await foundRelationship.update({
+                            requested: false,
+                            following: false,
+                        });
 
                         return response("Follow request rejected", 200);
                     },
