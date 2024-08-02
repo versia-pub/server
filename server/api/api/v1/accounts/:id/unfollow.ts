@@ -57,10 +57,8 @@ export default (app: Hono) =>
                 otherUser,
             );
 
-            if (foundRelationship.data.following) {
-                await foundRelationship.update({
-                    following: false,
-                });
+            if (!(await self.unfollow(otherUser, foundRelationship))) {
+                return errorResponse("Failed to unfollow user", 500);
             }
 
             return jsonResponse(foundRelationship.toApi());
