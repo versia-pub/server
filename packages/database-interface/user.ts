@@ -48,6 +48,7 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
+import { undoFederationRequest } from "../../classes/functions/federation.ts";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
 import { Instance } from "./instance";
@@ -252,6 +253,46 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         return foundRelationship;
+    }
+
+    async unfollow(followee: User, relationship: Relationship) {
+        if (followee.isRemote()) {
+            // TODO: This should reschedule for a later time and maybe notify the server admin if it fails too often
+            const { ok } = await this.federateToUser(
+                undoFederationRequest(
+                    this,
+                    new URL(
+                        `/follows/${relationship.id}`,
+                        config.http.base_url,
+                    ).toString(),
+                ),
+                followee,
+            );
+
+            if (!ok) {
+                return false;
+            }
+        } else if (!this.data.isLocked) {
+            if (relationship.data.following) {
+                await db.insert(Notifications).values({
+                    accountId: followee.id,
+                    type: "unfollow",
+                    notifiedId: this.id,
+                });
+            } else {
+                await db.insert(Notifications).values({
+                    accountId: followee.id,
+                    type: "cancel-follow",
+                    notifiedId: this.id,
+                });
+            }
+        }
+
+        await relationship.update({
+            following: false,
+        });
+
+        return true;
     }
 
     static async webFinger(
