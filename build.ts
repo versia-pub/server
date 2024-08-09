@@ -27,18 +27,6 @@ await Bun.build({
 
 buildSpinner.text = "Transforming";
 
-// Fix for wrong Bun file resolution, replaces node_modules with ./node_modules inside all dynamic imports
-// I apologize for this
-await $`sed -i 's|import("node_modules/|import("./node_modules/|g' dist/*.js`;
-await $`sed -i 's|import"node_modules/|import"./node_modules/|g' dist/**/*.js`;
-// Replace /temp/node_modules with ./node_modules
-await $`sed -i 's|/temp/node_modules|./node_modules|g' dist/**/*.js`;
-// Replace 'export { toFilter, getLevelFilter, getConsoleSink };' to remove getConsoleSink
-// Because Bun duplicates the export and it causes a runtime error
-await $`sed -i 's|export { toFilter, getLevelFilter, getConsoleSink };|export { toFilter, getLevelFilter };|g' dist/**/*.js`;
-// Delete "var list;"
-await $`sed -i 's|var list;||g' dist/**/*.js`;
-
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
 
