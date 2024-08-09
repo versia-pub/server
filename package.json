@@ -38,8 +38,7 @@
         "cli": "bun run cli/index.ts",
         "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'",
         "schema:generate": "bun run packages/config-manager/json-schema.ts > config/config.schema.json",
-        "check": "bunx tsc -p .",
-        "prepare": "bunx husky"
+        "check": "bunx tsc -p ."
     },
     "trustedDependencies": [
         "@biomejs/biome",
@@ -121,7 +120,6 @@
         "extract-zip": "^2.0.1",
         "hono": "npm:@jsr/hono__hono@4.5.4",
         "html-to-text": "^9.0.5",
-        "husky": "^9.1.4",
         "ioredis": "^5.4.1",
         "ip-matching": "^2.1.2",
         "iso-639-1": "^3.1.2",
