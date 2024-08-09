@@ -6,7 +6,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 ## Features
 
-- Upgrade Bun to `1.1.21`. This brings performance upgrades and better stability.
+- Upgrade Bun to `1.1.22`. This brings performance upgrades and better stability.
 - Added support for the [ActivityPub Federation Bridge](https://github.com/lysand-org/activitypub).
 - Added support for the [Sonic](https://github.com/valeriansaliou/sonic) search indexer.
 - Note deletions are now federated.

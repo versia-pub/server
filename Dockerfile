@@ -26,7 +26,7 @@ RUN bun run build
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.1.21-alpine
+FROM oven/bun:1.1.22-alpine
 
 RUN apk add --no-cache libstdc++
 
