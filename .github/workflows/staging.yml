@@ -25,10 +25,11 @@ jobs:
 
       - name: Bundle
         run: |
-          tar cf dist/ config/ CODE_OF_CONDUCT.md CONTRIBUTING.md README.md flake.nix shell.nix flake.lock docs/ LICENSE SECURITY.md | xz -z - > archive.tar.xz
+          mkdir bundle
+          cp dist/ config/ CODE_OF_CONDUCT.md CONTRIBUTING.md README.md flake.nix shell.nix flake.lock docs/ LICENSE SECURITY.md bundle/
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: staging-dist
-          path: archive.tar.xz
+          path: bundle/
