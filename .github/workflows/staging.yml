@@ -1,4 +1,4 @@
-name: Check Types
+name: Staging build bundle
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Bundle
         run: |
-          tar -xJf archive.tar.xz dist/ config/ CODE_OF_CONDUCT.md CONTRIBUTING.md README.md flake.nix shell.nix flake.lock docs/ LICENSE SECURITY.md
+          tar cf dist/ config/ CODE_OF_CONDUCT.md CONTRIBUTING.md README.md flake.nix shell.nix flake.lock docs/ LICENSE SECURITY.md | xz -z - > archive.tar.xz
 
       - name: Upload
         uses: actions/upload-artifact@v4
