@@ -23,6 +23,10 @@ jobs:
         run: |
           bun install
 
+      - name: Build dist
+        run: |
+          bun run build
+
       - name: Bundle
         run: |
           mkdir bundle
