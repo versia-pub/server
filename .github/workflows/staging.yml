@@ -26,7 +26,17 @@ jobs:
       - name: Bundle
         run: |
           mkdir bundle
-          cp dist/ config/ CODE_OF_CONDUCT.md CONTRIBUTING.md README.md flake.nix shell.nix flake.lock docs/ LICENSE SECURITY.md bundle/
+          cp -r dist bundle/
+          cp -r config bundle/
+          cp -r docs bundle/
+          cp -r CODE_OF_CONDUCT.md bundle/
+          cp -r CONTRIBUTING.md bundle/
+          cp -r README.md bundle/
+          cp -r flake.nix bundle/
+          cp -r shell.nix bundle/
+          cp -r flake.lock bundle/
+          cp -r LICENSE bundle/
+          cp -r SECURITY.md bundle/
 
       - name: Upload
         uses: actions/upload-artifact@v4
