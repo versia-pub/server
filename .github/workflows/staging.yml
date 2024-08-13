@@ -41,9 +41,10 @@ jobs:
           cp -r flake.lock bundle/
           cp -r LICENSE bundle/
           cp -r SECURITY.md bundle/
+          tar cfJ archive.tar.xz bundle/
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: staging-dist
-          path: bundle/
+          path: archive.tar.xz
