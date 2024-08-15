@@ -117,6 +117,10 @@ out
 .nuxt
 dist
 
+# Nix build output
+
+result
+
 # Gatsby files
 
 .cache/
