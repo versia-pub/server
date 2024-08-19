@@ -4,7 +4,6 @@ import type {
     Attachment as ApiAttachment,
 } from "@lysand-org/client/types";
 import type { ContentFormat } from "@lysand-org/federation/types";
-import { MediaBackendType } from "config-manager/config.type";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -15,6 +14,7 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
+import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index";
 import { BaseInterface } from "./base";
 
