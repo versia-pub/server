@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig } from "@/api";
 import { urlToContentFormat } from "@/content_types";
-import { jsonResponse } from "@/response";
 import type { ServerMetadata } from "@lysand-org/federation/types";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
@@ -18,8 +17,8 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, () => {
-        return jsonResponse({
+    app.on(meta.allowedMethods, meta.route, (context) => {
+        return context.json({
             type: "ServerMetadata",
             name: config.instance.name,
             version: pkg.version,

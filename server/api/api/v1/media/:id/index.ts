@@ -5,7 +5,7 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
@@ -54,19 +54,22 @@ export default apiRoute((app) =>
             const { id } = context.req.valid("param");
 
             if (!id.match(idValidator)) {
-                return errorResponse("Invalid ID, must be of type UUIDv7", 404);
+                return context.json(
+                    { error: "Invalid ID, must be of type UUIDv7" },
+                    404,
+                );
             }
 
             const attachment = await Attachment.fromId(id);
 
             if (!attachment) {
-                return errorResponse("Media not found", 404);
+                return context.json({ error: "Media not found" }, 404);
             }
 
             switch (context.req.method) {
                 case "GET": {
                     if (attachment.data.url) {
-                        return jsonResponse(attachment.toApi());
+                        return context.json(attachment.toApi());
                     }
                     return response(null, 206);
                 }
@@ -95,14 +98,14 @@ export default apiRoute((app) =>
                             thumbnailUrl,
                         });
 
-                        return jsonResponse(attachment.toApi());
+                        return context.json(attachment.toApi());
                     }
 
-                    return jsonResponse(attachment.toApi());
+                    return context.json(attachment.toApi());
                 }
             }
 
-            return errorResponse("Method not allowed", 405);
+            return context.json({ error: "Method not allowed" }, 405);
         },
     ),
 );

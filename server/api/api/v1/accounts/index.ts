@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { tempmailDomains } from "@/tempmail";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
@@ -52,7 +52,7 @@ export default apiRoute((app) =>
                 context.req.valid("json");
 
             if (!config.signups.registration) {
-                return jsonResponse(
+                return context.json(
                     {
                         error: "Registration is disabled",
                     },
@@ -235,7 +235,7 @@ export default apiRoute((app) =>
                                 .join(", ")}`,
                     )
                     .join(", ");
-                return jsonResponse(
+                return context.json(
                     {
                         error: `Validation failed: ${errorsText}`,
                         details: Object.fromEntries(

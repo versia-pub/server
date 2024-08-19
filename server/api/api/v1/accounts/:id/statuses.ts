@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -75,7 +74,7 @@ export default apiRoute((app) =>
             const otherUser = await User.fromId(id);
 
             if (!otherUser) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             const {
@@ -109,7 +108,7 @@ export default apiRoute((app) =>
                 user?.id,
             );
 
-            return jsonResponse(
+            return context.json(
                 await Promise.all(objects.map((note) => note.toApi(otherUser))),
                 200,
                 {

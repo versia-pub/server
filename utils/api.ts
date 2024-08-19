@@ -1,7 +1,5 @@
-import { errorResponse } from "@/response";
 import type { Context, Hono } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
-import type { StatusCode } from "@hono/hono/utils/http-status";
 import { validator } from "@hono/hono/validator";
 import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
@@ -129,10 +127,15 @@ export const handleZodError = (
     result:
         | { success: true; data?: object }
         | { success: false; error: z.ZodError<z.AnyZodObject>; data?: object },
-    _context: unknown,
-) => {
+    context: Context,
+): Response | undefined => {
     if (!result.success) {
-        return errorResponse(fromZodError(result.error).message, 422);
+        return context.json(
+            {
+                error: fromZodError(result.error).message,
+            },
+            422,
+        );
     }
 };
 
@@ -142,28 +145,11 @@ const getAuth = async (value: Record<string, string>) => {
         : null;
 };
 
-const returnContextError = (
-    context: Context,
-    error: string,
-    code?: StatusCode,
-    // @ts-expect-error The return type is too complex for TypeScript to work with, but it's fine since this isn't a library
-): ReturnType<Context["json"]> => {
-    const templateError = errorResponse(error, code);
-
-    return context.json(
-        {
-            error,
-        },
-        code,
-        templateError.headers.toJSON(),
-    );
-};
-
 const checkPermissions = (
     auth: AuthData | null,
     permissionData: ApiRouteMetadata["permissions"],
     context: Context,
-) => {
+): Response | undefined => {
     const userPerms = auth?.user
         ? auth.user.getAllPermissions()
         : config.permissions.anonymous;
@@ -176,9 +162,10 @@ const checkPermissions = (
         const missingPerms = requiredPerms.filter(
             (perm) => !userPerms.includes(perm),
         );
-        return returnContextError(
-            context,
-            `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
+        return context.json(
+            {
+                error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
+            },
             403,
         );
     }
@@ -188,7 +175,13 @@ const checkRouteNeedsAuth = (
     auth: AuthData | null,
     authData: ApiRouteMetadata["auth"],
     context: Context,
-) => {
+):
+    | Response
+    | {
+          user: User | null;
+          token: string | null;
+          application: Application | null;
+      } => {
     if (auth?.user) {
         return {
             user: auth.user as User,
@@ -200,9 +193,10 @@ const checkRouteNeedsAuth = (
         authData.required ||
         authData.methodOverrides?.[context.req.method as HttpVerb]
     ) {
-        return returnContextError(
-            context,
-            "This route requires authentication.",
+        return context.json(
+            {
+                error: "This route requires authentication.",
+            },
             401,
         );
     }
@@ -217,7 +211,7 @@ const checkRouteNeedsAuth = (
 export const checkRouteNeedsChallenge = async (
     challengeData: ApiRouteMetadata["challenge"],
     context: Context,
-): Promise<true | ReturnType<typeof returnContextError>> => {
+): Promise<true | Response> => {
     if (!challengeData) {
         return true;
     }
@@ -225,9 +219,10 @@ export const checkRouteNeedsChallenge = async (
     const challengeSolution = context.req.header("X-Challenge-Solution");
 
     if (!challengeSolution) {
-        return returnContextError(
-            context,
-            "This route requires a challenge solution to be sent to it via the X-Challenge-Solution header. Please check the documentation for more information.",
+        return context.json(
+            {
+                error: "This route requires a challenge solution to be sent to it via the X-Challenge-Solution header. Please check the documentation for more information.",
+            },
             401,
         );
     }
@@ -235,9 +230,10 @@ export const checkRouteNeedsChallenge = async (
     const { challenge_id } = extractParams(challengeSolution);
 
     if (!challenge_id) {
-        return returnContextError(
-            context,
-            "The challenge solution provided is invalid.",
+        return context.json(
+            {
+                error: "The challenge solution provided is invalid.",
+            },
             401,
         );
     }
@@ -247,17 +243,19 @@ export const checkRouteNeedsChallenge = async (
     });
 
     if (!challenge) {
-        return returnContextError(
-            context,
-            "The challenge solution provided is invalid.",
+        return context.json(
+            {
+                error: "The challenge solution provided is invalid.",
+            },
             401,
         );
     }
 
     if (new Date(challenge.expiresAt) < new Date()) {
-        return returnContextError(
-            context,
-            "The challenge provided has expired.",
+        return context.json(
+            {
+                error: "The challenge provided has expired.",
+            },
             401,
         );
     }
@@ -268,9 +266,10 @@ export const checkRouteNeedsChallenge = async (
     );
 
     if (!isValid) {
-        return returnContextError(
-            context,
-            "The challenge solution provided is incorrect.",
+        return context.json(
+            {
+                error: "The challenge solution provided is incorrect.",
+            },
             401,
         );
     }
@@ -292,6 +291,9 @@ export const auth = (
     validator("header", async (value, context) => {
         const auth = await getAuth(value);
 
+        // Only exists for type casting, as otherwise weird errors happen with Hono
+        const fakeResponse = context.json({});
+
         // Permissions check
         if (permissionData) {
             const permissionCheck = checkPermissions(
@@ -300,7 +302,7 @@ export const auth = (
                 context,
             );
             if (permissionCheck) {
-                return permissionCheck;
+                return permissionCheck as typeof fakeResponse;
             }
         }
 
@@ -310,11 +312,17 @@ export const auth = (
                 context,
             );
             if (challengeCheck !== true) {
-                return challengeCheck;
+                return challengeCheck as typeof fakeResponse;
             }
         }
 
-        return checkRouteNeedsAuth(auth, authData, context);
+        return checkRouteNeedsAuth(auth, authData, context) as
+            | typeof fakeResponse
+            | {
+                  user: User | null;
+                  token: string | null;
+                  application: Application | null;
+              };
     });
 
 // Helper function to parse form data

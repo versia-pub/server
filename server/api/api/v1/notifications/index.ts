@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { fetchTimeline } from "@/timelines";
 import { zValidator } from "@hono/zod-validator";
 import { sql } from "drizzle-orm";
@@ -105,7 +104,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { user } = context.req.valid("header");
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const {
@@ -119,8 +118,10 @@ export default apiRoute((app) =>
             } = context.req.valid("query");
 
             if (types && exclude_types) {
-                return errorResponse(
-                    "Can't use both types and exclude_types",
+                return context.json(
+                    {
+                        error: "Can't use both types and exclude_types",
+                    },
                     400,
                 );
             }
@@ -191,7 +192,7 @@ export default apiRoute((app) =>
                     user.id,
                 );
 
-            return jsonResponse(
+            return context.json(
                 await Promise.all(objects.map((n) => notificationToApi(n))),
                 200,
                 {

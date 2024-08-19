@@ -36,30 +36,10 @@ export type Json =
     | Json[]
     | { [key: string]: Json };
 
-export const jsonResponse = (
-    data: Json,
-    status = 200,
-    headers: Record<string, string> = {},
-) => {
-    return response(JSON.stringify(data), status, {
-        "Content-Type": "application/json",
-        ...headers,
-    });
-};
-
 export const xmlResponse = (data: string, status = 200) => {
     return response(data, status, {
         "Content-Type": "application/xml",
     });
-};
-
-export const errorResponse = (error: string, status = 500) => {
-    return jsonResponse(
-        {
-            error: error,
-        },
-        status,
-    );
 };
 
 export const redirect = (

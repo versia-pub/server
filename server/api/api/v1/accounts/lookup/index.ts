@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import {
@@ -50,7 +49,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!acct) {
-                return errorResponse("Invalid acct parameter", 400);
+                return context.json({ error: "Invalid acct parameter" }, 400);
             }
 
             // Check if acct is matching format username@domain.com or @username@domain.com
@@ -86,10 +85,10 @@ export default apiRoute((app) =>
                 const foundAccount = await User.resolve(uri);
 
                 if (foundAccount) {
-                    return jsonResponse(foundAccount.toApi());
+                    return context.json(foundAccount.toApi());
                 }
 
-                return errorResponse("Account not found", 404);
+                return context.json({ error: "Account not found" }, 404);
             }
 
             let username = acct;
@@ -100,11 +99,11 @@ export default apiRoute((app) =>
             const account = await User.fromSql(eq(Users.username, username));
 
             if (account) {
-                return jsonResponse(account.toApi());
+                return context.json(account.toApi());
             }
 
-            return errorResponse(
-                `Account with username ${username} not found`,
+            return context.json(
+                { error: `Account with username ${username} not found` },
                 404,
             );
         },

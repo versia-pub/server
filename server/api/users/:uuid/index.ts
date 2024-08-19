@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, redirect, response } from "@/response";
+import { redirect, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
@@ -45,12 +45,12 @@ export default apiRoute((app) =>
                     : await User.fromId(uuid);
 
             if (!user) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             if (user.isRemote()) {
-                return errorResponse(
-                    "Cannot view users from remote instances",
+                return context.json(
+                    { error: "Cannot view users from remote instances" },
                     403,
                 );
             }

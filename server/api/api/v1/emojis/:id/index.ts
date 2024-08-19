@@ -7,7 +7,7 @@ import {
     jsonOrForm,
 } from "@/api";
 import { mimeLookup } from "@/content_types";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -80,13 +80,13 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const emoji = await Emoji.fromId(id);
 
             if (!emoji) {
-                return errorResponse("Emoji not found", 404);
+                return context.json({ error: "Emoji not found" }, 404);
             }
 
             // Check if user is admin
@@ -94,7 +94,7 @@ export default apiRoute((app) =>
                 !user.hasPermission(RolePermissions.ManageEmojis) &&
                 emoji.data.ownerId !== user.data.id
             ) {
-                return jsonResponse(
+                return context.json(
                     {
                         error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
                     },
@@ -117,8 +117,10 @@ export default apiRoute((app) =>
                     const form = context.req.valid("json");
 
                     if (!form) {
-                        return errorResponse(
-                            "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
+                        return context.json(
+                            {
+                                error: "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
+                            },
                             422,
                         );
                     }
@@ -132,8 +134,10 @@ export default apiRoute((app) =>
                         ) &&
                         form.global === undefined
                     ) {
-                        return errorResponse(
-                            "Invalid form data (must supply shortcode and/or element and/or alt and/or global)",
+                        return context.json(
+                            {
+                                error: "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
+                            },
                             422,
                         );
                     }
@@ -142,8 +146,10 @@ export default apiRoute((app) =>
                         !user.hasPermission(RolePermissions.ManageEmojis) &&
                         form.global
                     ) {
-                        return errorResponse(
-                            `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
+                        return context.json(
+                            {
+                                error: `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
+                            },
                             401,
                         );
                     }
@@ -158,7 +164,7 @@ export default apiRoute((app) =>
                                 : await mimeLookup(form.element);
 
                         if (!contentType.startsWith("image/")) {
-                            return jsonResponse(
+                            return context.json(
                                 {
                                     error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
                                 },
@@ -190,11 +196,11 @@ export default apiRoute((app) =>
 
                     await emoji.update(modified);
 
-                    return jsonResponse(emoji.toApi());
+                    return context.json(emoji.toApi());
                 }
 
                 case "GET": {
-                    return jsonResponse(emoji.toApi());
+                    return context.json(emoji.toApi());
                 }
             }
         },

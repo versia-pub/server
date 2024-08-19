@@ -78,7 +78,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const emojis = await response.json();
 
@@ -110,7 +112,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const emojis = await response.json();
 
@@ -138,7 +142,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const emojis = await response.json();
 

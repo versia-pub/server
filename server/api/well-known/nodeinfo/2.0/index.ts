@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@/api";
-import { jsonResponse } from "@/response";
 import manifest from "~/package.json";
 
 export const meta = applyConfig({
@@ -15,8 +14,8 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, () => {
-        return jsonResponse({
+    app.on(meta.allowedMethods, meta.route, (context) => {
+        return context.json({
             version: "2.0",
             software: { name: "versia-server", version: manifest.version },
             protocols: ["versia"],

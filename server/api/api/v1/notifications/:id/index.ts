@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { findManyNotifications } from "~/classes/functions/notification";
@@ -38,7 +37,7 @@ export default apiRoute((app) =>
 
             const { user } = context.req.valid("header");
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const notification = (
@@ -53,10 +52,10 @@ export default apiRoute((app) =>
             )[0];
 
             if (!notification) {
-                return errorResponse("Notification not found", 404);
+                return context.json({ error: "Notification not found" }, 404);
             }
 
-            return jsonResponse(notification);
+            return context.json(notification);
         },
     ),
 );

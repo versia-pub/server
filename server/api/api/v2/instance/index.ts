@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@/api";
-import { jsonResponse, proxyUrl } from "@/response";
+import { proxyUrl } from "@/response";
 import type { Instance as ApiInstance } from "@lysand-org/client/types";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
@@ -20,7 +20,7 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
+    app.on(meta.allowedMethods, meta.route, async (context) => {
         // Get software version from package.json
         const version = manifest.version;
 
@@ -33,7 +33,7 @@ export default apiRoute((app) =>
         );
 
         // TODO: fill in more values
-        return jsonResponse({
+        return context.json({
             domain: new URL(config.http.base_url).hostname,
             title: config.instance.name,
             version: "4.3.0-alpha.3+glitch",

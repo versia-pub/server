@@ -1,4 +1,3 @@
-import { errorResponse } from "@/response";
 import { sentry } from "@/sentry";
 import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
@@ -19,7 +18,7 @@ export const ipBans = createMiddleware(async (context, next) => {
     for (const ip of config.http.banned_ips) {
         try {
             if (matches(ip, requestIp?.address)) {
-                return errorResponse("Forbidden", 403);
+                return context.json({ error: "Forbidden" }, 403);
             }
         } catch (e) {
             const logger = getLogger("server");
@@ -28,8 +27,8 @@ export const ipBans = createMiddleware(async (context, next) => {
             logger.error`${e}`;
             sentry?.captureException(e);
 
-            return errorResponse(
-                `A server error occured: ${(e as Error).message}`,
+            return context.json(
+                { error: `A server error occured: ${(e as Error).message}` },
                 500,
             );
         }

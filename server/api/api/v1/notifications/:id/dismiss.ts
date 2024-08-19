@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -39,7 +38,7 @@ export default apiRoute((app) =>
 
             const { user } = context.req.valid("header");
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             await db
@@ -49,7 +48,7 @@ export default apiRoute((app) =>
                 })
                 .where(eq(Notifications.id, id));
 
-            return jsonResponse({});
+            return context.json({});
         },
     ),
 );

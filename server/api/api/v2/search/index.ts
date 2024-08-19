@@ -6,7 +6,6 @@ import {
     parseUserAddress,
     userAddressValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -63,19 +62,21 @@ export default apiRoute((app) =>
                 context.req.valid("query");
 
             if (!self && (resolve || offset)) {
-                return errorResponse(
-                    "Cannot use resolve or offset without being authenticated",
+                return context.json(
+                    {
+                        error: "Cannot use resolve or offset without being authenticated",
+                    },
                     401,
                 );
             }
 
             if (!q) {
-                return errorResponse("Query is required", 400);
+                return context.json({ error: "Query is required" }, 400);
             }
 
             if (!config.sonic.enabled) {
-                return errorResponse(
-                    "Search is not enabled by your server administrator",
+                return context.json(
+                    { error: "Search is not enabled on this server" },
                     501,
                 );
             }
@@ -119,7 +120,7 @@ export default apiRoute((app) =>
                         : null;
 
                     if (account) {
-                        return jsonResponse({
+                        return context.json({
                             accounts: [account.toApi()],
                             statuses: [],
                             hashtags: [],
@@ -141,7 +142,7 @@ export default apiRoute((app) =>
                         const newUser = await User.resolve(uri);
 
                         if (newUser) {
-                            return jsonResponse({
+                            return context.json({
                                 accounts: [newUser.toApi()],
                                 statuses: [],
                                 hashtags: [],
@@ -210,7 +211,7 @@ export default apiRoute((app) =>
                       )
                     : [];
 
-            return jsonResponse({
+            return context.json({
                 accounts: accounts.map((account) => account.toApi()),
                 statuses: await Promise.all(
                     statuses.map((status) => status.toApi(self)),

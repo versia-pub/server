@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
-import { jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -51,15 +50,6 @@ export const schemas = {
     }),
 };
 
-const returnError = (error: string, description: string) =>
-    jsonResponse(
-        {
-            error,
-            error_description: description,
-        },
-        401,
-    );
-
 export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
@@ -73,23 +63,32 @@ export default apiRoute((app) =>
             switch (grant_type) {
                 case "authorization_code": {
                     if (!code) {
-                        return returnError(
-                            "invalid_request",
-                            "Code is required",
+                        return context.json(
+                            {
+                                error: "invalid_request",
+                                error_description: "Code is required",
+                            },
+                            401,
                         );
                     }
 
                     if (!redirect_uri) {
-                        return returnError(
-                            "invalid_request",
-                            "Redirect URI is required",
+                        return context.json(
+                            {
+                                error: "invalid_request",
+                                error_description: "Redirect URI is required",
+                            },
+                            401,
                         );
                     }
 
                     if (!client_id) {
-                        return returnError(
-                            "invalid_client",
-                            "Client ID is required",
+                        return context.json(
+                            {
+                                error: "invalid_request",
+                                error_description: "Client ID is required",
+                            },
+                            401,
                         );
                     }
 
@@ -100,9 +99,12 @@ export default apiRoute((app) =>
                     });
 
                     if (!client || client.secret !== client_secret) {
-                        return returnError(
-                            "invalid_client",
-                            "Invalid client credentials",
+                        return context.json(
+                            {
+                                error: "invalid_client",
+                                error_description: "Invalid client credentials",
+                            },
+                            401,
                         );
                     }
 
@@ -116,7 +118,13 @@ export default apiRoute((app) =>
                     });
 
                     if (!token) {
-                        return returnError("invalid_grant", "Code not found");
+                        return context.json(
+                            {
+                                error: "invalid_grant",
+                                error_description: "Code not found",
+                            },
+                            401,
+                        );
                     }
 
                     // Invalidate the code
@@ -125,7 +133,7 @@ export default apiRoute((app) =>
                         .set({ code: null })
                         .where(eq(Tokens.id, token.id));
 
-                    return jsonResponse({
+                    return context.json({
                         access_token: token.accessToken,
                         token_type: "Bearer",
                         expires_in: token.expiresAt
@@ -145,9 +153,12 @@ export default apiRoute((app) =>
                 }
             }
 
-            return returnError(
-                "unsupported_grant_type",
-                "Unsupported grant type",
+            return context.json(
+                {
+                    error: "unsupported_grant_type",
+                    error_description: "Unsupported grant type",
+                },
+                401,
             );
         },
     ),

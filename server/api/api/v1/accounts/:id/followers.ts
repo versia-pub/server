@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -61,7 +60,7 @@ export default apiRoute((app) =>
             // TODO: Add follower/following privacy settings
 
             if (!otherUser) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             const { objects, link } = await Timeline.getUserTimeline(
@@ -75,7 +74,7 @@ export default apiRoute((app) =>
                 context.req.url,
             );
 
-            return jsonResponse(
+            return context.json(
                 await Promise.all(objects.map((object) => object.toApi())),
                 200,
                 {

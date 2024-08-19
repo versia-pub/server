@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -45,13 +44,13 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const foundStatus = await Note.fromId(id, user.id);
 
             if (!foundStatus?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             const existingReblog = await Note.fromSql(
@@ -62,7 +61,7 @@ export default apiRoute((app) =>
             );
 
             if (existingReblog) {
-                return errorResponse("Already reblogged", 422);
+                return context.json({ error: "Already reblogged" }, 422);
             }
 
             const newReblog = await Note.insert({
@@ -75,13 +74,13 @@ export default apiRoute((app) =>
             });
 
             if (!newReblog) {
-                return errorResponse("Failed to reblog", 500);
+                return context.json({ error: "Failed to reblog" }, 500);
             }
 
             const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
 
             if (!finalNewReblog) {
-                return errorResponse("Failed to reblog", 500);
+                return context.json({ error: "Failed to reblog" }, 500);
             }
 
             if (foundStatus.author.isLocal() && user.isLocal()) {
@@ -93,7 +92,7 @@ export default apiRoute((app) =>
                 });
             }
 
-            return jsonResponse(await finalNewReblog.toApi(user));
+            return context.json(await finalNewReblog.toApi(user));
         },
     ),
 );

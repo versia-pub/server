@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, proxyUrl, response } from "@/response";
+import { proxyUrl, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -44,7 +44,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const issuer = config.oidc.providers.find(
@@ -52,7 +52,7 @@ export default apiRoute((app) =>
             );
 
             if (!issuer) {
-                return errorResponse("Issuer not found", 404);
+                return context.json({ error: "Issuer not found" }, 404);
             }
 
             switch (context.req.method) {
@@ -67,13 +67,15 @@ export default apiRoute((app) =>
                     });
 
                     if (!account) {
-                        return errorResponse(
-                            "Account not found or is not linked to this issuer",
+                        return context.json(
+                            {
+                                error: "Account not found or is not linked to this issuer",
+                            },
                             404,
                         );
                     }
 
-                    return jsonResponse({
+                    return context.json({
                         id: issuer.id,
                         name: issuer.name,
                         icon: proxyUrl(issuer.icon) || undefined,
@@ -89,8 +91,10 @@ export default apiRoute((app) =>
                     });
 
                     if (!account) {
-                        return errorResponse(
-                            "Account not found or is not linked to this issuer",
+                        return context.json(
+                            {
+                                error: "Account not found or is not linked to this issuer",
+                            },
                             404,
                         );
                     }

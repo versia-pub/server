@@ -7,7 +7,6 @@ import {
     jsonOrForm,
 } from "@/api";
 import { mimeLookup } from "@/content_types";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
@@ -73,12 +72,14 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             if (!user.hasPermission(RolePermissions.ManageEmojis) && global) {
-                return errorResponse(
-                    `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
+                return context.json(
+                    {
+                        error: `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
+                    },
                     401,
                 );
             }
@@ -93,8 +94,10 @@ export default apiRoute((app) =>
             );
 
             if (existing) {
-                return errorResponse(
-                    `An emoji with the shortcode ${shortcode} already exists, either owned by you or global.`,
+                return context.json(
+                    {
+                        error: `An emoji with the shortcode ${shortcode} already exists, either owned by you or global.`,
+                    },
                     422,
                 );
             }
@@ -108,8 +111,10 @@ export default apiRoute((app) =>
                     : await mimeLookup(element);
 
             if (!contentType.startsWith("image/")) {
-                return errorResponse(
-                    `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
+                return context.json(
+                    {
+                        error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
+                    },
                     422,
                 );
             }
@@ -135,7 +140,7 @@ export default apiRoute((app) =>
                 alt,
             });
 
-            return jsonResponse(emoji.toApi());
+            return context.json(emoji.toApi());
         },
     ),
 );

@@ -173,7 +173,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const object = (await response.json()) as ApiStatus;
 
@@ -198,7 +200,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const object = (await response.json()) as ApiStatus;
 
@@ -237,7 +241,9 @@ describe(meta.route, () => {
         );
 
         expect(response2.status).toBe(200);
-        expect(response2.headers.get("content-type")).toBe("application/json");
+        expect(response2.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const object2 = (await response2.json()) as ApiStatus;
 
@@ -276,7 +282,9 @@ describe(meta.route, () => {
         );
 
         expect(response2.status).toBe(200);
-        expect(response2.headers.get("content-type")).toBe("application/json");
+        expect(response2.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const object2 = (await response2.json()) as ApiStatus;
 
@@ -299,7 +307,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const object = (await response.json()) as ApiStatus;
 
@@ -326,7 +336,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -357,7 +367,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -388,7 +398,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -416,7 +426,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -442,7 +452,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 

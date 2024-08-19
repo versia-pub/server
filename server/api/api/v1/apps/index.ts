@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -67,7 +66,7 @@ export default apiRoute((app) =>
                     .returning()
             )[0];
 
-            return jsonResponse({
+            return context.json({
                 id: app.id,
                 name: app.name,
                 website: app.website,

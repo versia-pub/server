@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
@@ -80,7 +79,7 @@ export default apiRoute((app) =>
             const { user: self } = context.req.valid("header");
 
             if (!self && following) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const [username, host] = q.replace(/^@/, "").split("@");
@@ -126,7 +125,7 @@ export default apiRoute((app) =>
 
             const result = indexOfCorrectSort.map((index) => accounts[index]);
 
-            return jsonResponse(result.map((acct) => acct.toApi()));
+            return context.json(result.map((acct) => acct.toApi()));
         },
     ),
 );

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -48,13 +47,13 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const status = await Note.fromId(id, user.id);
 
             if (!status?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             const { objects, link } = await Timeline.getUserTimeline(
@@ -68,7 +67,7 @@ export default apiRoute((app) =>
                 context.req.url,
             );
 
-            return jsonResponse(
+            return context.json(
                 objects.map((user) => user.toApi()),
                 200,
                 {

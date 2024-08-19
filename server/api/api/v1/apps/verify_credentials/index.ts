@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { getFromToken } from "~/classes/functions/application";
 import { RolePermissions } from "~/drizzle/schema";
 
@@ -27,19 +26,19 @@ export default apiRoute((app) =>
             const { user, token } = context.req.valid("header");
 
             if (!token) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const application = await getFromToken(token);
 
             if (!application) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
-            return jsonResponse({
+            return context.json({
                 name: application.name,
                 website: application.website,
                 vapid_key: application.vapidKey,

@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, debugRequest, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
@@ -75,12 +75,12 @@ export default apiRoute((app) =>
             const user = await User.fromId(uuid);
 
             if (!user) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             if (user.isRemote()) {
-                return errorResponse(
-                    "Cannot view users from remote instances",
+                return context.json(
+                    { error: "Cannot view users from remote instances" },
                     403,
                 );
             }
@@ -98,8 +98,10 @@ export default apiRoute((app) =>
                 if (token) {
                     // Request is bridge request
                     if (token !== config.federation.bridge.token) {
-                        return errorResponse(
-                            "An invalid token was passed in the Authorization header. Please use the correct token, or remove the Authorization header.",
+                        return context.json(
+                            {
+                                error: "An invalid token was passed in the Authorization header. Please use the correct token, or remove the Authorization header.",
+                            },
                             401,
                         );
                     }
@@ -116,8 +118,10 @@ export default apiRoute((app) =>
                             }
                         }
                     } else {
-                        return errorResponse(
-                            "Request IP address is not available",
+                        return context.json(
+                            {
+                                error: "Request IP address is not available",
+                            },
                             500,
                         );
                     }
@@ -146,7 +150,10 @@ export default apiRoute((app) =>
             // Verify request signature
             if (checkSignature) {
                 if (!sender) {
-                    return errorResponse("Could not resolve keyId", 400);
+                    return context.json(
+                        { error: "Could not resolve keyId" },
+                        400,
+                    );
                 }
 
                 if (config.debug.federation) {
@@ -186,7 +193,7 @@ export default apiRoute((app) =>
                     });
 
                 if (!isValid) {
-                    return errorResponse("Invalid signature", 400);
+                    return context.json({ error: "Invalid signature" }, 400);
                 }
             }
 
@@ -199,7 +206,10 @@ export default apiRoute((app) =>
                         const account = await User.resolve(note.author);
 
                         if (!account) {
-                            return errorResponse("Author not found", 404);
+                            return context.json(
+                                { error: "Author not found" },
+                                404,
+                            );
                         }
 
                         const newStatus = await Note.fromVersia(
@@ -212,7 +222,10 @@ export default apiRoute((app) =>
                         });
 
                         if (!newStatus) {
-                            return errorResponse("Failed to add status", 500);
+                            return context.json(
+                                { error: "Failed to add status" },
+                                500,
+                            );
                         }
 
                         return response("Note created", 201);
@@ -221,7 +234,10 @@ export default apiRoute((app) =>
                         const account = await User.resolve(follow.author);
 
                         if (!account) {
-                            return errorResponse("Author not found", 400);
+                            return context.json(
+                                { error: "Author not found" },
+                                400,
+                            );
                         }
 
                         const foundRelationship =
@@ -260,7 +276,10 @@ export default apiRoute((app) =>
                         const account = await User.resolve(followAccept.author);
 
                         if (!account) {
-                            return errorResponse("Author not found", 400);
+                            return context.json(
+                                { error: "Author not found" },
+                                400,
+                            );
                         }
 
                         const foundRelationship =
@@ -287,7 +306,10 @@ export default apiRoute((app) =>
                         const account = await User.resolve(followReject.author);
 
                         if (!account) {
-                            return errorResponse("Author not found", 400);
+                            return context.json(
+                                { error: "Author not found" },
+                                400,
+                            );
                         }
 
                         const foundRelationship =
@@ -338,14 +360,18 @@ export default apiRoute((app) =>
                                 await user.delete();
                                 return response("Account deleted", 200);
                             }
-                            return errorResponse(
-                                "Cannot delete other users than self",
+                            return context.json(
+                                {
+                                    error: "Cannot delete other users than self",
+                                },
                                 400,
                             );
                         }
 
-                        return errorResponse(
-                            `Deletion of object ${toDelete} not implemented`,
+                        return context.json(
+                            {
+                                error: `Deletetion of object ${toDelete} not implemented`,
+                            },
                             400,
                         );
                     },
@@ -356,7 +382,10 @@ export default apiRoute((app) =>
                         );
 
                         if (!updatedAccount) {
-                            return errorResponse("Failed to update user", 500);
+                            return context.json(
+                                { error: "Failed to update user" },
+                                500,
+                            );
                         }
 
                         return response("User refreshed", 200);
@@ -372,7 +401,10 @@ export default apiRoute((app) =>
 
                         // Refetch note
                         if (!note) {
-                            return errorResponse("Note not found", 404);
+                            return context.json(
+                                { error: "Note not found" },
+                                404,
+                            );
                         }
 
                         await note.updateFromRemote();
@@ -385,14 +417,23 @@ export default apiRoute((app) =>
                     return result;
                 }
 
-                return errorResponse("Object has not been implemented", 400);
+                return context.json(
+                    { error: "Object has not been implemented" },
+                    400,
+                );
             } catch (e) {
                 if (isValidationError(e)) {
-                    return errorResponse((e as ValidationError).message, 400);
+                    return context.json(
+                        {
+                            error: "Failed to process request",
+                            error_description: (e as ValidationError).message,
+                        },
+                        400,
+                    );
                 }
                 logger.error`${e}`;
                 sentry?.captureException(e);
-                return jsonResponse(
+                return context.json(
                     {
                         error: "Failed to process request",
                         message: (e as Error).message,

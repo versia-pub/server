@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
@@ -60,7 +60,7 @@ export default apiRoute((app) =>
 
             if (foundObject) {
                 if (!foundObject.isViewableByUser(null)) {
-                    return errorResponse("Object not found", 404);
+                    return context.json({ error: "Object not found" }, 404);
                 }
             } else {
                 foundObject =
@@ -78,12 +78,12 @@ export default apiRoute((app) =>
             }
 
             if (!(foundObject && apiObject)) {
-                return errorResponse("Object not found", 404);
+                return context.json({ error: "Object not found" }, 404);
             }
 
             if (foundAuthor?.isRemote()) {
-                return errorResponse(
-                    "Cannot view objects from remote instances",
+                return context.json(
+                    { error: "Cannot view objects from remote instances" },
                     403,
                 );
             }

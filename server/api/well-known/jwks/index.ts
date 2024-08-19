@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@/api";
-import { jsonResponse } from "@/response";
 import { exportJWK } from "jose";
 import { config } from "~/packages/config-manager";
 
@@ -16,7 +15,7 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, async () => {
+    app.on(meta.allowedMethods, meta.route, async (context) => {
         const publicKey = await crypto.subtle.importKey(
             "spki",
             Buffer.from(config.oidc.jwt_key.split(";")[1], "base64"),
@@ -30,7 +29,7 @@ export default apiRoute((app) =>
         // Remove the private key
         jwk.d = undefined;
 
-        return jsonResponse({
+        return context.json({
             keys: [
                 {
                     ...jwk,

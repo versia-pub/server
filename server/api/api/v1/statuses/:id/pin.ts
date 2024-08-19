@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -44,17 +43,17 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const foundStatus = await Note.fromId(id, user?.id);
 
             if (!foundStatus) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             if (foundStatus.author.id !== user.id) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             if (
@@ -66,12 +65,12 @@ export default apiRoute((app) =>
                         ),
                 })
             ) {
-                return errorResponse("Already pinned", 422);
+                return context.json({ error: "Already pinned" }, 422);
             }
 
             await user.pin(foundStatus);
 
-            return jsonResponse(await foundStatus.toApi(user));
+            return context.json(await foundStatus.toApi(user));
         },
     ),
 );

@@ -25,7 +25,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const objects = (await response.json()) as ApiStatus[];
 
@@ -42,7 +44,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const objects = (await response.json()) as ApiStatus[];
 
@@ -72,7 +76,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const objects = (await response.json()) as ApiStatus[];
 
@@ -102,7 +108,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const objects = (await response.json()) as ApiStatus[];
 
@@ -143,7 +151,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -195,7 +203,7 @@ describe(meta.route, () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -245,7 +253,9 @@ describe(meta.route, () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const objects = (await response.json()) as ApiStatus[];
 

@@ -1,4 +1,3 @@
-import { errorResponse } from "@/response";
 import { createMiddleware } from "@hono/hono/factory";
 
 export const boundaryCheck = createMiddleware(async (context, next) => {
@@ -7,8 +6,10 @@ export const boundaryCheck = createMiddleware(async (context, next) => {
 
     if (contentType?.includes("multipart/form-data")) {
         if (!contentType.includes("boundary")) {
-            return errorResponse(
-                "You are sending a request with a multipart/form-data content type but without a boundary. Please include a boundary in the Content-Type header. For more information, visit https://stackoverflow.com/questions/3508338/what-is-the-boundary-in-multipart-form-data",
+            return context.json(
+                {
+                    error: "You are sending a request with a multipart/form-data content type but without a boundary. Please include a boundary in the Content-Type header. For more information, visit https://stackoverflow.com/questions/3508338/what-is-the-boundary-in-multipart-form-data",
+                },
                 400,
             );
         }

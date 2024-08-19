@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { deleteLike } from "~/classes/functions/like";
@@ -38,13 +37,13 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const note = await Note.fromId(id, user.id);
 
             if (!note?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             await deleteLike(user, note);
@@ -52,10 +51,10 @@ export default apiRoute((app) =>
             const newNote = await Note.fromId(id, user.id);
 
             if (!newNote) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
-            return jsonResponse(await newNote.toApi(user));
+            return context.json(await newNote.toApi(user));
         },
     ),
 );

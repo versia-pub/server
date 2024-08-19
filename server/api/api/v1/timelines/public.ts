@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -94,7 +93,7 @@ export default apiRoute((app) =>
                 user?.id,
             );
 
-            return jsonResponse(
+            return context.json(
                 await Promise.all(
                     objects.map(async (note) => note.toApi(user)),
                 ),

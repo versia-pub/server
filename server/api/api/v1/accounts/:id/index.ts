@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
@@ -40,10 +39,10 @@ export default apiRoute((app) =>
             const foundUser = await User.fromId(id);
 
             if (!foundUser) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
-            return jsonResponse(foundUser.toApi(user?.id === foundUser.id));
+            return context.json(foundUser.toApi(user?.id === foundUser.id));
         },
     ),
 );

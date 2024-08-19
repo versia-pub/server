@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
@@ -40,7 +40,7 @@ export default apiRoute((app) =>
             const { id } = context.req.valid("param");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const userRoles = await Role.getUserRoles(
@@ -50,12 +50,12 @@ export default apiRoute((app) =>
             const role = await Role.fromId(id);
 
             if (!role) {
-                return errorResponse("Role not found", 404);
+                return context.json({ error: "Role not found" }, 404);
             }
 
             switch (context.req.method) {
                 case "GET": {
-                    return jsonResponse(role.toApi());
+                    return context.json(role.toApi());
                 }
 
                 case "POST": {
@@ -66,14 +66,10 @@ export default apiRoute((app) =>
                     );
 
                     if (role.data.priority > userHighestRole.data.priority) {
-                        return errorResponse(
-                            `Cannot assign role '${
-                                role.data.name
-                            }' with priority ${
-                                role.data.priority
-                            } to user with highest role priority ${
-                                userHighestRole.data.priority
-                            }`,
+                        return context.json(
+                            {
+                                error: `Cannot assign role '${role.data.name}' with priority ${role.data.priority} to user with highest role priority ${userHighestRole.data.priority}`,
+                            },
                             403,
                         );
                     }
@@ -90,14 +86,10 @@ export default apiRoute((app) =>
                     );
 
                     if (role.data.priority > userHighestRole.data.priority) {
-                        return errorResponse(
-                            `Cannot remove role '${
-                                role.data.name
-                            }' with priority ${
-                                role.data.priority
-                            } from user with highest role priority ${
-                                userHighestRole.data.priority
-                            }`,
+                        return context.json(
+                            {
+                                error: `Cannot remove role '${role.data.name}' with priority ${role.data.priority} from user with highest role priority ${userHighestRole.data.priority}`,
+                            },
                             403,
                         );
                     }
