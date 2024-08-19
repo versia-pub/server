@@ -109,7 +109,7 @@ export default (app: Hono) =>
                               config.http.base_url,
                           ).toString()
                         : undefined,
-                items: notes.map((note) => note.toLysand()),
+                items: notes.map((note) => note.toVersia()),
             });
         },
     );

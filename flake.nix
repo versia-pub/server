@@ -1,5 +1,5 @@
 {
-  description = "Lysand Server";
+  description = "Versia Server";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";

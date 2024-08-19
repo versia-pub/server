@@ -197,7 +197,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public toLysand(): ContentFormat {
+    public toVersia(): ContentFormat {
         return {
             [this.data.mimeType]: {
                 content: this.data.url,
@@ -217,7 +217,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public static fromLysand(
+    public static fromVersia(
         attachmentToConvert: ContentFormat,
     ): Promise<Attachment> {
         const key = Object.keys(attachmentToConvert)[0];

@@ -57,7 +57,7 @@ export default (app: Hono) =>
             }
 
             if (debug) {
-                return response(JSON.stringify(user.toLysand(), null, 4), 200, {
+                return response(JSON.stringify(user.toVersia(), null, 4), 200, {
                     "Content-Type": "application/json",
                 });
             }
@@ -70,7 +70,7 @@ export default (app: Hono) =>
                 return redirect(user.toApi().url);
             }
 
-            const userString = JSON.stringify(user.toLysand());
+            const userString = JSON.stringify(user.toVersia());
 
             // If base_url uses https and request uses http, rewrite request to use https
             // This fixes reverse proxy errors
@@ -82,7 +82,7 @@ export default (app: Hono) =>
                 reqUrl.protocol = "https:";
             }
 
-            const { headers } = await user.sign(user.toLysand(), reqUrl, "GET");
+            const { headers } = await user.sign(user.toVersia(), reqUrl, "GET");
 
             return response(userString, 200, {
                 "Content-Type": "application/json",

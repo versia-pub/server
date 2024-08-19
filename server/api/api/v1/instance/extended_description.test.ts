@@ -15,9 +15,8 @@ describe(meta.route, () => {
         const json = await response.json();
         expect(json).toEqual({
             updated_at: new Date(1970, 0, 0).toISOString(),
-            // This is a [Lysand](https://lysand.org) server with the default extended description.
             content:
-                '<p>This is a <a href="https://lysand.org">Lysand</a> server with the default extended description.</p>\n',
+                '<p>This is a <a href="https://versia.pub">Versia</a> server with the default extended description.</p>\n',
         });
     });
 });

@@ -18,7 +18,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
     }
 
     /**
-     * Loads the plugin's configuration from the Lysand Server configuration file.
+     * Loads the plugin's configuration from the Versia Server configuration file.
      * This will be called when the plugin is loaded.
      * @param config Values the user has set in the configuration file.
      */
@@ -65,7 +65,7 @@ export class PluginConfigManager<Schema extends z.ZodTypeAny> {
     }
 
     /**
-     * Loads the configuration from the Lysand Server configuration file.
+     * Loads the configuration from the Versia Server configuration file.
      * This will be called when the plugin is loaded.
      * @param config Values the user has set in the configuration file.
      */

@@ -203,7 +203,7 @@ export default (app: Hono) =>
                             return errorResponse("Author not found", 404);
                         }
 
-                        const newStatus = await Note.fromLysand(
+                        const newStatus = await Note.fromVersia(
                             note,
                             account,
                         ).catch((e) => {

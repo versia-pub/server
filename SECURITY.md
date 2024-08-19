@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-For now, only the released latest version of Lysand is supported for security updates. This will change as Lysand exits alpha status.
+For now, only the released latest version of Veraia Server is supported for security updates. This will change as Versia Server exits alpha status.
 
 ## Reporting a Vulnerability
 
@@ -15,8 +15,8 @@ Please do not report vulnerabilities publicly until they have been patched. If y
 
 ## Vulnerability Disclosure Policy
 
-Lysand is an open-source project, and as such, we welcome security researchers to audit our code and report vulnerabilities. We will do our best to patch vulnerabilities as quickly as possible, and will credit researchers for their discoveries if they wish to be credited.
+Versia Server is an open-source project, and as such, we welcome security researchers to audit our code and report vulnerabilities. We will do our best to patch vulnerabilities as quickly as possible, and will credit researchers for their discoveries if they wish to be credited.
 
 For security reasons, we ask that you do not publicly disclose vulnerabilities until they have been patched. We will do our best to patch vulnerabilities as quickly as possible, and will credit researchers for their discoveries if they wish to be credited.
 
-Thank you for helping to keep Lysand secure! :3
+Thank you for helping to keep Versia Server secure! :3

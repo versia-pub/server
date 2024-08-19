@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { Entity } from "@lysand-org/federation/types";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { type LikeType, likeToLysand } from "~/classes/functions/like";
+import { type LikeType, likeToVersia } from "~/classes/functions/like";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -56,7 +56,7 @@ export default (app: Hono) =>
                     inArray(Notes.visibility, ["public", "unlisted"]),
                 ),
             );
-            apiObject = foundObject ? foundObject.toLysand() : null;
+            apiObject = foundObject ? foundObject.toVersia() : null;
             foundAuthor = foundObject ? foundObject.author : null;
 
             if (foundObject) {
@@ -72,7 +72,7 @@ export default (app: Hono) =>
                                 sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${like.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
                             ),
                     })) ?? null;
-                apiObject = foundObject ? likeToLysand(foundObject) : null;
+                apiObject = foundObject ? likeToVersia(foundObject) : null;
                 foundAuthor = foundObject
                     ? await User.fromId(foundObject.likerId)
                     : null;

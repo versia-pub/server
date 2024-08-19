@@ -1,5 +1,5 @@
 services:
-    lysand:
+    versia:
         image: ghcr.io/lysand-org/lysand:latest
         volumes:
             - ./logs:/app/dist/logs
@@ -7,10 +7,10 @@ services:
             - ./uploads:/app/dist/uploads
             - ./glitch:/app/dist/glitch
         restart: unless-stopped
-        container_name: lysand
+        container_name: versia
         command: "cli start --all-threads"
         networks:
-            - lysand-net
+            - versia-net
         depends_on:
             - db
             - redis
@@ -19,44 +19,44 @@ services:
     
     fe:
         image: ghcr.io/lysand-org/lysand-fe:main
-        container_name: lysand-fe
+        container_name: versia-fe
         restart: unless-stopped
         networks:
-            - lysand-net
+            - versia-net
         environment:
             NUXT_PUBLIC_API_HOST: https://yourserver.com
             
     db:
         image: ghcr.io/lysand-org/postgres:main
-        container_name: lysand-db
+        container_name: versia-db
         restart: unless-stopped
         environment:
-            POSTGRES_DB: lysand
-            POSTGRES_USER: lysand
+            POSTGRES_DB: versia
+            POSTGRES_USER: versia
             POSTGRES_PASSWORD: _______________
         networks:
-            - lysand-net
+            - versia-net
         volumes:
             - ./db-data:/var/lib/postgresql/data
 
     redis:
         image: redis:alpine
-        container_name: lysand-redis
+        container_name: versia-redis
         volumes:
             - ./redis-data:/data
         restart: unless-stopped
         networks:
-            - lysand-net
+            - versia-net
 
     sonic:
         volumes:
           - ./config.cfg:/etc/sonic.cfg
           - ./store/:/var/lib/sonic/store/
         image: valeriansaliou/sonic:v1.4.9
-        container_name: lysand-sonic
+        container_name: versia-sonic
         restart: unless-stopped
         networks:
-            - lysand-net
+            - versia-net
 
 networks:
-    lysand-net:
+    versia-net:

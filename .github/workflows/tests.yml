@@ -16,11 +16,11 @@ jobs:
                 ports:
                     - 5432:5432
                 env:
-                    POSTGRES_DB: lysand
-                    POSTGRES_USER: lysand
-                    POSTGRES_PASSWORD: lysand
+                    POSTGRES_DB: versia
+                    POSTGRES_USER: versia
+                    POSTGRES_PASSWORD: versia
                 volumes:
-                    - lysand-data:/var/lib/postgresql/data
+                    - versia-data:/var/lib/postgresql/data
                 options: --health-cmd pg_isready
                     --health-interval 10s
                     --health-timeout 5s

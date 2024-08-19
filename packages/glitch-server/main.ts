@@ -216,17 +216,17 @@ const brandingTransforms = (
 
     newFileContents = newFileContents.replaceAll(
         "Glitch-soc is free open source software forked from Mastodon.",
-        "Lysand is free and open-source software using the Glitch-Soc frontend.",
+        "Versia Server is free and open-source software using the Glitch-Soc frontend.",
     );
-    newFileContents = newFileContents.replaceAll("Mastodon", "Lysand");
+    newFileContents = newFileContents.replaceAll("Mastodon", "Versia Server");
     newFileContents = newFileContents.replaceAll(
-        "Lysand is free, open-source software, and a trademark of Lysand gGmbH.",
+        "Versia is free, open-source software, and a trademark of Versia gGmbH.",
         "This is not a Mastodon instance.",
     );
 
     newFileContents = newFileContents.replaceAll(
         "joinmastodon.org",
-        "lysand.org",
+        "versia.pub",
     );
 
     return newFileContents;

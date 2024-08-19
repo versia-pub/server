@@ -136,8 +136,8 @@ export const Likes = pgTable("Likes", {
         .notNull(),
 });
 
-export const LysandObjects = pgTable(
-    "LysandObject",
+export const VersiaObjects = pgTable(
+    "VersiaObject",
     {
         id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
         remoteId: text("remote_id").notNull(),
@@ -154,7 +154,7 @@ export const LysandObjects = pgTable(
         return {
             remoteIdKey: uniqueIndex().on(table.remoteId),
             uriKey: uniqueIndex().on(table.uri),
-            lysandObjectAuthorIdFkey: foreignKey({
+            versiaObjectAuthorIdFkey: foreignKey({
                 columns: [table.authorId],
                 foreignColumns: [table.id],
             })
@@ -347,8 +347,8 @@ export const Instances = pgTable("Instances", {
         .notNull(),
     protocol: text("protocol")
         .notNull()
-        .$type<"lysand" | "activitypub">()
-        .default("lysand"),
+        .$type<"versia" | "activitypub">()
+        .default("versia"),
 });
 
 export const OpenIdAccounts = pgTable("OpenIdAccounts", {

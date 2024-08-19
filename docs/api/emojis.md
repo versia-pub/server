@@ -1,6 +1,6 @@
 # Emoji API
 
-An Emoji API is made available to users to manage custom emoji on the instance. We recommend using Lysand's CLI to manage emoji, but this API is available for those who prefer to use it (both admin and non-admin users).
+An Emoji API is made available to users to manage custom emoji on the instance. We recommend using Versia Server's CLI to manage emoji, but this API is available for those who prefer to use it (both admin and non-admin users).
 
 ## Create Emoji
 

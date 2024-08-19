@@ -1,13 +1,13 @@
-# Contributing to Lysand
+# Contributing to Versia
 
 > [!NOTE]
 > This document was authored by [@CPlusPatch](https://github.com/CPlusPatch).
 
-Thank you for your interest in contributing to Lysand! We welcome contributions from everyone, regardless of their level of experience or expertise.
+Thank you for your interest in contributing to Versia Server! We welcome contributions from everyone, regardless of their level of experience or expertise.
 
 # Tech Stack
 
-Lysand is built using the following technologies:
+Versia Server is built using the following technologies:
 
 - [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but faster and with more features
 - [PostgreSQL](https://www.postgresql.org/) - A relational database
@@ -51,19 +51,19 @@ To develop with HTTPS, you need to generate a self-signed certificate. We will u
 mkcert -install
 # You can change the domain to whatever you want, but it must resolve via /etc/hosts
 # *.localhost domains are automatically aliased to localhost by DNS
-mkcert -key-file config/lysand.localhost-key.pem -cert-file config/lysand.localhost.pem lysand.localhost
+mkcert -key-file config/versia.localhost-key.pem -cert-file config/versia.localhost.pem versia.localhost
 ```
 3. Edit the config:
 ```toml
 [http]
-base_url = "https://lysand.localhost:9900"
-bind = "lysand.localhost"
+base_url = "https://versia.localhost:9900"
+bind = "versia.localhost"
 bind_port = 9900 # Change the port to whatever you want
 
 [http.tls]
 enabled = true
-key = "config/lysand.localhost-key.pem"
-cert = "config/lysand.localhost.pem"
+key = "config/versia.localhost-key.pem"
+cert = "config/versia.localhost.pem"
 passphrase = ""
 ca = ""
 ```
@@ -134,7 +134,7 @@ To add tests for a route, create a `route_file_name.test.ts` file in the same di
 
 ### Writing documentation
 
-Documentation for the Lysand protocol is available on [lysand.org](https://lysand.org/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
+Documentation for the Versia protocol is available on [lysand.org](https://lysand.org/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
 
 This project should not need much documentation, but if you think that something needs to be documented, please add it to the README, docs or contribution guide.
 
@@ -145,11 +145,11 @@ If you find a bug, please open an issue on GitHub. Please make sure to include t
 - The steps to reproduce the bug
 - The expected behavior
 - The actual behavior
-- The version of Lysand you are using
+- The version of Versia Server you are using
 - The version of Bun you are using
 - The version of PostgreSQL you are using
 - Your operating system and version
 
 # License
 
-Lysand is licensed under the [AGPLv3 or later](https://www.gnu.org/licenses/agpl-3.0.en.html) license. By contributing to Lysand, you agree to license your contributions under the same license.
+Versia Server is licensed under the [AGPLv3 or later](https://www.gnu.org/licenses/agpl-3.0.en.html) license. By contributing to Versia, you agree to license your contributions under the same license.

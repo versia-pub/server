@@ -1,10 +1,10 @@
 # Frontend API
 
-The frontend API contains endpoints that are useful for frontend developers. These endpoints are not part of the Mastodon API, but are specific to Lysand.
+The frontend API contains endpoints that are useful for frontend developers. These endpoints are not part of the Mastodon API, but are specific to Versia Server.
 
 ## Routes that the Frontend must implement
 
-These routes can be set to a different URL in the Lysand configuration, at `frontend.routes`. The frontend must implement these routes for the instance to function correctly.
+These routes can be set to a different URL in the Versia Server configuration, at `frontend.routes`. The frontend must implement these routes for the instance to function correctly.
 
 - `GET /oauth/authorize`: (NOT `POST`): Identifier/password login form, submits to [`POST /api/auth/login`](#sign-in) or OpenID Connect flow.
 - `GET /oauth/consent`: Consent form, submits to [`POST /api/auth/redirect`](#consent)
@@ -15,7 +15,7 @@ These routes can be set to a different URL in the Lysand configuration, at `fron
 GET /api/v1/frontend/config
 ```
 
-Retrieves the frontend configuration for the instance. This returns whatever the `frontend.settings` object is set to in the Lysand configuration.
+Retrieves the frontend configuration for the instance. This returns whatever the `frontend.settings` object is set to in the Versia Server configuration.
 
 This behaves like the `/api/v1/preferences` endpoint in the Mastodon API, but is specific to the frontend. These values are arbitrary and can be used for anything.
 
@@ -23,8 +23,8 @@ For example, the frontend configuration could contain the following:
 
 ```json
 {
-    "org.lysand.fe:theme": "dark",
-    "org.lysand.fe:custom_css": "body { background-color: black; }",
+    "pub.versia.fe:theme": "dark",
+    "pub.versia.fe:custom_css": "body { background-color: black; }",
     // Googly is an imaginary frontend that uses the `net.googly.frontend` namespace
     "net.googly.frontend:spoiler_image": "https://example.com/spoiler.png"
 }

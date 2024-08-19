@@ -49,7 +49,7 @@ describe(meta.route, () => {
                 },
                 body: JSON.stringify({
                     shortcode: "test",
-                    element: "https://cdn.lysand.org/logo.webp",
+                    element: "https://cdn.versia.social/logo.webp",
                 }),
             }),
         );
@@ -108,7 +108,7 @@ describe(meta.route, () => {
                     },
                     body: JSON.stringify({
                         shortcode: "test3",
-                        element: "https://cdn.lysand.org/logo.webp",
+                        element: "https://cdn.versia.social/logo.webp",
                     }),
                 }),
             );

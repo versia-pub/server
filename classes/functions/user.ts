@@ -114,14 +114,14 @@ export const getFromHeader = async (value: string): Promise<AuthData> => {
 
 export const sendFollowAccept = async (follower: User, followee: User) => {
     await follower.federateToUser(
-        followAcceptToLysand(follower, followee),
+        followAcceptToVersia(follower, followee),
         followee,
     );
 };
 
 export const sendFollowReject = async (follower: User, followee: User) => {
     await follower.federateToUser(
-        followRejectToLysand(follower, followee),
+        followRejectToVersia(follower, followee),
         followee,
     );
 };
@@ -258,7 +258,7 @@ export const retrieveToken = async (
     );
 };
 
-export const followRequestToLysand = (
+export const followRequestToVersia = (
     follower: User,
     followee: User,
 ): Follow => {
@@ -286,7 +286,7 @@ export const followRequestToLysand = (
     };
 };
 
-export const followAcceptToLysand = (
+export const followAcceptToVersia = (
     follower: User,
     followee: User,
 ): FollowAccept => {
@@ -314,12 +314,12 @@ export const followAcceptToLysand = (
     };
 };
 
-export const followRejectToLysand = (
+export const followRejectToVersia = (
     follower: User,
     followee: User,
 ): FollowReject => {
     return {
-        ...followAcceptToLysand(follower, followee),
+        ...followAcceptToVersia(follower, followee),
         type: "FollowReject",
     };
 };

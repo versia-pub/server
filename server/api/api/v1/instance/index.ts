@@ -80,7 +80,7 @@ export default (app: Hono) =>
                     streaming_api: "",
                 },
                 version: "4.3.0-alpha.3+glitch",
-                lysand_version: version,
+                versia_version: version,
                 sso: {
                     forced: false,
                     providers: config.oidc.providers.map((p) => ({
@@ -92,7 +92,7 @@ export default (app: Hono) =>
                 contact_account: contactAccount?.toApi() || undefined,
             } satisfies Record<string, unknown> & {
                 banner: string | null;
-                lysand_version: string;
+                versia_version: string;
                 sso: {
                     forced: boolean;
                     providers: {

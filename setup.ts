@@ -12,7 +12,7 @@ await configureLoggers();
 
 const serverLogger = getLogger("server");
 
-serverLogger.info`Starting Lysand...`;
+serverLogger.info`Starting Versia Server...`;
 
 await setupDatabase();
 
@@ -29,7 +29,7 @@ const postCount = await Note.getCount();
 
 await checkConfig(config);
 
-serverLogger.info`Lysand started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`;
+serverLogger.info`Versia Server started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`;
 
 serverLogger.info`Database is online, now serving ${postCount} posts`;
 

@@ -150,7 +150,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
 
         const foundInstance = host ? await Instance.resolve(host) : null;
 
-        return await Emoji.fromLysand(emojiToFetch, foundInstance?.id ?? null);
+        return await Emoji.fromVersia(emojiToFetch, foundInstance?.id ?? null);
     }
 
     get id() {
@@ -189,7 +189,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         };
     }
 
-    public toLysand(): CustomEmojiExtension["emojis"][0] {
+    public toVersia(): CustomEmojiExtension["emojis"][0] {
         return {
             name: this.data.shortcode,
             url: {
@@ -201,7 +201,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         };
     }
 
-    public static fromLysand(
+    public static fromVersia(
         emoji: CustomEmojiExtension["emojis"][0],
         instanceId: string | null,
     ): Promise<Emoji> {

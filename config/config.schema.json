@@ -26,7 +26,7 @@
                 "database": {
                     "type": "string",
                     "minLength": 1,
-                    "default": "lysand"
+                    "default": "versia"
                 }
             },
             "required": ["username"],
@@ -228,7 +228,7 @@
                 "base_url": {
                     "type": "string",
                     "minLength": 1,
-                    "default": "http://lysand.social"
+                    "default": "http://versia.social"
                 },
                 "bind": {
                     "type": "string",
@@ -548,7 +548,7 @@
                 },
                 "bucket_name": {
                     "type": "string",
-                    "default": "lysand"
+                    "default": "versia"
                 },
                 "public_url": {
                     "$ref": "#/properties/http/properties/proxy/properties/address/anyOf/0"
@@ -565,7 +565,7 @@
                 "endpoint": "",
                 "access_key": "",
                 "secret_access_key": "",
-                "bucket_name": "lysand",
+                "bucket_name": "versia",
                 "public_url": "https://cdn.example.com"
             }
         },
@@ -3375,12 +3375,12 @@
                 "name": {
                     "type": "string",
                     "minLength": 1,
-                    "default": "Lysand"
+                    "default": "Versia"
                 },
                 "description": {
                     "type": "string",
                     "minLength": 1,
-                    "default": "A Lysand instance"
+                    "default": "A Versia instance"
                 },
                 "extended_description_path": {
                     "type": "string"
@@ -3437,8 +3437,8 @@
             },
             "additionalProperties": false,
             "default": {
-                "name": "Lysand",
-                "description": "A Lysand instance",
+                "name": "Versia",
+                "description": "A Versia instance",
                 "keys": {
                     "public": "",
                     "private": ""

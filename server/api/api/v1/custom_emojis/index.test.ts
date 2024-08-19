@@ -22,7 +22,7 @@ beforeAll(async () => {
             method: "POST",
             body: JSON.stringify({
                 shortcode: "test1",
-                element: "https://cdn.lysand.org/logo.webp",
+                element: "https://cdn.versia.social/logo.webp",
                 global: true,
             }),
         }),
@@ -39,7 +39,7 @@ beforeAll(async () => {
             method: "POST",
             body: JSON.stringify({
                 shortcode: "test2",
-                element: "https://cdn.lysand.org/logo.webp",
+                element: "https://cdn.versia.social/logo.webp",
             }),
         }),
     );
@@ -53,7 +53,7 @@ beforeAll(async () => {
             method: "POST",
             body: JSON.stringify({
                 shortcode: "test3",
-                element: "https://cdn.lysand.org/logo.webp",
+                element: "https://cdn.versia.social/logo.webp",
             }),
         }),
     );

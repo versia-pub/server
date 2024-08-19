@@ -10,7 +10,7 @@ Three extra attributes have been added to the `/api/v1/instance` endpoint:
 {
     // ...
     banner: string | null;
-    lysand_version: string;
+    versia_version: string;
     sso: {
         forced: boolean;
         providers: {
@@ -26,9 +26,9 @@ Three extra attributes have been added to the `/api/v1/instance` endpoint:
 
 The URL of the instance's banner image. `null` if there is no banner set.
 
-### `lysand_version`
+### `versia_version`
 
-The version of the Lysand instance.
+The version of the Versia Server instance.
 
 The normal `version` field is always set to `"4.3.0+glitch"` or similar, to not confuse clients that expect a Mastodon instance.
 
@@ -55,18 +55,18 @@ Two extra attributes has been adding to all returned account objects:
 ```ts
 {
     // ...
-    roles: LysandRoles[];
+    roles: VersiaRoles[];
     uri: string;
 }
 ```
 
 ### `roles`
 
-An array of roles from [Lysand Roles](./roles.md).
+An array of roles from [Versia Server Roles](./roles.md).
 
 ### `uri`
 
-The URI of the account's Lysand object (for federation). Similar to Mastodon's `uri` field on notes.
+The URI of the account's Versia object (for federation). Similar to Mastodon's `uri` field on notes.
 
 ## `/api/v1/accounts/update_credentials`
 

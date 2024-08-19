@@ -32,7 +32,7 @@ export const configValidator = z.object({
             .default(5432),
         username: z.string().min(1),
         password: z.string().default(""),
-        database: z.string().min(1).default("lysand"),
+        database: z.string().min(1).default("versia"),
     }),
     redis: z.object({
         queue: z
@@ -109,7 +109,7 @@ export const configValidator = z.object({
         jwt_key: z.string().min(3).includes(";").default("").or(z.literal("")),
     }),
     http: z.object({
-        base_url: z.string().min(1).default("http://lysand.social"),
+        base_url: z.string().min(1).default("http://versia.social"),
         bind: z.string().min(1).default("0.0.0.0"),
         bind_port: z
             .number()
@@ -260,7 +260,7 @@ export const configValidator = z.object({
             access_key: z.string(),
             secret_access_key: z.string(),
             region: z.string().optional(),
-            bucket_name: z.string().default("lysand"),
+            bucket_name: z.string().default("versia"),
             public_url: zUrl,
         })
         .default({
@@ -268,7 +268,7 @@ export const configValidator = z.object({
             access_key: "",
             secret_access_key: "",
             region: undefined,
-            bucket_name: "lysand",
+            bucket_name: "versia",
             public_url: "https://cdn.example.com",
         }),
     validation: z
@@ -507,8 +507,8 @@ export const configValidator = z.object({
         }),
     instance: z
         .object({
-            name: z.string().min(1).default("Lysand"),
-            description: z.string().min(1).default("A Lysand instance"),
+            name: z.string().min(1).default("Versia"),
+            description: z.string().min(1).default("A Versia instance"),
             extended_description_path: z.string().optional(),
             tos_path: z.string().optional(),
             privacy_policy_path: z.string().optional(),
@@ -525,8 +525,8 @@ export const configValidator = z.object({
                 }),
         })
         .default({
-            name: "Lysand",
-            description: "A Lysand instance",
+            name: "Versia",
+            description: "A Versia instance",
             extended_description_path: undefined,
             tos_path: undefined,
             privacy_policy_path: undefined,

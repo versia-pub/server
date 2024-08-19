@@ -1,5 +1,5 @@
 {
-    "name": "Lysand Dev Container",
+    "name": "versia Dev Container",
     "dockerFile": "Dockerfile",
     "runArgs": [
         "-v",

@@ -5,7 +5,7 @@ import { BaseCommand } from "~/cli/base";
 export default class Start extends BaseCommand<typeof Start> {
     static override args = {};
 
-    static override description = "Starts Lysand";
+    static override description = "Starts Versia Server";
 
     static override examples = [
         "<%= config.bin %> <%= command.id %> --threads 4",

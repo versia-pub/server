@@ -3,19 +3,19 @@
 ## Requirements
 
 - The [Bun Runtime](https://bun.sh), version 1.1.24 or later (usage of the latest version is recommended)
-  - Lysand will work on lower versions than 1.1.24, but only the latest version is supported
+  - Versia Server will work on lower versions than 1.1.24, but only the latest version is supported
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 - (Optional if you want search) A working [Sonic](https://github.com/valeriansaliou/sonic) instance
 
 > [!WARNING]
-> Lysand has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run Lysand.
+> Versia Server has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run LysVersia Serverand.
 > 
-> We will not be offering support to Windows or macOS users. If you are using one of these operating systems, please use a virtual machine or container to run Lysand.
+> We will not be offering support to Windows or macOS users. If you are using one of these operating systems, please use a virtual machine or container to run Versia Server.
 
 ## With Docker/Podman
 
-Docker is the recommended way to run Lysand (Podman also works). To run Lysand with Docker, follow these steps:
+Docker is the recommended way to run Versia Server (Podman also works). To run Versia Server with Docker, follow these steps:
 
 1. Download the `docker-compose.yml` file from the repository
 
