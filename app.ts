@@ -76,7 +76,6 @@ export const appFactory = async () => {
     app.use(
         cors({
             origin: "*",
-            allowHeaders: ["Content-Type", "Authorization"],
             allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
             credentials: true,
         }),
