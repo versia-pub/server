@@ -1,11 +1,10 @@
-import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
 import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
-import { prometheus } from "@hono/prometheus";
-import { getLogger } from "@logtape/logtape";
+/* import { prometheus } from "@hono/prometheus";
+ */ import { getLogger } from "@logtape/logtape";
 import { config } from "~/packages/config-manager/index";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
@@ -23,7 +22,7 @@ export const appFactory = async () => {
         strict: false,
     });
 
-    const { printMetrics, registerMetrics } = prometheus({
+    /* const { printMetrics, registerMetrics } = prometheus({
         collectDefaultMetrics: true,
         metricOptions: {
             requestsTotal: {
@@ -33,7 +32,7 @@ export const appFactory = async () => {
                 },
             },
         },
-    });
+    }); */
 
     app.use(ipBans);
     app.use(agentBans);
@@ -82,8 +81,8 @@ export const appFactory = async () => {
             credentials: true,
         }),
     );
-    app.use("*", registerMetrics);
-    app.get("/metrics", printMetrics);
+    /* app.use("*", registerMetrics);
+    app.get("/metrics", printMetrics); */
     // Disabled as federation now checks for this
     // app.use(urlCheck);
 
@@ -99,8 +98,8 @@ export const appFactory = async () => {
         route.default(app);
     }
 
-    app.options("*", () => {
-        return response(null);
+    app.options("*", (context) => {
+        return context.text("", 204);
     });
 
     app.all("*", async (context) => {
