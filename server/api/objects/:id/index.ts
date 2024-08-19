@@ -27,12 +27,6 @@ export const schemas = {
     param: z.object({
         id: z.string().uuid(),
     }),
-    query: z.object({
-        debug: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-    }),
 };
 
 export default apiRoute((app) =>
@@ -40,10 +34,8 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        zValidator("query", schemas.query, handleZodError),
         async (context) => {
             const { id } = context.req.valid("param");
-            const { debug } = context.req.valid("query");
 
             let foundObject: Note | LikeType | null = null;
             let foundAuthor: User | null = null;
@@ -86,12 +78,6 @@ export default apiRoute((app) =>
                     { error: "Cannot view objects from remote instances" },
                     403,
                 );
-            }
-
-            if (debug) {
-                return response(JSON.stringify(apiObject, null, 4), 200, {
-                    "Content-Type": "application/json",
-                });
             }
 
             const objectString = JSON.stringify(apiObject);
