@@ -38,6 +38,7 @@ export default (app: Hono) =>
             domain: new URL(config.http.base_url).hostname,
             title: config.instance.name,
             version: "4.3.0-alpha.3+glitch",
+            // @ts-expect-error Temporary until package also gets the rebranding
             versia_version: version,
             source_url: "https://github.com/lysand-org/lysand",
             description: config.instance.description,
