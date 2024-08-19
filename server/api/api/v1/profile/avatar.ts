@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
@@ -26,14 +25,14 @@ export default apiRoute((app) =>
             const { user: self } = context.req.valid("header");
 
             if (!self) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             await self.update({
                 avatar: "",
             });
 
-            return jsonResponse(self.toApi(true));
+            return context.json(self.toApi(true));
         },
     ),
 );

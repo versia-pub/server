@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { sendFollowAccept } from "~/classes/functions/user";
@@ -38,7 +37,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const { account_id } = context.req.valid("param");
@@ -46,7 +45,7 @@ export default apiRoute((app) =>
             const account = await User.fromId(account_id);
 
             if (!account) {
-                return errorResponse("Account not found", 404);
+                return context.json({ error: "Account not found" }, 404);
             }
 
             const oppositeRelationship = await Relationship.fromOwnerAndSubject(
@@ -70,7 +69,7 @@ export default apiRoute((app) =>
                 await sendFollowAccept(account, user);
             }
 
-            return jsonResponse(foundRelationship.toApi());
+            return context.json(foundRelationship.toApi());
         },
     ),
 );

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, qsQuery } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
@@ -41,7 +40,7 @@ export default apiRoute((app) =>
             const ids = Array.isArray(id) ? id : [id];
 
             if (!self) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const relationships = await Relationship.fromOwnerAndSubjects(
@@ -55,7 +54,7 @@ export default apiRoute((app) =>
                     ids.indexOf(b.data.subjectId),
             );
 
-            return jsonResponse(relationships.map((r) => r.toApi()));
+            return context.json(relationships.map((r) => r.toApi()));
         },
     ),
 );

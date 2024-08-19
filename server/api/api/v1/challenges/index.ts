@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
-import { errorResponse, jsonResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -23,14 +22,17 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async (_context) => {
+        async (context) => {
             if (!config.validation.challenges.enabled) {
-                return errorResponse("Challenges are disabled in config", 400);
+                return context.json(
+                    { error: "Challenges are disabled in config" },
+                    400,
+                );
             }
 
             const result = await generateChallenge();
 
-            return jsonResponse({
+            return context.json({
                 id: result.id,
                 ...result.challenge,
             });

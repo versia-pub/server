@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -44,12 +43,12 @@ export default apiRoute((app) =>
             const author = await User.fromId(uuid);
 
             if (!author) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             if (author.isRemote()) {
-                return errorResponse(
-                    "Cannot view users from remote instances",
+                return context.json(
+                    { error: "Cannot view users from remote instances" },
                     403,
                 );
             }
@@ -80,7 +79,7 @@ export default apiRoute((app) =>
                     )
             )[0].count;
 
-            return jsonResponse({
+            return context.json({
                 first: new URL(
                     `/users/${uuid}/outbox?page=1`,
                     config.http.base_url,

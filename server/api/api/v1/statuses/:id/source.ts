@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { StatusSource as ApiStatusSource } from "@lysand-org/client/types";
 import { z } from "zod";
@@ -38,16 +37,16 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const status = await Note.fromId(id, user.id);
 
             if (!status?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
-            return jsonResponse({
+            return context.json({
                 id: status.id,
                 // TODO: Give real source for spoilerText
                 spoiler_text: status.data.spoilerText,

@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
-import { jsonResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -20,13 +19,13 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async () => {
+        async (context) => {
             const { content, lastModified } = await renderMarkdownInPath(
                 config.instance.extended_description_path ?? "",
                 "This is a [Versia](https://versia.pub) server with the default extended description.",
             );
 
-            return jsonResponse({
+            return context.json({
                 updated_at: lastModified.toISOString(),
                 content,
             });

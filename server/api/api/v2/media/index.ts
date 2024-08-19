@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import sharp from "sharp";
 import { z } from "zod";
@@ -46,8 +45,10 @@ export default apiRoute((app) =>
             const { file, thumbnail, description } = context.req.valid("form");
 
             if (file.size > config.validation.max_media_size) {
-                return errorResponse(
-                    `File too large, max size is ${config.validation.max_media_size} bytes`,
+                return context.json(
+                    {
+                        error: `File too large, max size is ${config.validation.max_media_size} bytes`,
+                    },
                     413,
                 );
             }
@@ -56,7 +57,7 @@ export default apiRoute((app) =>
                 config.validation.enforce_mime_types &&
                 !config.validation.allowed_mime_types.includes(file.type)
             ) {
-                return errorResponse("Invalid file type", 415);
+                return context.json({ error: "Invalid file type" }, 415);
             }
 
             const sha256 = new Bun.SHA256();
@@ -96,10 +97,10 @@ export default apiRoute((app) =>
             // TODO: Add job to process videos and other media
 
             if (isImage) {
-                return jsonResponse(newAttachment.toApi());
+                return context.json(newAttachment.toApi());
             }
 
-            return jsonResponse(
+            return context.json(
                 {
                     ...newAttachment.toApi(),
                     url: null,

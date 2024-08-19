@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@/api";
-import { jsonResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,9 +14,9 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, () => {
+    app.on(meta.allowedMethods, meta.route, (context) => {
         const baseUrl = new URL(config.http.base_url);
-        return jsonResponse({
+        return context.json({
             issuer: baseUrl.origin.toString(),
             authorization_endpoint: `${baseUrl.origin}/oauth/authorize`,
             token_endpoint: `${baseUrl.origin}/oauth/token`,

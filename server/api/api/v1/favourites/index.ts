@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -49,7 +48,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const { objects: favourites, link } =
@@ -65,7 +64,7 @@ export default apiRoute((app) =>
                     user?.id,
                 );
 
-            return jsonResponse(
+            return context.json(
                 await Promise.all(
                     favourites.map(async (note) => note.toApi(user)),
                 ),

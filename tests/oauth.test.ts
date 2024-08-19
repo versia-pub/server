@@ -47,7 +47,9 @@ describe("POST /api/v1/apps/", () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const json = await response.json();
 
@@ -149,7 +151,9 @@ describe("POST /oauth/token/", () => {
         const json = await response.json();
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
         expect(json).toEqual({
             access_token: expect.any(String),
             token_type: "Bearer",
@@ -178,7 +182,9 @@ describe("GET /api/v1/apps/verify_credentials", () => {
         );
 
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toBe("application/json");
+        expect(response.headers.get("content-type")).toContain(
+            "application/json",
+        );
 
         const credentials = (await response.json()) as Partial<ApiApplication>;
 

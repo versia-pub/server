@@ -1,4 +1,4 @@
-import { errorResponse, jsonResponse, response } from "@/response";
+import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { Hono } from "@hono/hono";
 import { getLogger } from "@logtape/logtape";
@@ -76,8 +76,10 @@ export const appFactory = async () => {
         proxy?.headers.set("Cache-Control", "max-age=31536000");
 
         if (!proxy || proxy.status === 404) {
-            return errorResponse(
-                "Route not found on proxy or API route. Are you using the correct HTTP method?",
+            return context.json(
+                {
+                    error: "Route not found on proxy or API route. Are you using the correct HTTP method?",
+                },
                 404,
             );
         }
@@ -95,11 +97,11 @@ export const appFactory = async () => {
         return proxy;
     });
 
-    app.onError((error) => {
+    app.onError((error, c) => {
         const serverLogger = getLogger("server");
         serverLogger.error`${error}`;
         sentry?.captureException(error);
-        return jsonResponse(
+        return c.json(
             {
                 error: "A server error occured",
                 name: error.name,

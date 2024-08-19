@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
-import { errorResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
 import { SignJWT } from "jose";
@@ -232,7 +232,7 @@ export default apiRoute((app) =>
             }
 
             if (!flow.application) {
-                return errorResponse("Application not found", 500);
+                return context.json({ error: "Application not found" }, 500);
             }
 
             const code = randomString(32, "hex");

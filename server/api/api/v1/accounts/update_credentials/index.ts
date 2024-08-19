@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
@@ -149,7 +148,7 @@ export default apiRoute((app) =>
             } = context.req.valid("json");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const self = user.data;
@@ -192,7 +191,10 @@ export default apiRoute((app) =>
                 );
 
                 if (existingUser) {
-                    return errorResponse("Username is already taken", 400);
+                    return context.json(
+                        { error: "Username is already taken" },
+                        400,
+                    );
                 }
 
                 self.username = username;
@@ -330,10 +332,10 @@ export default apiRoute((app) =>
 
             const output = await User.fromId(self.id);
             if (!output) {
-                return errorResponse("Couldn't edit user", 500);
+                return context.json({ error: "Couldn't edit user" }, 500);
             }
 
-            return jsonResponse(output.toApi());
+            return context.json(output.toApi());
         },
     ),
 );

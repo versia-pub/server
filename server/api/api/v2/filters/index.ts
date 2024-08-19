@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -69,7 +68,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
             switch (context.req.method) {
                 case "GET": {
@@ -80,7 +79,7 @@ export default apiRoute((app) =>
                         },
                     });
 
-                    return jsonResponse(
+                    return context.json(
                         userFilters.map((filter) => ({
                             id: filter.id,
                             title: filter.title,
@@ -103,8 +102,8 @@ export default apiRoute((app) =>
                 case "POST": {
                     const form = context.req.valid("json");
                     if (!form) {
-                        return errorResponse(
-                            "Missing required Form fields",
+                        return context.json(
+                            { error: "Missing required fields" },
                             422,
                         );
                     }
@@ -118,8 +117,10 @@ export default apiRoute((app) =>
                     } = form;
 
                     if (!title || ctx?.length === 0) {
-                        return errorResponse(
-                            "Missing required fields (title and context)",
+                        return context.json(
+                            {
+                                error: "Missing required fields (title and context)",
+                            },
                             422,
                         );
                     }
@@ -140,7 +141,10 @@ export default apiRoute((app) =>
                     )[0];
 
                     if (!newFilter) {
-                        return errorResponse("Failed to create filter", 500);
+                        return context.json(
+                            { error: "Failed to create filter" },
+                            500,
+                        );
                     }
 
                     const insertedKeywords =
@@ -158,7 +162,7 @@ export default apiRoute((app) =>
                                   .returning()
                             : [];
 
-                    return jsonResponse({
+                    return context.json({
                         id: newFilter.id,
                         title: newFilter.title,
                         context: newFilter.context,

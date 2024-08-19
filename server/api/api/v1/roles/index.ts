@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { Role } from "~/packages/database-interface/role";
 
 export const meta = applyConfig({
@@ -23,7 +22,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const userRoles = await Role.getUserRoles(
@@ -31,7 +30,7 @@ export default apiRoute((app) =>
                 user.data.isAdmin,
             );
 
-            return jsonResponse(userRoles.map((r) => r.toApi()));
+            return context.json(userRoles.map((r) => r.toApi()));
         },
     ),
 );

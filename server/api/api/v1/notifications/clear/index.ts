@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Notifications, RolePermissions } from "~/drizzle/schema";
@@ -28,7 +27,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { user } = context.req.valid("header");
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             await db
@@ -38,7 +37,7 @@ export default apiRoute((app) =>
                 })
                 .where(eq(Notifications.notifiedId, user.id));
 
-            return jsonResponse({});
+            return context.json({});
         },
     ),
 );

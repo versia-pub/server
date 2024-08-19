@@ -43,7 +43,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(202);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -76,7 +76,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -123,7 +123,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -168,7 +168,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -218,7 +218,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -248,7 +248,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -276,7 +276,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -308,7 +308,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 
@@ -365,7 +365,7 @@ describe("API Tests", () => {
             );
 
             expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toBe(
+            expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
 

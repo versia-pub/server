@@ -5,7 +5,6 @@ import {
     idValidator,
     webfingerMention,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@lysand-org/federation";
@@ -44,8 +43,10 @@ export default apiRoute((app) =>
 
             // Check if resource is in the correct format (acct:uuid/username@domain)
             if (!resource.match(webfingerMention)) {
-                return errorResponse(
-                    "Invalid resource (should be acct:(id or username)@domain)",
+                return context.json(
+                    {
+                        error: "Invalid resource (should be acct:(id or username)@domain)",
+                    },
                     400,
                 );
             }
@@ -56,7 +57,7 @@ export default apiRoute((app) =>
 
             // Check if user is a local user
             if (requestedUser.split("@")[1] !== host) {
-                return errorResponse("User is a remote user", 404);
+                return context.json({ error: "User is a remote user" }, 404);
             }
 
             const isUuid = requestedUser.split("@")[0].match(idValidator);
@@ -72,7 +73,7 @@ export default apiRoute((app) =>
             );
 
             if (!user) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             let activityPubUrl = "";
@@ -97,7 +98,7 @@ export default apiRoute((app) =>
                 }
             }
 
-            return jsonResponse({
+            return context.json({
                 subject: `acct:${
                     isUuid ? user.id : user.data.username
                 }@${host}`,

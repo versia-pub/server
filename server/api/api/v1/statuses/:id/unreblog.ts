@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -39,14 +38,14 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const foundStatus = await Note.fromId(id, user.id);
 
             // Check if user is authorized to view this status (if it's private)
             if (!foundStatus?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             const existingReblog = await Note.fromSql(
@@ -59,7 +58,7 @@ export default apiRoute((app) =>
             );
 
             if (!existingReblog) {
-                return errorResponse("Not already reblogged", 422);
+                return context.json({ error: "Not already reblogged" }, 422);
             }
 
             await existingReblog.delete();
@@ -71,10 +70,10 @@ export default apiRoute((app) =>
             const newNote = await Note.fromId(id, user.id);
 
             if (!newNote) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
-            return jsonResponse(await newNote.toApi(user));
+            return context.json(await newNote.toApi(user));
         },
     ),
 );

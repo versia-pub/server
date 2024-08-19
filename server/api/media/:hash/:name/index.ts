@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
@@ -50,7 +50,7 @@ export default apiRoute((app) =>
             const buffer = await file.arrayBuffer();
 
             if (!(await file.exists())) {
-                return errorResponse("File not found", 404);
+                return context.json({ error: "File not found" }, 404);
             }
 
             // Can't directly copy file into Response because this crashes Bun for now

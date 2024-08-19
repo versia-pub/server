@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, qsQuery } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -41,7 +40,7 @@ export default apiRoute((app) =>
             const { id: ids } = context.req.valid("query");
 
             if (!self) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const idFollowerRelationships =
@@ -60,7 +59,7 @@ export default apiRoute((app) =>
                 });
 
             if (idFollowerRelationships.length === 0) {
-                return jsonResponse([]);
+                return context.json([]);
             }
 
             // Find users that you follow in idFollowerRelationships
@@ -82,7 +81,7 @@ export default apiRoute((app) =>
             );
 
             if (relevantRelationships.length === 0) {
-                return jsonResponse([]);
+                return context.json([]);
             }
 
             const finalUsers = await User.manyFromSql(
@@ -92,7 +91,7 @@ export default apiRoute((app) =>
                 ),
             );
 
-            return jsonResponse(finalUsers.map((o) => o.toApi()));
+            return context.json(finalUsers.map((o) => o.toApi()));
         },
     ),
 );

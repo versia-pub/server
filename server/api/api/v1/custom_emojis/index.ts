@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { jsonResponse } from "@/response";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { Emoji } from "~/packages/database-interface/emoji";
@@ -37,7 +36,7 @@ export default apiRoute((app) =>
                 ),
             );
 
-            return jsonResponse(emojis.map((emoji) => emoji.toApi()));
+            return context.json(emojis.map((emoji) => emoji.toApi()));
         },
     ),
 );

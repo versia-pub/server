@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -112,7 +111,7 @@ export default apiRoute((app) =>
             const { user, application } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const {
@@ -132,17 +131,23 @@ export default apiRoute((app) =>
                 const foundAttachments = await Attachment.fromIds(media_ids);
 
                 if (foundAttachments.length !== media_ids.length) {
-                    return errorResponse("Invalid media IDs", 422);
+                    return context.json({ error: "Invalid media IDs" }, 422);
                 }
             }
 
             // Check that in_reply_to_id and quote_id are real posts if provided
             if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
-                return errorResponse("Invalid in_reply_to_id (not found)", 422);
+                return context.json(
+                    { error: "Invalid in_reply_to_id (not found)" },
+                    422,
+                );
             }
 
             if (quote_id && !(await Note.fromId(quote_id))) {
-                return errorResponse("Invalid quote_id (not found)", 422);
+                return context.json(
+                    { error: "Invalid quote_id (not found)" },
+                    422,
+                );
             }
 
             const newNote = await Note.fromData({
@@ -165,7 +170,7 @@ export default apiRoute((app) =>
                 await newNote.federateToUsers();
             }
 
-            return jsonResponse(await newNote.toApi(user));
+            return context.json(await newNote.toApi(user));
         },
     ),
 );

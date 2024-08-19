@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
@@ -40,14 +39,14 @@ export default apiRoute((app) =>
             const foundStatus = await Note.fromId(id, user?.id);
 
             if (!foundStatus) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             const ancestors = await foundStatus.getAncestors(user ?? null);
 
             const descendants = await foundStatus.getDescendants(user ?? null);
 
-            return jsonResponse({
+            return context.json({
                 ancestors: await Promise.all(
                     ancestors.map((status) => status.toApi(user)),
                 ),

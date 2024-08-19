@@ -1,4 +1,3 @@
-import { errorResponse } from "@/response";
 import { createMiddleware } from "@hono/hono/factory";
 import { config } from "~/packages/config-manager";
 
@@ -8,7 +7,7 @@ export const agentBans = createMiddleware(async (context, next) => {
 
     for (const agent of config.http.banned_user_agents) {
         if (new RegExp(agent).test(ua)) {
-            return errorResponse("Forbidden", 403);
+            return context.json({ error: "Forbidden" }, 403);
         }
     }
 

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -82,7 +81,7 @@ export default apiRoute((app) =>
             const { id } = context.req.valid("param");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const userFilter = await db.query.Filters.findFirst({
@@ -94,12 +93,12 @@ export default apiRoute((app) =>
             });
 
             if (!userFilter) {
-                return errorResponse("Filter not found", 404);
+                return context.json({ error: "Filter not found" }, 404);
             }
 
             switch (context.req.method) {
                 case "GET": {
-                    return jsonResponse({
+                    return context.json({
                         id: userFilter.id,
                         title: userFilter.title,
                         context: userFilter.context,
@@ -187,10 +186,13 @@ export default apiRoute((app) =>
                     });
 
                     if (!updatedFilter) {
-                        return errorResponse("Failed to update filter", 500);
+                        return context.json(
+                            { error: "Failed to update filter" },
+                            500,
+                        );
                     }
 
-                    return jsonResponse({
+                    return context.json({
                         id: updatedFilter.id,
                         title: updatedFilter.title,
                         context: updatedFilter.context,
@@ -216,7 +218,7 @@ export default apiRoute((app) =>
                             ),
                         );
 
-                    return jsonResponse({});
+                    return context.json({});
                 }
             }
         },

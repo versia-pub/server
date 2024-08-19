@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, response } from "@/response";
+import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
@@ -34,8 +34,8 @@ export default apiRoute((app) =>
 
             // Check if URL is valid
             if (!URL.canParse(id)) {
-                return errorResponse(
-                    "Invalid URL (it should be encoded as base64url",
+                return context.json(
+                    { error: "Invalid URL (it should be encoded as base64url" },
                     400,
                 );
             }

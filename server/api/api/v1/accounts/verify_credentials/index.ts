@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -24,10 +23,10 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
-            return jsonResponse(user.toApi(true));
+            return context.json(user.toApi(true));
         },
     ),
 );

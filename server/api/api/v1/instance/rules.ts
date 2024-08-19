@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { jsonResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -19,8 +18,8 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async () => {
-            return jsonResponse(
+        async (context) => {
+            return context.json(
                 config.signups.rules.map((rule, index) => ({
                     id: String(index),
                     text: rule,

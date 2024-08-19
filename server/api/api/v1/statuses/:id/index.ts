@@ -6,7 +6,6 @@ import {
     idValidator,
     jsonOrForm,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -121,16 +120,16 @@ export default apiRoute((app) =>
             const note = await Note.fromId(id, user?.id);
 
             if (!note?.isViewableByUser(user)) {
-                return errorResponse("Record not found", 404);
+                return context.json({ error: "Record not found" }, 404);
             }
 
             switch (context.req.method) {
                 case "GET": {
-                    return jsonResponse(await note.toApi(user));
+                    return context.json(await note.toApi(user));
                 }
                 case "DELETE": {
                     if (note.author.id !== user?.id) {
-                        return errorResponse("Unauthorized", 401);
+                        return context.json({ error: "Unauthorized" }, 401);
                     }
 
                     // TODO: Delete and redraft
@@ -141,15 +140,15 @@ export default apiRoute((app) =>
                         undoFederationRequest(user, note.getUri()),
                     );
 
-                    return jsonResponse(await note.toApi(user), 200);
+                    return context.json(await note.toApi(user), 200);
                 }
                 case "PUT": {
                     if (!user) {
-                        return errorResponse("Unauthorized", 401);
+                        return context.json({ error: "Unauthorized" }, 401);
                     }
 
                     if (note.author.id !== user.id) {
-                        return errorResponse("Unauthorized", 401);
+                        return context.json({ error: "Unauthorized" }, 401);
                     }
 
                     if (media_ids.length > 0) {
@@ -157,7 +156,10 @@ export default apiRoute((app) =>
                             await Attachment.fromIds(media_ids);
 
                         if (foundAttachments.length !== media_ids.length) {
-                            return errorResponse("Invalid media IDs", 422);
+                            return context.json(
+                                { error: "Invalid media IDs" },
+                                422,
+                            );
                         }
                     }
 
@@ -175,7 +177,7 @@ export default apiRoute((app) =>
                         mediaAttachments: media_ids,
                     });
 
-                    return jsonResponse(await newNote.toApi(user));
+                    return context.json(await newNote.toApi(user));
                 }
             }
         },

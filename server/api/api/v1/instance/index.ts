@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { jsonResponse, proxyUrl } from "@/response";
+import { proxyUrl } from "@/response";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
@@ -25,7 +25,7 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async () => {
+        async (context) => {
             // Get software version from package.json
             const version = manifest.version;
 
@@ -40,7 +40,7 @@ export default apiRoute((app) =>
             const knownDomainsCount = await Instance.getCount();
 
             // TODO: fill in more values
-            return jsonResponse({
+            return context.json({
                 approval_required: false,
                 configuration: {
                     polls: {

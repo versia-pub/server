@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -55,13 +54,13 @@ export default apiRoute((app) =>
             const { reblogs, notify, languages } = context.req.valid("json");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             const otherUser = await User.fromId(id);
 
             if (!otherUser) {
-                return errorResponse("User not found", 404);
+                return context.json({ error: "User not found" }, 404);
             }
 
             let relationship = await Relationship.fromOwnerAndSubject(
@@ -77,7 +76,7 @@ export default apiRoute((app) =>
                 });
             }
 
-            return jsonResponse(relationship.toApi());
+            return context.json(relationship.toApi());
         },
     ),
 );

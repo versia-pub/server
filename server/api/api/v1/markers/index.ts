@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { errorResponse, jsonResponse } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import type { Marker as ApiMarker } from "@lysand-org/client/types";
 import { and, count, eq } from "drizzle-orm";
@@ -54,13 +53,13 @@ export default apiRoute((app) =>
             const timeline = Array.isArray(timelines) ? timelines : [];
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             switch (context.req.method) {
                 case "GET": {
                     if (!timeline) {
-                        return jsonResponse({});
+                        return context.json({});
                     }
 
                     const markers: ApiMarker = {
@@ -132,7 +131,7 @@ export default apiRoute((app) =>
                         }
                     }
 
-                    return jsonResponse(markers);
+                    return context.json(markers);
                 }
 
                 case "POST": {
@@ -212,7 +211,7 @@ export default apiRoute((app) =>
                         };
                     }
 
-                    return jsonResponse(markers);
+                    return context.json(markers);
                 }
             }
         },

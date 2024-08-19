@@ -1,6 +1,5 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
-import { jsonResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -20,13 +19,13 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async () => {
+        async (context) => {
             const { content, lastModified } = await renderMarkdownInPath(
                 config.instance.tos_path ?? "",
                 "This instance has not provided any terms of service.",
             );
 
-            return jsonResponse({
+            return context.json({
                 updated_at: lastModified.toISOString(),
                 content,
             });

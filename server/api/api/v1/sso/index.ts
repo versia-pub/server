@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { randomString } from "@/math";
-import { errorResponse, jsonResponse, proxyUrl } from "@/response";
+import { proxyUrl } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import {
     calculatePKCECodeChallenge,
@@ -58,7 +58,7 @@ export default apiRoute((app) =>
             const { user } = context.req.valid("header");
 
             if (!user) {
-                return errorResponse("Unauthorized", 401);
+                return context.json({ error: "Unauthorized" }, 401);
             }
 
             switch (context.req.method) {
@@ -68,7 +68,7 @@ export default apiRoute((app) =>
                         where: (User, { eq }) => eq(User.userId, user.id),
                     });
 
-                    return jsonResponse(
+                    return context.json(
                         accounts
                             .map((account) => {
                                 const issuer = config.oidc.providers.find(
@@ -95,8 +95,8 @@ export default apiRoute((app) =>
                 }
                 case "POST": {
                     if (!form) {
-                        return errorResponse(
-                            "Missing issuer in form body",
+                        return context.json(
+                            { error: "Missing issuer in form body" },
                             400,
                         );
                     }
@@ -104,8 +104,8 @@ export default apiRoute((app) =>
                     const { issuer: issuerId } = form;
 
                     if (!issuerId) {
-                        return errorResponse(
-                            "Missing issuer in form body",
+                        return context.json(
+                            { error: "Missing issuer in form body" },
                             400,
                         );
                     }
@@ -115,8 +115,8 @@ export default apiRoute((app) =>
                     );
 
                     if (!issuer) {
-                        return errorResponse(
-                            `Issuer ${issuerId} not found`,
+                        return context.json(
+                            { error: `Issuer ${issuerId} not found` },
                             404,
                         );
                     }
@@ -157,7 +157,7 @@ export default apiRoute((app) =>
                     const codeChallenge =
                         await calculatePKCECodeChallenge(codeVerifier);
 
-                    return jsonResponse({
+                    return context.json({
                         link: `${
                             authServer.authorization_endpoint
                         }?${new URLSearchParams({

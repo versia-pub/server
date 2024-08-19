@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { errorResponse, redirect } from "@/response";
+import { redirect } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
@@ -159,7 +159,7 @@ export default apiRoute((app) =>
             });
 
             if (!application) {
-                return errorResponse("Invalid application", 400);
+                return context.json({ error: "Invalid application" }, 400);
             }
 
             const searchParams = new URLSearchParams({

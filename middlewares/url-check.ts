@@ -1,4 +1,3 @@
-import { errorResponse } from "@/response";
 import { createMiddleware } from "@hono/hono/factory";
 import { config } from "~/packages/config-manager";
 
@@ -7,8 +6,10 @@ export const urlCheck = createMiddleware(async (context, next) => {
     const baseUrl = new URL(config.http.base_url);
 
     if (new URL(context.req.url).origin !== baseUrl.origin) {
-        return errorResponse(
-            `Request URL ${context.req.url} does not match base URL ${baseUrl.origin}`,
+        return context.json(
+            {
+                error: `Request URL ${context.req.url} does not match base URL ${baseUrl.origin}`,
+            },
             400,
         );
     }
