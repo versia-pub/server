@@ -1,5 +1,5 @@
-import { config } from "config-manager";
 import type { Config } from "drizzle-kit";
+import { config } from "~/packages/config-manager/index";
 
 export default {
     dialect: "postgresql",

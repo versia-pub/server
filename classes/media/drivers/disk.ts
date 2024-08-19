@@ -5,7 +5,7 @@
 
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import { MediaHasher } from "../media-hasher";
 import type { UploadedFileMetadata } from "../media-manager";
 import type { MediaDriver } from "./media-driver";

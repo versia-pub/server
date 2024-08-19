@@ -1,4 +1,3 @@
-import { config } from "config-manager";
 import type {
     Notification,
     findManyNotifications,
@@ -6,6 +5,7 @@ import type {
 import type { Status, findManyNotes } from "~/classes/functions/status";
 import type { UserType, findManyUsers } from "~/classes/functions/user";
 import type { db } from "~/drizzle/db";
+import { config } from "~/packages/config-manager/index";
 
 export async function fetchTimeline<T extends UserType | Status | Notification>(
     model:

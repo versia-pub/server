@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 
 const baseUrl = config.http.base_url;

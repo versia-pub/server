@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "bun:test";
-import type { Config } from "config-manager";
 import sharp from "sharp";
+import type { Config } from "~/packages/config-manager/config.type";
 import { ImageConversionPreprocessor } from "./image-conversion";
 
 describe("ImageConversionPreprocessor", () => {

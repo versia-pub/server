@@ -5,7 +5,7 @@
 
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import type { S3Client } from "@bradenmacdonald/s3-lite-client";
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import type { MediaHasher } from "../media-hasher";
 import { S3MediaDriver } from "./s3";
 

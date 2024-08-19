@@ -1,8 +1,8 @@
 import type { Like } from "@lysand-org/federation/types";
-import { config } from "config-manager";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Likes, Notifications } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import type { Note } from "~/packages/database-interface/note";
 import type { User } from "~/packages/database-interface/user";
 

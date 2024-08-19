@@ -3,7 +3,7 @@
  * @module MediaManager
  */
 
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import { DiskMediaDriver } from "./drivers/disk";
 import type { MediaDriver } from "./drivers/media-driver";
 import { S3MediaDriver } from "./drivers/s3";

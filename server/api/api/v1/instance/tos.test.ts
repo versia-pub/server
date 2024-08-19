@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { sendTestRequest } from "~/tests/utils";
 import { meta } from "./tos";
 

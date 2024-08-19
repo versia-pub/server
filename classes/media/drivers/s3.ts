@@ -4,7 +4,7 @@
  */
 
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import { MediaHasher } from "../media-hasher";
 import type { UploadedFileMetadata } from "../media-manager";
 import type { MediaDriver } from "./media-driver";

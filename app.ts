@@ -2,7 +2,7 @@ import { errorResponse, jsonResponse, response } from "@/response";
 import { sentry } from "@/sentry";
 import { Hono } from "@hono/hono";
 import { getLogger } from "@logtape/logtape";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
 import { boundaryCheck } from "./middlewares/boundary-check";

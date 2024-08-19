@@ -1,4 +1,4 @@
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 
 export const oauthRedirectUri = (issuer: string) =>
     new URL(`/oauth/sso/${issuer}/callback`, config.http.base_url).toString();

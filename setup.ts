@@ -1,8 +1,8 @@
 import { checkConfig } from "@/init";
 import { configureLoggers } from "@/loggers";
 import { getLogger } from "@logtape/logtape";
-import { config } from "config-manager";
 import { setupDatabase } from "~/drizzle/db";
+import { config } from "~/packages/config-manager/index";
 import { Note } from "~/packages/database-interface/note";
 import { searchManager } from "./classes/search/search-manager";
 

@@ -14,7 +14,7 @@ import {
 } from "bun:test";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import type { MediaHasher } from "../media-hasher";
 import { DiskMediaDriver } from "./disk";
 

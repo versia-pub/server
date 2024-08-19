@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { config } from "config-manager";
 import { ADMIN_ROLES } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { Role } from "~/packages/database-interface/role";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";

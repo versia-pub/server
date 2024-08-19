@@ -1,5 +1,5 @@
 import type { Undo } from "@lysand-org/federation/types";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import type { User } from "~/packages/database-interface/user";
 
 export const undoFederationRequest = (undoer: User, uri: string): Undo => {
