@@ -4,6 +4,7 @@ import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
 import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
+import { prometheus } from "@hono/prometheus";
 import { getLogger } from "@logtape/logtape";
 import { config } from "~/packages/config-manager/index";
 import { agentBans } from "./middlewares/agent-bans";
@@ -20,6 +21,18 @@ export const appFactory = async () => {
 
     const app = new Hono({
         strict: false,
+    });
+
+    const { printMetrics, registerMetrics } = prometheus({
+        collectDefaultMetrics: true,
+        metricOptions: {
+            requestsTotal: {
+                customLabels: {
+                    content_type: (c) =>
+                        c.res.headers.get("content-type") ?? "unknown",
+                },
+            },
+        },
     });
 
     app.use(ipBans);
@@ -68,6 +81,8 @@ export const appFactory = async () => {
             credentials: true,
         }),
     );
+    app.use("*", registerMetrics);
+    app.get("/metrics", printMetrics);
     // Disabled as federation now checks for this
     // app.use(urlCheck);
 
