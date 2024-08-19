@@ -2,10 +2,10 @@ import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { config } from "config-manager";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";
 

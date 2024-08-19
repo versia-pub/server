@@ -1,6 +1,5 @@
 import { proxyUrl } from "@/response";
 import type { RolePermission } from "@lysand-org/client/types";
-import { config } from "config-manager";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -12,6 +11,7 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { RoleToUsers, Roles } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { BaseInterface } from "./base";
 
 export type RoleType = InferSelectModel<typeof Roles>;

@@ -6,7 +6,7 @@ import type {
     Account as ApiAccount,
     Relationship as ApiRelationship,
 } from "@lysand-org/client/types";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
 
 const baseUrl = config.http.base_url;

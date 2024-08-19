@@ -3,7 +3,6 @@ import type {
     FollowAccept,
     FollowReject,
 } from "@lysand-org/federation/types";
-import { config } from "config-manager";
 import { type InferSelectModel, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import {
@@ -13,6 +12,7 @@ import {
     Tokens,
     type Users,
 } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";

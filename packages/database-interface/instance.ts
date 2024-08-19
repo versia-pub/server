@@ -6,7 +6,6 @@ import {
 } from "@lysand-org/federation";
 import type { ServerMetadata } from "@lysand-org/federation/types";
 import chalk from "chalk";
-import { config } from "config-manager";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -18,6 +17,7 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Instances } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { BaseInterface } from "./base";
 import { User } from "./user";
 

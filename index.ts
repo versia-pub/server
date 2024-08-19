@@ -1,8 +1,8 @@
 import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
 import { createServer } from "@/server";
-import { config } from "config-manager";
 import { appFactory } from "~/app";
+import { config } from "~/packages/config-manager/index";
 import { setupDatabase } from "./drizzle/db";
 
 if (import.meta.main) {

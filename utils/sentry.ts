@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/bun";
-import { config } from "config-manager";
 import pkg from "~/package.json";
+import { config } from "~/packages/config-manager/index";
 
 const sentryInstance =
     config.logging.sentry.enabled &&

@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@lysand-org/client/types";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 

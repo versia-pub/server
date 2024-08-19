@@ -6,7 +6,6 @@ import { validator } from "@hono/hono/validator";
 import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
-import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import {
     anyOf,
@@ -27,6 +26,7 @@ import type { Application } from "~/classes/functions/application";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import type { User } from "~/packages/database-interface/user";
 import type { ApiRouteMetadata, HttpVerb } from "~/types/api";
 

@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
-import { config } from "config-manager";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { getSolvedChallenge, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";
 

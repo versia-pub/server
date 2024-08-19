@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@lysand-org/client/types";
-import { config } from "config-manager";
+import { config } from "~/packages/config-manager/index";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./public";
 

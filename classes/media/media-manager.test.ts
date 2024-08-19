@@ -4,7 +4,7 @@
  */
 
 import { beforeEach, describe, expect, it, mock } from "bun:test";
-import type { Config } from "config-manager";
+import type { Config } from "~/packages/config-manager/config.type";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { DiskMediaDriver } from "./drivers/disk";
 import { S3MediaDriver } from "./drivers/s3";

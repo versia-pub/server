@@ -3,8 +3,8 @@
  * @module MediaManager/Preprocessors
  */
 
-import type { Config } from "config-manager";
 import sharp from "sharp";
+import type { Config } from "~/packages/config-manager/config.type";
 import type { MediaPreprocessor } from "./media-preprocessor";
 
 /**

@@ -2,10 +2,10 @@ import { applyConfig, auth, handleZodError, idValidator } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
 import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
-import { config } from "config-manager";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
+import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
 
 export const meta = applyConfig({
