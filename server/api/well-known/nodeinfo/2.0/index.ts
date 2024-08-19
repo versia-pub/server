@@ -19,8 +19,8 @@ export default (app: Hono) =>
     app.on(meta.allowedMethods, meta.route, () => {
         return jsonResponse({
             version: "2.0",
-            software: { name: "lysand", version: manifest.version },
-            protocols: ["lysand"],
+            software: { name: "versia-server", version: manifest.version },
+            protocols: ["versia"],
             services: { outbound: [], inbound: [] },
             usage: {
                 users: { total: 0, activeMonth: 0, activeHalfyear: 0 },

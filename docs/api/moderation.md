@@ -3,11 +3,11 @@
 > [!WARNING]
 > **NOT IMPLEMENTED**
 
-The Lysand project uses the Mastodon API to interact with clients. However, the moderation API is custom-made for Lysand Server, as it allows for more fine-grained control over the server's behavior.
+The Versia Server project uses the Mastodon API to interact with clients. However, the moderation API is custom-made for Versia Server Server, as it allows for more fine-grained control over the server's behavior.
 
 ## Flags, ModTags and ModNotes
 
-Flags are used by Lysand Server to automatically attribute tags to a status or account based on rules. ModTags and ModNotes are used by moderators to manually tag and take notes on statuses and accounts.
+Flags are used by Versia Server Server to automatically attribute tags to a status or account based on rules. ModTags and ModNotes are used by moderators to manually tag and take notes on statuses and accounts.
 
 The difference between flags and modtags is that flags are automatically attributed by the server, while modtags are manually attributed by moderators.
 
@@ -22,7 +22,7 @@ The difference between flags and modtags is that flags are automatically attribu
 
 ### ModTag Types
 
-ModTag do not have set types and can be anything. Lysand Server autosuggest previously used tags when a moderator is adding a new tag to avoid duplicates.
+ModTag do not have set types and can be anything. Versia Server Server autosuggest previously used tags when a moderator is adding a new tag to avoid duplicates.
 
 ### Data Format
 

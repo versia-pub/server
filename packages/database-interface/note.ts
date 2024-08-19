@@ -11,7 +11,7 @@ import type {
 import { EntityValidator } from "@lysand-org/federation";
 import type {
     ContentFormat,
-    Note as LysandNote,
+    Note as VersiaNote,
 } from "@lysand-org/federation/types";
 import {
     type InferInsertModel,
@@ -193,7 +193,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         const users = await this.getUsersToFederateTo();
 
         for (const user of users) {
-            await this.author.federateToUser(this.toLysand(), user);
+            await this.author.federateToUser(this.toVersia(), user);
         }
     }
 
@@ -594,7 +594,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @returns The saved note, or null if the note could not be fetched
      */
     static async saveFromRemote(uri: string): Promise<Note | null> {
-        let note: LysandNote | null = null;
+        let note: VersiaNote | null = null;
 
         if (uri) {
             if (!URL.canParse(uri)) {
@@ -622,16 +622,16 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             throw new Error("Invalid object author");
         }
 
-        return await Note.fromLysand(note, author);
+        return await Note.fromVersia(note, author);
     }
 
     /**
-     * Turns a Lysand Note into a database note (saved)
-     * @param note Lysand Note
+     * Turns a Versia Note into a database note (saved)
+     * @param note Versia Note
      * @param author Author of the note
      * @returns The saved note
      */
-    static async fromLysand(note: LysandNote, author: User): Promise<Note> {
+    static async fromVersia(note: VersiaNote, author: User): Promise<Note> {
         const emojis: Emoji[] = [];
         const logger = getLogger("federation");
 
@@ -653,7 +653,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         const attachments: Attachment[] = [];
 
         for (const attachment of note.attachments ?? []) {
-            const resolvedAttachment = await Attachment.fromLysand(
+            const resolvedAttachment = await Attachment.fromVersia(
                 attachment,
             ).catch((e) => {
                 logger.error`${e}`;
@@ -886,10 +886,10 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     }
 
     /**
-     * Convert a note to the Lysand format
-     * @returns The note in the Lysand format
+     * Convert a note to the Versia format
+     * @returns The note in the Versia format
      */
-    toLysand(): LysandNote {
+    toVersia(): VersiaNote {
         const status = this.data;
         return {
             type: "Note",
@@ -906,7 +906,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 },
             },
             attachments: (status.attachments ?? []).map((attachment) =>
-                new Attachment(attachment).toLysand(),
+                new Attachment(attachment).toVersia(),
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) =>
@@ -925,7 +925,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             extensions: {
                 "org.lysand:custom_emojis": {
                     emojis: status.emojis.map((emoji) =>
-                        new Emoji(emoji).toLysand(),
+                        new Emoji(emoji).toVersia(),
                     ),
                 },
                 // TODO: Add polls and reactions

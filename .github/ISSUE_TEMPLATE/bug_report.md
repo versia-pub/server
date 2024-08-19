@@ -32,7 +32,7 @@ Please upload logs onto a service like [Pastebin](https://pastebin.com/) or [Has
  - OS: [e.g.  Fedora 39]
 - Bun version
 - Postgres version
-- Lysand commit ID or version
+- versia Server commit ID or version
 
 ## Additional context
 

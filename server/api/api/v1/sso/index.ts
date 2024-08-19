@@ -135,7 +135,7 @@ export default (app: Hono) =>
                             .insert(Applications)
                             .values({
                                 clientId: user.id + randomString(32, "base64"),
-                                name: "Lysand",
+                                name: "Versia",
                                 redirectUri: `${oauthRedirectUri(issuerId)}`,
                                 scopes: "openid profile email",
                                 secret: "",

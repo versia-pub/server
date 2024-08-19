@@ -1,9 +1,9 @@
 [database]
 host = "localhost"
 port = 5432
-username = "lysand"
-password = "lysand"
-database = "lysand"
+username = "versia"
+password = "versia"
+database = "versia"
 
 [redis.queue]
 host = "localhost"
@@ -38,7 +38,7 @@ rules = [
 ]
 
 [oidc]
-# Run Lysand with this value missing to generate a new key
+# Run Versia with this value missing to generate a new key
 jwt_key = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl;MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="
 
 [http]
@@ -79,7 +79,7 @@ convert_to = "webp"
 # access_key = ""
 # secret_access_key = ""
 # region = "us-west-2"
-# bucket_name = "lysand"
+# bucket_name = "versia"
 # public_url = "https://cdn.example.com"
 
 [validation]
@@ -185,7 +185,7 @@ allowed_mime_types = [
 
 [validation.challenges]
 # "Challenges" (aka captchas) are a way to verify that a user is human
-# Lysand's challenges use no external services, and are Proof of Work based
+# Versia Server's challenges use no external services, and are Proof of Work based
 # This means that they do not require any user interaction, instead
 # they require the user's computer to do a small amount of work
 enabled = true
@@ -240,8 +240,8 @@ remove_media = [] # NOT IMPLEMENTED
 authorized_fetch = false
 
 [instance]
-name = "Lysand"
-description = "A test instance of Lysand"
+name = "Versia"
+description = "A test instance of Versia Server"
 # URL to your instance logo (jpg files should be renamed to jpeg)
 # logo = ""
 # URL to your instance banner (jpg files should be renamed to jpeg)

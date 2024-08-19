@@ -24,7 +24,7 @@ export default (app: Hono) =>
         async () => {
             const { content, lastModified } = await renderMarkdownInPath(
                 config.instance.extended_description_path ?? "",
-                "This is a [Lysand](https://lysand.org) server with the default extended description.",
+                "This is a [Versia](https://versia.pub) server with the default extended description.",
             );
 
             return jsonResponse({

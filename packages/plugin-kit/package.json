@@ -1,9 +1,9 @@
 {
-    "name": "@lysand-org/kit",
+    "name": "@versia-org/kit",
     "module": "index.ts",
     "type": "module",
     "version": "0.0.0",
-    "description": "Framework for building Lysand Server plugins",
+    "description": "Framework for building Versia Server plugins",
     "author": {
         "email": "contact@cpluspatch.com",
         "name": "CPlusPatch",

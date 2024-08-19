@@ -1,5 +1,5 @@
 {
-    "name": "lysand",
+    "name": "versia-server",
     "module": "index.ts",
     "type": "module",
     "version": "0.7.0",
@@ -64,7 +64,7 @@
         "additionalHelpFlags": ["-h"],
         "additionalVersionFlags": ["-v"],
         "plugins": [],
-        "description": "CLI to interface with the Lysand project",
+        "description": "CLI to interface with the Versia project",
         "topicSeparator": " ",
         "topics": {
             "user": {

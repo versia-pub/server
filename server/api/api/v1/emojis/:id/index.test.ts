@@ -23,7 +23,7 @@ beforeAll(async () => {
             method: "POST",
             body: JSON.stringify({
                 shortcode: "test",
-                element: "https://cdn.lysand.org/logo.webp",
+                element: "https://cdn.versia.social/logo.webp",
                 global: true,
             }),
         }),

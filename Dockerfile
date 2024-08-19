@@ -37,10 +37,10 @@ COPY entrypoint.sh /app
 
 LABEL org.opencontainers.image.authors="Gaspard Wierzbinski (https://cpluspatch.dev)"
 LABEL org.opencontainers.image.source="https://github.com/lysand-org/lysand"
-LABEL org.opencontainers.image.vendor="Lysand Org"
+LABEL org.opencontainers.image.vendor="Versia Pub"
 LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
-LABEL org.opencontainers.image.title="Lysand Server"
-LABEL org.opencontainers.image.description="Lysand Server docker image"
+LABEL org.opencontainers.image.title="Versia Server"
+LABEL org.opencontainers.image.description="Versia Server Docker image"
 
 # Set current Git commit hash as an environment variable
 ARG GIT_COMMIT

@@ -1,30 +1,30 @@
 <p align="center">
-  <a href="https://lysand.org"><img src="https://cdn.lysand.org/logo-long-dark.webp" alt="Lysand Logo" height="110"></a>
+  <a href="https://lysand.org"><img src="https://cdn.lysand.org/logo-long-dark.webp" alt="Versia Logo" height="110"></a>
 </p>
 
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
 
 ## What is this?
 
-**Lysand Server** is a federated social network server based on the [Lysand](https://lysand.org) protocol. It is currently in beta phase, with basic federation and almost complete Mastodon API support.
+**Versia Server** (formerly Lysand Server) is a federated social network server based on the [Versia](https://lysand.org) protocol. It is currently in beta phase, with basic federation and almost complete Mastodon API support.
 
 ### Goals
 
-- **Privacy**: Lysand is designed to be as private as possible. Unnecessary data is not stored, and data that is stored is done so securely.
-- **Configurability**: High configurability is a key feature of Lysand. Almost every aspect of the server can be configured to suit your needs. If you feel like something is missing, please open an issue.
-- **Security**: Lysand is designed with security in mind. It is built with modern security practices and technologies, and is constantly updated to ensure the highest level of security.
-- **Performance**: Efficiency and speed are a key focus of Lysand. The design is non-monolithic, and is built to be as fast as possible.
-- **Mastodon API compatibility**: Lysand is designed to be compatible with the Mastodon API, with [`glitch-soc`](https://github.com/glitch-soc/mastodon) extensions.
+- **Privacy**: Versia Server is designed to be as private as possible. Unnecessary data is not stored, and data that is stored is done so securely.
+- **Configurability**: High configurability is a key feature of Versia Server. Almost every aspect of the server can be configured to suit your needs. If you feel like something is missing, please open an issue.
+- **Security**: Versia Server is designed with security in mind. It is built with modern security practices and technologies, and is constantly updated to ensure the highest level of security.
+- **Performance**: Efficiency and speed are a key focus of Versia Server. The design is non-monolithic, and is built to be as fast as possible.
+- **Mastodon API compatibility**: Versia Server is designed to be compatible with the Mastodon API, with [`glitch-soc`](https://github.com/glitch-soc/mastodon) extensions.
 
 ### Anti-Goals
 
 - **Monolithic design**: Modularity and scaling is important to this project. This means that it is not a single, monolithic application, but rather a collection of smaller, more focused applications. (API layer, queue, database, frontend, etc.)
-- **Complexity**: Both in code and in function, Lysand should be as simple as possible. This does not mean adding no features or functionality, but rather that the features and functionality that are added should be well-written and easy to understand.
-- **Bloat**: Lysand should not be bloated with unnecessary features, packages, dependencies or code. It should be as lightweight as possible, while still being feature-rich.
+- **Complexity**: Both in code and in function, Versia Server should be as simple as possible. This does not mean adding no features or functionality, but rather that the features and functionality that are added should be well-written and easy to understand.
+- **Bloat**: Versia Server should not be bloated with unnecessary features, packages, dependencies or code. It should be as lightweight as possible, while still being feature-rich.
 
 ## Features
 
-- [x] Fully compliant Lysand 3.0 federation (partial)
+- [x] Versia 3.0 federation (partial)
 - [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files
@@ -56,11 +56,11 @@
 
 ## Screenshots
 
-You can visit [social.lysand.org](https://social.lysand.org) to see a live instance of Lysand with Lysand-FE.
+You can visit [social.lysand.org](https://social.lysand.org) to see a live instance of Versia Server with Versia-FE.
 
 ## How do I run it?
 
-Please see the [installation guide](docs/installation.md) for more information on how to install Lysand.
+Please see the [installation guide](docs/installation.md) for more information on how to install Versia.
 
 ## Contributing
 
@@ -69,13 +69,13 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 ## Federation
 
 The following extensions are currently supported or being worked on:
-- `org.lysand:custom_emojis`: Custom emojis
-- `org.lysand:polls`: Polls
-- `org.lysand:microblogging`: Microblogging
+- `pub.versia:custom_emojis`: Custom emojis
+- `pub.versia:polls`: Polls
+- `pub.versia:share`: Share
 
 ## API
 
-Lysand implements the Mastodon API (as well as `glitch-soc` extensions). The API is currently almost fully complete, with some fringe functionality still being worked on.
+Versia Server implements the Mastodon API (as well as `glitch-soc` extensions). The API is currently almost fully complete, with some fringe functionality still being worked on.
 
 Working endpoints are:
 
@@ -206,9 +206,9 @@ Working endpoints are:
 - [ ] Reports
 - [ ] Admin API
 
-## Lysand API
+## Versia Server API
 
-For Lysand's own custom API, please see the [API documentation](docs/api/index.md).
+For Versia Server's own custom API, please see the [API documentation](docs/api/index.md).
 
 ## License
 

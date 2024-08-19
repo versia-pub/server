@@ -1,6 +1,6 @@
 # Federation API
 
-The Federation API contains a variety of endpoints for interacting with the Lysand remote network.
+The Federation API contains a variety of endpoints for interacting with the Versia Server remote network.
 
 ## Refetch User
 

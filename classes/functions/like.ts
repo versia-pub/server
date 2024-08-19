@@ -11,7 +11,7 @@ export type LikeType = InferSelectModel<typeof Likes>;
 /**
  * Represents a Like entity in the database.
  */
-export const likeToLysand = (like: LikeType): Like => {
+export const likeToVersia = (like: LikeType): Like => {
     return {
         id: like.id,
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten

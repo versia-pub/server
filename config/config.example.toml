@@ -1,4 +1,4 @@
-# This schema always follows the latest dev version of Lysand, which may not be what you want
+# This schema always follows the latest dev version of Versia Server, which may not be what you want
 # Change the URL to the commit/tag you are using
 #:schema https://raw.githubusercontent.com/lysand-org/lysand/main/config/config.schema.json
 
@@ -6,9 +6,9 @@
 # Main PostgreSQL database connection
 host = "localhost"
 port = 5432
-username = "lysand"
+username = "versia"
 password = "mycoolpassword"
-database = "lysand"
+database = "versia"
 
 [redis.queue]
 # Redis instance for storing the federation queue
@@ -46,10 +46,10 @@ rules = [
 ]
 
 [oidc]
-# Run Lysand with this value missing to generate a new key
+# Run Versia Server with this value missing to generate a new key
 jwt_key = ""
 
-# If enabled, Lysand will require users to log in with an OAuth provider
+# If enabled, Versia Server will require users to log in with an OAuth provider
 forced = false
 
 # Allow registration with OAuth providers
@@ -67,16 +67,16 @@ allow_registration = true
 # name = "CPlusPatch ID"
 # id = "cpluspatch-id"
 # This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)
-# url = "https://id.cpluspatch.com/application/o/lysand-testing/"
+# url = "https://id.cpluspatch.com/application/o/versia-testing/"
 # client_id = "XXXX"
 # client_secret = "XXXXX"
 # icon = "https://cpluspatch.com/images/icons/logo.svg"
 
 [http]
-# The full URL Lysand will be reachable by (paths are not supported)
-base_url = "https://lysand.localhost:9900"
+# The full URL Versia Server will be reachable by (paths are not supported)
+base_url = "https://versia.localhost:9900"
 # Address to bind to (0.0.0.0 is suggested for proxies)
-bind = "lysand.localhost"
+bind = "versia.localhost"
 bind_port = 9900
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
@@ -94,7 +94,7 @@ enabled = false
 address = "http://localhost:8118"
 
 [http.tls]
-# If these values are set, Lysand will use these files for TLS
+# If these values are set, Versia Server will use these files for TLS
 enabled = false
 key = ""
 cert = ""
@@ -104,7 +104,7 @@ ca = ""
 [http.bait]
 # Enable the bait feature (sends fake data to those who are flagged)
 enabled = false
-# Path to file of bait data (if not provided, Lysand will send the entire Bee Movie script)
+# Path to file of bait data (if not provided, Versia Server will send the entire Bee Movie script)
 send_file = ""
 # IPs to send bait data to (wildcards, networks and ranges are supported)
 bait_ips = ["127.0.0.1", "::1"]
@@ -112,15 +112,15 @@ bait_ips = ["127.0.0.1", "::1"]
 bait_user_agents = ["curl", "wget"]
 
 [frontend]
-# Enable custom frontends (warning: not enabling this or Glitch will make Lysand only accessible via the Mastodon API)
+# Enable custom frontends (warning: not enabling this or Glitch will make Versia Server only accessible via the Mastodon API)
 # Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
 enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
 
 [frontend.routes]
-# Special routes for your frontend, below are the defaults for Lysand-FE
-# Can be set to a route already used by Lysand, as long as it is on a different HTTP method
+# Special routes for your frontend, below are the defaults for Versia-FE
+# Can be set to a route already used by Versia Server, as long as it is on a different HTTP method
 # e.g. /oauth/authorize is a POST-only route, so you can serve a GET route at /oauth/authorize
 # home = "/"
 # login = "/oauth/authorize"
@@ -179,7 +179,7 @@ convert_vector = false
 # access_key = "XXXXX"
 # secret_access_key = "XXX"
 # region = ""
-# bucket_name = "lysand"
+# bucket_name = "versia"
 # public_url = "https://cdn.example.com"
 
 [validation]
@@ -263,7 +263,7 @@ enforce_mime_types = false
 
 [validation.challenges]
 # "Challenges" (aka captchas) are a way to verify that a user is human
-# Lysand's challenges use no external services, and are Proof of Work based
+# Versia Server's challenges use no external services, and are Proof of Work based
 # This means that they do not require any user interaction, instead
 # they require the user's computer to do a small amount of work
 enabled = false
@@ -312,7 +312,7 @@ banners = []
 avatars = []
 
 # For bridge software, such as lysand-org/activitypub
-# Bridges must be hosted separately from the main Lysand process
+# Bridges must be hosted separately from the main Versia Server process
 [federation.bridge]
 enabled = false
 # Only lysand-ap exists for now
@@ -323,11 +323,11 @@ allowed_ips = ["192.168.1.0/24"]
 # Token for the bridge software
 # Bridge must have the same token!
 token = "mycooltoken"
-url = "https://ap.lysand.org"
+url = "https://ap.versia.social"
 
 [instance]
-name = "Lysand"
-description = "A Lysand instance"
+name = "Versia"
+description = "A Versia Server instance"
 # Path to a file containing a longer description of your instance
 # This will be parsed as Markdown
 # extended_description_path = "config/extended_description.md"

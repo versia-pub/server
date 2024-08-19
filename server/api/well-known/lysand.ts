@@ -15,7 +15,7 @@ export const meta = applyConfig({
         duration: 60,
         max: 60,
     },
-    route: "/.well-known/lysand",
+    route: "/.well-known/versia",
 });
 
 export default (app: Hono) =>
@@ -28,6 +28,6 @@ export default (app: Hono) =>
             logo: urlToContentFormat(config.instance.logo) ?? undefined,
             banner: urlToContentFormat(config.instance.banner) ?? undefined,
             supported_extensions: ["org.lysand:custom_emojis"],
-            website: "https://lysand.org",
+            website: "https://versia.pub",
         } satisfies ServerMetadata);
     });

@@ -133,10 +133,10 @@ export class Instance extends BaseInterface<typeof Instances> {
 
     static async fetchMetadata(url: string): Promise<{
         metadata: ServerMetadata;
-        protocol: "lysand" | "activitypub";
+        protocol: "versia" | "activitypub";
     } | null> {
         const origin = new URL(url).origin;
-        const wellKnownUrl = new URL("/.well-known/lysand", origin);
+        const wellKnownUrl = new URL("/.well-known/versia", origin);
         const logger = getLogger("federation");
 
         const requester = await User.getServerActor().getFederationRequester();
@@ -152,7 +152,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                 }));
 
             if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
-                // If the server doesn't have a Lysand well-known endpoint, it's not a Lysand instance
+                // If the server doesn't have a Versia well-known endpoint, it's not a Versia instance
                 // Try to resolve ActivityPub metadata instead
                 const data = await Instance.fetchActivityPubMetadata(url);
 
@@ -171,7 +171,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                     data,
                 );
 
-                return { metadata, protocol: "lysand" };
+                return { metadata, protocol: "versia" };
             } catch (error) {
                 logger.error`Instance ${chalk.bold(
                     origin,
@@ -179,7 +179,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                 return null;
             }
         } catch (error) {
-            logger.error`Failed to fetch Lysand metadata for instance ${chalk.bold(
+            logger.error`Failed to fetch Versia metadata for instance ${chalk.bold(
                 origin,
             )} - Error! ${error}`;
             return null;

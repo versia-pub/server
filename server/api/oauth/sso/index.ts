@@ -60,7 +60,7 @@ export default (app: Hono) =>
         meta.route,
         zValidator("query", schemas.query, handleZodError),
         async (context) => {
-            // This is the Lysand client's client_id, not the external OAuth provider's client_id
+            // This is the Versia client's client_id, not the external OAuth provider's client_id
             const { issuer: issuerId, client_id } = context.req.valid("query");
             const body = await context.req.query();
 

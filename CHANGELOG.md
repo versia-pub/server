@@ -1,8 +1,11 @@
-# `0.7.0`
+# `0.7.0` (unreleased)
+
+> [!WARNING]
+> This release marks the rename of the project from `Lysand` to `Versia`.
 
 ## Backwards Compatibility
 
-Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new features may not be available to older clients. Notably, `lysand-fe` has had major improvements and will not work with `0.6.0`.
+Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new features may not be available to older clients. Notably, `versia-fe` has had major improvements and will not work with `0.6.0`.
 
 ## Features
 
@@ -16,7 +19,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Added [**Roles API**](docs/api/roles.md).
 - Added [**Permissions API**](docs/api/roles.md) and enabled it for every route.
 - Added [**TOS and Privacy Policy**](docs/api/mastodon.md) endpoints.
-- Added [**Challenge API**](docs/api/challenges.md). (basically CAPTCHAS). This can be enabled/disabled by administrators. No `lysand-fe` support yet.
+- Added [**Challenge API**](docs/api/challenges.md). (basically CAPTCHAS). This can be enabled/disabled by administrators. No `versia-fe` support yet.
 - Added ability to refetch user data from remote instances.
 - Added ability to change the `username` of a user. ([Mastodon API extension](docs/api/mastodon.md)).
 - Added an endpoint to get a user by its username.
@@ -24,7 +27,7 @@ Lysand Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Add option to never convert vector images to a raster format.
 - Refactor logging system to be more robust and easier to use. Logfiles are now automatically rotated.
 - Add support for HTTP proxies.
-- Add support for serving Lysand over a Tor hidden service.
+- Add support for serving Versia over a Tor hidden service.
 - Add global server error handler, to properly return 500 error messages to clients.
 - Sign all federation HTTP requests.
 - Add JSON schema for configuration file.

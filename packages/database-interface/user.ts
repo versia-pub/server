@@ -14,7 +14,7 @@ import {
     type HttpVerb,
     SignatureConstructor,
 } from "@lysand-org/federation";
-import type { Entity, User as LysandUser } from "@lysand-org/federation/types";
+import type { Entity, User as VersiaUser } from "@lysand-org/federation/types";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -34,7 +34,7 @@ import { htmlToText } from "html-to-text";
 import {
     type UserWithRelations,
     findManyUsers,
-    followRequestToLysand,
+    followRequestToVersia,
 } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
@@ -232,7 +232,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (otherUser.isRemote()) {
             const { ok } = await this.federateToUser(
-                followRequestToLysand(this, otherUser),
+                followRequestToVersia(this, otherUser),
                 otherUser,
             );
 
@@ -412,8 +412,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const instance = await Instance.resolve(uri);
 
-        if (instance.data.protocol === "lysand") {
-            return await User.saveFromLysand(uri, instance);
+        if (instance.data.protocol === "versia") {
+            return await User.saveFromVersia(uri, instance);
         }
 
         if (instance.data.protocol === "activitypub") {
@@ -428,18 +428,18 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 config.federation.bridge.url,
             );
 
-            return await User.saveFromLysand(bridgeUri.toString(), instance);
+            return await User.saveFromVersia(bridgeUri.toString(), instance);
         }
 
         throw new Error(`Unsupported protocol: ${instance.data.protocol}`);
     }
 
-    private static async saveFromLysand(
+    private static async saveFromVersia(
         uri: string,
         instance: Instance,
     ): Promise<User> {
         const requester = await User.getServerActor().getFederationRequester();
-        const { data: json } = await requester.get<Partial<LysandUser>>(uri, {
+        const { data: json } = await requester.get<Partial<VersiaUser>>(uri, {
             // @ts-expect-error Bun extension
             proxy: config.http.proxy.address,
         });
@@ -447,12 +447,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const validator = new EntityValidator();
         const data = await validator.User(json);
 
-        const user = await User.fromLysand(data, instance);
+        const user = await User.fromVersia(data, instance);
 
         const userEmojis =
             data.extensions?.["org.lysand:custom_emojis"]?.emojis ?? [];
         const emojis = await Promise.all(
-            userEmojis.map((emoji) => Emoji.fromLysand(emoji, instance.id)),
+            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance.id)),
         );
 
         if (emojis.length > 0) {
@@ -475,8 +475,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return finalUser;
     }
 
-    static async fromLysand(
-        user: LysandUser,
+    static async fromVersia(
+        user: VersiaUser,
         instance: Instance,
     ): Promise<User> {
         const data = {
@@ -707,14 +707,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 newUser.endpoints ||
                 newUser.isDiscoverable)
         ) {
-            await this.federateToFollowers(this.toLysand());
+            await this.federateToFollowers(this.toVersia());
         }
 
         return updated.data;
     }
 
     /**
-     * Signs a Lysand entity with that user's private key
+     * Signs a Versia entity with that user's private key
      *
      * @param entity Entity to sign
      * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
@@ -754,7 +754,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
-     * Helper to get the appropriate Lysand SDK requester with this user's private key
+     * Helper to get the appropriate Versia SDK requester with this user's private key
      *
      * @returns The requester
      */
@@ -894,9 +894,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toLysand(): LysandUser {
+    toVersia(): VersiaUser {
         if (this.isRemote()) {
-            throw new Error("Cannot convert remote user to Lysand format");
+            throw new Error("Cannot convert remote user to Versia format");
         }
 
         const user = this.data;
@@ -958,7 +958,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             extensions: {
                 "org.lysand:custom_emojis": {
                     emojis: user.emojis.map((emoji) =>
-                        new Emoji(emoji).toLysand(),
+                        new Emoji(emoji).toVersia(),
                     ),
                 },
             },
