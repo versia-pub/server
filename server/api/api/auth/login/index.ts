@@ -1,6 +1,5 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { errorResponse, redirect } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
@@ -81,7 +80,7 @@ const returnError = (query: object, error: string, description: string) => {
     );
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -193,4 +192,5 @@ export default (app: Hono) =>
                 },
             );
         },
-    );
+    ),
+);

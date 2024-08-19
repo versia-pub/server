@@ -1,5 +1,5 @@
 import { errorResponse } from "@/response";
-import type { Context } from "@hono/hono";
+import type { Context, Hono } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
 import type { StatusCode } from "@hono/hono/utils/http-status";
 import { validator } from "@hono/hono/validator";
@@ -43,6 +43,14 @@ export const applyConfig = (routeMeta: ApiRouteMetadata) => {
 
     return newMeta;
 };
+
+export const apiRoute = (
+    fn: (
+        app: Hono /* <{
+            Bindings: {};
+        }> */,
+    ) => void,
+) => fn;
 
 export const idValidator = createRegExp(
     anyOf(digit, charIn("ABCDEF")).times(8),

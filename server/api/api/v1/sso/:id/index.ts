@@ -1,6 +1,5 @@
-import { applyConfig, auth, handleZodError } from "@/api";
+import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse, proxyUrl, response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -34,7 +33,7 @@ export const schemas = {
  * A GET request allows the user to list all their linked accounts
  * A POST request allows the user to link a new account
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -104,4 +103,5 @@ export default (app: Hono) =>
                 }
             }
         },
-    );
+    ),
+);

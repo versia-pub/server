@@ -1,5 +1,4 @@
-import { applyConfig } from "@/api";
-import type { Hono } from "@hono/hono";
+import { apiRoute, applyConfig } from "@/api";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -17,7 +16,7 @@ export const meta = applyConfig({
 /**
  * Mastodon-FE logout route
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, () => {
         return new Response(null, {
             headers: {
@@ -28,4 +27,5 @@ export default (app: Hono) =>
             },
             status: 303,
         });
-    });
+    }),
+);

@@ -1,6 +1,5 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { Role } from "~/packages/database-interface/role";
 
 export const meta = applyConfig({
@@ -15,7 +14,7 @@ export const meta = applyConfig({
     route: "/api/v1/roles",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -34,4 +33,5 @@ export default (app: Hono) =>
 
             return jsonResponse(userRoles.map((r) => r.toApi()));
         },
-    );
+    ),
+);

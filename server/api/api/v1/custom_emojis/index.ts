@@ -1,6 +1,5 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { Emoji } from "~/packages/database-interface/emoji";
@@ -20,7 +19,7 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -40,4 +39,5 @@ export default (app: Hono) =>
 
             return jsonResponse(emojis.map((emoji) => emoji.toApi()));
         },
-    );
+    ),
+);

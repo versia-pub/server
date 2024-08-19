@@ -1,6 +1,5 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -15,7 +14,7 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -30,4 +29,5 @@ export default (app: Hono) =>
 
             return jsonResponse(user.toApi(true));
         },
-    );
+    ),
+);

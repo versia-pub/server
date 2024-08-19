@@ -1,6 +1,5 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -44,7 +43,7 @@ const returnError = (token: string, error: string, description: string) => {
     });
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -69,4 +68,5 @@ export default (app: Hono) =>
                 Location: `${config.frontend.routes.password_reset}?success=true`,
             });
         },
-    );
+    ),
+);

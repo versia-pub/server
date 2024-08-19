@@ -1,6 +1,5 @@
-import { applyConfig, auth, handleZodError } from "@/api";
+import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
@@ -69,7 +68,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -129,4 +128,5 @@ export default (app: Hono) =>
 
             return jsonResponse(result.map((acct) => acct.toApi()));
         },
-    );
+    ),
+);

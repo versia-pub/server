@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,7 +14,7 @@ export const meta = applyConfig({
     route: "/.well-known/openid-configuration",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, () => {
         const baseUrl = new URL(config.http.base_url);
         return jsonResponse({
@@ -31,4 +30,5 @@ export default (app: Hono) =>
             token_endpoint_auth_methods_supported: ["client_secret_basic"],
             claims_supported: ["sub"],
         });
-    });
+    }),
+);

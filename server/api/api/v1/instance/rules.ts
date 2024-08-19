@@ -1,6 +1,5 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,12 +14,12 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
         auth(meta.auth, meta.permissions),
-        async (_context) => {
+        async () => {
             return jsonResponse(
                 config.signups.rules.map((rule, index) => ({
                     id: String(index),
@@ -29,4 +28,5 @@ export default (app: Hono) =>
                 })),
             );
         },
-    );
+    ),
+);

@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { exportJWK } from "jose";
 import { config } from "~/packages/config-manager";
 
@@ -16,7 +15,7 @@ export const meta = applyConfig({
     route: "/.well-known/jwks",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, async () => {
         const publicKey = await crypto.subtle.importKey(
             "spki",
@@ -41,4 +40,5 @@ export default (app: Hono) =>
                 },
             ],
         });
-    });
+    }),
+);

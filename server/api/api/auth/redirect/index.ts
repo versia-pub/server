@@ -1,5 +1,4 @@
-import { applyConfig, handleZodError } from "@/api";
-import type { Hono } from "@hono/hono";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -30,7 +29,7 @@ export const schemas = {
 /**
  * OAuth Code flow
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -70,4 +69,5 @@ export default (app: Hono) =>
             // Redirect back to application
             return Response.redirect(`${redirect_uri}?code=${code}`, 302);
         },
-    );
+    ),
+);

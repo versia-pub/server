@@ -1,7 +1,6 @@
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { jsonResponse, response } from "@/response";
 import { tempmailDomains } from "@/tempmail";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
@@ -40,7 +39,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -257,4 +256,5 @@ export default (app: Hono) =>
 
             return response(null, 200);
         },
-    );
+    ),
+);
