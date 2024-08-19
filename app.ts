@@ -41,6 +41,7 @@ export const appFactory = async () => {
     app.use(logger);
     app.use(boundaryCheck);
     app.use(
+        "/api/*",
         secureHeaders({
             contentSecurityPolicy: {
                 // We will not be returning HTML, so everything should be blocked
