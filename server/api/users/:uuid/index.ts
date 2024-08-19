@@ -21,12 +21,6 @@ export const schemas = {
     param: z.object({
         uuid: z.string().uuid().or(z.literal("actor")),
     }),
-    query: z.object({
-        debug: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-    }),
 };
 
 export default apiRoute((app) =>
@@ -34,10 +28,8 @@ export default apiRoute((app) =>
         meta.allowedMethods,
         meta.route,
         zValidator("param", schemas.param, handleZodError),
-        zValidator("query", schemas.query, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
-            const { debug } = context.req.valid("query");
 
             const user =
                 uuid === "actor"
@@ -53,12 +45,6 @@ export default apiRoute((app) =>
                     { error: "Cannot view users from remote instances" },
                     403,
                 );
-            }
-
-            if (debug) {
-                return response(JSON.stringify(user.toVersia(), null, 4), 200, {
-                    "Content-Type": "application/json",
-                });
             }
 
             // Try to detect a web browser and redirect to the user's profile page

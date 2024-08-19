@@ -1,6 +1,9 @@
 import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { Hono } from "@hono/hono";
+import { cors } from "@hono/hono/cors";
+import { prettyJSON } from "@hono/hono/pretty-json";
+import { secureHeaders } from "@hono/hono/secure-headers";
 import { getLogger } from "@logtape/logtape";
 import { config } from "~/packages/config-manager/index";
 import { agentBans } from "./middlewares/agent-bans";
@@ -24,6 +27,47 @@ export const appFactory = async () => {
     app.use(bait);
     app.use(logger);
     app.use(boundaryCheck);
+    app.use(
+        secureHeaders({
+            contentSecurityPolicy: {
+                // We will not be returning HTML, so everything should be blocked
+                defaultSrc: ["'none'"],
+                scriptSrc: ["'none'"],
+                styleSrc: ["'none'"],
+                imgSrc: ["'none'"],
+                connectSrc: ["'none'"],
+                fontSrc: ["'none'"],
+                objectSrc: ["'none'"],
+                mediaSrc: ["'none'"],
+                frameSrc: ["'none'"],
+                frameAncestors: ["'none'"],
+                baseUri: ["'none'"],
+                formAction: ["'none'"],
+                childSrc: ["'none'"],
+                workerSrc: ["'none'"],
+                manifestSrc: ["'none'"],
+            },
+            referrerPolicy: "no-referrer",
+            xFrameOptions: "DENY",
+            xContentTypeOptions: "nosniff",
+            crossOriginEmbedderPolicy: "require-corp",
+            crossOriginOpenerPolicy: "same-origin",
+            crossOriginResourcePolicy: "same-origin",
+        }),
+    );
+    app.use(
+        prettyJSON({
+            space: 4,
+        }),
+    );
+    app.use(
+        cors({
+            origin: "*",
+            allowHeaders: ["Content-Type", "Authorization"],
+            allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+            credentials: true,
+        }),
+    );
     // Disabled as federation now checks for this
     // app.use(urlCheck);
 
