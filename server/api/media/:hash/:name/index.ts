@@ -1,6 +1,5 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { errorResponse, response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
@@ -26,7 +25,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -61,4 +60,5 @@ export default (app: Hono) =>
                 "Content-Range": `bytes ${start}-${end}/${file.size}`,
             });
         },
-    );
+    ),
+);

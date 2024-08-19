@@ -1,6 +1,5 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -33,7 +32,7 @@ export const schemas = {
 
 const NOTES_PER_PAGE = 20;
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -112,4 +111,5 @@ export default (app: Hono) =>
                 items: notes.map((note) => note.toVersia()),
             });
         },
-    );
+    ),
+);

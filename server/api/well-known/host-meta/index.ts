@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { xmlResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,7 +14,7 @@ export const meta = applyConfig({
     route: "/.well-known/host-meta",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, () => {
         return xmlResponse(
             `<?xml version="1.0" encoding="UTF-8"?><XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"><Link rel="lrdd" template="${new URL(
@@ -23,4 +22,5 @@ export default (app: Hono) =>
                 config.http.base_url,
             ).toString()}?resource={uri}"/></XRD>`,
         );
-    });
+    }),
+);

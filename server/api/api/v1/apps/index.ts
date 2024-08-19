@@ -1,7 +1,6 @@
-import { applyConfig, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -44,7 +43,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -78,4 +77,5 @@ export default (app: Hono) =>
                 vapid_link: app.vapidKey,
             });
         },
-    );
+    ),
+);

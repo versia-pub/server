@@ -1,7 +1,6 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
 import { response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -35,7 +34,7 @@ export const schemas = {
 /**
  * Mastodon-FE login route
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -104,4 +103,5 @@ export default (app: Hono) =>
                 }; SameSite=Lax; Path=/; HttpOnly; Max-Age=${maxAge}`,
             });
         },
-    );
+    ),
+);

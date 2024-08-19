@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { jsonResponse, proxyUrl } from "@/response";
-import type { Hono } from "@hono/hono";
 import type { Instance as ApiInstance } from "@lysand-org/client/types";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
@@ -20,8 +19,8 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
-    app.on(meta.allowedMethods, meta.route, async (_context) => {
+export default apiRoute((app) =>
+    app.on(meta.allowedMethods, meta.route, async () => {
         // Get software version from package.json
         const version = manifest.version;
 
@@ -125,4 +124,5 @@ export default (app: Hono) =>
                 })),
             },
         } satisfies ApiInstance);
-    });
+    }),
+);

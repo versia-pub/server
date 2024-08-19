@@ -1,7 +1,6 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
 import { errorResponse, response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
 import { SignJWT } from "jose";
@@ -63,7 +62,7 @@ const returnError = (query: object, error: string, description: string) => {
  * After the user has authenticated to an external OpenID provider,
  * they are redirected here to complete the OAuth flow and get a code
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -288,4 +287,5 @@ export default (app: Hono) =>
                 }`,
             });
         },
-    );
+    ),
+);

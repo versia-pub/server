@@ -1,8 +1,7 @@
-import { applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { randomString } from "@/math";
 import { errorResponse, jsonResponse, proxyUrl } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import {
     calculatePKCECodeChallenge,
@@ -47,7 +46,7 @@ export const schemas = {
  * A GET request allows the user to list all their linked accounts
  * A POST request allows the user to link a new account, and returns a link
  */
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -180,4 +179,5 @@ export default (app: Hono) =>
                 }
             }
         },
-    );
+    ),
+);

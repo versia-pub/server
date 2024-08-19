@@ -1,6 +1,5 @@
-import { applyConfig, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -61,7 +60,7 @@ const returnError = (error: string, description: string) =>
         401,
     );
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -151,4 +150,5 @@ export default (app: Hono) =>
                 "Unsupported grant type",
             );
         },
-    );
+    ),
+);

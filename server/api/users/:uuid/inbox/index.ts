@@ -1,7 +1,6 @@
-import { applyConfig, debugRequest, handleZodError } from "@/api";
+import { apiRoute, applyConfig, debugRequest, handleZodError } from "@/api";
 import { errorResponse, jsonResponse, response } from "@/response";
 import { sentry } from "@/sentry";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import {
@@ -47,7 +46,7 @@ export const schemas = {
     body: z.any(),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -402,4 +401,5 @@ export default (app: Hono) =>
                 );
             }
         },
-    );
+    ),
+);

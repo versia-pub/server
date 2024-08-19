@@ -1,7 +1,6 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -19,7 +18,7 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -36,4 +35,5 @@ export default (app: Hono) =>
                 ...result.challenge,
             });
         },
-    );
+    ),
+);

@@ -1,4 +1,5 @@
 import {
+    apiRoute,
     applyConfig,
     auth,
     emojiValidator,
@@ -7,7 +8,6 @@ import {
 } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
@@ -60,7 +60,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -137,4 +137,5 @@ export default (app: Hono) =>
 
             return jsonResponse(emoji.toApi());
         },
-    );
+    ),
+);

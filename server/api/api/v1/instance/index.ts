@@ -1,6 +1,5 @@
-import { applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth } from "@/api";
 import { jsonResponse, proxyUrl } from "@/response";
-import type { Hono } from "@hono/hono";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
@@ -21,7 +20,7 @@ export const meta = applyConfig({
     },
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -103,4 +102,5 @@ export default (app: Hono) =>
                 };
             });
         },
-    );
+    ),
+);

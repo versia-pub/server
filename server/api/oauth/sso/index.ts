@@ -1,7 +1,6 @@
-import { applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { oauthRedirectUri } from "@/constants";
 import { redirect, response } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import {
     calculatePKCECodeChallenge,
@@ -54,7 +53,7 @@ const returnError = (query: object, error: string, description: string) => {
     });
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -135,4 +134,5 @@ export default (app: Hono) =>
                 302,
             );
         },
-    );
+    ),
+);

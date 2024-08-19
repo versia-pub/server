@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,7 +14,8 @@ export const meta = applyConfig({
     route: "/api/v1/frontend/config",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, () => {
         return jsonResponse(config.frontend.settings);
-    });
+    }),
+);

@@ -1,11 +1,11 @@
 import {
+    apiRoute,
     applyConfig,
     handleZodError,
     idValidator,
     webfingerMention,
 } from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@lysand-org/federation";
@@ -34,7 +34,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -126,4 +126,5 @@ export default (app: Hono) =>
                 ].filter(Boolean),
             });
         },
-    );
+    ),
+);

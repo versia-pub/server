@@ -1,7 +1,12 @@
-import { applyConfig, auth, handleZodError, idValidator } from "@/api";
+import {
+    apiRoute,
+    applyConfig,
+    auth,
+    handleZodError,
+    idValidator,
+} from "@/api";
 import { errorResponse, jsonResponse } from "@/response";
 import { fetchTimeline } from "@/timelines";
-import type { Hono } from "@hono/hono";
 import { zValidator } from "@hono/zod-validator";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
@@ -91,7 +96,7 @@ export const schemas = {
     }),
 };
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(
         meta.allowedMethods,
         meta.route,
@@ -194,4 +199,5 @@ export default (app: Hono) =>
                 },
             );
         },
-    );
+    ),
+);

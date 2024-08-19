@@ -1,6 +1,5 @@
-import { applyConfig } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { jsonResponse } from "@/response";
-import type { Hono } from "@hono/hono";
 import manifest from "~/package.json";
 
 export const meta = applyConfig({
@@ -15,7 +14,7 @@ export const meta = applyConfig({
     route: "/.well-known/nodeinfo/2.0",
 });
 
-export default (app: Hono) =>
+export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, () => {
         return jsonResponse({
             version: "2.0",
@@ -29,4 +28,5 @@ export default (app: Hono) =>
             openRegistrations: false,
             metadata: {},
         });
-    });
+    }),
+);
