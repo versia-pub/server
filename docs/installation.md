@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- The [Bun Runtime](https://bun.sh), version 1.1.24 or later (usage of the latest version is recommended)
-  - Versia Server will work on lower versions than 1.1.24, but only the latest version is supported
+- The [Bun Runtime](https://bun.sh), version 1.1.25 or later (usage of the latest version is recommended)
+  - Versia Server will not work on lower versions than 1.1.25.
 - A PostgreSQL database
 - (Optional but recommended) A Linux-based operating system
 - (Optional if you want search) A working [Sonic](https://github.com/valeriansaliou/sonic) instance
