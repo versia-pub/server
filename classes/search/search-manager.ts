@@ -27,6 +27,7 @@ export enum SonicIndexType {
 export class SonicSearchManager {
     private searchChannel: SonicChannelSearch;
     private ingestChannel: SonicChannelIngest;
+    private connected = false;
     private logger = getLogger("sonic");
 
     /**
@@ -52,6 +53,10 @@ export class SonicSearchManager {
     async connect(silent = false): Promise<void> {
         if (!this.config.sonic.enabled) {
             !silent && this.logger.info`Sonic search is disabled`;
+            return;
+        }
+
+        if (this.connected) {
             return;
         }
 
@@ -110,6 +115,7 @@ export class SonicSearchManager {
                 this.searchChannel.ping(),
                 this.ingestChannel.ping(),
             ]);
+            this.connected = true;
             !silent && this.logger.info`Connected to Sonic`;
         } catch (error) {
             this.logger.fatal`Error while connecting to Sonic: ${error}`;

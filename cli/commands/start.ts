@@ -35,17 +35,12 @@ export default class Start extends BaseCommand<typeof Start> {
 
         const numCpus = flags["all-threads"] ? os.cpus().length : flags.threads;
 
-        // Check if index is a JS or TS file (depending on the environment)
-        const index = (await Bun.file("index.ts").exists())
-            ? "index.ts"
-            : "index.js";
+        // Resolves the path to the main module
+        const resolved = import.meta.resolve("../../index");
 
-        await import("../../setup");
+        process.env.NUM_CPUS = String(numCpus);
+        process.env.SILENT = flags.silent ? "true" : "false";
 
-        for (let i = 0; i < numCpus; i++) {
-            new Worker(index, {
-                type: "module",
-            });
-        }
+        await import(resolved);
     }
 }
