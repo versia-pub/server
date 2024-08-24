@@ -28,7 +28,7 @@ curl -fsSL https://bun.sh/install | bash
 1. Clone this repository
 
 ```bash
-git clone https://github.com/lysand-org/lysand.git
+git clone https://github.com/lysand-org/server.git
 ```
 
 2. Install the dependencies
@@ -134,7 +134,7 @@ To add tests for a route, create a `route_file_name.test.ts` file in the same di
 
 ### Writing documentation
 
-Documentation for the Versia protocol is available on [lysand.org](https://lysand.org/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
+Documentation for the Versia protocol is available on [versia.pub](https://versia.pub/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
 
 This project should not need much documentation, but if you think that something needs to be documented, please add it to the README, docs or contribution guide.
 

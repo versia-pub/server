@@ -1,6 +1,6 @@
 # This schema always follows the latest dev version of Versia Server, which may not be what you want
 # Change the URL to the commit/tag you are using
-#:schema https://raw.githubusercontent.com/lysand-org/lysand/main/config/config.schema.json
+#:schema https://raw.githubusercontent.com/lysand-org/server/main/config/config.schema.json
 
 [database]
 # Main PostgreSQL database connection

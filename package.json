@@ -10,9 +10,9 @@
         "url": "https://cpluspatch.com"
     },
     "bugs": {
-        "url": "https://github.com/lysand-org/lysand/issues"
+        "url": "https://github.com/lysand-org/server/issues"
     },
-    "icon": "https://github.com/lysand-org/lysand",
+    "icon": "https://github.com/lysand-org/server",
     "license": "AGPL-3.0-or-later",
     "keywords": ["federated", "activitypub", "bun"],
     "workspaces": ["packages/*"],
@@ -25,7 +25,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/lysand-org/lysand.git"
+        "url": "git+https://github.com/lysand-org/server.git"
     },
     "private": true,
     "scripts": {
