@@ -253,10 +253,10 @@ const htmlTransforms = async (
                             mascot: "https://media.tech.lgbt/site_uploads/files/000/000/004/original/1a16a73feb5c2463.png",
                             profile_directory: true,
                             registrations_open: true,
-                            repository: "lysand-org/lysand",
+                            repository: "lysand-org/server",
                             search_enabled: true,
                             single_user_mode: false,
-                            source_url: "https://github.com/lysand-org/lysand",
+                            source_url: "https://github.com/lysand-org/server",
                             sso_redirect: null,
                             status_page_url: null,
                             streaming_api_base_url: `wss://${

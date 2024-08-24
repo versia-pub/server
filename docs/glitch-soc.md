@@ -2,7 +2,7 @@
 
 Versia Server supports the use of the Glitch-Soc fork of Mastodon's frontend. Here's how to do it:
 
-1. Download the latest Glitch FE package from [the releases page](https://github.com/lysand-org/lysand/releases) (it should be named `glitch.tar.gz` and be inside the assets of a normal Versia Server release).
+1. Download the latest Glitch FE package from [the releases page](https://github.com/lysand-org/server/releases) (it should be named `glitch.tar.gz` and be inside the assets of a normal Versia Server release).
 2. Extract the contents of the package into a folder, which you can name `glitch` for simplicity. (if using Docker, now is the time to mount that folder into the container, for example with `-v /path/to/glitch:/app/dist/glitch`)
 3. Change the config to enable Glitch-FE:
     ```toml

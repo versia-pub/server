@@ -39,7 +39,7 @@ export default apiRoute((app) =>
             version: "4.3.0-alpha.3+glitch",
             // @ts-expect-error Temporary until package also gets the rebranding
             versia_version: version,
-            source_url: "https://github.com/lysand-org/lysand",
+            source_url: "https://github.com/lysand-org/server",
             description: config.instance.description,
             usage: {
                 users: {

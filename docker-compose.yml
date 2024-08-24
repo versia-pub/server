@@ -1,62 +1,62 @@
 services:
-    versia:
-        image: ghcr.io/lysand-org/lysand:latest
-        volumes:
-            - ./logs:/app/dist/logs
-            - ./config:/app/dist/config
-            - ./uploads:/app/dist/uploads
-            - ./glitch:/app/dist/glitch
-        restart: unless-stopped
-        container_name: versia
-        command: "cli start --all-threads"
-        networks:
-            - versia-net
-        depends_on:
-            - db
-            - redis
-            - sonic
-            - fe
-    
-    fe:
-        image: ghcr.io/lysand-org/lysand-fe:main
-        container_name: versia-fe
-        restart: unless-stopped
-        networks:
-            - versia-net
-        environment:
-            NUXT_PUBLIC_API_HOST: https://yourserver.com
-            
-    db:
-        image: ghcr.io/lysand-org/postgres:main
-        container_name: versia-db
-        restart: unless-stopped
-        environment:
-            POSTGRES_DB: versia
-            POSTGRES_USER: versia
-            POSTGRES_PASSWORD: _______________
-        networks:
-            - versia-net
-        volumes:
-            - ./db-data:/var/lib/postgresql/data
+  versia:
+    image: ghcr.io/lysand-org/server:latest
+    volumes:
+      - ./logs:/app/dist/logs
+      - ./config:/app/dist/config
+      - ./uploads:/app/dist/uploads
+      - ./glitch:/app/dist/glitch
+    restart: unless-stopped
+    container_name: versia
+    command: "cli start --all-threads"
+    networks:
+      - versia-net
+    depends_on:
+      - db
+      - redis
+      - sonic
+      - fe
 
-    redis:
-        image: redis:alpine
-        container_name: versia-redis
-        volumes:
-            - ./redis-data:/data
-        restart: unless-stopped
-        networks:
-            - versia-net
+  fe:
+    image: ghcr.io/lysand-org/frontend:main
+    container_name: versia-fe
+    restart: unless-stopped
+    networks:
+      - versia-net
+    environment:
+      NUXT_PUBLIC_API_HOST: https://yourserver.com
 
-    sonic:
-        volumes:
-          - ./config.cfg:/etc/sonic.cfg
-          - ./store/:/var/lib/sonic/store/
-        image: valeriansaliou/sonic:v1.4.9
-        container_name: versia-sonic
-        restart: unless-stopped
-        networks:
-            - versia-net
+  db:
+    image: ghcr.io/lysand-org/postgres:main
+    container_name: versia-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: versia
+      POSTGRES_USER: versia
+      POSTGRES_PASSWORD: _______________
+    networks:
+      - versia-net
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: versia-redis
+    volumes:
+      - ./redis-data:/data
+    restart: unless-stopped
+    networks:
+      - versia-net
+
+  sonic:
+    volumes:
+      - ./config.cfg:/etc/sonic.cfg
+      - ./store/:/var/lib/sonic/store/
+    image: valeriansaliou/sonic:v1.4.9
+    container_name: versia-sonic
+    restart: unless-stopped
+    networks:
+      - versia-net
 
 networks:
-    versia-net:
+  versia-net:

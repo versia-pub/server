@@ -36,7 +36,7 @@ COPY --from=build /temp/dist /app/dist
 COPY entrypoint.sh /app
 
 LABEL org.opencontainers.image.authors="Gaspard Wierzbinski (https://cpluspatch.dev)"
-LABEL org.opencontainers.image.source="https://github.com/lysand-org/lysand"
+LABEL org.opencontainers.image.source="https://github.com/lysand-org/server"
 LABEL org.opencontainers.image.vendor="Versia Pub"
 LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 LABEL org.opencontainers.image.title="Versia Server"
