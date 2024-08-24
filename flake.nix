@@ -3,15 +3,15 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }: {
+  outputs = { self, nixpkgs, flake-utils, ... }: {
     hydraJobs = {
       inherit (self) packages;
     };
-  } // flake-utils.lib.eachDefaultSystem (system:
-  let 
+  } // flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system: let
     pkgs = import nixpkgs {
       inherit system;
     };
@@ -20,7 +20,11 @@
       versiajs = pkgs.callPackage ./nix/package.nix {};
       default = self.packages.${system}.versiajs;
     };
-
+  }) // flake-utils.lib.eachDefaultSystem (system: let
+    pkgs = import nixpkgs {
+      inherit system;
+    };
+  in {
     devShells = {
       default = pkgs.mkShell {
         buildInputs = with pkgs; [
