@@ -25,6 +25,10 @@
       inherit system;
     };
   in {
+    apps.update-modules = {
+      type = "app";
+      program = self.packages.${system}.versiajs.passthru.updateScript;
+    };
     devShells = {
       default = pkgs.mkShell {
         buildInputs = with pkgs; [
