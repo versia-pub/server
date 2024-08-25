@@ -1,13 +1,16 @@
 {
   lib,
   stdenv,
-  fetchFromGitHub,
   bun,
   callPackage,
-  nodeHashes ? callPackage ./nodeHashes.nix { inherit lib; },
+  modulesSrc ? callPackage ./source.nix {},
   nodePackages_latest,
   makeBinaryWrapper,
 }:
+
+assert lib.assertMsg (
+  with builtins; hashFile "sha256" ../bun.lockb == hashFile "sha256" "${modulesSrc.src}/bun.lockb"
+  ) "bun.lockb has changed. Please run 'nix run .#apps.x86_64-linux.update-modules'";
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "versiajs";
@@ -15,10 +18,12 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = ../.;
 
-  node_modules = stdenv.mkDerivation {
-    pname = "${finalAttrs.pname}-node_modules";
+  versiajsModules = stdenv.mkDerivation (modulesAttrs: {
+    pname = "${finalAttrs.pname}-modules";
 
-    inherit (finalAttrs) version src; 
+    inherit (finalAttrs) version; 
+
+    src = modulesSrc.src;
 
     nativeBuildInputs = with nodePackages_latest; [ bun nodejs typescript ];
 
@@ -35,9 +40,9 @@ stdenv.mkDerivation (finalAttrs: {
 
     dontFixup = true;
 
-    outputHash = nodeHashes.${stdenv.system};
+    outputHash = modulesSrc.outputHash.${stdenv.system};
     outputHashMode = "recursive";
-  };
+  });
 
   nativeBuildInputs = [ bun ];
 
@@ -48,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
   configurePhase = ''
     runHook preConfigure
 
-    cp -r ${finalAttrs.node_modules}/node_modules .
+    cp -r ${finalAttrs.versiajsModules}/node_modules .
 
     runHook postConfigure
   '';
@@ -80,11 +85,13 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
+  passthru.updateScript = ./update.sh;
+
   meta = {
     description = "A new federated server written with TypeScript and Bun ";
     homepage = "https://lysand.org";
     license = with lib.licenses; [ agpl3Plus ];
     maintainers = with lib.maintainers; [ snaki ];
-    platforms = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+    platforms = [ "x86_64-linux" "aarch64-linux" ];
   };
 })
