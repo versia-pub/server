@@ -20,24 +20,28 @@
     hydraJobs = {
       inherit (self) packages;
     };
-  } // flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system: let
+    overlays.default = final: prev: {
+      versiajs = final.callPackage ./nix/package.nix {};
+    };
+  } //
+  flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" ] (system: let
     pkgs = import nixpkgs {
       inherit system;
+      overlays = [ self.overlays.default ];
     };
   in {
     packages = {
-      versiajs = pkgs.callPackage ./nix/package.nix {};
+      inherit (pkgs) versiajs;
       default = self.packages.${system}.versiajs;
     };
-  }) // flake-utils.lib.eachDefaultSystem (system: let
-    pkgs = import nixpkgs {
-      inherit system;
-    };
-  in {
     apps.update-modules = {
       type = "app";
       program = self.packages.${system}.versiajs.passthru.updateScript;
     };
+  }) //
+  flake-utils.lib.eachDefaultSystem (system: let
+    pkgs = nixpkgs.legacyPackages.${system};
+  in {
     devShells = {
       default = pkgs.mkShell {
         buildInputs = with pkgs; [
