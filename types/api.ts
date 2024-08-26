@@ -1,5 +1,16 @@
 import type { Hono } from "@hono/hono";
 import type { RouterRoute } from "@hono/hono/types";
+import type {
+    Delete,
+    Follow,
+    FollowAccept,
+    FollowReject,
+    InstanceMetadata,
+    LikeExtension,
+    Note,
+    Unfollow,
+    User,
+} from "@versia/federation/types";
 import type { z } from "zod";
 import type { RolePermissions } from "~/drizzle/schema";
 
@@ -40,3 +51,14 @@ export interface ApiRouteExports {
     };
     default: (app: Hono) => RouterRoute;
 }
+
+export type KnownEntity =
+    | Note
+    | InstanceMetadata
+    | User
+    | Follow
+    | FollowAccept
+    | FollowReject
+    | Unfollow
+    | Delete
+    | LikeExtension;

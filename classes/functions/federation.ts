@@ -1,15 +1,16 @@
-import type { Undo } from "@lysand-org/federation/types";
-import { config } from "~/packages/config-manager/index";
+import type { Unfollow } from "@versia/federation/types";
 import type { User } from "~/packages/database-interface/user";
 
-export const undoFederationRequest = (undoer: User, uri: string): Undo => {
+export const unfollowFederationRequest = (
+    unfollower: User,
+    unfollowing: User,
+): Unfollow => {
     const id = crypto.randomUUID();
     return {
-        type: "Undo",
+        type: "Unfollow",
         id,
-        author: undoer.getUri(),
+        author: unfollower.getUri(),
         created_at: new Date().toISOString(),
-        object: uri,
-        uri: new URL(`/undos/${id}`, config.http.base_url).toString(),
+        followee: unfollowing.getUri(),
     };
 };

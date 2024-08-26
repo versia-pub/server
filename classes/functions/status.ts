@@ -1,7 +1,7 @@
 import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import type { ContentFormat } from "@lysand-org/federation/types";
+import type { ContentFormat } from "@versia/federation/types";
 import {
     type InferSelectModel,
     and,

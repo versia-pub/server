@@ -168,6 +168,7 @@ export default apiRoute((app) =>
                 self.note = await contentToHtml({
                     "text/markdown": {
                         content: note,
+                        remote: false,
                     },
                 });
             }
@@ -235,6 +236,7 @@ export default apiRoute((app) =>
                         {
                             "text/markdown": {
                                 content: field.name,
+                                remote: false,
                             },
                         },
                         undefined,
@@ -245,6 +247,7 @@ export default apiRoute((app) =>
                         {
                             "text/markdown": {
                                 content: field.value,
+                                remote: false,
                             },
                         },
                         undefined,
@@ -262,11 +265,13 @@ export default apiRoute((app) =>
                         key: {
                             "text/html": {
                                 content: parsedName,
+                                remote: false,
                             },
                         },
                         value: {
                             "text/html": {
                                 content: parsedValue,
+                                remote: false,
                             },
                         },
                     });

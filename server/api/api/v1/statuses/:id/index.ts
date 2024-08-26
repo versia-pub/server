@@ -9,7 +9,6 @@ import {
 import { zValidator } from "@hono/zod-validator";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { undoFederationRequest } from "~/classes/functions/federation";
 import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
@@ -136,9 +135,7 @@ export default apiRoute((app) =>
 
                     await note.delete();
 
-                    await user.federateToFollowers(
-                        undoFederationRequest(user, note.getUri()),
-                    );
+                    await user.federateToFollowers(note.deleteToVersia());
 
                     return context.json(await note.toApi(user), 200);
                 }
@@ -169,6 +166,7 @@ export default apiRoute((app) =>
                             ? {
                                   [content_type]: {
                                       content: statusText,
+                                      remote: false,
                                   },
                               }
                             : undefined,

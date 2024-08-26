@@ -1,4 +1,4 @@
-import type { Like } from "@lysand-org/federation/types";
+import type { LikeExtension } from "@versia/federation/types";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Likes, Notifications } from "~/drizzle/schema";
@@ -11,15 +11,15 @@ export type LikeType = InferSelectModel<typeof Likes>;
 /**
  * Represents a Like entity in the database.
  */
-export const likeToVersia = (like: LikeType): Like => {
+export const likeToVersia = (like: LikeType): LikeExtension => {
     return {
         id: like.id,
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
         author: (like as any).liker?.uri,
-        type: "Like",
+        type: "pub.versia:likes/Like",
         created_at: new Date(like.createdAt).toISOString(),
         // biome-ignore lint/suspicious/noExplicitAny: to be rewritten
-        object: (like as any).liked?.uri,
+        liked: (like as any).liked?.uri,
         uri: new URL(`/objects/${like.id}`, config.http.base_url).toString(),
     };
 };

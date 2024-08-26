@@ -2,7 +2,6 @@ import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { undoFederationRequest } from "~/classes/functions/federation";
 import { Notes, RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 
@@ -63,9 +62,7 @@ export default apiRoute((app) =>
 
             await existingReblog.delete();
 
-            await user.federateToFollowers(
-                undoFederationRequest(user, existingReblog.getUri()),
-            );
+            await user.federateToFollowers(existingReblog.deleteToVersia());
 
             const newNote = await Note.fromId(id, user.id);
 

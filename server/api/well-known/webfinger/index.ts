@@ -7,7 +7,7 @@ import {
 } from "@/api";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
-import type { ResponseError } from "@lysand-org/federation";
+import type { ResponseError } from "@versia/federation";
 import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";

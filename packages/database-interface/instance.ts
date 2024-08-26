@@ -3,8 +3,8 @@ import {
     EntityValidator,
     type ResponseError,
     type ValidationError,
-} from "@lysand-org/federation";
-import type { ServerMetadata } from "@lysand-org/federation/types";
+} from "@versia/federation";
+import type { InstanceMetadata } from "@versia/federation/types";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -132,7 +132,7 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     static async fetchMetadata(url: string): Promise<{
-        metadata: ServerMetadata;
+        metadata: InstanceMetadata;
         protocol: "versia" | "activitypub";
     } | null> {
         const origin = new URL(url).origin;
@@ -167,7 +167,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             }
 
             try {
-                const metadata = await new EntityValidator().ServerMetadata(
+                const metadata = await new EntityValidator().InstanceMetadata(
                     data,
                 );
 
@@ -188,7 +188,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
     private static async fetchActivityPubMetadata(
         url: string,
-    ): Promise<ServerMetadata | null> {
+    ): Promise<InstanceMetadata | null> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/nodeinfo", origin);
 
@@ -285,14 +285,30 @@ export class Instance extends BaseInterface<typeof Instances> {
             return {
                 name:
                     metadata.metadata.nodeName || metadata.metadata.title || "",
-                version: metadata.software.version,
-                description:
-                    metadata.metadata.nodeDescription ||
-                    metadata.metadata.description ||
-                    "",
-                logo: undefined,
-                type: "ServerMetadata",
-                supported_extensions: [],
+                description: {
+                    "text/plain": {
+                        content:
+                            metadata.metadata.nodeDescription ||
+                            metadata.metadata.description ||
+                            "",
+                        remote: false,
+                    },
+                },
+                type: "InstanceMetadata",
+                software: {
+                    name: "Unknown ActivityPub software",
+                    version: metadata.software.version,
+                },
+                created_at: new Date().toISOString(),
+                public_key: {
+                    key: "",
+                    algorithm: "ed25519",
+                },
+                host: new URL(url).host,
+                compatibility: {
+                    extensions: [],
+                    versions: [],
+                },
             };
         } catch (error) {
             logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -326,7 +342,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return Instance.insert({
             baseUrl: host,
             name: metadata.name,
-            version: metadata.version,
+            version: metadata.software.version,
             logo: metadata.logo,
             protocol: protocol,
         });

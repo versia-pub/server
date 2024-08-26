@@ -1,4 +1,4 @@
-import type { ContentFormat } from "@lysand-org/federation/types";
+import type { ContentFormat } from "@versia/federation/types";
 import { lookup } from "mime-types";
 import { config } from "~/packages/config-manager";
 
@@ -31,6 +31,7 @@ export const urlToContentFormat = (url?: string): ContentFormat | null => {
         return {
             "image/svg+xml": {
                 content: url,
+                remote: true,
             },
         };
     }
@@ -41,6 +42,7 @@ export const urlToContentFormat = (url?: string): ContentFormat | null => {
     return {
         [mimeType]: {
             content: url,
+            remote: true,
         },
     };
 };

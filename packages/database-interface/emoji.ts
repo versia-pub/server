@@ -1,7 +1,7 @@
 import { emojiValidatorWithColons } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as ApiEmoji } from "@lysand-org/client/types";
-import type { CustomEmojiExtension } from "@lysand-org/federation/types";
+import type { CustomEmojiExtension } from "@versia/federation/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -196,6 +196,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
                 [this.data.contentType]: {
                     content: this.data.url,
                     description: this.data.alt || undefined,
+                    remote: true,
                 },
             },
         };

@@ -1,5 +1,5 @@
 import type { Source as ApiSource } from "@lysand-org/client/types";
-import type { ContentFormat } from "@lysand-org/federation/types";
+import type { ContentFormat } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -381,9 +381,9 @@ export const Users = pgTable(
             }[]
         >(),
         endpoints: jsonb("endpoints").$type<Partial<{
-            dislikes: string;
+            dislikes?: string;
             featured: string;
-            likes: string;
+            likes?: string;
             followers: string;
             following: string;
             inbox: string;

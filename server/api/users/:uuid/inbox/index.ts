@@ -7,8 +7,8 @@ import {
     EntityValidator,
     RequestParserHandler,
     SignatureValidator,
-} from "@lysand-org/federation";
-import type { Entity } from "@lysand-org/federation/types";
+} from "@versia/federation";
+import type { Entity } from "@versia/federation/types";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
@@ -39,8 +39,9 @@ export const schemas = {
         uuid: z.string().uuid(),
     }),
     header: z.object({
-        signature: z.string(),
-        date: z.string(),
+        "X-Signature": z.string(),
+        "X-Nonce": z.string(),
+        "X-Signed-By": z.string().url().or(z.literal("instance")),
         authorization: z.string().optional(),
     }),
     body: z.any(),
@@ -55,8 +56,12 @@ export default apiRoute((app) =>
         zValidator("json", schemas.body, handleZodError),
         async (context) => {
             const { uuid } = context.req.valid("param");
-            const { signature, date, authorization } =
-                context.req.valid("header");
+            const {
+                "X-Signature": signature,
+                "X-Nonce": nonce,
+                "X-Signed-By": signedBy,
+                authorization,
+            } = context.req.valid("header");
             const logger = getLogger(["federation", "inbox"]);
 
             const body: Entity = await context.req.valid("json");
@@ -128,19 +133,24 @@ export default apiRoute((app) =>
                 }
             }
 
-            const keyId = signature
-                .split("keyId=")[1]
-                .split(",")[0]
-                .replace(/"/g, "");
-            const sender = await User.resolve(keyId);
+            const sender = await User.resolve(signedBy);
 
-            const origin = new URL(keyId).origin;
+            if (sender?.isLocal()) {
+                return context.json(
+                    { error: "Cannot send federation requests to local users" },
+                    400,
+                );
+            }
+
+            const hostname = new URL(sender?.data.instance?.baseUrl ?? "")
+                .hostname;
 
             // Check if Origin is defederated
             if (
                 config.federation.blocked.find(
                     (blocked) =>
-                        blocked.includes(origin) || origin.includes(blocked),
+                        blocked.includes(hostname) ||
+                        hostname.includes(blocked),
                 )
             ) {
                 // Pretend to accept request
@@ -151,7 +161,7 @@ export default apiRoute((app) =>
             if (checkSignature) {
                 if (!sender) {
                     return context.json(
-                        { error: "Could not resolve keyId" },
+                        { error: "Could not resolve sender" },
                         400,
                     );
                 }
@@ -165,23 +175,13 @@ export default apiRoute((app) =>
                     sender.data.publicKey,
                 );
 
-                // If base_url uses https and request uses http, rewrite request to use https
-                // This fixes reverse proxy errors
-                const reqUrl = new URL(context.req.url);
-                if (
-                    new URL(config.http.base_url).protocol === "https:" &&
-                    reqUrl.protocol === "http:"
-                ) {
-                    reqUrl.protocol = "https:";
-                }
-
                 const isValid = await validator
                     .validate(
-                        new Request(reqUrl, {
+                        new Request(context.req.url, {
                             method: context.req.method,
                             headers: {
-                                Signature: signature,
-                                Date: date,
+                                "X-Signature": signature,
+                                "X-Date": nonce,
                             },
                             body: await context.req.text(),
                         }),
@@ -193,7 +193,7 @@ export default apiRoute((app) =>
                     });
 
                 if (!isValid) {
-                    return context.json({ error: "Invalid signature" }, 400);
+                    return context.json({ error: "Invalid signature" }, 401);
                 }
             }
 
@@ -332,48 +332,53 @@ export default apiRoute((app) =>
 
                         return response("Follow request rejected", 200);
                     },
-                    undo: async (undo) => {
+                    // "delete" is a reserved keyword in JS
+                    delete: async (delete_) => {
                         // Delete the specified object from database, if it exists and belongs to the user
-                        const toDelete = undo.object;
+                        const toDelete = delete_.target;
 
-                        // Try and find a follow, note, or user with the given URI
-                        // Note
-                        const note = await Note.fromSql(
-                            eq(Notes.uri, toDelete),
-                            eq(Notes.authorId, user.id),
-                        );
+                        switch (delete_.deleted_type) {
+                            case "Note": {
+                                const note = await Note.fromSql(
+                                    eq(Notes.uri, toDelete),
+                                    eq(Notes.authorId, user.id),
+                                );
 
-                        if (note) {
-                            await note.delete();
-                            return response("Note deleted", 200);
-                        }
+                                if (note) {
+                                    await note.delete();
+                                    return response("Note deleted", 200);
+                                }
 
-                        // Follow (unfollow/cancel follow request)
-                        // TODO: Remember to store URIs of follow requests/objects in the future
-
-                        // User
-                        const otherUser = await User.resolve(toDelete);
-
-                        if (otherUser) {
-                            if (otherUser.id === user.id) {
-                                // Delete own account
-                                await user.delete();
-                                return response("Account deleted", 200);
+                                break;
                             }
-                            return context.json(
-                                {
-                                    error: "Cannot delete other users than self",
-                                },
-                                400,
-                            );
-                        }
+                            case "User": {
+                                const otherUser = await User.resolve(toDelete);
 
-                        return context.json(
-                            {
-                                error: `Deletetion of object ${toDelete} not implemented`,
-                            },
-                            400,
-                        );
+                                if (otherUser) {
+                                    if (otherUser.id === user.id) {
+                                        // Delete own account
+                                        await user.delete();
+                                        return response("Account deleted", 200);
+                                    }
+                                    return context.json(
+                                        {
+                                            error: "Cannot delete other users than self",
+                                        },
+                                        400,
+                                    );
+                                }
+
+                                break;
+                            }
+                            default: {
+                                return context.json(
+                                    {
+                                        error: `Deletetion of object ${toDelete} not implemented`,
+                                    },
+                                    400,
+                                );
+                            }
+                        }
                     },
                     user: async (user) => {
                         // Refetch user to ensure we have the latest data
@@ -389,27 +394,6 @@ export default apiRoute((app) =>
                         }
 
                         return response("User refreshed", 200);
-                    },
-                    patch: async (patch) => {
-                        // Update the specified note in the database, if it exists and belongs to the user
-                        const toPatch = patch.patched_id;
-
-                        const note = await Note.fromSql(
-                            eq(Notes.uri, toPatch),
-                            eq(Notes.authorId, user.id),
-                        );
-
-                        // Refetch note
-                        if (!note) {
-                            return context.json(
-                                { error: "Note not found" },
-                                404,
-                            );
-                        }
-
-                        await note.updateFromRemote();
-
-                        return response("Note updated", 200);
                     },
                 });
 

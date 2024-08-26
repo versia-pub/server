@@ -8,11 +8,12 @@ import type {
     Attachment as ApiAttachment,
     Status as ApiStatus,
 } from "@lysand-org/client/types";
-import { EntityValidator } from "@lysand-org/federation";
+import { EntityValidator } from "@versia/federation";
 import type {
     ContentFormat,
+    Delete as VersiaDelete,
     Note as VersiaNote,
-} from "@lysand-org/federation/types";
+} from "@versia/federation/types";
 import {
     type InferInsertModel,
     type SQL,
@@ -666,14 +667,26 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             }
         }
 
+        let visibility = note.group
+            ? ["public", "followers"].includes(note.group)
+                ? (note.group as "public" | "private")
+                : ("url" as const)
+            : ("direct" as const);
+
+        if (visibility === "url") {
+            // TODO: Implement groups
+            visibility = "direct";
+        }
+
         const newData = {
             author,
             content: note.content ?? {
                 "text/plain": {
                     content: "",
+                    remote: false,
                 },
             },
-            visibility: note.visibility as ApiStatus["visibility"],
+            visibility: visibility as ApiStatus["visibility"],
             isSensitive: note.is_sensitive ?? false,
             spoilerText: note.subject ?? "",
             emojis,
@@ -885,6 +898,19 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         ).toString();
     }
 
+    deleteToVersia(): VersiaDelete {
+        const id = crypto.randomUUID();
+
+        return {
+            type: "Delete",
+            id,
+            author: this.author.getUri(),
+            deleted_type: "Note",
+            target: this.getUri(),
+            created_at: new Date().toISOString(),
+        };
+    }
+
     /**
      * Convert a note to the Versia format
      * @returns The note in the Versia format
@@ -900,9 +926,11 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             content: {
                 "text/html": {
                     content: status.content,
+                    remote: false,
                 },
                 "text/plain": {
                     content: htmlToText(status.content),
+                    remote: false,
                 },
             },
             attachments: (status.attachments ?? []).map((attachment) =>
@@ -917,11 +945,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             replies_to:
                 Note.getUri(status.replyId, status.reply?.uri) ?? undefined,
             subject: status.spoilerText,
-            visibility: status.visibility as
-                | "public"
-                | "unlisted"
-                | "private"
-                | "direct",
+            // TODO: Refactor as part of groups
+            group: status.visibility === "public" ? "public" : "followers",
             extensions: {
                 "org.lysand:custom_emojis": {
                     emojis: status.emojis.map((emoji) =>

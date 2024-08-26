@@ -3,7 +3,7 @@ import type {
     AsyncAttachment as ApiAsyncAttachment,
     Attachment as ApiAttachment,
 } from "@lysand-org/client/types";
-import type { ContentFormat } from "@lysand-org/federation/types";
+import type { ContentFormat } from "@versia/federation/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -201,7 +201,9 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return {
             [this.data.mimeType]: {
                 content: this.data.url,
-                blurhash: this.data.blurhash ?? undefined,
+                remote: true,
+                // TODO: Replace BlurHash with thumbhash
+                // thumbhash: this.data.blurhash ?? undefined,
                 description: this.data.description ?? undefined,
                 duration: this.data.duration ?? undefined,
                 fps: this.data.fps ?? undefined,
@@ -233,7 +235,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             size: value.size || undefined,
             width: value.width || undefined,
             sha256: value.hash?.sha256 || undefined,
-            blurhash: value.blurhash || undefined,
+            // blurhash: value.blurhash || undefined,
         });
     }
 }

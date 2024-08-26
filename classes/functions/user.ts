@@ -2,7 +2,7 @@ import type {
     Follow,
     FollowAccept,
     FollowReject,
-} from "@lysand-org/federation/types";
+} from "@versia/federation/types";
 import { type InferSelectModel, eq, sql } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import {
@@ -12,7 +12,6 @@ import {
     Tokens,
     type Users,
 } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
 import type { Application } from "./application";
@@ -282,7 +281,6 @@ export const followRequestToVersia = (
         author: follower.getUri(),
         followee: followee.getUri(),
         created_at: new Date().toISOString(),
-        uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
     };
 };
 
@@ -310,7 +308,6 @@ export const followAcceptToVersia = (
         author: followee.getUri(),
         created_at: new Date().toISOString(),
         follower: follower.getUri(),
-        uri: new URL(`/follows/${id}`, config.http.base_url).toString(),
     };
 };
 

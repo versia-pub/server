@@ -155,6 +155,7 @@ export default apiRoute((app) =>
                 content: {
                     [content_type]: {
                         content: status ?? "",
+                        remote: false,
                     },
                 },
                 visibility,

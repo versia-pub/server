@@ -13,8 +13,8 @@ import {
     FederationRequester,
     type HttpVerb,
     SignatureConstructor,
-} from "@lysand-org/federation";
-import type { Entity, User as VersiaUser } from "@lysand-org/federation/types";
+} from "@versia/federation";
+import type { User as VersiaUser } from "@versia/federation/types";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -48,7 +48,8 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
-import { undoFederationRequest } from "../../classes/functions/federation.ts";
+import type { KnownEntity } from "~/types/api.ts";
+import { unfollowFederationRequest } from "../../classes/functions/federation.ts";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
 import { Instance } from "./instance";
@@ -259,13 +260,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         if (followee.isRemote()) {
             // TODO: This should reschedule for a later time and maybe notify the server admin if it fails too often
             const { ok } = await this.federateToUser(
-                undoFederationRequest(
-                    this,
-                    new URL(
-                        `/follows/${relationship.id}`,
-                        config.http.base_url,
-                    ).toString(),
-                ),
+                unfollowFederationRequest(this, followee),
                 followee,
             );
 
@@ -450,7 +445,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const user = await User.fromVersia(data, instance);
 
         const userEmojis =
-            data.extensions?.["org.lysand:custom_emojis"]?.emojis ?? [];
+            data.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
         const emojis = await Promise.all(
             userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance.id)),
         );
@@ -484,13 +479,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri: user.uri,
             createdAt: new Date(user.created_at).toISOString(),
             endpoints: {
-                dislikes: user.dislikes,
-                featured: user.featured,
-                likes: user.likes,
-                followers: user.followers,
-                following: user.following,
+                dislikes:
+                    user.collections["pub.versia:likes/Dislikes"] ?? undefined,
+                featured: user.collections.featured,
+                likes: user.collections["pub.versia:likes/Likes"] ?? undefined,
+                followers: user.collections.followers,
+                following: user.collections.following,
                 inbox: user.inbox,
-                outbox: user.outbox,
+                outbox: user.collections.outbox,
             },
             fields: user.fields ?? [],
             updatedAt: new Date(user.created_at).toISOString(),
@@ -503,7 +499,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 : "",
             displayName: user.display_name ?? "",
             note: getBestContentType(user.bio).content,
-            publicKey: user.public_key.public_key,
+            publicKey: user.public_key.key,
             source: {
                 language: null,
                 note: "",
@@ -722,7 +718,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The signed string and headers to send with the request
      */
     async sign(
-        entity: Entity,
+        entity: KnownEntity,
         signatureUrl: string | URL,
         signatureMethod: HttpVerb = "POST",
     ): Promise<{
@@ -772,7 +768,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * @param entity Entity to federate
      */
-    async federateToFollowers(entity: Entity): Promise<void> {
+    async federateToFollowers(entity: KnownEntity): Promise<void> {
         // Get followers
         const followers = await User.manyFromSql(
             and(
@@ -793,7 +789,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param user User to federate to
      * @returns Whether the federation was successful
      */
-    async federateToUser(entity: Entity, user: User): Promise<{ ok: boolean }> {
+    async federateToUser(
+        entity: KnownEntity,
+        user: User,
+    ): Promise<{ ok: boolean }> {
         const { headers } = await this.sign(
             entity,
             user.data.endpoints?.inbox ?? "",
@@ -908,38 +907,42 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             bio: {
                 "text/html": {
                     content: user.note,
+                    remote: false,
                 },
                 "text/plain": {
                     content: htmlToText(user.note),
+                    remote: false,
                 },
             },
             created_at: new Date(user.createdAt).toISOString(),
-            dislikes: new URL(
-                `/users/${user.id}/dislikes`,
-                config.http.base_url,
-            ).toString(),
-            featured: new URL(
-                `/users/${user.id}/featured`,
-                config.http.base_url,
-            ).toString(),
-            likes: new URL(
-                `/users/${user.id}/likes`,
-                config.http.base_url,
-            ).toString(),
-            followers: new URL(
-                `/users/${user.id}/followers`,
-                config.http.base_url,
-            ).toString(),
-            following: new URL(
-                `/users/${user.id}/following`,
-                config.http.base_url,
-            ).toString(),
+            collections: {
+                featured: new URL(
+                    `/users/${user.id}/featured`,
+                    config.http.base_url,
+                ).toString(),
+                "pub.versia:likes/Likes": new URL(
+                    `/users/${user.id}/likes`,
+                    config.http.base_url,
+                ).toString(),
+                "pub.versia:likes/Dislikes": new URL(
+                    `/users/${user.id}/dislikes`,
+                    config.http.base_url,
+                ).toString(),
+                followers: new URL(
+                    `/users/${user.id}/followers`,
+                    config.http.base_url,
+                ).toString(),
+                following: new URL(
+                    `/users/${user.id}/following`,
+                    config.http.base_url,
+                ).toString(),
+                outbox: new URL(
+                    `/users/${user.id}/outbox`,
+                    config.http.base_url,
+                ).toString(),
+            },
             inbox: new URL(
                 `/users/${user.id}/inbox`,
-                config.http.base_url,
-            ).toString(),
-            outbox: new URL(
-                `/users/${user.id}/outbox`,
                 config.http.base_url,
             ).toString(),
             indexable: false,
@@ -953,7 +956,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     `/users/${user.id}`,
                     config.http.base_url,
                 ).toString(),
-                public_key: user.publicKey,
+                key: user.publicKey,
+                algorithm: "ed25519",
             },
             extensions: {
                 "org.lysand:custom_emojis": {
