@@ -10,6 +10,14 @@ username = "versia"
 password = "mycoolpassword"
 database = "versia"
 
+# Add any eventual read-only database replicas here
+# [[database.replicas]]
+# host = "other-host"
+# port = 5432
+# username = "versia"
+# password = "mycoolpassword2"
+# database = "replica1"
+
 [redis.queue]
 # Redis instance for storing the federation queue
 # Required for federation

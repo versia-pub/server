@@ -33,6 +33,22 @@ export const configValidator = z.object({
         username: z.string().min(1),
         password: z.string().default(""),
         database: z.string().min(1).default("versia"),
+        replicas: z
+            .array(
+                z.object({
+                    host: z.string().min(1),
+                    port: z
+                        .number()
+                        .int()
+                        .min(1)
+                        .max(2 ** 16 - 1)
+                        .default(5432),
+                    username: z.string().min(1),
+                    password: z.string().default(""),
+                    database: z.string().min(1).default("versia"),
+                }),
+            )
+            .optional(),
     }),
     redis: z.object({
         queue: z
