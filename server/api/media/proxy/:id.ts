@@ -44,6 +44,7 @@ export default apiRoute((app) =>
                 headers: {
                     "Accept-Encoding": "br",
                 },
+                // @ts-expect-error Proxy is a Bun-specific feature
                 proxy: config.http.proxy.address,
             });
 

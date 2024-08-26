@@ -28,6 +28,7 @@ const checkHttpProxyConfig = async (config: Config) => {
 
         // Test the proxy
         const response = await fetch("https://api.ipify.org?format=json", {
+            // @ts-expect-error Proxy is a Bun-specific feature
             proxy: config.http.proxy.address,
         });
 

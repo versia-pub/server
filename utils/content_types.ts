@@ -54,6 +54,7 @@ export const mimeLookup = async (url: string) => {
 
     const fetchLookup = fetch(url, {
         method: "HEAD",
+        // @ts-expect-error Proxy is a Bun-specific feature
         proxy: config.http.proxy.address,
     }).then((response) => response.headers.get("content-type") || "");
 

@@ -63,6 +63,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
                 headers: {
                     "Accept-Encoding": "identity",
                 },
+                // @ts-expect-error Proxy is a Bun-specific feature
                 proxy: config.http.proxy.address,
             });
 
