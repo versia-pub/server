@@ -89,7 +89,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   meta = {
     description = "A new federated server written with TypeScript and Bun ";
-    homepage = "https://lysand.org";
+    homepage = "https://versia.pub";
     license = with lib.licenses; [ agpl3Plus ];
     maintainers = with lib.maintainers; [ snaki ];
     platforms = [ "x86_64-linux" "aarch64-linux" ];
