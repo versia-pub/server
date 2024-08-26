@@ -36,7 +36,7 @@
     };
     apps.update-modules = {
       type = "app";
-      program = self.packages.${system}.versiajs.passthru.updateScript;
+      program = ./nix/update.sh;
     };
   }) //
   flake-utils.lib.eachDefaultSystem (system: let
