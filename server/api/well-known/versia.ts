@@ -22,7 +22,7 @@ export default apiRoute((app) =>
             type: "InstanceMetadata",
             compatibility: {
                 extensions: ["pub.versia:custom_emojis"],
-                versions: ["0.3.1", "0.4.0"],
+                versions: ["0.4.0"],
             },
             host: new URL(config.http.base_url).host,
             name: config.instance.name,
