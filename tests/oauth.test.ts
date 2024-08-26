@@ -5,7 +5,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import type {
     Application as ApiApplication,
     Token as ApiToken,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import { config } from "~/packages/config-manager";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
 

@@ -6,7 +6,7 @@ import {
     idValidator,
 } from "@/api";
 import { zValidator } from "@hono/zod-validator";
-import type { Marker as ApiMarker } from "@lysand-org/client/types";
+import type { Marker as ApiMarker } from "@versia/client/types";
 import { and, count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";

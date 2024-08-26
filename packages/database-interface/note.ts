@@ -7,7 +7,7 @@ import { getLogger } from "@logtape/logtape";
 import type {
     Attachment as ApiAttachment,
     Status as ApiStatus,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import { EntityValidator } from "@versia/federation";
 import type {
     ContentFormat,

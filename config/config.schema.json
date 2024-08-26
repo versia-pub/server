@@ -3346,7 +3346,7 @@
                             "anyOf": [
                                 {
                                     "type": "string",
-                                    "enum": ["lysand-ap"]
+                                    "enum": ["versia-ap"]
                                 },
                                 {
                                     "type": "string"
@@ -3372,7 +3372,7 @@
                     "additionalProperties": false,
                     "default": {
                         "enabled": false,
-                        "software": "lysand-ap",
+                        "software": "versia-ap",
                         "allowed_ips": [],
                         "token": ""
                     }
@@ -3396,7 +3396,7 @@
                 },
                 "bridge": {
                     "enabled": false,
-                    "software": "lysand-ap",
+                    "software": "versia-ap",
                     "allowed_ips": [],
                     "token": ""
                 }

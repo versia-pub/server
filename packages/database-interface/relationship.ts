@@ -1,4 +1,4 @@
-import type { Relationship as APIRelationship } from "@lysand-org/client/types";
+import type { Relationship as APIRelationship } from "@versia/client/types";
 import {
     type InferInsertModel,
     type InferSelectModel,

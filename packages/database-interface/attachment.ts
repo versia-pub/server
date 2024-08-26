@@ -2,7 +2,7 @@ import { proxyUrl } from "@/response";
 import type {
     AsyncAttachment as ApiAsyncAttachment,
     Attachment as ApiAttachment,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import {
     type InferInsertModel,

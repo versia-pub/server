@@ -7,7 +7,7 @@ Versia Server supports the use of the Glitch-Soc fork of Mastodon's frontend. He
 3. Change the config to enable Glitch-FE:
     ```toml
     [frontend]
-    # Enable custom frontends (warning: not enabling this or Glitch will make Lysand only accessible via the Mastodon API)
+    # Enable custom frontends (warning: not enabling this or Glitch will make Versia Server only accessible via the Mastodon API)
     # Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
     enabled = true
     # The URL to reach the frontend at (should be on a local network)

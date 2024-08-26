@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Relationship as ApiRelationship } from "@lysand-org/client/types";
+import type { Relationship as ApiRelationship } from "@versia/client/types";
 import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./follow";

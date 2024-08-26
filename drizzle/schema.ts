@@ -1,4 +1,4 @@
-import type { Source as ApiSource } from "@lysand-org/client/types";
+import type { Source as ApiSource } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";

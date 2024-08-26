@@ -484,14 +484,14 @@ export const configValidator = z.object({
             bridge: z
                 .object({
                     enabled: z.boolean().default(false),
-                    software: z.enum(["lysand-ap"]).or(z.string()),
+                    software: z.enum(["versia-ap"]).or(z.string()),
                     allowed_ips: z.array(z.string().trim()).default([]),
                     token: z.string().default(""),
                     url: zUrl.optional(),
                 })
                 .default({
                     enabled: false,
-                    software: "lysand-ap",
+                    software: "versia-ap",
                     allowed_ips: [],
                     token: "",
                 })
@@ -516,7 +516,7 @@ export const configValidator = z.object({
             },
             bridge: {
                 enabled: false,
-                software: "lysand-ap",
+                software: "versia-ap",
                 allowed_ips: [],
                 token: "",
             },

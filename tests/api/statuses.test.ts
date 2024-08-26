@@ -6,7 +6,7 @@ import type {
     AsyncAttachment as ApiAsyncAttachment,
     Context as ApiContext,
     Status as ApiStatus,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
 

@@ -1,5 +1,5 @@
 import { proxyUrl } from "@/response";
-import type { RolePermission } from "@lysand-org/client/types";
+import type { RolePermission } from "@versia/client/types";
 import {
     type InferInsertModel,
     type InferSelectModel,

@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Notification as ApiNotification } from "@lysand-org/client/types";
+import type { Notification as ApiNotification } from "@versia/client/types";
 import { config } from "~/packages/config-manager/index";
 import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
 import { meta } from "./index";

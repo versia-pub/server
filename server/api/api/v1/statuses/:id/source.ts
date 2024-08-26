@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
 import { zValidator } from "@hono/zod-validator";
-import type { StatusSource as ApiStatusSource } from "@lysand-org/client/types";
+import type { StatusSource as ApiStatusSource } from "@versia/client/types";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";

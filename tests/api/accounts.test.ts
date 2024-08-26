@@ -5,7 +5,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import type {
     Account as ApiAccount,
     Relationship as ApiRelationship,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import { config } from "~/packages/config-manager/index";
 import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
 

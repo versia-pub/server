@@ -323,8 +323,8 @@ avatars = []
 # Bridges must be hosted separately from the main Versia Server process
 [federation.bridge]
 enabled = false
-# Only lysand-ap exists for now
-software = "lysand-ap"
+# Only versia-ap exists for now
+software = "versia-ap"
 # If this is empty, any bridge with the correct token
 # will be able to send data to your instance
 allowed_ips = ["192.168.1.0/24"]

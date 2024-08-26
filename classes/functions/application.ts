@@ -1,4 +1,4 @@
-import type { Application as APIApplication } from "@lysand-org/client/types";
+import type { Application as APIApplication } from "@versia/client/types";
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import type { Applications } from "~/drizzle/schema";

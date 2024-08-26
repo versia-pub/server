@@ -1,6 +1,6 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
-import type { Emoji as ApiEmoji } from "@lysand-org/client/types";
+import type { Emoji as ApiEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import {
     type InferInsertModel,

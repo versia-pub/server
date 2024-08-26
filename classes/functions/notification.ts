@@ -1,4 +1,4 @@
-import type { Notification as ApiNotification } from "@lysand-org/client/types";
+import type { Notification as ApiNotification } from "@versia/client/types";
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import type { Notifications } from "~/drizzle/schema";

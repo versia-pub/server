@@ -7,14 +7,14 @@ import { getLogger } from "@logtape/logtape";
 import type {
     Account as ApiAccount,
     Mention as ApiMention,
-} from "@lysand-org/client/types";
+} from "@versia/client/types";
 import {
     EntityValidator,
     FederationRequester,
     type HttpVerb,
     SignatureConstructor,
 } from "@versia/federation";
-import type { User as VersiaUser } from "@versia/federation/types";
+import type { Collection, User as VersiaUser } from "@versia/federation/types";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -668,7 +668,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The signed string and headers to send with the request
      */
     async sign(
-        entity: KnownEntity,
+        entity: KnownEntity | Collection,
         signatureUrl: string | URL,
         signatureMethod: HttpVerb = "POST",
     ): Promise<{

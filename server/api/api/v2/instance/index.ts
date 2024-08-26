@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@/api";
 import { proxyUrl } from "@/response";
-import type { Instance as ApiInstance } from "@lysand-org/client/types";
+import type { Instance as ApiInstance } from "@versia/client/types";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
@@ -37,7 +37,6 @@ export default apiRoute((app) =>
             domain: new URL(config.http.base_url).hostname,
             title: config.instance.name,
             version: "4.3.0-alpha.3+glitch",
-            // @ts-expect-error Temporary until package also gets the rebranding
             versia_version: version,
             source_url: "https://github.com/lysand-org/server",
             description: config.instance.description,
