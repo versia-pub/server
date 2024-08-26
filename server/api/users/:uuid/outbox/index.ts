@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { zValidator } from "@hono/zod-validator";
-import type { Entity } from "@versia/federation/types";
+import type { Collection } from "@versia/federation/types";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -108,14 +108,9 @@ export default apiRoute((app) =>
                           ).toString()
                         : null,
                 items: notes.map((note) => note.toVersia()),
-            };
+            } satisfies Collection;
 
-            const { headers } = await author.sign(
-                // @ts-expect-error To fix when I add collections to versia-api
-                json as Entity,
-                context.req.url,
-                "GET",
-            );
+            const { headers } = await author.sign(json, context.req.url, "GET");
 
             return context.json(json, 200, headers.toJSON());
         },

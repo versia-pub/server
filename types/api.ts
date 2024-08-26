@@ -1,6 +1,7 @@
 import type { Hono } from "@hono/hono";
 import type { RouterRoute } from "@hono/hono/types";
 import type {
+    Collection,
     Delete,
     Follow,
     FollowAccept,
@@ -61,4 +62,5 @@ export type KnownEntity =
     | FollowReject
     | Unfollow
     | Delete
-    | LikeExtension;
+    | LikeExtension
+    | Collection;
