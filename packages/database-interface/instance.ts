@@ -139,7 +139,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         const wellKnownUrl = new URL("/.well-known/versia", origin);
         const logger = getLogger("federation");
 
-        const requester = await User.getServerActor().getFederationRequester();
+        const requester = await User.getFederationRequester();
 
         try {
             const { ok, raw, data } = await requester
@@ -195,7 +195,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         // Go to endpoint, then follow the links to the actual metadata
 
         const logger = getLogger("federation");
-        const requester = await User.getServerActor().getFederationRequester();
+        const requester = await User.getFederationRequester();
 
         try {
             const {

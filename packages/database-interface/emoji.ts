@@ -1,4 +1,4 @@
-import { emojiValidatorWithColons } from "@/api";
+import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as ApiEmoji } from "@lysand-org/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
@@ -191,7 +191,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
 
     public toVersia(): CustomEmojiExtension["emojis"][0] {
         return {
-            name: this.data.shortcode,
+            name: `:${this.data.shortcode}:`,
             url: {
                 [this.data.contentType]: {
                     content: this.data.url,
@@ -206,8 +206,17 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         emoji: CustomEmojiExtension["emojis"][0],
         instanceId: string | null,
     ): Promise<Emoji> {
+        // Extracts the shortcode from the emoji name (e.g. :shortcode: -> shortcode)
+        const shortcode = [
+            ...emoji.name.matchAll(emojiValidatorWithIdentifiers),
+        ][0].groups.shortcode;
+
+        if (!shortcode) {
+            throw new Error("Could not extract shortcode from emoji name");
+        }
+
         return Emoji.insert({
-            shortcode: emoji.name,
+            shortcode,
             url: Object.entries(emoji.url)[0][1].content,
             alt: Object.entries(emoji.url)[0][1].description || undefined,
             contentType: Object.keys(emoji.url)[0],

@@ -76,9 +76,7 @@ export default apiRoute((app) =>
 
                 const [username, domain] = accountMatches[0].split("@");
 
-                const requester = user ?? User.getServerActor();
-
-                const manager = await requester.getFederationRequester();
+                const manager = await (user ?? User).getFederationRequester();
 
                 const uri = await User.webFinger(manager, username, domain);
 

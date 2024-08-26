@@ -73,6 +73,10 @@ export default apiRoute((app) =>
                 return context.json({ error: "Object not found" }, 404);
             }
 
+            if (!foundAuthor) {
+                return context.json({ error: "Author not found" }, 404);
+            }
+
             if (foundAuthor?.isRemote()) {
                 return context.json(
                     { error: "Cannot view objects from remote instances" },
@@ -92,9 +96,11 @@ export default apiRoute((app) =>
                 reqUrl.protocol = "https:";
             }
 
-            const author = foundAuthor ?? User.getServerActor();
-
-            const { headers } = await author.sign(apiObject, reqUrl, "GET");
+            const { headers } = await foundAuthor.sign(
+                apiObject,
+                reqUrl,
+                "GET",
+            );
 
             return response(objectString, 200, {
                 "Content-Type": "application/json",

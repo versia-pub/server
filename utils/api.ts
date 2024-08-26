@@ -9,12 +9,14 @@ import {
     anyOf,
     caseInsensitive,
     charIn,
+    charNotIn,
     createRegExp,
     digit,
     exactly,
     global,
     letter,
     maybe,
+    not,
     oneOrMore,
 } from "magic-regexp";
 import { parse } from "qs";
@@ -67,14 +69,23 @@ export const idValidator = createRegExp(
 
 export const emojiValidator = createRegExp(
     // A-Z a-z 0-9 _ -
-    oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
+    oneOrMore(letter.or(digit).or(charIn("_-"))),
     [caseInsensitive, global],
 );
 
 export const emojiValidatorWithColons = createRegExp(
     exactly(":"),
-    oneOrMore(letter.or(digit).or(exactly("_")).or(exactly("-"))),
+    oneOrMore(letter.or(digit).or(charIn("_-"))),
     exactly(":"),
+    [caseInsensitive, global],
+);
+
+export const emojiValidatorWithIdentifiers = createRegExp(
+    exactly(
+        exactly(not.letter.or(not.digit).or(charNotIn("_-"))).times(1),
+        oneOrMore(letter.or(digit).or(charIn("_-"))).groupedAs("shortcode"),
+        exactly(not.letter.or(not.digit).or(charNotIn("_-"))).times(1),
+    ),
     [caseInsensitive, global],
 );
 

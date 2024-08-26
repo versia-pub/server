@@ -1,8 +1,7 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { redirect, response } from "@/response";
+import { redirect } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -19,7 +18,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     param: z.object({
-        uuid: z.string().uuid().or(z.literal("actor")),
+        uuid: z.string().uuid(),
     }),
 };
 
@@ -31,10 +30,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { uuid } = context.req.valid("param");
 
-            const user =
-                uuid === "actor"
-                    ? User.getServerActor()
-                    : await User.fromId(uuid);
+            const user = await User.fromId(uuid);
 
             if (!user) {
                 return context.json({ error: "User not found" }, 404);
@@ -55,24 +51,15 @@ export default apiRoute((app) =>
                 return redirect(user.toApi().url);
             }
 
-            const userString = JSON.stringify(user.toVersia());
+            const userJson = user.toVersia();
 
-            // If base_url uses https and request uses http, rewrite request to use https
-            // This fixes reverse proxy errors
-            const reqUrl = new URL(context.req.url);
-            if (
-                new URL(config.http.base_url).protocol === "https:" &&
-                reqUrl.protocol === "http:"
-            ) {
-                reqUrl.protocol = "https:";
-            }
+            const { headers } = await user.sign(
+                userJson,
+                context.req.url,
+                "GET",
+            );
 
-            const { headers } = await user.sign(user.toVersia(), reqUrl, "GET");
-
-            return response(userString, 200, {
-                "Content-Type": "application/json",
-                ...headers.toJSON(),
-            });
+            return context.json(userJson, 200, headers.toJSON());
         },
     ),
 );

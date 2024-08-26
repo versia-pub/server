@@ -128,10 +128,9 @@ export default apiRoute((app) =>
                     }
 
                     if (resolve) {
-                        const requester = self ?? User.getServerActor();
-
-                        const manager =
-                            await requester.getFederationRequester();
+                        const manager = await (
+                            self ?? User
+                        ).getFederationRequester();
 
                         const uri = await User.webFinger(
                             manager,

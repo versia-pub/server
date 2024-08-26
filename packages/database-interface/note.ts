@@ -602,8 +602,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
                 throw new Error(`Invalid URI to parse ${uri}`);
             }
 
-            const requester =
-                await User.getServerActor().getFederationRequester();
+            const requester = await User.getFederationRequester();
 
             const { data } = await requester.get(uri, {
                 // @ts-expect-error Bun extension
@@ -636,7 +635,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         const emojis: Emoji[] = [];
         const logger = getLogger("federation");
 
-        for (const emoji of note.extensions?.["org.lysand:custom_emojis"]
+        for (const emoji of note.extensions?.["pub.versia:custom_emojis"]
             ?.emojis ?? []) {
             const resolvedEmoji = await Emoji.fetchFromRemote(emoji).catch(
                 (e) => {
@@ -948,7 +947,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             // TODO: Refactor as part of groups
             group: status.visibility === "public" ? "public" : "followers",
             extensions: {
-                "org.lysand:custom_emojis": {
+                "pub.versia:custom_emojis": {
                     emojis: status.emojis.map((emoji) =>
                         new Emoji(emoji).toVersia(),
                     ),

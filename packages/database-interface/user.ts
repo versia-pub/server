@@ -135,56 +135,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    static getServerActor(): User {
-        return new User({
-            id: "00000000-0000-0000-0000-000000000000",
-            username: "actor",
-            avatar: "",
-            createdAt: "2024-01-01T00:00:00.000Z",
-            displayName: "Server Actor",
-            note: "This is a system actor used for server-to-server communication. It is not a real user.",
-            updatedAt: "2024-01-01T00:00:00.000Z",
-            instanceId: null,
-            publicKey: config.instance.keys.public,
-            source: {
-                fields: [],
-                language: null,
-                note: "",
-                privacy: "public",
-                sensitive: false,
-            },
-            fields: [],
-            isAdmin: false,
-            isBot: false,
-            isLocked: false,
-            isDiscoverable: false,
-            endpoints: {
-                dislikes: "",
-                featured: "",
-                likes: "",
-                followers: "",
-                following: "",
-                inbox: "",
-                outbox: "",
-            },
-            disableAutomoderation: false,
-            email: "",
-            emailVerificationToken: "",
-            emojis: [],
-            followerCount: 0,
-            followingCount: 0,
-            header: "",
-            instance: null,
-            password: "",
-            passwordResetToken: "",
-            privateKey: config.instance.keys.private,
-            roles: [],
-            sanctions: [],
-            statusCount: 0,
-            uri: "/users/actor",
-        });
-    }
-
     static getUri(id: string, uri: string | null, baseUrl: string) {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
     }
@@ -433,7 +383,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         uri: string,
         instance: Instance,
     ): Promise<User> {
-        const requester = await User.getServerActor().getFederationRequester();
+        const requester = await User.getFederationRequester();
         const { data: json } = await requester.get<Partial<VersiaUser>>(uri, {
             // @ts-expect-error Bun extension
             proxy: config.http.proxy.address,
@@ -750,6 +700,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
+     * Helper to get the appropriate Versia SDK requester with the instance's private key
+     *
+     * @returns The requester
+     */
+    static async getFederationRequester(): Promise<FederationRequester> {
+        const signatureConstructor = await SignatureConstructor.fromStringKey(
+            config.instance.keys.private,
+            config.http.base_url,
+        );
+
+        return new FederationRequester(signatureConstructor);
+    }
+
+    /**
      * Helper to get the appropriate Versia SDK requester with this user's private key
      *
      * @returns The requester
@@ -947,6 +911,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             ).toString(),
             indexable: false,
             username: user.username,
+            manually_approves_followers: this.data.isLocked,
             avatar: urlToContentFormat(this.getAvatarUrl(config)) ?? undefined,
             header: urlToContentFormat(this.getHeaderUrl(config)) ?? undefined,
             display_name: user.displayName,
@@ -960,7 +925,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 algorithm: "ed25519",
             },
             extensions: {
-                "org.lysand:custom_emojis": {
+                "pub.versia:custom_emojis": {
                     emojis: user.emojis.map((emoji) =>
                         new Emoji(emoji).toVersia(),
                     ),

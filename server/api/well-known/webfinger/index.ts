@@ -79,9 +79,7 @@ export default apiRoute((app) =>
             let activityPubUrl = "";
 
             if (config.federation.bridge.enabled) {
-                const requester = await User.getServerActor();
-
-                const manager = await requester.getFederationRequester();
+                const manager = await User.getFederationRequester();
 
                 try {
                     activityPubUrl = await manager.webFinger(

@@ -1,5 +1,6 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { zValidator } from "@hono/zod-validator";
+import type { Entity } from "@versia/federation/types";
 import { and, count, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -79,7 +80,7 @@ export default apiRoute((app) =>
                     )
             )[0].count;
 
-            return context.json({
+            const json = {
                 first: new URL(
                     `/users/${uuid}/outbox?page=1`,
                     config.http.base_url,
@@ -90,8 +91,7 @@ export default apiRoute((app) =>
                     )}`,
                     config.http.base_url,
                 ).toString(),
-                total_items: totalNotes,
-                // Server actor
+                total: totalNotes,
                 author: author.getUri(),
                 next:
                     notes.length === NOTES_PER_PAGE
@@ -99,16 +99,25 @@ export default apiRoute((app) =>
                               `/users/${uuid}/outbox?page=${pageNumber + 1}`,
                               config.http.base_url,
                           ).toString()
-                        : undefined,
-                prev:
+                        : null,
+                previous:
                     pageNumber > 1
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber - 1}`,
                               config.http.base_url,
                           ).toString()
-                        : undefined,
+                        : null,
                 items: notes.map((note) => note.toVersia()),
-            });
+            };
+
+            const { headers } = await author.sign(
+                // @ts-expect-error To fix when I add collections to versia-api
+                json as Entity,
+                context.req.url,
+                "GET",
+            );
+
+            return context.json(json, 200, headers.toJSON());
         },
     ),
 );
