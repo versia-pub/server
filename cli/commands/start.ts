@@ -35,12 +35,9 @@ export default class Start extends BaseCommand<typeof Start> {
 
         const numCpus = flags["all-threads"] ? os.cpus().length : flags.threads;
 
-        // Resolves the path to the main module
-        const resolved = import.meta.resolve("../../index");
-
         process.env.NUM_CPUS = String(numCpus);
         process.env.SILENT = flags.silent ? "true" : "false";
 
-        await import(resolved);
+        await import("~/index");
     }
 }
