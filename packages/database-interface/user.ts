@@ -14,7 +14,11 @@ import {
     type HttpVerb,
     SignatureConstructor,
 } from "@versia/federation";
-import type { Collection, User as VersiaUser } from "@versia/federation/types";
+import type {
+    Collection,
+    Unfollow,
+    User as VersiaUser,
+} from "@versia/federation/types";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -49,7 +53,6 @@ import {
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
-import { unfollowFederationRequest } from "../../classes/functions/federation.ts";
 import { BaseInterface } from "./base";
 import { Emoji } from "./emoji";
 import { Instance } from "./instance";
@@ -210,7 +213,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         if (followee.isRemote()) {
             // TODO: This should reschedule for a later time and maybe notify the server admin if it fails too often
             const { ok } = await this.federateToUser(
-                unfollowFederationRequest(this, followee),
+                this.unfollowToVersia(followee),
                 followee,
             );
 
@@ -238,6 +241,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         });
 
         return true;
+    }
+
+    private unfollowToVersia(followee: User): Unfollow {
+        const id = crypto.randomUUID();
+        return {
+            type: "Unfollow",
+            id,
+            author: this.getUri(),
+            created_at: new Date().toISOString(),
+            followee: followee.getUri(),
+        };
     }
 
     static async webFinger(
