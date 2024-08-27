@@ -142,8 +142,7 @@ export default apiRoute((app) =>
                 );
             }
 
-            const hostname = new URL(sender?.data.instance?.baseUrl ?? "")
-                .hostname;
+            const hostname = sender?.data.instance?.baseUrl ?? "";
 
             // Check if Origin is defederated
             if (
