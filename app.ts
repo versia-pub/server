@@ -5,6 +5,7 @@ import { secureHeaders } from "@hono/hono/secure-headers";
 import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus";
  */ import { getLogger } from "@logtape/logtape";
+import pkg from "~/package.json" with { type: "application/json" };
 import { config } from "~/packages/config-manager/index";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
@@ -12,6 +13,7 @@ import { boundaryCheck } from "./middlewares/boundary-check";
 import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
+import { swaggerUI } from "@hono/swagger-ui";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
 
 export const appFactory = async () => {
@@ -95,6 +97,32 @@ export const appFactory = async () => {
 
         route.default(app);
     }
+
+    app.doc31("/openapi.json", {
+        openapi: "3.1.0",
+        info: {
+            title: "Versia Server API",
+            version: pkg.version,
+            license: {
+                name: "AGPL-3.0",
+                url: "https://www.gnu.org/licenses/agpl-3.0.html",
+            },
+            contact: pkg.author,
+        },
+    });
+    app.doc("/openapi.3.0.0.json", {
+        openapi: "3.0.0",
+        info: {
+            title: "Versia Server API",
+            version: pkg.version,
+            license: {
+                name: "AGPL-3.0",
+                url: "https://www.gnu.org/licenses/agpl-3.0.html",
+            },
+            contact: pkg.author,
+        },
+    });
+    app.get("/docs", swaggerUI({ url: "/openapi.json" }));
 
     app.options("*", (context) => {
         return context.text("", 204);
