@@ -32,6 +32,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Sign all federation HTTP requests.
 - Add JSON schema for configuration file.
 - Rewrite federation stack
+- Updated federation to Versia 0.4
 
 ## Bug Fixes
 
@@ -54,6 +55,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 - Remove old logging system, to be replaced by a new one.
 - Removed Meilisearch support, in favor of Sonic. Follow instructions in the [installation guide](docs/installation.md) to set up Sonic.
+- Removed explicit Glitch-FE support. Glitch-FE will still work, but must be hosted separately like any other frontend.
 
 ## Miscellaneous
 
