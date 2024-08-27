@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-SOURCE=$(nix-prefetch-github --nix lysand-org server | tail -n 6)
+SOURCE=$(nix-prefetch-github --nix versia-pub server | tail -n 6)
 
 cat > ./nix/source.nix << EOF
 {

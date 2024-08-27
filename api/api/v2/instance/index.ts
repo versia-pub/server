@@ -38,7 +38,7 @@ export default apiRoute((app) =>
             title: config.instance.name,
             version: "4.3.0-alpha.3+glitch",
             versia_version: version,
-            source_url: "https://github.com/lysand-org/server",
+            source_url: "https://github.com/versia-pub/server",
             description: config.instance.description,
             usage: {
                 users: {

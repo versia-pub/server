@@ -4,4 +4,4 @@ Versia Server uses a special PostgreSQL extension called `pg_uuidv7` to generate
 
 ## Using the Docker image
 
-Versia Server offers a pre-made Docker image for PostgreSQL with the extension already installed. Use `ghcr.io/lysand-org/postgres:main` as your Docker image name to use it.
+Versia Server offers a pre-made Docker image for PostgreSQL with the extension already installed. Use `ghcr.io/versia-pub/postgres:main` as your Docker image name to use it.

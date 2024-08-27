@@ -1,6 +1,6 @@
 services:
   versia:
-    image: ghcr.io/lysand-org/server:latest
+    image: ghcr.io/versia-pub/server:latest
     volumes:
       - ./logs:/app/dist/logs
       - ./config:/app/dist/config
@@ -17,7 +17,7 @@ services:
       - fe
 
   fe:
-    image: ghcr.io/lysand-org/frontend:main
+    image: ghcr.io/versia-pub/frontend:main
     container_name: versia-fe
     restart: unless-stopped
     networks:
@@ -26,7 +26,7 @@ services:
       NUXT_PUBLIC_API_HOST: https://yourserver.com
 
   db:
-    image: ghcr.io/lysand-org/postgres:main
+    image: ghcr.io/versia-pub/postgres:main
     container_name: versia-db
     restart: unless-stopped
     environment:

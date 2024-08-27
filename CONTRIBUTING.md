@@ -28,7 +28,7 @@ curl -fsSL https://bun.sh/install | bash
 1. Clone this repository
 
 ```bash
-git clone https://github.com/lysand-org/server.git
+git clone https://github.com/versia-pub/server.git
 ```
 
 2. Install the dependencies

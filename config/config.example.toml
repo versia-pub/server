@@ -1,6 +1,6 @@
 # This schema always follows the latest dev version of Versia Server, which may not be what you want
 # Change the URL to the commit/tag you are using
-#:schema https://raw.githubusercontent.com/lysand-org/server/main/config/config.schema.json
+#:schema https://raw.githubusercontent.com/versia-pub/server/main/config/config.schema.json
 
 [database]
 # Main PostgreSQL database connection
@@ -311,7 +311,7 @@ reactions = []
 banners = []
 avatars = []
 
-# For bridge software, such as lysand-org/activitypub
+# For bridge software, such as versia-pub/activitypub
 # Bridges must be hosted separately from the main Versia Server process
 [federation.bridge]
 enabled = false
