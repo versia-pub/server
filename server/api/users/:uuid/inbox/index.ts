@@ -39,9 +39,9 @@ export const schemas = {
         uuid: z.string().uuid(),
     }),
     header: z.object({
-        "X-Signature": z.string(),
-        "X-Nonce": z.string(),
-        "X-Signed-By": z.string().url().or(z.literal("instance")),
+        "x-signature": z.string(),
+        "x-nonce": z.string(),
+        "x-signed-by": z.string().url().or(z.literal("instance")),
         authorization: z.string().optional(),
     }),
     body: z.any(),
@@ -57,9 +57,9 @@ export default apiRoute((app) =>
         async (context) => {
             const { uuid } = context.req.valid("param");
             const {
-                "X-Signature": signature,
-                "X-Nonce": nonce,
-                "X-Signed-By": signedBy,
+                "x-signature": signature,
+                "x-nonce": nonce,
+                "x-signed-by": signedBy,
                 authorization,
             } = context.req.valid("header");
             const logger = getLogger(["federation", "inbox"]);
