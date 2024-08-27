@@ -1,8 +1,8 @@
 import { sentry } from "@/sentry";
-import { Hono } from "@hono/hono";
 import { cors } from "@hono/hono/cors";
 import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
+import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus";
  */ import { getLogger } from "@logtape/logtape";
 import { config } from "~/packages/config-manager/index";
@@ -18,7 +18,7 @@ import type { ApiRouteExports } from "./types/api";
 export const appFactory = async () => {
     const serverLogger = getLogger("server");
 
-    const app = new Hono({
+    const app = new OpenAPIHono({
         strict: false,
     });
 

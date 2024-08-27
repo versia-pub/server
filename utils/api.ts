@@ -1,6 +1,7 @@
-import type { Context, Hono } from "@hono/hono";
+import type { Context } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
 import { validator } from "@hono/hono/validator";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
@@ -46,7 +47,7 @@ export const applyConfig = (routeMeta: ApiRouteMetadata) => {
 
 export const apiRoute = (
     fn: (
-        app: Hono /* <{
+        app: OpenAPIHono /* <{
             Bindings: {};
         }> */,
     ) => void,

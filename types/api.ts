@@ -1,5 +1,5 @@
-import type { Hono } from "@hono/hono";
 import type { RouterRoute } from "@hono/hono/types";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import type {
     Delete,
     Follow,
@@ -49,7 +49,7 @@ export interface ApiRouteExports {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;
     };
-    default: (app: Hono) => RouterRoute;
+    default: (app: OpenAPIHono) => RouterRoute;
 }
 
 export type KnownEntity =
