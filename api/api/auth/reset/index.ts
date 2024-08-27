@@ -1,6 +1,6 @@
-import { apiRoute, applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { response } from "@/response";
-import { zValidator } from "@hono/zod-validator";
+import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { Users } from "~/drizzle/schema";
@@ -26,6 +26,30 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "post",
+    path: "/api/auth/reset",
+    summary: "Reset password",
+    description: "Reset password",
+    responses: {
+        302: {
+            description: "Redirect to the password reset page with a message",
+        },
+    },
+    request: {
+        body: {
+            content: {
+                "application/x-www-form-urlencoded": {
+                    schema: schemas.form,
+                },
+                "multipart/form-data": {
+                    schema: schemas.form,
+                },
+            },
+        },
+    },
+});
+
 const returnError = (token: string, error: string, description: string) => {
     const searchParams = new URLSearchParams();
 
@@ -44,29 +68,22 @@ const returnError = (token: string, error: string, description: string) => {
 };
 
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("form", schemas.form, handleZodError),
-        async (context) => {
-            const { token, password } = context.req.valid("form");
+    app.openapi(route, async (context) => {
+        const { token, password } = context.req.valid("form");
 
-            const user = await User.fromSql(
-                eq(Users.passwordResetToken, token),
-            );
+        const user = await User.fromSql(eq(Users.passwordResetToken, token));
 
-            if (!user) {
-                return returnError(token, "invalid_token", "Invalid token");
-            }
+        if (!user) {
+            return returnError(token, "invalid_token", "Invalid token");
+        }
 
-            await user.update({
-                password: await Bun.password.hash(password),
-                passwordResetToken: null,
-            });
+        await user.update({
+            password: await Bun.password.hash(password),
+            passwordResetToken: null,
+        });
 
-            return response(null, 302, {
-                Location: `${config.frontend.routes.password_reset}?success=true`,
-            });
-        },
-    ),
+        return response(null, 302, {
+            Location: `${config.frontend.routes.password_reset}?success=true`,
+        });
+    }),
 );

@@ -68,7 +68,7 @@ export default apiRoute((app) =>
                 only_media,
             } = context.req.valid("query");
 
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             const { objects, link } = await Timeline.getNoteTimeline(
                 and(

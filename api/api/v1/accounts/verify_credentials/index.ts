@@ -20,7 +20,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         (context) => {
             // TODO: Add checks for disabled/unverified accounts
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             if (!user) {
                 return context.json({ error: "Unauthorized" }, 401);

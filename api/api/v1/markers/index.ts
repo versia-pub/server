@@ -48,7 +48,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { "timeline[]": timelines } = context.req.valid("query");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             const timeline = Array.isArray(timelines) ? timelines : [];
 

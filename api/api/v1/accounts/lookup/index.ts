@@ -46,7 +46,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { acct } = context.req.valid("query");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             if (!acct) {
                 return context.json({ error: "Invalid acct parameter" }, 400);

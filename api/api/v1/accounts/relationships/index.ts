@@ -34,7 +34,7 @@ export default apiRoute((app) =>
         zValidator("query", schemas.query, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
-            const { user: self } = context.req.valid("header");
+            const { user: self } = context.get("auth");
             const { id } = context.req.valid("query");
 
             const ids = Array.isArray(id) ? id : [id];

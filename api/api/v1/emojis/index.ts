@@ -69,7 +69,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { shortcode, element, alt, global, category } =
                 context.req.valid("json");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             if (!user) {
                 return context.json({ error: "Unauthorized" }, 401);

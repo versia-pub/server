@@ -108,7 +108,7 @@ export default apiRoute((app) =>
         zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
-            const { user, application } = context.req.valid("header");
+            const { user, application } = context.get("auth");
 
             if (!user) {
                 return context.json({ error: "Unauthorized" }, 401);

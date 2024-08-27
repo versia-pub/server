@@ -1,6 +1,5 @@
 import type { Context } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
-import { validator } from "@hono/hono/validator";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import { extractParams, verifySolution } from "altcha-lib";
@@ -29,7 +28,7 @@ import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import type { User } from "~/packages/database-interface/user";
-import type { ApiRouteMetadata, HttpVerb } from "~/types/api";
+import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 
 export const applyConfig = (routeMeta: ApiRouteMetadata) => {
     const newMeta = routeMeta;
@@ -45,13 +44,7 @@ export const applyConfig = (routeMeta: ApiRouteMetadata) => {
     return newMeta;
 };
 
-export const apiRoute = (
-    fn: (
-        app: OpenAPIHono /* <{
-            Bindings: {};
-        }> */,
-    ) => void,
-) => fn;
+export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void) => fn;
 
 export const idValidator = createRegExp(
     anyOf(digit, charIn("ABCDEF")).times(8),
@@ -149,12 +142,6 @@ export const handleZodError = (
             422,
         );
     }
-};
-
-const getAuth = async (value: Record<string, string>) => {
-    return value.authorization
-        ? await getFromHeader(value.authorization)
-        : null;
 };
 
 const checkPermissions = (
@@ -300,8 +287,10 @@ export const auth = (
     permissionData?: ApiRouteMetadata["permissions"],
     challengeData?: ApiRouteMetadata["challenge"],
 ) =>
-    validator("header", async (value, context) => {
-        const auth = await getAuth(value);
+    createMiddleware<HonoEnv>(async (context, next) => {
+        const header = context.req.header("Authorization");
+
+        const auth = header ? await getFromHeader(header) : null;
 
         // Only exists for type casting, as otherwise weird errors happen with Hono
         const fakeResponse = context.json({});
@@ -328,13 +317,21 @@ export const auth = (
             }
         }
 
-        return checkRouteNeedsAuth(auth, authData, context) as
+        const authCheck = checkRouteNeedsAuth(auth, authData, context) as
             | typeof fakeResponse
             | {
                   user: User | null;
                   token: string | null;
                   application: Application | null;
               };
+
+        if (authCheck instanceof Response) {
+            return authCheck;
+        }
+
+        context.set("auth", authCheck);
+
+        await next();
     });
 
 // Helper function to parse form data

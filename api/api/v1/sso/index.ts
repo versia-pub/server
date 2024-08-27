@@ -55,7 +55,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const form = context.req.valid("json");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             if (!user) {
                 return context.json({ error: "Unauthorized" }, 401);

@@ -1,5 +1,5 @@
-import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -26,48 +26,56 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "get",
+    path: "/api/auth/redirect",
+    summary: "OAuth Code flow",
+    description:
+        "Redirects to the application, or back to login if the code is invalid",
+    responses: {
+        302: {
+            description:
+                "Redirects to the application, or back to login if the code is invalid",
+        },
+    },
+    request: {
+        query: schemas.query,
+    },
+});
+
 /**
  * OAuth Code flow
  */
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("query", schemas.query, handleZodError),
-        async (context) => {
-            const { redirect_uri, client_id, code } =
-                context.req.valid("query");
+    app.openapi(route, async (context) => {
+        const { redirect_uri, client_id, code } = context.req.valid("query");
 
-            const redirectToLogin = (error: string) =>
-                Response.redirect(
-                    `${config.frontend.routes.login}?${new URLSearchParams({
-                        ...context.req.query,
-                        error: encodeURIComponent(error),
-                    }).toString()}`,
-                    302,
-                );
+        const redirectToLogin = (error: string) =>
+            Response.redirect(
+                `${config.frontend.routes.login}?${new URLSearchParams({
+                    ...context.req.query,
+                    error: encodeURIComponent(error),
+                }).toString()}`,
+                302,
+            );
 
-            const foundToken = await db
-                .select()
-                .from(Tokens)
-                .leftJoin(
-                    Applications,
-                    eq(Tokens.applicationId, Applications.id),
-                )
-                .where(
-                    and(
-                        eq(Tokens.code, code),
-                        eq(Applications.clientId, client_id),
-                    ),
-                )
-                .limit(1);
+        const foundToken = await db
+            .select()
+            .from(Tokens)
+            .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
+            .where(
+                and(
+                    eq(Tokens.code, code),
+                    eq(Applications.clientId, client_id),
+                ),
+            )
+            .limit(1);
 
-            if (!foundToken || foundToken.length <= 0) {
-                return redirectToLogin("Invalid code");
-            }
+        if (!foundToken || foundToken.length <= 0) {
+            return redirectToLogin("Invalid code");
+        }
 
-            // Redirect back to application
-            return Response.redirect(`${redirect_uri}?code=${code}`, 302);
-        },
-    ),
+        // Redirect back to application
+        return Response.redirect(`${redirect_uri}?code=${code}`, 302);
+    }),
 );

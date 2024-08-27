@@ -12,12 +12,12 @@ import { boundaryCheck } from "./middlewares/boundary-check";
 import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
-import type { ApiRouteExports } from "./types/api";
+import type { ApiRouteExports, HonoEnv } from "./types/api";
 
 export const appFactory = async () => {
     const serverLogger = getLogger("server");
 
-    const app = new OpenAPIHono({
+    const app = new OpenAPIHono<HonoEnv>({
         strict: false,
     });
 

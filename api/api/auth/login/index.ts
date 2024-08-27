@@ -1,6 +1,6 @@
-import { apiRoute, applyConfig, handleZodError } from "@/api";
+import { apiRoute, applyConfig } from "@/api";
 import { redirect } from "@/response";
-import { zValidator } from "@hono/zod-validator";
+import { createRoute } from "@hono/zod-openapi";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { z } from "zod";
@@ -59,6 +59,34 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "post",
+    path: "/api/auth/login",
+    summary: "Login",
+    description: "Login to the application",
+    request: {
+        body: {
+            content: {
+                "multipart/form-data": {
+                    schema: schemas.form,
+                },
+            },
+        },
+        query: schemas.query,
+    },
+    responses: {
+        302: {
+            description: "Redirect to OAuth authorize, or error",
+            headers: {
+                "Set-Cookie": {
+                    description: "JWT cookie",
+                    required: false,
+                },
+            },
+        },
+    },
+});
+
 const returnError = (query: object, error: string, description: string) => {
     const searchParams = new URLSearchParams();
 
@@ -81,116 +109,103 @@ const returnError = (query: object, error: string, description: string) => {
 };
 
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("form", schemas.form, handleZodError),
-        zValidator("query", schemas.query, handleZodError),
-        async (context) => {
-            if (config.oidc.forced) {
-                return returnError(
-                    context.req.query(),
-                    "invalid_request",
-                    "Logging in with a password is disabled by the administrator. Please use a valid OpenID Connect provider.",
-                );
-            }
-
-            const { identifier, password } = context.req.valid("form");
-            const { client_id } = context.req.valid("query");
-
-            // Find user
-            const user = await User.fromSql(
-                or(
-                    eq(Users.email, identifier.toLowerCase()),
-                    eq(Users.username, identifier.toLowerCase()),
-                ),
+    app.openapi(route, async (context) => {
+        if (config.oidc.forced) {
+            return returnError(
+                context.req.query(),
+                "invalid_request",
+                "Logging in with a password is disabled by the administrator. Please use a valid OpenID Connect provider.",
             );
+        }
 
-            if (
-                !(
-                    user &&
-                    (await Bun.password.verify(
-                        password,
-                        user.data.password || "",
-                    ))
-                )
-            ) {
-                return returnError(
-                    context.req.query(),
-                    "invalid_grant",
-                    "Invalid identifier or password",
-                );
-            }
+        const { identifier, password } = context.req.valid("form");
+        const { client_id } = context.req.valid("query");
 
-            if (user.data.passwordResetToken) {
-                return redirect(
-                    `${
-                        config.frontend.routes.password_reset
-                    }?${new URLSearchParams({
+        // Find user
+        const user = await User.fromSql(
+            or(
+                eq(Users.email, identifier.toLowerCase()),
+                eq(Users.username, identifier.toLowerCase()),
+            ),
+        );
+
+        if (
+            !(
+                user &&
+                (await Bun.password.verify(password, user.data.password || ""))
+            )
+        ) {
+            return returnError(
+                context.req.query(),
+                "invalid_grant",
+                "Invalid identifier or password",
+            );
+        }
+
+        if (user.data.passwordResetToken) {
+            return redirect(
+                `${config.frontend.routes.password_reset}?${new URLSearchParams(
+                    {
                         token: user.data.passwordResetToken ?? "",
                         login_reset: "true",
-                    }).toString()}`,
-                );
-            }
-
-            // Try and import the key
-            const privateKey = await crypto.subtle.importKey(
-                "pkcs8",
-                Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
-                "Ed25519",
-                false,
-                ["sign"],
+                    },
+                ).toString()}`,
             );
+        }
 
-            // Generate JWT
-            const jwt = await new SignJWT({
-                sub: user.id,
-                iss: new URL(config.http.base_url).origin,
-                aud: client_id,
-                exp: Math.floor(Date.now() / 1000) + 60 * 60,
-                iat: Math.floor(Date.now() / 1000),
-                nbf: Math.floor(Date.now() / 1000),
-            })
-                .setProtectedHeader({ alg: "EdDSA" })
-                .sign(privateKey);
+        // Try and import the key
+        const privateKey = await crypto.subtle.importKey(
+            "pkcs8",
+            Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
+            "Ed25519",
+            false,
+            ["sign"],
+        );
 
-            const application = await db.query.Applications.findFirst({
-                where: (app, { eq }) => eq(app.clientId, client_id),
-            });
+        // Generate JWT
+        const jwt = await new SignJWT({
+            sub: user.id,
+            iss: new URL(config.http.base_url).origin,
+            aud: client_id,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60,
+            iat: Math.floor(Date.now() / 1000),
+            nbf: Math.floor(Date.now() / 1000),
+        })
+            .setProtectedHeader({ alg: "EdDSA" })
+            .sign(privateKey);
 
-            if (!application) {
-                return context.json({ error: "Invalid application" }, 400);
+        const application = await db.query.Applications.findFirst({
+            where: (app, { eq }) => eq(app.clientId, client_id),
+        });
+
+        if (!application) {
+            return context.json({ error: "Invalid application" }, 400);
+        }
+
+        const searchParams = new URLSearchParams({
+            application: application.name,
+        });
+
+        if (application.website) {
+            searchParams.append("website", application.website);
+        }
+
+        // Add all data that is not undefined except email and password
+        for (const [key, value] of Object.entries(context.req.query())) {
+            if (key !== "email" && key !== "password" && value !== undefined) {
+                searchParams.append(key, String(value));
             }
+        }
 
-            const searchParams = new URLSearchParams({
-                application: application.name,
-            });
-
-            if (application.website) {
-                searchParams.append("website", application.website);
-            }
-
-            // Add all data that is not undefined except email and password
-            for (const [key, value] of Object.entries(context.req.query())) {
-                if (
-                    key !== "email" &&
-                    key !== "password" &&
-                    value !== undefined
-                ) {
-                    searchParams.append(key, String(value));
-                }
-            }
-
-            // Redirect to OAuth authorize with JWT
-            return redirect(
-                `${config.frontend.routes.consent}?${searchParams.toString()}`,
-                302,
-                {
-                    "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
-                        60 * 60
-                    }`,
-                },
-            );
-        },
-    ),
+        // Redirect to OAuth authorize with JWT
+        return redirect(
+            `${config.frontend.routes.consent}?${searchParams.toString()}`,
+            302,
+            {
+                "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
+                    60 * 60
+                }`,
+            },
+        );
+    }),
 );

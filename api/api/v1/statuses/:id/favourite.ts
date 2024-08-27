@@ -36,7 +36,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { id } = context.req.valid("param");
 
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             if (!user) {
                 return context.json({ error: "Unauthorized" }, 401);

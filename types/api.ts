@@ -11,8 +11,10 @@ import type {
     Unfollow,
     User,
 } from "@versia/federation/types";
-import type { z } from "zod";
+import { z } from "zod";
+import type { Application } from "~/classes/functions/application";
 import type { RolePermissions } from "~/drizzle/schema";
+import type { User as DatabaseUser } from "~/packages/database-interface/user";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 export interface ApiRouteMetadata {
@@ -43,13 +45,27 @@ export interface ApiRouteMetadata {
     };
 }
 
+export const ErrorSchema = z.object({
+    error: z.string(),
+});
+
+export type HonoEnv = {
+    Variables: {
+        auth: {
+            user: DatabaseUser | null;
+            token: string | null;
+            application: Application | null;
+        };
+    };
+};
+
 export interface ApiRouteExports {
     meta: ApiRouteMetadata;
     schemas?: {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;
     };
-    default: (app: OpenAPIHono) => RouterRoute;
+    default: (app: OpenAPIHono<HonoEnv>) => RouterRoute;
 }
 
 export type KnownEntity =

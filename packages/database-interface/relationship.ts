@@ -8,6 +8,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Relationships } from "~/drizzle/schema";
 import { BaseInterface } from "./base";
@@ -25,6 +26,23 @@ export class Relationship extends BaseInterface<
     typeof Relationships,
     RelationshipWithOpposite
 > {
+    static schema = z.object({
+        id: z.string(),
+        blocked_by: z.boolean(),
+        blocking: z.boolean(),
+        domain_blocking: z.boolean(),
+        endorsed: z.boolean(),
+        followed_by: z.boolean(),
+        following: z.boolean(),
+        muting_notifications: z.boolean(),
+        muting: z.boolean(),
+        note: z.string().nullable(),
+        notifying: z.boolean(),
+        requested_by: z.boolean(),
+        requested: z.boolean(),
+        showing_reblogs: z.boolean(),
+    });
+
     async reload(): Promise<void> {
         const reloaded = await Relationship.fromId(this.data.id);
 

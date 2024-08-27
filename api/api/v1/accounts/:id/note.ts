@@ -42,7 +42,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
             const { comment } = context.req.valid("json");
 
             if (!user) {

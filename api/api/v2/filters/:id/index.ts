@@ -77,7 +77,7 @@ export default apiRoute((app) =>
         zValidator("json", schemas.json, handleZodError),
         auth(meta.auth, meta.permissions),
         async (context) => {
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
             const { id } = context.req.valid("param");
 
             if (!user) {

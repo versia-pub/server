@@ -24,7 +24,7 @@ export default apiRoute((app) =>
         meta.route,
         auth(meta.auth, meta.permissions),
         async (context) => {
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             const emojis = await Emoji.manyFromSql(
                 and(

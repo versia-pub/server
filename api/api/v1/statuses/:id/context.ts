@@ -34,7 +34,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { id } = context.req.valid("param");
 
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
 
             const foundStatus = await Note.fromId(id, user?.id);
 

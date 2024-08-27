@@ -48,7 +48,7 @@ export default apiRoute((app) =>
         auth(meta.auth, meta.permissions),
         async (context) => {
             const { id } = context.req.valid("param");
-            const { user } = context.req.valid("header");
+            const { user } = context.get("auth");
             // TODO: Add duration support
             const { notifications } = context.req.valid("json");
 
