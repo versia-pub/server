@@ -5,7 +5,6 @@ services:
       - ./logs:/app/dist/logs
       - ./config:/app/dist/config
       - ./uploads:/app/dist/uploads
-      - ./glitch:/app/dist/glitch
     restart: unless-stopped
     container_name: versia
     command: "cli start --all-threads"

@@ -120,7 +120,7 @@ bait_ips = ["127.0.0.1", "::1"]
 bait_user_agents = ["curl", "wget"]
 
 [frontend]
-# Enable custom frontends (warning: not enabling this or Glitch will make Versia Server only accessible via the Mastodon API)
+# Enable custom frontends (warning: not enabling this will make Versia Server only accessible via the Mastodon API)
 # Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
 enabled = true
 # The URL to reach the frontend at (should be on a local network)
@@ -140,14 +140,6 @@ url = "http://localhost:3000"
 # Arbitrary key/value pairs to be passed to the frontend
 # This can be used to set up custom themes, etc on supported frontends.
 # theme = "dark"
-
-[frontend.glitch]
-# Enable the Glitch frontend integration
-enabled = false
-# Glitch assets folder
-assets = "glitch"
-# Server the assets were ripped from (and any eventual CDNs)
-server = ["https://tech.lgbt"]
 
 [smtp]
 # SMTP server to use for sending emails

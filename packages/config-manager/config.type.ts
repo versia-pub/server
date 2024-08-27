@@ -182,17 +182,6 @@ export const configValidator = z.object({
         .object({
             enabled: z.boolean().default(true),
             url: zUrl.default("http://localhost:3000"),
-            glitch: z
-                .object({
-                    enabled: z.boolean().default(false),
-                    assets: z.string().min(1).default("glitch"),
-                    server: z.array(zUrl).default([]),
-                })
-                .default({
-                    enabled: false,
-                    assets: "glitch",
-                    server: [],
-                }),
             routes: z
                 .object({
                     home: zUrlPath.default("/"),
@@ -213,11 +202,6 @@ export const configValidator = z.object({
         .default({
             enabled: true,
             url: "http://localhost:3000",
-            glitch: {
-                enabled: false,
-                assets: "glitch",
-                server: [],
-            },
             settings: {},
         }),
     smtp: z

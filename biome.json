@@ -1,8 +1,7 @@
 {
     "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
     "organizeImports": {
-        "enabled": true,
-        "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
+        "enabled": true
     },
     "linter": {
         "enabled": true,
@@ -62,16 +61,17 @@
                 "useImportExtensions": "off",
                 "useThrowNewError": "warn"
             }
-        },
-        "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
+        }
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
-        "indentWidth": 4,
-        "ignore": ["node_modules", "dist", "glitch", "glitch-dev"]
+        "indentWidth": 4
     },
     "javascript": {
         "globals": ["Bun", "HTMLRewriter", "BufferEncoding"]
+    },
+    "files": {
+        "ignore": ["node_modules", "dist"]
     }
 }

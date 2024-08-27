@@ -11,7 +11,6 @@ import { bait } from "./middlewares/bait";
 import { boundaryCheck } from "./middlewares/boundary-check";
 import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
-import { handleGlitchRequest } from "./packages/glitch-server/main";
 import { routes } from "./routes";
 import type { ApiRouteExports } from "./types/api";
 
@@ -102,14 +101,6 @@ export const appFactory = async () => {
     });
 
     app.all("*", async (context) => {
-        if (config.frontend.glitch.enabled) {
-            const glitch = await handleGlitchRequest(context.req.raw);
-
-            if (glitch) {
-                return glitch;
-            }
-        }
-
         const replacedUrl = new URL(
             new URL(context.req.url).pathname,
             config.frontend.url,

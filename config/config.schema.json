@@ -392,33 +392,6 @@
                     "$ref": "#/properties/http/properties/proxy/properties/address/anyOf/0",
                     "default": "http://localhost:3000"
                 },
-                "glitch": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": {
-                            "type": "boolean",
-                            "default": false
-                        },
-                        "assets": {
-                            "type": "string",
-                            "minLength": 1,
-                            "default": "glitch"
-                        },
-                        "server": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/properties/http/properties/proxy/properties/address/anyOf/0"
-                            },
-                            "default": []
-                        }
-                    },
-                    "additionalProperties": false,
-                    "default": {
-                        "enabled": false,
-                        "assets": "glitch",
-                        "server": []
-                    }
-                },
                 "routes": {
                     "type": "object",
                     "properties": {
@@ -463,11 +436,6 @@
             "default": {
                 "enabled": true,
                 "url": "http://localhost:3000",
-                "glitch": {
-                    "enabled": false,
-                    "assets": "glitch",
-                    "server": []
-                },
                 "settings": {}
             }
         },
