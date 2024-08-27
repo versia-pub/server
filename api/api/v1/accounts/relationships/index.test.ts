@@ -2,8 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -17,41 +16,25 @@ beforeAll(async () => {
         .set({ isLocked: true })
         .where(eq(Users.id, users[0].id));
 
-    const res1 = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/accounts/${users[0].id}/follow`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        ),
-    );
+    const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${tokens[1].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    });
 
     expect(res1.ok).toBe(true);
 
-    const res2 = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/accounts/${users[2].id}/follow`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        ),
-    );
+    const res2 = await fakeRequest(`/api/v1/accounts/${users[2].id}/follow`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${tokens[0].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    });
 
     expect(res2.ok).toBe(true);
 });
@@ -63,31 +46,19 @@ afterAll(async () => {
 // /api/v1/accounts/relationships
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?id[]=${users[2].id}`,
-                    config.http.base_url,
-                ),
-            ),
-        );
+        const response = await fakeRequest(`${meta.route}?id[]=${users[2].id}`);
 
         expect(response.status).toBe(401);
     });
 
     test("should return relationships", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?id[]=${users[2].id}`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?id[]=${users[2].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -111,18 +82,13 @@ describe(meta.route, () => {
     });
 
     test("should be requested_by user1", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?id[]=${users[1].id}`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?id[]=${users[1].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);

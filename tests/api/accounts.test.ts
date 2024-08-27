@@ -7,9 +7,7 @@ import type {
     Relationship as ApiRelationship,
 } from "@versia/client/types";
 import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "~/tests/utils";
-
-const baseUrl = config.http.base_url;
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const user = users[0];
@@ -29,22 +27,17 @@ const getFormData = (object: Record<string, string | number | boolean>) =>
 describe("API Tests", () => {
     describe("PATCH /api/v1/accounts/update_credentials", () => {
         test("should update the authenticated user's display name", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        "/api/v1/accounts/update_credentials",
-                        baseUrl,
-                    ),
-                    {
-                        method: "PATCH",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                        body: getFormData({
-                            display_name: "New Display Name",
-                        }),
+            const response = await fakeRequest(
+                "/api/v1/accounts/update_credentials",
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
-                ),
+                    body: getFormData({
+                        display_name: "New Display Name",
+                    }),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -60,18 +53,13 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/accounts/verify_credentials", () => {
         test("should return the authenticated user's account information", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        "/api/v1/accounts/verify_credentials",
-                        baseUrl,
-                    ),
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
+            const response = await fakeRequest(
+                "/api/v1/accounts/verify_credentials",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
-                ),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -111,21 +99,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/remove_from_followers", () => {
         test("should remove the specified user from the authenticated user's followers and return an APIRelationship object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/remove_from_followers`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/remove_from_followers`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -142,21 +125,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/block", () => {
         test("should block the specified user and return an APIRelationship object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/block`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/block`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -173,14 +151,12 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/blocks", () => {
         test("should return an array of APIAccount objects for the user's blocked accounts", async () => {
-            const response = await sendTestRequest(
-                new Request(wrapRelativeUrl("/api/v1/blocks", baseUrl), {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
-                    },
-                }),
-            );
+            const response = await fakeRequest("/api/v1/blocks", {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token.accessToken}`,
+                },
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -196,21 +172,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/unblock", () => {
         test("should unblock the specified user and return an APIRelationship object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/unblock`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/unblock`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -227,21 +198,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/pin", () => {
         test("should pin the specified user and return an APIRelationship object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/pin`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/pin`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -258,21 +224,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/unpin", () => {
         test("should unpin the specified user and return an APIRelationship object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/unpin`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/unpin`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -289,21 +250,16 @@ describe("API Tests", () => {
 
     describe("POST /api/v1/accounts/:id/note", () => {
         test("should update the specified account's note and return the updated account object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/note`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ comment: "This is a new note" }),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/note`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({ comment: "This is a new note" }),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -320,19 +276,14 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/accounts/relationships", () => {
         test("should return an array of APIRelationship objects for the authenticated user's relationships", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/relationships?id[]=${user2.id}`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
+            const response = await fakeRequest(
+                `/api/v1/accounts/relationships?id[]=${user2.id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
-                ),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -358,17 +309,12 @@ describe("API Tests", () => {
 
     describe("DELETE /api/v1/profile/avatar", () => {
         test("should delete the avatar of the authenticated user and return the updated account object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl("/api/v1/profile/avatar", baseUrl),
-                    {
-                        method: "DELETE",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
+            const response = await fakeRequest("/api/v1/profile/avatar", {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token.accessToken}`,
+                },
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -384,17 +330,12 @@ describe("API Tests", () => {
 
     describe("DELETE /api/v1/profile/header", () => {
         test("should delete the header of the authenticated user and return the updated account object", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl("/api/v1/profile/header", baseUrl),
-                    {
-                        method: "DELETE",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
-                    },
-                ),
-            );
+            const response = await fakeRequest("/api/v1/profile/header", {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token.accessToken}`,
+                },
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -410,21 +351,16 @@ describe("API Tests", () => {
 
     describe("GET /api/v1/accounts/familiar_followers", () => {
         test("should follow the user", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/${user2.id}/follow`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({}),
+            const response = await fakeRequest(
+                `/api/v1/accounts/${user2.id}/follow`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
+                        "Content-Type": "application/json",
                     },
-                ),
+                    body: JSON.stringify({}),
+                },
             );
 
             expect(response.status).toBe(200);
@@ -434,19 +370,14 @@ describe("API Tests", () => {
         });
 
         test("should return an array of objects with id and accounts properties, where id is a string and accounts is an array of APIAccount objects", async () => {
-            const response = await sendTestRequest(
-                new Request(
-                    wrapRelativeUrl(
-                        `/api/v1/accounts/familiar_followers?id[]=${user2.id}`,
-                        baseUrl,
-                    ),
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token.accessToken}`,
-                        },
+            const response = await fakeRequest(
+                `/api/v1/accounts/familiar_followers?id[]=${user2.id}`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token.accessToken}`,
                     },
-                ),
+                },
             );
 
             expect(response.status).toBe(200);

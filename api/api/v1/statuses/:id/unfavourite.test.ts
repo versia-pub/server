@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./unfavourite";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -14,35 +13,25 @@ afterAll(async () => {
 // /api/v1/statuses/:id/unfavourite
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", timeline[0].id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                },
-            ),
+        const response = await fakeRequest(
+            meta.route.replace(":id", timeline[0].id),
+            {
+                method: "POST",
+            },
         );
 
         expect(response.status).toBe(401);
     });
 
     test("should be able to unfavourite post that is not favourited", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", timeline[0].id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", timeline[0].id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -50,35 +39,22 @@ describe(meta.route, () => {
 
     test("should unfavourite post", async () => {
         beforeAll(async () => {
-            await sendTestRequest(
-                new Request(
-                    new URL(
-                        `/api/v1/statuses/${timeline[1].id}/favourite`,
-                        config.http.base_url,
-                    ),
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${tokens[1].accessToken}`,
-                        },
-                    },
-                ),
-            );
+            await fakeRequest(`/api/v1/statuses/${timeline[1].id}/favourite`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+            });
         });
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", timeline[1].id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", timeline[1].id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -90,18 +66,13 @@ describe(meta.route, () => {
     });
 
     test("post should not be favourited when fetched", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/v1/statuses/${timeline[1].id}`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `/api/v1/statuses/${timeline[1].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);

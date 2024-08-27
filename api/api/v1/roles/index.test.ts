@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { ADMIN_ROLES } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import { Role } from "~/packages/database-interface/role";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, deleteUsers, tokens } = await getTestUsers(1);
@@ -32,24 +32,20 @@ afterAll(async () => {
 // /api/v1/roles
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "GET",
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            method: "GET",
+        });
 
         expect(response.status).toBe(401);
     });
 
     test("should return a list of roles", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.ok).toBe(true);
         const roles = await response.json();

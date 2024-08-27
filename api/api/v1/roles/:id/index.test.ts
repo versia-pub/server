@@ -1,8 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
 import { Role } from "~/packages/database-interface/role";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
@@ -61,58 +60,34 @@ afterAll(async () => {
 // /api/v1/roles/:id
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", role.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "GET",
-                },
-            ),
-        );
+        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+            method: "GET",
+        });
 
         expect(response.status).toBe(401);
     });
 
     test("should return 404 if role does not exist", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(
-                        ":id",
-                        "00000000-0000-0000-0000-000000000000",
-                    ),
-                    config.http.base_url,
-                ),
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(404);
     });
 
     test("should return the role", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", role.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
+        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.ok).toBe(true);
         const output = await response.json();
@@ -127,19 +102,14 @@ describe(meta.route, () => {
     });
 
     test("should return 403 if user does not have MANAGE_ROLES permission", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", roleNotLinked.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", roleNotLinked.id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(403);
@@ -154,32 +124,25 @@ describe(meta.route, () => {
             permissions: [RolePermissions.ManageRoles],
         });
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", roleNotLinked.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", roleNotLinked.id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(204);
 
         // Check if role was assigned
-        const response2 = await sendTestRequest(
-            new Request(new URL("/api/v1/roles", config.http.base_url), {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response2 = await fakeRequest("/api/v1/roles", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response2.ok).toBe(true);
         const roles = await response2.json();
@@ -201,32 +164,22 @@ describe(meta.route, () => {
     });
 
     test("should unassign role", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", role.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
+        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(204);
 
         // Check if role was unassigned
-        const response2 = await sendTestRequest(
-            new Request(new URL("/api/v1/roles", config.http.base_url), {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response2 = await fakeRequest("/api/v1/roles", {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response2.ok).toBe(true);
         const roles = await response2.json();
@@ -248,19 +201,14 @@ describe(meta.route, () => {
             permissions: [RolePermissions.ManageRoles],
         });
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", higherPriorityRole.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", higherPriorityRole.id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(403);

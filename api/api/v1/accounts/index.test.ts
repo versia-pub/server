@@ -3,8 +3,7 @@ import { randomString } from "@/math";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { getSolvedChallenge, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getSolvedChallenge } from "~/tests/utils";
 import { meta } from "./index";
 
 const username = randomString(10, "hex");
@@ -18,228 +17,206 @@ afterEach(async () => {
 // /api/v1/statuses
 describe(meta.route, () => {
     test("should create a new account", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: "bob@gamer.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username,
+                email: "bob@gamer.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response.ok).toBe(true);
     });
 
     test("should refuse invalid emails", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: "bob",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username,
+                email: "bob",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should require a password", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: "contatc@bob.com",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username,
+                email: "contatc@bob.com",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should not allow a previously registered email", async () => {
-        await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: "contact@george.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username,
+                email: "contact@george.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username2,
-                    email: "contact@george.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username2,
+                email: "contact@george.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should not allow a previously registered email (case insensitive)", async () => {
-        await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username,
-                    email: "contact@george.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username,
+                email: "contact@george.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: username2,
-                    email: "CONTACT@george.CoM",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: username2,
+                email: "CONTACT@george.CoM",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should not allow invalid usernames (not a-z_0-9)", async () => {
-        const response1 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: "bob$",
-                    email: "contact@bob.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response1 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: "bob$",
+                email: "contact@bob.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response1.status).toBe(422);
 
-        const response2 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: "bob-markey",
-                    email: "contact@bob.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response2 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: "bob-markey",
+                email: "contact@bob.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response2.status).toBe(422);
 
-        const response3 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: "bob markey",
-                    email: "contact@bob.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response3 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: "bob markey",
+                email: "contact@bob.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response3.status).toBe(422);
 
-        const response4 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-Challenge-Solution": await getSolvedChallenge(),
-                },
-                body: JSON.stringify({
-                    username: "BOB",
-                    email: "contact@bob.com",
-                    password: "password",
-                    agreement: "true",
-                    locale: "en",
-                    reason: "testing",
-                }),
+        const response4 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Challenge-Solution": await getSolvedChallenge(),
+            },
+            body: JSON.stringify({
+                username: "BOB",
+                email: "contact@bob.com",
+                password: "password",
+                agreement: "true",
+                locale: "en",
+                reason: "testing",
             }),
-        );
+        });
 
         expect(response4.status).toBe(422);
     });

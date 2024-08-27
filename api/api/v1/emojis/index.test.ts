@@ -3,8 +3,7 @@ import { inArray } from "drizzle-orm";
 import sharp from "sharp";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(3);
@@ -41,18 +40,16 @@ const createImage = async (name: string): Promise<File> => {
 
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    shortcode: "test",
-                    element: "https://cdn.versia.social/logo.webp",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                shortcode: "test",
+                element: "https://cdn.versia.social/logo.webp",
             }),
-        );
+        });
 
         expect(response.status).toBe(401);
     });
@@ -64,15 +61,13 @@ describe(meta.route, () => {
             formData.append("element", await createImage("test.png"));
             formData.append("global", "true");
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.ok).toBe(true);
             const emoji = await response.json();
@@ -85,33 +80,29 @@ describe(meta.route, () => {
             formData.append("shortcode", "test2");
             formData.append("element", new File(["test"], "test.txt"));
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.status).toBe(422);
         });
 
         test("should upload an emoji by url", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        shortcode: "test3",
-                        element: "https://cdn.versia.social/logo.webp",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    shortcode: "test3",
+                    element: "https://cdn.versia.social/logo.webp",
                 }),
-            );
+            });
 
             expect(response.ok).toBe(true);
             const emoji = await response.json();
@@ -124,15 +115,13 @@ describe(meta.route, () => {
             formData.append("shortcode", "test1");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.status).toBe(422);
         });
@@ -144,15 +133,13 @@ describe(meta.route, () => {
             formData.append("shortcode", "test4");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.ok).toBe(true);
             const emoji = await response.json();
@@ -165,15 +152,13 @@ describe(meta.route, () => {
             formData.append("shortcode", "test1");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.status).toBe(422);
         });
@@ -183,15 +168,13 @@ describe(meta.route, () => {
             formData.append("shortcode", "test4");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[2].accessToken}`,
-                    },
-                    body: formData,
-                }),
-            );
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[2].accessToken}`,
+                },
+                body: formData,
+            });
 
             expect(response.ok).toBe(true);
             const emoji = await response.json();

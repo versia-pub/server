@@ -19,18 +19,10 @@ if (config.sonic.enabled) {
 
 const app = await appFactory();
 
-/**
- * This allows us to send a test request to the server even when it isnt running
- * @param req Request to send
- * @returns Response from the server
- */
-export function sendTestRequest(req: Request): Promise<Response> {
-    // return fetch(req);
-    return Promise.resolve(app.fetch(req));
-}
-
-export function wrapRelativeUrl(url: string, baseUrl: string) {
-    return new URL(url, baseUrl);
+export function fakeRequest(url: URL | string, init?: RequestInit) {
+    return Promise.resolve(
+        app.fetch(new Request(new URL(url, config.http.base_url), init)),
+    );
 }
 
 export const deleteOldTestUsers = async () => {

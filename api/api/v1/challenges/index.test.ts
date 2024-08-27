@@ -1,16 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { sendTestRequest } from "~/tests/utils";
+import { fakeRequest } from "~/tests/utils";
 import { meta } from "./index";
 
 // /api/v1/challenges
 describe(meta.route, () => {
     test("should get a challenge", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+        });
 
         expect(response.status).toBe(200);
 

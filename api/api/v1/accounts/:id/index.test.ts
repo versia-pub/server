@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -13,47 +12,29 @@ afterAll(async () => {
 
 beforeAll(async () => {
     for (const status of timeline) {
-        await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/v1/statuses/${status.id}/favourite`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({}),
-                },
-            ),
-        );
+        await fakeRequest(`/api/v1/statuses/${status.id}/favourite`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[1].accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+        });
     }
 });
 
 // /api/v1/accounts/:id
 describe(meta.route, () => {
     test("should return 404 if ID is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", "invalid"),
-                    config.http.base_url,
-                ),
-            ),
+        const response = await fakeRequest(
+            meta.route.replace(":id", "invalid"),
         );
         expect(response.status).toBe(422);
     });
 
     test("should return user", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", users[0].id),
-                    config.http.base_url,
-                ),
-            ),
+        const response = await fakeRequest(
+            meta.route.replace(":id", users[0].id),
         );
 
         expect(response.status).toBe(200);

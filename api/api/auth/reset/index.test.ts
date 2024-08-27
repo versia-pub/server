@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Applications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
@@ -38,17 +38,13 @@ describe(meta.route, () => {
         formData.append("identifier", users[0]?.data.username ?? "");
         formData.append("password", passwords[0]);
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    body: formData,
-                },
-            ),
+        const response = await fakeRequest(
+            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+
+            {
+                method: "POST",
+                body: formData,
+            },
         );
 
         expect(response.status).toBe(302);
@@ -65,17 +61,12 @@ describe(meta.route, () => {
         formData.append("identifier", users[0]?.data.username ?? "");
         formData.append("password", passwords[0]);
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    body: formData,
-                },
-            ),
+        const response = await fakeRequest(
+            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            {
+                method: "POST",
+                body: formData,
+            },
         );
 
         expect(response.status).toBe(302);
@@ -96,12 +87,10 @@ describe(meta.route, () => {
         formData.append("password", newPassword);
         formData.append("password2", newPassword);
 
-        const response = await sendTestRequest(
-            new Request(new URL("/api/auth/reset", config.http.base_url), {
-                method: "POST",
-                body: formData,
-            }),
-        );
+        const response = await fakeRequest("/api/auth/reset", {
+            method: "POST",
+            body: formData,
+        });
 
         expect(response.status).toBe(302);
         expect(response.headers.get("location")).toBeDefined();
@@ -111,17 +100,12 @@ describe(meta.route, () => {
         loginFormData.append("identifier", users[0]?.data.username ?? "");
         loginFormData.append("password", newPassword);
 
-        const loginResponse = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    body: loginFormData,
-                },
-            ),
+        const loginResponse = await fakeRequest(
+            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            {
+                method: "POST",
+                body: loginFormData,
+            },
         );
 
         expect(loginResponse.status).toBe(302);

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const getFormData = (object: Record<string, string | number | boolean>) =>
@@ -14,75 +13,55 @@ const { users, tokens, deleteUsers } = await getTestUsers(2);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    const res1 = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/accounts/${users[0].id}/follow`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        ),
-    );
+    const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${tokens[1].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+    });
 
     expect(res1.status).toBe(200);
 
-    const res2 = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/statuses/${timeline[0].id}/favourite`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
+    const res2 = await fakeRequest(
+        `/api/v1/statuses/${timeline[0].id}/favourite`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[1].accessToken}`,
+                "Content-Type": "application/json",
             },
-        ),
+            body: JSON.stringify({}),
+        },
     );
 
     expect(res2.status).toBe(200);
 
-    const res3 = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/statuses/${timeline[0].id}/reblog`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                },
-                body: getFormData({}),
-            },
-        ),
-    );
-
-    expect(res3.status).toBe(200);
-
-    const res4 = await sendTestRequest(
-        new Request(new URL("/api/v1/statuses", config.http.base_url), {
+    const res3 = await fakeRequest(
+        `/api/v1/statuses/${timeline[0].id}/reblog`,
+        {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[1].accessToken}`,
             },
-            body: new URLSearchParams({
-                status: `@${users[0].data.username} test mention`,
-                visibility: "direct",
-                local_only: "true",
-            }),
-        }),
+            body: getFormData({}),
+        },
     );
+
+    expect(res3.status).toBe(200);
+
+    const res4 = await fakeRequest("/api/v1/statuses", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${tokens[1].accessToken}`,
+        },
+        body: new URLSearchParams({
+            status: `@${users[0].data.username} test mention`,
+            visibility: "direct",
+            local_only: "true",
+        }),
+    });
 
     expect(res4.status).toBe(200);
 });
@@ -94,21 +73,17 @@ afterAll(async () => {
 // /api/v1/notifications
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url)),
-        );
+        const response = await fakeRequest(meta.route);
 
         expect(response.status).toBe(401);
     });
 
     test("should return 200 with notifications", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -133,36 +108,31 @@ describe(meta.route, () => {
     });
 
     test("should not return notifications with filtered keywords", async () => {
-        const filterResponse = await sendTestRequest(
-            new Request(new URL("/api/v2/filters", config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    title: "Test Filter",
-                    "context[]": "notifications",
-                    filter_action: "hide",
-                    "keywords_attributes[0][keyword]":
-                        timeline[0].content.slice(4, 20),
-                    "keywords_attributes[0][whole_word]": "false",
-                }),
+        const filterResponse = await fakeRequest("/api/v2/filters", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                title: "Test Filter",
+                "context[]": "notifications",
+                filter_action: "hide",
+                "keywords_attributes[0][keyword]": timeline[0].content.slice(
+                    4,
+                    20,
+                ),
+                "keywords_attributes[0][whole_word]": "false",
             }),
-        );
+        });
 
         expect(filterResponse.status).toBe(200);
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(`${meta.route}?limit=20`, config.http.base_url),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                },
-            ),
-        );
+        const response = await fakeRequest(`${meta.route}?limit=20`, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -180,19 +150,14 @@ describe(meta.route, () => {
         );
 
         // Delete filter
-        const filterDeleteResponse = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/v2/filters/${(await filterResponse.json()).id}`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const filterDeleteResponse = await fakeRequest(
+            `/api/v2/filters/${(await filterResponse.json()).id}`,
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(filterDeleteResponse.status).toBe(200);

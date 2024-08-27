@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -13,18 +12,13 @@ afterAll(async () => {
 // /api/v1/accounts/search
 describe(meta.route, () => {
     test("should return 200 with users", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?q=${users[0].data.username}`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?q=${users[0].data.username}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);

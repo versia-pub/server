@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { deleteUsers, tokens } = await getTestUsers(1);
@@ -12,19 +11,14 @@ afterAll(async () => {
 // /api/v1/sso/:id
 describe(meta.route, () => {
     test("should not find unknown issuer", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", "unknown"),
-                    config.http.base_url,
-                ),
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0]?.accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", "unknown"),
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${tokens[0]?.accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(404);
@@ -32,20 +26,15 @@ describe(meta.route, () => {
             error: "Issuer not found",
         });
 
-        const response2 = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", "unknown"),
-                    config.http.base_url,
-                ),
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0]?.accessToken}`,
-                        "Content-Type": "application/json",
-                    },
+        const response2 = await fakeRequest(
+            meta.route.replace(":id", "unknown"),
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                    "Content-Type": "application/json",
                 },
-            ),
+            },
         );
 
         expect(response2.status).toBe(404);

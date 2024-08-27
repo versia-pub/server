@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -25,152 +25,134 @@ beforeAll(async () => {
 
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            body: new URLSearchParams({
+                status: "Hello, world!",
             }),
-        );
+        });
 
         expect(response.status).toBe(401);
     });
 
     test("should return 422 is status is empty", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams(),
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams(),
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 is status is too long", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "a".repeat(config.validation.max_note_size + 1),
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "a".repeat(config.validation.max_note_size + 1),
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 is visibility is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    visibility: "invalid",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                visibility: "invalid",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 if scheduled_at is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    scheduled_at: "invalid",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                scheduled_at: "invalid",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 is in_reply_to_id is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    in_reply_to_id: "invalid",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                in_reply_to_id: "invalid",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 is quote_id is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    quote_id: "invalid",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                quote_id: "invalid",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should return 422 is media_ids is invalid", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    "media_ids[]": "invalid",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                "media_ids[]": "invalid",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(422);
     });
 
     test("should create a post", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -184,20 +166,18 @@ describe(meta.route, () => {
 
     test("should create a post with visibility", async () => {
         // This one uses JSON to test the interop
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    status: "Hello, world!",
-                    visibility: "unlisted",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                status: "Hello, world!",
+                visibility: "unlisted",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -211,34 +191,30 @@ describe(meta.route, () => {
     });
 
     test("should create a post with a reply", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                local_only: "true",
             }),
-        );
+        });
 
         const object = (await response.json()) as ApiStatus;
 
-        const response2 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world again!",
-                    in_reply_to_id: object.id,
-                    local_only: "true",
-                }),
+        const response2 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world again!",
+                in_reply_to_id: object.id,
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toContain(
@@ -252,34 +228,30 @@ describe(meta.route, () => {
     });
 
     test("should create a post with a quote", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world!",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world!",
+                local_only: "true",
             }),
-        );
+        });
 
         const object = (await response.json()) as ApiStatus;
 
-        const response2 = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, world again!",
-                    quote_id: object.id,
-                    local_only: "true",
-                }),
+        const response2 = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, world again!",
+                quote_id: object.id,
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toContain(
@@ -293,18 +265,16 @@ describe(meta.route, () => {
     });
 
     test("should correctly parse emojis", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Hello, :test:!",
-                    local_only: "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Hello, :test:!",
+                local_only: "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -322,18 +292,16 @@ describe(meta.route, () => {
 
     describe("mentions testing", () => {
         test("should correctly parse @mentions", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        status: `Hello, @${users[1].data.username}!`,
-                        local_only: "true",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: `Hello, @${users[1].data.username}!`,
+                    local_only: "true",
                 }),
-            );
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -351,20 +319,18 @@ describe(meta.route, () => {
         });
 
         test("should correctly parse @mentions@domain", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        status: `Hello, @${users[1].data.username}@${
-                            new URL(config.http.base_url).host
-                        }!`,
-                        local_only: "true",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: `Hello, @${users[1].data.username}@${
+                        new URL(config.http.base_url).host
+                    }!`,
+                    local_only: "true",
                 }),
-            );
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -384,18 +350,16 @@ describe(meta.route, () => {
 
     describe("HTML injection testing", () => {
         test("should not allow HTML injection", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        status: "Hi! <script>alert('Hello, world!');</script>",
-                        local_only: "true",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: "Hi! <script>alert('Hello, world!');</script>",
+                    local_only: "true",
                 }),
-            );
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -410,20 +374,18 @@ describe(meta.route, () => {
         });
 
         test("should not allow HTML injection in spoiler_text", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        status: "Hello, world!",
-                        spoiler_text:
-                            "uwu <script>alert('Hello, world!');</script>",
-                        local_only: "true",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: "Hello, world!",
+                    spoiler_text:
+                        "uwu <script>alert('Hello, world!');</script>",
+                    local_only: "true",
                 }),
-            );
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -438,18 +400,16 @@ describe(meta.route, () => {
         });
 
         test("should rewrite all image and video src to go through proxy", async () => {
-            const response = await sendTestRequest(
-                new Request(new URL(meta.route, config.http.base_url), {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        status: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
-                        local_only: "true",
-                    }),
+            const response = await fakeRequest(meta.route, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                },
+                body: new URLSearchParams({
+                    status: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
+                    local_only: "true",
                 }),
-            );
+            });
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(

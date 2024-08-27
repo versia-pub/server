@@ -1,14 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { sendTestRequest } from "~/tests/utils";
+import { fakeRequest } from "~/tests/utils";
 import { meta } from "./tos";
 
 // /api/v1/instance/tos
 describe(meta.route, () => {
     test("should return terms of service", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url)),
-        );
+        const response = await fakeRequest(meta.route);
 
         expect(response.status).toBe(200);
 

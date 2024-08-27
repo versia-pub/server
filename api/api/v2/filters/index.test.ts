@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { tokens, deleteUsers } = await getTestUsers(2);
@@ -12,21 +11,17 @@ afterAll(async () => {
 // /api/v2/filters
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url)),
-        );
+        const response = await fakeRequest(meta.route);
 
         expect(response.status).toBe(401);
     });
 
     test("should return user filters (none)", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(200);
 
@@ -45,23 +40,21 @@ describe(meta.route, () => {
         formData.append("keywords_attributes[0][keyword]", "test");
         formData.append("keywords_attributes[0][whole_word]", "true");
 
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    title: "Test Filter",
-                    "context[]": "home",
-                    filter_action: "warn",
-                    expires_in: "86400",
-                    "keywords_attributes[0][keyword]": "test",
-                    "keywords_attributes[0][whole_word]": "true",
-                }),
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                title: "Test Filter",
+                "context[]": "home",
+                filter_action: "warn",
+                expires_in: "86400",
+                "keywords_attributes[0][keyword]": "test",
+                "keywords_attributes[0][whole_word]": "true",
             }),
-        );
+        });
 
         expect(response.status).toBe(200);
 

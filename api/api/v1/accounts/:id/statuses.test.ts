@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./statuses";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -13,19 +12,14 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
-    const response = await sendTestRequest(
-        new Request(
-            new URL(
-                `/api/v1/statuses/${timeline2[0].id}/reblog`,
-                config.http.base_url,
-            ),
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                },
+    const response = await fakeRequest(
+        `/api/v1/statuses/${timeline2[0].id}/reblog`,
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[1].accessToken}`,
             },
-        ),
+        },
     );
 
     expect(response.status).toBe(200);
@@ -34,18 +28,14 @@ beforeAll(async () => {
 // /api/v1/accounts/:id/statuses
 describe(meta.route, () => {
     test("should return 200 with statuses", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", users[1].id),
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", users[1].id),
+
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -58,21 +48,14 @@ describe(meta.route, () => {
     });
 
     test("should exclude reblogs", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route.replace(
-                        ":id",
-                        users[1].id,
-                    )}?exclude_reblogs=true`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route.replace(":id", users[1].id)}?exclude_reblogs=true`,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -86,37 +69,28 @@ describe(meta.route, () => {
 
     test("should exclude replies", async () => {
         // Create reply
-        const replyResponse = await sendTestRequest(
-            new Request(new URL("/api/v1/statuses", config.http.base_url), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                },
-                body: new URLSearchParams({
-                    status: "Reply",
-                    in_reply_to_id: timeline[0].id,
-                    local_only: "true",
-                }),
+        const replyResponse = await fakeRequest("/api/v1/statuses", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[1].accessToken}`,
+            },
+            body: new URLSearchParams({
+                status: "Reply",
+                in_reply_to_id: timeline[0].id,
+                local_only: "true",
             }),
-        );
+        });
 
         expect(replyResponse.status).toBe(200);
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route.replace(
-                        ":id",
-                        users[1].id,
-                    )}?exclude_replies=true`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route.replace(":id", users[1].id)}?exclude_replies=true`,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -129,18 +103,14 @@ describe(meta.route, () => {
     });
 
     test("should only include pins", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route.replace(":id", users[1].id)}?pinned=true`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route.replace(":id", users[1].id)}?pinned=true`,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -150,35 +120,27 @@ describe(meta.route, () => {
         expect(data.length).toBe(0);
 
         // Create pin
-        const pinResponse = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/v1/statuses/${timeline[3].id}/pin`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const pinResponse = await fakeRequest(
+            `/api/v1/statuses/${timeline[3].id}/pin`,
+
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(pinResponse.status).toBe(200);
 
-        const response2 = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route.replace(":id", users[1].id)}?pinned=true`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response2 = await fakeRequest(
+            `${meta.route.replace(":id", users[1].id)}?pinned=true`,
+
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response2.status).toBe(200);

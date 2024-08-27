@@ -1,8 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
-
-const baseUrl = config.http.base_url;
+import { fakeRequest, getTestUsers } from "./utils";
 
 const { tokens, deleteUsers } = await getTestUsers(1);
 
@@ -15,19 +12,14 @@ describe("API Tests", () => {
         const formData = new FormData();
         formData.append("test", "test");
 
-        const response = await sendTestRequest(
-            new Request(
-                wrapRelativeUrl(`${baseUrl}/api/v1/statuses`, baseUrl),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                    body: formData,
-                },
-            ),
-        );
+        const response = await fakeRequest("/api/v1/statuses", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+                "Content-Type": "multipart/form-data",
+            },
+            body: formData,
+        });
 
         expect(response.status).toBe(400);
         const data = await response.json();
@@ -42,9 +34,8 @@ describe("API Tests", () => {
             return;
         }
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
+        const response = await fakeRequest(
+            
                     "/api/v1/instance",
                     base_url.replace("https://", "http://"),
                 ),

@@ -1,27 +1,24 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { tokens, deleteUsers } = await getTestUsers(2);
 
-const response = await sendTestRequest(
-    new Request(new URL("/api/v2/filters", config.http.base_url), {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[0].accessToken}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-            title: "Test Filter",
-            "context[]": "home",
-            filter_action: "warn",
-            expires_in: "86400",
-            "keywords_attributes[0][keyword]": "test",
-            "keywords_attributes[0][whole_word]": "true",
-        }),
+const response = await fakeRequest("/api/v2/filters", {
+    method: "POST",
+    headers: {
+        Authorization: `Bearer ${tokens[0].accessToken}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: new URLSearchParams({
+        title: "Test Filter",
+        "context[]": "home",
+        filter_action: "warn",
+        expires_in: "86400",
+        "keywords_attributes[0][keyword]": "test",
+        "keywords_attributes[0][whole_word]": "true",
     }),
-);
+});
 
 expect(response.status).toBe(200);
 
@@ -35,36 +32,26 @@ afterAll(async () => {
 // /api/v2/filters/:id
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(401);
     });
 
     test("should get that filter", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -83,29 +70,24 @@ describe(meta.route, () => {
     });
 
     test("should edit that filter", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        title: "New Filter",
-                        "context[]": "notifications",
-                        filter_action: "hide",
-                        expires_in: "86400",
-                        "keywords_attributes[0][keyword]": "new",
-                        "keywords_attributes[0][id]": filter.keywords[0].id,
-                        "keywords_attributes[0][whole_word]": "false",
-                    }),
+        const response = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    "Content-Type": "application/x-www-form-urlencoded",
                 },
-            ),
+                body: new URLSearchParams({
+                    title: "New Filter",
+                    "context[]": "notifications",
+                    filter_action: "hide",
+                    expires_in: "86400",
+                    "keywords_attributes[0][keyword]": "new",
+                    "keywords_attributes[0][id]": filter.keywords[0].id,
+                    "keywords_attributes[0][whole_word]": "false",
+                }),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -124,23 +106,18 @@ describe(meta.route, () => {
     });
 
     test("should delete keyword", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: new URLSearchParams({
-                        "keywords_attributes[0][id]": filter.keywords[0].id,
-                        "keywords_attributes[0][_destroy]": "true",
-                    }),
+        const response = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+                body: new URLSearchParams({
+                    "keywords_attributes[0][id]": filter.keywords[0].id,
+                    "keywords_attributes[0][_destroy]": "true",
+                }),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -150,18 +127,13 @@ describe(meta.route, () => {
         expect(json.keywords).toBeEmpty();
 
         // Get the filter again and check
-        const getResponse = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const getResponse = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(getResponse.status).toBe(200);
@@ -171,37 +143,27 @@ describe(meta.route, () => {
     test("should delete filter", async () => {
         const formData = new FormData();
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
-                    body: formData,
+        const response = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+                body: formData,
+            },
         );
 
         expect(response.status).toBe(200);
 
         // Try to GET the filter again
-        const getResponse = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", filter.id),
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const getResponse = await fakeRequest(
+            meta.route.replace(":id", filter.id),
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(getResponse.status).toBe(404);

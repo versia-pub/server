@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
@@ -13,31 +12,24 @@ afterAll(async () => {
 // /api/v1/markers
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                method: "GET",
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            method: "GET",
+        });
         expect(response.status).toBe(401);
     });
 
     test("should return empty markers", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                `${new URL(
-                    meta.route,
-                    config.http.base_url,
-                )}?${new URLSearchParams([
-                    ["timeline[]", "home"],
-                    ["timeline[]", "notifications"],
-                ])}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?${new URLSearchParams([
+                ["timeline[]", "home"],
+                ["timeline[]", "notifications"],
+            ])}`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -45,21 +37,17 @@ describe(meta.route, () => {
     });
 
     test("should create markers", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `${meta.route}?${new URLSearchParams({
-                        "home[last_read_id]": timeline[0].id,
-                    })}`,
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?${new URLSearchParams({
+                "home[last_read_id]": timeline[0].id,
+            })}`,
+
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -73,22 +61,17 @@ describe(meta.route, () => {
     });
 
     test("should return markers", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                `${new URL(
-                    meta.route,
-                    config.http.base_url,
-                )}?${new URLSearchParams([
-                    ["timeline[]", "home"],
-                    ["timeline[]", "notifications"],
-                ])}`,
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `${meta.route}?${new URLSearchParams([
+                ["timeline[]", "home"],
+                ["timeline[]", "notifications"],
+            ])}`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);

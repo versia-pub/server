@@ -6,10 +6,7 @@ import type {
     Application as ApiApplication,
     Token as ApiToken,
 } from "@versia/client/types";
-import { config } from "~/packages/config-manager";
-import { getTestUsers, sendTestRequest, wrapRelativeUrl } from "./utils";
-
-const baseUrl = config.http.base_url;
+import { fakeRequest, getTestUsers } from "./utils";
 
 let clientId: string;
 let clientSecret: string;
@@ -31,20 +28,18 @@ describe("POST /api/v1/apps/", () => {
         formData.append("redirect_uris", "https://example.com");
         formData.append("scopes", "read write");
 
-        const response = await sendTestRequest(
-            new Request(new URL("/api/v1/apps", config.http.base_url), {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    client_name: "Test Application",
-                    website: "https://example.com",
-                    redirect_uris: "https://example.com",
-                    scopes: "read write",
-                }),
+        const response = await fakeRequest("/api/v1/apps", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                client_name: "Test Application",
+                website: "https://example.com",
+                redirect_uris: "https://example.com",
+                scopes: "read write",
             }),
-        );
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -75,17 +70,12 @@ describe("POST /api/auth/login/", () => {
         formData.append("identifier", users[0]?.data.email ?? "");
         formData.append("password", passwords[0]);
 
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/auth/login?client_id=${clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
-                    baseUrl,
-                ),
-                {
-                    method: "POST",
-                    body: formData,
-                },
-            ),
+        const response = await fakeRequest(
+            `/api/auth/login?client_id=${clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            {
+                method: "POST",
+                body: formData,
+            },
         );
 
         expect(response.status).toBe(302);
@@ -98,22 +88,20 @@ describe("POST /api/auth/login/", () => {
 
 describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL("/oauth/authorize", baseUrl), {
-                method: "POST",
-                headers: {
-                    Cookie: `jwt=${jwt}`,
-                },
-                body: new URLSearchParams({
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    redirect_uri: "https://example.com",
-                    response_type: "code",
-                    scope: "read write",
-                    max_age: "604800",
-                }),
+        const response = await fakeRequest("/oauth/authorize", {
+            method: "POST",
+            headers: {
+                Cookie: `jwt=${jwt}`,
+            },
+            body: new URLSearchParams({
+                client_id: clientId,
+                client_secret: clientSecret,
+                redirect_uri: "https://example.com",
+                response_type: "code",
+                scope: "read write",
+                max_age: "604800",
             }),
-        );
+        });
 
         expect(response.status).toBe(302);
         expect(response.headers.get("location")).toBeDefined();
@@ -130,23 +118,21 @@ describe("GET /oauth/authorize/", () => {
 
 describe("POST /oauth/token/", () => {
     test("should get an access token", async () => {
-        const response = await sendTestRequest(
-            new Request(wrapRelativeUrl("/oauth/token", baseUrl), {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    grant_type: "authorization_code",
-                    code,
-                    redirect_uri: "https://example.com",
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    scope: "read write",
-                }),
+        const response = await fakeRequest("/oauth/token", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${jwt}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                grant_type: "authorization_code",
+                code,
+                redirect_uri: "https://example.com",
+                client_id: clientId,
+                client_secret: clientSecret,
+                scope: "read write",
             }),
-        );
+        });
 
         const json = await response.json();
 
@@ -170,16 +156,11 @@ describe("POST /oauth/token/", () => {
 
 describe("GET /api/v1/apps/verify_credentials", () => {
     test("should return the authenticated application's credentials", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                wrapRelativeUrl("/api/v1/apps/verify_credentials", baseUrl),
-                {
-                    headers: {
-                        Authorization: `Bearer ${token.access_token}`,
-                    },
-                },
-            ),
-        );
+        const response = await fakeRequest("/api/v1/apps/verify_credentials", {
+            headers: {
+                Authorization: `Bearer ${token.access_token}`,
+            },
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(

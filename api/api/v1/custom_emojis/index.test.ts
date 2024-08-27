@@ -2,8 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { inArray } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
@@ -13,50 +12,44 @@ beforeAll(async () => {
     await users[1].update({ isAdmin: true });
 
     // Upload one emoji as admin, then one as each user
-    const response = await sendTestRequest(
-        new Request(new URL("/api/v1/emojis", config.http.base_url), {
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-                shortcode: "test1",
-                element: "https://cdn.versia.social/logo.webp",
-                global: true,
-            }),
+    const response = await fakeRequest("/api/v1/emojis", {
+        headers: {
+            Authorization: `Bearer ${tokens[1].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+            shortcode: "test1",
+            element: "https://cdn.versia.social/logo.webp",
+            global: true,
         }),
-    );
+    });
 
     expect(response.status).toBe(200);
 
-    await sendTestRequest(
-        new Request(new URL("/api/v1/emojis", config.http.base_url), {
-            headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-                shortcode: "test2",
-                element: "https://cdn.versia.social/logo.webp",
-            }),
+    await fakeRequest("/api/v1/emojis", {
+        headers: {
+            Authorization: `Bearer ${tokens[0].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+            shortcode: "test2",
+            element: "https://cdn.versia.social/logo.webp",
         }),
-    );
+    });
 
-    await sendTestRequest(
-        new Request(new URL("/api/v1/emojis", config.http.base_url), {
-            headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "POST",
-            body: JSON.stringify({
-                shortcode: "test3",
-                element: "https://cdn.versia.social/logo.webp",
-            }),
+    await fakeRequest("/api/v1/emojis", {
+        headers: {
+            Authorization: `Bearer ${tokens[1].accessToken}`,
+            "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+            shortcode: "test3",
+            element: "https://cdn.versia.social/logo.webp",
         }),
-    );
+    });
 });
 
 afterAll(async () => {
@@ -69,13 +62,11 @@ afterAll(async () => {
 
 describe(meta.route, () => {
     test("should return all global emojis", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
-                },
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            headers: {
+                Authorization: `Bearer ${tokens[1].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -103,13 +94,11 @@ describe(meta.route, () => {
     });
 
     test("should return all user emojis", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url), {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
-                },
-            }),
-        );
+        const response = await fakeRequest(meta.route, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].accessToken}`,
+            },
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
@@ -137,9 +126,7 @@ describe(meta.route, () => {
     });
 
     test("should return all global emojis when signed out", async () => {
-        const response = await sendTestRequest(
-            new Request(new URL(meta.route, config.http.base_url)),
-        );
+        const response = await fakeRequest(meta.route);
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(

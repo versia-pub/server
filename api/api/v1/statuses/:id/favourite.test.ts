@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index";
-import { getTestStatuses, getTestUsers, sendTestRequest } from "~/tests/utils";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./favourite";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -14,35 +13,25 @@ afterAll(async () => {
 // /api/v1/statuses/:id/favourite
 describe(meta.route, () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", timeline[0].id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                },
-            ),
+        const response = await fakeRequest(
+            meta.route.replace(":id", timeline[0].id),
+            {
+                method: "POST",
+            },
         );
 
         expect(response.status).toBe(401);
     });
 
     test("should favourite post", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    meta.route.replace(":id", timeline[0].id),
-                    config.http.base_url,
-                ),
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            meta.route.replace(":id", timeline[0].id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
@@ -54,18 +43,13 @@ describe(meta.route, () => {
     });
 
     test("post should be favourited when fetched", async () => {
-        const response = await sendTestRequest(
-            new Request(
-                new URL(
-                    `/api/v1/statuses/${timeline[0].id}`,
-                    config.http.base_url,
-                ),
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[1].accessToken}`,
-                    },
+        const response = await fakeRequest(
+            `/api/v1/statuses/${timeline[0].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[1].accessToken}`,
                 },
-            ),
+            },
         );
 
         expect(response.status).toBe(200);
