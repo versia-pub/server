@@ -12,6 +12,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
@@ -21,6 +22,34 @@ import { BaseInterface } from "./base";
 export type AttachmentType = InferSelectModel<typeof Attachments>;
 
 export class Attachment extends BaseInterface<typeof Attachments> {
+    static schema: z.ZodType<ApiAttachment> = z.object({
+        id: z.string().uuid(),
+        type: z.enum(["unknown", "image", "gifv", "video", "audio"]),
+        url: z.string().url(),
+        remote_url: z.string().url().nullable(),
+        preview_url: z.string().url().nullable(),
+        text_url: z.string().url().nullable(),
+        meta: z
+            .object({
+                width: z.number().optional(),
+                height: z.number().optional(),
+                fps: z.number().optional(),
+                size: z.string().optional(),
+                duration: z.number().optional(),
+                length: z.string().optional(),
+                aspect: z.number().optional(),
+                original: z.object({
+                    width: z.number().optional(),
+                    height: z.number().optional(),
+                    size: z.string().optional(),
+                    aspect: z.number().optional(),
+                }),
+            })
+            .nullable(),
+        description: z.string().nullable(),
+        blurhash: z.string().nullable(),
+    });
+
     async reload(): Promise<void> {
         const reloaded = await Attachment.fromId(this.data.id);
 

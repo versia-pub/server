@@ -65,7 +65,7 @@ import { Role } from "./role";
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
-    static schema = z.object({
+    static schema: z.ZodType<ApiAccount> = z.object({
         id: z.string(),
         username: z.string(),
         acct: z.string(),
@@ -92,12 +92,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             z.object({
                 name: z.string(),
                 value: z.string(),
-                verified: z.boolean().nullable().optional(),
+                verified: z.boolean().optional(),
                 verified_at: z.string().nullable().optional(),
             }),
         ),
         // FIXME: Use a proper type
-        moved: z.any().nullable(),
+        moved: z.lazy(() => User.schema).nullable(),
         bot: z.boolean().nullable(),
         source: z
             .object({
@@ -105,6 +105,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 sensitive: z.boolean().nullable(),
                 language: z.string().nullable(),
                 note: z.string(),
+                fields: z.array(
+                    z.object({
+                        name: z.string(),
+                        value: z.string(),
+                    }),
+                ),
             })
             .optional(),
         role: z

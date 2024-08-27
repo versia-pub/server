@@ -1,16 +1,12 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    handleZodError,
-    idValidator,
-} from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { Notes, RolePermissions } from "~/drizzle/schema";
+import { Note } from "~/packages/database-interface/note";
 import { Timeline } from "~/packages/database-interface/timeline";
 import { User } from "~/packages/database-interface/user";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -60,61 +56,89 @@ export const schemas = {
     }),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
-            const { user } = context.get("auth");
-
-            const otherUser = await User.fromId(id);
-
-            if (!otherUser) {
-                return context.json({ error: "User not found" }, 404);
-            }
-
-            const {
-                max_id,
-                min_id,
-                since_id,
-                limit,
-                exclude_reblogs,
-                only_media,
-                exclude_replies,
-                pinned,
-            } = context.req.valid("query");
-
-            const { objects, link } = await Timeline.getNoteTimeline(
-                and(
-                    max_id ? lt(Notes.id, max_id) : undefined,
-                    since_id ? gte(Notes.id, since_id) : undefined,
-                    min_id ? gt(Notes.id, min_id) : undefined,
-                    eq(Notes.authorId, id),
-                    only_media
-                        ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
-                        : undefined,
-                    pinned
-                        ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = ${Notes.id} AND "UserToPinnedNotes"."userId" = ${otherUser.id})`
-                        : undefined,
-                    exclude_reblogs ? isNull(Notes.reblogId) : undefined,
-                    exclude_replies ? isNull(Notes.replyId) : undefined,
-                ),
-                limit,
-                context.req.url,
-                user?.id,
-            );
-
-            return context.json(
-                await Promise.all(objects.map((note) => note.toApi(otherUser))),
-                200,
-                {
-                    link,
+const route = createRoute({
+    method: "get",
+    path: "/api/v1/accounts/{id}/statuses",
+    summary: "Get account statuses",
+    description: "Gets an paginated list of statuses by the specified account",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+        query: schemas.query,
+    },
+    responses: {
+        200: {
+            description: "A list of statuses by the specified account",
+            content: {
+                "application/json": {
+                    schema: z.array(Note.schema),
                 },
-            );
+            },
+            headers: {
+                Link: {
+                    description: "Links to the next and previous pages",
+                },
+            },
         },
-    ),
+        404: {
+            description: "User not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) =>
+    app.openapi(route, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        const otherUser = await User.fromId(id);
+
+        if (!otherUser) {
+            return context.json({ error: "User not found" }, 404);
+        }
+
+        const {
+            max_id,
+            min_id,
+            since_id,
+            limit,
+            exclude_reblogs,
+            only_media,
+            exclude_replies,
+            pinned,
+        } = context.req.valid("query");
+
+        const { objects, link } = await Timeline.getNoteTimeline(
+            and(
+                max_id ? lt(Notes.id, max_id) : undefined,
+                since_id ? gte(Notes.id, since_id) : undefined,
+                min_id ? gt(Notes.id, min_id) : undefined,
+                eq(Notes.authorId, id),
+                only_media
+                    ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
+                    : undefined,
+                pinned
+                    ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = ${Notes.id} AND "UserToPinnedNotes"."userId" = ${otherUser.id})`
+                    : undefined,
+                exclude_reblogs ? isNull(Notes.reblogId) : undefined,
+                exclude_replies ? isNull(Notes.replyId) : undefined,
+            ),
+            limit,
+            context.req.url,
+            user?.id,
+        );
+
+        return context.json(
+            await Promise.all(objects.map((note) => note.toApi(otherUser))),
+            200,
+            {
+                link,
+            },
+        );
+    }),
 );

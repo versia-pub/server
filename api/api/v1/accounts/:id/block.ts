@@ -39,7 +39,7 @@ const route = createRoute({
     middleware: [auth(meta.auth, meta.permissions)],
     responses: {
         200: {
-            description: "User blocked",
+            description: "Updated relationship",
             content: {
                 "application/json": {
                     schema: Relationship.schema,

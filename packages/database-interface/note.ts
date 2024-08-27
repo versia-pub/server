@@ -27,6 +27,7 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
+import { z } from "zod";
 import {
     type Application,
     applicationToApi,
@@ -56,6 +57,96 @@ import { User } from "./user";
  * Gives helpers to fetch notes from database in a nice format
  */
 export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
+    static schema: z.ZodType<ApiStatus> = z.object({
+        id: z.string().uuid(),
+        uri: z.string().url(),
+        url: z.string().url(),
+        account: z.lazy(() => User.schema),
+        in_reply_to_id: z.string().uuid().nullable(),
+        in_reply_to_account_id: z.string().uuid().nullable(),
+        reblog: z.lazy(() => Note.schema).nullable(),
+        content: z.string(),
+        plain_content: z.string().nullable(),
+        created_at: z.string(),
+        edited_at: z.string().nullable(),
+        emojis: z.array(Emoji.schema),
+        replies_count: z.number().int().nonnegative(),
+        reblogs_count: z.number().int().nonnegative(),
+        favourites_count: z.number().int().nonnegative(),
+        reblogged: z.boolean().nullable(),
+        favourited: z.boolean().nullable(),
+        muted: z.boolean().nullable(),
+        sensitive: z.boolean(),
+        spoiler_text: z.string(),
+        visibility: z.enum(["public", "unlisted", "private", "direct"]),
+        media_attachments: z.array(Attachment.schema),
+        mentions: z.array(
+            z.object({
+                id: z.string().uuid(),
+                username: z.string(),
+                acct: z.string(),
+                url: z.string().url(),
+            }),
+        ),
+        tags: z.array(z.object({ name: z.string(), url: z.string().url() })),
+        card: z
+            .object({
+                url: z.string().url(),
+                title: z.string(),
+                description: z.string(),
+                type: z.enum(["link", "photo", "video", "rich"]),
+                image: z.string().url().nullable(),
+                author_name: z.string().nullable(),
+                author_url: z.string().url().nullable(),
+                provider_name: z.string().nullable(),
+                provider_url: z.string().url().nullable(),
+                html: z.string().nullable(),
+                width: z.number().int().nonnegative().nullable(),
+                height: z.number().int().nonnegative().nullable(),
+                embed_url: z.string().url().nullable(),
+                blurhash: z.string().nullable(),
+            })
+            .nullable(),
+        poll: z
+            .object({
+                id: z.string().uuid(),
+                expires_at: z.string(),
+                expired: z.boolean(),
+                multiple: z.boolean(),
+                votes_count: z.number().int().nonnegative(),
+                voted: z.boolean(),
+                options: z.array(
+                    z.object({
+                        title: z.string(),
+                        votes_count: z.number().int().nonnegative().nullable(),
+                    }),
+                ),
+            })
+            .nullable(),
+        application: z
+            .object({
+                name: z.string(),
+                website: z.string().url().nullable().optional(),
+                vapid_key: z.string().nullable().optional(),
+            })
+            .nullable(),
+        language: z.string().nullable(),
+        pinned: z.boolean().nullable(),
+        emoji_reactions: z.array(
+            z.object({
+                count: z.number().int().nonnegative(),
+                me: z.boolean(),
+                name: z.string(),
+                url: z.string().url().optional(),
+                static_url: z.string().url().optional(),
+                accounts: z.array(z.lazy(() => User.schema)).optional(),
+                account_ids: z.array(z.string().uuid()).optional(),
+            }),
+        ),
+        quote: z.lazy(() => Note.schema).nullable(),
+        bookmarked: z.boolean(),
+    });
+
     save(): Promise<StatusWithRelations> {
         return this.update(this.data);
     }

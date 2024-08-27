@@ -2,6 +2,7 @@ import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
 import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
+import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus";
  */ import { getLogger } from "@logtape/logtape";
@@ -13,14 +14,15 @@ import { boundaryCheck } from "./middlewares/boundary-check";
 import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
-import { swaggerUI } from "@hono/swagger-ui";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
+import { handleZodError } from "@/api";
 
 export const appFactory = async () => {
     const serverLogger = getLogger("server");
 
     const app = new OpenAPIHono<HonoEnv>({
         strict: false,
+        defaultHook: handleZodError,
     });
 
     /* const { printMetrics, registerMetrics } = prometheus({
