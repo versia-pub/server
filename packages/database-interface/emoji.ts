@@ -11,6 +11,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
 import { BaseInterface } from "./base";
@@ -21,6 +22,14 @@ export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
 };
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
+    static schema = z.object({
+        shortcode: z.string(),
+        url: z.string(),
+        visible_in_picker: z.boolean(),
+        category: z.string().optional(),
+        static_url: z.string(),
+    });
+
     async reload(): Promise<void> {
         const reloaded = await Emoji.fromId(this.data.id);
 

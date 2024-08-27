@@ -1,5 +1,5 @@
 import { proxyUrl } from "@/response";
-import type { RolePermission } from "@versia/client/types";
+import { RolePermission } from "@versia/client/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -9,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { RoleToUsers, Roles } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
@@ -17,6 +18,16 @@ import { BaseInterface } from "./base";
 export type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
+    static schema = z.object({
+        id: z.string(),
+        name: z.string(),
+        permissions: z.array(z.nativeEnum(RolePermission)),
+        priority: z.number(),
+        description: z.string().nullable(),
+        visible: z.boolean(),
+        icon: z.string().nullable(),
+    });
+
     async reload(): Promise<void> {
         const reloaded = await Role.fromId(this.data.id);
 

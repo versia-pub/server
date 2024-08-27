@@ -35,6 +35,7 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
+import { z } from "zod";
 import {
     type UserWithRelations,
     findManyUsers,
@@ -64,6 +65,57 @@ import { Role } from "./role";
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
+    static schema = z.object({
+        id: z.string(),
+        username: z.string(),
+        acct: z.string(),
+        display_name: z.string(),
+        locked: z.boolean(),
+        discoverable: z.boolean().optional(),
+        group: z.boolean().nullable(),
+        noindex: z.boolean().nullable(),
+        suspended: z.boolean().nullable(),
+        limited: z.boolean().nullable(),
+        created_at: z.string(),
+        followers_count: z.number(),
+        following_count: z.number(),
+        statuses_count: z.number(),
+        note: z.string(),
+        uri: z.string(),
+        url: z.string(),
+        avatar: z.string(),
+        avatar_static: z.string(),
+        header: z.string(),
+        header_static: z.string(),
+        emojis: z.array(Emoji.schema),
+        fields: z.array(
+            z.object({
+                name: z.string(),
+                value: z.string(),
+                verified: z.boolean().nullable().optional(),
+                verified_at: z.string().nullable().optional(),
+            }),
+        ),
+        // FIXME: Use a proper type
+        moved: z.any().nullable(),
+        bot: z.boolean().nullable(),
+        source: z
+            .object({
+                privacy: z.string().nullable(),
+                sensitive: z.boolean().nullable(),
+                language: z.string().nullable(),
+                note: z.string(),
+            })
+            .optional(),
+        role: z
+            .object({
+                name: z.string(),
+            })
+            .optional(),
+        roles: z.array(Role.schema),
+        mute_expires_at: z.string().optional(),
+    });
+
     async reload(): Promise<void> {
         const reloaded = await User.fromId(this.data.id);
 
