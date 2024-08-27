@@ -285,15 +285,9 @@ export class Instance extends BaseInterface<typeof Instances> {
             return {
                 name:
                     metadata.metadata.nodeName || metadata.metadata.title || "",
-                description: {
-                    "text/plain": {
-                        content:
-                            metadata.metadata.nodeDescription ||
-                            metadata.metadata.description ||
-                            "",
-                        remote: false,
-                    },
-                },
+                description:
+                    metadata.metadata.nodeDescription ||
+                    metadata.metadata.description,
                 type: "InstanceMetadata",
                 software: {
                     name: "Unknown ActivityPub software",

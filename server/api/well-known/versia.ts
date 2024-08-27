@@ -26,12 +26,7 @@ export default apiRoute((app) =>
             },
             host: new URL(config.http.base_url).host,
             name: config.instance.name,
-            description: {
-                "text/plain": {
-                    content: config.instance.description,
-                    remote: false,
-                },
-            },
+            description: config.instance.description,
             public_key: {
                 key: config.instance.keys.public,
                 algorithm: "ed25519",
