@@ -109,7 +109,7 @@
         "@sentry/bun": "^8.26.0",
         "@tufjs/canonical-json": "^2.0.0",
         "@versia/client": "^0.1.0-rc.0",
-        "@versia/federation": "^0.1.0-rc.1",
+        "@versia/federation": "^0.1.0-rc.2",
         "altcha-lib": "^0.5.1",
         "blurhash": "^2.0.5",
         "bullmq": "^5.12.10",
