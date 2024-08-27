@@ -1,3 +1,4 @@
+import { handleZodError } from "@/api";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
 import { prettyJSON } from "@hono/hono/pretty-json";
@@ -15,7 +16,6 @@ import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
-import { handleZodError } from "@/api";
 
 export const appFactory = async () => {
     const serverLogger = getLogger("server");
