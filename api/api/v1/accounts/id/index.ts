@@ -1,9 +1,10 @@
-import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -27,24 +28,47 @@ export const schemas = {
     }),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("query", schemas.query, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { username } = context.req.valid("query");
-
-            const user = await User.fromSql(
-                and(eq(Users.username, username), isNull(Users.instanceId)),
-            );
-
-            if (!user) {
-                return context.json({ error: "User not found" }, 404);
-            }
-
-            return context.json(user.toApi());
+const route = createRoute({
+    method: "get",
+    path: "/api/v1/accounts/id",
+    summary: "Get account by username",
+    description: "Get an account by username",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        query: schemas.query,
+    },
+    responses: {
+        200: {
+            description: "Account",
+            content: {
+                "application/json": {
+                    schema: User.schema,
+                },
+            },
         },
-    ),
+        404: {
+            description: "Not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) =>
+    app.openapi(route, async (context) => {
+        const { username } = context.req.valid("query");
+
+        const user = await User.fromSql(
+            and(eq(Users.username, username), isNull(Users.instanceId)),
+        );
+
+        if (!user) {
+            return context.json({ error: "User not found" }, 404);
+        }
+
+        return context.json(user.toApi(), 200);
+    }),
 );

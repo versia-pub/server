@@ -1,6 +1,6 @@
-import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, applyConfig, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { zValidator } from "@hono/zod-validator";
+import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Applications, RolePermissions } from "~/drizzle/schema";
@@ -42,31 +42,62 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "post",
+    path: "/api/v1/apps",
+    summary: "Create app",
+    description: "Create an OAuth2 app",
+    middleware: [jsonOrForm()],
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: schemas.json,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "App",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        id: z.string().uuid(),
+                        name: z.string(),
+                        website: z.string().nullable(),
+                        client_id: z.string(),
+                        client_secret: z.string(),
+                        redirect_uri: z.string(),
+                        vapid_link: z.string().nullable(),
+                    }),
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        jsonOrForm(),
-        zValidator("json", schemas.json, handleZodError),
-        async (context) => {
-            const { client_name, redirect_uris, scopes, website } =
-                context.req.valid("json");
+    app.openapi(route, async (context) => {
+        const { client_name, redirect_uris, scopes, website } =
+            context.req.valid("json");
 
-            const app = (
-                await db
-                    .insert(Applications)
-                    .values({
-                        name: client_name || "",
-                        redirectUri: decodeURIComponent(redirect_uris) || "",
-                        scopes: scopes || "read",
-                        website: website || null,
-                        clientId: randomString(32, "base64url"),
-                        secret: randomString(64, "base64url"),
-                    })
-                    .returning()
-            )[0];
+        const app = (
+            await db
+                .insert(Applications)
+                .values({
+                    name: client_name || "",
+                    redirectUri: decodeURIComponent(redirect_uris) || "",
+                    scopes: scopes || "read",
+                    website: website || null,
+                    clientId: randomString(32, "base64url"),
+                    secret: randomString(64, "base64url"),
+                })
+                .returning()
+        )[0];
 
-            return context.json({
+        return context.json(
+            {
                 id: app.id,
                 name: app.name,
                 website: app.website,
@@ -74,7 +105,8 @@ export default apiRoute((app) =>
                 client_secret: app.secret,
                 redirect_uri: app.redirectUri,
                 vapid_link: app.vapidKey,
-            });
-        },
-    ),
+            },
+            200,
+        );
+    }),
 );
