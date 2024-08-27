@@ -24,7 +24,7 @@
         "paths": {
             "@/*": ["./utils/*"],
             "~/*": ["./*"],
-            "+/*": ["./server/api/*"]
+            "+/*": ["./api/*"]
         },
         "noUnusedLocals": true
     },
@@ -34,7 +34,7 @@
         "*.d.ts",
         "**/*.ts",
         "**/*.d.ts",
-        "server/api/well-known/**/*.ts",
+        "api/well-known/**/*.ts",
         "packages/cli/index.mts"
     ]
 }

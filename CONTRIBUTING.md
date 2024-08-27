@@ -130,7 +130,7 @@ Tests **should** be written for all API routes and all functions that are not tr
 
 #### Adding per-route tests
 
-To add tests for a route, create a `route_file_name.test.ts` file in the same directory as the route itself. See [this example](/server/api/api/v1/timelines/home.test.ts) for help writing tests.
+To add tests for a route, create a `route_file_name.test.ts` file in the same directory as the route itself. See [this example](/api/api/v1/timelines/home.test.ts) for help writing tests.
 
 ### Writing documentation
 
