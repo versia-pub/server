@@ -5,7 +5,7 @@ import { appFactory } from "~/app";
 import { config } from "~/packages/config-manager/index";
 
 if (cluster.isPrimary) {
-    for (let i = 0; i < (Number(process.env.NUM_CPUS) ?? 1); i++) {
+    for (let i = 0; i < Number(process.env.NUM_CPUS ?? 1); i++) {
         cluster.fork();
     }
     await import("./setup");
