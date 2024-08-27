@@ -180,7 +180,7 @@ export default apiRoute((app) =>
                             method: context.req.method,
                             headers: {
                                 "X-Signature": signature,
-                                "X-Date": nonce,
+                                "X-Nonce": nonce,
                             },
                             body: await context.req.text(),
                         }),
