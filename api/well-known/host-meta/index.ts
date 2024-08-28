@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@/api";
-import { xmlResponse } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,8 +14,9 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, () => {
-        return xmlResponse(
+    app.on(meta.allowedMethods, meta.route, (context) => {
+        context.header("Content-Type", "application/xrd+xml");
+        return context.body(
             `<?xml version="1.0" encoding="UTF-8"?><XRD xmlns="http://docs.oasis-open.org/ns/xri/xrd-1.0"><Link rel="lrdd" template="${new URL(
                 "/.well-known/webfinger",
                 config.http.base_url,

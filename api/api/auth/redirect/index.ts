@@ -51,12 +51,11 @@ export default apiRoute((app) =>
         const { redirect_uri, client_id, code } = context.req.valid("query");
 
         const redirectToLogin = (error: string) =>
-            Response.redirect(
+            context.redirect(
                 `${config.frontend.routes.login}?${new URLSearchParams({
                     ...context.req.query,
                     error: encodeURIComponent(error),
                 }).toString()}`,
-                302,
             );
 
         const foundToken = await db

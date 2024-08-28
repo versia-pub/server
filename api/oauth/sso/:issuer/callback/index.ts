@@ -1,8 +1,9 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { randomString } from "@/math";
-import { response } from "@/response";
+import { setCookie } from "@hono/hono/cookie";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, isNull } from "drizzle-orm";
+import type { Context } from "hono";
 import { SignJWT } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
@@ -39,7 +40,12 @@ export const schemas = {
     }),
 };
 
-const returnError = (query: object, error: string, description: string) => {
+const returnError = (
+    context: Context,
+    query: object,
+    error: string,
+    description: string,
+) => {
     const searchParams = new URLSearchParams();
 
     // Add all data that is not undefined except email and password
@@ -52,9 +58,9 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error", error);
     searchParams.append("error_description", description);
 
-    return response(null, 302, {
-        Location: `${config.frontend.routes.login}?${searchParams.toString()}`,
-    });
+    return context.redirect(
+        `${config.frontend.routes.login}?${searchParams.toString()}`,
+    );
 };
 
 /**
@@ -99,9 +105,8 @@ export default apiRoute((app) =>
                 redirectUrl,
                 (error, message, app) =>
                     returnError(
-                        {
-                            ...manager.processOAuth2Error(app),
-                        },
+                        context,
+                        manager.processOAuth2Error(app),
                         error,
                         message,
                     ),
@@ -117,7 +122,7 @@ export default apiRoute((app) =>
 
             // If linking account
             if (link && user_id) {
-                return await manager.linkUser(user_id, userInfo);
+                return await manager.linkUser(user_id, context, userInfo);
             }
 
             let userId = (
@@ -191,6 +196,7 @@ export default apiRoute((app) =>
                     userId = user.id;
                 } else {
                     return returnError(
+                        context,
                         {
                             redirect_uri: flow.application?.redirectUri,
                             client_id: flow.application?.clientId,
@@ -207,6 +213,7 @@ export default apiRoute((app) =>
 
             if (!user) {
                 return returnError(
+                    context,
                     {
                         redirect_uri: flow.application?.redirectUri,
                         client_id: flow.application?.clientId,
@@ -220,6 +227,7 @@ export default apiRoute((app) =>
 
             if (!user.hasPermission(RolePermissions.OAuth)) {
                 return returnError(
+                    context,
                     {
                         redirect_uri: flow.application?.redirectUri,
                         client_id: flow.application?.clientId,
@@ -268,8 +276,16 @@ export default apiRoute((app) =>
                 .sign(privateKey);
 
             // Redirect back to application
-            return response(null, 302, {
-                Location: new URL(
+            setCookie(context, "jwt", jwt, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "strict",
+                path: "/",
+                maxAge: 60 * 60,
+            });
+
+            return context.redirect(
+                new URL(
                     `${config.frontend.routes.consent}?${new URLSearchParams({
                         redirect_uri: flow.application.redirectUri,
                         code,
@@ -281,11 +297,7 @@ export default apiRoute((app) =>
                     }).toString()}`,
                     config.http.base_url,
                 ).toString(),
-                // Set cookie with JWT
-                "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
-                    60 * 60
-                }`,
-            });
+            );
         },
     ),
 );

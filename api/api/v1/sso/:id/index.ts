@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { proxyUrl, response } from "@/response";
+import { proxyUrl } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -103,7 +103,7 @@ export default apiRoute((app) =>
                         .delete(OpenIdAccounts)
                         .where(eq(OpenIdAccounts.id, account.id));
 
-                    return response(null, 204);
+                    return context.newResponse(null, 204);
                 }
             }
         },

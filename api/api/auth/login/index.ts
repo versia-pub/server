@@ -1,5 +1,6 @@
 import { apiRoute, applyConfig } from "@/api";
-import { redirect } from "@/response";
+import type { Context } from "@hono/hono";
+import { setCookie } from "@hono/hono/cookie";
 import { createRoute } from "@hono/zod-openapi";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
@@ -87,11 +88,11 @@ const route = createRoute({
     },
 });
 
-const returnError = (query: object, error: string, description: string) => {
+const returnError = (context: Context, error: string, description: string) => {
     const searchParams = new URLSearchParams();
 
     // Add all data that is not undefined except email and password
-    for (const [key, value] of Object.entries(query)) {
+    for (const [key, value] of Object.entries(context.req.query())) {
         if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
         }
@@ -100,11 +101,11 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error", error);
     searchParams.append("error_description", description);
 
-    return redirect(
+    return context.redirect(
         new URL(
             `${config.frontend.routes.login}?${searchParams.toString()}`,
             config.http.base_url,
-        ),
+        ).toString(),
     );
 };
 
@@ -112,7 +113,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         if (config.oidc.forced) {
             return returnError(
-                context.req.query(),
+                context,
                 "invalid_request",
                 "Logging in with a password is disabled by the administrator. Please use a valid OpenID Connect provider.",
             );
@@ -136,14 +137,14 @@ export default apiRoute((app) =>
             )
         ) {
             return returnError(
-                context.req.query(),
+                context,
                 "invalid_grant",
                 "Invalid identifier or password",
             );
         }
 
         if (user.data.passwordResetToken) {
-            return redirect(
+            return context.redirect(
                 `${config.frontend.routes.password_reset}?${new URLSearchParams(
                     {
                         token: user.data.passwordResetToken ?? "",
@@ -198,14 +199,15 @@ export default apiRoute((app) =>
         }
 
         // Redirect to OAuth authorize with JWT
-        return redirect(
+        setCookie(context, "jwt", jwt, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "Strict",
+            path: "/",
+            maxAge: 60 * 60,
+        });
+        return context.redirect(
             `${config.frontend.routes.consent}?${searchParams.toString()}`,
-            302,
-            {
-                "Set-Cookie": `jwt=${jwt}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${
-                    60 * 60
-                }`,
-            },
         );
     }),
 );

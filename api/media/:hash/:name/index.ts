@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 
@@ -54,7 +53,7 @@ export default apiRoute((app) =>
             }
 
             // Can't directly copy file into Response because this crashes Bun for now
-            return response(buffer, 200, {
+            return context.newResponse(buffer, 200, {
                 "Content-Type": file.type || "application/octet-stream",
                 "Content-Length": `${file.size - start}`,
                 "Content-Range": `bytes ${start}-${end}/${file.size}`,

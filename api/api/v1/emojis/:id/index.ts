@@ -7,7 +7,6 @@ import {
     jsonOrForm,
 } from "@/api";
 import { mimeLookup } from "@/content_types";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -110,7 +109,7 @@ export default apiRoute((app) =>
 
                     await db.delete(Emojis).where(eq(Emojis.id, id));
 
-                    return response(null, 204);
+                    return context.newResponse(null, 204);
                 }
 
                 case "PATCH": {

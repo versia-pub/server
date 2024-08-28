@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
 import { oauthRedirectUri } from "@/constants";
-import { redirect, response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import type { Context } from "hono";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,
@@ -35,7 +35,12 @@ export const schemas = {
     }),
 };
 
-const returnError = (query: object, error: string, description: string) => {
+const returnError = (
+    context: Context,
+    query: object,
+    error: string,
+    description: string,
+) => {
     const searchParams = new URLSearchParams();
 
     // Add all data that is not undefined except email and password
@@ -48,9 +53,9 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error", error);
     searchParams.append("error_description", description);
 
-    return response(null, 302, {
-        Location: `${config.frontend.routes.login}?${searchParams.toString()}`,
-    });
+    return context.redirect(
+        `${config.frontend.routes.login}?${searchParams.toString()}`,
+    );
 };
 
 export default apiRoute((app) =>
@@ -65,6 +70,7 @@ export default apiRoute((app) =>
 
             if (!client_id || client_id === "undefined") {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "client_id is required",
@@ -77,6 +83,7 @@ export default apiRoute((app) =>
 
             if (!issuer) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "issuer is invalid",
@@ -98,6 +105,7 @@ export default apiRoute((app) =>
 
             if (!application) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "client_id is invalid",
@@ -119,7 +127,7 @@ export default apiRoute((app) =>
             const codeChallenge =
                 await calculatePKCECodeChallenge(codeVerifier);
 
-            return redirect(
+            return context.redirect(
                 `${authServer.authorization_endpoint}?${new URLSearchParams({
                     client_id: issuer.client_id,
                     redirect_uri: `${oauthRedirectUri(issuerId)}?flow=${
@@ -131,7 +139,6 @@ export default apiRoute((app) =>
                     code_challenge_method: "S256",
                     code_challenge: codeChallenge,
                 }).toString()}`,
-                302,
             );
         },
     ),

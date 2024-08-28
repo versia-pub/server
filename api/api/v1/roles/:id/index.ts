@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
@@ -76,7 +75,7 @@ export default apiRoute((app) =>
 
                     await role.linkUser(user.id);
 
-                    return response(null, 204);
+                    return context.newResponse(null, 204);
                 }
                 case "DELETE": {
                     const userHighestRole = userRoles.reduce((prev, current) =>
@@ -96,7 +95,7 @@ export default apiRoute((app) =>
 
                     await role.unlinkUser(user.id);
 
-                    return response(null, 204);
+                    return context.newResponse(null, 204);
                 }
             }
         },

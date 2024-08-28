@@ -5,7 +5,6 @@ import {
     handleZodError,
     idValidator,
 } from "@/api";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
@@ -71,7 +70,7 @@ export default apiRoute((app) =>
                     if (attachment.data.url) {
                         return context.json(attachment.toApi());
                     }
-                    return response(null, 206);
+                    return context.newResponse(null, 206);
                 }
                 case "PUT": {
                     const { description, thumbnail } =

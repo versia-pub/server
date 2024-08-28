@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig } from "@/api";
-import { response } from "@/response";
 import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
+import type { Context } from "hono";
 import { z } from "zod";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
@@ -50,21 +50,26 @@ const route = createRoute({
     },
 });
 
-const returnError = (token: string, error: string, description: string) => {
+const returnError = (
+    context: Context,
+    token: string,
+    error: string,
+    description: string,
+) => {
     const searchParams = new URLSearchParams();
 
     searchParams.append("error", error);
     searchParams.append("error_description", description);
     searchParams.append("token", token);
 
-    return response(null, 302, {
-        Location: new URL(
+    return context.redirect(
+        new URL(
             `${
                 config.frontend.routes.password_reset
             }?${searchParams.toString()}`,
             config.http.base_url,
         ).toString(),
-    });
+    );
 };
 
 export default apiRoute((app) =>
@@ -74,7 +79,12 @@ export default apiRoute((app) =>
         const user = await User.fromSql(eq(Users.passwordResetToken, token));
 
         if (!user) {
-            return returnError(token, "invalid_token", "Invalid token");
+            return returnError(
+                context,
+                token,
+                "invalid_token",
+                "Invalid token",
+            );
         }
 
         await user.update({
@@ -82,8 +92,8 @@ export default apiRoute((app) =>
             passwordResetToken: null,
         });
 
-        return response(null, 302, {
-            Location: `${config.frontend.routes.password_reset}?success=true`,
-        });
+        return context.redirect(
+            `${config.frontend.routes.password_reset}?success=true`,
+        );
     }),
 );

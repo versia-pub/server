@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
+import type { StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
 
@@ -62,7 +62,7 @@ export default apiRoute((app) =>
                     .get("Content-Disposition")
                     ?.match(/filename="(.+)"/)?.[1] || id.split("/").pop();
 
-            return response(media.body, media.status, {
+            return context.newResponse(media.body, media.status as StatusCode, {
                 "Content-Type":
                     media.headers.get("Content-Type") ||
                     "application/octet-stream",

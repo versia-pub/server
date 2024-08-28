@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { zValidator } from "@hono/zod-validator";
+import type { Context } from "hono";
 import { SignJWT, jwtVerify } from "jose";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
@@ -59,11 +59,16 @@ export const schemas = {
     }),
 };
 
-const returnError = (query: object, error: string, description: string) => {
+const returnError = (
+    context: Context,
+    data: object,
+    error: string,
+    description: string,
+) => {
     const searchParams = new URLSearchParams();
 
     // Add all data that is not undefined except email and password
-    for (const [key, value] of Object.entries(query)) {
+    for (const [key, value] of Object.entries(data)) {
         if (key !== "email" && key !== "password" && value !== undefined) {
             searchParams.append(key, value);
         }
@@ -72,9 +77,9 @@ const returnError = (query: object, error: string, description: string) => {
     searchParams.append("error", error);
     searchParams.append("error_description", description);
 
-    return response(null, 302, {
-        Location: `${config.frontend.routes.login}?${searchParams.toString()}`,
-    });
+    return context.redirect(
+        `${config.frontend.routes.login}?${searchParams.toString()}`,
+    );
 };
 
 export default apiRoute((app) =>
@@ -94,6 +99,7 @@ export default apiRoute((app) =>
 
             if (!cookie) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "No cookies were sent with the request",
@@ -107,6 +113,7 @@ export default apiRoute((app) =>
 
             if (!jwt) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "No jwt cookie was sent in the request",
@@ -142,6 +149,7 @@ export default apiRoute((app) =>
 
             if (!result) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "Invalid JWT, could not verify",
@@ -151,24 +159,45 @@ export default apiRoute((app) =>
             const payload = result.payload;
 
             if (!payload.sub) {
-                return returnError(body, "invalid_request", "Invalid sub");
+                return returnError(
+                    context,
+                    body,
+                    "invalid_request",
+                    "Invalid sub",
+                );
             }
             if (!payload.aud) {
-                return returnError(body, "invalid_request", "Invalid aud");
+                return returnError(
+                    context,
+                    body,
+                    "invalid_request",
+                    "Invalid aud",
+                );
             }
             if (!payload.exp) {
-                return returnError(body, "invalid_request", "Invalid exp");
+                return returnError(
+                    context,
+                    body,
+                    "invalid_request",
+                    "Invalid exp",
+                );
             }
 
             // Check if the user is authenticated
             const user = await User.fromId(payload.sub);
 
             if (!user) {
-                return returnError(body, "invalid_request", "Invalid sub");
+                return returnError(
+                    context,
+                    body,
+                    "invalid_request",
+                    "Invalid sub",
+                );
             }
 
             if (!user.hasPermission(RolePermissions.OAuth)) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     `User is missing the ${RolePermissions.OAuth} permission`,
@@ -183,6 +212,7 @@ export default apiRoute((app) =>
 
             if (!(asksCode || asksToken || asksIdToken)) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "Invalid response_type, must ask for code, token, or id_token",
@@ -191,6 +221,7 @@ export default apiRoute((app) =>
 
             if (asksCode && !redirect_uri) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "Redirect URI is required for code flow (can be urn:ietf:wg:oauth:2.0:oob)",
@@ -216,6 +247,7 @@ export default apiRoute((app) =>
 
             if (!application) {
                 return returnError(
+                    context,
                     body,
                     "invalid_client",
                     "Invalid client_id or client_secret",
@@ -224,6 +256,7 @@ export default apiRoute((app) =>
 
             if (application.redirectUri !== redirect_uri) {
                 return returnError(
+                    context,
                     body,
                     "invalid_request",
                     "Redirect URI does not match client_id",
@@ -237,7 +270,12 @@ export default apiRoute((app) =>
                 scope &&
                 !scope.split(" ").every((s) => applicationScopes.includes(s))
             ) {
-                return returnError(body, "invalid_scope", "Invalid scope");
+                return returnError(
+                    context,
+                    body,
+                    "invalid_scope",
+                    "Invalid scope",
+                );
             }
 
             // Generate tokens
@@ -323,11 +361,7 @@ export default apiRoute((app) =>
 
             redirectUri.search = searchParams.toString();
 
-            return response(null, 302, {
-                Location: redirectUri.toString(),
-                "Cache-Control": "no-store",
-                Pragma: "no-cache",
-            });
+            return context.redirect(redirectUri.toString());
         },
     ),
 );

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, debugRequest, handleZodError } from "@/api";
-import { response } from "@/response";
 import { sentry } from "@/sentry";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
@@ -153,7 +152,7 @@ export default apiRoute((app) =>
                 )
             ) {
                 // Pretend to accept request
-                return response(null, 201);
+                return context.newResponse(null, 201);
             }
 
             // Verify request signature
@@ -200,7 +199,7 @@ export default apiRoute((app) =>
             const handler = new RequestParserHandler(body, validator);
 
             try {
-                const result = await handler.parseBody({
+                return await handler.parseBody<Response>({
                     note: async (note) => {
                         const account = await User.resolve(note.author);
 
@@ -227,7 +226,7 @@ export default apiRoute((app) =>
                             );
                         }
 
-                        return response("Note created", 201);
+                        return context.text("Note created", 201);
                     },
                     follow: async (follow) => {
                         const account = await User.resolve(follow.author);
@@ -246,7 +245,7 @@ export default apiRoute((app) =>
                             );
 
                         if (foundRelationship.data.following) {
-                            return response("Already following", 200);
+                            return context.text("Already following", 200);
                         }
 
                         await foundRelationship.update({
@@ -269,7 +268,7 @@ export default apiRoute((app) =>
                             await sendFollowAccept(account, user);
                         }
 
-                        return response("Follow request sent", 200);
+                        return context.text("Follow request sent", 200);
                     },
                     followAccept: async (followAccept) => {
                         const account = await User.resolve(followAccept.author);
@@ -288,7 +287,7 @@ export default apiRoute((app) =>
                             );
 
                         if (!foundRelationship.data.requested) {
-                            return response(
+                            return context.text(
                                 "There is no follow request to accept",
                                 200,
                             );
@@ -299,7 +298,7 @@ export default apiRoute((app) =>
                             following: true,
                         });
 
-                        return response("Follow request accepted", 200);
+                        return context.text("Follow request accepted", 200);
                     },
                     followReject: async (followReject) => {
                         const account = await User.resolve(followReject.author);
@@ -318,7 +317,7 @@ export default apiRoute((app) =>
                             );
 
                         if (!foundRelationship.data.requested) {
-                            return response(
+                            return context.text(
                                 "There is no follow request to reject",
                                 200,
                             );
@@ -329,7 +328,7 @@ export default apiRoute((app) =>
                             following: false,
                         });
 
-                        return response("Follow request rejected", 200);
+                        return context.text("Follow request rejected", 200);
                     },
                     // "delete" is a reserved keyword in JS
                     delete: async (delete_) => {
@@ -345,7 +344,7 @@ export default apiRoute((app) =>
 
                                 if (note) {
                                     await note.delete();
-                                    return response("Note deleted", 200);
+                                    return context.text("Note deleted", 200);
                                 }
 
                                 break;
@@ -357,7 +356,10 @@ export default apiRoute((app) =>
                                     if (otherUser.id === user.id) {
                                         // Delete own account
                                         await user.delete();
-                                        return response("Account deleted", 200);
+                                        return context.text(
+                                            "Account deleted",
+                                            200,
+                                        );
                                     }
                                     return context.json(
                                         {
@@ -378,6 +380,11 @@ export default apiRoute((app) =>
                                 );
                             }
                         }
+
+                        return context.json(
+                            { error: "Object not found or not owned by user" },
+                            404,
+                        );
                     },
                     user: async (user) => {
                         // Refetch user to ensure we have the latest data
@@ -392,18 +399,15 @@ export default apiRoute((app) =>
                             );
                         }
 
-                        return response("User refreshed", 200);
+                        return context.text("User refreshed", 200);
+                    },
+                    unknown: () => {
+                        return context.json(
+                            { error: "Unknown entity type" },
+                            400,
+                        );
                     },
                 });
-
-                if (result) {
-                    return result;
-                }
-
-                return context.json(
-                    { error: "Object has not been implemented" },
-                    400,
-                );
             } catch (e) {
                 if (isValidationError(e)) {
                     return context.json(

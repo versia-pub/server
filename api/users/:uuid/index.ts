@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { redirect } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { User } from "~/packages/database-interface/user";
@@ -48,7 +47,7 @@ export default apiRoute((app) =>
                 context.req.header("user-agent")?.includes("Mozilla") &&
                 uuid !== "actor"
             ) {
-                return redirect(user.toApi().url);
+                return context.redirect(user.toApi().url);
             }
 
             const userJson = user.toVersia();

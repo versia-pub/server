@@ -1,4 +1,3 @@
-import { response } from "@/response";
 import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
@@ -34,7 +33,7 @@ export const bait = createMiddleware(async (context, next) => {
     if (requestIp?.address) {
         for (const ip of config.http.bait.bait_ips) {
             if (matches(ip, requestIp.address)) {
-                return response(file);
+                return context.newResponse(file.stream());
             }
         }
     }
@@ -44,7 +43,7 @@ export const bait = createMiddleware(async (context, next) => {
 
     for (const agent of config.http.bait.bait_user_agents) {
         if (new RegExp(agent).test(ua)) {
-            return response(file);
+            return context.newResponse(file.stream());
         }
     }
 

@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { response } from "@/response";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -83,9 +82,6 @@ export default apiRoute((app) =>
                     403,
                 );
             }
-
-            const objectString = JSON.stringify(apiObject);
-
             // If base_url uses https and request uses http, rewrite request to use https
             // This fixes reverse proxy errors
             const reqUrl = new URL(context.req.url);
@@ -102,10 +98,7 @@ export default apiRoute((app) =>
                 "GET",
             );
 
-            return response(objectString, 200, {
-                "Content-Type": "application/json",
-                ...headers.toJSON(),
-            });
+            return context.json(apiObject, 200, headers.toJSON());
         },
     ),
 );

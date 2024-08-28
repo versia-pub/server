@@ -1,5 +1,4 @@
 import { apiRoute, applyConfig } from "@/api";
-import { redirect } from "@/response";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -15,9 +14,12 @@ export const meta = applyConfig({
 });
 
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, () => {
-        return redirect(
-            new URL("/.well-known/nodeinfo/2.0", config.http.base_url),
+    app.on(meta.allowedMethods, meta.route, (context) => {
+        return context.redirect(
+            new URL(
+                "/.well-known/nodeinfo/2.0",
+                config.http.base_url,
+            ).toString(),
             301,
         );
     }),
