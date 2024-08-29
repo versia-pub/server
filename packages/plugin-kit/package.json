@@ -1,5 +1,5 @@
 {
-    "name": "@versia-org/kit",
+    "name": "@versia/kit",
     "module": "index.ts",
     "type": "module",
     "version": "0.0.0",

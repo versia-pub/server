@@ -1,3 +1,4 @@
+import { readdir } from "node:fs/promises";
 import { $ } from "bun";
 import ora from "ora";
 import { routes } from "~/routes";
@@ -6,12 +7,19 @@ const buildSpinner = ora("Building").start();
 
 await $`rm -rf dist && mkdir dist`;
 
+// Get all directories under the plugins/ directory
+const pluginDirs = await readdir("plugins", { withFileTypes: true });
+
 await Bun.build({
     entrypoints: [
         "index.ts",
         "cli/index.ts",
         // Force Bun to include endpoints
         ...Object.values(routes),
+        // Include all plugins
+        ...pluginDirs
+            .filter((dir) => dir.isDirectory())
+            .map((dir) => `plugins/${dir.name}/index.ts`),
     ],
     outdir: "dist",
     target: "bun",

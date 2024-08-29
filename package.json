@@ -15,7 +15,7 @@
     "icon": "https://github.com/versia-pub/server",
     "license": "AGPL-3.0-or-later",
     "keywords": ["federated", "activitypub", "bun"],
-    "workspaces": ["packages/*"],
+    "workspaces": ["packages/plugin-kit"],
     "maintainers": [
         {
             "email": "contact@cpluspatch.com",

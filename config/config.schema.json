@@ -237,22 +237,21 @@
                     },
                     "default": []
                 },
-                "jwt_key": {
-                    "anyOf": [
-                        {
+                "keys": {
+                    "type": "object",
+                    "properties": {
+                        "public": {
                             "type": "string",
-                            "minLength": 3,
-                            "pattern": "\\;",
-                            "default": ""
+                            "minLength": 1
                         },
-                        {
+                        "private": {
                             "type": "string",
-                            "const": ""
+                            "minLength": 1
                         }
-                    ]
+                    },
+                    "additionalProperties": false
                 }
             },
-            "required": ["jwt_key"],
             "additionalProperties": false
         },
         "http": {

@@ -14,6 +14,7 @@ import type {
 import { z } from "zod";
 import type { Application } from "~/classes/functions/application";
 import type { RolePermissions } from "~/drizzle/schema";
+import type { Config } from "~/packages/config-manager";
 import type { User as DatabaseUser } from "~/packages/database-interface/user";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
@@ -51,6 +52,7 @@ export const ErrorSchema = z.object({
 
 export type HonoEnv = {
     Variables: {
+        config: Config;
         auth: {
             user: DatabaseUser | null;
             token: string | null;

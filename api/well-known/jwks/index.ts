@@ -18,7 +18,7 @@ export default apiRoute((app) =>
     app.on(meta.allowedMethods, meta.route, async (context) => {
         const publicKey = await crypto.subtle.importKey(
             "spki",
-            Buffer.from(config.oidc.jwt_key.split(";")[1], "base64"),
+            Buffer.from(config.oidc.keys?.public ?? "", "base64"),
             "Ed25519",
             true,
             ["verify"],

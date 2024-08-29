@@ -122,7 +122,12 @@ export const configValidator = z.object({
                 }),
             )
             .default([]),
-        jwt_key: z.string().min(3).includes(";").default("").or(z.literal("")),
+        keys: z
+            .object({
+                public: z.string().min(1).optional(),
+                private: z.string().min(1).optional(),
+            })
+            .optional(),
     }),
     http: z.object({
         base_url: z.string().min(1).default("http://versia.social"),

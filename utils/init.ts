@@ -78,9 +78,9 @@ const checkChallengeConfig = async (config: Config) => {
 const checkOidcConfig = async (config: Config) => {
     const logger = getLogger("server");
 
-    if (!config.oidc.jwt_key) {
-        logger.fatal`The JWT private key is not set in the config`;
-        logger.fatal`Below is a generated key for you to copy in the config at oidc.jwt_key`;
+    if (!(config.oidc.keys?.private && config.oidc.keys?.public)) {
+        logger.fatal`The OpenID keys are not set in the config`;
+        logger.fatal`Below are generated key for you to copy in the config at oidc.keys`;
 
         // Generate a key for them
         const keys = await crypto.subtle.generateKey("Ed25519", true, [
@@ -96,7 +96,9 @@ const checkOidcConfig = async (config: Config) => {
             await crypto.subtle.exportKey("spki", keys.publicKey),
         ).toString("base64");
 
-        logger.fatal`Generated key: ${chalk.gray(`${privateKey};${publicKey}`)}`;
+        logger.fatal`Generated keys:`;
+        logger.fatal`Private key: ${chalk.gray(privateKey)}`;
+        logger.fatal`Public key: ${chalk.gray(publicKey)}`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
@@ -106,7 +108,7 @@ const checkOidcConfig = async (config: Config) => {
     const privateKey = await crypto.subtle
         .importKey(
             "pkcs8",
-            Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
+            Buffer.from(config.oidc.keys?.private ?? "", "base64"),
             "Ed25519",
             false,
             ["sign"],
@@ -117,7 +119,7 @@ const checkOidcConfig = async (config: Config) => {
     const publicKey = await crypto.subtle
         .importKey(
             "spki",
-            Buffer.from(config.oidc.jwt_key.split(";")[1], "base64"),
+            Buffer.from(config.oidc.keys?.public ?? "", "base64"),
             "Ed25519",
             false,
             ["verify"],
@@ -125,7 +127,7 @@ const checkOidcConfig = async (config: Config) => {
         .catch((e) => e as Error);
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
-        logger.fatal`The JWT key could not be imported! You may generate a new one by removing the old one from the config and restarting the server (this will invalidate all current JWTs).`;
+        logger.fatal`The OpenID keys could not be imported! You may generate a new one by removing the old ones from config and restarting the server (this will invalidate all current JWTs).`;
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);

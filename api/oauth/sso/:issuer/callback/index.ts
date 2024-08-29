@@ -257,7 +257,7 @@ export default apiRoute((app) =>
             // Try and import the key
             const privateKey = await crypto.subtle.importKey(
                 "pkcs8",
-                Buffer.from(config.oidc.jwt_key.split(";")[0], "base64"),
+                Buffer.from(config.oidc.keys?.private ?? "", "base64"),
                 "Ed25519",
                 false,
                 ["sign"],

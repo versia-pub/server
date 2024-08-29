@@ -1,6 +1,7 @@
 import { handleZodError } from "@/api";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
+import { createMiddleware } from "@hono/hono/factory";
 import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
@@ -9,6 +10,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
  */ import { getLogger } from "@logtape/logtape";
 import pkg from "~/package.json" with { type: "application/json" };
 import { config } from "~/packages/config-manager/index";
+import plugin from "~/plugins/openid";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
 import { boundaryCheck } from "./middlewares/boundary-check";
@@ -83,6 +85,14 @@ export const appFactory = async () => {
             credentials: true,
         }),
     );
+    app.use(
+        createMiddleware<HonoEnv>(async (context, next) => {
+            context.set("config", config);
+
+            await next();
+        }),
+    );
+
     /* app.use("*", registerMetrics);
     app.get("/metrics", printMetrics); */
     // Disabled as federation now checks for this
@@ -99,6 +109,12 @@ export const appFactory = async () => {
 
         route.default(app);
     }
+
+    // @ts-expect-error We check if the keys are valid before this is called
+    // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
+    plugin["_loadConfig"](config.oidc);
+    // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
+    plugin["_addToApp"](app);
 
     app.doc31("/openapi.json", {
         openapi: "3.1.0",
