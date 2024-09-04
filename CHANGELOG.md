@@ -50,6 +50,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Some instance metadata will no longer be missing from `/api/v2/instabnce` endpoint. In fact, it will now be more complete than Mastodon's implementation.
 - The Origin HTTP header will no longer be used to determine the origin of a request. This was a security issue.
 - New notes will no longer incorrectly be federated to *all* remote users at once.
+- Fix [Elk Client](https://elk.zone/) not being able to log in.
 
 ## Removals
 
