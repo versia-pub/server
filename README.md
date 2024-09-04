@@ -24,7 +24,7 @@
 
 ## Features
 
-- [x] Versia 3.0 federation (partial)
+- [x] Versia Working Draft 4 federation (partial)
 - [x] Hyper fast (thousands of HTTP requests per second)
 - [x] S3 or local media storage
 - [x] Deduplication of uploaded files

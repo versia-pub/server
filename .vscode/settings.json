@@ -7,5 +7,6 @@
         "federation",
         "config",
         "plugin"
-    ]
+    ],
+    "languageToolLinter.languageTool.ignoredWordsInWorkspace": ["versia"]
 }

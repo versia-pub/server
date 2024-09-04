@@ -9,7 +9,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 ## Features
 
-- Upgrade Bun to `1.1.26`. This brings performance upgrades and better stability.
+- Upgraded Bun to `1.1.26`. This brings performance upgrades and better stability.
 - Added support for the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub).
 - Added support for the [Sonic](https://github.com/valeriansaliou/sonic) search indexer.
 - Note deletions are now federated.
@@ -25,7 +25,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Added an endpoint to get a user by its username.
 - Add OpenID Connect registration support. Admins can now disable username/password registration entirely and still allow users to sign up via OpenID Connect.
 - Add option to never convert vector images to a raster format.
-- Refactor logging system to be more robust and easier to use. Logfiles are now automatically rotated.
+- Refactor logging system to be more robust and easier to use. Log files are now automatically rotated.
 - Add support for HTTP proxies.
 - Add support for serving Versia over a Tor hidden service.
 - Add global server error handler, to properly return 500 error messages to clients.
