@@ -458,3 +458,24 @@ export const debugRequest = async (req: Request) => {
         logger.debug`${urlAndMethod}`;
     }
 };
+
+export const debugResponse = async (res: Response) => {
+    const body = await res.clone().text();
+    const logger = getLogger("server");
+
+    const status = `${chalk.bold("Status")}: ${chalk.green(res.status)}`;
+
+    const headers = `${chalk.bold("Headers")}:\n${Array.from(
+        res.headers.entries(),
+    )
+        .map(([key, value]) => ` - ${chalk.cyan(key)}: ${chalk.white(value)}`)
+        .join("\n")}`;
+
+    const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
+
+    if (config.logging.log_requests_verbose) {
+        logger.debug`${status}\n${headers}\n${bodyLog}`;
+    } else {
+        logger.debug`${status}`;
+    }
+};

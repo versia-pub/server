@@ -567,6 +567,7 @@ export const configValidator = z.object({
     logging: z
         .object({
             log_requests: z.boolean().default(false),
+            log_responses: z.boolean().default(false),
             log_requests_verbose: z.boolean().default(false),
             log_level: z
                 .enum(["debug", "info", "warning", "error", "fatal"])
@@ -605,6 +606,7 @@ export const configValidator = z.object({
         })
         .default({
             log_requests: false,
+            log_responses: false,
             log_requests_verbose: false,
             log_level: "info",
             log_ip: false,

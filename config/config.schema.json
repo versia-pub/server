@@ -3848,6 +3848,10 @@
                     "type": "boolean",
                     "default": false
                 },
+                "log_responses": {
+                    "type": "boolean",
+                    "default": false
+                },
                 "log_requests_verbose": {
                     "type": "boolean",
                     "default": false
@@ -3941,6 +3945,7 @@
             "additionalProperties": false,
             "default": {
                 "log_requests": false,
+                "log_responses": false,
                 "log_requests_verbose": false,
                 "log_level": "info",
                 "log_ip": false,
