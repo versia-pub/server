@@ -76,9 +76,11 @@ export default apiRoute((app) =>
 
         // Redirect back to application
         return context.redirect(
-            `${redirect_uri}?${new URLSearchParams({
-                code,
-            }).toString()}`,
+            encodeURI(
+                `${redirect_uri}?${new URLSearchParams({
+                    code,
+                }).toString()}`,
+            ),
         );
     }),
 );
