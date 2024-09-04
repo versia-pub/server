@@ -87,7 +87,7 @@ export default apiRoute((app) =>
                 .insert(Applications)
                 .values({
                     name: client_name || "",
-                    redirectUri: decodeURIComponent(redirect_uris) || "",
+                    redirectUri: decodeURI(redirect_uris) || "",
                     scopes: scopes || "read",
                     website: website || null,
                     clientId: randomString(32, "base64url"),
