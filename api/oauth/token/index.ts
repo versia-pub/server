@@ -112,7 +112,10 @@ export default apiRoute((app) =>
                         where: (token, { eq, and }) =>
                             and(
                                 eq(token.code, code),
-                                eq(token.redirectUri, redirect_uri),
+                                eq(
+                                    token.redirectUri,
+                                    decodeURIComponent(redirect_uri),
+                                ),
                                 eq(token.clientId, client_id),
                             ),
                     });
