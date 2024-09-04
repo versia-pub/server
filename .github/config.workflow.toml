@@ -39,7 +39,7 @@ rules = [
 
 [oidc]
 
-[keys]
+[oidc.keys]
 private = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl"
 public = "MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="
 
