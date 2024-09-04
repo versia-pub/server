@@ -435,7 +435,7 @@ export const jsonOrForm = () => {
 };
 
 export const debugRequest = async (req: Request) => {
-    const body = await req.clone().text();
+    const body = await req.text();
     const logger = getLogger("server");
 
     const urlAndMethod = `${chalk.green(req.method)} ${chalk.blue(req.url)}`;
