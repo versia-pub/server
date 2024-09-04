@@ -303,7 +303,7 @@ export default (plugin: PluginType) =>
                 redirectUri.searchParams.append("code", code);
                 state && redirectUri.searchParams.append("state", state);
 
-                return context.redirect(redirectUri.toString());
+                return context.redirect(encodeURI(redirectUri.toString()));
             },
         ),
     );
