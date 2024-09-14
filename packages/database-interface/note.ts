@@ -511,8 +511,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         application?: Application;
     }): Promise<Note> {
         const plaintextContent = data.content
-            ? data.content["text/plain"]?.content ??
-              Object.entries(data.content)[0][1].content
+            ? (data.content["text/plain"]?.content ??
+              Object.entries(data.content)[0][1].content)
             : undefined;
 
         const parsedMentions = [
@@ -954,9 +954,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             url: data.uri || this.getMastoUri(),
             bookmarked: false,
             quote: data.quotingId
-                ? (await Note.fromId(data.quotingId, userFetching?.id).then(
+                ? ((await Note.fromId(data.quotingId, userFetching?.id).then(
                       (n) => n?.toApi(userFetching),
-                  )) ?? null
+                  )) ?? null)
                 : null,
             edited_at: data.updatedAt
                 ? new Date(data.updatedAt).toISOString()

@@ -261,6 +261,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             duration: value.duration || undefined,
             fps: value.fps || undefined,
             height: value.height || undefined,
+            // biome-ignore lint/style/useExplicitLengthCheck: Biome thinks we're checking if size is not zero
             size: value.size || undefined,
             width: value.width || undefined,
             sha256: value.hash?.sha256 || undefined,
