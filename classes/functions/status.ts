@@ -255,7 +255,7 @@ export const parseTextMentions = async (
     text: string,
     author: User,
 ): Promise<User[]> => {
-    const mentionedPeople = [...text.matchAll(mentionValidator)] ?? [];
+    const mentionedPeople = [...text.matchAll(mentionValidator)];
     if (mentionedPeople.length === 0) {
         return [];
     }
