@@ -6,7 +6,7 @@ import { config } from "~/packages/config-manager";
 export const logger = createMiddleware(async (context, next) => {
     if (config.logging.log_requests) {
         const logger = getLogger("server");
-        const body = await context.req.text();
+        const body = await context.req.raw.clone().text();
 
         const urlAndMethod = `${chalk.green(context.req.method)} ${chalk.blue(context.req.url)}`;
 

@@ -55,7 +55,9 @@ rules = [
 
 [oidc]
 # Run Versia Server with this value missing to generate a new key
-jwt_key = ""
+# [oidc.keys]
+# public = "XXXX"
+# private = "XXXX"
 
 # If enabled, Versia Server will require users to log in with an OAuth provider
 forced = false
