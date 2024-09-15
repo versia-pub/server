@@ -13,11 +13,11 @@ import {
     type RotatingFileSinkOptions,
     type Sink,
     configure,
+    defaultTextFormatter,
     getConsoleSink,
     getLevelFilter,
 } from "@logtape/logtape";
 import chalk from "chalk";
-import stripAnsi from "strip-ansi";
 import { config } from "~/packages/config-manager";
 
 // HACK: This is a workaround for the lack of type exports in the Logtape package.
@@ -73,34 +73,6 @@ const levelAbbreviations: Record<LogLevel, string> = {
     error: "ERR",
     fatal: "FTL",
 };
-
-export function defaultTextFormatter(record: LogRecord): string {
-    const ts = new Date(record.timestamp);
-    let msg = "";
-    for (let i = 0; i < record.message.length; i++) {
-        if (i % 2 === 0) {
-            msg += record.message[i];
-        } else {
-            msg += Bun.inspect(stripAnsi(record.message[i] as string)).match(
-                /"(.*?)"/,
-            )?.[1];
-        }
-    }
-    const category = record.category.join("\xb7");
-    return `${ts.toISOString().replace("T", " ").replace("Z", " +00:00")} [${
-        levelAbbreviations[record.level]
-    }] ${category}: ${msg}\n`;
-}
-
-/**
- * A console formatter is a function that accepts a log record and returns
- * an array of arguments to pass to {@link console.log}.
- *
- * @param record The log record to format.
- * @returns The formatted log record, as an array of arguments for
- *          {@link console.log}.
- */
-export type ConsoleFormatter = (record: LogRecord) => readonly unknown[];
 
 /**
  * The styles for the log level in the console.
