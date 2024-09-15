@@ -1,16 +1,11 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    handleZodError,
-    idValidator,
-} from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "PUT"],
@@ -30,7 +25,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     param: z.object({
-        id: z.string(),
+        id: z.string().uuid(),
     }),
     form: z.object({
         thumbnail: z.instanceof(File).optional(),
@@ -42,69 +37,132 @@ export const schemas = {
     }),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        zValidator("form", schemas.form, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
-
-            if (!id.match(idValidator)) {
-                return context.json(
-                    { error: "Invalid ID, must be of type UUIDv7" },
-                    404,
-                );
-            }
-
-            const attachment = await Attachment.fromId(id);
-
-            if (!attachment) {
-                return context.json({ error: "Media not found" }, 404);
-            }
-
-            switch (context.req.method) {
-                case "GET": {
-                    if (attachment.data.url) {
-                        return context.json(attachment.toApi());
-                    }
-                    return context.newResponse(null, 206);
-                }
-                case "PUT": {
-                    const { description, thumbnail } =
-                        context.req.valid("form");
-
-                    let thumbnailUrl = attachment.data.thumbnailUrl;
-
-                    const mediaManager = new MediaManager(config);
-
-                    if (thumbnail) {
-                        const { path } = await mediaManager.addFile(thumbnail);
-                        thumbnailUrl = Attachment.getUrl(path);
-                    }
-
-                    const descriptionText =
-                        description || attachment.data.description;
-
-                    if (
-                        descriptionText !== attachment.data.description ||
-                        thumbnailUrl !== attachment.data.thumbnailUrl
-                    ) {
-                        await attachment.update({
-                            description: descriptionText,
-                            thumbnailUrl,
-                        });
-
-                        return context.json(attachment.toApi());
-                    }
-
-                    return context.json(attachment.toApi());
-                }
-            }
-
-            return context.json({ error: "Method not allowed" }, 405);
+const routePut = createRoute({
+    method: "put",
+    path: "/api/v1/media/{id}",
+    summary: "Update media",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+        body: {
+            content: {
+                "multipart/form-data": {
+                    schema: schemas.form,
+                },
+            },
         },
-    ),
-);
+    },
+    responses: {
+        204: {
+            description: "Media updated",
+            content: {
+                "application/json": {
+                    schema: Attachment.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Media not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+const routeGet = createRoute({
+    method: "get",
+    path: "/api/v1/media/{id}",
+    summary: "Get media",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Media",
+            content: {
+                "application/json": {
+                    schema: Attachment.schema,
+                },
+            },
+        },
+        404: {
+            description: "Media not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) => {
+    app.openapi(routePut, async (context) => {
+        const { id } = context.req.valid("param");
+
+        const attachment = await Attachment.fromId(id);
+
+        if (!attachment) {
+            return context.json({ error: "Media not found" }, 404);
+        }
+
+        const { description, thumbnail } = context.req.valid("form");
+
+        let thumbnailUrl = attachment.data.thumbnailUrl;
+
+        const mediaManager = new MediaManager(config);
+
+        if (thumbnail) {
+            const { path } = await mediaManager.addFile(thumbnail);
+            thumbnailUrl = Attachment.getUrl(path);
+        }
+
+        const descriptionText = description || attachment.data.description;
+
+        if (
+            descriptionText !== attachment.data.description ||
+            thumbnailUrl !== attachment.data.thumbnailUrl
+        ) {
+            await attachment.update({
+                description: descriptionText,
+                thumbnailUrl,
+            });
+
+            return context.json(attachment.toApi(), 204);
+        }
+
+        return context.json(attachment.toApi(), 204);
+    });
+
+    app.openapi(routeGet, async (context) => {
+        const { id } = context.req.valid("param");
+
+        const attachment = await Attachment.fromId(id);
+
+        if (!attachment) {
+            return context.json({ error: "Media not found" }, 404);
+        }
+
+        return context.json(attachment.toApi(), 200);
+    });
+});

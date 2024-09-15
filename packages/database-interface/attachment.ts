@@ -1,8 +1,5 @@
 import { proxyUrl } from "@/response";
-import type {
-    AsyncAttachment as ApiAsyncAttachment,
-    Attachment as ApiAttachment,
-} from "@versia/client/types";
+import type { Attachment as ApiAttachment } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import {
     type InferInsertModel,
@@ -212,7 +209,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         };
     }
 
-    public toApi(): ApiAttachment | ApiAsyncAttachment {
+    public toApi(): ApiAttachment {
         return {
             id: this.data.id,
             type: this.getMastodonType(),
