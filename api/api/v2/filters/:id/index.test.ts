@@ -154,7 +154,7 @@ describe(meta.route, () => {
             },
         );
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(204);
 
         // Try to GET the filter again
         const getResponse = await fakeRequest(

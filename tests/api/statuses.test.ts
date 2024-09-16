@@ -34,7 +34,7 @@ describe("API Tests", () => {
                 body: formData,
             });
 
-            expect(response.status).toBe(202);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );

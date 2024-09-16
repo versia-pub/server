@@ -1,5 +1,9 @@
-import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
+import {
+    LikeExtension as LikeSchema,
+    Note as NoteSchema,
+} from "@versia/federation/schemas";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { type LikeType, likeToVersia } from "~/classes/functions/like";
@@ -8,7 +12,7 @@ import { Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import type { KnownEntity } from "~/types/api";
+import { ErrorSchema, type KnownEntity } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -28,77 +32,103 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "get",
+    path: "/objects/{id}",
+    summary: "Get object",
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Object",
+            content: {
+                "application/json": {
+                    schema: NoteSchema.or(LikeSchema),
+                },
+            },
+        },
+        404: {
+            description: "Object not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        403: {
+            description: "Cannot view objects from remote instances",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        async (context) => {
-            const { id } = context.req.valid("param");
+    app.openapi(route, async (context) => {
+        const { id } = context.req.valid("param");
 
-            let foundObject: Note | LikeType | null = null;
-            let foundAuthor: User | null = null;
-            let apiObject: KnownEntity | null = null;
+        let foundObject: Note | LikeType | null = null;
+        let foundAuthor: User | null = null;
+        let apiObject: KnownEntity | null = null;
 
-            foundObject = await Note.fromSql(
-                and(
-                    eq(Notes.id, id),
-                    inArray(Notes.visibility, ["public", "unlisted"]),
-                ),
-            );
-            apiObject = foundObject ? foundObject.toVersia() : null;
-            foundAuthor = foundObject ? foundObject.author : null;
+        foundObject = await Note.fromSql(
+            and(
+                eq(Notes.id, id),
+                inArray(Notes.visibility, ["public", "unlisted"]),
+            ),
+        );
+        apiObject = foundObject ? foundObject.toVersia() : null;
+        foundAuthor = foundObject ? foundObject.author : null;
 
-            if (foundObject) {
-                if (!foundObject.isViewableByUser(null)) {
-                    return context.json({ error: "Object not found" }, 404);
-                }
-            } else {
-                foundObject =
-                    (await db.query.Likes.findFirst({
-                        where: (like, { eq, and }) =>
-                            and(
-                                eq(like.id, id),
-                                sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${like.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
-                            ),
-                    })) ?? null;
-                apiObject = foundObject ? likeToVersia(foundObject) : null;
-                foundAuthor = foundObject
-                    ? await User.fromId(foundObject.likerId)
-                    : null;
-            }
-
-            if (!(foundObject && apiObject)) {
+        if (foundObject) {
+            if (!foundObject.isViewableByUser(null)) {
                 return context.json({ error: "Object not found" }, 404);
             }
+        } else {
+            foundObject =
+                (await db.query.Likes.findFirst({
+                    where: (like, { eq, and }) =>
+                        and(
+                            eq(like.id, id),
+                            sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${like.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
+                        ),
+                })) ?? null;
+            apiObject = foundObject ? likeToVersia(foundObject) : null;
+            foundAuthor = foundObject
+                ? await User.fromId(foundObject.likerId)
+                : null;
+        }
 
-            if (!foundAuthor) {
-                return context.json({ error: "Author not found" }, 404);
-            }
+        if (!(foundObject && apiObject)) {
+            return context.json({ error: "Object not found" }, 404);
+        }
 
-            if (foundAuthor?.isRemote()) {
-                return context.json(
-                    { error: "Cannot view objects from remote instances" },
-                    403,
-                );
-            }
-            // If base_url uses https and request uses http, rewrite request to use https
-            // This fixes reverse proxy errors
-            const reqUrl = new URL(context.req.url);
-            if (
-                new URL(config.http.base_url).protocol === "https:" &&
-                reqUrl.protocol === "http:"
-            ) {
-                reqUrl.protocol = "https:";
-            }
+        if (!foundAuthor) {
+            return context.json({ error: "Author not found" }, 404);
+        }
 
-            const { headers } = await foundAuthor.sign(
-                apiObject,
-                reqUrl,
-                "GET",
+        if (foundAuthor?.isRemote()) {
+            return context.json(
+                { error: "Cannot view objects from remote instances" },
+                403,
             );
+        }
+        // If base_url uses https and request uses http, rewrite request to use https
+        // This fixes reverse proxy errors
+        const reqUrl = new URL(context.req.url);
+        if (
+            new URL(config.http.base_url).protocol === "https:" &&
+            reqUrl.protocol === "http:"
+        ) {
+            reqUrl.protocol = "https:";
+        }
 
-            return context.json(apiObject, 200, headers.toJSON());
-        },
-    ),
+        const { headers } = await foundAuthor.sign(apiObject, reqUrl, "GET");
+
+        return context.json(apiObject, 200, headers.toJSON());
+    }),
 );

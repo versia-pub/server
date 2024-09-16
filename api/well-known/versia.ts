@@ -1,8 +1,12 @@
 import { apiRoute, applyConfig } from "@/api";
 import { urlToContentFormat } from "@/content_types";
-import type { InstanceMetadata } from "@versia/federation/types";
+import { createRoute } from "@hono/zod-openapi";
+import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/schemas";
+import { asc } from "drizzle-orm";
+import { Users } from "~/drizzle/schema";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
+import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -16,28 +20,52 @@ export const meta = applyConfig({
     route: "/.well-known/versia",
 });
 
+const route = createRoute({
+    method: "get",
+    path: "/.well-known/versia",
+    summary: "Get instance metadata",
+    responses: {
+        200: {
+            description: "Instance metadata",
+            content: {
+                "application/json": {
+                    schema: InstanceMetadataSchema,
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, (context) => {
-        return context.json({
-            type: "InstanceMetadata",
-            compatibility: {
-                extensions: ["pub.versia:custom_emojis"],
-                versions: ["0.4.0"],
+    app.openapi(route, async (context) => {
+        // Get date of first user creation
+        const firstUser = await User.fromSql(undefined, asc(Users.createdAt));
+
+        return context.json(
+            {
+                type: "InstanceMetadata" as const,
+                compatibility: {
+                    extensions: ["pub.versia:custom_emojis"],
+                    versions: ["0.4.0"],
+                },
+                host: new URL(config.http.base_url).host,
+                name: config.instance.name,
+                description: config.instance.description,
+                public_key: {
+                    key: config.instance.keys.public,
+                    algorithm: "ed25519" as const,
+                },
+                software: {
+                    name: "Versia Server",
+                    version: pkg.version,
+                },
+                banner: urlToContentFormat(config.instance.banner),
+                logo: urlToContentFormat(config.instance.logo),
+                created_at: new Date(
+                    firstUser?.data.createdAt ?? 0,
+                ).toISOString(),
             },
-            host: new URL(config.http.base_url).host,
-            name: config.instance.name,
-            description: config.instance.description,
-            public_key: {
-                key: config.instance.keys.public,
-                algorithm: "ed25519",
-            },
-            software: {
-                name: "Versia Server",
-                version: pkg.version,
-            },
-            banner: urlToContentFormat(config.instance.banner),
-            logo: urlToContentFormat(config.instance.logo),
-            created_at: "2021-10-01T00:00:00Z",
-        } satisfies InstanceMetadata);
+            200,
+        );
     }),
 );

@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -13,8 +14,19 @@ export const meta = applyConfig({
     route: "/.well-known/nodeinfo",
 });
 
+const route = createRoute({
+    method: "get",
+    path: "/.well-known/nodeinfo",
+    summary: "Well-known nodeinfo",
+    responses: {
+        301: {
+            description: "Redirect to 2.0 Nodeinfo",
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, (context) => {
+    app.openapi(route, (context) => {
         return context.redirect(
             new URL(
                 "/.well-known/nodeinfo/2.0",

@@ -160,6 +160,6 @@ describe(meta.route, () => {
             },
         );
 
-        expect(filterDeleteResponse.status).toBe(200);
+        expect(filterDeleteResponse.status).toBe(204);
     });
 });

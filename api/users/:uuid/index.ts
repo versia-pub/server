@@ -1,7 +1,9 @@
-import { apiRoute, applyConfig, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
+import { User as UserSchema } from "@versia/federation/schemas";
 import { z } from "zod";
 import { User } from "~/packages/database-interface/user";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -21,44 +23,71 @@ export const schemas = {
     }),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        async (context) => {
-            const { uuid } = context.req.valid("param");
-
-            const user = await User.fromId(uuid);
-
-            if (!user) {
-                return context.json({ error: "User not found" }, 404);
-            }
-
-            if (user.isRemote()) {
-                return context.json(
-                    { error: "Cannot view users from remote instances" },
-                    403,
-                );
-            }
-
-            // Try to detect a web browser and redirect to the user's profile page
-            if (
-                context.req.header("user-agent")?.includes("Mozilla") &&
-                uuid !== "actor"
-            ) {
-                return context.redirect(user.toApi().url);
-            }
-
-            const userJson = user.toVersia();
-
-            const { headers } = await user.sign(
-                userJson,
-                context.req.url,
-                "GET",
-            );
-
-            return context.json(userJson, 200, headers.toJSON());
+const route = createRoute({
+    method: "get",
+    path: "/users/{uuid}",
+    summary: "Get user data",
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "User data",
+            content: {
+                "application/json": {
+                    schema: UserSchema,
+                },
+            },
         },
-    ),
+        301: {
+            description:
+                "Redirect to user profile (for web browsers). Uses user-agent for detection.",
+        },
+        404: {
+            description: "User not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        403: {
+            description: "Cannot view users from remote instances",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) =>
+    app.openapi(route, async (context) => {
+        const { uuid } = context.req.valid("param");
+
+        const user = await User.fromId(uuid);
+
+        if (!user) {
+            return context.json({ error: "User not found" }, 404);
+        }
+
+        if (user.isRemote()) {
+            return context.json(
+                { error: "Cannot view users from remote instances" },
+                403,
+            );
+        }
+
+        // Try to detect a web browser and redirect to the user's profile page
+        if (context.req.header("user-agent")?.includes("Mozilla")) {
+            return context.redirect(user.toApi().url);
+        }
+
+        const userJson = user.toVersia();
+
+        const { headers } = await user.sign(userJson, context.req.url, "GET");
+
+        return context.json(userJson, 200, headers.toJSON());
+    }),
 );

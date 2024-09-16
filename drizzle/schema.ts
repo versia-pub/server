@@ -61,6 +61,7 @@ export const Filters = pgTable("Filters", {
         }),
     context: text("context")
         .array()
+        .notNull()
         .$type<
             ("home" | "notifications" | "public" | "thread" | "account")[]
         >(),

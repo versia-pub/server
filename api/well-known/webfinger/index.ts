@@ -1,11 +1,5 @@
-import {
-    apiRoute,
-    applyConfig,
-    handleZodError,
-    idValidator,
-    webfingerMention,
-} from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, idValidator, webfingerMention } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
 import { and, eq, isNull } from "drizzle-orm";
@@ -14,6 +8,7 @@ import { z } from "zod";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -29,86 +24,118 @@ export const meta = applyConfig({
 
 export const schemas = {
     query: z.object({
-        resource: z.string().trim().min(1).max(512).startsWith("acct:"),
+        resource: z
+            .string()
+            .trim()
+            .min(1)
+            .max(512)
+            .startsWith("acct:")
+            .regex(
+                webfingerMention,
+                "Invalid resource (should be acct:(id or username)@domain)",
+            ),
     }),
 };
 
+const route = createRoute({
+    method: "get",
+    path: "/.well-known/webfinger",
+    summary: "Get user information",
+    request: {
+        query: schemas.query,
+    },
+    responses: {
+        200: {
+            description: "User information",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        subject: z.string(),
+                        links: z.array(
+                            z.object({
+                                rel: z.string(),
+                                type: z.string(),
+                                href: z.string(),
+                            }),
+                        ),
+                    }),
+                },
+            },
+        },
+        404: {
+            description: "User not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("query", schemas.query, handleZodError),
-        async (context) => {
-            const { resource } = context.req.valid("query");
+    app.openapi(route, async (context) => {
+        const { resource } = context.req.valid("query");
 
-            // Check if resource is in the correct format (acct:uuid/username@domain)
-            if (!resource.match(webfingerMention)) {
-                return context.json(
-                    {
-                        error: "Invalid resource (should be acct:(id or username)@domain)",
-                    },
-                    400,
-                );
-            }
+        const requestedUser = resource.split("acct:")[1];
 
-            const requestedUser = resource.split("acct:")[1];
+        const host = new URL(config.http.base_url).host;
 
-            const host = new URL(config.http.base_url).host;
+        // Check if user is a local user
+        if (requestedUser.split("@")[1] !== host) {
+            return context.json({ error: "User is a remote user" }, 404);
+        }
 
-            // Check if user is a local user
-            if (requestedUser.split("@")[1] !== host) {
-                return context.json({ error: "User is a remote user" }, 404);
-            }
+        const isUuid = requestedUser.split("@")[0].match(idValidator);
 
-            const isUuid = requestedUser.split("@")[0].match(idValidator);
-
-            const user = await User.fromSql(
-                and(
-                    eq(
-                        isUuid ? Users.id : Users.username,
-                        requestedUser.split("@")[0],
-                    ),
-                    isNull(Users.instanceId),
+        const user = await User.fromSql(
+            and(
+                eq(
+                    isUuid ? Users.id : Users.username,
+                    requestedUser.split("@")[0],
                 ),
-            );
+                isNull(Users.instanceId),
+            ),
+        );
 
-            if (!user) {
-                return context.json({ error: "User not found" }, 404);
+        if (!user) {
+            return context.json({ error: "User not found" }, 404);
+        }
+
+        let activityPubUrl = "";
+
+        if (config.federation.bridge.enabled) {
+            const manager = await User.getFederationRequester();
+
+            try {
+                activityPubUrl = await manager.webFinger(
+                    user.data.username,
+                    new URL(config.http.base_url).host,
+                    "application/activity+json",
+                    config.federation.bridge.url,
+                );
+            } catch (e) {
+                const error = e as ResponseError;
+
+                getLogger("federation")
+                    .error`Error from bridge: ${await error.response.data}`;
             }
+        }
 
-            let activityPubUrl = "";
-
-            if (config.federation.bridge.enabled) {
-                const manager = await User.getFederationRequester();
-
-                try {
-                    activityPubUrl = await manager.webFinger(
-                        user.data.username,
-                        new URL(config.http.base_url).host,
-                        "application/activity+json",
-                        config.federation.bridge.url,
-                    );
-                } catch (e) {
-                    const error = e as ResponseError;
-
-                    getLogger("federation")
-                        .error`Error from bridge: ${await error.response.data}`;
-                }
-            }
-
-            return context.json({
-                subject: `acct:${
-                    isUuid ? user.id : user.data.username
-                }@${host}`,
+        return context.json(
+            {
+                subject: `acct:${isUuid ? user.id : user.data.username}@${host}`,
 
                 links: [
                     // Keep the ActivityPub link first, because Misskey only searches
                     // for the first link with rel="self" and doesn't check the type.
-                    activityPubUrl && {
-                        rel: "self",
-                        type: "application/activity+json",
-                        href: activityPubUrl,
-                    },
+                    activityPubUrl
+                        ? {
+                              rel: "self",
+                              type: "application/activity+json",
+                              href: activityPubUrl,
+                          }
+                        : undefined,
                     {
                         rel: "self",
                         type: "application/json",
@@ -119,11 +146,18 @@ export default apiRoute((app) =>
                     },
                     {
                         rel: "avatar",
-                        type: lookup(user.getAvatarUrl(config)),
+                        type:
+                            lookup(user.getAvatarUrl(config)) ??
+                            "application/octet-stream",
                         href: user.getAvatarUrl(config),
                     },
-                ].filter(Boolean),
-            });
-        },
-    ),
+                ].filter(Boolean) as {
+                    rel: string;
+                    type: string;
+                    href: string;
+                }[],
+            },
+            200,
+        );
+    }),
 );

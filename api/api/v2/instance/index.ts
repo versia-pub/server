@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@/api";
 import { proxyUrl } from "@/response";
-import type { Instance as ApiInstance } from "@versia/client/types";
+import { createRoute, z } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
 import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
@@ -19,8 +19,110 @@ export const meta = applyConfig({
     },
 });
 
+const route = createRoute({
+    method: "get",
+    path: "/api/v2/instance",
+    summary: "Get instance metadata",
+    responses: {
+        200: {
+            description: "Instance metadata",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        domain: z.string(),
+                        title: z.string(),
+                        version: z.string(),
+                        versia_version: z.string(),
+                        source_url: z.string(),
+                        description: z.string(),
+                        usage: z.object({
+                            users: z.object({
+                                active_month: z.number(),
+                            }),
+                        }),
+                        thumbnail: z.object({
+                            url: z.string().nullable(),
+                        }),
+                        banner: z.object({
+                            url: z.string().nullable(),
+                        }),
+                        languages: z.array(z.string()),
+                        configuration: z.object({
+                            urls: z.object({
+                                streaming: z.string().nullable(),
+                                status: z.string().nullable(),
+                            }),
+                            accounts: z.object({
+                                max_featured_tags: z.number(),
+                                max_displayname_characters: z.number(),
+                                avatar_size_limit: z.number(),
+                                header_size_limit: z.number(),
+                                max_fields_name_characters: z.number(),
+                                max_fields_value_characters: z.number(),
+                                max_fields: z.number(),
+                                max_username_characters: z.number(),
+                                max_note_characters: z.number(),
+                            }),
+                            statuses: z.object({
+                                max_characters: z.number(),
+                                max_media_attachments: z.number(),
+                                characters_reserved_per_url: z.number(),
+                            }),
+                            media_attachments: z.object({
+                                supported_mime_types: z.array(z.string()),
+                                image_size_limit: z.number(),
+                                image_matrix_limit: z.number(),
+                                video_size_limit: z.number(),
+                                video_frame_rate_limit: z.number(),
+                                video_matrix_limit: z.number(),
+                                max_description_characters: z.number(),
+                            }),
+                            polls: z.object({
+                                max_characters_per_option: z.number(),
+                                max_expiration: z.number(),
+                                max_options: z.number(),
+                                min_expiration: z.number(),
+                            }),
+                            translation: z.object({
+                                enabled: z.boolean(),
+                            }),
+                        }),
+                        registrations: z.object({
+                            enabled: z.boolean(),
+                            approval_required: z.boolean(),
+                            message: z.string().nullable(),
+                            url: z.string().nullable(),
+                        }),
+                        contact: z.object({
+                            email: z.string().nullable(),
+                            account: User.schema.nullable(),
+                        }),
+                        rules: z.array(
+                            z.object({
+                                id: z.string(),
+                                text: z.string(),
+                                hint: z.string(),
+                            }),
+                        ),
+                        sso: z.object({
+                            forced: z.boolean(),
+                            providers: z.array(
+                                z.object({
+                                    name: z.string(),
+                                    icon: z.string(),
+                                    id: z.string(),
+                                }),
+                            ),
+                        }),
+                    }),
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(meta.allowedMethods, meta.route, async (context) => {
+    app.openapi(route, async (context) => {
         // Get software version from package.json
         const version = manifest.version;
 
@@ -122,6 +224,6 @@ export default apiRoute((app) =>
                     id: p.id,
                 })),
             },
-        } satisfies ApiInstance);
+        });
     }),
 );

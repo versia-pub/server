@@ -11,6 +11,7 @@ import type {
     Unfollow,
     User,
 } from "@versia/federation/types";
+import type { SocketAddress } from "bun";
 import { z } from "zod";
 import type { Application } from "~/classes/functions/application";
 import type { RolePermissions } from "~/drizzle/schema";
@@ -58,6 +59,9 @@ export type HonoEnv = {
             token: string | null;
             application: Application | null;
         };
+    };
+    Bindings: {
+        ip?: SocketAddress | null;
     };
 };
 

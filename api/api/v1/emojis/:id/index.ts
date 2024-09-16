@@ -1,13 +1,6 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    emojiValidator,
-    handleZodError,
-    jsonOrForm,
-} from "@/api";
+import { apiRoute, applyConfig, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
-import { zValidator } from "@hono/zod-validator";
+import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
@@ -16,6 +9,7 @@ import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Emoji } from "~/packages/database-interface/emoji";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["DELETE", "GET", "PATCH"],
@@ -62,146 +56,302 @@ export const schemas = {
                 .or(z.boolean())
                 .optional(),
         })
-        .partial()
-        .optional(),
+        .partial(),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        jsonOrForm(),
-        zValidator("param", schemas.param, handleZodError),
-        zValidator("json", schemas.json, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
-            const { user } = context.get("auth");
+const routeGet = createRoute({
+    method: "get",
+    path: "/api/v1/emojis/{id}",
+    summary: "Get emoji data",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Emoji",
+            content: {
+                "application/json": {
+                    schema: Emoji.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        403: {
+            description: "Insufficient credentials",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Emoji not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
 
-            if (!user) {
-                return context.json({ error: "Unauthorized" }, 401);
-            }
+const routePatch = createRoute({
+    method: "patch",
+    path: "/api/v1/emojis/{id}",
+    summary: "Modify emoji",
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    request: {
+        params: schemas.param,
+        body: {
+            content: {
+                "application/json": {
+                    schema: schemas.json,
+                },
+                "application/x-www-form-urlencoded": {
+                    schema: schemas.json,
+                },
+                "multipart/form-data": {
+                    schema: schemas.json,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Emoji modified",
+            content: {
+                "application/json": {
+                    schema: Emoji.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        403: {
+            description: "Insufficient credentials",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Emoji not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        422: {
+            description: "Invalid form data",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
 
-            const emoji = await Emoji.fromId(id);
+const routeDelete = createRoute({
+    method: "delete",
+    path: "/api/v1/emojis/{id}",
+    summary: "Delete emoji",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        204: {
+            description: "Emoji deleted",
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Emoji not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
 
-            if (!emoji) {
-                return context.json({ error: "Emoji not found" }, 404);
-            }
+export default apiRoute((app) => {
+    app.openapi(routeGet, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
 
-            // Check if user is admin
-            if (
-                !user.hasPermission(RolePermissions.ManageEmojis) &&
-                emoji.data.ownerId !== user.data.id
-            ) {
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const emoji = await Emoji.fromId(id);
+
+        if (!emoji) {
+            return context.json({ error: "Emoji not found" }, 404);
+        }
+
+        // Check if user is admin
+        if (
+            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            emoji.data.ownerId !== user.data.id
+        ) {
+            return context.json(
+                {
+                    error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
+                },
+                403,
+            );
+        }
+
+        return context.json(emoji.toApi(), 200);
+    });
+
+    app.openapi(routePatch, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const emoji = await Emoji.fromId(id);
+
+        if (!emoji) {
+            return context.json({ error: "Emoji not found" }, 404);
+        }
+
+        // Check if user is admin
+        if (
+            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            emoji.data.ownerId !== user.data.id
+        ) {
+            return context.json(
+                {
+                    error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
+                },
+                403,
+            );
+        }
+
+        const mediaManager = new MediaManager(config);
+
+        const {
+            global: emojiGlobal,
+            alt,
+            category,
+            element,
+            shortcode,
+        } = context.req.valid("json");
+
+        if (!user.hasPermission(RolePermissions.ManageEmojis) && emojiGlobal) {
+            return context.json(
+                {
+                    error: `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
+                },
+                401,
+            );
+        }
+
+        const modified = structuredClone(emoji.data);
+
+        if (element) {
+            // Check of emoji is an image
+            let contentType =
+                element instanceof File
+                    ? element.type
+                    : await mimeLookup(element);
+
+            if (!contentType.startsWith("image/")) {
                 return context.json(
                     {
-                        error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
+                        error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
                     },
-                    403,
+                    422,
                 );
             }
 
-            const mediaManager = new MediaManager(config);
+            let url = "";
 
-            switch (context.req.method) {
-                case "DELETE": {
-                    await mediaManager.deleteFileByUrl(emoji.data.url);
+            if (element instanceof File) {
+                const uploaded = await mediaManager.addFile(element);
 
-                    await db.delete(Emojis).where(eq(Emojis.id, id));
-
-                    return context.newResponse(null, 204);
-                }
-
-                case "PATCH": {
-                    const form = context.req.valid("json");
-
-                    if (!form) {
-                        return context.json(
-                            {
-                                error: "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
-                            },
-                            422,
-                        );
-                    }
-
-                    if (
-                        !(
-                            form.shortcode ||
-                            form.element ||
-                            form.alt ||
-                            form.category
-                        ) &&
-                        form.global === undefined
-                    ) {
-                        return context.json(
-                            {
-                                error: "Invalid form data (must supply at least one of: shortcode, element, alt, category)",
-                            },
-                            422,
-                        );
-                    }
-
-                    if (
-                        !user.hasPermission(RolePermissions.ManageEmojis) &&
-                        form.global
-                    ) {
-                        return context.json(
-                            {
-                                error: `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
-                            },
-                            401,
-                        );
-                    }
-
-                    const modified = structuredClone(emoji.data);
-
-                    if (form.element) {
-                        // Check of emoji is an image
-                        let contentType =
-                            form.element instanceof File
-                                ? form.element.type
-                                : await mimeLookup(form.element);
-
-                        if (!contentType.startsWith("image/")) {
-                            return context.json(
-                                {
-                                    error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
-                                },
-                                422,
-                            );
-                        }
-
-                        let url = "";
-
-                        if (form.element instanceof File) {
-                            const uploaded = await mediaManager.addFile(
-                                form.element,
-                            );
-
-                            url = uploaded.path;
-                            contentType = uploaded.uploadedFile.type;
-                        } else {
-                            url = form.element;
-                        }
-
-                        modified.url = Attachment.getUrl(url);
-                        modified.contentType = contentType;
-                    }
-
-                    modified.shortcode = form.shortcode ?? modified.shortcode;
-                    modified.alt = form.alt ?? modified.alt;
-                    modified.category = form.category ?? modified.category;
-                    modified.ownerId = form.global ? null : user.data.id;
-
-                    await emoji.update(modified);
-
-                    return context.json(emoji.toApi());
-                }
-
-                case "GET": {
-                    return context.json(emoji.toApi());
-                }
+                url = uploaded.path;
+                contentType = uploaded.uploadedFile.type;
+            } else {
+                url = element;
             }
-        },
-    ),
-);
+
+            modified.url = Attachment.getUrl(url);
+            modified.contentType = contentType;
+        }
+
+        modified.shortcode = shortcode ?? modified.shortcode;
+        modified.alt = alt ?? modified.alt;
+        modified.category = category ?? modified.category;
+        modified.ownerId = emojiGlobal ? null : user.data.id;
+
+        await emoji.update(modified);
+
+        return context.json(emoji.toApi(), 200);
+    });
+
+    app.openapi(routeDelete, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const emoji = await Emoji.fromId(id);
+
+        if (!emoji) {
+            return context.json({ error: "Emoji not found" }, 404);
+        }
+
+        // Check if user is admin
+        if (
+            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            emoji.data.ownerId !== user.data.id
+        ) {
+            return context.json(
+                {
+                    error: `You cannot delete this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
+                },
+                403,
+            );
+        }
+
+        const mediaManager = new MediaManager(config);
+
+        await mediaManager.deleteFileByUrl(emoji.data.url);
+
+        await db.delete(Emojis).where(eq(Emojis.id, id));
+
+        return context.newResponse(null, 204);
+    });
+});

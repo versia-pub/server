@@ -1,5 +1,5 @@
-import { apiRoute, applyConfig, handleZodError, jsonOrForm } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, jsonOrForm } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
@@ -50,90 +50,137 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "post",
+    path: "/oauth/token",
+    summary: "Get token",
+    middleware: [jsonOrForm()],
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: schemas.json,
+                },
+                "application/x-www-form-urlencoded": {
+                    schema: schemas.json,
+                },
+                "multipart/form-data": {
+                    schema: schemas.json,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Token",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        access_token: z.string(),
+                        token_type: z.string(),
+                        expires_in: z.number().optional().nullable(),
+                        id_token: z.string().optional().nullable(),
+                        refresh_token: z.string().optional().nullable(),
+                        scope: z.string().optional(),
+                        created_at: z.number(),
+                    }),
+                },
+            },
+        },
+        401: {
+            description: "Authorization error",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        error: z.string(),
+                        error_description: z.string(),
+                    }),
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        jsonOrForm(),
-        zValidator("json", schemas.json, handleZodError),
-        async (context) => {
-            const { grant_type, code, redirect_uri, client_id, client_secret } =
-                context.req.valid("json");
+    app.openapi(route, async (context) => {
+        const { grant_type, code, redirect_uri, client_id, client_secret } =
+            context.req.valid("json");
 
-            switch (grant_type) {
-                case "authorization_code": {
-                    if (!code) {
-                        return context.json(
-                            {
-                                error: "invalid_request",
-                                error_description: "Code is required",
-                            },
-                            401,
-                        );
-                    }
+        switch (grant_type) {
+            case "authorization_code": {
+                if (!code) {
+                    return context.json(
+                        {
+                            error: "invalid_request",
+                            error_description: "Code is required",
+                        },
+                        401,
+                    );
+                }
 
-                    if (!redirect_uri) {
-                        return context.json(
-                            {
-                                error: "invalid_request",
-                                error_description: "Redirect URI is required",
-                            },
-                            401,
-                        );
-                    }
+                if (!redirect_uri) {
+                    return context.json(
+                        {
+                            error: "invalid_request",
+                            error_description: "Redirect URI is required",
+                        },
+                        401,
+                    );
+                }
 
-                    if (!client_id) {
-                        return context.json(
-                            {
-                                error: "invalid_request",
-                                error_description: "Client ID is required",
-                            },
-                            401,
-                        );
-                    }
+                if (!client_id) {
+                    return context.json(
+                        {
+                            error: "invalid_request",
+                            error_description: "Client ID is required",
+                        },
+                        401,
+                    );
+                }
 
-                    // Verify the client_secret
-                    const client = await db.query.Applications.findFirst({
-                        where: (application, { eq }) =>
-                            eq(application.clientId, client_id),
-                    });
+                // Verify the client_secret
+                const client = await db.query.Applications.findFirst({
+                    where: (application, { eq }) =>
+                        eq(application.clientId, client_id),
+                });
 
-                    if (!client || client.secret !== client_secret) {
-                        return context.json(
-                            {
-                                error: "invalid_client",
-                                error_description: "Invalid client credentials",
-                            },
-                            401,
-                        );
-                    }
+                if (!client || client.secret !== client_secret) {
+                    return context.json(
+                        {
+                            error: "invalid_client",
+                            error_description: "Invalid client credentials",
+                        },
+                        401,
+                    );
+                }
 
-                    const token = await db.query.Tokens.findFirst({
-                        where: (token, { eq, and }) =>
-                            and(
-                                eq(token.code, code),
-                                eq(token.redirectUri, decodeURI(redirect_uri)),
-                                eq(token.clientId, client_id),
-                            ),
-                    });
+                const token = await db.query.Tokens.findFirst({
+                    where: (token, { eq, and }) =>
+                        and(
+                            eq(token.code, code),
+                            eq(token.redirectUri, decodeURI(redirect_uri)),
+                            eq(token.clientId, client_id),
+                        ),
+                });
 
-                    if (!token) {
-                        return context.json(
-                            {
-                                error: "invalid_grant",
-                                error_description: "Code not found",
-                            },
-                            401,
-                        );
-                    }
+                if (!token) {
+                    return context.json(
+                        {
+                            error: "invalid_grant",
+                            error_description: "Code not found",
+                        },
+                        401,
+                    );
+                }
 
-                    // Invalidate the code
-                    await db
-                        .update(Tokens)
-                        .set({ code: null })
-                        .where(eq(Tokens.id, token.id));
+                // Invalidate the code
+                await db
+                    .update(Tokens)
+                    .set({ code: null })
+                    .where(eq(Tokens.id, token.id));
 
-                    return context.json({
+                return context.json(
+                    {
                         access_token: token.accessToken,
                         token_type: "Bearer",
                         expires_in: token.expiresAt
@@ -149,17 +196,18 @@ export default apiRoute((app) =>
                         created_at: Math.floor(
                             new Date(token.createdAt).getTime() / 1000,
                         ),
-                    });
-                }
+                    },
+                    200,
+                );
             }
+        }
 
-            return context.json(
-                {
-                    error: "unsupported_grant_type",
-                    error_description: "Unsupported grant type",
-                },
-                401,
-            );
-        },
-    ),
+        return context.json(
+            {
+                error: "unsupported_grant_type",
+                error_description: "Unsupported grant type",
+            },
+            401,
+        );
+    }),
 );
