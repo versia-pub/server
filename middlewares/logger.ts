@@ -5,7 +5,7 @@ import { config } from "~/packages/config-manager";
 
 export const logger = createMiddleware(async (context, next) => {
     if (config.logging.log_requests) {
-        const logger = getLogger("server");
+        const serverLogger = getLogger("server");
         const body = await context.req.raw.clone().text();
 
         const urlAndMethod = `${chalk.green(context.req.method)} ${chalk.blue(context.req.url)}`;
@@ -26,9 +26,9 @@ export const logger = createMiddleware(async (context, next) => {
         const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
         if (config.logging.log_requests_verbose) {
-            logger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
+            serverLogger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
         } else {
-            logger.debug`${urlAndMethod}`;
+            serverLogger.debug`${urlAndMethod}`;
         }
     }
 

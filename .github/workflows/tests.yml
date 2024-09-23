@@ -48,4 +48,4 @@ jobs:
 
       - name: Run tests
         run: |
-          bun test
+          bun run test

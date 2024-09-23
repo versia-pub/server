@@ -38,7 +38,8 @@
         "cli": "bun run cli/index.ts",
         "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'",
         "schema:generate": "bun run packages/config-manager/json-schema.ts > config/config.schema.json && bun run packages/plugin-kit/json-schema.ts > packages/plugin-kit/manifest.schema.json",
-        "check": "bunx tsc -p ."
+        "check": "bunx tsc -p .",
+        "test": "find . -name \"*.test.ts\" -not -path \"./node_modules/*\" | xargs -I {} sh -c 'bun test {} || exit 255'"
     },
     "trustedDependencies": [
         "@biomejs/biome",

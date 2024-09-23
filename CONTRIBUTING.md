@@ -83,8 +83,10 @@ If your port number is lower than 1024, you may need to run the command as root.
 
 To run the tests, run:
 ```sh
-bun test
+bun run test
 ```
+
+The `bun test` command will cause errors due to Bun bugs ([oven-sh/bun#7823](https://github.com/oven-sh/bun/issues/7823)). Use the `test` script instead.
 
 The tests are located all around the codebase (filename `*.test.ts`) and follow a Jest-like syntax. The server should be shut down before running the tests.
 
