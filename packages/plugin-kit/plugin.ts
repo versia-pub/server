@@ -4,7 +4,6 @@ import type { z } from "zod";
 import { type ZodError, fromZodError } from "zod-validation-error";
 import type { HonoEnv } from "~/types/api";
 import type { ServerHooks } from "./hooks";
-import { type Manifest, manifestSchema } from "./schema";
 
 export type HonoPluginEnv<ConfigType extends z.ZodTypeAny> = HonoEnv & {
     Variables: {
@@ -19,12 +18,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         fn: (app: OpenAPIHono<HonoPluginEnv<ConfigSchema>>) => void;
     }[] = [];
 
-    constructor(
-        private manifest: Manifest,
-        private configManager: PluginConfigManager<ConfigSchema>,
-    ) {
-        this.validateManifest(manifest);
-    }
+    constructor(private configManager: PluginConfigManager<ConfigSchema>) {}
 
     get middleware() {
         // Middleware that adds the plugin's configuration to the request object
@@ -34,10 +28,6 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
                 await next();
             },
         );
-    }
-
-    public getManifest() {
-        return this.manifest;
     }
 
     public registerRoute(
@@ -76,19 +66,10 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         this.handlers[hook] = handler;
     }
 
-    private validateManifest(manifest: Manifest) {
-        try {
-            manifestSchema.parse(manifest);
-        } catch (error) {
-            throw fromZodError(error as ZodError);
-        }
-    }
-
     static [Symbol.hasInstance](instance: unknown): boolean {
         return (
             typeof instance === "object" &&
             instance !== null &&
-            "getManifest" in instance &&
             "registerHandler" in instance
         );
     }

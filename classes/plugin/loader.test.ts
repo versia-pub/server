@@ -154,14 +154,7 @@ describe("PluginLoader", () => {
     });
 
     test("loadPlugin should load and return a Plugin instance", async () => {
-        const mockPlugin = new Plugin(
-            {
-                name: "test-plugin",
-                version: "1.1.0",
-                description: "Doobaee",
-            },
-            new PluginConfigManager(z.object({})),
-        );
+        const mockPlugin = new Plugin(new PluginConfigManager(z.object({})));
         mock.module("/some/path/index.ts", () => ({
             default: mockPlugin,
         }));
@@ -186,10 +179,7 @@ describe("PluginLoader", () => {
             version: "1.1.0",
             description: "Doobaee",
         };
-        const mockPlugin = new Plugin(
-            manifestContent,
-            new PluginConfigManager(z.object({})),
-        );
+        const mockPlugin = new Plugin(new PluginConfigManager(z.object({})));
 
         mockReaddir
             .mockResolvedValueOnce([

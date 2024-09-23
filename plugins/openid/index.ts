@@ -1,12 +1,6 @@
-import { Hooks, type Manifest, Plugin, PluginConfigManager } from "@versia/kit";
+import { Hooks, Plugin, PluginConfigManager } from "@versia/kit";
 import { z } from "zod";
 import authorizeRoute from "./routes/authorize";
-
-const myManifest: Manifest = {
-    name: "@versia/openid",
-    description: "OpenID authentication.",
-    version: "0.1.0",
-};
 
 const configManager = new PluginConfigManager(
     z.object({
@@ -65,7 +59,7 @@ const configManager = new PluginConfigManager(
     }),
 );
 
-const plugin = new Plugin(myManifest, configManager);
+const plugin = new Plugin(configManager);
 
 plugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);

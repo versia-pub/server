@@ -1,13 +1,6 @@
 import { z } from "zod";
 import { Hooks } from "./hooks";
 import { Plugin, PluginConfigManager } from "./plugin";
-import type { Manifest } from "./schema";
-
-const myManifest: Manifest = {
-    name: "my-plugin",
-    description: "A plugin for my app",
-    version: "1.0.0",
-};
 
 const configManager = new PluginConfigManager(
     z.object({
@@ -15,7 +8,7 @@ const configManager = new PluginConfigManager(
     }),
 );
 
-const myPlugin = new Plugin(myManifest, configManager);
+const myPlugin = new Plugin(configManager);
 
 myPlugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);
