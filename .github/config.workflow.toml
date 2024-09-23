@@ -284,3 +284,9 @@ max_coeff = 1.0
 [custom_ratelimits]
 # Add in any API route in this style here
 "/api/v1/timelines/public" = { duration = 60, max = 200 }
+
+[plugins]
+
+[plugins."@versia/openid".keys]
+private = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl"
+public = "MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="
