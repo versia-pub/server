@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { handleZodError } from "@/api";
-import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
 import { createMiddleware } from "@hono/hono/factory";
@@ -24,7 +23,6 @@ import { routes } from "./routes";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
 
 export const appFactory = async () => {
-    await configureLoggers();
     const serverLogger = getLogger("server");
 
     const app = new OpenAPIHono<HonoEnv>({
