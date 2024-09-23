@@ -642,6 +642,7 @@ export const configValidator = z.object({
         .default({
             federation: false,
         }),
+    plugins: z.record(z.string(), z.any()).optional(),
 });
 
 export type Config = z.infer<typeof configValidator>;

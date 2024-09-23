@@ -201,5 +201,10 @@ export const configureLoggers = (silent = false) =>
                 category: ["logtape", "meta"],
                 level: "error",
             },
+            {
+                category: "plugin",
+                sinks: ["console", "file"],
+                filters: ["configFilter"],
+            },
         ],
     });

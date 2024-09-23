@@ -1,4 +1,6 @@
+import { join } from "node:path";
 import { handleZodError } from "@/api";
+import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
 import { createMiddleware } from "@hono/hono/factory";
@@ -8,9 +10,11 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus";
  */ import { getLogger } from "@logtape/logtape";
+import chalk from "chalk";
+import type { ValidationError } from "zod-validation-error";
 import pkg from "~/package.json" with { type: "application/json" };
 import { config } from "~/packages/config-manager/index";
-import plugin from "~/plugins/openid";
+import { PluginLoader } from "./classes/plugin/loader";
 import { agentBans } from "./middlewares/agent-bans";
 import { bait } from "./middlewares/bait";
 import { boundaryCheck } from "./middlewares/boundary-check";
@@ -20,6 +24,7 @@ import { routes } from "./routes";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
 
 export const appFactory = async () => {
+    await configureLoggers();
     const serverLogger = getLogger("server");
 
     const app = new OpenAPIHono<HonoEnv>({
@@ -110,11 +115,35 @@ export const appFactory = async () => {
         route.default(app);
     }
 
-    // @ts-expect-error We check if the keys are valid before this is called
-    // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
-    plugin["_loadConfig"](config.oidc);
-    // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
-    plugin["_addToApp"](app);
+    serverLogger.info`Loading plugins`;
+
+    const loader = new PluginLoader();
+
+    const plugins = await loader.loadPlugins(join(process.cwd(), "plugins"));
+
+    for (const data of plugins) {
+        serverLogger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
+        try {
+            // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
+            await data.plugin["_loadConfig"](
+                config.plugins?.[data.manifest.name],
+            );
+        } catch (e) {
+            serverLogger.fatal`Plugin configuration is invalid: ${chalk.redBright(e as ValidationError)}`;
+            serverLogger.fatal`Put your configuration at ${chalk.blueBright(
+                "plugins.<plugin-name>",
+            )}`;
+            serverLogger.fatal`Press Ctrl+C to exit`;
+
+            // Hang until Ctrl+C is pressed
+            await Bun.sleep(Number.POSITIVE_INFINITY);
+            process.exit();
+        }
+        // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
+        await data.plugin["_addToApp"](app);
+    }
+
+    serverLogger.info`Plugins loaded`;
 
     app.doc31("/openapi.json", {
         openapi: "3.1.0",

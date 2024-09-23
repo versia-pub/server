@@ -55,9 +55,9 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
      * This will be called when the plugin is loaded.
      * @param config Values the user has set in the configuration file.
      */
-    protected _loadConfig(config: z.input<ConfigSchema>) {
+    protected _loadConfig(config: z.input<ConfigSchema>): Promise<void> {
         // biome-ignore lint/complexity/useLiteralKeys: Private method
-        this.configManager["_load"](config);
+        return this.configManager["_load"](config);
     }
 
     protected _addToApp(app: OpenAPIHono<HonoEnv>) {
@@ -117,7 +117,7 @@ export class PluginConfigManager<Schema extends z.ZodTypeAny> {
         try {
             this.store = await this.schema.parseAsync(config);
         } catch (error) {
-            throw fromZodError(error as ZodError);
+            throw fromZodError(error as ZodError).message;
         }
     }
 

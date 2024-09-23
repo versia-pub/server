@@ -4006,6 +4006,10 @@
             "default": {
                 "federation": false
             }
+        },
+        "plugins": {
+            "type": "object",
+            "additionalProperties": {}
         }
     },
     "required": [
