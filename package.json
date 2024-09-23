@@ -37,7 +37,7 @@
         "wc": "find server database *.ts docs packages types utils drizzle tests -type f -print0 | wc -m --files0-from=-",
         "cli": "bun run cli/index.ts",
         "prune": "ts-prune | grep -v server/ | grep -v dist/ | grep -v '(used in module)'",
-        "schema:generate": "bun run packages/config-manager/json-schema.ts > config/config.schema.json",
+        "schema:generate": "bun run packages/config-manager/json-schema.ts > config/config.schema.json && bun run packages/plugin-kit/json-schema.ts > packages/plugin-kit/manifest.schema.json",
         "check": "bunx tsc -p ."
     },
     "trustedDependencies": [

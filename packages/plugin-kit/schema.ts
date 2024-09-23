@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const manifestSchema = z.object({
+    // biome-ignore lint/style/useNamingConvention: <explanation>
+    $schema: z.string().optional(),
     name: z.string().min(3).max(100),
     version: z
         .string()
