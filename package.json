@@ -111,7 +111,7 @@
         "@sentry/bun": "^8.30.0",
         "@tufjs/canonical-json": "^2.0.0",
         "@versia/client": "^0.1.0",
-        "@versia/federation": "^0.1.1-rc.0",
+        "@versia/federation": "^0.1.1-rc.4",
         "altcha-lib": "^1.1.0",
         "blurhash": "^2.0.5",
         "bullmq": "^5.13.0",
@@ -152,5 +152,8 @@
         "xss": "^1.0.15",
         "zod": "^3.23.8",
         "zod-validation-error": "^3.4.0"
+    },
+    "patchedDependencies": {
+        "@versia/federation@0.1.1-rc.4": "patches/@versia%2Ffederation@0.1.1-rc.4.patch"
     }
 }

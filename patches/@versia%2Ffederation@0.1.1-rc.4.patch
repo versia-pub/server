@@ -1,0 +1,42 @@
+diff --git a/dist/schemas.js b/dist/schemas.js
+index 863bad7a46138cb41f5c946135c310029040079c..a0c671d98ce605e11729a58dfcfc256ce819b59f 100644
+--- a/dist/schemas.js
++++ b/dist/schemas.js
+@@ -1,27 +1,4 @@
+-import {
+-    CollectionSchema,
+-    ContentFormatSchema,
+-    CustomEmojiExtensionSchema,
+-    DeleteSchema,
+-    DislikeSchema,
+-    EntitySchema,
+-    ExtensionPropertySchema,
+-    FollowAcceptSchema,
+-    FollowRejectSchema,
+-    FollowSchema,
+-    GroupSchema,
+-    InstanceMetadataSchema,
+-    LikeSchema,
+-    NoteSchema,
+-    ReactionSchema,
+-    ShareSchema,
+-    UnfollowSchema,
+-    UserSchema,
+-    VanityExtensionSchema,
+-    VoteSchema,
+-    WebFingerSchema
+-  } from "./chunk-xkj0ty3v.js";
+-  export {
++export {
+     WebFingerSchema as WebFinger,
+     VanityExtensionSchema as VanityExtension,
+     UserSchema as User,
+@@ -43,6 +20,6 @@ import {
+     CustomEmojiExtensionSchema as CustomEmojiExtension,
+     ContentFormatSchema as ContentFormat,
+     CollectionSchema as Collection
+-  };
++} from "./chunk-xkj0ty3v.js";
+   
+   //# debugId=E689838DDC6D7A1264756E2164756E21
+\ No newline at end of file

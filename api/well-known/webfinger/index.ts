@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, idValidator, webfingerMention } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
+import { WebFinger } from "@versia/federation/schemas";
 import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
@@ -49,16 +50,7 @@ const route = createRoute({
             description: "User information",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        subject: z.string(),
-                        links: z.array(
-                            z.object({
-                                rel: z.string(),
-                                type: z.string(),
-                                href: z.string(),
-                            }),
-                        ),
-                    }),
+                    schema: WebFinger,
                 },
             },
         },
