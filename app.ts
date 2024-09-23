@@ -220,7 +220,6 @@ export const appFactory = async () => {
     });
 
     app.onError((error, c) => {
-        const serverLogger = getLogger("server");
         serverLogger.error`${error}`;
         sentry?.captureException(error);
         return c.json(
