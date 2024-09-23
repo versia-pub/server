@@ -98,7 +98,7 @@
     "dependencies": {
         "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
-        "@hono/hono": "npm:@jsr/hono__hono@4.6.1",
+        "@hono/hono": "npm:@jsr/hono__hono@4.6.2",
         "@hono/prometheus": "^1.0.1",
         "@hono/swagger-ui": "^0.4.1",
         "@hono/zod-openapi": "^0.16.0",
@@ -121,7 +121,7 @@
         "cli-table": "^0.3.11",
         "drizzle-orm": "^0.33.0",
         "extract-zip": "^2.0.1",
-        "hono": "npm:@jsr/hono__hono@4.6.1",
+        "hono": "npm:@jsr/hono__hono@4.6.2",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.4.1",
         "ip-matching": "^2.1.2",
