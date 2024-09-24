@@ -34,13 +34,13 @@ export class PluginLoader {
     }
 
     /**
-     * Check if a directory has an entrypoint file (index.ts).
+     * Check if a directory has an entrypoint file (index.{ts,js}).
      * @param {string} dir - The directory to search.
      * @returns {Promise<boolean>} - True if the entrypoint file is found, otherwise false.
      */
     private async hasEntrypoint(dir: string): Promise<boolean> {
         const files = await readdir(dir);
-        return files.includes("index.ts");
+        return files.includes("index.ts") || files.includes("index.js");
     }
 
     /**
@@ -74,7 +74,7 @@ export class PluginLoader {
     }
 
     /**
-     * Find all direct subdirectories with a valid manifest file and entrypoint (index.ts).
+     * Find all direct subdirectories with a valid manifest file and entrypoint (index.{ts,js}).
      * @param {string} dir - The directory to search.
      * @returns {Promise<string[]>} - An array of plugin directories.
      */
@@ -166,7 +166,7 @@ export class PluginLoader {
                 const manifest = await this.parseManifest(dir, plugin);
                 const pluginInstance = await this.loadPlugin(
                     dir,
-                    `${plugin}/index.ts`,
+                    `${plugin}/index`,
                 );
 
                 return { manifest, plugin: pluginInstance };

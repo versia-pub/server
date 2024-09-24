@@ -21,8 +21,10 @@ import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
+import { configureLoggers } from "@/loggers";
 
 export const appFactory = async () => {
+    await configureLoggers();
     const serverLogger = getLogger("server");
 
     const app = new OpenAPIHono<HonoEnv>({
@@ -137,6 +139,7 @@ export const appFactory = async () => {
             await Bun.sleep(Number.POSITIVE_INFINITY);
             process.exit();
         }
+
         // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
         await data.plugin["_addToApp"](app);
     }

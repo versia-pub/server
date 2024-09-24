@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
 
 const { deleteUsers, tokens } = await getTestUsers(1);
 
@@ -8,10 +7,9 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v1/sso
-describe(meta.route, () => {
+describe("/api/v1/sso", () => {
     test("should return empty list", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/sso", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${tokens[0]?.accessToken}`,
@@ -23,7 +21,7 @@ describe(meta.route, () => {
     });
 
     test("should return an error if provider doesn't exist", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/sso", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0]?.accessToken}`,

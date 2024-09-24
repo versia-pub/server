@@ -194,10 +194,10 @@ describe("PluginLoader", () => {
             success: true,
             data: manifestContent,
         });
-        mock.module("/some/path/plugin1/index.ts", () => ({
+        mock.module("/some/path/plugin1/index", () => ({
             default: mockPlugin,
         }));
-        mock.module("/some/path/plugin2/index.ts", () => ({
+        mock.module("/some/path/plugin2/index", () => ({
             default: mockPlugin,
         }));
 

@@ -1,6 +1,7 @@
 import { Hooks, Plugin, PluginConfigManager } from "@versia/kit";
 import { z } from "zod";
 import authorizeRoute from "./routes/authorize";
+import ssoRoute from "./routes/sso";
 
 const configManager = new PluginConfigManager(
     z.object({
@@ -66,6 +67,7 @@ plugin.registerHandler(Hooks.Response, (req) => {
     return req;
 });
 authorizeRoute(plugin);
+ssoRoute(plugin);
 
 export type PluginType = typeof plugin;
 export default plugin;

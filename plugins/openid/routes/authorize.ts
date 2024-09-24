@@ -159,6 +159,18 @@ export default (plugin: PluginType) =>
                     );
                 }
 
+                if (!z.string().uuid().safeParse(sub).success) {
+                    errorSearchParams.append("error", "invalid_request");
+                    errorSearchParams.append(
+                        "error_description",
+                        "Invalid JWT, sub is not a valid user ID",
+                    );
+
+                    return context.redirect(
+                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    );
+                }
+
                 const user = await User.fromId(sub);
 
                 if (!user) {

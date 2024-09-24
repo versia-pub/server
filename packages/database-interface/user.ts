@@ -408,6 +408,41 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.update(this.data);
     }
 
+    public async getLinkedOidcAccounts(): Promise<
+        {
+            id: string;
+            name: string;
+            url: string;
+            icon?: string | undefined;
+            server_id: string;
+        }[]
+    > {
+        // Get all linked accounts
+        const accounts = await db.query.OpenIdAccounts.findMany({
+            where: (User, { eq }) => eq(User.userId, this.id),
+        });
+
+        return accounts
+            .map((account) => {
+                const issuer = config.oidc.providers.find(
+                    (provider) => provider.id === account.issuerId,
+                );
+
+                if (!issuer) {
+                    return null;
+                }
+
+                return {
+                    id: issuer.id,
+                    name: issuer.name,
+                    url: issuer.url,
+                    icon: proxyUrl(issuer.icon) || undefined,
+                    server_id: account.serverId,
+                };
+            })
+            .filter((x) => x !== null);
+    }
+
     async updateFromRemote(): Promise<User> {
         if (!this.isRemote()) {
             throw new Error(
