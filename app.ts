@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { handleZodError } from "@/api";
+import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
 import { createMiddleware } from "@hono/hono/factory";
@@ -7,8 +8,8 @@ import { prettyJSON } from "@hono/hono/pretty-json";
 import { secureHeaders } from "@hono/hono/secure-headers";
 import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
-/* import { prometheus } from "@hono/prometheus";
- */ import { getLogger } from "@logtape/logtape";
+/* import { prometheus } from "@hono/prometheus"; */
+import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import type { ValidationError } from "zod-validation-error";
 import pkg from "~/package.json" with { type: "application/json" };
@@ -21,7 +22,6 @@ import { ipBans } from "./middlewares/ip-bans";
 import { logger } from "./middlewares/logger";
 import { routes } from "./routes";
 import type { ApiRouteExports, HonoEnv } from "./types/api";
-import { configureLoggers } from "@/loggers";
 
 export const appFactory = async () => {
     await configureLoggers();

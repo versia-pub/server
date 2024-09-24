@@ -34,7 +34,7 @@ describe("/api/v1/sso", () => {
 
         expect(response.status).toBe(404);
         expect(await response.json()).toMatchObject({
-            error: "Issuer unknown not found",
+            error: "Issuer with ID unknown not found in instance's OpenID configuration",
         });
     });
 
