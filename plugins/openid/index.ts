@@ -1,9 +1,10 @@
-import { Hooks, Plugin, PluginConfigManager } from "@versia/kit";
+import { Hooks, Plugin } from "@versia/kit";
 import { z } from "zod";
 import authorizeRoute from "./routes/authorize";
 import ssoRoute from "./routes/sso";
+import ssoIdRoute from "./routes/sso/:id/index";
 
-const configManager = new PluginConfigManager(
+const plugin = new Plugin(
     z.object({
         forced: z.boolean().default(false),
         allow_registration: z.boolean().default(true),
@@ -60,14 +61,13 @@ const configManager = new PluginConfigManager(
     }),
 );
 
-const plugin = new Plugin(configManager);
-
 plugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);
     return req;
 });
 authorizeRoute(plugin);
 ssoRoute(plugin);
+ssoIdRoute(plugin);
 
 export type PluginType = typeof plugin;
 export default plugin;

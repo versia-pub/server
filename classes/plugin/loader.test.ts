@@ -8,7 +8,7 @@ import {
     test,
 } from "bun:test";
 import { ZodError, type ZodTypeAny, z } from "zod";
-import { Plugin, PluginConfigManager } from "~/packages/plugin-kit";
+import { Plugin } from "~/packages/plugin-kit";
 import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";
 import { PluginLoader } from "./loader";
 
@@ -154,7 +154,7 @@ describe("PluginLoader", () => {
     });
 
     test("loadPlugin should load and return a Plugin instance", async () => {
-        const mockPlugin = new Plugin(new PluginConfigManager(z.object({})));
+        const mockPlugin = new Plugin(z.object({}));
         mock.module("/some/path/index.ts", () => ({
             default: mockPlugin,
         }));
@@ -179,7 +179,7 @@ describe("PluginLoader", () => {
             version: "1.1.0",
             description: "Doobaee",
         };
-        const mockPlugin = new Plugin(new PluginConfigManager(z.object({})));
+        const mockPlugin = new Plugin(z.object({}));
 
         mockReaddir
             .mockResolvedValueOnce([

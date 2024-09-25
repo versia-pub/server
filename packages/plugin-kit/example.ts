@@ -1,14 +1,12 @@
 import { z } from "zod";
 import { Hooks } from "./hooks";
-import { Plugin, PluginConfigManager } from "./plugin";
+import { Plugin } from "./plugin";
 
-const configManager = new PluginConfigManager(
+const myPlugin = new Plugin(
     z.object({
         apiKey: z.string(),
     }),
 );
-
-const myPlugin = new Plugin(configManager);
 
 myPlugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);
