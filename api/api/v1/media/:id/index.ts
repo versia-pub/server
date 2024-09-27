@@ -8,7 +8,6 @@ import { Attachment } from "~/packages/database-interface/attachment";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET", "PUT"],
     ratelimits: {
         max: 10,
         duration: 60,

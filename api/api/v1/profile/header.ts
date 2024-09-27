@@ -5,7 +5,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["DELETE"],
     ratelimits: {
         max: 10,
         duration: 60,

@@ -6,7 +6,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     ratelimits: {
         max: 4,
         duration: 60,

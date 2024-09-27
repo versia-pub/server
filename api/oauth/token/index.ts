@@ -6,7 +6,6 @@ import { db } from "~/drizzle/db";
 import { Tokens } from "~/drizzle/schema";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     auth: {
         required: false,
     },

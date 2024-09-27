@@ -10,7 +10,6 @@ import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v1/instance",
     ratelimits: {
         max: 300,

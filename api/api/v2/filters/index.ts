@@ -5,7 +5,6 @@ import { db } from "~/drizzle/db";
 import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 export const meta = applyConfig({
-    allowedMethods: ["GET", "POST"],
     route: "/api/v2/filters",
     ratelimits: {
         max: 60,

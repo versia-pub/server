@@ -8,7 +8,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     ratelimits: {
         max: 60,
         duration: 60,

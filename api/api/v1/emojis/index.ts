@@ -11,7 +11,6 @@ import { Emoji } from "~/packages/database-interface/emoji";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/emojis",
     ratelimits: {
         max: 30,

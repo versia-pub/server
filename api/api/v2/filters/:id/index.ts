@@ -7,7 +7,6 @@ import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET", "PUT", "DELETE"],
     route: "/api/v2/filters/:id",
     ratelimits: {
         max: 60,

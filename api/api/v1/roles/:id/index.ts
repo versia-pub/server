@@ -6,7 +6,6 @@ import { Role } from "~/packages/database-interface/role";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET", "POST", "DELETE"],
     auth: {
         required: true,
     },

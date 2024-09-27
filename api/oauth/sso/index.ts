@@ -14,7 +14,6 @@ import { OpenIdLoginFlows } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },

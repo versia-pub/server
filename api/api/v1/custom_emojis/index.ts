@@ -5,7 +5,6 @@ import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { Emoji } from "~/packages/database-interface/emoji";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v1/custom_emojis",
     ratelimits: {
         max: 100,

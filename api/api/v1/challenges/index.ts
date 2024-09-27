@@ -5,7 +5,6 @@ import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/challenges",
     ratelimits: {
         max: 10,

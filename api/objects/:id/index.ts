@@ -15,7 +15,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },

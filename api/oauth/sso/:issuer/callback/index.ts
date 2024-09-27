@@ -14,7 +14,6 @@ import { OAuthManager } from "~/packages/database-interface/oauth";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },

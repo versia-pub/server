@@ -9,7 +9,6 @@ import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/accounts",
     ratelimits: {
         max: 2,

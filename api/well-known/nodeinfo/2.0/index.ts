@@ -3,7 +3,6 @@ import { createRoute, z } from "@hono/zod-openapi";
 import manifest from "~/package.json";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },

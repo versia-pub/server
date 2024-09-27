@@ -6,7 +6,6 @@ import { db } from "~/drizzle/db";
 import { Applications, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/apps",
     ratelimits: {
         max: 2,

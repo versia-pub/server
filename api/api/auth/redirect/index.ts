@@ -7,7 +7,6 @@ import { Applications, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     ratelimits: {
         max: 4,
         duration: 60,

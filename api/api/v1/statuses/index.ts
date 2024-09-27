@@ -9,7 +9,6 @@ import { Note } from "~/packages/database-interface/note";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     ratelimits: {
         max: 300,
         duration: 60,

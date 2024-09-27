@@ -6,7 +6,6 @@ import { Relationship } from "~/packages/database-interface/relationship";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v1/accounts/relationships",
     ratelimits: {
         max: 30,

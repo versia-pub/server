@@ -8,7 +8,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/follow_requests/:account_id/reject",
     ratelimits: {
         max: 100,

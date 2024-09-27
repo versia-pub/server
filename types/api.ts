@@ -20,7 +20,6 @@ import type { User as DatabaseUser } from "~/packages/database-interface/user";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 export interface ApiRouteMetadata {
-    allowedMethods: HttpVerb[];
     ratelimits: {
         max: number;
         duration: number;

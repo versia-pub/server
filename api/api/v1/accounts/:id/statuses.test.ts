@@ -22,7 +22,7 @@ beforeAll(async () => {
         },
     );
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
 });
 
 // /api/v1/accounts/:id/statuses
@@ -81,7 +81,7 @@ describe(meta.route, () => {
             }),
         });
 
-        expect(replyResponse.status).toBe(200);
+        expect(replyResponse.status).toBe(201);
 
         const response = await fakeRequest(
             `${meta.route.replace(":id", users[1].id)}?exclude_replies=true`,

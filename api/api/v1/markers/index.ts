@@ -8,7 +8,6 @@ import { Markers, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET", "POST"],
     route: "/api/v1/markers",
     ratelimits: {
         max: 100,

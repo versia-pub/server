@@ -7,7 +7,6 @@ import { Notifications, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["DELETE"],
     route: "/api/v1/notifications/destroy_multiple",
     ratelimits: {
         max: 100,

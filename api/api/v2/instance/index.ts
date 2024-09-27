@@ -8,7 +8,6 @@ import { config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v2/instance",
     ratelimits: {
         max: 300,

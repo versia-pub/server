@@ -8,7 +8,6 @@ import { Timeline } from "~/packages/database-interface/timeline";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     ratelimits: {
         max: 200,
         duration: 60,

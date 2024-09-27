@@ -7,7 +7,6 @@ import { Notifications, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["POST"],
     route: "/api/v1/notifications/:id/dismiss",
     ratelimits: {
         max: 100,

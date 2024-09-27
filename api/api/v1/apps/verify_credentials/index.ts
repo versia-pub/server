@@ -5,7 +5,6 @@ import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v1/apps/verify_credentials",
     ratelimits: {
         max: 100,

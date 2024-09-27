@@ -62,7 +62,7 @@ describe("API Tests", () => {
                 }),
             });
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -104,7 +104,7 @@ describe("API Tests", () => {
                 }),
             });
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -189,7 +189,7 @@ describe("API Tests", () => {
                 },
             );
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );

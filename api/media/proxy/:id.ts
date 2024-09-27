@@ -6,7 +6,6 @@ import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/media/proxy/:id",
     ratelimits: {
         max: 100,

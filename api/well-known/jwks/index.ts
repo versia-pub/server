@@ -4,7 +4,6 @@ import { exportJWK } from "jose";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     auth: {
         required: false,
     },

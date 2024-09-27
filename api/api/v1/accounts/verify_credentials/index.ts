@@ -4,7 +4,6 @@ import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/api/v1/accounts/verify_credentials",
     ratelimits: {
         max: 100,

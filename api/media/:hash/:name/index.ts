@@ -4,7 +4,6 @@ import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
-    allowedMethods: ["GET"],
     route: "/media/:hash/:name",
     ratelimits: {
         max: 100,
