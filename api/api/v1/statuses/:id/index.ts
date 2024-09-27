@@ -1,18 +1,12 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    handleZodError,
-    idValidator,
-    jsonOrForm,
-} from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth, idValidator, jsonOrForm } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET", "DELETE", "PUT"],
@@ -95,89 +89,213 @@ export const schemas = {
         ),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        jsonOrForm(),
-        zValidator("param", schemas.param, handleZodError),
-        zValidator("json", schemas.json, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
-            const { user } = context.get("auth");
-
-            // TODO: Polls
-            const {
-                status: statusText,
-                content_type,
-                media_ids,
-                spoiler_text,
-                sensitive,
-            } = context.req.valid("json");
-
-            const note = await Note.fromId(id, user?.id);
-
-            if (!note?.isViewableByUser(user)) {
-                return context.json({ error: "Record not found" }, 404);
-            }
-
-            switch (context.req.method) {
-                case "GET": {
-                    return context.json(await note.toApi(user));
-                }
-                case "DELETE": {
-                    if (note.author.id !== user?.id) {
-                        return context.json({ error: "Unauthorized" }, 401);
-                    }
-
-                    // TODO: Delete and redraft
-
-                    await note.delete();
-
-                    await user.federateToFollowers(note.deleteToVersia());
-
-                    return context.json(await note.toApi(user), 200);
-                }
-                case "PUT": {
-                    if (!user) {
-                        return context.json({ error: "Unauthorized" }, 401);
-                    }
-
-                    if (note.author.id !== user.id) {
-                        return context.json({ error: "Unauthorized" }, 401);
-                    }
-
-                    if (media_ids.length > 0) {
-                        const foundAttachments =
-                            await Attachment.fromIds(media_ids);
-
-                        if (foundAttachments.length !== media_ids.length) {
-                            return context.json(
-                                { error: "Invalid media IDs" },
-                                422,
-                            );
-                        }
-                    }
-
-                    const newNote = await note.updateFromData({
-                        author: user,
-                        content: statusText
-                            ? {
-                                  [content_type]: {
-                                      content: statusText,
-                                      remote: false,
-                                  },
-                              }
-                            : undefined,
-                        isSensitive: sensitive,
-                        spoilerText: spoiler_text,
-                        mediaAttachments: media_ids,
-                    });
-
-                    return context.json(await newNote.toApi(user));
-                }
-            }
+const routeGet = createRoute({
+    method: "get",
+    path: "/api/v1/statuses/{id}",
+    summary: "Get status",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Status",
+            content: {
+                "application/json": {
+                    schema: Note.schema,
+                },
+            },
         },
-    ),
-);
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+const routeDelete = createRoute({
+    method: "delete",
+    path: "/api/v1/statuses/{id}",
+    summary: "Delete a status",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Deleted status",
+            content: {
+                "application/json": {
+                    schema: Note.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+const routePut = createRoute({
+    method: "put",
+    path: "/api/v1/statuses/{id}",
+    summary: "Update a status",
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    request: {
+        params: schemas.param,
+        body: {
+            content: {
+                "application/json": {
+                    schema: schemas.json,
+                },
+                "application/x-www-form-urlencoded": {
+                    schema: schemas.json,
+                },
+                "multipart/form-data": {
+                    schema: schemas.json,
+                },
+            },
+        },
+    },
+    responses: {
+        200: {
+            description: "Updated status",
+            content: {
+                "application/json": {
+                    schema: Note.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        422: {
+            description: "Invalid media IDs",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) => {
+    app.openapi(routeGet, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        const note = await Note.fromId(id, user?.id);
+
+        if (!note?.isViewableByUser(user)) {
+            return context.json({ error: "Record not found" }, 404);
+        }
+
+        return context.json(await note.toApi(user), 200);
+    });
+
+    app.openapi(routeDelete, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        const note = await Note.fromId(id, user?.id);
+
+        if (!note?.isViewableByUser(user)) {
+            return context.json({ error: "Record not found" }, 404);
+        }
+
+        if (note.author.id !== user?.id) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        // TODO: Delete and redraft
+        await note.delete();
+
+        await user.federateToFollowers(note.deleteToVersia());
+
+        return context.json(await note.toApi(user), 200);
+    });
+
+    app.openapi(routePut, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const note = await Note.fromId(id, user?.id);
+
+        if (!note?.isViewableByUser(user)) {
+            return context.json({ error: "Record not found" }, 404);
+        }
+
+        if (note.author.id !== user.id) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        // TODO: Polls
+        const {
+            status: statusText,
+            content_type,
+            media_ids,
+            spoiler_text,
+            sensitive,
+        } = context.req.valid("json");
+
+        if (media_ids.length > 0) {
+            const foundAttachments = await Attachment.fromIds(media_ids);
+
+            if (foundAttachments.length !== media_ids.length) {
+                return context.json({ error: "Invalid media IDs" }, 422);
+            }
+        }
+
+        const newNote = await note.updateFromData({
+            author: user,
+            content: statusText
+                ? {
+                      [content_type]: {
+                          content: statusText,
+                          remote: false,
+                      },
+                  }
+                : undefined,
+            isSensitive: sensitive,
+            spoilerText: spoiler_text,
+            mediaAttachments: media_ids,
+        });
+
+        return context.json(await newNote.toApi(user), 200);
+    });
+});

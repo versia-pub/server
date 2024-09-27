@@ -1,16 +1,12 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    handleZodError,
-    idValidator,
-} from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 import { Timeline } from "~/packages/database-interface/timeline";
+import { User } from "~/packages/database-interface/user";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -39,48 +35,77 @@ export const schemas = {
     }),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("query", schemas.query, handleZodError),
-        zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { max_id, since_id, min_id, limit } =
-                context.req.valid("query");
-            const { id } = context.req.valid("param");
-
-            const { user } = context.get("auth");
-
-            if (!user) {
-                return context.json({ error: "Unauthorized" }, 401);
-            }
-
-            const status = await Note.fromId(id, user?.id);
-
-            if (!status?.isViewableByUser(user)) {
-                return context.json({ error: "Record not found" }, 404);
-            }
-
-            const { objects, link } = await Timeline.getUserTimeline(
-                and(
-                    max_id ? lt(Users.id, max_id) : undefined,
-                    since_id ? gte(Users.id, since_id) : undefined,
-                    min_id ? gt(Users.id, min_id) : undefined,
-                    sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${status.id} AND "Likes"."likerId" = ${Users.id})`,
-                ),
-                limit,
-                context.req.url,
-            );
-
-            return context.json(
-                objects.map((user) => user.toApi()),
-                200,
-                {
-                    Link: link,
+const route = createRoute({
+    method: "get",
+    path: "/api/v1/statuses/{id}/favourited_by",
+    summary: "Get users who favourited a status",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+        query: schemas.query,
+    },
+    responses: {
+        200: {
+            description: "Users who favourited a status",
+            content: {
+                "application/json": {
+                    schema: z.array(User.schema),
                 },
-            );
+            },
         },
-    ),
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) =>
+    app.openapi(route, async (context) => {
+        const { max_id, since_id, min_id, limit } = context.req.valid("query");
+        const { id } = context.req.valid("param");
+
+        const { user } = context.get("auth");
+
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const status = await Note.fromId(id, user?.id);
+
+        if (!status?.isViewableByUser(user)) {
+            return context.json({ error: "Record not found" }, 404);
+        }
+
+        const { objects, link } = await Timeline.getUserTimeline(
+            and(
+                max_id ? lt(Users.id, max_id) : undefined,
+                since_id ? gte(Users.id, since_id) : undefined,
+                min_id ? gt(Users.id, min_id) : undefined,
+                sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${status.id} AND "Likes"."likerId" = ${Users.id})`,
+            ),
+            limit,
+            context.req.url,
+        );
+
+        return context.json(
+            objects.map((user) => user.toApi()),
+            200,
+            {
+                Link: link,
+            },
+        );
+    }),
 );

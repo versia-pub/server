@@ -1,9 +1,10 @@
-import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import type { StatusSource as ApiStatusSource } from "@versia/client/types";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -26,32 +27,69 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "get",
+    path: "/api/v1/statuses/{id}/source",
+    summary: "Get status source",
+    middleware: [auth(meta.auth, meta.permissions)],
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Status source",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        id: z.string().uuid(),
+                        spoiler_text: z.string(),
+                        text: z.string(),
+                    }),
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
-            const { user } = context.get("auth");
+    app.openapi(route, async (context) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
 
-            if (!user) {
-                return context.json({ error: "Unauthorized" }, 401);
-            }
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
 
-            const status = await Note.fromId(id, user.id);
+        const status = await Note.fromId(id, user.id);
 
-            if (!status?.isViewableByUser(user)) {
-                return context.json({ error: "Record not found" }, 404);
-            }
+        if (!status?.isViewableByUser(user)) {
+            return context.json({ error: "Record not found" }, 404);
+        }
 
-            return context.json({
+        return context.json(
+            {
                 id: status.id,
                 // TODO: Give real source for spoilerText
                 spoiler_text: status.data.spoilerText,
                 text: status.data.contentSource,
-            } as ApiStatusSource);
-        },
-    ),
+            } satisfies ApiStatusSource,
+            200,
+        );
+    }),
 );

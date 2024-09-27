@@ -1,8 +1,9 @@
-import { apiRoute, applyConfig, auth, handleZodError } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["GET"],
@@ -25,35 +26,63 @@ export const schemas = {
     }),
 };
 
+const route = createRoute({
+    method: "get",
+    path: "/api/v1/statuses/{id}/context",
+    middleware: [auth(meta.auth, meta.permissions)],
+    summary: "Get status context",
+    request: {
+        params: schemas.param,
+    },
+    responses: {
+        200: {
+            description: "Status context",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        ancestors: z.array(Note.schema),
+                        descendants: z.array(Note.schema),
+                    }),
+                },
+            },
+        },
+        404: {
+            description: "Record not found",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
 export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        zValidator("param", schemas.param, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { id } = context.req.valid("param");
+    app.openapi(route, async (context) => {
+        const { id } = context.req.valid("param");
 
-            const { user } = context.get("auth");
+        const { user } = context.get("auth");
 
-            const foundStatus = await Note.fromId(id, user?.id);
+        const foundStatus = await Note.fromId(id, user?.id);
 
-            if (!foundStatus) {
-                return context.json({ error: "Record not found" }, 404);
-            }
+        if (!foundStatus) {
+            return context.json({ error: "Record not found" }, 404);
+        }
 
-            const ancestors = await foundStatus.getAncestors(user ?? null);
+        const ancestors = await foundStatus.getAncestors(user ?? null);
 
-            const descendants = await foundStatus.getDescendants(user ?? null);
+        const descendants = await foundStatus.getDescendants(user ?? null);
 
-            return context.json({
+        return context.json(
+            {
                 ancestors: await Promise.all(
                     ancestors.map((status) => status.toApi(user)),
                 ),
                 descendants: await Promise.all(
                     descendants.map((status) => status.toApi(user)),
                 ),
-            });
-        },
-    ),
+            },
+            200,
+        );
+    }),
 );

@@ -1,11 +1,12 @@
-import { apiRoute, applyConfig, auth, handleZodError, jsonOrForm } from "@/api";
-import { zValidator } from "@hono/zod-validator";
+import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { createRoute } from "@hono/zod-openapi";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { Note } from "~/packages/database-interface/note";
+import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     allowedMethods: ["POST"],
@@ -100,78 +101,116 @@ export const schemas = {
         ),
 };
 
-export default apiRoute((app) =>
-    app.on(
-        meta.allowedMethods,
-        meta.route,
-        jsonOrForm(),
-        zValidator("json", schemas.json, handleZodError),
-        auth(meta.auth, meta.permissions),
-        async (context) => {
-            const { user, application } = context.get("auth");
-
-            if (!user) {
-                return context.json({ error: "Unauthorized" }, 401);
-            }
-
-            const {
-                status,
-                media_ids,
-                in_reply_to_id,
-                quote_id,
-                sensitive,
-                spoiler_text,
-                visibility,
-                content_type,
-                local_only,
-            } = context.req.valid("json");
-
-            // Check if media attachments are all valid
-            if (media_ids.length > 0) {
-                const foundAttachments = await Attachment.fromIds(media_ids);
-
-                if (foundAttachments.length !== media_ids.length) {
-                    return context.json({ error: "Invalid media IDs" }, 422);
-                }
-            }
-
-            // Check that in_reply_to_id and quote_id are real posts if provided
-            if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
-                return context.json(
-                    { error: "Invalid in_reply_to_id (not found)" },
-                    422,
-                );
-            }
-
-            if (quote_id && !(await Note.fromId(quote_id))) {
-                return context.json(
-                    { error: "Invalid quote_id (not found)" },
-                    422,
-                );
-            }
-
-            const newNote = await Note.fromData({
-                author: user,
-                content: {
-                    [content_type]: {
-                        content: status ?? "",
-                        remote: false,
-                    },
+const route = createRoute({
+    method: "post",
+    path: "/api/v1/statuses",
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    summary: "Post a new status",
+    request: {
+        body: {
+            content: {
+                "application/json": {
+                    schema: schemas.json,
                 },
-                visibility,
-                isSensitive: sensitive ?? false,
-                spoilerText: spoiler_text ?? "",
-                mediaAttachments: media_ids,
-                replyId: in_reply_to_id ?? undefined,
-                quoteId: quote_id ?? undefined,
-                application: application ?? undefined,
-            });
-
-            if (!local_only) {
-                await newNote.federateToUsers();
-            }
-
-            return context.json(await newNote.toApi(user));
+                "application/x-www-form-urlencoded": {
+                    schema: schemas.json,
+                },
+                "multipart/form-data": {
+                    schema: schemas.json,
+                },
+            },
         },
-    ),
+    },
+    responses: {
+        201: {
+            description: "The new status",
+            content: {
+                "application/json": {
+                    schema: Note.schema,
+                },
+            },
+        },
+        401: {
+            description: "Unauthorized",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+        422: {
+            description: "Invalid data",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
+    },
+});
+
+export default apiRoute((app) =>
+    app.openapi(route, async (context) => {
+        const { user, application } = context.get("auth");
+
+        if (!user) {
+            return context.json({ error: "Unauthorized" }, 401);
+        }
+
+        const {
+            status,
+            media_ids,
+            in_reply_to_id,
+            quote_id,
+            sensitive,
+            spoiler_text,
+            visibility,
+            content_type,
+            local_only,
+        } = context.req.valid("json");
+
+        // Check if media attachments are all valid
+        if (media_ids.length > 0) {
+            const foundAttachments = await Attachment.fromIds(media_ids);
+
+            if (foundAttachments.length !== media_ids.length) {
+                return context.json({ error: "Invalid media IDs" }, 422);
+            }
+        }
+
+        // Check that in_reply_to_id and quote_id are real posts if provided
+        if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
+            return context.json(
+                { error: "Invalid in_reply_to_id (not found)" },
+                422,
+            );
+        }
+
+        if (quote_id && !(await Note.fromId(quote_id))) {
+            return context.json({ error: "Invalid quote_id (not found)" }, 422);
+        }
+
+        const newNote = await Note.fromData({
+            author: user,
+            content: {
+                [content_type]: {
+                    content: status ?? "",
+                    remote: false,
+                },
+            },
+            visibility,
+            isSensitive: sensitive ?? false,
+            spoilerText: spoiler_text ?? "",
+            mediaAttachments: media_ids,
+            replyId: in_reply_to_id ?? undefined,
+            quoteId: quote_id ?? undefined,
+            application: application ?? undefined,
+        });
+
+        if (!local_only) {
+            await newNote.federateToUsers();
+        }
+
+        return context.json(await newNote.toApi(user), 201);
+    }),
 );
