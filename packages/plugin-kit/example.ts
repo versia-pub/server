@@ -12,3 +12,5 @@ myPlugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);
     return req;
 });
+
+export default myPlugin;

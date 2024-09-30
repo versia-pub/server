@@ -1,6 +1,8 @@
 import { Hooks, Plugin } from "@versia/kit";
 import { z } from "zod";
 import authorizeRoute from "./routes/authorize";
+import tokenRevokeRoute from "./routes/oauth/revoke";
+import tokenRoute from "./routes/oauth/token";
 import ssoRoute from "./routes/sso";
 import ssoIdRoute from "./routes/sso/:id/index";
 
@@ -61,13 +63,17 @@ const plugin = new Plugin(
     }),
 );
 
+// Test hook for screenshots
 plugin.registerHandler(Hooks.Response, (req) => {
     console.info("Request received:", req);
     return req;
 });
+
 authorizeRoute(plugin);
 ssoRoute(plugin);
 ssoIdRoute(plugin);
+tokenRoute(plugin);
+tokenRevokeRoute(plugin);
 
 export type PluginType = typeof plugin;
 export default plugin;
