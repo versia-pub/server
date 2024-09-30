@@ -33,6 +33,38 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 - Add JSON schema for configuration file.
 - Rewrite federation stack
 - Updated federation to Versia 0.4
+- Implement OAuth2 token revocation
+- Add new **Plugin API**
+
+## Plugin System
+
+A new plugin system for extending Versia Server has been added in this release!
+
+> [!NOTE]
+> 
+> This is an internal feature and is not documented. Support for third-party plugins will be given on a "if we have time" basis, until the API is fully stabilized and documented
+
+Plugins using this framework support:
+
+- [x] Plugin hotswapping
+- [x] Manifest files (JSON, JSON5, JSONC supported) with metadata (JSON schema provided)
+- [x] Installation by dropping a folder into the plugins/ directory
+- [x] Support for plugins having their own NPM dependencies
+- [x] Support for storing plugins' configuration in the main config.toml
+- [x] Schema-based strict config validation (plugins can specify their own schemas)
+- [x] Full type-safety
+- [x] Custom hooks
+- [x] FFI compatibility (with `bun:ffi` or Node's FFI)
+- [x] Custom API route registration or overriding or middlewaring
+- [x] Automatic OpenAPI schema generation for all installed plugins
+- [x] End-to-end and unit testing supported
+- [x] Automatic user input validation for API routes with schemas (specify a schema for the route and the server will take care of validating everything)
+- [x] Access to internal database abstractions
+- [x] Support for sending raw SQL to database (type-safe!)
+
+The new `@versia/kit` NPM/JSR package is available for plugin developers.
+
+As a demonstration of the power of this system and an effort to modularize the codebase further, OpenID functionality has been moved to a plugin. This plugin is required for login.
 
 ## Bug Fixes
 

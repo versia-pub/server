@@ -187,7 +187,7 @@ Working endpoints are:
 - [ ] `/api/v2/suggestions`
 - [x] `/oauth/authorize`
 - [x] `/oauth/token`
-- [ ] `/oauth/revoke`
+- [x] `/oauth/revoke`
 - Admin API  
 
 ### Main work to do for API
