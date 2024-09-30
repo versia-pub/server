@@ -103,7 +103,6 @@
         "@hono/prometheus": "^1.0.1",
         "@hono/swagger-ui": "^0.4.1",
         "@hono/zod-openapi": "^0.16.0",
-        "@hono/zod-validator": "^0.2.2",
         "@inquirer/confirm": "^4.0.1",
         "@inquirer/input": "^3.0.1",
         "@json2csv/plainjs": "^7.0.6",
