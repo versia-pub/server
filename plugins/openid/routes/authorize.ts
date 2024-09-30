@@ -1,11 +1,11 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
+import { db } from "@versia/kit/db";
+import { RolePermissions, Tokens } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
-import { db } from "~/drizzle/db";
-import { RolePermissions, Tokens } from "~/drizzle/schema";
 import { User } from "~/packages/database-interface/user";
 import type { PluginType } from "../index";
 

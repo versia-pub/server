@@ -37,6 +37,18 @@
         ".": {
             "import": "./index.ts",
             "default": "./index.ts"
+        },
+        "./db": {
+            "import": "./exports/db.ts",
+            "default": "./exports/db.ts"
+        },
+        "./drizzle": {
+            "import": "./exports/drizzle.ts",
+            "default": "./exports/drizzle.ts"
+        },
+        "./tables": {
+            "import": "./exports/tables.ts",
+            "default": "./exports/tables.ts"
         }
     }
 }

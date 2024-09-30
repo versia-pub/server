@@ -1,15 +1,15 @@
 import { auth } from "@/api";
+import { db } from "@versia/kit/db";
+import {
+    Applications,
+    OpenIdLoginFlows,
+    RolePermissions,
+} from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
 } from "oauth4webapi";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import {
-    Applications,
-    OpenIdLoginFlows,
-    RolePermissions,
-} from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 import type { PluginType } from "../..";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils";

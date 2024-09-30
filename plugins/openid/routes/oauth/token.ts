@@ -1,8 +1,8 @@
 import { jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Tokens } from "~/drizzle/schema";
+import { db } from "@versia/kit/db";
+import { eq } from "@versia/kit/drizzle";
+import { Tokens } from "@versia/kit/tables";
 import type { PluginType } from "../..";
 
 export const schemas = {

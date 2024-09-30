@@ -1,9 +1,9 @@
 import { auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
-import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { OpenIdAccounts, RolePermissions } from "~/drizzle/schema";
+import { db } from "@versia/kit/db";
+import { eq } from "@versia/kit/drizzle";
+import { OpenIdAccounts, RolePermissions } from "@versia/kit/tables";
 import type { PluginType } from "~/plugins/openid";
 import { ErrorSchema } from "~/types/api";
 
