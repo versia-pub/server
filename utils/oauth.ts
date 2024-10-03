@@ -49,13 +49,7 @@ export const checkIfOauthIsValid = (
     }
 
     // If there are scopes left, check if they match
-    if (
-        nonMatchedScopes.every((scope) =>
-            application.scopes.split(" ").includes(scope),
-        )
-    ) {
-        return true;
-    }
-
-    return false;
+    return nonMatchedScopes.every((scope) =>
+        application.scopes.split(" ").includes(scope),
+    );
 };
