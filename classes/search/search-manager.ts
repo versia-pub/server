@@ -149,7 +149,7 @@ export class SonicSearchManager {
      * @param n Batch number
      * @param batchSize Size of the batch
      */
-    private async getNthDatabaseAccountBatch(
+    private getNthDatabaseAccountBatch(
         n: number,
         batchSize = 1000,
     ): Promise<Record<string, string | Date>[]> {
@@ -172,7 +172,7 @@ export class SonicSearchManager {
      * @param n Batch number
      * @param batchSize Size of the batch
      */
-    private async getNthDatabaseStatusBatch(
+    private getNthDatabaseStatusBatch(
         n: number,
         batchSize = 1000,
     ): Promise<Record<string, string | Date>[]> {

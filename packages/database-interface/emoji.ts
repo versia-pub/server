@@ -172,10 +172,10 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
      * @param text The text to parse
      * @returns An array of emojis
      */
-    public static async parseFromText(text: string): Promise<Emoji[]> {
+    public static parseFromText(text: string): Promise<Emoji[]> {
         const matches = text.match(emojiValidatorWithColons);
         if (!matches || matches.length === 0) {
-            return [];
+            return Promise.resolve([]);
         }
 
         return Emoji.manyFromSql(

@@ -11,30 +11,29 @@ export class BlurhashPreprocessor implements MediaPreprocessor {
             const metadata = await sharp(arrayBuffer).metadata();
 
             const blurhash = await new Promise<string | null>((resolve) => {
-                (async () =>
-                    sharp(arrayBuffer)
-                        .raw()
-                        .ensureAlpha()
-                        .toBuffer((err, buffer) => {
-                            if (err) {
-                                resolve(null);
-                                return;
-                            }
+                sharp(arrayBuffer)
+                    .raw()
+                    .ensureAlpha()
+                    .toBuffer((err, buffer) => {
+                        if (err) {
+                            resolve(null);
+                            return;
+                        }
 
-                            try {
-                                resolve(
-                                    encode(
-                                        new Uint8ClampedArray(buffer),
-                                        metadata?.width ?? 0,
-                                        metadata?.height ?? 0,
-                                        4,
-                                        4,
-                                    ) as string,
-                                );
-                            } catch {
-                                resolve(null);
-                            }
-                        }))();
+                        try {
+                            resolve(
+                                encode(
+                                    new Uint8ClampedArray(buffer),
+                                    metadata?.width ?? 0,
+                                    metadata?.height ?? 0,
+                                    4,
+                                    4,
+                                ) as string,
+                            );
+                        } catch {
+                            resolve(null);
+                        }
+                    });
             });
 
             return { file, blurhash };

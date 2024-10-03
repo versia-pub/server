@@ -80,7 +80,7 @@ describe("PluginLoader", () => {
     test("parseManifestFile should parse JSON manifest", async () => {
         const manifestContent = { name: "test-plugin" };
         Bun.file = jest.fn().mockReturnValue({
-            text: async () => JSON.stringify(manifestContent),
+            text: () => Promise.resolve(JSON.stringify(manifestContent)),
         });
 
         // biome-ignore lint/complexity/useLiteralKeys: Private method
@@ -111,7 +111,7 @@ describe("PluginLoader", () => {
         };
         mockReaddir.mockResolvedValue(["manifest.json"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: async () => JSON.stringify(manifestContent),
+            text: () => Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: true,
@@ -141,7 +141,7 @@ describe("PluginLoader", () => {
         };
         mockReaddir.mockResolvedValue(["manifest.json"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: async () => JSON.stringify(manifestContent),
+            text: () => Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: false,
@@ -188,7 +188,7 @@ describe("PluginLoader", () => {
             ])
             .mockResolvedValue(["manifest.json", "index.ts"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: async () => JSON.stringify(manifestContent),
+            text: () => Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: true,

@@ -37,7 +37,7 @@ const route = createRoute({
 });
 
 export default apiRoute((app) =>
-    app.openapi(route, async (context) => {
+    app.openapi(route, (context) => {
         return context.json(
             config.signups.rules.map((rule, index) => ({
                 id: String(index),

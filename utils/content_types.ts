@@ -47,11 +47,11 @@ export const urlToContentFormat = (url?: string): ContentFormat | null => {
     };
 };
 
-export const mimeLookup = async (url: string) => {
+export const mimeLookup = (url: string): Promise<string> => {
     const naiveLookup = lookup(url.replace(new URL(url).search, ""));
 
     if (naiveLookup) {
-        return naiveLookup;
+        return Promise.resolve(naiveLookup);
     }
 
     const fetchLookup = fetch(url, {

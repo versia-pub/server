@@ -93,7 +93,7 @@ export default apiRoute((app) =>
         );
 
         return context.json(
-            await Promise.all(objects.map(async (note) => note.toApi(user))),
+            await Promise.all(objects.map((note) => note.toApi(user))),
             200,
             {
                 Link: link,

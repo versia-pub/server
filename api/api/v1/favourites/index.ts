@@ -81,7 +81,7 @@ export default apiRoute((app) =>
         );
 
         return context.json(
-            await Promise.all(favourites.map(async (note) => note.toApi(user))),
+            await Promise.all(favourites.map((note) => note.toApi(user))),
             200,
             {
                 Link: link,

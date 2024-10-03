@@ -395,8 +395,8 @@ export const setContextFormDataToObject = (
     setTo: object,
 ): Context => {
     context.req.bodyCache.json = setTo;
-    context.req.parseBody = async () => context.req.bodyCache.json;
-    context.req.json = async () => context.req.bodyCache.json;
+    context.req.parseBody = () => Promise.resolve(context.req.bodyCache.json);
+    context.req.json = () => Promise.resolve(context.req.bodyCache.json);
 
     return context;
 };
