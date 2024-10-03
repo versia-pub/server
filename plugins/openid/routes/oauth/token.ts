@@ -205,6 +205,8 @@ export default (plugin: PluginType) => {
                             200,
                         );
                     }
+
+                    default:
                 }
 
                 return context.json(
