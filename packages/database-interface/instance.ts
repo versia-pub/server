@@ -338,7 +338,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             name: metadata.name,
             version: metadata.software.version,
             logo: metadata.logo,
-            protocol: protocol,
+            protocol,
         });
     }
 

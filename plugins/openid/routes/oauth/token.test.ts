@@ -12,8 +12,8 @@ const secret = "test-secret";
 
 beforeAll(async () => {
     await db.insert(Applications).values({
-        clientId: clientId,
-        redirectUri: redirectUri,
+        clientId,
+        redirectUri,
         scopes: scope,
         name: "Test Application",
         secret,
@@ -21,8 +21,8 @@ beforeAll(async () => {
 
     await db.insert(Tokens).values({
         code: "test-code",
-        redirectUri: redirectUri,
-        clientId: clientId,
+        redirectUri,
+        clientId,
         accessToken: "test-access-token",
         expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
         createdAt: new Date().toISOString(),

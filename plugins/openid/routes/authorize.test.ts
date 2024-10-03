@@ -22,8 +22,8 @@ const privateKey = await crypto.subtle.importKey(
 
 beforeAll(async () => {
     await db.insert(Applications).values({
-        clientId: clientId,
-        redirectUri: redirectUri,
+        clientId,
+        redirectUri,
         scopes: scope,
         name: "Test Application",
         secret,

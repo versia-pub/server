@@ -26,7 +26,7 @@ export const renderMarkdownInPath = async (
     }
 
     return {
-        content: content,
+        content,
         lastModified,
     };
 };

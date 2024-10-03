@@ -287,7 +287,7 @@ export default (plugin: PluginType) =>
 
                 await db.insert(Tokens).values({
                     accessToken: randomString(64, "base64url"),
-                    code: code,
+                    code,
                     scope: scope ?? application.scopes,
                     tokenType: TokenType.Bearer,
                     applicationId: application.id,

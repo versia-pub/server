@@ -250,7 +250,7 @@ export default apiRoute((app) =>
 
         await db.insert(Tokens).values({
             accessToken: randomString(64, "base64url"),
-            code: code,
+            code,
             scope: flow.application.scopes,
             tokenType: TokenType.Bearer,
             userId: user.id,

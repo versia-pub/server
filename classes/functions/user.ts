@@ -277,7 +277,7 @@ export const followRequestToVersia = (
 
     return {
         type: "Follow",
-        id: id,
+        id,
         author: follower.getUri(),
         followee: followee.getUri(),
         created_at: new Date().toISOString(),
@@ -304,7 +304,7 @@ export const followAcceptToVersia = (
 
     return {
         type: "FollowAccept",
-        id: id,
+        id,
         author: followee.getUri(),
         created_at: new Date().toISOString(),
         follower: follower.getUri(),

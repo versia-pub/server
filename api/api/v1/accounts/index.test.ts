@@ -24,7 +24,7 @@ describe(meta.route, () => {
                 "X-Challenge-Solution": await getSolvedChallenge(),
             },
             body: JSON.stringify({
-                username: username,
+                username,
                 email: "bob@gamer.com",
                 password: "password",
                 agreement: "true",
@@ -44,7 +44,7 @@ describe(meta.route, () => {
                 "X-Challenge-Solution": await getSolvedChallenge(),
             },
             body: JSON.stringify({
-                username: username,
+                username,
                 email: "bob",
                 password: "password",
                 agreement: "true",
@@ -64,7 +64,7 @@ describe(meta.route, () => {
                 "X-Challenge-Solution": await getSolvedChallenge(),
             },
             body: JSON.stringify({
-                username: username,
+                username,
                 email: "contatc@bob.com",
                 agreement: "true",
                 locale: "en",
@@ -83,7 +83,7 @@ describe(meta.route, () => {
                 "X-Challenge-Solution": await getSolvedChallenge(),
             },
             body: JSON.stringify({
-                username: username,
+                username,
                 email: "contact@george.com",
                 password: "password",
                 agreement: "true",
@@ -119,7 +119,7 @@ describe(meta.route, () => {
                 "X-Challenge-Solution": await getSolvedChallenge(),
             },
             body: JSON.stringify({
-                username: username,
+                username,
                 email: "contact@george.com",
                 password: "password",
                 agreement: "true",

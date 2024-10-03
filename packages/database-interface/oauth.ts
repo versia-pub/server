@@ -140,7 +140,7 @@ export class OAuthManager {
         await db.insert(OpenIdAccounts).values({
             serverId: sub,
             issuerId: this.issuer.id,
-            userId: userId,
+            userId,
         });
     }
 
@@ -273,9 +273,9 @@ export class OAuthManager {
         );
 
         return {
-            userInfo: userInfo,
-            flow: flow,
-            claims: claims,
+            userInfo,
+            flow,
+            claims,
         };
     }
 }

@@ -150,7 +150,7 @@ describe(meta.route, () => {
 
         expect(response2.ok).toBe(true);
         const emojis = await response2.json();
-        expect(emojis).not.toContainEqual(expect.objectContaining({ id: id }));
+        expect(emojis).not.toContainEqual(expect.objectContaining({ id }));
     });
 
     test("should delete the emoji", async () => {

@@ -118,7 +118,7 @@ export class Relationship extends BaseInterface<
         for (const subjectId of missingSubjectsIds) {
             await Relationship.insert({
                 ownerId: owner.id,
-                subjectId: subjectId,
+                subjectId,
                 languages: [],
                 following: false,
                 showingReblogs: false,

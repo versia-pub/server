@@ -144,7 +144,7 @@ export const nodeDriver: RotatingFileSinkDriver<number> = {
         }
         return statSync(path);
     },
-    renameSync: renameSync,
+    renameSync,
 };
 
 export const configureLoggers = (silent = false) =>

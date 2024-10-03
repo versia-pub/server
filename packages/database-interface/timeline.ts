@@ -167,12 +167,12 @@ export class Timeline<Type extends Note | User> {
             case TimelineType.Note:
                 return {
                     link,
-                    objects: objects,
+                    objects,
                 };
             case TimelineType.User:
                 return {
                     link,
-                    objects: objects,
+                    objects,
                 };
         }
     }

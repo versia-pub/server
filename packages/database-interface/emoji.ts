@@ -230,7 +230,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             alt: Object.entries(emoji.url)[0][1].description || undefined,
             contentType: Object.keys(emoji.url)[0],
             visibleInPicker: true,
-            instanceId: instanceId,
+            instanceId,
         });
     }
 }
