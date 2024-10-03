@@ -52,7 +52,6 @@ export const setupDatabase = async (info = true) => {
                 return;
             }
 
-            logger.fatal`${e}`;
             logger.fatal`Failed to connect to database ${chalk.bold(
                 // Index of the database in the array
                 replicas.indexOf(dbPool) === -1
@@ -60,8 +59,7 @@ export const setupDatabase = async (info = true) => {
                     : `replica-${replicas.indexOf(dbPool)}`,
             )}. Please check your configuration.`;
 
-            // Hang until Ctrl+C is pressed
-            await Bun.sleep(Number.POSITIVE_INFINITY);
+            throw e;
         }
     }
 
@@ -73,11 +71,9 @@ export const setupDatabase = async (info = true) => {
             migrationsFolder: "./drizzle/migrations",
         });
     } catch (e) {
-        logger.fatal`${e}`;
         logger.fatal`Failed to migrate database. Please check your configuration.`;
 
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
+        throw e;
     }
 
     info && logger.info`Database migrated`;

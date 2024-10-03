@@ -29,7 +29,7 @@ await Bun.build({
 }).then((output) => {
     if (!output.success) {
         console.error(output.logs);
-        process.exit(1);
+        throw new Error("Build failed");
     }
 });
 

@@ -17,13 +17,6 @@ const checkHttpProxyConfig = async (config: Config) => {
     const logger = getLogger("server");
 
     if (config.http.proxy.enabled) {
-        if (!config.http.proxy.address) {
-            logger.fatal`The HTTP proxy is enabled, but the proxy address is not set in the config`;
-
-            // Hang until Ctrl+C is pressed
-            await Bun.sleep(Number.POSITIVE_INFINITY);
-        }
-
         logger.info`HTTP proxy enabled at ${chalk.gray(config.http.proxy.address)}, testing...`;
 
         // Test the proxy
@@ -37,10 +30,9 @@ const checkHttpProxyConfig = async (config: Config) => {
         logger.info`Your IPv4 address is ${chalk.gray(ip)}`;
 
         if (!response.ok) {
-            logger.fatal`The HTTP proxy is enabled, but the proxy address is not reachable`;
-
-            // Hang until Ctrl+C is pressed
-            await Bun.sleep(Number.POSITIVE_INFINITY);
+            throw new Error(
+                "The HTTP proxy is enabled, but the proxy address is not reachable",
+            );
         }
     }
 };
@@ -127,10 +119,9 @@ const checkOidcConfig = async (config: Config) => {
         .catch((e) => e as Error);
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
-        logger.fatal`The OpenID keys could not be imported! You may generate a new one by removing the old ones from config and restarting the server (this will invalidate all current JWTs).`;
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
+        throw new Error(
+            "The OpenID keys could not be imported! You may generate a new one by removing the old ones from config and restarting the server (this will invalidate all current JWTs).",
+        );
     }
 };
 
@@ -174,9 +165,8 @@ const checkFederationConfig = async (config: Config) => {
         .catch((e) => e as Error);
 
     if (privateKey instanceof Error || publicKey instanceof Error) {
-        logger.fatal`The federation keys could not be imported! You may generate new ones by removing the old ones from the config and restarting the server.`;
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
+        throw new Error(
+            "The federation keys could not be imported! You may generate new ones by removing the old ones from the config and restarting the server.",
+        );
     }
 };

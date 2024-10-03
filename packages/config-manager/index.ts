@@ -23,10 +23,7 @@ const parsed = await configValidator.safeParseAsync(config);
 
 if (!parsed.success) {
     console.error("Invalid config file:");
-    console.error(fromZodError(parsed.error).message);
-    // Hang until Ctrl+C is pressed
-    await Bun.sleep(Number.POSITIVE_INFINITY);
-    process.exit();
+    throw fromZodError(parsed.error).message;
 }
 
 const exportedConfig = parsed.data;

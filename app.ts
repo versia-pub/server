@@ -133,11 +133,7 @@ export const appFactory = async () => {
             serverLogger.fatal`Put your configuration at ${chalk.blueBright(
                 "plugins.<plugin-name>",
             )}`;
-            serverLogger.fatal`Press Ctrl+C to exit`;
-
-            // Hang until Ctrl+C is pressed
-            await Bun.sleep(Number.POSITIVE_INFINITY);
-            process.exit();
+            throw new Error("Plugin configuration is invalid");
         }
 
         // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method

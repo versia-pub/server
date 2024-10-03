@@ -4,6 +4,10 @@ import { createServer } from "@/server";
 import { appFactory } from "~/app";
 import { config } from "~/packages/config-manager/index";
 
+process.on("SIGINT", () => {
+    process.exit();
+});
+
 if (cluster.isPrimary) {
     for (let i = 0; i < Number(process.env.NUM_CPUS ?? 1); i++) {
         cluster.fork();

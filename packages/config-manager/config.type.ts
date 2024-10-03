@@ -150,6 +150,10 @@ export const configValidator = z.object({
                 enabled: false,
                 address: "",
             })
+            .refine(
+                (arg) => !arg.enabled || !!arg.address,
+                "When proxy is enabled, address must be set",
+            )
             .transform((arg) => ({
                 ...arg,
                 address: arg.enabled ? arg.address : undefined,

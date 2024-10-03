@@ -20,10 +20,6 @@ if (config.sonic.enabled) {
     await searchManager.connect();
 }
 
-process.on("SIGINT", () => {
-    process.exit();
-});
-
 // Check if database is reachable
 const postCount = await Note.getCount();
 
@@ -34,12 +30,6 @@ serverLogger.info`Versia Server started at ${config.http.bind}:${config.http.bin
 serverLogger.info`Database is online, now serving ${postCount} posts`;
 
 if (config.frontend.enabled) {
-    if (!URL.canParse(config.frontend.url)) {
-        serverLogger.error`Frontend URL is not a valid URL: ${config.frontend.url}`;
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
-
     // Check if frontend is reachable
     const response = await fetch(new URL("/", config.frontend.url))
         .then((res) => res.ok)
