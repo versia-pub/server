@@ -333,15 +333,13 @@ export default apiRoute((app) =>
             await Emoji.parseFromText(sanitizedDisplayName);
         const noteEmojis = await Emoji.parseFromText(self.note);
 
-        self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis].map(
-            (e) => e.data,
-        );
-
-        // Deduplicate emojis
-        self.emojis = self.emojis.filter(
-            (emoji, index, self) =>
-                self.findIndex((e) => e.id === emoji.id) === index,
-        );
+        self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis]
+            .map((e) => e.data)
+            .filter(
+                // Deduplicate emojis
+                (emoji, index, self) =>
+                    self.findIndex((e) => e.id === emoji.id) === index,
+            );
 
         // Connect emojis, if any
         // Do it before updating user, so that federation takes that into account
