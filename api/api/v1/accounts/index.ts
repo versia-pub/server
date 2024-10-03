@@ -189,7 +189,7 @@ export default apiRoute((app) =>
             if (!form[value]) {
                 errors.details[value].push({
                     error: "ERR_BLANK",
-                    description: `can't be blank`,
+                    description: "can't be blank",
                 });
             }
         }
@@ -291,7 +291,7 @@ export default apiRoute((app) =>
         if (!locale) {
             errors.details.locale.push({
                 error: "ERR_BLANK",
-                description: `can't be blank`,
+                description: "can't be blank",
             });
         }
 
