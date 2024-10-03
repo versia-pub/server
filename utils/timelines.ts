@@ -50,7 +50,7 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
             );
         }
 
-        if (objects.length >= (Number(args?.limit) ?? 20)) {
+        if (objects.length >= Number(args?.limit ?? 20)) {
             // Check if there are statuses after the last one
             // @ts-expect-error hack again
             const objectsAfter = await model({
