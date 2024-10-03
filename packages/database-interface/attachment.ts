@@ -124,9 +124,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return this.update(this.data);
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Attachments).where(inArray(Attachments.id, ids));
         } else {

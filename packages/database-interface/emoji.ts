@@ -107,9 +107,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return this.update(this.data);
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Emojis).where(inArray(Emojis.id, ids));
         } else {

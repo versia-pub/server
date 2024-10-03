@@ -358,9 +358,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         )[0].count;
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Users).where(inArray(Users.id, ids));
         } else {

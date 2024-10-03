@@ -143,9 +143,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return this.update(this.data);
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Roles).where(inArray(Roles.id, ids));
         } else {

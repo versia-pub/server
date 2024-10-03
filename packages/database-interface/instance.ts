@@ -101,9 +101,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return this.update(this.data);
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Instances).where(inArray(Instances.id, ids));
         } else {

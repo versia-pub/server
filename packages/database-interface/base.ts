@@ -30,16 +30,10 @@ export abstract class BaseInterface<
     /**
      * Deletes the model from the database.
      *
-     * @param ids - The ids of the models to delete.
+     * @param ids - The ids of the models to delete. If not provided, the current model will be deleted.
      * @returns A promise that resolves when the deletion is complete.
      */
-    public abstract delete(ids: string[]): Promise<void>;
-    /**
-     * Deletes the model from the database.
-     *
-     * @returns A promise that resolves when the deletion is complete.
-     */
-    public abstract delete(): Promise<void>;
+    public abstract delete(ids?: string[]): Promise<void>;
 
     /**
      * Updates the model with new data.

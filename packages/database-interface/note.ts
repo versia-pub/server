@@ -810,9 +810,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return await Note.fromData(newData);
     }
 
-    async delete(ids: string[]): Promise<void>;
-    async delete(): Promise<void>;
-    async delete(ids?: unknown): Promise<void> {
+    async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Notes).where(inArray(Notes.id, ids));
         } else {
