@@ -28,10 +28,10 @@ WORKDIR /temp/dist
 # Copy production dependencies and source code into final image
 FROM oven/bun:1.1.29-alpine
 
-RUN apk add --no-cache libstdc++^14.0.0
+# Install libstdc++ for Bun and create app directory
+RUN apk add --no-cache libstdc++^14.0.0 &&
+    mkdir -p /app
 
-# Create app directory
-RUN mkdir -p /app
 COPY --from=build /temp/dist /app/dist
 COPY entrypoint.sh /app
 
