@@ -76,7 +76,7 @@ export class Timeline<Type extends Note | User> {
             switch (this.type) {
                 case TimelineType.Note:
                     linkHeader.push(
-                        ...(await this.fetchNoteLinkHeader(
+                        ...(await Timeline.fetchNoteLinkHeader(
                             objects as Note[],
                             urlWithoutQuery,
                             limit,
@@ -85,7 +85,7 @@ export class Timeline<Type extends Note | User> {
                     break;
                 case TimelineType.User:
                     linkHeader.push(
-                        ...(await this.fetchUserLinkHeader(
+                        ...(await Timeline.fetchUserLinkHeader(
                             objects as User[],
                             urlWithoutQuery,
                             limit,
@@ -98,7 +98,7 @@ export class Timeline<Type extends Note | User> {
         return linkHeader.join(", ");
     }
 
-    private async fetchNoteLinkHeader(
+    private static async fetchNoteLinkHeader(
         notes: Note[],
         urlWithoutQuery: string,
         limit: number,
@@ -126,7 +126,7 @@ export class Timeline<Type extends Note | User> {
         return linkHeader;
     }
 
-    private async fetchUserLinkHeader(
+    private static async fetchUserLinkHeader(
         users: User[],
         urlWithoutQuery: string,
         limit: number,

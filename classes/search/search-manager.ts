@@ -149,7 +149,7 @@ export class SonicSearchManager {
      * @param n Batch number
      * @param batchSize Size of the batch
      */
-    private getNthDatabaseAccountBatch(
+    private static getNthDatabaseAccountBatch(
         n: number,
         batchSize = 1000,
     ): Promise<Record<string, string | Date>[]> {
@@ -172,7 +172,7 @@ export class SonicSearchManager {
      * @param n Batch number
      * @param batchSize Size of the batch
      */
-    private getNthDatabaseStatusBatch(
+    private static getNthDatabaseStatusBatch(
         n: number,
         batchSize = 1000,
     ): Promise<Record<string, string | Date>[]> {
@@ -221,10 +221,11 @@ export class SonicSearchManager {
         const batchCount = Math.ceil(accountCount / batchSize);
 
         for (let i = 0; i < batchCount; i++) {
-            const accounts = await this.getNthDatabaseAccountBatch(
-                i,
-                batchSize,
-            );
+            const accounts =
+                await SonicSearchManager.getNthDatabaseAccountBatch(
+                    i,
+                    batchSize,
+                );
             await Promise.all(
                 accounts.map((account) =>
                     this.ingestChannel.push(
@@ -252,7 +253,10 @@ export class SonicSearchManager {
         const batchCount = Math.ceil(statusCount / batchSize);
 
         for (let i = 0; i < batchCount; i++) {
-            const statuses = await this.getNthDatabaseStatusBatch(i, batchSize);
+            const statuses = await SonicSearchManager.getNthDatabaseStatusBatch(
+                i,
+                batchSize,
+            );
             await Promise.all(
                 statuses.map((status) =>
                     this.ingestChannel.push(

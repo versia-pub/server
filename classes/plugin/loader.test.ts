@@ -56,7 +56,7 @@ describe("PluginLoader", () => {
         ]);
 
         // biome-ignore lint/complexity/useLiteralKeys: Private method
-        const directories = await pluginLoader["getDirectories"]("/some/path");
+        const directories = await PluginLoader["getDirectories"]("/some/path");
         expect(directories).toEqual(["dir1", "dir2"]);
     });
 
@@ -65,7 +65,7 @@ describe("PluginLoader", () => {
 
         const manifestFile =
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await pluginLoader["findManifestFile"]("/some/path");
+            await PluginLoader["findManifestFile"]("/some/path");
         expect(manifestFile).toBe("manifest.json");
     });
 
@@ -73,7 +73,7 @@ describe("PluginLoader", () => {
         mockReaddir.mockResolvedValue(["index.ts", "otherfile.txt"]);
 
         // biome-ignore lint/complexity/useLiteralKeys: Private method
-        const hasEntrypoint = await pluginLoader["hasEntrypoint"]("/some/path");
+        const hasEntrypoint = await PluginLoader["hasEntrypoint"]("/some/path");
         expect(hasEntrypoint).toBe(true);
     });
 

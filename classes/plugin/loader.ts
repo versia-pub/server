@@ -18,7 +18,7 @@ export class PluginLoader {
      * @param {string} dir - The directory to search.
      * @returns {Promise<string[]>} - An array of directory names.
      */
-    private async getDirectories(dir: string): Promise<string[]> {
+    private static async getDirectories(dir: string): Promise<string[]> {
         const files = await readdir(dir, { withFileTypes: true });
         return files.filter((f) => f.isDirectory()).map((f) => f.name);
     }
@@ -28,7 +28,9 @@ export class PluginLoader {
      * @param {string} dir - The directory to search.
      * @returns {Promise<string | undefined>} - The manifest file name if found, otherwise undefined.
      */
-    private async findManifestFile(dir: string): Promise<string | undefined> {
+    private static async findManifestFile(
+        dir: string,
+    ): Promise<string | undefined> {
         const files = await readdir(dir);
         return files.find((f) => f.match(/^manifest\.(json|json5|jsonc)$/));
     }
@@ -38,7 +40,7 @@ export class PluginLoader {
      * @param {string} dir - The directory to search.
      * @returns {Promise<boolean>} - True if the entrypoint file is found, otherwise false.
      */
-    private async hasEntrypoint(dir: string): Promise<boolean> {
+    private static async hasEntrypoint(dir: string): Promise<boolean> {
         const files = await readdir(dir);
         return files.includes("index.ts") || files.includes("index.js");
     }
@@ -79,16 +81,16 @@ export class PluginLoader {
      * @returns {Promise<string[]>} - An array of plugin directories.
      */
     public async findPlugins(dir: string): Promise<string[]> {
-        const directories = await this.getDirectories(dir);
+        const directories = await PluginLoader.getDirectories(dir);
         const plugins: string[] = [];
 
         for (const directory of directories) {
-            const manifestFile = await this.findManifestFile(
+            const manifestFile = await PluginLoader.findManifestFile(
                 `${dir}/${directory}`,
             );
             if (
                 manifestFile &&
-                (await this.hasEntrypoint(`${dir}/${directory}`))
+                (await PluginLoader.hasEntrypoint(`${dir}/${directory}`))
             ) {
                 plugins.push(directory);
             }
@@ -105,7 +107,9 @@ export class PluginLoader {
      * @throws Will throw an error if the manifest file is missing or invalid.
      */
     public async parseManifest(dir: string, plugin: string): Promise<Manifest> {
-        const manifestFile = await this.findManifestFile(`${dir}/${plugin}`);
+        const manifestFile = await PluginLoader.findManifestFile(
+            `${dir}/${plugin}`,
+        );
 
         if (!manifestFile) {
             throw new Error(`Plugin ${plugin} is missing a manifest file`);

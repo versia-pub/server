@@ -33,7 +33,7 @@ export class OAuthManager {
         this.issuer = found;
     }
 
-    async getFlow(flowId: string) {
+    static async getFlow(flowId: string) {
         return await db.query.OpenIdLoginFlows.findFirst({
             where: (flow, { eq }) => eq(flow.id, flowId),
             with: {
@@ -42,13 +42,13 @@ export class OAuthManager {
         });
     }
 
-    async getAuthServer(issuerUrl: URL) {
+    static async getAuthServer(issuerUrl: URL) {
         return await discoveryRequest(issuerUrl, {
             algorithm: "oidc",
         }).then((res) => processDiscoveryResponse(issuerUrl, res));
     }
 
-    getParameters(
+    static getParameters(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
         currentUrl: URL,
@@ -64,7 +64,7 @@ export class OAuthManager {
         );
     }
 
-    async getOIDCResponse(
+    static async getOIDCResponse(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
         redirectUri: string,
@@ -83,7 +83,7 @@ export class OAuthManager {
         );
     }
 
-    async processOIDCResponse(
+    static async processOIDCResponse(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
         oidcResponse: Response,
@@ -98,7 +98,7 @@ export class OAuthManager {
         );
     }
 
-    async getUserInfo(
+    static async getUserInfo(
         authServer: AuthorizationServer,
         issuer: (typeof config.oidc.providers)[0],
         accessToken: string,
@@ -125,7 +125,7 @@ export class OAuthManager {
         );
     }
 
-    processOAuth2Error(
+    static processOAuth2Error(
         application: InferInsertModel<typeof Applications> | null,
     ) {
         return {
@@ -212,7 +212,7 @@ export class OAuthManager {
             app: Application | null,
         ) => Response,
     ) {
-        const flow = await this.getFlow(flowId);
+        const flow = await OAuthManager.getFlow(flowId);
 
         if (!flow) {
             return errorFn("invalid_request", "Invalid flow", null);
@@ -220,9 +220,9 @@ export class OAuthManager {
 
         const issuerUrl = new URL(this.issuer.url);
 
-        const authServer = await this.getAuthServer(issuerUrl);
+        const authServer = await OAuthManager.getAuthServer(issuerUrl);
 
-        const parameters = await this.getParameters(
+        const parameters = await OAuthManager.getParameters(
             authServer,
             this.issuer,
             currentUrl,
@@ -236,7 +236,7 @@ export class OAuthManager {
             );
         }
 
-        const oidcResponse = await this.getOIDCResponse(
+        const oidcResponse = await OAuthManager.getOIDCResponse(
             authServer,
             this.issuer,
             redirectUrl.toString(),
@@ -244,7 +244,7 @@ export class OAuthManager {
             parameters,
         );
 
-        const result = await this.processOIDCResponse(
+        const result = await OAuthManager.processOIDCResponse(
             authServer,
             this.issuer,
             oidcResponse,
@@ -265,7 +265,7 @@ export class OAuthManager {
 
         // Validate `sub`
         // Later, we'll use this to automatically set the user's data
-        const userInfo = await this.getUserInfo(
+        const userInfo = await OAuthManager.getUserInfo(
             authServer,
             this.issuer,
             access_token,

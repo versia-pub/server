@@ -104,10 +104,9 @@ export class ImageConversionPreprocessor implements MediaPreprocessor {
         fileName: string,
         newExtension: string,
     ): string {
-        return this.extractFilenameFromPath(fileName).replace(
-            /\.[^/.]+$/,
-            `.${newExtension}`,
-        );
+        return ImageConversionPreprocessor.extractFilenameFromPath(
+            fileName,
+        ).replace(/\.[^/.]+$/, `.${newExtension}`);
     }
 
     /**
@@ -115,7 +114,7 @@ export class ImageConversionPreprocessor implements MediaPreprocessor {
      * @param path - The path to extract the filename from.
      * @returns The extracted filename.
      */
-    private extractFilenameFromPath(path: string): string {
+    private static extractFilenameFromPath(path: string): string {
         const pathParts = path.split(/(?<!\\)\//);
         return pathParts[pathParts.length - 1];
     }

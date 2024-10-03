@@ -113,7 +113,7 @@ export default apiRoute((app) =>
             (error, message, app) =>
                 returnError(
                     context,
-                    manager.processOAuth2Error(app),
+                    OAuthManager.processOAuth2Error(app),
                     error,
                     message,
                 ),
