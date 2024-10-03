@@ -82,15 +82,15 @@ export const userExtras = {
 };
 
 export const userExtrasTemplate = (name: string) => ({
-    // @ts-ignore
+    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
     followerCount: sql([
         `(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
     ]).as("follower_count"),
-    // @ts-ignore
+    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
     followingCount: sql([
         `(SELECT COUNT(*) FROM "Relationships" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "${name}".id AND "relationshipSubjects"."following" = true))`,
     ]).as("following_count"),
-    // @ts-ignore
+    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
     statusCount: sql([
         `(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."authorId" = "${name}".id)`,
     ]).as("status_count"),
