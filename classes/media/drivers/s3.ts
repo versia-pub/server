@@ -5,7 +5,7 @@
 
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import type { Config } from "~/packages/config-manager/config.type";
-import { MediaHasher } from "../media-hasher";
+import { getMediaHash } from "../media-hasher";
 import type { UploadedFileMetadata } from "../media-manager";
 import type { MediaDriver } from "./media-driver";
 
@@ -14,7 +14,6 @@ import type { MediaDriver } from "./media-driver";
  */
 export class S3MediaDriver implements MediaDriver {
     private s3Client: S3Client;
-    private mediaHasher: MediaHasher;
 
     /**
      * Creates a new S3MediaDriver instance.
@@ -29,7 +28,6 @@ export class S3MediaDriver implements MediaDriver {
             accessKey: config.s3.access_key,
             secretKey: config.s3.secret_access_key,
         });
-        this.mediaHasher = new MediaHasher();
     }
 
     /**
@@ -41,7 +39,7 @@ export class S3MediaDriver implements MediaDriver {
         // Sometimes the file name is not available, so we generate a random name
         const fileName = file.name ?? crypto.randomUUID();
 
-        const hash = await this.mediaHasher.getMediaHash(file);
+        const hash = await getMediaHash(file);
         const path = `${hash}/${fileName}`;
 
         await this.s3Client.putObject(path, file.stream(), {

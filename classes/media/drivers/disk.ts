@@ -6,7 +6,7 @@
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import type { Config } from "~/packages/config-manager/config.type";
-import { MediaHasher } from "../media-hasher";
+import { getMediaHash } from "../media-hasher";
 import type { UploadedFileMetadata } from "../media-manager";
 import type { MediaDriver } from "./media-driver";
 
@@ -14,15 +14,11 @@ import type { MediaDriver } from "./media-driver";
  * Implements the MediaDriver interface for disk storage.
  */
 export class DiskMediaDriver implements MediaDriver {
-    private mediaHasher: MediaHasher;
-
     /**
      * Creates a new DiskMediaDriver instance.
      * @param config - The configuration object.
      */
-    constructor(private config: Config) {
-        this.mediaHasher = new MediaHasher();
-    }
+    constructor(private config: Config) {}
 
     /**
      * @inheritdoc
@@ -33,7 +29,7 @@ export class DiskMediaDriver implements MediaDriver {
         // Sometimes the file name is not available, so we generate a random name
         const fileName = file.name ?? crypto.randomUUID();
 
-        const hash = await this.mediaHasher.getMediaHash(file);
+        const hash = await getMediaHash(file);
         const path = join(hash, fileName);
         const fullPath = join(this.config.media.local_uploads_folder, path);
 

@@ -80,7 +80,7 @@ export class PluginLoader {
      * @param {string} dir - The directory to search.
      * @returns {Promise<string[]>} - An array of plugin directories.
      */
-    public async findPlugins(dir: string): Promise<string[]> {
+    public static async findPlugins(dir: string): Promise<string[]> {
         const directories = await PluginLoader.getDirectories(dir);
         const plugins: string[] = [];
 
@@ -163,7 +163,7 @@ export class PluginLoader {
     public async loadPlugins(
         dir: string,
     ): Promise<{ manifest: Manifest; plugin: Plugin<ZodTypeAny> }[]> {
-        const plugins = await this.findPlugins(dir);
+        const plugins = await PluginLoader.findPlugins(dir);
 
         return Promise.all(
             plugins.map(async (plugin) => {

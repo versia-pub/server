@@ -99,7 +99,7 @@ describe("PluginLoader", () => {
             ])
             .mockResolvedValue(["manifest.json", "index.ts"]);
 
-        const plugins = await pluginLoader.findPlugins("/some/path");
+        const plugins = await PluginLoader.findPlugins("/some/path");
         expect(plugins).toEqual(["plugin1", "plugin2"]);
     });
 

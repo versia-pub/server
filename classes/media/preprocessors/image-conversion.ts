@@ -70,7 +70,10 @@ export class ImageConversionPreprocessor implements MediaPreprocessor {
         return {
             file: new File(
                 [convertedBuffer],
-                this.getReplacedFileName(file.name, commandName),
+                ImageConversionPreprocessor.getReplacedFileName(
+                    file.name,
+                    commandName,
+                ),
                 {
                     type: targetFormat,
                     lastModified: Date.now(),
@@ -100,7 +103,7 @@ export class ImageConversionPreprocessor implements MediaPreprocessor {
      * @param newExtension - The new extension.
      * @returns The filename with the new extension.
      */
-    private getReplacedFileName(
+    private static getReplacedFileName(
         fileName: string,
         newExtension: string,
     ): string {

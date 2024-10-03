@@ -3,17 +3,17 @@
  * @module Tests/S3MediaDriver
  */
 
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { type Mock, beforeEach, describe, expect, it, mock } from "bun:test";
 import type { S3Client } from "@bradenmacdonald/s3-lite-client";
 import type { Config } from "~/packages/config-manager/config.type";
-import type { MediaHasher } from "../media-hasher";
+import type { getMediaHash } from "../media-hasher";
 import { S3MediaDriver } from "./s3";
 
 describe("S3MediaDriver", () => {
     let s3Driver: S3MediaDriver;
     let mockConfig: Config;
     let mockS3Client: S3Client;
-    let mockMediaHasher: MediaHasher;
+    let mockMediaHasher: Mock<typeof getMediaHash>;
 
     beforeEach(() => {
         mockConfig = {
@@ -38,9 +38,11 @@ describe("S3MediaDriver", () => {
             deleteObject: mock(() => Promise.resolve()),
         }))() as unknown as S3Client;
 
-        mockMediaHasher = mock(() => ({
-            getMediaHash: mock(() => Promise.resolve("testhash")),
-        }))();
+        mockMediaHasher = mock(() => Promise.resolve("testhash"));
+
+        mock.module("../media-hasher", () => ({
+            getMediaHash: mockMediaHasher,
+        }));
 
         s3Driver = new S3MediaDriver(mockConfig);
         // @ts-expect-error: Replacing private property for testing
@@ -53,7 +55,7 @@ describe("S3MediaDriver", () => {
         const file = new File(["test"], "test.webp", { type: "image/webp" });
         const result = await s3Driver.addFile(file);
 
-        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(mockMediaHasher).toHaveBeenCalledWith(file);
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
             "testhash/test.webp",
             expect.any(ReadableStream),
@@ -70,7 +72,7 @@ describe("S3MediaDriver", () => {
         const file = new Blob(["test"], { type: "image/webp" });
         const result = await s3Driver.addFile(file as File);
 
-        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(mockMediaHasher).toHaveBeenCalledWith(file);
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
             expect.stringContaining("testhash"),
             expect.any(ReadableStream),

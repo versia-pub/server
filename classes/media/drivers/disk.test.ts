@@ -15,13 +15,13 @@ import {
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import type { Config } from "~/packages/config-manager/config.type";
-import type { MediaHasher } from "../media-hasher";
+import type { getMediaHash } from "../media-hasher";
 import { DiskMediaDriver } from "./disk";
 
 describe("DiskMediaDriver", () => {
     let diskDriver: DiskMediaDriver;
     let mockConfig: Config;
-    let mockMediaHasher: MediaHasher;
+    let mockMediaHasher: Mock<typeof getMediaHash>;
     let bunWriteSpy: Mock<typeof Bun.write>;
 
     beforeEach(() => {
@@ -31,9 +31,11 @@ describe("DiskMediaDriver", () => {
             },
         } as Config;
 
-        mockMediaHasher = mock(() => ({
-            getMediaHash: mock(() => Promise.resolve("testhash")),
-        }))();
+        mockMediaHasher = mock(() => Promise.resolve("testhash"));
+
+        mock.module("../media-hasher", () => ({
+            getMediaHash: mockMediaHasher,
+        }));
 
         diskDriver = new DiskMediaDriver(mockConfig);
         // @ts-expect-error: Replacing private property for testing
@@ -65,7 +67,7 @@ describe("DiskMediaDriver", () => {
         const file = new File(["test"], "test.webp", { type: "image/webp" });
         const result = await diskDriver.addFile(file);
 
-        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(mockMediaHasher).toHaveBeenCalledWith(file);
         expect(bunWriteSpy).toHaveBeenCalledWith(
             join("/test/uploads", "testhash", "test.webp"),
             expect.any(ArrayBuffer),
@@ -81,7 +83,7 @@ describe("DiskMediaDriver", () => {
         const file = new Blob(["test"], { type: "image/webp" });
         const result = await diskDriver.addFile(file as File);
 
-        expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
+        expect(mockMediaHasher).toHaveBeenCalledWith(file);
         expect(bunWriteSpy).toHaveBeenCalledWith(
             expect.stringContaining("testhash"),
             expect.any(ArrayBuffer),
