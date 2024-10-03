@@ -1,7 +1,7 @@
 # Node is required for building the project
 FROM imbios/bun-node:1-20-alpine AS base
 
-RUN apk add --no-cache libstdc++
+RUN apk add --no-cache libstdc++^14.0.0
 
 # Install dependencies into temp directory
 # This will cache them and speed up future builds
@@ -28,7 +28,7 @@ WORKDIR /temp/dist
 # Copy production dependencies and source code into final image
 FROM oven/bun:1.1.29-alpine
 
-RUN apk add --no-cache libstdc++
+RUN apk add --no-cache libstdc++^14.0.0
 
 # Create app directory
 RUN mkdir -p /app
