@@ -12,8 +12,8 @@ import {
     mock,
     spyOn,
 } from "bun:test";
-import * as fs from "node:fs/promises";
-import * as path from "node:path";
+import { rm } from "node:fs/promises";
+import { join } from "node:path";
 import type { Config } from "~/packages/config-manager/config.type";
 import type { MediaHasher } from "../media-hasher";
 import { DiskMediaDriver } from "./disk";
@@ -67,12 +67,12 @@ describe("DiskMediaDriver", () => {
 
         expect(mockMediaHasher.getMediaHash).toHaveBeenCalledWith(file);
         expect(bunWriteSpy).toHaveBeenCalledWith(
-            path.join("/test/uploads", "testhash", "test.webp"),
+            join("/test/uploads", "testhash", "test.webp"),
             expect.any(ArrayBuffer),
         );
         expect(result).toEqual({
             uploadedFile: file,
-            path: path.join("testhash", "test.webp"),
+            path: join("testhash", "test.webp"),
             hash: "testhash",
         });
     });
@@ -103,7 +103,7 @@ describe("DiskMediaDriver", () => {
 
         expect(databaseHashFetcher).toHaveBeenCalledWith(hash);
         expect(Bun.file).toHaveBeenCalledWith(
-            path.join("/test/uploads", "test.webp"),
+            join("/test/uploads", "test.webp"),
         );
         expect(result).toBeInstanceOf(File);
         expect(result?.name).toBe("test.webp");
@@ -114,9 +114,7 @@ describe("DiskMediaDriver", () => {
         const filename = "test.webp";
         const result = await diskDriver.getFile(filename);
 
-        expect(Bun.file).toHaveBeenCalledWith(
-            path.join("/test/uploads", filename),
-        );
+        expect(Bun.file).toHaveBeenCalledWith(join("/test/uploads", filename));
         expect(result).toBeInstanceOf(File);
         expect(result?.name).toBe(filename);
         expect(result?.type).toBe("image/webp");
@@ -126,9 +124,8 @@ describe("DiskMediaDriver", () => {
         const url = "http://localhost:3000/uploads/testhash/test.webp";
         await diskDriver.deleteFileByUrl(url);
 
-        expect(fs.rm).toHaveBeenCalledWith(
-            path.join("/test/uploads", "testhash"),
-            { recursive: true },
-        );
+        expect(rm).toHaveBeenCalledWith(join("/test/uploads", "testhash"), {
+            recursive: true,
+        });
     });
 });
