@@ -6,7 +6,7 @@ import { db } from "~/drizzle/db";
 import { Emojis, Instances, Users } from "~/drizzle/schema";
 import { Instance } from "~/packages/database-interface/instance";
 import { User } from "~/packages/database-interface/user";
-import { BaseCommand } from "./base";
+import { BaseCommand } from "./base.ts";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<
     (typeof BaseCommand)["baseFlags"] & T["flags"]

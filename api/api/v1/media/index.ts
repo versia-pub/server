@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import { Attachment } from "~/packages/database-interface/attachment";
 import { ErrorSchema } from "~/types/api";
 

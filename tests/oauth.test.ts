@@ -6,7 +6,7 @@ import type {
     Application as ApiApplication,
     Token as ApiToken,
 } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "./utils";
+import { fakeRequest, getTestUsers } from "./utils.ts";
 
 let clientId: string;
 let clientSecret: string;

@@ -5,7 +5,7 @@ import { db } from "~/drizzle/db";
 import { Applications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 

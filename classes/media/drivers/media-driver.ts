@@ -3,7 +3,7 @@
  * @module MediaManager/Drivers
  */
 
-import type { UploadedFileMetadata } from "../media-manager";
+import type { UploadedFileMetadata } from "../media-manager.ts";
 
 /**
  * Represents a media storage driver.

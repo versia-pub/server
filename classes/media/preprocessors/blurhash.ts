@@ -1,6 +1,6 @@
 import { encode } from "blurhash";
 import sharp from "sharp";
-import type { MediaPreprocessor } from "./media-preprocessor";
+import type { MediaPreprocessor } from "./media-preprocessor.ts";
 
 export class BlurhashPreprocessor implements MediaPreprocessor {
     public async process(

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./privacy_policy";
+import { meta } from "./privacy_policy.ts";
 
 // /api/v1/instance/privacy_policy
 describe(meta.route, () => {

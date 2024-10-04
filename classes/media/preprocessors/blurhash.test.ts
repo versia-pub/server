@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import sharp from "sharp";
-import { BlurhashPreprocessor } from "./blurhash";
+import { BlurhashPreprocessor } from "./blurhash.ts";
 
 describe("BlurhashPreprocessor", () => {
     let preprocessor: BlurhashPreprocessor;

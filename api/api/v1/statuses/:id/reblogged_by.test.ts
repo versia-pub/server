@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./reblogged_by";
+import { meta } from "./reblogged_by.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();

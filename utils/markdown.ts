@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { markdownParse } from "~/classes/functions/status";
-import { sentry } from "./sentry";
+import { sentry } from "./sentry.ts";
 
 export const renderMarkdownInPath = async (
     path: string,

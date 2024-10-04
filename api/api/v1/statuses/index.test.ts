@@ -3,9 +3,9 @@ import type { Status as ApiStatus } from "@versia/client/types";
 import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 

@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, deleteUsers } = await getTestUsers(5);
 

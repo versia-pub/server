@@ -48,10 +48,10 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Attachment } from "./attachment";
-import { BaseInterface } from "./base";
-import { Emoji } from "./emoji";
-import { User } from "./user";
+import { Attachment } from "./attachment.ts";
+import { BaseInterface } from "./base.ts";
+import { Emoji } from "./emoji.ts";
+import { User } from "./user.ts";
 
 /**
  * Gives helpers to fetch notes from database in a nice format

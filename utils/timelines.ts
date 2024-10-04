@@ -5,7 +5,7 @@ import type {
 import type { Status, findManyNotes } from "~/classes/functions/status";
 import type { UserType, findManyUsers } from "~/classes/functions/user";
 import type { db } from "~/drizzle/db";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 
 export async function fetchTimeline<T extends UserType | Status | Notification>(
     model:

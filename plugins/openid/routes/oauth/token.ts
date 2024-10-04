@@ -3,7 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
-import type { PluginType } from "../..";
+import type { PluginType } from "../../index.ts";
 
 export const schemas = {
     json: z.object({

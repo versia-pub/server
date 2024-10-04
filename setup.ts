@@ -2,9 +2,9 @@ import { checkConfig } from "@/init";
 import { configureLoggers } from "@/loggers";
 import { getLogger } from "@logtape/logtape";
 import { setupDatabase } from "~/drizzle/db";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import { Note } from "~/packages/database-interface/note";
-import { searchManager } from "./classes/search/search-manager";
+import { searchManager } from "./classes/search/search-manager.ts";
 
 const timeAtStart = performance.now();
 

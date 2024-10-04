@@ -11,8 +11,8 @@ import {
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Relationships } from "~/drizzle/schema";
-import { BaseInterface } from "./base";
-import type { User } from "./user";
+import { BaseInterface } from "./base.ts";
+import type { User } from "./user.ts";
 
 export type RelationshipType = InferSelectModel<typeof Relationships>;
 

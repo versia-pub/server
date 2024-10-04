@@ -1,6 +1,6 @@
-import { Hooks } from "./hooks";
-import { Plugin } from "./plugin";
-import type { Manifest } from "./schema";
+import { Hooks } from "./hooks.ts";
+import { Plugin } from "./plugin.ts";
+import type { Manifest } from "./schema.ts";
 
 export type { Manifest };
 export { Plugin, Hooks };

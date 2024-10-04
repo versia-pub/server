@@ -4,12 +4,12 @@
  */
 
 import type { Config } from "~/packages/config-manager/config.type";
-import { DiskMediaDriver } from "./drivers/disk";
-import type { MediaDriver } from "./drivers/media-driver";
-import { S3MediaDriver } from "./drivers/s3";
-import { BlurhashPreprocessor } from "./preprocessors/blurhash";
-import { ImageConversionPreprocessor } from "./preprocessors/image-conversion";
-import type { MediaPreprocessor } from "./preprocessors/media-preprocessor";
+import { DiskMediaDriver } from "./drivers/disk.ts";
+import type { MediaDriver } from "./drivers/media-driver.ts";
+import { S3MediaDriver } from "./drivers/s3.ts";
+import { BlurhashPreprocessor } from "./preprocessors/blurhash.ts";
+import { ImageConversionPreprocessor } from "./preprocessors/image-conversion.ts";
+import type { MediaPreprocessor } from "./preprocessors/media-preprocessor.ts";
 
 /**
  * Manages media operations with support for different storage drivers and preprocessing plugins.

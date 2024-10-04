@@ -10,7 +10,7 @@ import {
 import { ZodError, type ZodTypeAny, z } from "zod";
 import { Plugin } from "~/packages/plugin-kit";
 import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";
-import { PluginLoader } from "./loader";
+import { PluginLoader } from "./loader.ts";
 
 const mockReaddir = jest.fn();
 const mockGetLogger = jest.fn(() => ({

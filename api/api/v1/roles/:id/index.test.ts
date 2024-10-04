@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
 import { Role } from "~/packages/database-interface/role";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 let role: Role;

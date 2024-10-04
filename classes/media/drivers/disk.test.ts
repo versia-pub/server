@@ -15,8 +15,8 @@ import {
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import type { Config } from "~/packages/config-manager/config.type";
-import type { getMediaHash } from "../media-hasher";
-import { DiskMediaDriver } from "./disk";
+import type { getMediaHash } from "../media-hasher.ts";
+import { DiskMediaDriver } from "./disk.ts";
 
 describe("DiskMediaDriver", () => {
     let diskDriver: DiskMediaDriver;

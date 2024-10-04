@@ -2,7 +2,7 @@ import type { LikeExtension } from "@versia/federation/types";
 import { type InferSelectModel, and, eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Likes, Notifications } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import type { Note } from "~/packages/database-interface/note";
 import type { User } from "~/packages/database-interface/user";
 

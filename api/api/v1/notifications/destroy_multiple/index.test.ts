@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const statuses = await getTestStatuses(40, users[0]);

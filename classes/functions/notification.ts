@@ -4,13 +4,13 @@ import { db } from "~/drizzle/db";
 import type { Notifications } from "~/drizzle/schema";
 import { Note } from "~/packages/database-interface/note";
 import { User } from "~/packages/database-interface/user";
-import type { StatusWithRelations } from "./status";
+import type { StatusWithRelations } from "./status.ts";
 import {
     type UserWithRelations,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
-} from "./user";
+} from "./user.ts";
 
 export type Notification = InferSelectModel<typeof Notifications>;
 

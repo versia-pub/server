@@ -54,12 +54,12 @@ import {
 } from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
-import { BaseInterface } from "./base";
-import { Emoji } from "./emoji";
-import { Instance } from "./instance";
-import type { Note } from "./note";
-import { Relationship } from "./relationship";
-import { Role } from "./role";
+import { BaseInterface } from "./base.ts";
+import { Emoji } from "./emoji.ts";
+import { Instance } from "./instance.ts";
+import type { Note } from "./note.ts";
+import { Relationship } from "./relationship.ts";
+import { Role } from "./role.ts";
 
 /**
  * Gives helpers to fetch users from database in a nice format

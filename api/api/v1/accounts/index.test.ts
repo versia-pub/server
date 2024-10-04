@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
 import { fakeRequest, getSolvedChallenge } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const username = randomString(10, "hex");
 const username2 = randomString(10, "hex");

@@ -14,8 +14,8 @@ import {
 } from "~/drizzle/schema";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
-import type { Application } from "./application";
-import type { Token } from "./token";
+import type { Application } from "./application.ts";
+import type { Token } from "./token.ts";
 
 export type UserType = InferSelectModel<typeof Users>;
 

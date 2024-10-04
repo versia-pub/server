@@ -5,7 +5,7 @@ import { withReplicas } from "drizzle-orm/pg-core";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Pool } from "pg";
 import { config } from "~/packages/config-manager";
-import * as schema from "./schema";
+import * as schema from "./schema.ts";
 
 const primaryDb = new Pool({
     host: config.database.host,

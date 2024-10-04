@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Config } from "~/packages/config-manager/config.type";
 import type { HonoEnv } from "~/types/api";
-import { debugResponse } from "./api";
+import { debugResponse } from "./api.ts";
 
 export const createServer = (config: Config, app: OpenAPIHono<HonoEnv>) =>
     Bun.serve({

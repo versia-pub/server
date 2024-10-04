@@ -1,5 +1,5 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { manifestSchema } from "./schema";
+import { manifestSchema } from "./schema.ts";
 
 const jsonSchema = zodToJsonSchema(manifestSchema);
 

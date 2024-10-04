@@ -11,8 +11,8 @@ import {
 } from "oauth4webapi";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
-import type { PluginType } from "../..";
-import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils";
+import type { PluginType } from "../../index.ts";
+import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
 
 export default (plugin: PluginType) => {
     plugin.registerRoute("/api/v1/sso", (app) => {

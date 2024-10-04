@@ -3,7 +3,7 @@ import { inArray } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Emojis } from "~/drizzle/schema";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let id = "";

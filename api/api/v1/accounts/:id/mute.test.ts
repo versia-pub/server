@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Relationship as ApiRelationship } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./mute";
+import { meta } from "./mute.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 

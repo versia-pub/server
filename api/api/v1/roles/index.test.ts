@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { ADMIN_ROLES } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import { Role } from "~/packages/database-interface/role";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, deleteUsers, tokens } = await getTestUsers(1);
 let role: Role;

@@ -5,9 +5,9 @@
 
 import { S3Client } from "@bradenmacdonald/s3-lite-client";
 import type { Config } from "~/packages/config-manager/config.type";
-import { getMediaHash } from "../media-hasher";
-import type { UploadedFileMetadata } from "../media-manager";
-import type { MediaDriver } from "./media-driver";
+import { getMediaHash } from "../media-hasher.ts";
+import type { UploadedFileMetadata } from "../media-manager.ts";
+import type { MediaDriver } from "./media-driver.ts";
 
 /**
  * Implements the MediaDriver interface for S3 storage.

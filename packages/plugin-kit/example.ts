@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Hooks } from "./hooks";
-import { Plugin } from "./plugin";
+import { Hooks } from "./hooks.ts";
+import { Plugin } from "./plugin.ts";
 
 const myPlugin = new Plugin(
     z.object({

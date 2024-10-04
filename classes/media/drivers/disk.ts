@@ -6,9 +6,9 @@
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
 import type { Config } from "~/packages/config-manager/config.type";
-import { getMediaHash } from "../media-hasher";
-import type { UploadedFileMetadata } from "../media-manager";
-import type { MediaDriver } from "./media-driver";
+import { getMediaHash } from "../media-hasher.ts";
+import type { UploadedFileMetadata } from "../media-manager.ts";
+import type { MediaDriver } from "./media-driver.ts";
 
 /**
  * Implements the MediaDriver interface for disk storage.

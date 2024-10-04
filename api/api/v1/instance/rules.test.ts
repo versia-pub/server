@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./rules";
+import { meta } from "./rules.ts";
 
 // /api/v1/instance/rules
 describe(meta.route, () => {

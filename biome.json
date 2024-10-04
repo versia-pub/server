@@ -9,7 +9,6 @@
             "all": true,
             "correctness": {
                 "noNodejsModules": "off",
-                "useImportExtensions": "off",
                 "noUndeclaredDependencies": "off"
             },
             "performance": {

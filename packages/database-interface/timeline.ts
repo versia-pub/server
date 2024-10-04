@@ -1,8 +1,8 @@
 import { type SQL, gt } from "drizzle-orm";
 import { Notes, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Note } from "./note";
-import { User } from "./user";
+import { Note } from "./note.ts";
+import { User } from "./user.ts";
 
 enum TimelineType {
     Note = "Note",

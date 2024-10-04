@@ -6,10 +6,10 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import type { Config } from "~/packages/config-manager/config.type";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
-import { DiskMediaDriver } from "./drivers/disk";
-import { S3MediaDriver } from "./drivers/s3";
-import { MediaManager } from "./media-manager";
-import type { ImageConversionPreprocessor } from "./preprocessors/image-conversion";
+import { DiskMediaDriver } from "./drivers/disk.ts";
+import { S3MediaDriver } from "./drivers/s3.ts";
+import { MediaManager } from "./media-manager.ts";
+import type { ImageConversionPreprocessor } from "./preprocessors/image-conversion.ts";
 
 describe("MediaManager", () => {
     let mediaManager: MediaManager;

@@ -13,15 +13,15 @@ import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import type { ValidationError } from "zod-validation-error";
 import pkg from "~/package.json" with { type: "application/json" };
-import { config } from "~/packages/config-manager/index";
-import { PluginLoader } from "./classes/plugin/loader";
-import { agentBans } from "./middlewares/agent-bans";
-import { bait } from "./middlewares/bait";
-import { boundaryCheck } from "./middlewares/boundary-check";
-import { ipBans } from "./middlewares/ip-bans";
-import { logger } from "./middlewares/logger";
-import { routes } from "./routes";
-import type { ApiRouteExports, HonoEnv } from "./types/api";
+import { config } from "~/packages/config-manager/index.ts";
+import { PluginLoader } from "./classes/plugin/loader.ts";
+import { agentBans } from "./middlewares/agent-bans.ts";
+import { bait } from "./middlewares/bait.ts";
+import { boundaryCheck } from "./middlewares/boundary-check.ts";
+import { ipBans } from "./middlewares/ip-bans.ts";
+import { logger } from "./middlewares/logger.ts";
+import { routes } from "./routes.ts";
+import type { ApiRouteExports, HonoEnv } from "./types/api.ts";
 
 export const appFactory = async () => {
     await configureLoggers();

@@ -1,10 +1,10 @@
 import { Hooks, Plugin } from "@versia/kit";
 import { z } from "zod";
-import authorizeRoute from "./routes/authorize";
-import tokenRevokeRoute from "./routes/oauth/revoke";
-import tokenRoute from "./routes/oauth/token";
-import ssoRoute from "./routes/sso";
-import ssoIdRoute from "./routes/sso/:id/index";
+import authorizeRoute from "./routes/authorize.ts";
+import tokenRevokeRoute from "./routes/oauth/revoke.ts";
+import tokenRoute from "./routes/oauth/token.ts";
+import ssoIdRoute from "./routes/sso/:id/index.ts";
+import ssoRoute from "./routes/sso/index.ts";
 
 const plugin = new Plugin(
     z.object({

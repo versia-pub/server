@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./extended_description";
+import { meta } from "./extended_description.ts";
 
 // /api/v1/instance/extended_description
 describe(meta.route, () => {

@@ -1,19 +1,19 @@
 import { configureLoggers } from "@/loggers";
 import { execute } from "@oclif/core";
-import EmojiAdd from "./commands/emoji/add";
-import EmojiDelete from "./commands/emoji/delete";
-import EmojiImport from "./commands/emoji/import";
-import EmojiList from "./commands/emoji/list";
-import FederationInstanceFetch from "./commands/federation/instance/fetch";
-import FederationUserFetch from "./commands/federation/user/fetch";
-import FederationUserFinger from "./commands/federation/user/finger";
-import IndexRebuild from "./commands/index/rebuild";
-import Start from "./commands/start";
-import UserCreate from "./commands/user/create";
-import UserDelete from "./commands/user/delete";
-import UserList from "./commands/user/list";
-import UserRefetch from "./commands/user/refetch";
-import UserReset from "./commands/user/reset";
+import EmojiAdd from "./commands/emoji/add.ts";
+import EmojiDelete from "./commands/emoji/delete.ts";
+import EmojiImport from "./commands/emoji/import.ts";
+import EmojiList from "./commands/emoji/list.ts";
+import FederationInstanceFetch from "./commands/federation/instance/fetch.ts";
+import FederationUserFetch from "./commands/federation/user/fetch.ts";
+import FederationUserFinger from "./commands/federation/user/finger.ts";
+import IndexRebuild from "./commands/index/rebuild.ts";
+import Start from "./commands/start.ts";
+import UserCreate from "./commands/user/create.ts";
+import UserDelete from "./commands/user/delete.ts";
+import UserList from "./commands/user/list.ts";
+import UserRefetch from "./commands/user/refetch.ts";
+import UserReset from "./commands/user/reset.ts";
 
 await configureLoggers();
 

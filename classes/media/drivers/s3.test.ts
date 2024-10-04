@@ -6,8 +6,8 @@
 import { type Mock, beforeEach, describe, expect, it, mock } from "bun:test";
 import type { S3Client } from "@bradenmacdonald/s3-lite-client";
 import type { Config } from "~/packages/config-manager/config.type";
-import type { getMediaHash } from "../media-hasher";
-import { S3MediaDriver } from "./s3";
+import type { getMediaHash } from "../media-hasher.ts";
+import { S3MediaDriver } from "./s3.ts";
 
 describe("S3MediaDriver", () => {
     let s3Driver: S3MediaDriver;

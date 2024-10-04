@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { fakeRequest, getTestUsers } from "./utils";
+import { fakeRequest, getTestUsers } from "./utils.ts";
 
 const { tokens, deleteUsers } = await getTestUsers(1);
 

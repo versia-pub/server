@@ -12,8 +12,8 @@ import {
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { RoleToUsers, Roles } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { BaseInterface } from "./base";
+import { config } from "~/packages/config-manager/index.ts";
+import { BaseInterface } from "./base.ts";
 
 export type RoleType = InferSelectModel<typeof Roles>;
 

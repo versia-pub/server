@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import sharp from "sharp";
 import type { Config } from "~/packages/config-manager/config.type";
-import { ImageConversionPreprocessor } from "./image-conversion";
+import { ImageConversionPreprocessor } from "./image-conversion.ts";
 
 describe("ImageConversionPreprocessor", () => {
     let preprocessor: ImageConversionPreprocessor;

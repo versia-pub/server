@@ -14,8 +14,8 @@ import {
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances } from "~/drizzle/schema";
-import { BaseInterface } from "./base";
-import { Instance } from "./instance";
+import { BaseInterface } from "./base.ts";
+import { Instance } from "./instance.ts";
 
 export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
     instance: InferSelectModel<typeof Instances> | null;

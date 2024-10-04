@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index";
+import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 const timeline = await getTestStatuses(10, users[0]);

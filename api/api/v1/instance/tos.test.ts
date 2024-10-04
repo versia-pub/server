@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./tos";
+import { meta } from "./tos.ts";
 
 // /api/v1/instance/tos
 describe(meta.route, () => {

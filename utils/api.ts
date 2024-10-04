@@ -26,7 +26,7 @@ import type { Application } from "~/classes/functions/application";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import type { User } from "~/packages/database-interface/user";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 

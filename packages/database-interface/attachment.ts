@@ -13,8 +13,8 @@ import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Attachments } from "~/drizzle/schema";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index";
-import { BaseInterface } from "./base";
+import { config } from "~/packages/config-manager/index.ts";
+import { BaseInterface } from "./base.ts";
 
 export type AttachmentType = InferSelectModel<typeof Attachments>;
 

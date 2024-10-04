@@ -31,17 +31,17 @@ import {
     type Notes,
     Users,
 } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
+import { config } from "~/packages/config-manager/index.ts";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
-import type { Application } from "./application";
+import type { Application } from "./application.ts";
 import {
     type UserWithInstance,
     type UserWithRelations,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
-} from "./user";
+} from "./user.ts";
 
 export type Status = InferSelectModel<typeof Notes>;
 

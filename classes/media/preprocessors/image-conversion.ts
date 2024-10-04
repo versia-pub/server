@@ -5,7 +5,7 @@
 
 import sharp from "sharp";
 import type { Config } from "~/packages/config-manager/config.type";
-import type { MediaPreprocessor } from "./media-preprocessor";
+import type { MediaPreprocessor } from "./media-preprocessor.ts";
 
 /**
  * Supported input media formats.

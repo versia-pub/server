@@ -17,9 +17,9 @@ import {
 } from "drizzle-orm";
 import { db } from "~/drizzle/db";
 import { Instances } from "~/drizzle/schema";
-import { config } from "~/packages/config-manager/index";
-import { BaseInterface } from "./base";
-import { User } from "./user";
+import { config } from "~/packages/config-manager/index.ts";
+import { BaseInterface } from "./base.ts";
+import { User } from "./user.ts";
 
 export type AttachmentType = InferSelectModel<typeof Instances>;
 

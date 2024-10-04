@@ -7,7 +7,7 @@ import { JOSEError } from "jose/errors";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
 import { User } from "~/packages/database-interface/user";
-import type { PluginType } from "../index";
+import type { PluginType } from "../index.ts";
 
 const schemas = {
     query: z.object({

@@ -3,7 +3,7 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { z } from "zod";
 import { type ZodError, fromZodError } from "zod-validation-error";
 import type { HonoEnv } from "~/types/api";
-import type { ServerHooks } from "./hooks";
+import type { ServerHooks } from "./hooks.ts";
 
 export type HonoPluginEnv<ConfigType extends z.ZodTypeAny> = HonoEnv & {
     Variables: {
