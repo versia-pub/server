@@ -31,7 +31,7 @@ enabled = true
 # Redis instance to be used as a timeline cache
 # Optional, can be the same as the queue instance
 host = "localhost"
-port = 40004
+port = 6380
 password = ""
 database = 1
 enabled = false
@@ -39,7 +39,7 @@ enabled = false
 [sonic]
 # If Sonic is not configured, search will not be enabled
 host = "localhost"
-port = 40007
+port = 7700
 password = ""
 enabled = true
 
@@ -187,17 +187,17 @@ convert_vector = false
 [validation]
 # Checks user data
 # Does not retroactively apply to previously entered data
-max_displayname_size = 50
-max_bio_size = 160
+max_displayname_size = 50         # Character length
+max_bio_size = 5000
 max_note_size = 5000
-max_avatar_size = 5_000_000
+max_avatar_size = 5_000_000       # Bytes
 max_header_size = 5_000_000
 max_media_size = 40_000_000
 max_media_attachments = 10
 max_media_description_size = 1000
 max_poll_options = 20
 max_poll_option_size = 500
-min_poll_duration = 60
+min_poll_duration = 60            # Seconds
 max_poll_duration = 1893456000
 max_username_size = 30
 max_field_count = 10
@@ -205,8 +205,7 @@ max_field_name_size = 1000
 max_field_value_size = 1000
 # Forbidden usernames, defaults are from Akkoma
 username_blacklist = [
-    ".well-known",
-    "~",
+    "well-known",
     "about",
     "activities",
     "api",
@@ -293,7 +292,7 @@ placeholder_style = "thumbs"
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
 # These changes will not retroactively apply to existing data before they were changed
-# For that, please use the CLI
+# For that, please use the CLI (in a later release)
 
 # These instances will not be federated with
 blocked = []

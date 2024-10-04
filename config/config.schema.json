@@ -578,7 +578,7 @@
                 },
                 "max_bio_size": {
                     "type": "integer",
-                    "default": 160
+                    "default": 5000
                 },
                 "max_note_size": {
                     "type": "integer",
@@ -642,8 +642,7 @@
                         "type": "string"
                     },
                     "default": [
-                        ".well-known",
-                        "~",
+                        "well-known",
                         "about",
                         "activities",
                         "api",
@@ -1932,7 +1931,7 @@
             "additionalProperties": false,
             "default": {
                 "max_displayname_size": 50,
-                "max_bio_size": 160,
+                "max_bio_size": 5000,
                 "max_note_size": 5000,
                 "max_avatar_size": 5000000,
                 "max_header_size": 5000000,
@@ -1948,8 +1947,7 @@
                 "max_field_name_size": 1000,
                 "max_field_value_size": 1000,
                 "username_blacklist": [
-                    ".well-known",
-                    "~",
+                    "well-known",
                     "about",
                     "activities",
                     "api",

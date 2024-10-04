@@ -283,7 +283,7 @@ export const configValidator = z.object({
     validation: z
         .object({
             max_displayname_size: z.number().int().default(50),
-            max_bio_size: z.number().int().default(160),
+            max_bio_size: z.number().int().default(5000),
             max_note_size: z.number().int().default(5000),
             max_avatar_size: z.number().int().default(5000000),
             max_header_size: z.number().int().default(5000000),
@@ -301,8 +301,7 @@ export const configValidator = z.object({
             username_blacklist: z
                 .array(z.string())
                 .default([
-                    ".well-known",
-                    "~",
+                    "well-known",
                     "about",
                     "activities",
                     "api",
@@ -371,7 +370,7 @@ export const configValidator = z.object({
         })
         .default({
             max_displayname_size: 50,
-            max_bio_size: 160,
+            max_bio_size: 5000,
             max_note_size: 5000,
             max_avatar_size: 5000000,
             max_header_size: 5000000,
@@ -387,8 +386,7 @@ export const configValidator = z.object({
             max_field_name_size: 1000,
             max_field_value_size: 1000,
             username_blacklist: [
-                ".well-known",
-                "~",
+                "well-known",
                 "about",
                 "activities",
                 "api",
