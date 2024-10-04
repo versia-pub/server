@@ -29,7 +29,7 @@ WORKDIR /temp/dist
 FROM oven/bun:1.1.29-alpine
 
 # Install libstdc++ for Bun and create app directory
-RUN apk add --no-cache libstdc++^14.0.0 &&
+RUN apk add --no-cache libstdc++^14.0.0 && \
     mkdir -p /app
 
 COPY --from=build /temp/dist /app/dist
