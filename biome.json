@@ -8,8 +8,7 @@
         "rules": {
             "all": true,
             "correctness": {
-                "noNodejsModules": "off",
-                "noUndeclaredDependencies": "off"
+                "noNodejsModules": "off"
             },
             "performance": {
                 "useTopLevelRegex": "off"
