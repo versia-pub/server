@@ -4007,7 +4007,41 @@
         },
         "plugins": {
             "type": "object",
-            "additionalProperties": {}
+            "properties": {
+                "autoload": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "overrides": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "default": []
+                        },
+                        "disabled": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            },
+                            "default": []
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "enabled": [],
+                        "disabled": []
+                    }
+                },
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            },
+            "additionalProperties": false
         }
     },
     "required": [
@@ -4019,7 +4053,8 @@
         "http",
         "smtp",
         "filters",
-        "ratelimits"
+        "ratelimits",
+        "plugins"
     ],
     "additionalProperties": false,
     "$schema": "http://json-schema.org/draft-07/schema#"

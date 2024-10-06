@@ -119,19 +119,24 @@ export const appFactory = async () => {
 
     const loader = new PluginLoader();
 
-    const plugins = await loader.loadPlugins(join(process.cwd(), "plugins"));
+    const plugins = await loader.loadPlugins(
+        join(process.cwd(), "plugins"),
+        config.plugins?.autoload,
+        config.plugins?.overrides.enabled,
+        config.plugins?.overrides.disabled,
+    );
 
     for (const data of plugins) {
         serverLogger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
         try {
             // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
             await data.plugin["_loadConfig"](
-                config.plugins?.[data.manifest.name],
+                config.plugins?.config?.[data.manifest.name],
             );
         } catch (e) {
             serverLogger.fatal`Plugin configuration is invalid: ${chalk.redBright(e as ValidationError)}`;
             serverLogger.fatal`Put your configuration at ${chalk.blueBright(
-                "plugins.<plugin-name>",
+                "plugins.config.<plugin-name>",
             )}`;
             throw new Error("Plugin configuration is invalid");
         }

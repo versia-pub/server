@@ -162,12 +162,42 @@ export class PluginLoader {
      */
     public async loadPlugins(
         dir: string,
+        autoload: boolean,
+        enabled?: string[],
+        disabled?: string[],
     ): Promise<{ manifest: Manifest; plugin: Plugin<ZodTypeAny> }[]> {
         const plugins = await PluginLoader.findPlugins(dir);
+
+        const enabledOn = (enabled?.length ?? 0) > 0;
+        const disabledOn = (disabled?.length ?? 0) > 0;
+
+        if (enabledOn && disabledOn) {
+            this.logger
+                .fatal`Both enabled and disabled lists are specified. Only one of them can be used.`;
+            throw new Error("Invalid configuration");
+        }
 
         return Promise.all(
             plugins.map(async (plugin) => {
                 const manifest = await this.parseManifest(dir, plugin);
+
+                // If autoload is disabled, only load plugins explicitly enabled
+                if (
+                    !(autoload || enabledOn || enabled?.includes(manifest.name))
+                ) {
+                    return null;
+                }
+
+                // If enabled is specified, only load plugins in the enabled list
+                // If disabled is specified, only load plugins not in the disabled list
+                if (enabledOn && !enabled?.includes(manifest.name)) {
+                    return null;
+                }
+
+                if (disabled?.includes(manifest.name)) {
+                    return null;
+                }
+
                 const pluginInstance = await this.loadPlugin(
                     dir,
                     `${plugin}/index`,
@@ -175,6 +205,6 @@ export class PluginLoader {
 
                 return { manifest, plugin: pluginInstance };
             }),
-        );
+        ).then((data) => data.filter((d) => d !== null));
     }
 }

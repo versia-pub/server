@@ -287,6 +287,6 @@ max_coeff = 1.0
 
 [plugins]
 
-[plugins."@versia/openid".keys]
+[plugins.config."@versia/openid".keys]
 private = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl"
 public = "MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="

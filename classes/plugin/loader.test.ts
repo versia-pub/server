@@ -201,7 +201,7 @@ describe("PluginLoader", () => {
             default: mockPlugin,
         }));
 
-        const plugins = await pluginLoader.loadPlugins("/some/path");
+        const plugins = await pluginLoader.loadPlugins("/some/path", true);
         expect(plugins).toEqual([
             {
                 manifest: manifestContent,

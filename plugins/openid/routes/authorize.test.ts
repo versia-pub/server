@@ -14,7 +14,10 @@ const scope = "openid profile email";
 const secret = "test-secret";
 const privateKey = await crypto.subtle.importKey(
     "pkcs8",
-    Buffer.from(config.plugins?.["@versia/openid"].keys.private, "base64"),
+    Buffer.from(
+        config.plugins?.config?.["@versia/openid"].keys.private,
+        "base64",
+    ),
     "Ed25519",
     false,
     ["sign"],
