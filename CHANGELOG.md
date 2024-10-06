@@ -46,11 +46,11 @@ A new plugin system for extending Versia Server has been added in this release!
 
 Plugins using this framework support:
 
-- [x] Plugin hotswapping
+- [x] Plugin hotswapping and hotreloading
 - [x] Manifest files (JSON, JSON5, JSONC supported) with metadata (JSON schema provided)
 - [x] Installation by dropping a folder into the plugins/ directory
 - [x] Support for plugins having their own NPM dependencies
-- [x] Support for storing plugins' configuration in the main config.toml
+- [x] Support for storing plugins' configuration in the main config.toml (single source of truth)
 - [x] Schema-based strict config validation (plugins can specify their own schemas)
 - [x] Full type-safety
 - [x] Custom hooks
@@ -61,6 +61,7 @@ Plugins using this framework support:
 - [x] Automatic user input validation for API routes with schemas (specify a schema for the route and the server will take care of validating everything)
 - [x] Access to internal database abstractions
 - [x] Support for sending raw SQL to database (type-safe!)
+- [x] Plugin autoload on startup with override controls (enable/disable)
 
 The new `@versia/kit` NPM/JSR package is available for plugin developers.
 
