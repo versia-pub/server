@@ -26,8 +26,6 @@ password = ""
 enabled = false
 
 [signups]
-# URL of your Terms of Service
-tos_url = "https://example.com/tos"
 # Whether to enable registrations or not
 registration = true
 rules = [
@@ -208,38 +206,28 @@ language = "en"
 # Default header, must be a valid URL or ""
 # header = ""
 
-[activitypub]
-# Use ActivityPub Tombstones instead of deleting objects
-use_tombstones = true
-# Fetch all members of collections (followers, following, etc) when receiving them
-# WARNING: This can be a lot of data, and is not recommended
-fetch_all_collection_members = false # NOT IMPLEMENTED
+[federation]
+# This is a list of domain names, such as "mastodon.social" or "pleroma.site"
+# These changes will not retroactively apply to existing data before they were changed
+# For that, please use the CLI (in a later release)
 
-# The following values must be instance domain names without "https" or glob patterns
-# Rejects all activities from these instances (fediblocking)
-reject_activities = []
-# Force posts from this instance to be followers only
-force_followers_only = [] # NOT IMPLEMENTED
-# Discard all reports from these instances
-discard_reports = [] # NOT IMPLEMENTED
-# Discard all deletes from these instances
-discard_deletes = []
-# Discard all updates (edits) from these instances
-discard_updates = []
-# Discard all banners from these instances
-discard_banners = [] # NOT IMPLEMENTED
-# Discard all avatars from these instances
-discard_avatars = [] # NOT IMPLEMENTED
-# Discard all follow requests from these instances
-discard_follows = []
-# Force set these instances' media as sensitive
-force_sensitive = [] # NOT IMPLEMENTED
-# Remove theses instances' media
-remove_media = [] # NOT IMPLEMENTED
+# These instances will not be federated with
+blocked = []
+# These instances' data will only be shown to followers, not in public timelines
+followers_only = []
 
-# Whether to verify HTTP signatures for every request (warning: can slow down your server
-# significantly depending on processing power)
-authorized_fetch = false
+[federation.discard]
+# These objects will be discarded when received from these instances
+reports = []
+deletes = []
+updates = []
+media = []
+follows = []
+# If instance reactions are blocked, likes will also be discarded
+likes = []
+reactions = []
+banners = []
+avatars = []
 
 [instance]
 name = "Versia"
@@ -251,18 +239,20 @@ description = "A test instance of Versia Server"
 
 
 [filters]
-# Drop notes with these regex filters (only applies to new activities)
-note_filters = [
+# Regex filters for federated and local data
+# Drops data matching the filters
+# Does not apply retroactively to existing data
+
+# Note contents
+note_content = [
     # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
     # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
 ]
-# Drop users with these regex filters (only applies to new activities)
-username_filters = []
-# Drop users with these regex filters (only applies to new activities)
-displayname_filters = []
-# Drop users with these regex filters (only applies to new activities)
-bio_filters = []
-emoji_filters = [] # NOT IMPLEMENTED
+emoji = []
+# These will drop users matching the filters
+username = []
+displayname = []
+bio = []
 
 [logging]
 # Log all requests (warning: this is a lot of data)
@@ -276,14 +266,17 @@ log_ip = false
 log_filters = true
 
 [ratelimits]
+# These settings apply to every route at once
 # Amount to multiply every route's duration by
 duration_coeff = 1.0
-# Amount to multiply every route's max by
+# Amount to multiply every route's max requests per [duration] by
 max_coeff = 1.0
 
-[custom_ratelimits]
+[ratelimits.custom]
 # Add in any API route in this style here
-"/api/v1/timelines/public" = { duration = 60, max = 200 }
+# Applies before the global ratelimit changes
+# "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
+# "/api/v1/timelines/public" = { duration = 60, max = 200 }
 
 [plugins]
 
