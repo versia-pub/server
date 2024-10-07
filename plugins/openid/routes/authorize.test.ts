@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
-import { eq } from "drizzle-orm";
+import { db } from "@versia/kit/db";
+import { eq } from "@versia/kit/drizzle";
+import { Applications, RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
-import { db } from "~/drizzle/db";
-import { Applications, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 

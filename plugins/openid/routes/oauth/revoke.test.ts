@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Applications, Tokens } from "~/drizzle/schema";
+import { db } from "@versia/kit/db";
+import { eq } from "@versia/kit/drizzle";
+import { Applications, Tokens } from "@versia/kit/tables";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);
