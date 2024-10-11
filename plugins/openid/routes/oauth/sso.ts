@@ -119,8 +119,8 @@ export default (plugin: PluginType) => {
                         {
                             client_id: issuer.client_id,
                             redirect_uri: `${oauthRedirectUri(
-                                issuerId,
                                 context.get("config").http.base_url,
+                                issuerId,
                             )}?flow=${newFlow.id}`,
                             response_type: "code",
                             scope: "openid profile email",

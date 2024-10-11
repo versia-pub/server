@@ -164,8 +164,8 @@ export default (plugin: PluginType) => {
                 const codeVerifier = generateRandomCodeVerifier();
 
                 const redirectUri = oauthRedirectUri(
-                    issuerId,
                     context.get("config").http.base_url,
+                    issuerId,
                 );
 
                 const application = (
