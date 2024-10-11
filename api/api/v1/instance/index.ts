@@ -55,8 +55,8 @@ export default apiRoute((app) =>
 
         const oidcConfig = config.plugins?.config?.["@versia/openid"] as
             | {
-                  forced: boolean;
-                  providers: {
+                  forced?: boolean;
+                  providers?: {
                       id: string;
                       name: string;
                       icon: string;
@@ -109,7 +109,7 @@ export default apiRoute((app) =>
             sso: {
                 forced: oidcConfig?.forced ?? false,
                 providers:
-                    oidcConfig?.providers.map((p) => ({
+                    oidcConfig?.providers?.map((p) => ({
                         name: p.name,
                         icon: proxyUrl(p.icon) || undefined,
                         id: p.id,
