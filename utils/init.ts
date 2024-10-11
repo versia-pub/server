@@ -4,8 +4,6 @@ import type { Config } from "~/packages/config-manager";
 import { User } from "~/packages/database-interface/user";
 
 export const checkConfig = async (config: Config) => {
-    await checkOidcConfig(config);
-
     await checkFederationConfig(config);
 
     await checkHttpProxyConfig(config);
@@ -64,64 +62,6 @@ const checkChallengeConfig = async (config: Config) => {
 
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
-};
-
-const checkOidcConfig = async (config: Config) => {
-    const logger = getLogger("server");
-
-    if (!(config.oidc.keys?.private && config.oidc.keys?.public)) {
-        logger.fatal`The OpenID keys are not set in the config`;
-        logger.fatal`Below are generated key for you to copy in the config at oidc.keys`;
-
-        // Generate a key for them
-        const keys = await crypto.subtle.generateKey("Ed25519", true, [
-            "sign",
-            "verify",
-        ]);
-
-        const privateKey = Buffer.from(
-            await crypto.subtle.exportKey("pkcs8", keys.privateKey),
-        ).toString("base64");
-
-        const publicKey = Buffer.from(
-            await crypto.subtle.exportKey("spki", keys.publicKey),
-        ).toString("base64");
-
-        logger.fatal`Generated keys:`;
-        logger.fatal`Private key: ${chalk.gray(privateKey)}`;
-        logger.fatal`Public key: ${chalk.gray(publicKey)}`;
-
-        // Hang until Ctrl+C is pressed
-        await Bun.sleep(Number.POSITIVE_INFINITY);
-    }
-
-    // Try and import the key
-    const privateKey = await crypto.subtle
-        .importKey(
-            "pkcs8",
-            Buffer.from(config.oidc.keys?.private ?? "", "base64"),
-            "Ed25519",
-            false,
-            ["sign"],
-        )
-        .catch((e) => e as Error);
-
-    // Try and import the key
-    const publicKey = await crypto.subtle
-        .importKey(
-            "spki",
-            Buffer.from(config.oidc.keys?.public ?? "", "base64"),
-            "Ed25519",
-            false,
-            ["verify"],
-        )
-        .catch((e) => e as Error);
-
-    if (privateKey instanceof Error || publicKey instanceof Error) {
-        throw new Error(
-            "The OpenID keys could not be imported! You may generate a new one by removing the old ones from config and restarting the server (this will invalidate all current JWTs).",
-        );
     }
 };
 

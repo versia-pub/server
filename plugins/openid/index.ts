@@ -2,6 +2,7 @@ import { Hooks, Plugin } from "@versia/kit";
 import { z } from "zod";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
+import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";
 import tokenRevokeRoute from "./routes/oauth/revoke.ts";
 import ssoLoginRoute from "./routes/oauth/sso.ts";
 import tokenRoute from "./routes/oauth/token.ts";
@@ -78,6 +79,7 @@ tokenRoute(plugin);
 tokenRevokeRoute(plugin);
 jwksRoute(plugin);
 ssoLoginRoute(plugin);
+ssoLoginCallbackRoute(plugin);
 
 export type PluginType = typeof plugin;
 export default plugin;

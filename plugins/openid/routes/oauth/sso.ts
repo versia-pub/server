@@ -1,12 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
+import { db } from "@versia/kit/db";
+import { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
-import { db } from "~/drizzle/db.ts";
-import { OpenIdLoginFlows } from "~/drizzle/schema.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 
