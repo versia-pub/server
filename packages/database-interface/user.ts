@@ -24,7 +24,6 @@ import {
     type InferInsertModel,
     type SQL,
     and,
-    count,
     countDistinct,
     desc,
     eq,
@@ -327,15 +326,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    static async getCount() {
-        return (
-            await db
-                .select({
-                    count: count(),
-                })
-                .from(Users)
-                .where(isNull(Users.instanceId))
-        )[0].count;
+    static getCount(): Promise<number> {
+        return db.$count(Users, isNull(Users.instanceId));
     }
 
     static async getActiveInPeriod(milliseconds: number) {

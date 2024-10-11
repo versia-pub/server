@@ -4,7 +4,7 @@ import {
     Collection as CollectionSchema,
     Note as NoteSchema,
 } from "@versia/federation/schemas";
-import { and, count, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
@@ -102,19 +102,13 @@ export default apiRoute((app) =>
             NOTES_PER_PAGE * (pageNumber - 1),
         );
 
-        const totalNotes = (
-            await db
-                .select({
-                    count: count(),
-                })
-                .from(Notes)
-                .where(
-                    and(
-                        eq(Notes.authorId, uuid),
-                        inArray(Notes.visibility, ["public", "unlisted"]),
-                    ),
-                )
-        )[0].count;
+        const totalNotes = await db.$count(
+            Notes,
+            and(
+                eq(Notes.authorId, uuid),
+                inArray(Notes.visibility, ["public", "unlisted"]),
+            ),
+        );
 
         const json = {
             first: new URL(

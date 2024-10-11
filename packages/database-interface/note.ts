@@ -18,7 +18,6 @@ import {
     type InferInsertModel,
     type SQL,
     and,
-    count,
     desc,
     eq,
     inArray,
@@ -349,16 +348,10 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
      * @returns The number of notes in the database
      */
     static async getCount(): Promise<number> {
-        return (
-            await db
-                .select({
-                    count: count(),
-                })
-                .from(Notes)
-                .where(
-                    sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NULL)`,
-                )
-        )[0].count;
+        return await db.$count(
+            Notes,
+            sql`EXISTS (SELECT 1 FROM "Users" WHERE "Users"."id" = ${Notes.authorId} AND "Users"."instanceId" IS NULL)`,
+        );
     }
 
     /**

@@ -10,7 +10,6 @@ import {
     type InferInsertModel,
     type InferSelectModel,
     type SQL,
-    count,
     desc,
     eq,
     inArray,
@@ -340,13 +339,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         });
     }
 
-    static async getCount() {
-        return (
-            await db
-                .select({
-                    count: count(),
-                })
-                .from(Instances)
-        )[0].count;
+    static getCount(): Promise<number> {
+        return db.$count(Instances);
     }
 }

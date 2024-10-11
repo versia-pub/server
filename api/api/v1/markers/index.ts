@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
-import { and, count, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "~/drizzle/db";
 import { Markers, RolePermissions } from "~/drizzle/schema";
@@ -140,22 +140,15 @@ export default apiRoute((app) => {
                     ),
             });
 
-            const totalCount = await db
-                .select({
-                    count: count(),
-                })
-                .from(Markers)
-                .where(
-                    and(
-                        eq(Markers.userId, user.id),
-                        eq(Markers.timeline, "home"),
-                    ),
-                );
+            const totalCount = await db.$count(
+                Markers,
+                and(eq(Markers.userId, user.id), eq(Markers.timeline, "home")),
+            );
 
             if (found?.noteId) {
                 markers.home = {
                     last_read_id: found.noteId,
-                    version: totalCount[0].count,
+                    version: totalCount,
                     updated_at: new Date(found.createdAt).toISOString(),
                 };
             }
@@ -170,22 +163,18 @@ export default apiRoute((app) => {
                     ),
             });
 
-            const totalCount = await db
-                .select({
-                    count: count(),
-                })
-                .from(Markers)
-                .where(
-                    and(
-                        eq(Markers.userId, user.id),
-                        eq(Markers.timeline, "notifications"),
-                    ),
-                );
+            const totalCount = await db.$count(
+                Markers,
+                and(
+                    eq(Markers.userId, user.id),
+                    eq(Markers.timeline, "notifications"),
+                ),
+            );
 
             if (found?.notificationId) {
                 markers.notifications = {
                     last_read_id: found.notificationId,
-                    version: totalCount[0].count,
+                    version: totalCount,
                     updated_at: new Date(found.createdAt).toISOString(),
                 };
             }
@@ -222,21 +211,14 @@ export default apiRoute((app) => {
                     .returning()
             )[0];
 
-            const totalCount = await db
-                .select({
-                    count: count(),
-                })
-                .from(Markers)
-                .where(
-                    and(
-                        eq(Markers.userId, user.id),
-                        eq(Markers.timeline, "home"),
-                    ),
-                );
+            const totalCount = await db.$count(
+                Markers,
+                and(eq(Markers.userId, user.id), eq(Markers.timeline, "home")),
+            );
 
             markers.home = {
                 last_read_id: homeId,
-                version: totalCount[0].count,
+                version: totalCount,
                 updated_at: new Date(insertedMarker.createdAt).toISOString(),
             };
         }
@@ -253,21 +235,17 @@ export default apiRoute((app) => {
                     .returning()
             )[0];
 
-            const totalCount = await db
-                .select({
-                    count: count(),
-                })
-                .from(Markers)
-                .where(
-                    and(
-                        eq(Markers.userId, user.id),
-                        eq(Markers.timeline, "notifications"),
-                    ),
-                );
+            const totalCount = await db.$count(
+                Markers,
+                and(
+                    eq(Markers.userId, user.id),
+                    eq(Markers.timeline, "notifications"),
+                ),
+            );
 
             markers.notifications = {
                 last_read_id: notificationsId,
-                version: totalCount[0].count,
+                version: totalCount,
                 updated_at: new Date(insertedMarker.createdAt).toISOString(),
             };
         }
