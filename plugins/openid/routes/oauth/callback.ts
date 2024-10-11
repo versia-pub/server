@@ -38,6 +38,7 @@ export default (plugin: PluginType) => {
                 summary: "SSO callback",
                 description:
                     "After the user has authenticated to an external OpenID provider, they are redirected here to complete the OAuth flow and get a code",
+                middleware: [plugin.middleware],
                 request: {
                     query: schemas.query,
                     params: schemas.param,

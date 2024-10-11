@@ -20,7 +20,7 @@ export default (plugin: PluginType) => {
                 method: "post",
                 path: "/oauth/revoke",
                 summary: "Revoke token",
-                middleware: [jsonOrForm()],
+                middleware: [jsonOrForm(), plugin.middleware],
                 request: {
                     body: {
                         content: {

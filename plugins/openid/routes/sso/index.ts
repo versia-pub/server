@@ -98,6 +98,7 @@ export default (plugin: PluginType) => {
                             required: [RolePermissions.OAuth],
                         },
                     ),
+                    plugin.middleware,
                 ],
                 request: {
                     body: {

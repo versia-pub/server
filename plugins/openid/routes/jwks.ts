@@ -36,6 +36,7 @@ export default (plugin: PluginType) => {
                     auth({
                         required: false,
                     }),
+                    plugin.middleware,
                 ],
             }),
             async (context) => {

@@ -45,7 +45,7 @@ export default (plugin: PluginType) => {
                 method: "post",
                 path: "/oauth/token",
                 summary: "Get token",
-                middleware: [jsonOrForm()],
+                middleware: [jsonOrForm(), plugin.middleware],
                 request: {
                     body: {
                         content: {
