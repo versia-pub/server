@@ -110,7 +110,30 @@ const returnError = (context: Context, error: string, description: string) => {
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        if (config.oidc.forced) {
+        const oidcConfig = config.plugins?.config?.["@versia/openid"] as
+            | {
+                  forced: boolean;
+                  providers: {
+                      id: string;
+                      name: string;
+                      icon: string;
+                  }[];
+                  keys: {
+                      private: string;
+                      public: string;
+                  };
+              }
+            | undefined;
+
+        if (!oidcConfig) {
+            return returnError(
+                context,
+                "invalid_request",
+                "The OpenID Connect plugin is not enabled on this instance. Cannot process login request.",
+            );
+        }
+
+        if (oidcConfig?.forced) {
             return returnError(
                 context,
                 "invalid_request",
@@ -156,7 +179,7 @@ export default apiRoute((app) =>
         // Try and import the key
         const privateKey = await crypto.subtle.importKey(
             "pkcs8",
-            Buffer.from(config.oidc.keys?.private ?? "", "base64"),
+            Buffer.from(oidcConfig?.keys?.private ?? "", "base64"),
             "Ed25519",
             false,
             ["sign"],

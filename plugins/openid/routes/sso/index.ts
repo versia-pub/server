@@ -69,7 +69,9 @@ export default (plugin: PluginType) => {
                     );
                 }
 
-                const linkedAccounts = await user.getLinkedOidcAccounts();
+                const linkedAccounts = await user.getLinkedOidcAccounts(
+                    context.get("pluginConfig").providers,
+                );
 
                 return context.json(
                     linkedAccounts.map((account) => ({

@@ -398,7 +398,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.update(this.data);
     }
 
-    public async getLinkedOidcAccounts(): Promise<
+    public async getLinkedOidcAccounts(
+        providers: {
+            id: string;
+            name: string;
+            url: string;
+            icon?: string;
+        }[],
+    ): Promise<
         {
             id: string;
             name: string;
@@ -414,7 +421,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         return accounts
             .map((account) => {
-                const issuer = config.oidc.providers.find(
+                const issuer = providers.find(
                     (provider) => provider.id === account.issuerId,
                 );
 

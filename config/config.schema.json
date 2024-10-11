@@ -185,75 +185,6 @@
             },
             "additionalProperties": false
         },
-        "oidc": {
-            "type": "object",
-            "properties": {
-                "forced": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "allow_registration": {
-                    "type": "boolean",
-                    "default": true
-                },
-                "providers": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "id": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "url": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "client_id": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "client_secret": {
-                                "type": "string",
-                                "minLength": 1
-                            },
-                            "icon": {
-                                "type": "string",
-                                "minLength": 1
-                            }
-                        },
-                        "required": [
-                            "name",
-                            "id",
-                            "url",
-                            "client_id",
-                            "client_secret"
-                        ],
-                        "additionalProperties": false
-                    },
-                    "default": []
-                },
-                "keys": {
-                    "type": "object",
-                    "properties": {
-                        "public": {
-                            "type": "string",
-                            "minLength": 1
-                        },
-                        "private": {
-                            "type": "string",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false
-                }
-            },
-            "additionalProperties": false
-        },
         "http": {
             "type": "object",
             "properties": {
@@ -4049,12 +3980,10 @@
         "redis",
         "sonic",
         "signups",
-        "oidc",
         "http",
         "smtp",
         "filters",
-        "ratelimits",
-        "plugins"
+        "ratelimits"
     ],
     "additionalProperties": false,
     "$schema": "http://json-schema.org/draft-07/schema#"

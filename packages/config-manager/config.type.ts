@@ -120,33 +120,6 @@ export const configValidator = z
                 rules: z.array(z.string()).default([]),
             })
             .strict(),
-        oidc: z
-            .object({
-                forced: z.boolean().default(false),
-                allow_registration: z.boolean().default(true),
-                providers: z
-                    .array(
-                        z
-                            .object({
-                                name: z.string().min(1),
-                                id: z.string().min(1),
-                                url: z.string().min(1),
-                                client_id: z.string().min(1),
-                                client_secret: z.string().min(1),
-                                icon: z.string().min(1).optional(),
-                            })
-                            .strict(),
-                    )
-                    .default([]),
-                keys: z
-                    .object({
-                        public: z.string().min(1).optional(),
-                        private: z.string().min(1).optional(),
-                    })
-                    .strict()
-                    .optional(),
-            })
-            .strict(),
         http: z
             .object({
                 base_url: z.string().min(1).default("http://versia.social"),
@@ -727,7 +700,8 @@ export const configValidator = z
                     ),
                 config: z.record(z.string(), z.any()).optional(),
             })
-            .strict(),
+            .strict()
+            .optional(),
     })
     .strict();
 

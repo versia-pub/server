@@ -53,6 +53,17 @@ export default apiRoute((app) =>
 
         const knownDomainsCount = await Instance.getCount();
 
+        const oidcConfig = config.plugins?.config?.["@versia/openid"] as
+            | {
+                  forced: boolean;
+                  providers: {
+                      id: string;
+                      name: string;
+                      icon: string;
+                  }[];
+              }
+            | undefined;
+
         // TODO: fill in more values
         return context.json({
             approval_required: false,
@@ -94,13 +105,15 @@ export default apiRoute((app) =>
             },
             version: "4.3.0-alpha.3+glitch",
             versia_version: version,
+            // TODO: Put into plugin directly
             sso: {
-                forced: false,
-                providers: config.oidc.providers.map((p) => ({
-                    name: p.name,
-                    icon: proxyUrl(p.icon) || undefined,
-                    id: p.id,
-                })),
+                forced: oidcConfig?.forced ?? false,
+                providers:
+                    oidcConfig?.providers.map((p) => ({
+                        name: p.name,
+                        icon: proxyUrl(p.icon) || undefined,
+                        id: p.id,
+                    })) ?? [],
             },
             contact_account: contactAccount?.toApi() || undefined,
         } satisfies Record<string, unknown> & {

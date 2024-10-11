@@ -53,35 +53,6 @@ rules = [
     "Don't post illegal content",
 ]
 
-[oidc]
-# Run Versia Server with this value missing to generate a new key
-# [oidc.keys]
-# public = "XXXX"
-# private = "XXXX"
-
-# If enabled, Versia Server will require users to log in with an OAuth provider
-forced = false
-
-# Allow registration with OAuth providers
-# Overriden by the signups.registration setting
-allow_registration = true
-
-# The provider MUST support OpenID Connect with .well-known discovery
-# Most notably, GitHub does not support this
-# Redirect URLs in your OAuth provider can be set to this:
-# <base_url>/oauth/sso/<provider_id>/callback*
-# The asterisk is important, as it allows for any query parameters to be passed
-# Authentik for example uses regex so it can be set to (regex):
-# <base_url>/oauth/sso/<provider_id>/callback.*
-# [[oidc.providers]]
-# name = "CPlusPatch ID"
-# id = "cpluspatch-id"
-# This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)
-# url = "https://id.cpluspatch.com/application/o/versia-testing/"
-# client_id = "XXXX"
-# client_secret = "XXXXX"
-# icon = "https://cpluspatch.com/images/icons/logo.svg"
-
 [http]
 # The full URL Versia Server will be reachable by (paths are not supported)
 base_url = "https://versia.localhost:9900"
@@ -424,3 +395,41 @@ max_coeff = 1.0
 # Applies before the global ratelimit changes
 # "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
 # "/api/v1/timelines/public" = { duration = 60, max = 200 }
+
+[plugins]
+# Whether to automatically load all plugins in the plugins directory
+autoload = true
+
+# Override for autoload
+[plugins.overrides]
+enabled = []
+disabled = []
+
+[plugins.config."@versia/openid"]
+# If enabled, Versia will require users to log in with an OAuth provider
+forced = false
+
+# Allow registration with OAuth providers
+# Overriden by the signups.registration setting
+allow_registration = true
+
+# [plugins.config."@versia/openid".keys]
+# Run Versia Server with those values missing to generate a new key
+# public = ""
+# private = ""
+
+# The provider MUST support OpenID Connect with .well-known discovery
+# Most notably, GitHub does not support this
+# Redirect URLs in your OAuth provider can be set to this:
+# <base_url>/oauth/sso/<provider_id>/callback*
+# The asterisk is important, as it allows for any query parameters to be passed
+# Authentik for example uses regex so it can be set to (regex):
+# <base_url>/oauth/sso/<provider_id>/callback.*
+# [[oidc.providers]]
+# name = "CPlusPatch ID"
+# id = "cpluspatch-id"
+# This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)
+# url = "https://id.cpluspatch.com/application/o/versia-testing/"
+# client_id = "XXXX"
+# client_secret = "XXXXX"
+# icon = "https://cpluspatch.com/images/icons/logo.svg"

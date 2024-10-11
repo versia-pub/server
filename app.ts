@@ -121,7 +121,7 @@ export const appFactory = async () => {
 
     const plugins = await loader.loadPlugins(
         join(process.cwd(), "plugins"),
-        config.plugins?.autoload,
+        config.plugins?.autoload ?? true,
         config.plugins?.overrides.enabled,
         config.plugins?.overrides.disabled,
     );
