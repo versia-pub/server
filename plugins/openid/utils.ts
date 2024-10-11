@@ -1,4 +1,6 @@
 import { db } from "@versia/kit/db";
+import type { InferSelectModel } from "@versia/kit/drizzle";
+import type { Applications, OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     type AuthorizationResponseError,
     type AuthorizationServer,
@@ -15,7 +17,6 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import type { Application } from "~/classes/functions/application";
 
 export const oauthDiscoveryRequest = (
     issuerUrl: string | URL,
@@ -131,7 +132,11 @@ export const automaticOidcFlow = async (
     errorFn: (
         error: string,
         message: string,
-        app: Application | null,
+        flow:
+            | (InferSelectModel<typeof OpenIdLoginFlows> & {
+                  application?: InferSelectModel<typeof Applications> | null;
+              })
+            | null,
     ) => Response,
 ) => {
     const flow = await getFlow(flowId);
@@ -171,11 +176,7 @@ export const automaticOidcFlow = async (
         const claims = getValidatedIdTokenClaims(result);
 
         if (!claims) {
-            return errorFn(
-                "invalid_request",
-                "Invalid claims",
-                flow.application,
-            );
+            return errorFn("invalid_request", "Invalid claims", flow);
         }
 
         const { sub } = claims;
@@ -196,10 +197,6 @@ export const automaticOidcFlow = async (
         };
     } catch (e) {
         const error = e as ResponseBodyError | AuthorizationResponseError;
-        return errorFn(
-            error.error,
-            error.error_description || "",
-            flow.application,
-        );
+        return errorFn(error.error, error.error_description || "", flow);
     }
 };

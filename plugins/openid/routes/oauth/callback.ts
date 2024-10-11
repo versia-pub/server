@@ -91,7 +91,19 @@ export default (plugin: PluginType) => {
                     flowId,
                     currentUrl,
                     redirectUrl,
-                    (error, message) => {
+                    (error, message, flow) => {
+                        const errorSearchParams = new URLSearchParams(
+                            Object.entries({
+                                redirect_uri: flow?.application?.redirectUri,
+                                client_id: flow?.application?.clientId,
+                                response_type: "code",
+                                scope: flow?.application?.scopes,
+                            }).filter(([_, value]) => value !== undefined) as [
+                                string,
+                                string,
+                            ][],
+                        );
+
                         errorSearchParams.append("error", error);
                         errorSearchParams.append("error_description", message);
 
