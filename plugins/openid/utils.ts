@@ -1,14 +1,15 @@
 import { db } from "@versia/kit/db";
 import {
+    type AuthorizationResponseError,
     type AuthorizationServer,
-    type OAuth2Error,
-    type OpenIDTokenEndpointResponse,
+    ClientSecretPost,
+    type ResponseBodyError,
+    type TokenEndpointResponse,
     authorizationCodeGrantRequest,
     discoveryRequest,
     expectNoState,
     getValidatedIdTokenClaims,
-    isOAuth2Error,
-    processAuthorizationCodeOpenIDResponse,
+    processAuthorizationCodeResponse,
     processDiscoveryResponse,
     processUserInfoResponse,
     userInfoRequest,
@@ -47,14 +48,12 @@ const getAuthServer = (issuerUrl: URL): Promise<AuthorizationServer> => {
 const getParameters = (
     authServer: AuthorizationServer,
     clientId: string,
-    clientSecret: string,
     currentUrl: URL,
-): URLSearchParams | OAuth2Error => {
+): URLSearchParams => {
     return validateAuthResponse(
         authServer,
         {
             client_id: clientId,
-            client_secret: clientSecret,
         },
         currentUrl,
         expectNoState,
@@ -73,8 +72,8 @@ const getOIDCResponse = (
         authServer,
         {
             client_id: clientId,
-            client_secret: clientSecret,
         },
+        ClientSecretPost(clientSecret),
         parameters,
         redirectUri,
         codeVerifier,
@@ -84,14 +83,12 @@ const getOIDCResponse = (
 const processOIDCResponse = (
     authServer: AuthorizationServer,
     clientId: string,
-    clientSecret: string,
     oidcResponse: Response,
-): Promise<OpenIDTokenEndpointResponse | OAuth2Error> => {
-    return processAuthorizationCodeOpenIDResponse(
+): Promise<TokenEndpointResponse> => {
+    return processAuthorizationCodeResponse(
         authServer,
         {
             client_id: clientId,
-            client_secret: clientSecret,
         },
         oidcResponse,
     );
@@ -100,7 +97,6 @@ const processOIDCResponse = (
 const getUserInfo = (
     authServer: AuthorizationServer,
     clientId: string,
-    clientSecret: string,
     accessToken: string,
     sub: string,
 ) => {
@@ -108,7 +104,6 @@ const getUserInfo = (
         authServer,
         {
             client_id: clientId,
-            client_secret: clientSecret,
         },
         accessToken,
     ).then(
@@ -117,7 +112,6 @@ const getUserInfo = (
                 authServer,
                 {
                     client_id: clientId,
-                    client_secret: clientId,
                 },
                 sub,
                 res,
@@ -146,67 +140,66 @@ export const automaticOidcFlow = async (
         return errorFn("invalid_request", "Invalid flow", null);
     }
 
-    const issuerUrl = new URL(issuer.url);
+    try {
+        const issuerUrl = new URL(issuer.url);
 
-    const authServer = await getAuthServer(issuerUrl);
+        const authServer = await getAuthServer(issuerUrl);
 
-    const parameters = await getParameters(
-        authServer,
-        issuer.client_id,
-        issuer.client_secret,
-        currentUrl,
-    );
+        const parameters = await getParameters(
+            authServer,
+            issuer.client_id,
+            currentUrl,
+        );
 
-    if (isOAuth2Error(parameters)) {
+        const oidcResponse = await getOIDCResponse(
+            authServer,
+            issuer.client_id,
+            issuer.client_secret,
+            redirectUrl.toString(),
+            flow.codeVerifier,
+            parameters,
+        );
+
+        const result = await processOIDCResponse(
+            authServer,
+            issuer.client_id,
+            oidcResponse,
+        );
+
+        const { access_token } = result;
+
+        const claims = getValidatedIdTokenClaims(result);
+
+        if (!claims) {
+            return errorFn(
+                "invalid_request",
+                "Invalid claims",
+                flow.application,
+            );
+        }
+
+        const { sub } = claims;
+
+        // Validate `sub`
+        // Later, we'll use this to automatically set the user's data
+        const userInfo = await getUserInfo(
+            authServer,
+            issuer.client_id,
+            access_token,
+            sub,
+        );
+
+        return {
+            userInfo,
+            flow,
+            claims,
+        };
+    } catch (e) {
+        const error = e as ResponseBodyError | AuthorizationResponseError;
         return errorFn(
-            parameters.error,
-            parameters.error_description || "",
+            error.error,
+            error.error_description || "",
             flow.application,
         );
     }
-
-    const oidcResponse = await getOIDCResponse(
-        authServer,
-        issuer.client_id,
-        issuer.client_secret,
-        redirectUrl.toString(),
-        flow.codeVerifier,
-        parameters,
-    );
-
-    const result = await processOIDCResponse(
-        authServer,
-        issuer.client_id,
-        issuer.client_secret,
-        oidcResponse,
-    );
-
-    if (isOAuth2Error(result)) {
-        return errorFn(
-            result.error,
-            result.error_description || "",
-            flow.application,
-        );
-    }
-
-    const { access_token } = result;
-
-    const claims = getValidatedIdTokenClaims(result);
-    const { sub } = claims;
-
-    // Validate `sub`
-    // Later, we'll use this to automatically set the user's data
-    const userInfo = await getUserInfo(
-        authServer,
-        issuer.client_id,
-        issuer.client_secret,
-        access_token,
-        sub,
-    );
-
-    return {
-        userInfo,
-        flow,
-        claims,
-    };
 };

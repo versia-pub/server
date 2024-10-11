@@ -32,8 +32,10 @@ export const db =
         ? withReplicas(
               drizzle(primaryDb, { schema }),
               replicas.map((r) => drizzle(r, { schema })) as [
-                  NodePgDatabase<typeof schema>,
-                  ...NodePgDatabase<typeof schema>[],
+                  // biome-ignore lint/style/useNamingConvention: <explanation>
+                  NodePgDatabase<typeof schema> & { $client: Pool },
+                  // biome-ignore lint/style/useNamingConvention: <explanation>
+                  ...(NodePgDatabase<typeof schema> & { $client: Pool })[],
               ],
           )
         : drizzle(primaryDb, { schema });
