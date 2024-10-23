@@ -21,6 +21,7 @@ import chalk from "chalk";
 import { config } from "~/packages/config-manager";
 
 // HACK: This is a workaround for the lack of type exports in the Logtape package.
+// biome-ignore format: Biome formatter bug
 type RotatingFileSinkDriver<T> =
     import("../node_modules/@logtape/logtape/logtape/sink").RotatingFileSinkDriver<T>;
 
