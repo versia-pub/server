@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
-import { getFromToken } from "~/classes/functions/application";
+import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "~/drizzle/schema";
+import { Application } from "~/packages/database-interface/application";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -29,13 +29,7 @@ const route = createRoute({
             description: "Application",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        name: z.string(),
-                        website: z.string().nullable(),
-                        vapid_key: z.string().nullable(),
-                        redirect_uris: z.string(),
-                        scopes: z.string(),
-                    }),
+                    schema: Application.schema,
                 },
             },
         },
@@ -61,7 +55,7 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const application = await getFromToken(token);
+        const application = await Application.getFromToken(token);
 
         if (!application) {
             return context.json({ error: "Unauthorized" }, 401);
@@ -69,11 +63,9 @@ export default apiRoute((app) =>
 
         return context.json(
             {
-                name: application.name,
-                website: application.website,
-                vapid_key: application.vapidKey,
-                redirect_uris: application.redirectUri,
-                scopes: application.scopes,
+                ...application.toApi(),
+                redirect_uris: application.data.redirectUri,
+                scopes: application.data.scopes,
             },
             200,
         );

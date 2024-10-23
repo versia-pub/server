@@ -22,11 +22,11 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type { Application } from "~/classes/functions/application";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
+import { Application } from "~/packages/database-interface/application";
 import type { User } from "~/packages/database-interface/user";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 
@@ -185,7 +185,9 @@ const checkRouteNeedsAuth = (
         return {
             user: auth.user as User,
             token: auth.token as string,
-            application: auth.application as Application | null,
+            application: auth.application
+                ? new Application(auth.application)
+                : null,
         };
     }
     if (

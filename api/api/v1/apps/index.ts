@@ -2,8 +2,8 @@ import { apiRoute, applyConfig, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Applications, RolePermissions } from "~/drizzle/schema";
+import { RolePermissions } from "~/drizzle/schema";
+import { Application } from "~/packages/database-interface/application";
 
 export const meta = applyConfig({
     route: "/api/v1/apps",
@@ -81,29 +81,24 @@ export default apiRoute((app) =>
         const { client_name, redirect_uris, scopes, website } =
             context.req.valid("json");
 
-        const app = (
-            await db
-                .insert(Applications)
-                .values({
-                    name: client_name || "",
-                    redirectUri: decodeURI(redirect_uris) || "",
-                    scopes: scopes || "read",
-                    website: website || null,
-                    clientId: randomString(32, "base64url"),
-                    secret: randomString(64, "base64url"),
-                })
-                .returning()
-        )[0];
+        const app = await Application.insert({
+            name: client_name || "",
+            redirectUri: decodeURI(redirect_uris) || "",
+            scopes: scopes || "read",
+            website: website || null,
+            clientId: randomString(32, "base64url"),
+            secret: randomString(64, "base64url"),
+        });
 
         return context.json(
             {
                 id: app.id,
-                name: app.name,
-                website: app.website,
-                client_id: app.clientId,
-                client_secret: app.secret,
-                redirect_uri: app.redirectUri,
-                vapid_link: app.vapidKey,
+                name: app.data.name,
+                website: app.data.website,
+                client_id: app.data.clientId,
+                client_secret: app.data.secret,
+                redirect_uri: app.data.redirectUri,
+                vapid_link: app.data.vapidKey,
             },
             200,
         );

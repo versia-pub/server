@@ -1,4 +1,4 @@
-import type { Application } from "~/classes/functions/application";
+import type { Application } from "~/packages/database-interface/application";
 
 /**
  * Check if an OAuth application is valid for a route
@@ -15,12 +15,12 @@ export const checkIfOauthIsValid = (
     }
 
     const hasAllWriteScopes =
-        application.scopes.split(" ").includes("write:*") ||
-        application.scopes.split(" ").includes("write");
+        application.data.scopes.split(" ").includes("write:*") ||
+        application.data.scopes.split(" ").includes("write");
 
     const hasAllReadScopes =
-        application.scopes.split(" ").includes("read:*") ||
-        application.scopes.split(" ").includes("read");
+        application.data.scopes.split(" ").includes("read:*") ||
+        application.data.scopes.split(" ").includes("read");
 
     if (hasAllWriteScopes && hasAllReadScopes) {
         return true;
@@ -50,6 +50,6 @@ export const checkIfOauthIsValid = (
 
     // If there are scopes left, check if they match
     return nonMatchedScopes.every((scope) =>
-        application.scopes.split(" ").includes(scope),
+        application.data.scopes.split(" ").includes(scope),
     );
 };

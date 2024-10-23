@@ -5,9 +5,9 @@ import { createRoute } from "@hono/zod-openapi";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Application } from "~/packages/database-interface/application";
 import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
@@ -197,20 +197,18 @@ export default apiRoute((app) =>
             .setProtectedHeader({ alg: "EdDSA" })
             .sign(privateKey);
 
-        const application = await db.query.Applications.findFirst({
-            where: (app, { eq }) => eq(app.clientId, client_id),
-        });
+        const application = await Application.fromClientId(client_id);
 
         if (!application) {
             return context.json({ error: "Invalid application" }, 400);
         }
 
         const searchParams = new URLSearchParams({
-            application: application.name,
+            application: application.data.name,
         });
 
-        if (application.website) {
-            searchParams.append("website", application.website);
+        if (application.data.website) {
+            searchParams.append("website", application.data.website);
         }
 
         // Add all data that is not undefined except email and password

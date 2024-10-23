@@ -12,9 +12,9 @@ import {
     Tokens,
     type Users,
 } from "~/drizzle/schema";
+import type { ApplicationType } from "~/packages/database-interface/application.ts";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
-import type { Application } from "./application.ts";
 import type { Token } from "./token.ts";
 
 export type UserType = InferSelectModel<typeof Users>;
@@ -99,7 +99,7 @@ export const userExtrasTemplate = (name: string) => ({
 export interface AuthData {
     user: User | null;
     token: string;
-    application: Application | null;
+    application: ApplicationType | null;
 }
 
 export const getFromHeader = async (value: string): Promise<AuthData> => {
@@ -216,7 +216,7 @@ export const retrieveUserAndApplicationFromToken = async (
     accessToken: string,
 ): Promise<{
     user: User | null;
-    application: Application | null;
+    application: ApplicationType | null;
 }> => {
     if (!accessToken) {
         return { user: null, application: null };

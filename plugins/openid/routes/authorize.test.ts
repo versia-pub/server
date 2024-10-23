@@ -1,17 +1,12 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
-import { db } from "@versia/kit/db";
-import { eq } from "@versia/kit/drizzle";
-import { Applications, RolePermissions } from "@versia/kit/tables";
+import { RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
 import { config } from "~/packages/config-manager";
+import { Application } from "~/packages/database-interface/application";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, tokens, users } = await getTestUsers(1);
-const clientId = "test-client-id";
-const redirectUri = "https://example.com/callback";
-const scope = "openid profile email";
-const secret = "test-secret";
 const privateKey = await crypto.subtle.importKey(
     "pkcs8",
     Buffer.from(
@@ -23,19 +18,17 @@ const privateKey = await crypto.subtle.importKey(
     ["sign"],
 );
 
-beforeAll(async () => {
-    await db.insert(Applications).values({
-        clientId,
-        redirectUri,
-        scopes: scope,
-        name: "Test Application",
-        secret,
-    });
+const application = await Application.insert({
+    clientId: "test-client-id",
+    redirectUri: "https://example.com/callback",
+    scopes: "openid profile email",
+    name: "Test Application",
+    secret: "test-secret",
 });
 
 afterAll(async () => {
     await deleteUsers();
-    await db.delete(Applications).where(eq(Applications.clientId, clientId));
+    await application.delete();
 });
 
 describe("/oauth/authorize", () => {
@@ -43,7 +36,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             iss: new URL(config.http.base_url).origin,
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
@@ -59,10 +52,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -75,7 +68,9 @@ describe("/oauth/authorize", () => {
             config.http.base_url,
         );
         const params = new URLSearchParams(location.search);
-        expect(location.origin + location.pathname).toBe(redirectUri);
+        expect(location.origin + location.pathname).toBe(
+            application.data.redirectUri,
+        );
         expect(params.get("code")).toBeTruthy();
         expect(params.get("state")).toBe("test-state");
     });
@@ -89,10 +84,10 @@ describe("/oauth/authorize", () => {
                 Cookie: "jwt=invalid-jwt",
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -115,7 +110,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             iss: new URL(config.http.base_url).origin,
-            aud: clientId,
+            aud: application.data.clientId,
         })
             .setProtectedHeader({ alg: "EdDSA" })
             .sign(privateKey);
@@ -128,10 +123,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -153,7 +148,7 @@ describe("/oauth/authorize", () => {
     test("should return error for user not found", async () => {
         const jwt = await new SignJWT({
             sub: "non-existent-user",
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iss: new URL(config.http.base_url).origin,
             iat: Math.floor(Date.now() / 1000),
@@ -170,10 +165,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -193,7 +188,7 @@ describe("/oauth/authorize", () => {
 
         const jwt2 = await new SignJWT({
             sub: "23e42862-d5df-49a8-95b5-52d8c6a11aea",
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iss: new URL(config.http.base_url).origin,
             iat: Math.floor(Date.now() / 1000),
@@ -210,10 +205,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt2}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -239,7 +234,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             iss: new URL(config.http.base_url).origin,
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
@@ -255,10 +250,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -300,9 +295,9 @@ describe("/oauth/authorize", () => {
             },
             body: JSON.stringify({
                 client_id: "invalid-client-id",
-                redirect_uri: redirectUri,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -325,7 +320,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             iss: new URL(config.http.base_url).origin,
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
@@ -341,10 +336,10 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
+                client_id: application.data.clientId,
                 redirect_uri: "https://invalid.com/callback",
                 response_type: "code",
-                scope,
+                scope: application.data.scopes,
                 state: "test-state",
                 code_challenge: randomString(43),
                 code_challenge_method: "S256",
@@ -367,7 +362,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             iss: new URL(config.http.base_url).origin,
-            aud: clientId,
+            aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
@@ -383,8 +378,8 @@ describe("/oauth/authorize", () => {
                 Cookie: `jwt=${jwt}`,
             },
             body: JSON.stringify({
-                client_id: clientId,
-                redirect_uri: redirectUri,
+                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUri,
                 response_type: "code",
                 scope: "invalid-scope",
                 state: "test-state",

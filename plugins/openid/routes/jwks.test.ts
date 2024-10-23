@@ -1,26 +1,17 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { db } from "@versia/kit/db";
-import { eq } from "drizzle-orm";
-import { Applications } from "~/drizzle/schema";
+import { afterAll, describe, expect, test } from "bun:test";
+import { Application } from "~/packages/database-interface/application";
 import { fakeRequest } from "~/tests/utils";
 
-const clientId = "test-client-id";
-const redirectUri = "https://example.com/callback";
-const scope = "openid profile email";
-const secret = "test-secret";
-
-beforeAll(async () => {
-    await db.insert(Applications).values({
-        clientId,
-        redirectUri,
-        scopes: scope,
-        name: "Test Application",
-        secret,
-    });
+const application = await Application.insert({
+    clientId: "test-client-id",
+    redirectUri: "https://example.com/callback",
+    scopes: "openid profile email",
+    secret: "test-secret",
+    name: "Test Application",
 });
 
 afterAll(async () => {
-    await db.delete(Applications).where(eq(Applications.clientId, clientId));
+    await application.delete();
 });
 
 describe("/.well-known/jwks", () => {

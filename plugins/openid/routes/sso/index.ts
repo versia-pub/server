@@ -1,10 +1,7 @@
 import { auth } from "@/api";
 import { db } from "@versia/kit/db";
-import {
-    Applications,
-    OpenIdLoginFlows,
-    RolePermissions,
-} from "@versia/kit/tables";
+import { Application } from "@versia/kit/db";
+import { OpenIdLoginFlows, RolePermissions } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
@@ -169,22 +166,17 @@ export default (plugin: PluginType) => {
                     issuerId,
                 );
 
-                const application = (
-                    await db
-                        .insert(Applications)
-                        .values({
-                            clientId:
-                                user.id +
-                                Buffer.from(
-                                    crypto.getRandomValues(new Uint8Array(32)),
-                                ).toString("base64"),
-                            name: "Versia",
-                            redirectUri,
-                            scopes: "openid profile email",
-                            secret: "",
-                        })
-                        .returning()
-                )[0];
+                const application = await Application.insert({
+                    clientId:
+                        user.id +
+                        Buffer.from(
+                            crypto.getRandomValues(new Uint8Array(32)),
+                        ).toString("base64"),
+                    name: "Versia",
+                    redirectUri,
+                    scopes: "openid profile email",
+                    secret: "",
+                });
 
                 // Store into database
                 const newFlow = (

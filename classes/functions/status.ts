@@ -32,9 +32,9 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
+import type { ApplicationType } from "~/packages/database-interface/application.ts";
 import type { EmojiWithInstance } from "~/packages/database-interface/emoji";
 import { User } from "~/packages/database-interface/user";
-import type { Application } from "./application.ts";
 import {
     type UserWithInstance,
     type UserWithRelations,
@@ -53,7 +53,7 @@ export type StatusWithRelations = Status & {
     emojis: EmojiWithInstance[];
     reply: Status | null;
     quote: Status | null;
-    application: Application | null;
+    application: ApplicationType | null;
     reblogCount: number;
     likeCount: number;
     replyCount: number;

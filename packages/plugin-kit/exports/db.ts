@@ -6,4 +6,5 @@ export { Emoji } from "~/packages/database-interface/emoji";
 export { Instance } from "~/packages/database-interface/instance";
 export { Note } from "~/packages/database-interface/note";
 export { Timeline } from "~/packages/database-interface/timeline";
+export { Application } from "~/packages/database-interface/application";
 export { db } from "~/drizzle/db";

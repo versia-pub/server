@@ -1,38 +1,30 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { eq } from "@versia/kit/drizzle";
-import { Applications, Tokens } from "@versia/kit/tables";
+import { Tokens } from "@versia/kit/tables";
+import { Application } from "~/packages/database-interface/application";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);
-const clientId = "test-client-id";
-const redirectUri = "https://example.com/callback";
-const scope = "openid profile email";
-const secret = "test-secret";
+
+const application = await Application.insert({
+    clientId: "test-client-id",
+    redirectUri: "https://example.com/callback",
+    scopes: "openid profile email",
+    secret: "test-secret",
+    name: "Test Application",
+});
 
 beforeAll(async () => {
-    const application = (
-        await db
-            .insert(Applications)
-            .values({
-                clientId,
-                redirectUri,
-                scopes: scope,
-                name: "Test Application",
-                secret,
-            })
-            .returning()
-    )[0];
-
     await db.insert(Tokens).values({
         code: "test-code",
-        redirectUri,
-        clientId,
+        redirectUri: application.data.redirectUri,
+        clientId: application.data.clientId,
         accessToken: "test-access-token",
         expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
         createdAt: new Date().toISOString(),
         tokenType: "Bearer",
-        scope,
+        scope: application.data.scopes,
         userId: users[0].id,
         applicationId: application.id,
     });
@@ -40,8 +32,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await deleteUsers();
-    await db.delete(Applications).where(eq(Applications.clientId, clientId));
-    await db.delete(Tokens).where(eq(Tokens.clientId, clientId));
+    await application.delete();
+    await db
+        .delete(Tokens)
+        .where(eq(Tokens.clientId, application.data.clientId));
 });
 
 describe("/oauth/revoke", () => {
@@ -52,8 +46,8 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: clientId,
-                client_secret: secret,
+                client_id: application.data.clientId,
+                client_secret: application.data.secret,
                 token: "test-access-token",
             }),
         });
@@ -70,8 +64,8 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: clientId,
-                client_secret: secret,
+                client_id: application.data.clientId,
+                client_secret: application.data.secret,
             }),
         });
 
@@ -90,7 +84,7 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: clientId,
+                client_id: application.data.clientId,
                 client_secret: "invalid-secret",
                 token: "test-access-token",
             }),
@@ -111,8 +105,8 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: clientId,
-                client_secret: secret,
+                client_id: application.data.clientId,
+                client_secret: application.data.secret,
                 token: "invalid-token",
             }),
         });
@@ -133,7 +127,7 @@ describe("/oauth/revoke", () => {
             },
             body: JSON.stringify({
                 client_id: "unauthorized-client-id",
-                client_secret: secret,
+                client_secret: application.data.secret,
                 token: "test-access-token",
             }),
         });

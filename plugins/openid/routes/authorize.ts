@@ -6,6 +6,7 @@ import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
 import { TokenType } from "~/classes/functions/token";
+import { Application } from "~/packages/database-interface/application.ts";
 import { User } from "~/packages/database-interface/user";
 import type { PluginType } from "../index.ts";
 
@@ -197,9 +198,7 @@ export default (plugin: PluginType) =>
                     );
                 }
 
-                const application = await db.query.Applications.findFirst({
-                    where: (app, { eq }) => eq(app.clientId, client_id),
-                });
+                const application = await Application.fromClientId(client_id);
 
                 if (!application) {
                     errorSearchParams.append("error", "invalid_request");
@@ -213,7 +212,7 @@ export default (plugin: PluginType) =>
                     );
                 }
 
-                if (application.redirectUri !== redirect_uri) {
+                if (application.data.redirectUri !== redirect_uri) {
                     errorSearchParams.append("error", "invalid_request");
                     errorSearchParams.append(
                         "error_description",
@@ -230,7 +229,7 @@ export default (plugin: PluginType) =>
                     scope &&
                     !scope
                         .split(" ")
-                        .every((s) => application.scopes.includes(s))
+                        .every((s) => application.data.scopes.includes(s))
                 ) {
                     errorSearchParams.append("error", "invalid_scope");
                     errorSearchParams.append(
@@ -288,10 +287,10 @@ export default (plugin: PluginType) =>
                 await db.insert(Tokens).values({
                     accessToken: randomString(64, "base64url"),
                     code,
-                    scope: scope ?? application.scopes,
+                    scope: scope ?? application.data.scopes,
                     tokenType: TokenType.Bearer,
                     applicationId: application.id,
-                    redirectUri: redirect_uri ?? application.redirectUri,
+                    redirectUri: redirect_uri ?? application.data.redirectUri,
                     expiresAt: new Date(
                         Date.now() + 60 * 60 * 24 * 14,
                     ).toISOString(),
@@ -310,7 +309,7 @@ export default (plugin: PluginType) =>
                               "/oauth/code",
                               context.get("config").http.base_url,
                           )
-                        : new URL(redirect_uri ?? application.redirectUri);
+                        : new URL(redirect_uri ?? application.data.redirectUri);
 
                 redirectUri.searchParams.append("code", code);
                 state && redirectUri.searchParams.append("state", state);

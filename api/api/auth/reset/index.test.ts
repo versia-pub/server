@@ -1,9 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
-import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Applications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Application } from "~/packages/database-interface/application.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 
@@ -12,22 +10,17 @@ const token = randomString(32, "hex");
 const newPassword = randomString(16, "hex");
 
 // Create application
-const application = (
-    await db
-        .insert(Applications)
-        .values({
-            name: "Test Application",
-            clientId: randomString(32, "hex"),
-            secret: "test",
-            redirectUri: "https://example.com",
-            scopes: "read write",
-        })
-        .returning()
-)[0];
+const application = await Application.insert({
+    name: "Test Application",
+    clientId: randomString(32, "hex"),
+    secret: "test",
+    redirectUri: "https://example.com",
+    scopes: "read write",
+});
 
 afterAll(async () => {
     await deleteUsers();
-    await db.delete(Applications).where(eq(Applications.id, application.id));
+    await application.delete();
 });
 
 // /api/auth/reset
@@ -39,7 +32,7 @@ describe(meta.route, () => {
         formData.append("password", passwords[0]);
 
         const response = await fakeRequest(
-            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
 
             {
                 method: "POST",
@@ -62,7 +55,7 @@ describe(meta.route, () => {
         formData.append("password", passwords[0]);
 
         const response = await fakeRequest(
-            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
             {
                 method: "POST",
                 body: formData,
@@ -101,7 +94,7 @@ describe(meta.route, () => {
         loginFormData.append("password", newPassword);
 
         const loginResponse = await fakeRequest(
-            `/api/auth/login?client_id=${application.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
             {
                 method: "POST",
                 body: loginFormData,
@@ -117,7 +110,7 @@ describe(meta.route, () => {
 
         expect(locationHeader.pathname).toBe("/oauth/consent");
         expect(locationHeader.searchParams.get("client_id")).toBe(
-            application.clientId,
+            application.data.clientId,
         );
         expect(locationHeader.searchParams.get("redirect_uri")).toBe(
             "https://example.com",

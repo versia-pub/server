@@ -7,6 +7,7 @@ import {
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
+import { Application } from "~/packages/database-interface/application.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 
@@ -83,10 +84,7 @@ export default (plugin: PluginType) => {
 
                 const codeVerifier = generateRandomCodeVerifier();
 
-                const application = await db.query.Applications.findFirst({
-                    where: (application, { eq }) =>
-                        eq(application.clientId, client_id),
-                });
+                const application = await Application.fromClientId(client_id);
 
                 if (!application) {
                     errorSearchParams.append("error", "invalid_request");

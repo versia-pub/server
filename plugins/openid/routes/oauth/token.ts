@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
+import { Application } from "~/packages/database-interface/application.ts";
 import type { PluginType } from "../../index.ts";
 
 export const schemas = {
@@ -140,12 +141,10 @@ export default (plugin: PluginType) => {
                         }
 
                         // Verify the client_secret
-                        const client = await db.query.Applications.findFirst({
-                            where: (application, { eq }) =>
-                                eq(application.clientId, client_id),
-                        });
+                        const client =
+                            await Application.fromClientId(client_id);
 
-                        if (!client || client.secret !== client_secret) {
+                        if (!client || client.data.secret !== client_secret) {
                             return context.json(
                                 {
                                     error: "invalid_client",

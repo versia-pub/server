@@ -28,10 +28,6 @@ import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
 import { z } from "zod";
 import {
-    type Application,
-    applicationToApi,
-} from "~/classes/functions/application";
-import {
     type StatusWithRelations,
     contentToHtml,
     findManyNotes,
@@ -47,6 +43,7 @@ import {
     Users,
 } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
+import { Application } from "./application.ts";
 import { Attachment } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
@@ -904,7 +901,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             account: this.author.toApi(userFetching?.id === data.authorId),
             created_at: new Date(data.createdAt).toISOString(),
             application: data.application
-                ? applicationToApi(data.application)
+                ? new Application(data.application).toApi()
                 : null,
             card: null,
             content: replacedContent,
