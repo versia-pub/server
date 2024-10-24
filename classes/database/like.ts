@@ -1,5 +1,5 @@
 import { RolePermission } from "@versia/client/types";
-import type { LikeExtension } from "@versia/federation";
+import type { Delete, LikeExtension } from "@versia/federation/types";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -158,6 +158,21 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                 this.data.liked.uri,
             ) as string,
             uri: this.getUri().toString(),
+        };
+    }
+
+    public unlikeToVersia(unliker?: User): Delete {
+        return {
+            type: "Delete",
+            id: crypto.randomUUID(),
+            created_at: new Date().toISOString(),
+            author: User.getUri(
+                unliker?.id ?? this.data.liker.id,
+                unliker?.data.uri ?? this.data.liker.uri,
+                config.http.base_url,
+            ),
+            deleted_type: "pub.versia:likes/Like",
+            deleted: this.getUri().toString(),
         };
     }
 }

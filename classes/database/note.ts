@@ -987,7 +987,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             id,
             author: this.author.getUri(),
             deleted_type: "Note",
-            target: this.getUri(),
+            deleted: this.getUri(),
             created_at: new Date().toISOString(),
         };
     }

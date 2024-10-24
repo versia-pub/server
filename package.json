@@ -111,7 +111,7 @@
         "@sentry/bun": "^8.35.0",
         "@tufjs/canonical-json": "^2.0.0",
         "@versia/client": "^0.1.0",
-        "@versia/federation": "^0.1.1",
+        "@versia/federation": "^0.1.2",
         "@versia/kit": "workspace:*",
         "altcha-lib": "^1.1.0",
         "blurhash": "^2.0.5",

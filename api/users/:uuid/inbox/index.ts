@@ -366,7 +366,7 @@ export default apiRoute((app) =>
                 // "delete" is a reserved keyword in JS
                 delete: async (delete_) => {
                     // Delete the specified object from database, if it exists and belongs to the user
-                    const toDelete = delete_.target;
+                    const toDelete = delete_.deleted;
 
                     switch (delete_.deleted_type) {
                         case "Note": {

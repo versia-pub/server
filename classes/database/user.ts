@@ -473,7 +473,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 noteId: note.id,
             });
         } else {
-            // TODO: Add database jobs for federating this
+            // Federate the like
+            this.federateToFollowers(newLike.toVersia());
         }
 
         return newLike;
@@ -511,7 +512,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (this.isLocal() && note.author.isRemote()) {
             // User is local, federate the delete
-            // TODO: Federate this
+            this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }
     }
 
