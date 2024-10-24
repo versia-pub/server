@@ -9,7 +9,7 @@
 - (Optional if you want search) A working [Sonic](https://github.com/valeriansaliou/sonic) instance
 
 > [!WARNING]
-> Versia Server has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run LysVersia Serverand.
+> Versia Server has not been tested on Windows or macOS. It is recommended to use a Linux-based operating system to run Versia Server.
 > 
 > We will not be offering support to Windows or macOS users. If you are using one of these operating systems, please use a virtual machine or container to run Versia Server.
 

@@ -7,7 +7,7 @@ services:
       - ./uploads:/app/dist/uploads
     restart: unless-stopped
     container_name: versia
-    command: "cli start --all-threads"
+    tty: true
     networks:
       - versia-net
     depends_on:
