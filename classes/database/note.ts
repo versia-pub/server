@@ -147,8 +147,11 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return this.update(this.data);
     }
 
-    async reload(): Promise<void> {
-        const reloaded = await Note.fromId(this.data.id);
+    /**
+     * @param userRequestingNoteId Used to calculate visibility of the note
+     */
+    async reload(userRequestingNoteId?: string): Promise<void> {
+        const reloaded = await Note.fromId(this.data.id, userRequestingNoteId);
 
         if (!reloaded) {
             throw new Error("Failed to reload status");
@@ -475,7 +478,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             }
         }
 
-        await newNote.reload();
+        await newNote.reload(data.author.id);
 
         return newNote;
     }
@@ -557,7 +560,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         // Set attachment parents
         await this.recalculateDatabaseAttachments(data.mediaAttachments ?? []);
 
-        await this.reload();
+        await this.reload(data.author.id);
 
         return this;
     }

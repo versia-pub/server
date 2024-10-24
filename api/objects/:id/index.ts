@@ -6,11 +6,10 @@ import {
 } from "@versia/federation/schemas";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
+import { Like } from "~/classes/database/like";
 import { Note } from "~/classes/database/note";
 import { User } from "~/classes/database/user";
-import { type LikeType, likeToVersia } from "~/classes/functions/like";
-import { db } from "~/drizzle/db";
-import { Notes } from "~/drizzle/schema";
+import { Likes, Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
 
@@ -70,7 +69,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { id } = context.req.valid("param");
 
-        let foundObject: Note | LikeType | null = null;
+        let foundObject: Note | Like | null = null;
         let foundAuthor: User | null = null;
         let apiObject: KnownEntity | null = null;
 
@@ -88,17 +87,15 @@ export default apiRoute((app) =>
                 return context.json({ error: "Object not found" }, 404);
             }
         } else {
-            foundObject =
-                (await db.query.Likes.findFirst({
-                    where: (like, { eq, and }) =>
-                        and(
-                            eq(like.id, id),
-                            sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${like.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
-                        ),
-                })) ?? null;
-            apiObject = foundObject ? likeToVersia(foundObject) : null;
+            foundObject = await Like.fromSql(
+                and(
+                    eq(Likes.id, id),
+                    sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${Likes.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
+                ),
+            );
+            apiObject = foundObject ? foundObject.toVersia() : null;
             foundAuthor = foundObject
-                ? await User.fromId(foundObject.likerId)
+                ? await User.fromId(foundObject.data.likerId)
                 : null;
         }
 

@@ -44,6 +44,7 @@ import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import {
     EmojiToUser,
+    Likes,
     NoteToMentions,
     Notes,
     Notifications,
@@ -56,6 +57,7 @@ import type { KnownEntity } from "~/types/api.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
+import { Like } from "./like.ts";
 import type { Note } from "./note.ts";
 import { Relationship } from "./relationship.ts";
 import { Role } from "./role.ts";
@@ -438,6 +440,79 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 };
             })
             .filter((x) => x !== null);
+    }
+
+    /**
+     * Like a note.
+     *
+     * If the note is already liked, it will return the existing like. Also creates a notification for the author of the note.
+     * @param note The note to like
+     * @returns The like object created or the existing like
+     */
+    public async like(note: Note): Promise<Like> {
+        // Check if the user has already liked the note
+        const existingLike = await Like.fromSql(
+            and(eq(Likes.likerId, this.id), eq(Likes.likedId, note.id)),
+        );
+
+        if (existingLike) {
+            return existingLike;
+        }
+
+        const newLike = await Like.insert({
+            likerId: this.id,
+            likedId: note.id,
+        });
+
+        if (note.author.data.instanceId === this.data.instanceId) {
+            // Notify the user that their post has been favourited
+            await db.insert(Notifications).values({
+                accountId: this.id,
+                type: "favourite",
+                notifiedId: note.author.id,
+                noteId: note.id,
+            });
+        } else {
+            // TODO: Add database jobs for federating this
+        }
+
+        return newLike;
+    }
+
+    /**
+     * Unlike a note.
+     *
+     * If the note is not liked, it will return without doing anything. Also removes any notifications for this like.
+     * @param note The note to unlike
+     * @returns
+     */
+    public async unlike(note: Note): Promise<void> {
+        const likeToDelete = await Like.fromSql(
+            and(eq(Likes.likerId, this.id), eq(Likes.likedId, note.id)),
+        );
+
+        if (!likeToDelete) {
+            return;
+        }
+
+        await likeToDelete.delete();
+
+        // Remove any eventual notifications for this like
+        await db
+            .delete(Notifications)
+            .where(
+                and(
+                    eq(Notifications.accountId, this.id),
+                    eq(Notifications.type, "favourite"),
+                    eq(Notifications.notifiedId, note.author.id),
+                    eq(Notifications.noteId, note.id),
+                ),
+            );
+
+        if (this.isLocal() && note.author.isRemote()) {
+            // User is local, federate the delete
+            // TODO: Federate this
+        }
     }
 
     async updateFromRemote(): Promise<User> {

@@ -2,8 +2,6 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { Note } from "~/classes/database/note";
-import { createLike } from "~/classes/functions/like";
-import { db } from "~/drizzle/db";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
@@ -79,21 +77,10 @@ export default apiRoute((app) =>
             return context.json({ error: "Record not found" }, 404);
         }
 
-        const existingLike = await db.query.Likes.findFirst({
-            where: (like, { and, eq }) =>
-                and(eq(like.likedId, note.data.id), eq(like.likerId, user.id)),
-        });
+        await user.like(note);
 
-        if (!existingLike) {
-            await createLike(user, note);
-        }
+        await note.reload(user.id);
 
-        const newNote = await Note.fromId(id, user.id);
-
-        if (!newNote) {
-            return context.json({ error: "Record not found" }, 404);
-        }
-
-        return context.json(await newNote.toApi(user), 200);
+        return context.json(await note.toApi(user), 200);
     }),
 );
