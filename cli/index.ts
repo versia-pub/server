@@ -1,37 +1,31 @@
 import { configureLoggers } from "@/loggers";
 import { execute } from "@oclif/core";
-import EmojiAdd from "./commands/emoji/add.ts";
-import EmojiDelete from "./commands/emoji/delete.ts";
-import EmojiImport from "./commands/emoji/import.ts";
-import EmojiList from "./commands/emoji/list.ts";
-import FederationInstanceFetch from "./commands/federation/instance/fetch.ts";
-import FederationUserFetch from "./commands/federation/user/fetch.ts";
-import FederationUserFinger from "./commands/federation/user/finger.ts";
-import IndexRebuild from "./commands/index/rebuild.ts";
 import Start from "./commands/start.ts";
-import UserCreate from "./commands/user/create.ts";
-import UserDelete from "./commands/user/delete.ts";
-import UserList from "./commands/user/list.ts";
-import UserRefetch from "./commands/user/refetch.ts";
-import UserReset from "./commands/user/reset.ts";
 
 await configureLoggers();
 
 // Use "explicit" oclif strategy to avoid issues with oclif's module resolver and bundling
 export const commands = {
-    "user:list": UserList,
-    "user:delete": UserDelete,
-    "user:create": UserCreate,
-    "user:reset": UserReset,
-    "user:refetch": UserRefetch,
-    "emoji:add": EmojiAdd,
-    "emoji:delete": EmojiDelete,
-    "emoji:list": EmojiList,
-    "emoji:import": EmojiImport,
-    "index:rebuild": IndexRebuild,
-    "federation:instance:fetch": FederationInstanceFetch,
-    "federation:user:finger": FederationUserFinger,
-    "federation:user:fetch": FederationUserFetch,
+    "user:list": (await import("./commands/user/list.ts")).default,
+    "user:delete": (await import("./commands/user/delete.ts")).default,
+    "user:create": (await import("./commands/user/create.ts")).default,
+    "user:reset": (await import("./commands/user/reset.ts")).default,
+    "user:refetch": (await import("./commands/user/refetch.ts")).default,
+    "emoji:add": (await import("./commands/emoji/add.ts")).default,
+    "emoji:delete": (await import("./commands/emoji/delete.ts")).default,
+    "emoji:list": (await import("./commands/emoji/list.ts")).default,
+    "emoji:import": (await import("./commands/emoji/import.ts")).default,
+    "index:rebuild": (await import("./commands/index/rebuild.ts")).default,
+    "federation:instance:fetch": (
+        await import("./commands/federation/instance/fetch.ts")
+    ).default,
+    "federation:user:finger": (
+        await import("./commands/federation/user/finger.ts")
+    ).default,
+    "federation:user:fetch": (
+        await import("./commands/federation/user/fetch.ts")
+    ).default,
+    "generate-keys": (await import("./commands/generate-keys.ts")).default,
     start: Start,
 };
 

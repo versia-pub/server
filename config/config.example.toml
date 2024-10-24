@@ -314,7 +314,8 @@ description = "A Versia Server instance"
 # URL to your instance banner
 # banner = ""
 
-# Used for federation. If left empty or missing, the server will generate one for you.
+# Used for federation.
+# Use the "generate-keys" CLI command to generate these keys
 [instance.keys]
 public = ""
 private = ""
@@ -413,10 +414,10 @@ forced = false
 # Overriden by the signups.registration setting
 allow_registration = true
 
-# [plugins.config."@versia/openid".keys]
-# Run Versia Server with those values missing to generate a new key
-# public = ""
-# private = ""
+[plugins.config."@versia/openid".keys]
+# Use the "generate-keys" CLI command to generate these keys
+public = ""
+private = ""
 
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this
