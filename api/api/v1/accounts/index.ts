@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
@@ -42,7 +42,10 @@ const route = createRoute({
     path: "/api/v1/accounts",
     summary: "Create account",
     description: "Register a new account",
-    middleware: [auth(meta.auth, meta.permissions, meta.challenge)],
+    middleware: [
+        auth(meta.auth, meta.permissions, meta.challenge),
+        jsonOrForm(),
+    ],
     request: {
         body: {
             content: {

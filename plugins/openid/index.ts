@@ -1,7 +1,7 @@
 import { Hooks, Plugin } from "@versia/kit";
+import { User } from "@versia/kit/db";
 import chalk from "chalk";
 import { z } from "zod";
-import { User } from "@versia/kit/db";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
 import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";
