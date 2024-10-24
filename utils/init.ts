@@ -1,7 +1,7 @@
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
+import { User } from "~/classes/database/user";
 import type { Config } from "~/packages/config-manager";
-import { User } from "~/packages/database-interface/user";
 
 export const checkConfig = async (config: Config) => {
     await checkFederationConfig(config);

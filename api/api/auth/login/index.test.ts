@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
+import { Application } from "~/classes/database/application.ts";
 import { config } from "~/packages/config-manager";
-import { Application } from "~/packages/database-interface/application.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 

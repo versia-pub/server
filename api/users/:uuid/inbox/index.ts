@@ -12,13 +12,13 @@ import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";
+import { Note } from "~/classes/database/note";
+import { Relationship } from "~/classes/database/relationship";
+import { User } from "~/classes/database/user";
 import { sendFollowAccept } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Notes, Notifications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Note } from "~/packages/database-interface/note";
-import { Relationship } from "~/packages/database-interface/relationship";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

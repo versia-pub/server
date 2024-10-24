@@ -13,8 +13,8 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
+import { User } from "~/classes/database/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

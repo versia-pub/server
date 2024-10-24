@@ -2,8 +2,8 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { StatusSource as ApiStatusSource } from "@versia/client/types";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
 import { RolePermissions } from "~/drizzle/schema";
-import { Note } from "~/packages/database-interface/note";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

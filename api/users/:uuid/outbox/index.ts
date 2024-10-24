@@ -6,11 +6,11 @@ import {
 } from "@versia/federation/schemas";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

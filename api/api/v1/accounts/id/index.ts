@@ -2,8 +2,8 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
+import { User } from "~/classes/database/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

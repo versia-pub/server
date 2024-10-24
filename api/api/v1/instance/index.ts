@@ -2,12 +2,12 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
+import { Instance } from "~/classes/database/instance";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
-import { Instance } from "~/packages/database-interface/instance";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     route: "/api/v1/instance",

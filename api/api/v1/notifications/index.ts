@@ -3,14 +3,14 @@ import { fetchTimeline } from "@/timelines";
 import { createRoute } from "@hono/zod-openapi";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import {
     findManyNotifications,
     notificationToApi,
 } from "~/classes/functions/notification";
 import type { NotificationWithRelations } from "~/classes/functions/notification";
 import { RolePermissions } from "~/drizzle/schema";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

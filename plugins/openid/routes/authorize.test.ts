@@ -2,8 +2,8 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
 import { RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
+import { Application } from "~/classes/database/application";
 import { config } from "~/packages/config-manager";
-import { Application } from "~/packages/database-interface/application";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, tokens, users } = await getTestUsers(1);

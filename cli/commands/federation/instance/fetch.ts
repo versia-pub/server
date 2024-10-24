@@ -1,8 +1,8 @@
 import { Args } from "@oclif/core";
 import ora from "ora";
+import { Instance } from "~/classes/database/instance";
 import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
-import { Instance } from "~/packages/database-interface/instance";
 
 export default class FederationInstanceFetch extends BaseCommand<
     typeof FederationInstanceFetch

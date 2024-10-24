@@ -7,7 +7,7 @@ import {
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
-import { Application } from "~/packages/database-interface/application.ts";
+import { Application } from "~/classes/database/application.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 

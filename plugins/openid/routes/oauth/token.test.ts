@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
-import { Application } from "~/packages/database-interface/application";
+import { Application } from "~/classes/database/application";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);

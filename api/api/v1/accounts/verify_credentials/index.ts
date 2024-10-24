@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "~/packages/database-interface/user";
+import { User } from "~/classes/database/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

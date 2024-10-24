@@ -1,13 +1,13 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import {
     findManyNotifications,
     notificationToApi,
 } from "~/classes/functions/notification";
 import { RolePermissions } from "~/drizzle/schema";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

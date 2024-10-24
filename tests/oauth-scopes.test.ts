@@ -3,7 +3,7 @@ import { checkIfOauthIsValid } from "@/oauth";
 import {
     Application,
     type ApplicationType,
-} from "~/packages/database-interface/application";
+} from "~/classes/database/application";
 
 describe("checkIfOauthIsValid", () => {
     it("should return true when routeScopes and application.scopes are empty", () => {

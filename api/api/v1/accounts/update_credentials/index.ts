@@ -4,14 +4,14 @@ import { createRoute } from "@hono/zod-openapi";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { Attachment } from "~/classes/database/attachment";
+import { Emoji } from "~/classes/database/emoji";
+import { User } from "~/classes/database/user";
 import { contentToHtml } from "~/classes/functions/status";
 import { MediaManager } from "~/classes/media/media-manager";
 import { db } from "~/drizzle/db";
 import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
-import { Attachment } from "~/packages/database-interface/attachment";
-import { Emoji } from "~/packages/database-interface/emoji";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

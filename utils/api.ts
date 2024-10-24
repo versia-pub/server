@@ -22,12 +22,12 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { Application } from "~/classes/database/application";
+import type { User } from "~/classes/database/user";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
-import { Application } from "~/packages/database-interface/application";
-import type { User } from "~/packages/database-interface/user";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 
 export const applyConfig = (routeMeta: ApiRouteMetadata) => {

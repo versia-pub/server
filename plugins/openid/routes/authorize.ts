@@ -5,9 +5,9 @@ import { RolePermissions, Tokens } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
+import { Application } from "~/classes/database/application.ts";
+import { User } from "~/classes/database/user.ts";
 import { TokenType } from "~/classes/functions/token";
-import { Application } from "~/packages/database-interface/application.ts";
-import { User } from "~/packages/database-interface/user";
 import type { PluginType } from "../index.ts";
 
 const schemas = {

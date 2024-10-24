@@ -3,10 +3,10 @@ import { urlToContentFormat } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
 import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/schemas";
 import { asc } from "drizzle-orm";
+import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
-import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     auth: {

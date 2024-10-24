@@ -2,9 +2,9 @@ import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
+import { Timeline } from "~/classes/database/timeline";
+import { User } from "~/classes/database/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
-import { Timeline } from "~/packages/database-interface/timeline";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

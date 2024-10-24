@@ -14,8 +14,8 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
+import { User } from "~/classes/database/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

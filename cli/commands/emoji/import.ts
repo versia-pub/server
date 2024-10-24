@@ -4,12 +4,12 @@ import { and, inArray, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import ora from "ora";
 import { unzip } from "unzipit";
+import { Attachment } from "~/classes/database/attachment";
+import { Emoji } from "~/classes/database/emoji";
 import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Attachment } from "~/packages/database-interface/attachment";
-import { Emoji } from "~/packages/database-interface/emoji";
 
 type MetaType = {
     emojis: {

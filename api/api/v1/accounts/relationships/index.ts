@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
+import { Relationship } from "~/classes/database/relationship";
 import { RolePermissions } from "~/drizzle/schema";
-import { Relationship } from "~/packages/database-interface/relationship";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

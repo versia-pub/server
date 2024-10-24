@@ -5,10 +5,10 @@ import { createRoute } from "@hono/zod-openapi";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { z } from "zod";
+import { Application } from "~/classes/database/application";
+import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Application } from "~/packages/database-interface/application";
-import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     ratelimits: {

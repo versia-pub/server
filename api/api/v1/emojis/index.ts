@@ -3,11 +3,11 @@ import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
+import { Attachment } from "~/classes/database/attachment";
+import { Emoji } from "~/classes/database/emoji";
 import { MediaManager } from "~/classes/media/media-manager";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Attachment } from "~/packages/database-interface/attachment";
-import { Emoji } from "~/packages/database-interface/emoji";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

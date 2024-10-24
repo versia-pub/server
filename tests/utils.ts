@@ -3,14 +3,14 @@ import { randomString } from "@/math";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import type { Status } from "~/classes/functions/status";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import { setupDatabase } from "~/drizzle/db";
 import { Notes, Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 
 await setupDatabase();
 if (config.sonic.enabled) {

@@ -2,9 +2,9 @@ import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
 import { db } from "~/drizzle/db";
 import { Notes, Notifications, RolePermissions } from "~/drizzle/schema";
-import { Note } from "~/packages/database-interface/note";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

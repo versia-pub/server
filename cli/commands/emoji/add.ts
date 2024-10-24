@@ -2,12 +2,12 @@ import { Args } from "@oclif/core";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
+import { Attachment } from "~/classes/database/attachment";
+import { Emoji } from "~/classes/database/emoji";
 import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Attachment } from "~/packages/database-interface/attachment";
-import { Emoji } from "~/packages/database-interface/emoji";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
     static override args = {

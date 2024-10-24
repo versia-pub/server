@@ -8,10 +8,10 @@ import {
     Ingest as SonicChannelIngest,
     Search as SonicChannelSearch,
 } from "sonic-channel";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import { db } from "~/drizzle/db";
 import { type Config, config } from "~/packages/config-manager";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 
 /**
  * Enum for Sonic index types

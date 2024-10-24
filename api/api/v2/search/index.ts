@@ -8,12 +8,12 @@ import {
 import { createRoute } from "@hono/zod-openapi";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
+import { Note } from "~/classes/database/note";
+import { User } from "~/classes/database/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { Note } from "~/packages/database-interface/note";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

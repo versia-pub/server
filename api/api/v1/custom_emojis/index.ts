@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { and, eq, isNull, or } from "drizzle-orm";
+import { Emoji } from "~/classes/database/emoji";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
-import { Emoji } from "~/packages/database-interface/emoji";
 
 export const meta = applyConfig({
     route: "/api/v1/custom_emojis",

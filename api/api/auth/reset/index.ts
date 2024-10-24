@@ -3,9 +3,9 @@ import { createRoute } from "@hono/zod-openapi";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { z } from "zod";
+import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { User } from "~/packages/database-interface/user";
 
 export const meta = applyConfig({
     ratelimits: {

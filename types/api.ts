@@ -13,10 +13,10 @@ import type {
 } from "@versia/federation/types";
 import type { SocketAddress } from "bun";
 import { z } from "zod";
+import type { Application } from "~/classes/database/application";
+import type { User as DatabaseUser } from "~/classes/database/user";
 import type { RolePermissions } from "~/drizzle/schema";
 import type { Config } from "~/packages/config-manager";
-import type { Application } from "~/packages/database-interface/application";
-import type { User as DatabaseUser } from "~/packages/database-interface/user";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 export interface ApiRouteMetadata {

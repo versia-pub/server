@@ -6,9 +6,9 @@ import { WebFinger } from "@versia/federation/schemas";
 import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
+import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
-import { User } from "~/packages/database-interface/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

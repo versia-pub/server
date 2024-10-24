@@ -1,10 +1,10 @@
 // biome-ignore lint/performance/noBarrelFile: <explanation>
-export { User } from "~/packages/database-interface/user";
-export { Role } from "~/packages/database-interface/role";
-export { Attachment } from "~/packages/database-interface/attachment";
-export { Emoji } from "~/packages/database-interface/emoji";
-export { Instance } from "~/packages/database-interface/instance";
-export { Note } from "~/packages/database-interface/note";
-export { Timeline } from "~/packages/database-interface/timeline";
-export { Application } from "~/packages/database-interface/application";
+export { User } from "~/classes/database/user";
+export { Role } from "~/classes/database/role";
+export { Attachment } from "~/classes/database/attachment";
+export { Emoji } from "~/classes/database/emoji";
+export { Instance } from "~/classes/database/instance";
+export { Note } from "~/classes/database/note";
+export { Timeline } from "~/classes/database/timeline";
+export { Application } from "~/classes/database/application";
 export { db } from "~/drizzle/db";

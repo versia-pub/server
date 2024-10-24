@@ -1,4 +1,4 @@
-import type { Application } from "~/packages/database-interface/application";
+import type { Application } from "~/classes/database/application";
 
 /**
  * Check if an OAuth application is valid for a route
