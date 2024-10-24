@@ -239,6 +239,13 @@
             "when": 1726491670160,
             "tag": "0033_panoramic_sister_grimm",
             "breakpoints": true
+        },
+        {
+            "idx": 34,
+            "version": "7",
+            "when": 1729789587213,
+            "tag": "0034_jittery_proemial_gods",
+            "breakpoints": true
         }
     ]
 }

@@ -12,12 +12,13 @@ import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { z } from "zod";
 import { type ValidationError, isValidationError } from "zod-validation-error";
+import { Like } from "~/classes/database/like";
 import { Note } from "~/classes/database/note";
 import { Relationship } from "~/classes/database/relationship";
 import { User } from "~/classes/database/user";
 import { sendFollowAccept } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
-import { Notes, Notifications } from "~/drizzle/schema";
+import { Likes, Notes, Notifications } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -363,6 +364,23 @@ export default apiRoute((app) =>
 
                     return context.text("Follow request rejected", 200);
                 },
+                "pub.versia:likes/Like": async (like) => {
+                    const author = await User.resolve(like.author);
+
+                    if (!author) {
+                        return context.json({ error: "Author not found" }, 400);
+                    }
+
+                    const note = await Note.resolve(like.liked);
+
+                    if (!note) {
+                        return context.json({ error: "Note not found" }, 400);
+                    }
+
+                    await author.like(note, like.uri);
+
+                    return context.text("Like added", 200);
+                },
                 // "delete" is a reserved keyword in JS
                 delete: async (delete_) => {
                     // Delete the specified object from database, if it exists and belongs to the user
@@ -400,6 +418,24 @@ export default apiRoute((app) =>
                             }
 
                             break;
+                        }
+                        case "pub.versia:likes/Like": {
+                            const like = await Like.fromSql(
+                                eq(Likes.uri, toDelete),
+                                eq(Likes.likerId, user.id),
+                            );
+
+                            if (like) {
+                                await like.delete();
+                                return context.text("Like deleted", 200);
+                            }
+
+                            return context.json(
+                                {
+                                    error: "Like not found or not owned by user",
+                                },
+                                404,
+                            );
                         }
                         default: {
                             return context.json(

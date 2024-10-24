@@ -447,9 +447,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * If the note is already liked, it will return the existing like. Also creates a notification for the author of the note.
      * @param note The note to like
+     * @param uri The URI of the like, if it is remote
      * @returns The like object created or the existing like
      */
-    public async like(note: Note): Promise<Like> {
+    public async like(note: Note, uri?: string): Promise<Like> {
         // Check if the user has already liked the note
         const existingLike = await Like.fromSql(
             and(eq(Likes.likerId, this.id), eq(Likes.likedId, note.id)),
@@ -462,9 +463,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const newLike = await Like.insert({
             likerId: this.id,
             likedId: note.id,
+            uri,
         });
 
-        if (note.author.data.instanceId === this.data.instanceId) {
+        if (this.isLocal() && note.author.isLocal()) {
             // Notify the user that their post has been favourited
             await db.insert(Notifications).values({
                 accountId: this.id,
@@ -472,7 +474,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 notifiedId: note.author.id,
                 noteId: note.id,
             });
-        } else {
+        } else if (this.isLocal() && note.author.isRemote()) {
             // Federate the like
             this.federateToFollowers(newLike.toVersia());
         }
@@ -498,19 +500,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         await likeToDelete.delete();
 
-        // Remove any eventual notifications for this like
-        await db
-            .delete(Notifications)
-            .where(
-                and(
-                    eq(Notifications.accountId, this.id),
-                    eq(Notifications.type, "favourite"),
-                    eq(Notifications.notifiedId, note.author.id),
-                    eq(Notifications.noteId, note.id),
-                ),
-            );
-
-        if (this.isLocal() && note.author.isRemote()) {
+        if (this.isLocal() && note.author.isLocal()) {
+            // Remove any eventual notifications for this like
+            await db
+                .delete(Notifications)
+                .where(
+                    and(
+                        eq(Notifications.accountId, this.id),
+                        eq(Notifications.type, "favourite"),
+                        eq(Notifications.notifiedId, note.author.id),
+                        eq(Notifications.noteId, note.id),
+                    ),
+                );
+        } else if (this.isLocal() && note.author.isRemote()) {
             // User is local, federate the delete
             this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }

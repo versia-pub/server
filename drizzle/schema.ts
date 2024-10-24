@@ -120,6 +120,7 @@ export const Markers = pgTable("Markers", {
 
 export const Likes = pgTable("Likes", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    uri: text("uri").unique(),
     likerId: uuid("likerId")
         .notNull()
         .references(() => Users.id, {
