@@ -1,6 +1,7 @@
 import { Hooks, Plugin } from "@versia/kit";
 import chalk from "chalk";
 import { z } from "zod";
+import { User } from "@versia/kit/db";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
 import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";
@@ -26,38 +27,60 @@ const plugin = new Plugin(
                 }),
             )
             .default([]),
-        keys: z.object({
-            public: z.string().transform(async (v) => {
-                try {
-                    return await crypto.subtle.importKey(
-                        "spki",
-                        Buffer.from(v, "base64"),
-                        "Ed25519",
-                        true,
-                        ["verify"],
-                    );
-                } catch {
-                    throw new Error(
-                        `Public key at keys.public is invalid. Run the ${chalk.bold("generate-keys")} command to generate a new keypair`,
-                    );
+        keys: z
+            .object({
+                public: z
+                    .string()
+                    .min(1)
+                    .transform(async (v) => {
+                        try {
+                            return await crypto.subtle.importKey(
+                                "spki",
+                                Buffer.from(v, "base64"),
+                                "Ed25519",
+                                true,
+                                ["verify"],
+                            );
+                        } catch {
+                            throw new Error(
+                                "Public key at oidc.keys.public is invalid",
+                            );
+                        }
+                    }),
+                private: z
+                    .string()
+                    .min(1)
+                    .transform(async (v) => {
+                        try {
+                            return await crypto.subtle.importKey(
+                                "pkcs8",
+                                Buffer.from(v, "base64"),
+                                "Ed25519",
+                                true,
+                                ["sign"],
+                            );
+                        } catch {
+                            throw new Error(
+                                "Private key at oidc.keys.private is invalid",
+                            );
+                        }
+                    }),
+            })
+            .optional()
+            .transform(async (v, ctx) => {
+                if (!(v?.private && v?.public)) {
+                    const { public_key, private_key } =
+                        await User.generateKeys();
+
+                    ctx.addIssue({
+                        code: z.ZodIssueCode.custom,
+                        message: `Keys are missing, please add the following to your config:\n\nkeys.public: ${chalk.gray(public_key)}\nkeys.private: ${chalk.gray(private_key)}
+                        `,
+                    });
                 }
+
+                return v as Exclude<typeof v, undefined>;
             }),
-            private: z.string().transform(async (v) => {
-                try {
-                    return await crypto.subtle.importKey(
-                        "pkcs8",
-                        Buffer.from(v, "base64"),
-                        "Ed25519",
-                        true,
-                        ["sign"],
-                    );
-                } catch {
-                    throw new Error(
-                        `Private key at keys.private is invalid. Run the ${chalk.bold("generate-keys")} command to generate a new keypair`,
-                    );
-                }
-            }),
-        }),
     }),
 );
 

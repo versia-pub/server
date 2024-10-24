@@ -1,5 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
+import { User } from "~/classes/database/user";
 import type { Config } from "~/packages/config-manager";
 
 export const checkConfig = async (config: Config) => {
@@ -68,8 +69,15 @@ const checkFederationConfig = async (config: Config) => {
     const logger = getLogger("server");
 
     if (!(config.instance.keys.public && config.instance.keys.private)) {
-        logger.fatal`The federation keys are not set in the config at instance.keys.public and instance.keys.private`;
-        logger.fatal`You can generate a keypair using the CLI command ${chalk.bold("generate-keys")}`;
+        logger.fatal`The federation keys are not set in the config`;
+        logger.fatal`Below are generated keys for you to copy in the config at instance.keys.public and instance.keys.private`;
+
+        // Generate a key for them
+        const { public_key, private_key } = await User.generateKeys();
+
+        logger.fatal`Generated public key: ${chalk.gray(public_key)}`;
+        logger.fatal`Generated private key: ${chalk.gray(private_key)}`;
+
         // Hang until Ctrl+C is pressed
         await Bun.sleep(Number.POSITIVE_INFINITY);
     }
