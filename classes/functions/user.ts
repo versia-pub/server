@@ -189,29 +189,6 @@ export const findManyUsers = async (
     return output.map((user) => transformOutputToUserWithRelations(user));
 };
 
-/**
- * Retrieves a user from a token.
- * @param access_token The access token to retrieve the user from.
- * @returns The user associated with the given access token.
- */
-export const retrieveUserFromToken = async (
-    accessToken: string,
-): Promise<User | null> => {
-    if (!accessToken) {
-        return null;
-    }
-
-    const token = await retrieveToken(accessToken);
-
-    if (!token?.userId) {
-        return null;
-    }
-
-    const user = await User.fromId(token.userId);
-
-    return user;
-};
-
 export const retrieveUserAndApplicationFromToken = async (
     accessToken: string,
 ): Promise<{
