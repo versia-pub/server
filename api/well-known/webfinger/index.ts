@@ -137,8 +137,9 @@ export default apiRoute((app) =>
                     },
                     {
                         rel: "avatar",
+                        // TODO: don't... don't use the mime type from the file extension
                         type:
-                            lookup(user.getAvatarUrl(config)) ??
+                            lookup(user.getAvatarUrl(config)) ||
                             "application/octet-stream",
                         href: user.getAvatarUrl(config),
                     },
