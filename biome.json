@@ -76,7 +76,9 @@
                 "noUselessEscapeInRegex": "warn",
                 "noUselessStringRaw": "warn",
                 "useAdjacentOverloadSignatures": "warn",
-                "useExplicitType": "warn"
+                "useExplicitType": "warn",
+                "useGuardForIn": "warn",
+                "useTrimStartEnd": "warn"
             }
         }
     },
