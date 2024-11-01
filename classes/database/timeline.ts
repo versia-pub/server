@@ -10,9 +10,9 @@ enum TimelineType {
 }
 
 export class Timeline<Type extends Note | User> {
-    constructor(private type: TimelineType) {}
+    public constructor(private type: TimelineType) {}
 
-    static getNoteTimeline(
+    public static getNoteTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
@@ -26,7 +26,7 @@ export class Timeline<Type extends Note | User> {
         );
     }
 
-    static getUserTimeline(
+    public static getUserTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,

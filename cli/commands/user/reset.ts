@@ -7,14 +7,14 @@ import { formatArray } from "~/cli/utils/format";
 import { config } from "~/packages/config-manager";
 
 export default class UserReset extends UserFinderCommand<typeof UserReset> {
-    static override description = "Resets users' passwords";
+    public static override description = "Resets users' passwords";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> johngastron --type username",
         "<%= config.bin %> <%= command.id %> 018ec11c-c6cb-7a67-bd20-a4c81bf42912",
     ];
 
-    static override flags = {
+    public static override flags = {
         confirm: Flags.boolean({
             description:
                 "Ask for confirmation before deleting the user (default yes)",
@@ -32,7 +32,7 @@ export default class UserReset extends UserFinderCommand<typeof UserReset> {
         }),
     };
 
-    static override args = {
+    public static override args = {
         identifier: UserFinderCommand.baseArgs.identifier,
     };
 

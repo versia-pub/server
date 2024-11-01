@@ -64,7 +64,7 @@ export type HonoEnv = {
 };
 
 export interface ApiRouteExports {
-    meta: ApiRouteMetadata;
+    meta?: ApiRouteMetadata;
     schemas?: {
         query?: z.AnyZodObject;
         body?: z.AnyZodObject;

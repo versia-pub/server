@@ -6,16 +6,16 @@ import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
 
 export default class EmojiList extends BaseCommand<typeof EmojiList> {
-    static override args = {};
+    public static override args = {};
 
-    static override description = "List all emojis";
+    public static override description = "List all emojis";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> --format json --local",
         "<%= config.bin %> <%= command.id %>",
     ];
 
-    static override flags = {
+    public static override flags = {
         format: Flags.string({
             char: "f",
             description: "Output format",

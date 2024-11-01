@@ -68,7 +68,7 @@ import { Role } from "./role.ts";
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
-    static schema: z.ZodType<ApiAccount> = z.object({
+    public static schema: z.ZodType<ApiAccount> = z.object({
         id: z.string(),
         username: z.string(),
         acct: z.string(),
@@ -125,7 +125,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         mute_expires_at: z.string().optional(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await User.fromId(this.data.id);
 
         if (!reloaded) {
@@ -135,7 +135,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         this.data = reloaded.data;
     }
 
-    static async fromId(id: string | null): Promise<User | null> {
+    public static async fromId(id: string | null): Promise<User | null> {
         if (!id) {
             return null;
         }
@@ -143,11 +143,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return await User.fromSql(eq(Users.id, id));
     }
 
-    static async fromIds(ids: string[]): Promise<User[]> {
+    public static async fromIds(ids: string[]): Promise<User[]> {
         return await User.manyFromSql(inArray(Users.id, ids));
     }
 
-    static async fromSql(
+    public static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Users.id),
     ) {
@@ -162,7 +162,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new User(found[0]);
     }
 
-    static async manyFromSql(
+    public static async manyFromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Users.id),
         limit?: number,
@@ -180,26 +180,26 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return found.map((s) => new User(s));
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 
-    isLocal() {
+    public isLocal() {
         return this.data.instanceId === null;
     }
 
-    isRemote() {
+    public isRemote() {
         return !this.isLocal();
     }
 
-    getUri() {
+    public getUri() {
         return (
             this.data.uri ||
             new URL(`/users/${this.data.id}`, config.http.base_url).toString()
         );
     }
 
-    static getUri(id: string, uri: string | null, baseUrl: string) {
+    public static getUri(id: string, uri: string | null, baseUrl: string) {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
     }
 
@@ -270,7 +270,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return foundRelationship;
     }
 
-    async unfollow(followee: User, relationship: Relationship) {
+    public async unfollow(followee: User, relationship: Relationship) {
         if (followee.isRemote()) {
             // TODO: This should reschedule for a later time and maybe notify the server admin if it fails too often
             const { ok } = await this.federateToUser(
@@ -329,7 +329,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    static async webFinger(
+    public static async webFinger(
         manager: FederationRequester,
         username: string,
         hostname: string,
@@ -344,11 +344,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    static getCount(): Promise<number> {
+    public static getCount(): Promise<number> {
         return db.$count(Users, isNull(Users.instanceId));
     }
 
-    static async getActiveInPeriod(milliseconds: number) {
+    public static async getActiveInPeriod(milliseconds: number) {
         return (
             await db
                 .select({
@@ -368,7 +368,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         )[0].count;
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Users).where(inArray(Users.id, ids));
         } else {
@@ -376,7 +376,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    async resetPassword() {
+    public async resetPassword() {
         const resetToken = randomString(32, "hex");
 
         await this.update({
@@ -386,7 +386,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return resetToken;
     }
 
-    async pin(note: Note) {
+    public async pin(note: Note) {
         return (
             await db
                 .insert(UserToPinnedNotes)
@@ -398,7 +398,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         )[0];
     }
 
-    async unpin(note: Note) {
+    public async unpin(note: Note) {
         return (
             await db
                 .delete(UserToPinnedNotes)
@@ -412,7 +412,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         )[0];
     }
 
-    save(): Promise<UserWithRelations> {
+    public save(): Promise<UserWithRelations> {
         return this.update(this.data);
     }
 
@@ -534,7 +534,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    async updateFromRemote(): Promise<User> {
+    public async updateFromRemote(): Promise<User> {
         if (!this.isRemote()) {
             throw new Error(
                 "Cannot refetch a local user (they are not remote)",
@@ -548,7 +548,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this;
     }
 
-    static async saveFromRemote(uri: string): Promise<User> {
+    public static async saveFromRemote(uri: string): Promise<User> {
         if (!URL.canParse(uri)) {
             throw new Error(`Invalid URI: ${uri}`);
         }
@@ -618,7 +618,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return finalUser;
     }
 
-    static async fromVersia(
+    public static async fromVersia(
         user: VersiaUser,
         instance: Instance,
     ): Promise<User> {
@@ -686,7 +686,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return user;
     }
 
-    static async resolve(uri: string): Promise<User | null> {
+    public static async resolve(uri: string): Promise<User | null> {
         // Check if user not already in database
         const foundUser = await User.fromSql(eq(Users.uri, uri));
 
@@ -715,7 +715,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's avatar
      */
-    getAvatarUrl(config: Config) {
+    public getAvatarUrl(config: Config) {
         if (!this.data.avatar) {
             return (
                 config.defaults.avatar ||
@@ -725,7 +725,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.data.avatar;
     }
 
-    static async generateKeys() {
+    public static async generateKeys() {
         const keys = await crypto.subtle.generateKey("Ed25519", true, [
             "sign",
             "verify",
@@ -747,7 +747,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    static async fromDataLocal(data: {
+    public static async fromDataLocal(data: {
         username: string;
         display_name?: string;
         password: string | undefined;
@@ -807,24 +807,28 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's header
      */
-    getHeaderUrl(config: Config) {
+    public getHeaderUrl(config: Config) {
         if (!this.data.header) {
             return config.defaults.header || "";
         }
         return this.data.header;
     }
 
-    getAcct() {
+    public getAcct() {
         return this.isLocal()
             ? this.data.username
             : `${this.data.username}@${this.data.instance?.baseUrl}`;
     }
 
-    static getAcct(isLocal: boolean, username: string, baseUrl?: string) {
+    public static getAcct(
+        isLocal: boolean,
+        username: string,
+        baseUrl?: string,
+    ) {
         return isLocal ? username : `${username}@${baseUrl}`;
     }
 
-    async update(
+    public async update(
         newUser: Partial<UserWithRelations>,
     ): Promise<UserWithRelations> {
         await db.update(Users).set(newUser).where(eq(Users.id, this.id));
@@ -865,7 +869,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param signatureMethod HTTP method to embed in signature (default: POST)
      * @returns The signed string and headers to send with the request
      */
-    async sign(
+    public async sign(
         entity: KnownEntity | Collection,
         signatureUrl: string | URL,
         signatureMethod: HttpVerb = "POST",
@@ -902,7 +906,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * @returns The requester
      */
-    static async getFederationRequester(): Promise<FederationRequester> {
+    public static async getFederationRequester(): Promise<FederationRequester> {
         const signatureConstructor = await SignatureConstructor.fromStringKey(
             config.instance.keys.private,
             config.http.base_url,
@@ -916,7 +920,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * @returns The requester
      */
-    async getFederationRequester(): Promise<FederationRequester> {
+    public async getFederationRequester(): Promise<FederationRequester> {
         const signatureConstructor = await SignatureConstructor.fromStringKey(
             this.data.privateKey ?? "",
             this.getUri(),
@@ -930,7 +934,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * @param entity Entity to federate
      */
-    async federateToFollowers(entity: KnownEntity): Promise<void> {
+    public async federateToFollowers(entity: KnownEntity): Promise<void> {
         // Get followers
         const followers = await User.manyFromSql(
             and(
@@ -951,7 +955,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param user User to federate to
      * @returns Whether the federation was successful
      */
-    async federateToUser(
+    public async federateToUser(
         entity: KnownEntity,
         user: User,
     ): Promise<{ ok: boolean }> {
@@ -985,7 +989,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return { ok: true };
     }
 
-    toApi(isOwnAccount = false): ApiAccount {
+    public toApi(isOwnAccount = false): ApiAccount {
         const user = this.data;
         return {
             id: user.id,
@@ -1055,7 +1059,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toVersia(): VersiaUser {
+    public toVersia(): VersiaUser {
         if (this.isRemote()) {
             throw new Error("Cannot convert remote user to Versia format");
         }
@@ -1132,7 +1136,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    toMention(): ApiMention {
+    public toMention(): ApiMention {
         return {
             url: this.getUri(),
             username: this.data.username,

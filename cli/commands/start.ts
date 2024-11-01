@@ -3,16 +3,16 @@ import { Flags } from "@oclif/core";
 import { BaseCommand } from "~/cli/base";
 
 export default class Start extends BaseCommand<typeof Start> {
-    static override args = {};
+    public static override args = {};
 
-    static override description = "Starts Versia Server";
+    public static override description = "Starts Versia Server";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> --threads 4",
         "<%= config.bin %> <%= command.id %> --all-threads",
     ];
 
-    static override flags = {
+    public static override flags = {
         threads: Flags.integer({
             char: "t",
             description: "Number of threads to use",

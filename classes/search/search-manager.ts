@@ -31,7 +31,7 @@ export class SonicSearchManager {
     /**
      * @param config Configuration for Sonic
      */
-    constructor(private config: Config) {
+    public constructor(private config: Config) {
         this.searchChannel = new SonicChannelSearch({
             host: config.sonic.host,
             port: config.sonic.port,
@@ -48,7 +48,7 @@ export class SonicSearchManager {
     /**
      * Connect to Sonic
      */
-    async connect(silent = false): Promise<void> {
+    public async connect(silent = false): Promise<void> {
         if (!this.config.sonic.enabled) {
             !silent && this.logger.info`Sonic search is disabled`;
             return;
@@ -125,7 +125,7 @@ export class SonicSearchManager {
      * Add a user to Sonic
      * @param user User to add
      */
-    async addUser(user: User): Promise<void> {
+    public async addUser(user: User): Promise<void> {
         if (!this.config.sonic.enabled) {
             return;
         }
@@ -192,7 +192,7 @@ export class SonicSearchManager {
      * @param batchSize Size of each batch
      * @param progressCallback Callback for progress updates
      */
-    async rebuildSearchIndexes(
+    public async rebuildSearchIndexes(
         indexes: SonicIndexType[],
         batchSize = 100,
         progressCallback?: (progress: number) => void,
@@ -275,7 +275,11 @@ export class SonicSearchManager {
      * @param limit Maximum number of results
      * @param offset Offset for pagination
      */
-    searchAccounts(query: string, limit = 10, offset = 0): Promise<string[]> {
+    public searchAccounts(
+        query: string,
+        limit = 10,
+        offset = 0,
+    ): Promise<string[]> {
         return this.searchChannel.query(
             SonicIndexType.Accounts,
             "users",
@@ -290,7 +294,11 @@ export class SonicSearchManager {
      * @param limit Maximum number of results
      * @param offset Offset for pagination
      */
-    searchStatuses(query: string, limit = 10, offset = 0): Promise<string[]> {
+    public searchStatuses(
+        query: string,
+        limit = 10,
+        offset = 0,
+    ): Promise<string[]> {
         return this.searchChannel.query(
             SonicIndexType.Statuses,
             "notes",

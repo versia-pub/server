@@ -40,7 +40,7 @@ export class ImageConversionPreprocessor implements MediaPreprocessor {
      * Creates a new ImageConversionPreprocessor instance.
      * @param config - The configuration object.
      */
-    constructor(private config: Config) {}
+    public constructor(private config: Config) {}
 
     /**
      * @inheritdoc

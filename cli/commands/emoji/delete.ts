@@ -13,18 +13,18 @@ import { config } from "~/packages/config-manager";
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete
 > {
-    static override args = {
+    public static override args = {
         identifier: EmojiFinderCommand.baseArgs.identifier,
     };
 
-    static override description = "Deletes an emoji";
+    public static override description = "Deletes an emoji";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> baba_yassie",
         '<%= config.bin %> <%= command.id %> "baba\\*" --pattern',
     ];
 
-    static override flags = {
+    public static override flags = {
         confirm: Flags.boolean({
             description:
                 "Ask for confirmation before deleting the emoji (default yes)",

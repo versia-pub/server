@@ -19,7 +19,7 @@ import { BaseInterface } from "./base.ts";
 export type AttachmentType = InferSelectModel<typeof Attachments>;
 
 export class Attachment extends BaseInterface<typeof Attachments> {
-    static schema: z.ZodType<ApiAttachment> = z.object({
+    public static schema: z.ZodType<ApiAttachment> = z.object({
         id: z.string().uuid(),
         type: z.enum(["unknown", "image", "gifv", "video", "audio"]),
         url: z.string().url(),
@@ -47,7 +47,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         blurhash: z.string().nullable(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Attachment.fromId(this.data.id);
 
         if (!reloaded) {
@@ -102,7 +102,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return found.map((s) => new Attachment(s));
     }
 
-    async update(
+    public async update(
         newAttachment: Partial<AttachmentType>,
     ): Promise<AttachmentType> {
         await db
@@ -120,11 +120,11 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return updated.data;
     }
 
-    save(): Promise<AttachmentType> {
+    public save(): Promise<AttachmentType> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Attachments).where(inArray(Attachments.id, ids));
         } else {
@@ -148,7 +148,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return attachment;
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

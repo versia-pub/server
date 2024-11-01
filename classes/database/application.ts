@@ -15,7 +15,7 @@ import { BaseInterface } from "./base.ts";
 export type ApplicationType = InferSelectModel<typeof Applications>;
 
 export class Application extends BaseInterface<typeof Applications> {
-    static schema: z.ZodType<APIApplication> = z.object({
+    public static schema: z.ZodType<APIApplication> = z.object({
         name: z.string(),
         website: z.string().url().optional().nullable(),
         vapid_key: z.string().optional().nullable(),
@@ -23,7 +23,7 @@ export class Application extends BaseInterface<typeof Applications> {
         scopes: z.string().optional(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Application.fromId(this.data.id);
 
         if (!reloaded) {
@@ -95,7 +95,7 @@ export class Application extends BaseInterface<typeof Applications> {
         return Application.fromSql(eq(Applications.clientId, clientId));
     }
 
-    async update(
+    public async update(
         newApplication: Partial<ApplicationType>,
     ): Promise<ApplicationType> {
         await db
@@ -113,11 +113,11 @@ export class Application extends BaseInterface<typeof Applications> {
         return updated.data;
     }
 
-    save(): Promise<ApplicationType> {
+    public save(): Promise<ApplicationType> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Applications).where(inArray(Applications.id, ids));
         } else {
@@ -141,7 +141,7 @@ export class Application extends BaseInterface<typeof Applications> {
         return application;
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

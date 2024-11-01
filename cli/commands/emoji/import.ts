@@ -20,22 +20,22 @@ type MetaType = {
 };
 
 export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
-    static override args = {
+    public static override args = {
         path: Args.string({
             description: "Path to the emoji archive (can be an URL)",
             required: true,
         }),
     };
 
-    static override description =
+    public static override description =
         "Imports emojis from a zip file (which can be fetched from a zip URL, e.g. for Pleroma emoji packs)";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> https://volpeon.ink/emojis/neocat/neocat.zip",
         "<%= config.bin %> <%= command.id %> export.zip",
     ];
 
-    static override flags = {
+    public static override flags = {
         confirm: Flags.boolean({
             description:
                 "Ask for confirmation before deleting the emoji (default yes)",

@@ -3,11 +3,12 @@ import chalk from "chalk";
 import { BaseCommand } from "~/cli/base";
 
 export default class GenerateKeys extends BaseCommand<typeof GenerateKeys> {
-    static override args = {};
+    public static override args = {};
 
-    static override description = "Generates keys to use in Versia Server";
+    public static override description =
+        "Generates keys to use in Versia Server";
 
-    static override flags = {};
+    public static override flags = {};
 
     public async run(): Promise<void> {
         const { public_key, private_key } = await User.generateKeys();

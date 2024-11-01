@@ -19,9 +19,9 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         fn: (app: OpenAPIHono<HonoPluginEnv<ConfigSchema>>) => void;
     }[] = [];
 
-    constructor(private configSchema: ConfigSchema) {}
+    public constructor(private configSchema: ConfigSchema) {}
 
-    get middleware() {
+    public get middleware() {
         // Middleware that adds the plugin's configuration to the request object
         return createMiddleware<HonoPluginEnv<ConfigSchema>>(
             async (context, next) => {
@@ -70,7 +70,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         this.handlers[hook] = handler;
     }
 
-    static [Symbol.hasInstance](instance: unknown): boolean {
+    public static [Symbol.hasInstance](instance: unknown): boolean {
         return (
             typeof instance === "object" &&
             instance !== null &&

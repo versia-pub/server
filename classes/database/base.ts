@@ -18,7 +18,7 @@ export abstract class BaseInterface<
      *
      * @param data - The data for the model.
      */
-    constructor(public data: Columns) {}
+    public constructor(public data: Columns) {}
 
     /**
      * Saves the current state of the model to the database.

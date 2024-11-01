@@ -60,7 +60,13 @@
                 }
             },
             "nursery": {
-                "noDuplicateElseIf": "warn"
+                "noDuplicateElseIf": "warn",
+                "useConsistentMemberAccessibility": {
+                    "level": "warn",
+                    "options": {
+                        "accessibility": "explicit"
+                    }
+                }
             }
         }
     },

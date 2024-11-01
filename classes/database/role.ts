@@ -18,7 +18,7 @@ import { BaseInterface } from "./base.ts";
 export type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
-    static schema = z.object({
+    public static schema = z.object({
         id: z.string(),
         name: z.string(),
         permissions: z.array(z.nativeEnum(RolePermission)),
@@ -28,7 +28,7 @@ export class Role extends BaseInterface<typeof Roles> {
         icon: z.string().nullable(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Role.fromId(this.data.id);
 
         if (!reloaded) {
@@ -127,7 +127,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return found.map((s) => new Role(s));
     }
 
-    async update(newRole: Partial<RoleType>): Promise<RoleType> {
+    public async update(newRole: Partial<RoleType>): Promise<RoleType> {
         await db.update(Roles).set(newRole).where(eq(Roles.id, this.id));
 
         const updated = await Role.fromId(this.data.id);
@@ -139,11 +139,11 @@ export class Role extends BaseInterface<typeof Roles> {
         return updated.data;
     }
 
-    save(): Promise<RoleType> {
+    public save(): Promise<RoleType> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Roles).where(inArray(Roles.id, ids));
         } else {
@@ -183,7 +183,7 @@ export class Role extends BaseInterface<typeof Roles> {
             );
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

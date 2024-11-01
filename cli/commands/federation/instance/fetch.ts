@@ -7,18 +7,18 @@ import { formatArray } from "~/cli/utils/format";
 export default class FederationInstanceFetch extends BaseCommand<
     typeof FederationInstanceFetch
 > {
-    static override args = {
+    public static override args = {
         url: Args.string({
             description: "URL of the remote instance",
             required: true,
         }),
     };
 
-    static override description = "Fetch metadata from remote instances";
+    public static override description = "Fetch metadata from remote instances";
 
-    static override examples = ["<%= config.bin %> <%= command.id %>"];
+    public static override examples = ["<%= config.bin %> <%= command.id %>"];
 
-    static override flags = {};
+    public static override flags = {};
 
     public async run(): Promise<void> {
         const { args } = await this.parse(FederationInstanceFetch);

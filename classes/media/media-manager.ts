@@ -32,7 +32,7 @@ export class MediaManager {
      * Creates a new MediaManager instance.
      * @param config - The configuration object.
      */
-    constructor(private config: Config) {
+    public constructor(private config: Config) {
         this.driver = this.initializeDriver();
         this.initializePreprocessors();
     }

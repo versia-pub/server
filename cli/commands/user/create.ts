@@ -9,21 +9,21 @@ import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
 
 export default class UserCreate extends BaseCommand<typeof UserCreate> {
-    static override args = {
+    public static override args = {
         username: Args.string({
             description: "Username",
             required: true,
         }),
     };
 
-    static override description = "Creates a new user";
+    public static override description = "Creates a new user";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> johngastron --email joe@gamer.com",
         "<%= config.bin %> <%= command.id %> bimbobaggins",
     ];
 
-    static override flags = {
+    public static override flags = {
         format: Flags.string({
             char: "f",
             description:

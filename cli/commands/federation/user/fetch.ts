@@ -8,18 +8,18 @@ import { BaseCommand } from "~/cli/base";
 export default class FederationUserFetch extends BaseCommand<
     typeof FederationUserFetch
 > {
-    static override args = {
+    public static override args = {
         address: Args.string({
             description: "Address of remote user (name@host.com)",
             required: true,
         }),
     };
 
-    static override description = "Fetch remote users";
+    public static override description = "Fetch remote users";
 
-    static override examples = ["<%= config.bin %> <%= command.id %>"];
+    public static override examples = ["<%= config.bin %> <%= command.id %>"];
 
-    static override flags = {};
+    public static override flags = {};
 
     public async run(): Promise<void> {
         const { args } = await this.parse(FederationUserFetch);

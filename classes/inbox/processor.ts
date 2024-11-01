@@ -68,7 +68,7 @@ export class InboxProcessor {
      * @param logger LogTape logger instance.
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
      */
-    constructor(
+    public constructor(
         private context: Context,
         private body: Entity,
         private sender: User,

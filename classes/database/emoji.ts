@@ -22,7 +22,7 @@ export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
 };
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
-    static schema = z.object({
+    public static schema = z.object({
         shortcode: z.string(),
         url: z.string(),
         visible_in_picker: z.boolean(),
@@ -30,7 +30,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         static_url: z.string(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Emoji.fromId(this.data.id);
 
         if (!reloaded) {
@@ -88,7 +88,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return found.map((s) => new Emoji(s));
     }
 
-    async update(
+    public async update(
         newEmoji: Partial<EmojiWithInstance>,
     ): Promise<EmojiWithInstance> {
         await db.update(Emojis).set(newEmoji).where(eq(Emojis.id, this.id));
@@ -103,11 +103,11 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return updated.data;
     }
 
-    save(): Promise<EmojiWithInstance> {
+    public save(): Promise<EmojiWithInstance> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Emojis).where(inArray(Emojis.id, ids));
         } else {
@@ -160,7 +160,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return await Emoji.fromVersia(emojiToFetch, foundInstance?.id ?? null);
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

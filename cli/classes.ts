@@ -16,7 +16,7 @@ export type ArgsType<T extends typeof Command> = Interfaces.InferredArgs<
 export abstract class UserFinderCommand<
     T extends typeof BaseCommand,
 > extends BaseCommand<typeof UserFinderCommand> {
-    static baseFlags = {
+    public static baseFlags = {
         pattern: Flags.boolean({
             char: "p",
             description:
@@ -48,7 +48,7 @@ export abstract class UserFinderCommand<
         }),
     };
 
-    static baseArgs = {
+    public static baseArgs = {
         identifier: Args.string({
             description:
                 "Identifier of the user (by default this must be an address, i.e. name@host.com)",
@@ -156,7 +156,7 @@ export abstract class UserFinderCommand<
 export abstract class EmojiFinderCommand<
     T extends typeof BaseCommand,
 > extends BaseCommand<typeof EmojiFinderCommand> {
-    static baseFlags = {
+    public static baseFlags = {
         pattern: Flags.boolean({
             char: "p",
             description:
@@ -181,7 +181,7 @@ export abstract class EmojiFinderCommand<
         }),
     };
 
-    static baseArgs = {
+    public static baseArgs = {
         identifier: Args.string({
             description: "Identifier of the emoji (defaults to shortcode)",
             required: true,

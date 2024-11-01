@@ -19,7 +19,7 @@ export class S3MediaDriver implements MediaDriver {
      * Creates a new S3MediaDriver instance.
      * @param config - The configuration object.
      */
-    constructor(config: Config) {
+    public constructor(config: Config) {
         this.s3Client = new S3Client({
             endPoint: config.s3.endpoint,
             useSSL: true,

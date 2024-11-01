@@ -5,7 +5,7 @@ import { BaseCommand } from "~/cli/base";
 import { config } from "~/packages/config-manager";
 
 export default class IndexRebuild extends BaseCommand<typeof IndexRebuild> {
-    static override args = {
+    public static override args = {
         type: Args.string({
             description: "Index category to rebuild",
             options: ["accounts", "statuses"],
@@ -13,11 +13,11 @@ export default class IndexRebuild extends BaseCommand<typeof IndexRebuild> {
         }),
     };
 
-    static override description = "Rebuild search indexes";
+    public static override description = "Rebuild search indexes";
 
-    static override examples = ["<%= config.bin %> <%= command.id %>"];
+    public static override examples = ["<%= config.bin %> <%= command.id %>"];
 
-    static override flags = {
+    public static override flags = {
         "batch-size": Flags.integer({
             char: "b",
             description: "Number of items to process in each batch",

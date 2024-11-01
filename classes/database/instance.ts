@@ -23,7 +23,7 @@ import { User } from "./user.ts";
 export type InstanceType = InferSelectModel<typeof Instances>;
 
 export class Instance extends BaseInterface<typeof Instances> {
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Instance.fromId(this.data.id);
 
         if (!reloaded) {
@@ -78,7 +78,9 @@ export class Instance extends BaseInterface<typeof Instances> {
         return found.map((s) => new Instance(s));
     }
 
-    async update(newInstance: Partial<InstanceType>): Promise<InstanceType> {
+    public async update(
+        newInstance: Partial<InstanceType>,
+    ): Promise<InstanceType> {
         await db
             .update(Instances)
             .set(newInstance)
@@ -94,11 +96,11 @@ export class Instance extends BaseInterface<typeof Instances> {
         return updated.data;
     }
 
-    save(): Promise<InstanceType> {
+    public save(): Promise<InstanceType> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Instances).where(inArray(Instances.id, ids));
         } else {
@@ -130,11 +132,11 @@ export class Instance extends BaseInterface<typeof Instances> {
         return instance;
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 
-    static async fetchMetadata(url: string): Promise<{
+    public static async fetchMetadata(url: string): Promise<{
         metadata: InstanceMetadata;
         protocol: "versia" | "activitypub";
     } | null> {
@@ -315,7 +317,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
-    static async resolve(url: string): Promise<Instance> {
+    public static async resolve(url: string): Promise<Instance> {
         const logger = getLogger("federation");
         const host = new URL(url).host;
 
@@ -345,7 +347,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         });
     }
 
-    static getCount(): Promise<number> {
+    public static getCount(): Promise<number> {
         return db.$count(Instances);
     }
 }

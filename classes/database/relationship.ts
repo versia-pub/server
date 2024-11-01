@@ -26,7 +26,7 @@ export class Relationship extends BaseInterface<
     typeof Relationships,
     RelationshipWithOpposite
 > {
-    static schema = z.object({
+    public static schema = z.object({
         id: z.string(),
         blocked_by: z.boolean(),
         blocking: z.boolean(),
@@ -43,7 +43,7 @@ export class Relationship extends BaseInterface<
         showing_reblogs: z.boolean(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Relationship.fromId(this.data.id);
 
         if (!reloaded) {
@@ -232,7 +232,7 @@ export class Relationship extends BaseInterface<
         return output;
     }
 
-    async update(
+    public async update(
         newRelationship: Partial<RelationshipType>,
     ): Promise<RelationshipWithOpposite> {
         await db
@@ -250,11 +250,11 @@ export class Relationship extends BaseInterface<
         return updated.data;
     }
 
-    save(): Promise<RelationshipWithOpposite> {
+    public save(): Promise<RelationshipWithOpposite> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db
                 .delete(Relationships)
@@ -286,7 +286,7 @@ export class Relationship extends BaseInterface<
         return relationship;
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

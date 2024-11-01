@@ -24,7 +24,7 @@ export type LikeType = InferSelectModel<typeof Likes> & {
 };
 
 export class Like extends BaseInterface<typeof Likes, LikeType> {
-    static schema = z.object({
+    public static schema = z.object({
         id: z.string(),
         name: z.string(),
         permissions: z.array(z.nativeEnum(RolePermission)),
@@ -34,7 +34,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         icon: z.string().nullable(),
     });
 
-    async reload(): Promise<void> {
+    public async reload(): Promise<void> {
         const reloaded = await Like.fromId(this.data.id);
 
         if (!reloaded) {
@@ -97,7 +97,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return found.map((s) => new Like(s));
     }
 
-    async update(newRole: Partial<LikeType>): Promise<LikeType> {
+    public async update(newRole: Partial<LikeType>): Promise<LikeType> {
         await db.update(Likes).set(newRole).where(eq(Likes.id, this.id));
 
         const updated = await Like.fromId(this.data.id);
@@ -109,11 +109,11 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return updated.data;
     }
 
-    save(): Promise<LikeType> {
+    public save(): Promise<LikeType> {
         return this.update(this.data);
     }
 
-    async delete(ids?: string[]): Promise<void> {
+    public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
             await db.delete(Likes).where(inArray(Likes.id, ids));
         } else {
@@ -135,7 +135,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return role;
     }
 
-    get id() {
+    public get id() {
         return this.data.id;
     }
 

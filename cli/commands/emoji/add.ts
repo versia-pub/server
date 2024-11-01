@@ -9,7 +9,7 @@ import { BaseCommand } from "~/cli/base";
 import { config } from "~/packages/config-manager";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
-    static override args = {
+    public static override args = {
         shortcode: Args.string({
             description: "Shortcode of the emoji",
             required: true,
@@ -20,14 +20,14 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
         }),
     };
 
-    static override description = "Adds a new emoji";
+    public static override description = "Adds a new emoji";
 
-    static override examples = [
+    public static override examples = [
         "<%= config.bin %> <%= command.id %> baba_yassie ./emojis/baba_yassie.png",
         "<%= config.bin %> <%= command.id %> baba_yassie https://example.com/emojis/baba_yassie.png",
     ];
 
-    static override flags = {};
+    public static override flags = {};
 
     public async run(): Promise<void> {
         const { args } = await this.parse(EmojiAdd);

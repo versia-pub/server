@@ -18,7 +18,7 @@ export class DiskMediaDriver implements MediaDriver {
      * Creates a new DiskMediaDriver instance.
      * @param config - The configuration object.
      */
-    constructor(private config: Config) {}
+    public constructor(private config: Config) {}
 
     /**
      * @inheritdoc
