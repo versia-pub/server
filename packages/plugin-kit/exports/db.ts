@@ -8,3 +8,5 @@ export { Note } from "~/classes/database/note";
 export { Timeline } from "~/classes/database/timeline";
 export { Application } from "~/classes/database/application";
 export { db } from "~/drizzle/db";
+export { Relationship } from "~/classes/database/relationship";
+export { Like } from "~/classes/database/like";

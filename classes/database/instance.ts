@@ -20,7 +20,7 @@ import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 
-export type AttachmentType = InferSelectModel<typeof Instances>;
+export type InstanceType = InferSelectModel<typeof Instances>;
 
 export class Instance extends BaseInterface<typeof Instances> {
     async reload(): Promise<void> {
@@ -78,9 +78,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return found.map((s) => new Instance(s));
     }
 
-    async update(
-        newInstance: Partial<AttachmentType>,
-    ): Promise<AttachmentType> {
+    async update(newInstance: Partial<InstanceType>): Promise<InstanceType> {
         await db
             .update(Instances)
             .set(newInstance)
@@ -96,7 +94,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return updated.data;
     }
 
-    save(): Promise<AttachmentType> {
+    save(): Promise<InstanceType> {
         return this.update(this.data);
     }
 
@@ -106,6 +104,14 @@ export class Instance extends BaseInterface<typeof Instances> {
         } else {
             await db.delete(Instances).where(eq(Instances.id, this.id));
         }
+    }
+
+    public static async fromUser(user: User): Promise<Instance | null> {
+        if (!user.data.instanceId) {
+            return null;
+        }
+
+        return await Instance.fromId(user.data.instanceId);
     }
 
     public static async insert(

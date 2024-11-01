@@ -111,20 +111,6 @@ export const getFromHeader = async (value: string): Promise<AuthData> => {
     return { user, token, application };
 };
 
-export const sendFollowAccept = async (follower: User, followee: User) => {
-    await follower.federateToUser(
-        followAcceptToVersia(follower, followee),
-        followee,
-    );
-};
-
-export const sendFollowReject = async (follower: User, followee: User) => {
-    await follower.federateToUser(
-        followRejectToVersia(follower, followee),
-        followee,
-    );
-};
-
 export const transformOutputToUserWithRelations = (
     user: Omit<UserType, "endpoints"> & {
         followerCount: unknown;

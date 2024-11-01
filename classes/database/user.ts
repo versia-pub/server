@@ -38,6 +38,8 @@ import { z } from "zod";
 import {
     type UserWithRelations,
     findManyUsers,
+    followAcceptToVersia,
+    followRejectToVersia,
     followRequestToVersia,
 } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
@@ -311,6 +313,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             created_at: new Date().toISOString(),
             followee: followee.getUri(),
         };
+    }
+
+    public async sendFollowAccept(follower: User): Promise<void> {
+        await this.federateToUser(
+            followAcceptToVersia(follower, this),
+            follower,
+        );
+    }
+
+    public async sendFollowReject(follower: User): Promise<void> {
+        await this.federateToUser(
+            followRejectToVersia(follower, this),
+            follower,
+        );
     }
 
     static async webFinger(

@@ -3,7 +3,6 @@ import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { Relationship } from "~/classes/database/relationship";
 import { User } from "~/classes/database/user";
-import { sendFollowAccept } from "~/classes/functions/user";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
@@ -97,7 +96,7 @@ export default apiRoute((app) =>
         // Check if accepting remote follow
         if (account.isRemote()) {
             // Federate follow accept
-            await sendFollowAccept(account, user);
+            await user.sendFollowAccept(account);
         }
 
         return context.json(foundRelationship.toApi(), 200);
