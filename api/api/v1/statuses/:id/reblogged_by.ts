@@ -1,9 +1,9 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline, User } from "@versia/kit/db";
+import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { RolePermissions, Users } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

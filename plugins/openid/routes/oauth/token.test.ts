@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { db } from "@versia/kit/db";
-import { Application } from "@versia/kit/db";
+import { Application, db } from "@versia/kit/db";
 import { eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import { fakeRequest, getTestUsers } from "~/tests/utils";

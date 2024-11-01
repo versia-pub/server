@@ -1,6 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { db } from "@versia/kit/db";
-import { Application } from "@versia/kit/db";
+import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,

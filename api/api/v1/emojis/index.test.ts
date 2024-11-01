@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { db } from "@versia/kit/db";
+import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
 import sharp from "sharp";
-import { db } from "~/drizzle/db";
-import { Emojis } from "~/drizzle/schema";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 

@@ -2,10 +2,10 @@ import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

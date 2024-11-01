@@ -3,18 +3,17 @@ import type {
     FollowAccept,
     FollowReject,
 } from "@versia/federation/types";
-import { User } from "@versia/kit/db";
-import { type InferSelectModel, eq, sql } from "drizzle-orm";
-import type { ApplicationType } from "~/classes/database/application.ts";
-import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
-import { db } from "~/drizzle/db";
+import { User, db } from "@versia/kit/db";
 import {
     Applications,
     type Instances,
     type Roles,
     Tokens,
     type Users,
-} from "~/drizzle/schema";
+} from "@versia/kit/tables";
+import { type InferSelectModel, eq, sql } from "drizzle-orm";
+import type { ApplicationType } from "~/classes/database/application.ts";
+import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
 import type { Token } from "./token.ts";
 
 export type UserType = InferSelectModel<typeof Users>;

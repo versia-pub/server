@@ -1,10 +1,9 @@
 import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
+import { User, db } from "@versia/kit/db";
+import { RolePermissions, Users } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { RolePermissions, Users } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

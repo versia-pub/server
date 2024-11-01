@@ -1,13 +1,13 @@
 import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
+import { db } from "@versia/kit/db";
+import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import ora from "ora";
 import { MediaManager } from "~/classes/media/media-manager";
 import { EmojiFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
-import { db } from "~/drizzle/db";
-import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export default class EmojiDelete extends EmojiFinderCommand<

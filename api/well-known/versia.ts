@@ -3,8 +3,8 @@ import { urlToContentFormat } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
 import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { asc } from "drizzle-orm";
-import { Users } from "~/drizzle/schema";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
 

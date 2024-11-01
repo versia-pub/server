@@ -1,9 +1,8 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note } from "@versia/kit/db";
+import { Note, db } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

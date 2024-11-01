@@ -19,6 +19,17 @@ import type {
     Unfollow,
     User as VersiaUser,
 } from "@versia/federation/types";
+import { db } from "@versia/kit/db";
+import {
+    EmojiToUser,
+    Likes,
+    NoteToMentions,
+    Notes,
+    Notifications,
+    type RolePermissions,
+    UserToPinnedNotes,
+    Users,
+} from "@versia/kit/tables";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -43,17 +54,6 @@ import {
     followRequestToVersia,
 } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
-import { db } from "~/drizzle/db";
-import {
-    EmojiToUser,
-    Likes,
-    NoteToMentions,
-    Notes,
-    Notifications,
-    type RolePermissions,
-    UserToPinnedNotes,
-    Users,
-} from "~/drizzle/schema";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { BaseInterface } from "./base.ts";

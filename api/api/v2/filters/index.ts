@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { db } from "@versia/kit/db";
+import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { FilterKeywords, Filters, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 export const meta = applyConfig({
     route: "/api/v2/filters",

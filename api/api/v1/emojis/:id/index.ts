@@ -1,12 +1,11 @@
 import { apiRoute, applyConfig, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Emoji } from "@versia/kit/db";
+import { Attachment, Emoji, db } from "@versia/kit/db";
+import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
-import { db } from "~/drizzle/db";
-import { Emojis, RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 

@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
+import { db } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Users } from "~/drizzle/schema";
 import { fakeRequest, getSolvedChallenge } from "~/tests/utils";
 import { meta } from "./index.ts";
 

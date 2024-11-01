@@ -1,5 +1,5 @@
+import type { Tokens } from "@versia/kit/tables";
 import type { InferSelectModel } from "drizzle-orm";
-import type { Tokens } from "~/drizzle/schema";
 
 /**
  * The type of token.

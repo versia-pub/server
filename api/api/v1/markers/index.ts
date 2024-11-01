@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
+import { db } from "@versia/kit/db";
+import { Markers, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Markers, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

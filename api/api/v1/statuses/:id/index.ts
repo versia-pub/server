@@ -1,9 +1,9 @@
 import { apiRoute, applyConfig, auth, idValidator, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Note } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 

@@ -3,10 +3,10 @@ import type { Context } from "@hono/hono";
 import { setCookie } from "@hono/hono/cookie";
 import { createRoute } from "@hono/zod-openapi";
 import { Application, User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

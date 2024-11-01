@@ -26,11 +26,14 @@ const deliveryQueue = new Queue<{ noteId: string }, void, DeliveryJobType>(
     },
 );
 
-const inboxQueue = new Queue<{ data: Entity }, void, InboxJobType>("inbox", {
-    connection,
-});
+export const inboxQueue = new Queue<{ data: Entity }, void, InboxJobType>(
+    "inbox",
+    {
+        connection,
+    },
+);
 
-const worker = new Worker<{ noteId: string }, void, DeliveryJobType>(
+export const worker = new Worker<{ noteId: string }, void, DeliveryJobType>(
     deliveryQueue.name,
     async (job) => {
         switch (job.name) {

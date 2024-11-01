@@ -1,12 +1,12 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import {
     findManyNotifications,
     notificationToApi,
 } from "~/classes/functions/notification";
-import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

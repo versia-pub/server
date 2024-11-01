@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, jest, mock, test } from "bun:test";
 import { SignatureValidator } from "@versia/federation";
 import type { Entity, Note as VersiaNote } from "@versia/federation/types";
-import { Note, Relationship, User } from "@versia/kit/db";
-import { db } from "@versia/kit/db";
+import { Note, Relationship, User, db } from "@versia/kit/db";
 import type { Context } from "hono";
 import { ValidationError } from "zod-validation-error";
 import { config } from "~/packages/config-manager/index.ts";

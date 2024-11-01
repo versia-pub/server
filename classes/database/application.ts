@@ -1,4 +1,6 @@
 import type { Application as APIApplication } from "@versia/client/types";
+import { db } from "@versia/kit/db";
+import { Applications } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -8,8 +10,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Applications } from "~/drizzle/schema";
 import { BaseInterface } from "./base.ts";
 
 export type ApplicationType = InferSelectModel<typeof Applications>;

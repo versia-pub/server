@@ -1,14 +1,13 @@
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
-import { Note, User } from "@versia/kit/db";
+import { Note, User, db } from "@versia/kit/db";
+import { Notes, Tokens, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import type { Status } from "~/classes/functions/status";
 import { searchManager } from "~/classes/search/search-manager";
-import { db } from "~/drizzle/db";
 import { setupDatabase } from "~/drizzle/db";
-import { Notes, Tokens, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 await setupDatabase();

@@ -1,9 +1,9 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { db } from "@versia/kit/db";
+import { Applications, Tokens } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Applications, Tokens } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

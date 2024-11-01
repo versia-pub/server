@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { fetchTimeline } from "@/timelines";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -9,7 +10,6 @@ import {
     notificationToApi,
 } from "~/classes/functions/notification";
 import type { NotificationWithRelations } from "~/classes/functions/notification";
-import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { z } from "zod";
-import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({

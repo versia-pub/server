@@ -1,5 +1,7 @@
 import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
+import { db } from "@versia/kit/db";
+import { Likes } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -9,8 +11,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Likes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import type { Status } from "../functions/status.ts";
 import type { UserType } from "../functions/user.ts";

@@ -12,9 +12,9 @@ import type {
     User,
 } from "@versia/federation/types";
 import type { Application, User as DatabaseUser } from "@versia/kit/db";
+import type { RolePermissions } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import { z } from "zod";
-import type { RolePermissions } from "~/drizzle/schema";
 import type { Config } from "~/packages/config-manager";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";

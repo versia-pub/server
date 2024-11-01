@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
+import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import {
     anyOf,
@@ -15,7 +16,6 @@ import {
 } from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { RolePermissions, Users } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

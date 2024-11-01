@@ -1,8 +1,7 @@
 import type { Notification as ApiNotification } from "@versia/client/types";
-import { Note, User } from "@versia/kit/db";
+import { Note, User, db } from "@versia/kit/db";
+import type { Notifications } from "@versia/kit/tables";
 import type { InferSelectModel } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import type { Notifications } from "~/drizzle/schema";
 import type { StatusWithRelations } from "./status.ts";
 import {
     type UserWithRelations,

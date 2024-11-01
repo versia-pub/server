@@ -6,12 +6,11 @@ import {
     userAddressValidator,
 } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, User } from "@versia/kit/db";
+import { Note, User, db } from "@versia/kit/db";
+import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { searchManager } from "~/classes/search/search-manager";
-import { db } from "~/drizzle/db";
-import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 

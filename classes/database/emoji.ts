@@ -2,6 +2,8 @@ import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as ApiEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
+import { db } from "@versia/kit/db";
+import { Emojis, Instances } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -12,8 +14,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Emojis, Instances } from "~/drizzle/schema";
 import { BaseInterface } from "./base.ts";
 import { Instance } from "./instance.ts";
 

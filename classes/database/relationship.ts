@@ -1,4 +1,6 @@
 import type { Relationship as APIRelationship } from "@versia/client/types";
+import { db } from "@versia/kit/db";
+import { Relationships } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -9,8 +11,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { Relationships } from "~/drizzle/schema";
 import { BaseInterface } from "./base.ts";
 import type { User } from "./user.ts";
 

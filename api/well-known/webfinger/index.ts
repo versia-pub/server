@@ -4,10 +4,10 @@ import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
 import { WebFinger } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { lookup } from "mime-types";
 import { z } from "zod";
-import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 

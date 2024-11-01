@@ -1,10 +1,10 @@
+import type { db } from "@versia/kit/db";
 import type {
     Notification,
     findManyNotifications,
 } from "~/classes/functions/notification";
 import type { Status, findManyNotes } from "~/classes/functions/status";
 import type { UserType, findManyUsers } from "~/classes/functions/user";
-import type { db } from "~/drizzle/db";
 import { config } from "~/packages/config-manager/index.ts";
 
 export async function fetchTimeline<T extends UserType | Status | Notification>(

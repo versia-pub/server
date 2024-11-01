@@ -1,11 +1,11 @@
 import { Args } from "@oclif/core";
 import { Attachment, Emoji } from "@versia/kit/db";
+import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
 import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
-import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {

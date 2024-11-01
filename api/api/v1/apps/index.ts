@@ -2,8 +2,8 @@ import { apiRoute, applyConfig, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({
     route: "/api/v1/apps",

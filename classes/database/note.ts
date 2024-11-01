@@ -14,6 +14,15 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
+import { db } from "@versia/kit/db";
+import {
+    Attachments,
+    EmojiToNote,
+    NoteToMentions,
+    Notes,
+    Notifications,
+    Users,
+} from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type SQL,
@@ -33,15 +42,6 @@ import {
     findManyNotes,
     parseTextMentions,
 } from "~/classes/functions/status";
-import { db } from "~/drizzle/db";
-import {
-    Attachments,
-    EmojiToNote,
-    NoteToMentions,
-    Notes,
-    Notifications,
-    Users,
-} from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Application } from "./application.ts";
 import { Attachment } from "./attachment.ts";

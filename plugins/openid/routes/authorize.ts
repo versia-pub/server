@@ -1,7 +1,6 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { db } from "@versia/kit/db";
-import { Application, User } from "@versia/kit/db";
+import { Application, User, db } from "@versia/kit/db";
 import { RolePermissions, Tokens } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";

@@ -1,7 +1,7 @@
+import { db } from "@versia/kit/db";
+import { Challenges } from "@versia/kit/tables";
 import { createChallenge } from "altcha-lib";
 import { sql } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Challenges } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 
 export const generateChallenge = async (

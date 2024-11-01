@@ -5,6 +5,8 @@ import {
     type ValidationError,
 } from "@versia/federation";
 import type { InstanceMetadata } from "@versia/federation/types";
+import { db } from "@versia/kit/db";
+import { Instances } from "@versia/kit/tables";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -14,8 +16,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Instances } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";

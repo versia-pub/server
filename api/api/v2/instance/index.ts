@@ -2,8 +2,8 @@ import { apiRoute, applyConfig } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { Users } from "~/drizzle/schema";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
 

@@ -1,14 +1,13 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Emoji, User } from "@versia/kit/db";
+import { Attachment, Emoji, User, db } from "@versia/kit/db";
+import { EmojiToUser, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { contentToHtml } from "~/classes/functions/status";
 import { MediaManager } from "~/classes/media/media-manager";
-import { db } from "~/drizzle/db";
-import { EmojiToUser, RolePermissions, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 

@@ -1,6 +1,10 @@
+import {
+    ADMIN_ROLES,
+    DEFAULT_ROLES,
+    RolePermissions,
+} from "@versia/kit/tables";
 import { types as mimeTypes } from "mime-types";
 import { z } from "zod";
-import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
 
 export enum MediaBackendType {
     Local = "local",

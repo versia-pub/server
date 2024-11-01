@@ -1,5 +1,7 @@
 import { proxyUrl } from "@/response";
 import { RolePermission } from "@versia/client/types";
+import { db } from "@versia/kit/db";
+import { RoleToUsers, Roles } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -10,8 +12,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "~/drizzle/db";
-import { RoleToUsers, Roles } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 

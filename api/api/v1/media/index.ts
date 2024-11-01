@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import sharp from "sharp";
 import { z } from "zod";
 import { MediaManager } from "~/classes/media/media-manager";
-import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 

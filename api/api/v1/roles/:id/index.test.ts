@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
-import { ADMIN_ROLES, DEFAULT_ROLES, RolePermissions } from "~/drizzle/schema";
+import {
+    ADMIN_ROLES,
+    DEFAULT_ROLES,
+    RolePermissions,
+} from "@versia/kit/tables";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 

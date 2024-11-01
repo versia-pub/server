@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { db } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Users } from "~/drizzle/schema";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 

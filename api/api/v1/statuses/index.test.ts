@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
+import { db } from "@versia/kit/db";
+import { Emojis } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { db } from "~/drizzle/db";
-import { Emojis } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";

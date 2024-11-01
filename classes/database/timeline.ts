@@ -1,5 +1,5 @@
+import { Notes, Users } from "@versia/kit/tables";
 import { type SQL, gt } from "drizzle-orm";
-import { Notes, Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { Note } from "./note.ts";
 import { User } from "./user.ts";
