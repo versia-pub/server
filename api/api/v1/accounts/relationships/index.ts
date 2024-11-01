@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Relationship } from "@versia/kit/db";
 import { z } from "zod";
-import { Relationship } from "~/classes/database/relationship";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 

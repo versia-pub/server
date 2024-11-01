@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
-import { Application } from "~/classes/database/application.ts";
+import { Application } from "@versia/kit/db";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";

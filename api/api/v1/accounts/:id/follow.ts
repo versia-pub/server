@@ -1,9 +1,8 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Relationship, User } from "@versia/kit/db";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { Relationship } from "~/classes/database/relationship";
-import { User } from "~/classes/database/user";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 

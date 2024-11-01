@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Emoji } from "@versia/kit/db";
 import { and, eq, isNull, or } from "drizzle-orm";
-import { Emoji } from "~/classes/database/emoji";
 import { Emojis, RolePermissions } from "~/drizzle/schema";
 
 export const meta = applyConfig({

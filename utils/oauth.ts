@@ -1,4 +1,4 @@
-import type { Application } from "~/classes/database/application";
+import type { Application } from "@versia/kit/db";
 
 /**
  * Check if an OAuth application is valid for a route

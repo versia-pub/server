@@ -4,12 +4,11 @@
  */
 
 import { getLogger } from "@logtape/logtape";
+import { Note, User } from "@versia/kit/db";
 import {
     Ingest as SonicChannelIngest,
     Search as SonicChannelSearch,
 } from "sonic-channel";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import { db } from "~/drizzle/db";
 import { type Config, config } from "~/packages/config-manager";
 

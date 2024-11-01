@@ -1,10 +1,9 @@
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
+import { Note, User } from "@versia/kit/db";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import type { Status } from "~/classes/functions/status";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";

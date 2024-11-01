@@ -1,10 +1,10 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute } from "@hono/zod-openapi";
+import { User } from "@versia/kit/db";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 

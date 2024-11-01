@@ -1,6 +1,6 @@
 import { Flags } from "@oclif/core";
+import { User } from "@versia/kit/db";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
-import { User } from "~/classes/database/user";
 import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
 import { Users } from "~/drizzle/schema";

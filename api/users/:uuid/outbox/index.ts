@@ -4,10 +4,9 @@ import {
     Collection as CollectionSchema,
     Note as NoteSchema,
 } from "@versia/federation/schemas";
+import { Note, User } from "@versia/kit/db";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import { db } from "~/drizzle/db";
 import { Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";

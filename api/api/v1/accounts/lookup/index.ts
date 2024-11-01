@@ -1,5 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { User } from "@versia/kit/db";
 import { eq } from "drizzle-orm";
 import {
     anyOf,
@@ -13,7 +14,6 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { z } from "zod";
-import { User } from "~/classes/database/user";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 

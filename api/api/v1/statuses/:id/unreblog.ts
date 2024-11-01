@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Note } from "@versia/kit/db";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { Note } from "~/classes/database/note";
 import { Notes, RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 

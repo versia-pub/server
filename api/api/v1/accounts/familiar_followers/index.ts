@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { User } from "@versia/kit/db";
 import { inArray } from "drizzle-orm";
 import { z } from "zod";
-import { User } from "~/classes/database/user";
 import { db } from "~/drizzle/db";
 import { RolePermissions, Users } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";

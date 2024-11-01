@@ -1,5 +1,5 @@
+import { User } from "@versia/kit/db";
 import chalk from "chalk";
-import { User } from "~/classes/database/user";
 import { BaseCommand } from "~/cli/base";
 
 export default class GenerateKeys extends BaseCommand<typeof GenerateKeys> {

@@ -1,9 +1,8 @@
 import { parseUserAddress, userAddressValidator } from "@/api";
 import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
+import { Instance, User } from "@versia/kit/db";
 import chalk from "chalk";
 import { and, eq, getTableColumns, like } from "drizzle-orm";
-import { Instance } from "~/classes/database/instance.ts";
-import { User } from "~/classes/database/user.ts";
 import { db } from "~/drizzle/db";
 import { Emojis, Instances, Users } from "~/drizzle/schema";
 import { BaseCommand } from "./base.ts";

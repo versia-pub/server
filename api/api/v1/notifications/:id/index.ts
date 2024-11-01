@@ -1,8 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Note, User } from "@versia/kit/db";
 import { z } from "zod";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import {
     findManyNotifications,
     notificationToApi,

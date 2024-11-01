@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
+import { Application } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
@@ -7,7 +8,6 @@ import {
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
-import { Application } from "~/classes/database/application.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 

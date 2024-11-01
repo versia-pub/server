@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
+import { User } from "@versia/kit/db";
 import chalk from "chalk";
-import { User } from "~/classes/database/user";
 import type { Config } from "~/packages/config-manager";
 
 export const checkConfig = async (config: Config) => {

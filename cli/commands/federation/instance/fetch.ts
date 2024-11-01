@@ -1,6 +1,6 @@
 import { Args } from "@oclif/core";
+import { Instance } from "@versia/kit/db";
 import ora from "ora";
-import { Instance } from "~/classes/database/instance";
 import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
 

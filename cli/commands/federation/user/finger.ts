@@ -1,9 +1,8 @@
 import { parseUserAddress, userAddressValidator } from "@/api";
 import { Args } from "@oclif/core";
+import { Instance, User } from "@versia/kit/db";
 import chalk from "chalk";
 import ora from "ora";
-import { Instance } from "~/classes/database/instance";
-import { User } from "~/classes/database/user";
 import { BaseCommand } from "~/cli/base";
 
 export default class FederationUserFinger extends BaseCommand<

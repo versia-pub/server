@@ -2,8 +2,8 @@ import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { Entity } from "@versia/federation/types";
+import { User } from "@versia/kit/db";
 import { z } from "zod";
-import { User } from "~/classes/database/user";
 import { InboxProcessor } from "~/classes/inbox/processor";
 import { ErrorSchema } from "~/types/api";
 

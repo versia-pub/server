@@ -11,10 +11,9 @@ import type {
     Unfollow,
     User,
 } from "@versia/federation/types";
+import type { Application, User as DatabaseUser } from "@versia/kit/db";
 import type { SocketAddress } from "bun";
 import { z } from "zod";
-import type { Application } from "~/classes/database/application";
-import type { User as DatabaseUser } from "~/classes/database/user";
 import type { RolePermissions } from "~/drizzle/schema";
 import type { Config } from "~/packages/config-manager";
 

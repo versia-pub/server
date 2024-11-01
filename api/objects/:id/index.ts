@@ -4,11 +4,9 @@ import {
     LikeExtension as LikeSchema,
     Note as NoteSchema,
 } from "@versia/federation/schemas";
+import { Like, Note, User } from "@versia/kit/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { Like } from "~/classes/database/like";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import { Likes, Notes } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";

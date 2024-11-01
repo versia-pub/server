@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User as UserSchema } from "@versia/federation/schemas";
+import { User } from "@versia/kit/db";
 import { z } from "zod";
-import { User } from "~/classes/database/user";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({

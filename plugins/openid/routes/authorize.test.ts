@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
+import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
-import { Application } from "~/classes/database/application";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 

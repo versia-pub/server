@@ -1,10 +1,9 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { fetchTimeline } from "@/timelines";
 import { createRoute } from "@hono/zod-openapi";
+import { Note, User } from "@versia/kit/db";
 import { sql } from "drizzle-orm";
 import { z } from "zod";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import {
     findManyNotifications,
     notificationToApi,

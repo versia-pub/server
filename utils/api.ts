@@ -2,6 +2,7 @@ import type { Context } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
+import { Application, type User } from "@versia/kit/db";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
@@ -22,8 +23,6 @@ import {
 import { parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { Application } from "~/classes/database/application";
-import type { User } from "~/classes/database/user";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { db } from "~/drizzle/db";
 import { Challenges } from "~/drizzle/schema";

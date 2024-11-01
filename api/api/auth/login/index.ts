@@ -2,11 +2,10 @@ import { apiRoute, applyConfig } from "@/api";
 import type { Context } from "@hono/hono";
 import { setCookie } from "@hono/hono/cookie";
 import { createRoute } from "@hono/zod-openapi";
+import { Application, User } from "@versia/kit/db";
 import { eq, or } from "drizzle-orm";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { Application } from "~/classes/database/application";
-import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager";
 

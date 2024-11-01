@@ -3,10 +3,10 @@ import type {
     FollowAccept,
     FollowReject,
 } from "@versia/federation/types";
+import { User } from "@versia/kit/db";
 import { type InferSelectModel, eq, sql } from "drizzle-orm";
 import type { ApplicationType } from "~/classes/database/application.ts";
 import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
-import { User } from "~/classes/database/user.ts";
 import { db } from "~/drizzle/db";
 import {
     Applications,

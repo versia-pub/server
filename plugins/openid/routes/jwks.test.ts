@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Application } from "~/classes/database/application";
+import { Application } from "@versia/kit/db";
 import { fakeRequest } from "~/tests/utils";
 
 const application = await Application.insert({

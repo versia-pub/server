@@ -1,9 +1,8 @@
 import { Args } from "@oclif/core";
+import { Attachment, Emoji } from "@versia/kit/db";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
-import { Attachment } from "~/classes/database/attachment";
-import { Emoji } from "~/classes/database/emoji";
 import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { Emojis } from "~/drizzle/schema";

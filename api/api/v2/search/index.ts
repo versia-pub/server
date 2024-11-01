@@ -6,10 +6,9 @@ import {
     userAddressValidator,
 } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Note, User } from "@versia/kit/db";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
-import { Note } from "~/classes/database/note";
-import { User } from "~/classes/database/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { db } from "~/drizzle/db";
 import { Instances, Notes, RolePermissions, Users } from "~/drizzle/schema";

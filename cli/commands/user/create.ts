@@ -1,9 +1,9 @@
 import input from "@inquirer/input";
 import { Args, Flags } from "@oclif/core";
+import { User } from "@versia/kit/db";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import { renderUnicodeCompact } from "uqr";
-import { User } from "~/classes/database/user";
 import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
 import { Users } from "~/drizzle/schema";

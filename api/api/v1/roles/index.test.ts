@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { Role } from "~/classes/database/role.ts";
+import { Role } from "@versia/kit/db";
 import { ADMIN_ROLES } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";

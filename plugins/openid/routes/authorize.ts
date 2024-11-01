@@ -1,12 +1,11 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { db } from "@versia/kit/db";
+import { Application, User } from "@versia/kit/db";
 import { RolePermissions, Tokens } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
-import { Application } from "~/classes/database/application.ts";
-import { User } from "~/classes/database/user.ts";
 import { TokenType } from "~/classes/functions/token";
 import type { PluginType } from "../index.ts";
 

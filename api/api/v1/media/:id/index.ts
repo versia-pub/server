@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Attachment } from "@versia/kit/db";
 import { z } from "zod";
-import { Attachment } from "~/classes/database/attachment";
 import { MediaManager } from "~/classes/media/media-manager";
 import { RolePermissions } from "~/drizzle/schema";
 import { config } from "~/packages/config-manager/index.ts";

@@ -2,6 +2,7 @@ import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import type { ContentFormat } from "@versia/federation/types";
+import { User } from "@versia/kit/db";
 import {
     type InferSelectModel,
     and,
@@ -26,7 +27,6 @@ import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import type { ApplicationType } from "~/classes/database/application.ts";
 import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
-import { User } from "~/classes/database/user.ts";
 import { db } from "~/drizzle/db";
 import {
     type Attachments,
