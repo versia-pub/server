@@ -86,7 +86,11 @@ const route = createRoute({
     },
 });
 
-const returnError = (context: Context, error: string, description: string) => {
+const returnError = (
+    context: Context,
+    error: string,
+    description: string,
+): Response => {
     const searchParams = new URLSearchParams();
 
     // Add all data that is not undefined except email and password

@@ -6,6 +6,7 @@ import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import type { Status } from "~/classes/functions/status";
+import type { Token } from "~/classes/functions/token";
 import { searchManager } from "~/classes/search/search-manager";
 import { setupDatabase } from "~/drizzle/db";
 import { config } from "~/packages/config-manager";
@@ -17,18 +18,28 @@ if (config.sonic.enabled) {
 
 const app = await appFactory();
 
-export function fakeRequest(url: URL | string, init?: RequestInit) {
+export function fakeRequest(
+    url: URL | string,
+    init?: RequestInit,
+): Promise<Response> {
     return Promise.resolve(
         app.fetch(new Request(new URL(url, config.http.base_url), init)),
     );
 }
 
-export const deleteOldTestUsers = async () => {
+export const deleteOldTestUsers = async (): Promise<void> => {
     // Deletes all users that match the test username (test-<32 random characters>)
     await db.delete(Users).where(like(Users.username, "test-%"));
 };
 
-export const getTestUsers = async (count: number) => {
+export const getTestUsers = async (
+    count: number,
+): Promise<{
+    users: User[];
+    tokens: Token[];
+    passwords: string[];
+    deleteUsers: () => Promise<void>;
+}> => {
     const users: User[] = [];
     const passwords: string[] = [];
 
@@ -67,7 +78,7 @@ export const getTestUsers = async (count: number) => {
         users,
         tokens,
         passwords,
-        deleteUsers: async () => {
+        deleteUsers: async (): Promise<void> => {
             await db.delete(Users).where(
                 inArray(
                     Users.id,
@@ -82,7 +93,7 @@ export const getTestStatuses = async (
     count: number,
     user: User,
     partial?: Partial<Status>,
-) => {
+): Promise<Note["data"][]> => {
     const statuses: Note[] = [];
 
     for (let i = 0; i < count; i++) {
@@ -123,7 +134,7 @@ export const getTestStatuses = async (
  * Only to be used in tests
  * @returns Base64 encoded payload
  */
-export const getSolvedChallenge = async () => {
+export const getSolvedChallenge = async (): Promise<string> => {
     const { challenge } = await generateChallenge(100);
 
     const solution = await solveChallenge(

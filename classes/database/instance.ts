@@ -132,7 +132,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return instance;
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 

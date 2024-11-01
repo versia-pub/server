@@ -3,7 +3,13 @@ import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
 import { Instance, User, db } from "@versia/kit/db";
 import { Emojis, Instances, Users } from "@versia/kit/tables";
 import chalk from "chalk";
-import { and, eq, getTableColumns, like } from "drizzle-orm";
+import {
+    type InferSelectModel,
+    and,
+    eq,
+    getTableColumns,
+    like,
+} from "drizzle-orm";
 import { BaseCommand } from "./base.ts";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<
@@ -203,7 +209,11 @@ export abstract class EmojiFinderCommand<
         this.args = args as ArgsType<T>;
     }
 
-    public async findEmojis() {
+    public async findEmojis(): Promise<
+        (InferSelectModel<typeof Emojis> & {
+            instanceUrl: string | null;
+        })[]
+    > {
         // Check if there are asterisks in the identifier but no pattern flag, warn the user if so
         if (this.args.identifier.includes("*") && !this.flags.pattern) {
             this.log(

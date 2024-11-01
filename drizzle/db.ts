@@ -40,7 +40,7 @@ export const db =
           )
         : drizzle(primaryDb, { schema });
 
-export const setupDatabase = async (info = true) => {
+export const setupDatabase = async (info = true): Promise<void> => {
     const logger = getLogger("database");
 
     for (const dbPool of [primaryDb, ...replicas]) {

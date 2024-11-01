@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
+import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 export const meta = applyConfig({
@@ -139,7 +140,8 @@ export default apiRoute((app) => {
         }
 
         const userFilters = await db.query.Filters.findMany({
-            where: (filter, { eq }) => eq(filter.userId, user.id),
+            where: (filter, { eq }): SQL | undefined =>
+                eq(filter.userId, user.id),
             with: {
                 keywords: true,
             },

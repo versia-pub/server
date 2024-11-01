@@ -3,7 +3,9 @@ import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
 
-const getFormData = (object: Record<string, string | number | boolean>) =>
+const getFormData = (
+    object: Record<string, string | number | boolean>,
+): FormData =>
     Object.keys(object).reduce((formData, key) => {
         formData.append(key, String(object[key]));
         return formData;

@@ -58,7 +58,7 @@ describe("BlurhashPreprocessor", () => {
         });
 
         mock.module("blurhash", () => ({
-            encode: () => {
+            encode: (): void => {
                 throw new Error("Test error");
             },
         }));

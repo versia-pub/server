@@ -3,7 +3,7 @@ import { fetchTimeline } from "@/timelines";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { sql } from "drizzle-orm";
+import { type SQL, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
     findManyNotifications,
@@ -159,7 +159,7 @@ export default apiRoute((app) =>
                         notification,
                         // @ts-expect-error Yes I KNOW the types are wrong
                         { lt, gte, gt, and, eq, not, inArray },
-                    ) =>
+                    ): SQL | undefined =>
                         and(
                             max_id ? lt(notification.id, max_id) : undefined,
                             since_id
@@ -200,7 +200,8 @@ export default apiRoute((app) =>
                         ),
                     limit,
                     // @ts-expect-error Yes I KNOW the types are wrong
-                    orderBy: (notification, { desc }) => desc(notification.id),
+                    orderBy: (notification, { desc }): SQL | undefined =>
+                        desc(notification.id),
                 },
                 context.req.raw,
                 user.id,

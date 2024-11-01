@@ -160,7 +160,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return await Emoji.fromVersia(emojiToFetch, foundInstance?.id ?? null);
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 

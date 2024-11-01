@@ -3,7 +3,7 @@ import { User } from "@versia/kit/db";
 import chalk from "chalk";
 import type { Config } from "~/packages/config-manager";
 
-export const checkConfig = async (config: Config) => {
+export const checkConfig = async (config: Config): Promise<void> => {
     await checkFederationConfig(config);
 
     await checkHttpProxyConfig(config);
@@ -11,7 +11,7 @@ export const checkConfig = async (config: Config) => {
     await checkChallengeConfig(config);
 };
 
-const checkHttpProxyConfig = async (config: Config) => {
+const checkHttpProxyConfig = async (config: Config): Promise<void> => {
     const logger = getLogger("server");
 
     if (config.http.proxy.enabled) {
@@ -35,7 +35,7 @@ const checkHttpProxyConfig = async (config: Config) => {
     }
 };
 
-const checkChallengeConfig = async (config: Config) => {
+const checkChallengeConfig = async (config: Config): Promise<void> => {
     const logger = getLogger("server");
 
     if (
@@ -65,7 +65,7 @@ const checkChallengeConfig = async (config: Config) => {
     }
 };
 
-const checkFederationConfig = async (config: Config) => {
+const checkFederationConfig = async (config: Config): Promise<void> => {
     const logger = getLogger("server");
 
     if (!(config.instance.keys.public && config.instance.keys.private)) {

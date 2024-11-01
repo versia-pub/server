@@ -3,7 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
-import { and, eq } from "drizzle-orm";
+import { type SQL, and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -133,7 +133,7 @@ export default apiRoute((app) => {
 
         if (timeline.includes("home")) {
             const found = await db.query.Markers.findFirst({
-                where: (marker, { and, eq }) =>
+                where: (marker, { and, eq }): SQL | undefined =>
                     and(
                         eq(marker.userId, user.id),
                         eq(marker.timeline, "home"),
@@ -156,7 +156,7 @@ export default apiRoute((app) => {
 
         if (timeline.includes("notifications")) {
             const found = await db.query.Markers.findFirst({
-                where: (marker, { and, eq }) =>
+                where: (marker, { and, eq }): SQL | undefined =>
                     and(
                         eq(marker.userId, user.id),
                         eq(marker.timeline, "notifications"),

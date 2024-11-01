@@ -1,7 +1,7 @@
 import { jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
-import { eq } from "@versia/kit/drizzle";
+import { type SQL, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import type { PluginType } from "../../index.ts";
 
@@ -13,7 +13,7 @@ export const schemas = {
     }),
 };
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/revoke", (app) => {
         app.openapi(
             createRoute({
@@ -63,7 +63,7 @@ export default (plugin: PluginType) => {
                     context.req.valid("json");
 
                 const foundToken = await db.query.Tokens.findFirst({
-                    where: (tokenTable, { eq, and }) =>
+                    where: (tokenTable, { eq, and }): SQL | undefined =>
                         and(
                             eq(tokenTable.accessToken, token ?? ""),
                             eq(tokenTable.clientId, client_id),

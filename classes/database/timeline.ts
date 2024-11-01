@@ -17,7 +17,7 @@ export class Timeline<Type extends Note | User> {
         limit: number,
         url: string,
         userId?: string,
-    ) {
+    ): Promise<{ link: string; objects: Note[] }> {
         return new Timeline<Note>(TimelineType.Note).fetchTimeline(
             sql,
             limit,
@@ -30,7 +30,7 @@ export class Timeline<Type extends Note | User> {
         sql: SQL<unknown> | undefined,
         limit: number,
         url: string,
-    ) {
+    ): Promise<{ link: string; objects: User[] }> {
         return new Timeline<User>(TimelineType.User).fetchTimeline(
             sql,
             limit,

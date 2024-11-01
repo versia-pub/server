@@ -1,4 +1,5 @@
 import {
+    type Stats,
     appendFileSync,
     closeSync,
     existsSync,
@@ -63,7 +64,7 @@ export function getBaseRotatingFileSink<TFile>(
         options.flushSync(fd);
         offset += bytes.length;
     };
-    sink[Symbol.dispose] = () => options.closeSync(fd);
+    sink[Symbol.dispose] = (): void => options.closeSync(fd);
     return sink;
 }
 
@@ -120,21 +121,21 @@ export function defaultConsoleFormatter(record: LogRecord): string[] {
 }
 
 export const nodeDriver: RotatingFileSinkDriver<number> = {
-    openSync(path: string) {
+    openSync(path: string): number {
         return openSync(path, "a");
     },
-    writeSync(fd, chunk) {
+    writeSync(fd, chunk): void {
         appendFileSync(fd, chunk, {
             flush: true,
         });
     },
-    flushSync() {
+    flushSync(): void {
         // ...
     },
-    closeSync(fd) {
+    closeSync(fd): void {
         closeSync(fd);
     },
-    statSync(path) {
+    statSync(path): Stats {
         // If file does not exist, create it
         if (!existsSync(path)) {
             // Mkdir all directories in path
@@ -148,7 +149,7 @@ export const nodeDriver: RotatingFileSinkDriver<number> = {
     renameSync,
 };
 
-export const configureLoggers = (silent = false) =>
+export const configureLoggers = (silent = false): Promise<void> =>
     configure({
         reset: true,
         sinks: {

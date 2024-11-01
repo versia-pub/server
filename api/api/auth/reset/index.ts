@@ -54,7 +54,7 @@ const returnError = (
     token: string,
     error: string,
     description: string,
-) => {
+): Response => {
     const searchParams = new URLSearchParams();
 
     searchParams.append("error", error);

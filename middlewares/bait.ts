@@ -1,10 +1,10 @@
 import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
-import type { SocketAddress } from "bun";
+import type { BunFile, SocketAddress } from "bun";
 import { matches } from "ip-matching";
 import { config } from "~/packages/config-manager";
 
-const baitFile = async () => {
+const baitFile = async (): Promise<BunFile | undefined> => {
     const file = Bun.file(config.http.bait.send_file || "./beemovie.txt");
 
     if (await file.exists()) {

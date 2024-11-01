@@ -148,11 +148,11 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return attachment;
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 
-    public static getUrl(name: string) {
+    public static getUrl(name: string): string {
         if (config.media.backend === MediaBackendType.Local) {
             return new URL(`/media/${name}`, config.http.base_url).toString();
         }

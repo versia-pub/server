@@ -59,7 +59,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
     public static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Likes.id),
-    ) {
+    ): Promise<Like | null> {
         const found = await db.query.Likes.findFirst({
             where: sql,
             orderBy,
@@ -81,7 +81,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         limit?: number,
         offset?: number,
         extra?: Parameters<typeof db.query.Likes.findMany>[0],
-    ) {
+    ): Promise<Like[]> {
         const found = await db.query.Likes.findMany({
             where: sql,
             orderBy,
@@ -135,7 +135,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return role;
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 

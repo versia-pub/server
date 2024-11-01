@@ -1,12 +1,18 @@
 import { db } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { createChallenge } from "altcha-lib";
+import type { Challenge } from "altcha-lib/types";
 import { sql } from "drizzle-orm";
 import { config } from "~/packages/config-manager";
 
 export const generateChallenge = async (
     maxNumber = config.validation.challenges.difficulty,
-) => {
+): Promise<{
+    id: string;
+    challenge: Challenge;
+    expiresAt: string;
+    createdAt: string;
+}> => {
     const expirationDate = new Date(
         Date.now() + config.validation.challenges.expiration * 1000,
     );

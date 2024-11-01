@@ -2,12 +2,12 @@ import { auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
-import { eq } from "@versia/kit/drizzle";
+import { type SQL, eq } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions } from "@versia/kit/tables";
 import type { PluginType } from "~/plugins/openid";
 import { ErrorSchema } from "~/types/api";
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/api/v1/sso", (app) => {
         app.openapi(
             createRoute({
@@ -88,7 +88,7 @@ export default (plugin: PluginType) => {
                 }
 
                 const account = await db.query.OpenIdAccounts.findFirst({
-                    where: (account, { eq, and }) =>
+                    where: (account, { eq, and }): SQL | undefined =>
                         and(
                             eq(account.userId, user.id),
                             eq(account.issuerId, issuerId),
@@ -181,7 +181,7 @@ export default (plugin: PluginType) => {
                 }
 
                 const account = await db.query.OpenIdAccounts.findFirst({
-                    where: (account, { eq, and }) =>
+                    where: (account, { eq, and }): SQL | undefined =>
                         and(
                             eq(account.userId, user.id),
                             eq(account.issuerId, issuerId),

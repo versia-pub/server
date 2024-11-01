@@ -75,13 +75,13 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             const password1 = await input({
                 message: "Please enter the user's password:",
                 // Set whatever the user types to stars
-                transformer: (value) => "*".repeat(value.length),
+                transformer: (value): string => "*".repeat(value.length),
             });
 
             const password2 = await input({
                 message: "Please confirm the user's password:",
                 // Set whatever the user types to stars
-                transformer: (value) => "*".repeat(value.length),
+                transformer: (value): string => "*".repeat(value.length),
             });
 
             if (password1 !== password2) {

@@ -1,4 +1,4 @@
-import type { Context } from "@hono/hono";
+import type { Context, MiddlewareHandler } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
@@ -6,7 +6,7 @@ import { Application, type User, db } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
-import { eq } from "drizzle-orm";
+import { type SQL, eq } from "drizzle-orm";
 import {
     anyOf,
     caseInsensitive,
@@ -21,14 +21,14 @@ import {
     not,
     oneOrMore,
 } from "magic-regexp";
-import { parse } from "qs";
+import { type ParsedQs, parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { type AuthData, getFromHeader } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 
-export const applyConfig = (routeMeta: ApiRouteMetadata) => {
+export const applyConfig = (routeMeta: ApiRouteMetadata): ApiRouteMetadata => {
     const newMeta = routeMeta;
 
     // Apply ratelimits from config
@@ -42,7 +42,8 @@ export const applyConfig = (routeMeta: ApiRouteMetadata) => {
     return newMeta;
 };
 
-export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void) => fn;
+export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
+    fn;
 
 export const idValidator = createRegExp(
     anyOf(digit, charIn("ABCDEF")).times(8),
@@ -115,7 +116,12 @@ export const webfingerMention = createRegExp(
     [],
 );
 
-export const parseUserAddress = (address: string) => {
+export const parseUserAddress = (
+    address: string,
+): {
+    username: string;
+    domain: string;
+} => {
     let output = address;
     // Remove leading @ if it exists
     if (output.startsWith("@")) {
@@ -238,7 +244,7 @@ export const checkRouteNeedsChallenge = async (
     }
 
     const challenge = await db.query.Challenges.findFirst({
-        where: (c, { eq }) => eq(c.id, challenge_id),
+        where: (c, { eq }): SQL | undefined => eq(c.id, challenge_id),
     });
 
     if (!challenge) {
@@ -286,7 +292,7 @@ export const auth = (
     authData: ApiRouteMetadata["auth"],
     permissionData?: ApiRouteMetadata["permissions"],
     challengeData?: ApiRouteMetadata["challenge"],
-) =>
+): MiddlewareHandler<HonoEnv, string> =>
     createMiddleware<HonoEnv>(async (context, next) => {
         const header = context.req.header("Authorization");
 
@@ -335,7 +341,10 @@ export const auth = (
     });
 
 // Helper function to parse form data
-async function parseFormData(context: Context) {
+async function parseFormData(context: Context): Promise<{
+    parsed: ParsedQs;
+    files: Map<string, File>;
+}> {
     const formData = await context.req.formData();
     const urlparams = new URLSearchParams();
     const files = new Map<string, File>();
@@ -365,7 +374,7 @@ async function parseFormData(context: Context) {
 }
 
 // Helper function to parse urlencoded data
-async function parseUrlEncoded(context: Context) {
+async function parseUrlEncoded(context: Context): Promise<ParsedQs> {
     const parsed = parse(await context.req.text(), {
         parseArrays: true,
         interpretNumericEntities: true,
@@ -374,7 +383,7 @@ async function parseUrlEncoded(context: Context) {
     return parsed;
 }
 
-export const qsQuery = () => {
+export const qsQuery = (): MiddlewareHandler => {
     return createMiddleware(async (context, next) => {
         const parsed = parse(context.req.query(), {
             parseArrays: true,
@@ -382,10 +391,10 @@ export const qsQuery = () => {
         });
 
         // @ts-expect-error Very bad hack
-        context.req.query = () => parsed;
+        context.req.query = (): typeof parsed => parsed;
 
         // @ts-expect-error I'm so sorry for this
-        context.req.queries = () => parsed;
+        context.req.queries = (): typeof parsed => parsed;
         await next();
     });
 };
@@ -395,8 +404,11 @@ export const setContextFormDataToObject = (
     setTo: object,
 ): Context => {
     context.req.bodyCache.json = setTo;
-    context.req.parseBody = () => Promise.resolve(context.req.bodyCache.json);
-    context.req.json = () => Promise.resolve(context.req.bodyCache.json);
+    context.req.parseBody = (): Promise<unknown> =>
+        Promise.resolve(context.req.bodyCache.json);
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    context.req.json = (): Promise<any> =>
+        Promise.resolve(context.req.bodyCache.json);
 
     return context;
 };
@@ -406,7 +418,7 @@ export const setContextFormDataToObject = (
  * Add it to random Hono routes and hope it works
  * @returns
  */
-export const jsonOrForm = () => {
+export const jsonOrForm = (): MiddlewareHandler => {
     return createMiddleware(async (context, next) => {
         const contentType = context.req.header("content-type");
 
@@ -434,7 +446,7 @@ export const jsonOrForm = () => {
     });
 };
 
-export const debugRequest = async (req: Request) => {
+export const debugRequest = async (req: Request): Promise<void> => {
     const body = await req.text();
     const logger = getLogger("server");
 
@@ -459,7 +471,7 @@ export const debugRequest = async (req: Request) => {
     }
 };
 
-export const debugResponse = async (res: Response) => {
+export const debugResponse = async (res: Response): Promise<void> => {
     const body = await res.clone().text();
     const logger = getLogger("server");
 

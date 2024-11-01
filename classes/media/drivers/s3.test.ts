@@ -30,7 +30,8 @@ describe("S3MediaDriver", () => {
             putObject: mock(() => Promise.resolve()),
             getObject: mock(() =>
                 Promise.resolve({
-                    arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+                    arrayBuffer: (): Promise<ArrayBuffer> =>
+                        Promise.resolve(new ArrayBuffer(8)),
                     headers: new Headers({ "Content-Type": "image/webp" }),
                 }),
             ),

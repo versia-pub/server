@@ -1,4 +1,5 @@
 import type { db } from "@versia/kit/db";
+import type { SQL } from "drizzle-orm";
 import type {
     Notification,
     findManyNotifications,
@@ -18,7 +19,10 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
         | Parameters<typeof db.query.Notifications.findMany>[0],
     req: Request,
     userId?: string,
-) {
+): Promise<{
+    link: string;
+    objects: T[];
+}> {
     // BEFORE: Before in a top-to-bottom order, so the most recent posts
     // AFTER: After in a top-to-bottom order, so the oldest posts
     // @ts-expect-error This is a hack to get around the fact that Prisma doesn't have a common base type for all models
@@ -37,7 +41,8 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
         const objectsBefore = await model({
             ...args,
             // @ts-expect-error this hack breaks typing :(
-            where: (object, { gt }) => gt(object.id, objects[0].id),
+            where: (object, { gt }): SQL | undefined =>
+                gt(object.id, objects[0].id),
             limit: 1,
         });
 
@@ -56,7 +61,8 @@ export async function fetchTimeline<T extends UserType | Status | Notification>(
             const objectsAfter = await model({
                 ...args,
                 // @ts-expect-error this hack breaks typing :(
-                where: (object, { lt }) => lt(object.id, objects.at(-1).id),
+                where: (object, { lt }): SQL | undefined =>
+                    lt(object.id, objects.at(-1)?.id),
                 limit: 1,
             });
 

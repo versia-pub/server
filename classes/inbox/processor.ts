@@ -219,14 +219,18 @@ export class InboxProcessor {
 
         try {
             return await handler.parseBody<Response>({
-                note: () => this.processNote(),
-                follow: () => this.processFollowRequest(),
-                followAccept: () => this.processFollowAccept(),
-                followReject: () => this.processFollowReject(),
-                "pub.versia:likes/Like": () => this.processLikeRequest(),
-                delete: () => this.processDelete(),
-                user: () => this.processUserRequest(),
-                unknown: () =>
+                note: (): Promise<Response> => this.processNote(),
+                follow: (): Promise<Response> => this.processFollowRequest(),
+                followAccept: (): Promise<Response> =>
+                    this.processFollowAccept(),
+                followReject: (): Promise<Response> =>
+                    this.processFollowReject(),
+                "pub.versia:likes/Like": (): Promise<Response> =>
+                    this.processLikeRequest(),
+                delete: (): Promise<Response> => this.processDelete(),
+                user: (): Promise<Response> => this.processUserRequest(),
+                unknown: (): Response &
+                    TypedResponse<{ error: string }, 400, "json"> =>
                     this.context.json({ error: "Unknown entity type" }, 400),
             });
         } catch (e) {

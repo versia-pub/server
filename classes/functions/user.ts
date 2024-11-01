@@ -11,7 +11,7 @@ import {
     Tokens,
     type Users,
 } from "@versia/kit/tables";
-import { type InferSelectModel, eq, sql } from "drizzle-orm";
+import { type InferSelectModel, type SQL, eq, sql } from "drizzle-orm";
 import type { ApplicationType } from "~/classes/database/application.ts";
 import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
 import type { Token } from "./token.ts";
@@ -80,7 +80,13 @@ export const userExtras = {
         ),
 };
 
-export const userExtrasTemplate = (name: string) => ({
+export const userExtrasTemplate = (
+    name: string,
+): {
+    followerCount: SQL.Aliased<unknown>;
+    followingCount: SQL.Aliased<unknown>;
+    statusCount: SQL.Aliased<unknown>;
+} => ({
     // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
     followerCount: sql([
         `(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
@@ -214,7 +220,8 @@ export const retrieveToken = async (
 
     return (
         (await db.query.Tokens.findFirst({
-            where: (tokens, { eq }) => eq(tokens.accessToken, accessToken),
+            where: (tokens, { eq }): SQL | undefined =>
+                eq(tokens.accessToken, accessToken),
         })) ?? null
     );
 };

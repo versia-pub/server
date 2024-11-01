@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
-import { inArray } from "drizzle-orm";
+import { type SQL, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -70,7 +70,7 @@ export default apiRoute((app) =>
             columns: {
                 ownerId: true,
             },
-            where: (relationship, { inArray, and, eq }) =>
+            where: (relationship, { inArray, and, eq }): SQL | undefined =>
                 and(
                     inArray(
                         relationship.subjectId,
@@ -89,7 +89,7 @@ export default apiRoute((app) =>
             columns: {
                 subjectId: true,
             },
-            where: (relationship, { inArray, and, eq }) =>
+            where: (relationship, { inArray, and, eq }): SQL | undefined =>
                 and(
                     eq(relationship.ownerId, self.id),
                     inArray(

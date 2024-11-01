@@ -2,7 +2,12 @@ import type { ContentFormat } from "@versia/federation/types";
 import { lookup } from "mime-types";
 import { config } from "~/packages/config-manager";
 
-export const getBestContentType = (content?: ContentFormat | null) => {
+export const getBestContentType = (
+    content?: ContentFormat | null,
+): {
+    content: string;
+    format: string;
+} => {
     if (!content) {
         return { content: "", format: "text/plain" };
     }

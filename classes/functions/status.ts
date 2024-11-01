@@ -261,7 +261,7 @@ export const parseTextMentions = async (
 
     const baseUrlHost = new URL(config.http.base_url).host;
 
-    const isLocal = (host?: string) => host === baseUrlHost || !host;
+    const isLocal = (host?: string): boolean => host === baseUrlHost || !host;
 
     const foundUsers = await db
         .select({
@@ -326,7 +326,7 @@ export const parseTextMentions = async (
     return finalList;
 };
 
-export const replaceTextMentions = (text: string, mentions: User[]) => {
+export const replaceTextMentions = (text: string, mentions: User[]): string => {
     let finalText = text;
     for (const mention of mentions) {
         const user = mention.data;
@@ -405,7 +405,7 @@ export const contentToHtml = async (
     htmlContent = linkifyHtml(htmlContent, {
         defaultProtocol: "https",
         validate: {
-            email: () => false,
+            email: (): false => false,
         },
         target: "_blank",
         rel: "nofollow noopener noreferrer",
@@ -414,11 +414,11 @@ export const contentToHtml = async (
     return htmlContent;
 };
 
-export const markdownParse = async (content: string) => {
+export const markdownParse = async (content: string): Promise<string> => {
     return (await getMarkdownRenderer()).render(content);
 };
 
-export const getMarkdownRenderer = () => {
+export const getMarkdownRenderer = (): MarkdownIt => {
     const renderer = MarkdownIt({
         html: true,
         linkify: true,

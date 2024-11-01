@@ -1,7 +1,7 @@
 import { stringifyEntitiesLight } from "stringify-entities";
 import xss, { type IFilterXSSOptions } from "xss";
 
-export const sanitizedHtmlStrip = (html: string) => {
+export const sanitizedHtmlStrip = (html: string): Promise<string> => {
     return sanitizeHtml(html, {
         whiteList: {},
     });
@@ -10,7 +10,7 @@ export const sanitizedHtmlStrip = (html: string) => {
 export const sanitizeHtmlInline = (
     html: string,
     extraConfig?: IFilterXSSOptions,
-) => {
+): Promise<string> => {
     return sanitizeHtml(html, {
         whiteList: {
             a: ["href", "title", "target", "rel", "class"],
@@ -33,7 +33,7 @@ export const sanitizeHtmlInline = (
 export const sanitizeHtml = async (
     html: string,
     extraConfig?: IFilterXSSOptions,
-) => {
+): Promise<string> => {
     const sanitizedHtml = xss(html, {
         whiteList: {
             a: ["href", "title", "target", "rel", "class"],
@@ -81,7 +81,7 @@ export const sanitizeHtml = async (
             track: ["src", "label", "kind"],
         },
         stripIgnoreTag: false,
-        escapeHtml: (unsafeHtml) =>
+        escapeHtml: (unsafeHtml): string =>
             stringifyEntitiesLight(unsafeHtml, {
                 escapeOnly: true,
             }),
@@ -103,7 +103,7 @@ export const sanitizeHtml = async (
 
     return await new HTMLRewriter()
         .on("*[class]", {
-            element(element) {
+            element(element): void {
                 const classes = element.getAttribute("class")?.split(" ") ?? [];
 
                 for (const className of classes) {

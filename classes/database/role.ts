@@ -1,5 +1,8 @@
 import { proxyUrl } from "@/response";
-import { RolePermission } from "@versia/client/types";
+import {
+    type VersiaRole as APIRole,
+    RolePermission,
+} from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { RoleToUsers, Roles } from "@versia/kit/tables";
 import {
@@ -53,7 +56,7 @@ export class Role extends BaseInterface<typeof Roles> {
     public static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Roles.id),
-    ) {
+    ): Promise<Role | null> {
         const found = await db.query.Roles.findFirst({
             where: sql,
             orderBy,
@@ -65,10 +68,14 @@ export class Role extends BaseInterface<typeof Roles> {
         return new Role(found);
     }
 
-    public static async getUserRoles(userId: string, isAdmin: boolean) {
+    public static async getUserRoles(
+        userId: string,
+        isAdmin: boolean,
+    ): Promise<Role[]> {
         return (
             await db.query.RoleToUsers.findMany({
-                where: (role, { eq }) => eq(role.userId, userId),
+                where: (role, { eq }): SQL | undefined =>
+                    eq(role.userId, userId),
                 with: {
                     role: true,
                     user: {
@@ -115,7 +122,7 @@ export class Role extends BaseInterface<typeof Roles> {
         limit?: number,
         offset?: number,
         extra?: Parameters<typeof db.query.Roles.findMany>[0],
-    ) {
+    ): Promise<Role[]> {
         const found = await db.query.Roles.findMany({
             where: sql,
             orderBy,
@@ -165,14 +172,14 @@ export class Role extends BaseInterface<typeof Roles> {
         return role;
     }
 
-    public async linkUser(userId: string) {
+    public async linkUser(userId: string): Promise<void> {
         await db.insert(RoleToUsers).values({
             userId,
             roleId: this.id,
         });
     }
 
-    public async unlinkUser(userId: string) {
+    public async unlinkUser(userId: string): Promise<void> {
         await db
             .delete(RoleToUsers)
             .where(
@@ -183,11 +190,11 @@ export class Role extends BaseInterface<typeof Roles> {
             );
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 
-    public toApi() {
+    public toApi(): APIRole {
         return {
             id: this.id,
             name: this.data.name,

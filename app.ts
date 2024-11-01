@@ -23,7 +23,7 @@ import { logger } from "./middlewares/logger.ts";
 import { routes } from "./routes.ts";
 import type { ApiRouteExports, HonoEnv } from "./types/api.ts";
 
-export const appFactory = async () => {
+export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
     await configureLoggers();
     const serverLogger = getLogger("server");
 

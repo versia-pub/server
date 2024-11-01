@@ -18,7 +18,9 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-const getFormData = (object: Record<string, string | number | boolean>) =>
+const getFormData = (
+    object: Record<string, string | number | boolean>,
+): FormData =>
     Object.keys(object).reduce((formData, key) => {
         formData.append(key, String(object[key]));
         return formData;

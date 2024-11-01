@@ -50,9 +50,9 @@ describe("PluginLoader", () => {
 
     test("getDirectories should return directories", async () => {
         mockReaddir.mockResolvedValue([
-            { name: "dir1", isDirectory: () => true },
-            { name: "file1", isDirectory: () => false },
-            { name: "dir2", isDirectory: () => true },
+            { name: "dir1", isDirectory: (): true => true },
+            { name: "file1", isDirectory: (): false => false },
+            { name: "dir2", isDirectory: (): true => true },
         ]);
 
         // biome-ignore lint/complexity/useLiteralKeys: Private method
@@ -80,7 +80,8 @@ describe("PluginLoader", () => {
     test("parseManifestFile should parse JSON manifest", async () => {
         const manifestContent = { name: "test-plugin" };
         Bun.file = jest.fn().mockReturnValue({
-            text: () => Promise.resolve(JSON.stringify(manifestContent)),
+            text: (): Promise<string> =>
+                Promise.resolve(JSON.stringify(manifestContent)),
         });
 
         // biome-ignore lint/complexity/useLiteralKeys: Private method
@@ -94,8 +95,8 @@ describe("PluginLoader", () => {
     test("findPlugins should return plugin directories with valid manifest and entrypoint", async () => {
         mockReaddir
             .mockResolvedValueOnce([
-                { name: "plugin1", isDirectory: () => true },
-                { name: "plugin2", isDirectory: () => true },
+                { name: "plugin1", isDirectory: (): true => true },
+                { name: "plugin2", isDirectory: (): true => true },
             ])
             .mockResolvedValue(["manifest.json", "index.ts"]);
 
@@ -111,7 +112,8 @@ describe("PluginLoader", () => {
         };
         mockReaddir.mockResolvedValue(["manifest.json"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: () => Promise.resolve(JSON.stringify(manifestContent)),
+            text: (): Promise<string> =>
+                Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: true,
@@ -141,7 +143,8 @@ describe("PluginLoader", () => {
         };
         mockReaddir.mockResolvedValue(["manifest.json"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: () => Promise.resolve(JSON.stringify(manifestContent)),
+            text: (): Promise<string> =>
+                Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: false,
@@ -183,12 +186,13 @@ describe("PluginLoader", () => {
 
         mockReaddir
             .mockResolvedValueOnce([
-                { name: "plugin1", isDirectory: () => true },
-                { name: "plugin2", isDirectory: () => true },
+                { name: "plugin1", isDirectory: (): true => true },
+                { name: "plugin2", isDirectory: (): true => true },
             ])
             .mockResolvedValue(["manifest.json", "index.ts"]);
         Bun.file = jest.fn().mockReturnValue({
-            text: () => Promise.resolve(JSON.stringify(manifestContent)),
+            text: (): Promise<string> =>
+                Promise.resolve(JSON.stringify(manifestContent)),
         });
         manifestSchema.safeParseAsync = jest.fn().mockResolvedValue({
             success: true,

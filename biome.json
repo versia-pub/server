@@ -66,7 +66,17 @@
                     "options": {
                         "accessibility": "explicit"
                     }
-                }
+                },
+                "noCommonJs": "warn",
+                "noDynamicNamespaceImportAccess": "warn",
+                "noExportedImports": "warn",
+                "noIrregularWhitespace": "warn",
+                "noSubstr": "warn",
+                "noTemplateCurlyInString": "warn",
+                "noUselessEscapeInRegex": "warn",
+                "noUselessStringRaw": "warn",
+                "useAdjacentOverloadSignatures": "warn",
+                "useExplicitType": "warn"
             }
         }
     },

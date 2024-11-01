@@ -1,5 +1,6 @@
 import { createMiddleware } from "@hono/hono/factory";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { MiddlewareHandler } from "hono";
 import type { z } from "zod";
 import { type ZodError, fromZodError } from "zod-validation-error";
 import type { HonoEnv } from "~/types/api";
@@ -21,7 +22,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
 
     public constructor(private configSchema: ConfigSchema) {}
 
-    public get middleware() {
+    public get middleware(): MiddlewareHandler {
         // Middleware that adds the plugin's configuration to the request object
         return createMiddleware<HonoPluginEnv<ConfigSchema>>(
             async (context, next) => {
@@ -34,7 +35,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
     public registerRoute(
         path: string,
         fn: (app: OpenAPIHono<HonoPluginEnv<ConfigSchema>>) => void,
-    ) {
+    ): void {
         this.routes.push({
             path,
             fn,
@@ -54,7 +55,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         }
     }
 
-    protected _addToApp(app: OpenAPIHono<HonoEnv>) {
+    protected _addToApp(app: OpenAPIHono<HonoEnv>): void {
         for (const route of this.routes) {
             app.use(route.path, this.middleware);
             route.fn(
@@ -66,7 +67,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
     public registerHandler<HookName extends keyof ServerHooks>(
         hook: HookName,
         handler: ServerHooks[HookName],
-    ) {
+    ): void {
         this.handlers[hook] = handler;
     }
 
@@ -81,7 +82,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
     /**
      * Returns the internal configuration object.
      */
-    private getConfig() {
+    private getConfig(): z.infer<ConfigSchema> {
         if (!this.store) {
             throw new Error("Configuration has not been loaded yet.");
         }

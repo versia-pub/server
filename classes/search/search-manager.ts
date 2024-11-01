@@ -5,6 +5,7 @@
 
 import { getLogger } from "@logtape/logtape";
 import { Note, User, db } from "@versia/kit/db";
+import type { SQL, ValueOrArray } from "drizzle-orm";
 import {
     Ingest as SonicChannelIngest,
     Search as SonicChannelSearch,
@@ -63,21 +64,21 @@ export class SonicSearchManager {
         // Connect to Sonic
         await new Promise<boolean>((resolve, reject) => {
             this.searchChannel.connect({
-                connected: () => {
+                connected: (): void => {
                     !silent &&
                         this.logger.info`Connected to Sonic Search Channel`;
                     resolve(true);
                 },
-                disconnected: () =>
+                disconnected: (): void =>
                     this.logger
                         .error`Disconnected from Sonic Search Channel. You might be using an incorrect password.`,
-                timeout: () =>
+                timeout: (): void =>
                     this.logger
                         .error`Sonic Search Channel connection timed out`,
-                retrying: () =>
+                retrying: (): void =>
                     this.logger
                         .warn`Retrying connection to Sonic Search Channel`,
-                error: (error) => {
+                error: (error): void => {
                     this.logger
                         .error`Failed to connect to Sonic Search Channel: ${error}`;
                     reject(error);
@@ -87,20 +88,20 @@ export class SonicSearchManager {
 
         await new Promise<boolean>((resolve, reject) => {
             this.ingestChannel.connect({
-                connected: () => {
+                connected: (): void => {
                     !silent &&
                         this.logger.info`Connected to Sonic Ingest Channel`;
                     resolve(true);
                 },
-                disconnected: () =>
+                disconnected: (): void =>
                     this.logger.error`Disconnected from Sonic Ingest Channel`,
-                timeout: () =>
+                timeout: (): void =>
                     this.logger
                         .error`Sonic Ingest Channel connection timed out`,
-                retrying: () =>
+                retrying: (): void =>
                     this.logger
                         .warn`Retrying connection to Sonic Ingest Channel`,
-                error: (error) => {
+                error: (error): void => {
                     this.logger
                         .error`Failed to connect to Sonic Ingest Channel: ${error}`;
                     reject(error);
@@ -161,7 +162,7 @@ export class SonicSearchManager {
                 note: true,
                 createdAt: true,
             },
-            orderBy: (user, { asc }) => asc(user.createdAt),
+            orderBy: (user, { asc }): ValueOrArray<SQL> => asc(user.createdAt),
         });
     }
 
@@ -182,7 +183,8 @@ export class SonicSearchManager {
                 content: true,
                 createdAt: true,
             },
-            orderBy: (status, { asc }) => asc(status.createdAt),
+            orderBy: (status, { asc }): ValueOrArray<SQL> =>
+                asc(status.createdAt),
         });
     }
 

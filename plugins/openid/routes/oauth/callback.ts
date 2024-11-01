@@ -2,7 +2,7 @@ import { randomString } from "@/math.ts";
 import { setCookie } from "@hono/hono/cookie";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
-import { and, eq, isNull } from "@versia/kit/drizzle";
+import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import {
     OpenIdAccounts,
     RolePermissions,
@@ -29,7 +29,7 @@ export const schemas = {
     }),
 };
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/sso/{issuer}/callback", (app) => {
         app.openapi(
             createRoute({
@@ -150,7 +150,7 @@ export default (plugin: PluginType) => {
 
                     // Check if account is already linked
                     const account = await db.query.OpenIdAccounts.findFirst({
-                        where: (account, { eq, and }) =>
+                        where: (account, { eq, and }): SQL | undefined =>
                             and(
                                 eq(account.serverId, sub),
                                 eq(account.issuerId, issuer.id),
@@ -188,7 +188,7 @@ export default (plugin: PluginType) => {
 
                 let userId = (
                     await db.query.OpenIdAccounts.findFirst({
-                        where: (account, { eq, and }) =>
+                        where: (account, { eq, and }): SQL | undefined =>
                             and(
                                 eq(account.serverId, sub),
                                 eq(account.issuerId, issuer.id),

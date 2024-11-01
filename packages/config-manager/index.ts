@@ -8,6 +8,7 @@
 import { loadConfig, watchConfig } from "c12";
 import { fromZodError } from "zod-validation-error";
 import { type Config, configValidator } from "./config.type";
+export type { Config } from "./config.type";
 
 const { config } = await watchConfig({
     configFile: "./config/config.toml",
@@ -29,4 +30,3 @@ if (!parsed.success) {
 const exportedConfig = parsed.data;
 
 export { exportedConfig as config };
-export type { Config };

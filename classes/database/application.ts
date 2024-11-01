@@ -82,7 +82,8 @@ export class Application extends BaseInterface<typeof Applications> {
         token: string,
     ): Promise<Application | null> {
         const result = await db.query.Tokens.findFirst({
-            where: (tokens, { eq }) => eq(tokens.accessToken, token),
+            where: (tokens, { eq }): SQL | undefined =>
+                eq(tokens.accessToken, token),
             with: {
                 application: true,
             },
@@ -141,7 +142,7 @@ export class Application extends BaseInterface<typeof Applications> {
         return application;
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 

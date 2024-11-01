@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, db } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -90,7 +91,7 @@ export default apiRoute((app) =>
 
         if (
             await db.query.UserToPinnedNotes.findFirst({
-                where: (userPinnedNote, { and, eq }) =>
+                where: (userPinnedNote, { and, eq }): SQL | undefined =>
                     and(
                         eq(userPinnedNote.noteId, foundStatus.data.id),
                         eq(userPinnedNote.userId, user.id),

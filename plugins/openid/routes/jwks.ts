@@ -3,7 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { exportJWK } from "jose";
 import type { PluginType } from "../index.ts";
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/.well-known/jwks", (app) =>
         app.openapi(
             createRoute({

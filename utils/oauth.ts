@@ -9,7 +9,7 @@ import type { Application } from "@versia/kit/db";
 export const checkIfOauthIsValid = (
     application: Application,
     routeScopes: string[],
-) => {
+): boolean => {
     if (routeScopes.length === 0) {
         return true;
     }

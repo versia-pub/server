@@ -94,6 +94,7 @@ export type Manifest = {
 };
 
 // This is a type guard to ensure that the schema and the type are in sync
+// biome-ignore lint/nursery/useExplicitType: <explanation>
 function assert<_T extends never>() {
     // ...
 }

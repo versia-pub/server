@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 import {
     findManyNotifications,
@@ -103,7 +104,8 @@ export default apiRoute((app) =>
         const notification = (
             await findManyNotifications(
                 {
-                    where: (notification, { eq }) => eq(notification.id, id),
+                    where: (notification, { eq }): SQL | undefined =>
+                        eq(notification.id, id),
                     limit: 1,
                 },
                 user.id,

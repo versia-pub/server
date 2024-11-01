@@ -9,7 +9,7 @@ export type Json =
     | Json[]
     | { [key: string]: Json };
 
-export const proxyUrl = (url: string | null = null) => {
+export const proxyUrl = (url: string | null = null): string | null => {
     const urlAsBase64Url = Buffer.from(url || "").toString("base64url");
     return url
         ? new URL(

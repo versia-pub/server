@@ -49,7 +49,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { redirect_uri, client_id, code } = context.req.valid("query");
 
-        const redirectToLogin = (error: string) =>
+        const redirectToLogin = (error: string): Response =>
             context.redirect(
                 `${config.frontend.routes.login}?${new URLSearchParams({
                     ...context.req.query,

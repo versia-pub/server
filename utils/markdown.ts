@@ -5,7 +5,10 @@ import { sentry } from "./sentry.ts";
 export const renderMarkdownInPath = async (
     path: string,
     defaultText?: string,
-) => {
+): Promise<{
+    content: string;
+    lastModified: Date;
+}> => {
     let content = await markdownParse(defaultText ?? "");
     let lastModified = new Date(1970, 0, 0);
 

@@ -10,7 +10,7 @@ import { ErrorSchema } from "~/types/api";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/api/v1/sso", (app) => {
         app.openapi(
             {

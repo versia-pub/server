@@ -150,7 +150,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     public static async fromSql(
         sql: SQL<unknown> | undefined,
         orderBy: SQL<unknown> | undefined = desc(Users.id),
-    ) {
+    ): Promise<User | null> {
         const found = await findManyUsers({
             where: sql,
             orderBy,
@@ -168,7 +168,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         limit?: number,
         offset?: number,
         extra?: Parameters<typeof db.query.Users.findMany>[0],
-    ) {
+    ): Promise<User[]> {
         const found = await findManyUsers({
             where: sql,
             orderBy,
@@ -180,34 +180,38 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return found.map((s) => new User(s));
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 
-    public isLocal() {
+    public isLocal(): boolean {
         return this.data.instanceId === null;
     }
 
-    public isRemote() {
+    public isRemote(): boolean {
         return !this.isLocal();
     }
 
-    public getUri() {
+    public getUri(): string {
         return (
             this.data.uri ||
             new URL(`/users/${this.data.id}`, config.http.base_url).toString()
         );
     }
 
-    public static getUri(id: string, uri: string | null, baseUrl: string) {
+    public static getUri(
+        id: string,
+        uri: string | null,
+        baseUrl: string,
+    ): string {
         return uri || new URL(`/users/${id}`, baseUrl).toString();
     }
 
-    public hasPermission(permission: RolePermissions) {
+    public hasPermission(permission: RolePermissions): boolean {
         return this.getAllPermissions().includes(permission);
     }
 
-    public getAllPermissions() {
+    public getAllPermissions(): RolePermissions[] {
         return (
             this.data.roles
                 .flatMap((role) => role.permissions)
@@ -270,7 +274,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return foundRelationship;
     }
 
-    public async unfollow(followee: User, relationship: Relationship) {
+    public async unfollow(
+        followee: User,
+        relationship: Relationship,
+    ): Promise<boolean> {
         if (followee.isRemote()) {
             // TODO: This should reschedule for a later time and maybe notify the server admin if it fails too often
             const { ok } = await this.federateToUser(
@@ -348,7 +355,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return db.$count(Users, isNull(Users.instanceId));
     }
 
-    public static async getActiveInPeriod(milliseconds: number) {
+    public static async getActiveInPeriod(
+        milliseconds: number,
+    ): Promise<number> {
         return (
             await db
                 .select({
@@ -376,7 +385,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    public async resetPassword() {
+    public async resetPassword(): Promise<string> {
         const resetToken = randomString(32, "hex");
 
         await this.update({
@@ -386,30 +395,22 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return resetToken;
     }
 
-    public async pin(note: Note) {
-        return (
-            await db
-                .insert(UserToPinnedNotes)
-                .values({
-                    noteId: note.id,
-                    userId: this.id,
-                })
-                .returning()
-        )[0];
+    public async pin(note: Note): Promise<void> {
+        await db.insert(UserToPinnedNotes).values({
+            noteId: note.id,
+            userId: this.id,
+        });
     }
 
-    public async unpin(note: Note) {
-        return (
-            await db
-                .delete(UserToPinnedNotes)
-                .where(
-                    and(
-                        eq(NoteToMentions.noteId, note.id),
-                        eq(NoteToMentions.userId, this.id),
-                    ),
-                )
-                .returning()
-        )[0];
+    public async unpin(note: Note): Promise<void> {
+        await db
+            .delete(UserToPinnedNotes)
+            .where(
+                and(
+                    eq(NoteToMentions.noteId, note.id),
+                    eq(NoteToMentions.userId, this.id),
+                ),
+            );
     }
 
     public save(): Promise<UserWithRelations> {
@@ -434,7 +435,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     > {
         // Get all linked accounts
         const accounts = await db.query.OpenIdAccounts.findMany({
-            where: (User, { eq }) => eq(User.userId, this.id),
+            where: (User, { eq }): SQL | undefined => eq(User.userId, this.id),
         });
 
         return accounts
@@ -715,7 +716,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's avatar
      */
-    public getAvatarUrl(config: Config) {
+    public getAvatarUrl(config: Config): string {
         if (!this.data.avatar) {
             return (
                 config.defaults.avatar ||
@@ -725,7 +726,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.data.avatar;
     }
 
-    public static async generateKeys() {
+    public static async generateKeys(): Promise<{
+        private_key: string;
+        public_key: string;
+    }> {
         const keys = await crypto.subtle.generateKey("Ed25519", true, [
             "sign",
             "verify",
@@ -807,14 +811,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's header
      */
-    public getHeaderUrl(config: Config) {
+    public getHeaderUrl(config: Config): string {
         if (!this.data.header) {
             return config.defaults.header || "";
         }
         return this.data.header;
     }
 
-    public getAcct() {
+    public getAcct(): string {
         return this.isLocal()
             ? this.data.username
             : `${this.data.username}@${this.data.instance?.baseUrl}`;
@@ -824,7 +828,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         isLocal: boolean,
         username: string,
         baseUrl?: string,
-    ) {
+    ): string {
         return isLocal ? username : `${username}@${baseUrl}`;
     }
 

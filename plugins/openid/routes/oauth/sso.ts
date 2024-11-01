@@ -20,7 +20,7 @@ export const schemas = {
     }),
 };
 
-export default (plugin: PluginType) => {
+export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/sso", (app) => {
         app.openapi(
             createRoute({

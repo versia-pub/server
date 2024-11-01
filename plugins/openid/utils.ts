@@ -1,5 +1,5 @@
 import { db } from "@versia/kit/db";
-import type { InferSelectModel } from "@versia/kit/drizzle";
+import type { InferSelectModel, SQL } from "@versia/kit/drizzle";
 import type { Applications, OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     type AuthorizationResponseError,
@@ -7,6 +7,7 @@ import {
     ClientSecretPost,
     type ResponseBodyError,
     type TokenEndpointResponse,
+    type UserInfoResponse,
     authorizationCodeGrantRequest,
     discoveryRequest,
     expectNoState,
@@ -17,6 +18,7 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
+import type { ApplicationType } from "~/classes/database/application";
 
 export const oauthDiscoveryRequest = (
     issuerUrl: string | URL,
@@ -28,12 +30,19 @@ export const oauthDiscoveryRequest = (
     }).then((res) => processDiscoveryResponse(issuerUrlurl, res));
 };
 
-export const oauthRedirectUri = (baseUrl: string, issuer: string) =>
+export const oauthRedirectUri = (baseUrl: string, issuer: string): string =>
     new URL(`/oauth/sso/${issuer}/callback`, baseUrl).toString();
 
-const getFlow = (flowId: string) => {
+const getFlow = (
+    flowId: string,
+): Promise<
+    | (InferSelectModel<typeof OpenIdLoginFlows> & {
+          application?: ApplicationType | null;
+      })
+    | undefined
+> => {
     return db.query.OpenIdLoginFlows.findFirst({
-        where: (flow, { eq }) => eq(flow.id, flowId),
+        where: (flow, { eq }): SQL | undefined => eq(flow.id, flowId),
         with: {
             application: true,
         },
@@ -100,7 +109,7 @@ const getUserInfo = (
     clientId: string,
     accessToken: string,
     sub: string,
-) => {
+): Promise<UserInfoResponse> => {
     return userInfoRequest(
         authServer,
         {
@@ -138,7 +147,16 @@ export const automaticOidcFlow = async (
               })
             | null,
     ) => Response,
-) => {
+): Promise<
+    | Response
+    | {
+          userInfo: UserInfoResponse;
+          flow: InferSelectModel<typeof OpenIdLoginFlows> & {
+              application?: ApplicationType | null;
+          };
+          claims: Record<string, unknown>;
+      }
+> => {
     const flow = await getFlow(flowId);
 
     if (!flow) {

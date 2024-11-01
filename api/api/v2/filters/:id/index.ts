@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
-import { and, eq, inArray } from "drizzle-orm";
+import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -204,7 +204,7 @@ export default apiRoute((app) => {
         }
 
         const userFilter = await db.query.Filters.findFirst({
-            where: (filter, { eq, and }) =>
+            where: (filter, { eq, and }): SQL | undefined =>
                 and(eq(filter.userId, user.id), eq(filter.id, id)),
             with: {
                 keywords: true,
@@ -300,7 +300,7 @@ export default apiRoute((app) => {
         }
 
         const updatedFilter = await db.query.Filters.findFirst({
-            where: (filter, { eq, and }) =>
+            where: (filter, { eq, and }): SQL | undefined =>
                 and(eq(filter.userId, user.id), eq(filter.id, id)),
             with: {
                 keywords: true,

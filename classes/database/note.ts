@@ -276,7 +276,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return found.map((s) => new Note(s));
     }
 
-    public get id() {
+    public get id(): string {
         return this.data.id;
     }
 
@@ -319,7 +319,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             {
                 with: {
                     relationships: {
-                        where: (relationship, { eq, and }) =>
+                        where: (relationship, { eq, and }): SQL | undefined =>
                             and(
                                 eq(relationship.subjectId, this.data.authorId),
                                 eq(relationship.following, true),
@@ -339,7 +339,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         return deduplicatedUsersById;
     }
 
-    public get author() {
+    public get author(): User {
         return new User(this.data.author);
     }
 
@@ -369,7 +369,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         );
     }
 
-    public isRemote() {
+    public isRemote(): boolean {
         return this.author.isRemote();
     }
 
@@ -846,7 +846,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         if (this.data.visibility === "private") {
             return user
                 ? !!(await db.query.Relationships.findFirst({
-                      where: (relationship, { and, eq }) =>
+                      where: (relationship, { and, eq }): SQL | undefined =>
                           and(
                               eq(relationship.ownerId, user?.id),
                               eq(relationship.subjectId, Notes.authorId),
@@ -877,7 +877,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         // Rewrite all src tags to go through proxy
         let replacedContent = new HTMLRewriter()
             .on("[src]", {
-                element(element) {
+                element(element): void {
                     element.setAttribute(
                         "src",
                         proxyUrl(element.getAttribute("src") ?? "") ?? "",
