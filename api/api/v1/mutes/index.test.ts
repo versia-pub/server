@@ -15,7 +15,7 @@ beforeAll(async () => {
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({}),
@@ -41,7 +41,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
         expect(response.status).toBe(200);
@@ -62,7 +62,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({}),
@@ -73,7 +73,7 @@ describe(meta.route, () => {
         const response2 = await fakeRequest(meta.route, {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
         expect(response2.status).toBe(200);

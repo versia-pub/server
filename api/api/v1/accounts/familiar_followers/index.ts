@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
-import { type SQL, inArray } from "drizzle-orm";
+import { RolePermissions, type Users } from "@versia/kit/tables";
+import { type InferSelectModel, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -23,7 +23,12 @@ export const meta = applyConfig({
 
 export const schemas = {
     query: z.object({
-        id: z.array(z.string().uuid()).min(1).max(10).or(z.string().uuid()),
+        id: z
+            .array(z.string().uuid())
+            .min(1)
+            .max(10)
+            .or(z.string().uuid())
+            .transform((v) => (Array.isArray(v) ? v : [v])),
     }),
 };
 
@@ -42,7 +47,12 @@ const route = createRoute({
             description: "Familiar followers",
             content: {
                 "application/json": {
-                    schema: z.array(User.schema),
+                    schema: z.array(
+                        z.object({
+                            id: z.string().uuid(),
+                            accounts: z.array(User.schema),
+                        }),
+                    ),
                 },
             },
         },
@@ -66,53 +76,35 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const idFollowerRelationships = await db.query.Relationships.findMany({
-            columns: {
-                ownerId: true,
-            },
-            where: (relationship, { inArray, and, eq }): SQL | undefined =>
-                and(
-                    inArray(
-                        relationship.subjectId,
-                        Array.isArray(ids) ? ids : [ids],
-                    ),
-                    eq(relationship.following, true),
+        // Find followers of the accounts in "ids", that you also follow
+        const finalUsers = await Promise.all(
+            ids.map(async (id) => ({
+                id,
+                accounts: await User.fromIds(
+                    (
+                        await db.execute(sql<InferSelectModel<typeof Users>>`
+                        SELECT "Users"."id" FROM "Users"
+                        INNER JOIN "Relationships" AS "SelfFollowing" 
+                            ON "SelfFollowing"."subjectId" = "Users"."id"
+                        WHERE "SelfFollowing"."ownerId" = ${self.id}
+                            AND "SelfFollowing"."following" = true
+                            AND EXISTS (
+                                SELECT 1 FROM "Relationships" AS "IdsFollowers"
+                                WHERE "IdsFollowers"."subjectId" = ${id}
+                                    AND "IdsFollowers"."ownerId" = "Users"."id"
+                                    AND "IdsFollowers"."following" = true
+                            )
+                    `)
+                    ).rows.map((u) => u.id as string),
                 ),
-        });
-
-        if (idFollowerRelationships.length === 0) {
-            return context.json([], 200);
-        }
-
-        // Find users that you follow in idFollowerRelationships
-        const relevantRelationships = await db.query.Relationships.findMany({
-            columns: {
-                subjectId: true,
-            },
-            where: (relationship, { inArray, and, eq }): SQL | undefined =>
-                and(
-                    eq(relationship.ownerId, self.id),
-                    inArray(
-                        relationship.subjectId,
-                        idFollowerRelationships.map((f) => f.ownerId),
-                    ),
-                    eq(relationship.following, true),
-                ),
-        });
-
-        if (relevantRelationships.length === 0) {
-            return context.json([], 200);
-        }
-
-        const finalUsers = await User.manyFromSql(
-            inArray(
-                Users.id,
-                relevantRelationships.map((r) => r.subjectId),
-            ),
+            })),
         );
 
         return context.json(
-            finalUsers.map((o) => o.toApi()),
+            finalUsers.map((u) => ({
+                ...u,
+                accounts: u.accounts.map((a) => a.toApi()),
+            })),
             200,
         );
     }),

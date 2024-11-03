@@ -17,7 +17,7 @@ beforeAll(async () => {
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
         },
     );
@@ -33,7 +33,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -53,7 +53,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -72,7 +72,7 @@ describe(meta.route, () => {
         const replyResponse = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Reply",
@@ -88,7 +88,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -108,7 +108,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -126,7 +126,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
             },
         );
@@ -138,7 +138,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

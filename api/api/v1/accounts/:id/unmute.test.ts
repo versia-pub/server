@@ -13,7 +13,7 @@ beforeAll(async () => {
     await fakeRequest(`/api/v1/accounts/${users[0].id}/mute`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
         },
     });
 });
@@ -36,7 +36,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -49,7 +49,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -65,7 +65,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

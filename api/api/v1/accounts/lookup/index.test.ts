@@ -16,7 +16,7 @@ describe(meta.route, () => {
             `${meta.route}?acct=${users[0].data.username}`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

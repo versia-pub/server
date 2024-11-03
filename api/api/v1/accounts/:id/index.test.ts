@@ -15,7 +15,7 @@ beforeAll(async () => {
         await fakeRequest(`/api/v1/statuses/${status.id}/favourite`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({}),

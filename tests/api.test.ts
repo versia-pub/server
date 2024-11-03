@@ -15,7 +15,7 @@ describe("API Tests", () => {
         const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "multipart/form-data",
             },
             body: formData,
@@ -42,7 +42,7 @@ describe("API Tests", () => {
                 {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     },
                 },
             ),

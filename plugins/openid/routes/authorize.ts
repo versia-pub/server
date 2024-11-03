@@ -1,11 +1,10 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { Application, User, db } from "@versia/kit/db";
-import { RolePermissions, Tokens } from "@versia/kit/tables";
+import { Application, Token, User } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
-import { TokenType } from "~/classes/functions/token";
 import type { PluginType } from "../index.ts";
 
 const schemas = {
@@ -282,11 +281,11 @@ export default (plugin: PluginType): void =>
                     .setProtectedHeader({ alg: "EdDSA" })
                     .sign(keys.private);
 
-                await db.insert(Tokens).values({
+                await Token.insert({
                     accessToken: randomString(64, "base64url"),
                     code,
                     scope: scope ?? application.data.scopes,
-                    tokenType: TokenType.Bearer,
+                    tokenType: "Bearer",
                     applicationId: application.id,
                     redirectUri: redirect_uri ?? application.data.redirectUri,
                     expiresAt: new Date(

@@ -77,7 +77,7 @@ describe(meta.route, () => {
             {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -89,7 +89,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route.replace(":id", role.id), {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -111,7 +111,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -133,7 +133,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -144,7 +144,7 @@ describe(meta.route, () => {
         const response2 = await fakeRequest("/api/v1/roles", {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -171,7 +171,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route.replace(":id", role.id), {
             method: "DELETE",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -181,7 +181,7 @@ describe(meta.route, () => {
         const response2 = await fakeRequest("/api/v1/roles", {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -210,7 +210,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

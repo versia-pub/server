@@ -27,7 +27,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -40,7 +40,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -56,7 +56,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

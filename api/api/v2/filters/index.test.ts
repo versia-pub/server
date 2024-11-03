@@ -19,7 +19,7 @@ describe(meta.route, () => {
     test("should return user filters (none)", async () => {
         const response = await fakeRequest(meta.route, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -43,7 +43,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({

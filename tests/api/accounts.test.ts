@@ -34,7 +34,7 @@ describe("API Tests", () => {
                 {
                     method: "PATCH",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                     body: getFormData({
                         display_name: "New Display Name",
@@ -59,7 +59,7 @@ describe("API Tests", () => {
                 "/api/v1/accounts/verify_credentials",
                 {
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -106,7 +106,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -132,7 +132,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -156,7 +156,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v1/blocks", {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
             });
 
@@ -179,7 +179,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -205,7 +205,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -231,7 +231,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -257,7 +257,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ comment: "This is a new note" }),
@@ -283,7 +283,7 @@ describe("API Tests", () => {
                 {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -314,7 +314,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v1/profile/avatar", {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
             });
 
@@ -335,7 +335,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v1/profile/header", {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
             });
 
@@ -358,7 +358,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({}),
@@ -371,13 +371,13 @@ describe("API Tests", () => {
             );
         });
 
-        test("should return an array of objects with id and accounts properties, where id is a string and accounts is an array of APIAccount objects", async () => {
+        test("should return no familiar followers", async () => {
             const response = await fakeRequest(
                 `/api/v1/accounts/familiar_followers?id[]=${user2.id}`,
                 {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -393,7 +393,9 @@ describe("API Tests", () => {
             }[];
 
             expect(Array.isArray(familiarFollowers)).toBe(true);
-            expect(familiarFollowers.length).toBe(0);
+            expect(familiarFollowers.length).toBe(1);
+            expect(familiarFollowers[0].id).toBe(user2.id);
+            expect(familiarFollowers[0].accounts).toBeArrayOfSize(0);
         });
     });
 });

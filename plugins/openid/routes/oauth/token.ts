@@ -1,7 +1,7 @@
 import { jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Application, db } from "@versia/kit/db";
-import { type SQL, eq } from "@versia/kit/drizzle";
+import { Application, Token } from "@versia/kit/db";
+import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import type { PluginType } from "../../index.ts";
 
@@ -154,17 +154,13 @@ export default (plugin: PluginType): void => {
                             );
                         }
 
-                        const token = await db.query.Tokens.findFirst({
-                            where: (token, { eq, and }): SQL | undefined =>
-                                and(
-                                    eq(token.code, code),
-                                    eq(
-                                        token.redirectUri,
-                                        decodeURI(redirect_uri),
-                                    ),
-                                    eq(token.clientId, client_id),
-                                ),
-                        });
+                        const token = await Token.fromSql(
+                            and(
+                                eq(Tokens.code, code),
+                                eq(Tokens.redirectUri, decodeURI(redirect_uri)),
+                                eq(Tokens.clientId, client_id),
+                            ),
+                        );
 
                         if (!token) {
                             return context.json(
@@ -177,28 +173,22 @@ export default (plugin: PluginType): void => {
                         }
 
                         // Invalidate the code
-                        await db
-                            .update(Tokens)
-                            .set({ code: null })
-                            .where(eq(Tokens.id, token.id));
+                        await token.update({ code: null });
 
                         return context.json(
                             {
-                                access_token: token.accessToken,
-                                token_type: "Bearer",
-                                expires_in: token.expiresAt
+                                ...token.toApi(),
+                                expires_in: token.data.expiresAt
                                     ? Math.floor(
-                                          (new Date(token.expiresAt).getTime() -
+                                          (new Date(
+                                              token.data.expiresAt,
+                                          ).getTime() -
                                               Date.now()) /
                                               1000,
                                       )
                                     : null,
-                                id_token: token.idToken,
+                                id_token: token.data.idToken,
                                 refresh_token: null,
-                                scope: token.scope,
-                                created_at: Math.floor(
-                                    new Date(token.createdAt).getTime() / 1000,
-                                ),
                             },
                             200,
                         );

@@ -7,7 +7,7 @@ const { tokens, deleteUsers } = await getTestUsers(2);
 const response = await fakeRequest("/api/v2/filters", {
     method: "POST",
     headers: {
-        Authorization: `Bearer ${tokens[0].accessToken}`,
+        Authorization: `Bearer ${tokens[0].data.accessToken}`,
         "Content-Type": "application/x-www-form-urlencoded",
     },
     body: new URLSearchParams({
@@ -49,7 +49,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", filter.id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -75,7 +75,7 @@ describe(meta.route, () => {
             {
                 method: "PUT",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
                 body: new URLSearchParams({
@@ -111,7 +111,7 @@ describe(meta.route, () => {
             {
                 method: "PUT",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     "keywords_attributes[0][id]": filter.keywords[0].id,
@@ -131,7 +131,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", filter.id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -148,7 +148,7 @@ describe(meta.route, () => {
             {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: formData,
             },
@@ -161,7 +161,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", filter.id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

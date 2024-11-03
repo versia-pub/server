@@ -3,18 +3,10 @@ import type {
     FollowAccept,
     FollowReject,
 } from "@versia/federation/types";
-import { User, db } from "@versia/kit/db";
-import {
-    Applications,
-    type Instances,
-    type Roles,
-    Tokens,
-    type Users,
-} from "@versia/kit/tables";
-import { type InferSelectModel, type SQL, eq, sql } from "drizzle-orm";
-import type { ApplicationType } from "~/classes/database/application.ts";
+import { type Application, type Token, type User, db } from "@versia/kit/db";
+import type { Instances, Roles, Users } from "@versia/kit/tables";
+import { type InferSelectModel, type SQL, sql } from "drizzle-orm";
 import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
-import type { Token } from "./token.ts";
 
 export type UserType = InferSelectModel<typeof Users>;
 
@@ -31,23 +23,7 @@ export type UserWithRelations = UserType & {
     roles: InferSelectModel<typeof Roles>[];
 };
 
-export const userRelations: {
-    instance: true;
-    emojis: {
-        with: {
-            emoji: {
-                with: {
-                    instance: true;
-                };
-            };
-        };
-    };
-    roles: {
-        with: {
-            role: true;
-        };
-    };
-} = {
+export const userRelations = {
     instance: true,
     emojis: {
         with: {
@@ -63,7 +39,7 @@ export const userRelations: {
             role: true,
         },
     },
-};
+} as const;
 
 export const userExtras = {
     followerCount:
@@ -103,18 +79,9 @@ export const userExtrasTemplate = (
 
 export interface AuthData {
     user: User | null;
-    token: string;
-    application: ApplicationType | null;
+    token: Token | null;
+    application: Application | null;
 }
-
-export const getFromHeader = async (value: string): Promise<AuthData> => {
-    const token = value.split(" ")[1];
-
-    const { user, application } =
-        await retrieveUserAndApplicationFromToken(token);
-
-    return { user, token, application };
-};
 
 export const transformOutputToUserWithRelations = (
     user: Omit<UserType, "endpoints"> & {
@@ -178,52 +145,6 @@ export const findManyUsers = async (
     });
 
     return output.map((user) => transformOutputToUserWithRelations(user));
-};
-
-export const retrieveUserAndApplicationFromToken = async (
-    accessToken: string,
-): Promise<{
-    user: User | null;
-    application: ApplicationType | null;
-}> => {
-    if (!accessToken) {
-        return { user: null, application: null };
-    }
-
-    const output = (
-        await db
-            .select({
-                token: Tokens,
-                application: Applications,
-            })
-            .from(Tokens)
-            .leftJoin(Applications, eq(Tokens.applicationId, Applications.id))
-            .where(eq(Tokens.accessToken, accessToken))
-            .limit(1)
-    )[0];
-
-    if (!output?.token.userId) {
-        return { user: null, application: null };
-    }
-
-    const user = await User.fromId(output.token.userId);
-
-    return { user, application: output.application ?? null };
-};
-
-export const retrieveToken = async (
-    accessToken: string,
-): Promise<Token | null> => {
-    if (!accessToken) {
-        return null;
-    }
-
-    return (
-        (await db.query.Tokens.findFirst({
-            where: (tokens, { eq }): SQL | undefined =>
-                eq(tokens.accessToken, accessToken),
-        })) ?? null
-    );
 };
 
 export const followRequestToVersia = (

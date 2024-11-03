@@ -1,12 +1,11 @@
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
-import { Note, User, db } from "@versia/kit/db";
-import { Notes, Tokens, Users } from "@versia/kit/tables";
+import { Note, Token, User, db } from "@versia/kit/db";
+import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
 import { asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import type { Status } from "~/classes/functions/status";
-import type { Token } from "~/classes/functions/token";
 import { searchManager } from "~/classes/search/search-manager";
 import { setupDatabase } from "~/drizzle/db";
 import { config } from "~/packages/config-manager";
@@ -60,23 +59,24 @@ export const getTestUsers = async (
         users.push(user);
     }
 
-    const tokens = await db
-        .insert(Tokens)
-        .values(
-            users.map((u) => ({
-                accessToken: randomString(32, "hex"),
-                tokenType: "bearer",
-                userId: u.id,
-                applicationId: null,
-                code: randomString(32, "hex"),
-                scope: "read write follow push",
-            })),
-        )
-        .returning();
+    const tokens = await Token.insertMany(
+        users.map((u) => ({
+            accessToken: randomString(32, "hex"),
+            tokenType: "bearer",
+            userId: u.id,
+            applicationId: null,
+            code: randomString(32, "hex"),
+            scope: "read write follow push",
+        })),
+    );
 
     return {
         users,
-        tokens,
+        // Order tokens in the same order as users
+        // The first token belongs to the first user, the second token belongs to the second user, etc.
+        tokens: users.map(
+            (u) => tokens.find((t) => t.data.userId === u.id) as Token,
+        ),
         passwords,
         deleteUsers: async (): Promise<void> => {
             await db.delete(Users).where(

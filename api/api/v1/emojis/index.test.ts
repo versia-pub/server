@@ -64,7 +64,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
                 body: formData,
             });
@@ -83,7 +83,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
                 body: formData,
             });
@@ -95,7 +95,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
@@ -118,7 +118,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
                 body: formData,
             });
@@ -136,7 +136,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: formData,
             });
@@ -155,7 +155,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: formData,
             });
@@ -171,7 +171,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[2].accessToken}`,
+                    Authorization: `Bearer ${tokens[2].data.accessToken}`,
                 },
                 body: formData,
             });

@@ -43,7 +43,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 

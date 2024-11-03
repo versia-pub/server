@@ -15,7 +15,7 @@ beforeAll(async () => {
         await fakeRequest(`/api/v1/statuses/${status.id}/reblog`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
         });
     }
@@ -36,7 +36,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", timeline[0].id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

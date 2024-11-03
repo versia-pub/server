@@ -29,7 +29,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v2/media", {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
                 body: formData,
             });
@@ -52,7 +52,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: "Hello, world!",
@@ -94,7 +94,7 @@ describe("API Tests", () => {
             const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token.accessToken}`,
+                    Authorization: `Bearer ${token.data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: "This is a reply!",
@@ -139,7 +139,7 @@ describe("API Tests", () => {
                 `/api/v1/statuses/${status?.id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -184,7 +184,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -209,7 +209,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -232,7 +232,7 @@ describe("API Tests", () => {
                 `/api/v1/statuses/${status?.id}/context`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -259,7 +259,7 @@ describe("API Tests", () => {
                 {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -289,7 +289,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -306,7 +306,7 @@ describe("API Tests", () => {
                 {
                     method: "POST",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );
@@ -330,7 +330,7 @@ describe("API Tests", () => {
                 {
                     method: "DELETE",
                     headers: {
-                        Authorization: `Bearer ${token.accessToken}`,
+                        Authorization: `Bearer ${token.data.accessToken}`,
                     },
                 },
             );

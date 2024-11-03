@@ -15,7 +15,7 @@ beforeAll(async () => {
     // Create an emoji
     const response = await fakeRequest("/api/v1/emojis", {
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         method: "POST",
@@ -55,7 +55,7 @@ describe(meta.route, () => {
 
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
                 method: "GET",
             },
@@ -67,7 +67,7 @@ describe(meta.route, () => {
     test("should not work if the user is trying to update an emoji they don't own", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             method: "PATCH",
@@ -82,7 +82,7 @@ describe(meta.route, () => {
     test("should return the emoji", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
             method: "GET",
         });
@@ -95,7 +95,7 @@ describe(meta.route, () => {
     test("should update the emoji", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             method: "PATCH",
@@ -112,7 +112,7 @@ describe(meta.route, () => {
     test("should update the emoji with another url, but keep the shortcode", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             method: "PATCH",
@@ -129,7 +129,7 @@ describe(meta.route, () => {
     test("should update the emoji to be non-global", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             method: "PATCH",
@@ -143,7 +143,7 @@ describe(meta.route, () => {
         // Check if the other user can see it
         const response2 = await fakeRequest("/api/v1/custom_emojis", {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             method: "GET",
         });
@@ -156,7 +156,7 @@ describe(meta.route, () => {
     test("should delete the emoji", async () => {
         const response = await fakeRequest(meta.route.replace(":id", id), {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
             method: "DELETE",
         });

@@ -13,7 +13,7 @@ describe("/api/v1/sso/:id", () => {
         const response = await fakeRequest("/api/v1/sso/unknown", {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -25,7 +25,7 @@ describe("/api/v1/sso/:id", () => {
         const response2 = await fakeRequest("/api/v1/sso/unknown", {
             method: "DELETE",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
         });

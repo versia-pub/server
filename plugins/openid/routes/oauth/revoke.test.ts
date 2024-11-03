@@ -1,7 +1,5 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { Application, db } from "@versia/kit/db";
-import { eq } from "@versia/kit/drizzle";
-import { Tokens } from "@versia/kit/tables";
+import { afterAll, describe, expect, test } from "bun:test";
+import { Application, Token } from "@versia/kit/db";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);
@@ -13,28 +11,23 @@ const application = await Application.insert({
     secret: "test-secret",
     name: "Test Application",
 });
-
-beforeAll(async () => {
-    await db.insert(Tokens).values({
-        code: "test-code",
-        redirectUri: application.data.redirectUri,
-        clientId: application.data.clientId,
-        accessToken: "test-access-token",
-        expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-        createdAt: new Date().toISOString(),
-        tokenType: "Bearer",
-        scope: application.data.scopes,
-        userId: users[0].id,
-        applicationId: application.id,
-    });
+const token = await Token.insert({
+    code: "test-code",
+    redirectUri: application.data.redirectUri,
+    clientId: application.data.clientId,
+    accessToken: "test-access-token",
+    expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+    tokenType: "Bearer",
+    scope: application.data.scopes,
+    userId: users[0].id,
+    applicationId: application.id,
 });
 
 afterAll(async () => {
     await deleteUsers();
     await application.delete();
-    await db
-        .delete(Tokens)
-        .where(eq(Tokens.clientId, application.data.clientId));
+    await token.delete();
 });
 
 describe("/oauth/revoke", () => {

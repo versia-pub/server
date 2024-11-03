@@ -47,7 +47,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -79,7 +79,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: "jwt=invalid-jwt",
             },
@@ -118,7 +118,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -160,7 +160,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -200,7 +200,7 @@ describe("/oauth/authorize", () => {
         const response2 = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt2}`,
             },
@@ -245,7 +245,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -289,7 +289,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -331,7 +331,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },
@@ -373,7 +373,7 @@ describe("/oauth/authorize", () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
                 Cookie: `jwt=${jwt}`,
             },

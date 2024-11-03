@@ -14,7 +14,7 @@ beforeAll(async () => {
     // Upload one emoji as admin, then one as each user
     const response = await fakeRequest("/api/v1/emojis", {
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         method: "POST",
@@ -29,7 +29,7 @@ beforeAll(async () => {
 
     await fakeRequest("/api/v1/emojis", {
         headers: {
-            Authorization: `Bearer ${tokens[0].accessToken}`,
+            Authorization: `Bearer ${tokens[0].data.accessToken}`,
             "Content-Type": "application/json",
         },
         method: "POST",
@@ -41,7 +41,7 @@ beforeAll(async () => {
 
     await fakeRequest("/api/v1/emojis", {
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         method: "POST",
@@ -64,7 +64,7 @@ describe(meta.route, () => {
     test("should return all global emojis", async () => {
         const response = await fakeRequest(meta.route, {
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
         });
 
@@ -96,7 +96,7 @@ describe(meta.route, () => {
     test("should return all user emojis", async () => {
         const response = await fakeRequest(meta.route, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 

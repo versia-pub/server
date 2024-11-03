@@ -16,7 +16,7 @@ beforeAll(async () => {
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({}),
@@ -33,7 +33,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", users[1].id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -54,7 +54,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -65,7 +65,7 @@ describe(meta.route, () => {
             meta.route.replace(":id", users[1].id),
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

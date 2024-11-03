@@ -18,7 +18,7 @@ beforeAll(async () => {
     const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -31,7 +31,7 @@ beforeAll(async () => {
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({}),
@@ -45,7 +45,7 @@ beforeAll(async () => {
         {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
             body: getFormData({}),
         },
@@ -56,7 +56,7 @@ beforeAll(async () => {
     const res4 = await fakeRequest("/api/v1/statuses", {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
         },
         body: new URLSearchParams({
             status: `@${users[0].data.username} test mention`,
@@ -83,7 +83,7 @@ describe(meta.route, () => {
     test("should return 200 with notifications", async () => {
         const response = await fakeRequest(meta.route, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -113,7 +113,7 @@ describe(meta.route, () => {
         const filterResponse = await fakeRequest("/api/v2/filters", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
@@ -132,7 +132,7 @@ describe(meta.route, () => {
 
         const response = await fakeRequest(`${meta.route}?limit=20`, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -157,7 +157,7 @@ describe(meta.route, () => {
             {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

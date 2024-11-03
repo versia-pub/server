@@ -12,7 +12,7 @@ describe("/api/v1/sso", () => {
         const response = await fakeRequest("/api/v1/sso", {
             method: "GET",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -24,7 +24,7 @@ describe("/api/v1/sso", () => {
         const response = await fakeRequest("/api/v1/sso", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0]?.accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({

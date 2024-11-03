@@ -1,7 +1,7 @@
 import { jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { db } from "@versia/kit/db";
-import { type SQL, eq } from "@versia/kit/drizzle";
+import { Token, db } from "@versia/kit/db";
+import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import type { PluginType } from "../../index.ts";
 
@@ -62,16 +62,12 @@ export default (plugin: PluginType): void => {
                 const { client_id, client_secret, token } =
                     context.req.valid("json");
 
-                const foundToken = await db.query.Tokens.findFirst({
-                    where: (tokenTable, { eq, and }): SQL | undefined =>
-                        and(
-                            eq(tokenTable.accessToken, token ?? ""),
-                            eq(tokenTable.clientId, client_id),
-                        ),
-                    with: {
-                        application: true,
-                    },
-                });
+                const foundToken = await Token.fromSql(
+                    and(
+                        eq(Tokens.accessToken, token ?? ""),
+                        eq(Tokens.clientId, client_id),
+                    ),
+                );
 
                 if (!(foundToken && token)) {
                     return context.json(
@@ -85,7 +81,7 @@ export default (plugin: PluginType): void => {
                 }
 
                 // Check if the client secret is correct
-                if (foundToken.application?.secret !== client_secret) {
+                if (foundToken.data.application?.secret !== client_secret) {
                     return context.json(
                         {
                             error: "unauthorized_client",

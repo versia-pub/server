@@ -2,7 +2,7 @@ import type { Context, MiddlewareHandler } from "@hono/hono";
 import { createMiddleware } from "@hono/hono/factory";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
-import { Application, type User, db } from "@versia/kit/db";
+import { Application, Token, db } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
@@ -24,7 +24,7 @@ import {
 import { type ParsedQs, parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { type AuthData, getFromHeader } from "~/classes/functions/user";
+import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
 
@@ -178,20 +178,12 @@ const checkRouteNeedsAuth = (
     auth: AuthData | null,
     authData: ApiRouteMetadata["auth"],
     context: Context,
-):
-    | Response
-    | {
-          user: User | null;
-          token: string | null;
-          application: Application | null;
-      } => {
-    if (auth?.user) {
+): Response | AuthData => {
+    if (auth?.user && auth?.token) {
         return {
-            user: auth.user as User,
-            token: auth.token as string,
-            application: auth.application
-                ? new Application(auth.application)
-                : null,
+            user: auth.user,
+            token: auth.token,
+            application: auth.application,
         };
     }
     if (
@@ -295,8 +287,19 @@ export const auth = (
 ): MiddlewareHandler<HonoEnv, string> =>
     createMiddleware<HonoEnv>(async (context, next) => {
         const header = context.req.header("Authorization");
+        const tokenString = header?.split(" ")[1];
 
-        const auth = header ? await getFromHeader(header) : null;
+        const token = tokenString
+            ? await Token.fromAccessToken(tokenString)
+            : null;
+
+        const auth: AuthData = {
+            token,
+            application: token?.data.application
+                ? new Application(token?.data.application)
+                : null,
+            user: (await token?.getUser()) ?? null,
+        };
 
         // Only exists for type casting, as otherwise weird errors happen with Hono
         const fakeResponse = context.json({});
@@ -325,11 +328,7 @@ export const auth = (
 
         const authCheck = checkRouteNeedsAuth(auth, authData, context) as
             | typeof fakeResponse
-            | {
-                  user: User | null;
-                  token: string | null;
-                  application: Application | null;
-              };
+            | AuthData;
 
         if (authCheck instanceof Response) {
             return authCheck;
@@ -385,7 +384,7 @@ async function parseUrlEncoded(context: Context): Promise<ParsedQs> {
 
 export const qsQuery = (): MiddlewareHandler => {
     return createMiddleware(async (context, next) => {
-        const parsed = parse(context.req.query(), {
+        const parsed = parse(new URL(context.req.url).searchParams.toString(), {
             parseArrays: true,
             interpretNumericEntities: true,
         });

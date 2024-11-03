@@ -55,7 +55,9 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const application = await Application.getFromToken(token);
+        const application = await Application.getFromToken(
+            token.data.accessToken,
+        );
 
         if (!application) {
             return context.json({ error: "Unauthorized" }, 401);

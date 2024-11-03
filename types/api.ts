@@ -11,10 +11,10 @@ import type {
     Unfollow,
     User,
 } from "@versia/federation/types";
-import type { Application, User as DatabaseUser } from "@versia/kit/db";
 import type { RolePermissions } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import { z } from "zod";
+import type { AuthData } from "~/classes/functions/user";
 import type { Config } from "~/packages/config-manager";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
@@ -52,11 +52,7 @@ export const ErrorSchema = z.object({
 export type HonoEnv = {
     Variables: {
         config: Config;
-        auth: {
-            user: DatabaseUser | null;
-            token: string | null;
-            application: Application | null;
-        };
+        auth: AuthData;
     };
     Bindings: {
         ip?: SocketAddress | null;

@@ -1,5 +1,5 @@
 import type { Application as APIApplication } from "@versia/client/types";
-import { db } from "@versia/kit/db";
+import { Token, db } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
 import {
     type InferInsertModel,
@@ -81,15 +81,11 @@ export class Application extends BaseInterface<typeof Applications> {
     public static async getFromToken(
         token: string,
     ): Promise<Application | null> {
-        const result = await db.query.Tokens.findFirst({
-            where: (tokens, { eq }): SQL | undefined =>
-                eq(tokens.accessToken, token),
-            with: {
-                application: true,
-            },
-        });
+        const result = await Token.fromAccessToken(token);
 
-        return result?.application ? new Application(result.application) : null;
+        return result?.data.application
+            ? new Application(result.data.application)
+            : null;
     }
 
     public static fromClientId(clientId: string): Promise<Application | null> {

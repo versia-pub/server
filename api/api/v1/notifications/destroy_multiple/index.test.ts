@@ -12,7 +12,7 @@ beforeAll(async () => {
     await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -22,7 +22,7 @@ beforeAll(async () => {
         await fakeRequest(`/api/v1/statuses/${statuses[i].id}/favourite`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[1].accessToken}`,
+                Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({}),
@@ -31,7 +31,7 @@ beforeAll(async () => {
 
     notifications = await fakeRequest("/api/v1/notifications", {
         headers: {
-            Authorization: `Bearer ${tokens[0].accessToken}`,
+            Authorization: `Bearer ${tokens[0].data.accessToken}`,
         },
     }).then((r) => r.json());
 
@@ -65,7 +65,7 @@ describe(meta.route, () => {
             {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -76,7 +76,7 @@ describe(meta.route, () => {
     test("should not display dismissed notification", async () => {
         const response = await fakeRequest("/api/v1/notifications", {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 

@@ -39,7 +39,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams(),
         });
@@ -51,7 +51,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "a".repeat(config.validation.max_note_size + 1),
@@ -66,7 +66,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -82,7 +82,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -98,7 +98,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -114,7 +114,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -130,7 +130,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -146,7 +146,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -169,7 +169,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -194,7 +194,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -207,7 +207,7 @@ describe(meta.route, () => {
         const response2 = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world again!",
@@ -231,7 +231,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -244,7 +244,7 @@ describe(meta.route, () => {
         const response2 = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, world again!",
@@ -268,7 +268,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
                 status: "Hello, :test:!",
@@ -295,7 +295,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: `Hello, @${users[1].data.username}!`,
@@ -322,7 +322,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: `Hello, @${users[1].data.username}@${
@@ -353,7 +353,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: "Hi! <script>alert('Hello, world!');</script>",
@@ -377,7 +377,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: "Hello, world!",
@@ -403,7 +403,7 @@ describe(meta.route, () => {
             const response = await fakeRequest(meta.route, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
                 body: new URLSearchParams({
                     status: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",

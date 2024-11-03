@@ -19,7 +19,7 @@ beforeAll(async () => {
     const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -30,7 +30,7 @@ beforeAll(async () => {
     const res2 = await fakeRequest(`/api/v1/accounts/${users[2].id}/follow`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[0].accessToken}`,
+            Authorization: `Bearer ${tokens[0].data.accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -56,7 +56,7 @@ describe(meta.route, () => {
             `${meta.route}?id[]=${users[2].id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -86,7 +86,7 @@ describe(meta.route, () => {
             `${meta.route}?id[]=${users[1].id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

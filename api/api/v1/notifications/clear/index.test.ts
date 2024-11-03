@@ -11,7 +11,7 @@ beforeAll(async () => {
     await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${tokens[1].accessToken}`,
+            Authorization: `Bearer ${tokens[1].data.accessToken}`,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
@@ -19,7 +19,7 @@ beforeAll(async () => {
 
     notifications = await fakeRequest("/api/v1/notifications", {
         headers: {
-            Authorization: `Bearer ${tokens[0].accessToken}`,
+            Authorization: `Bearer ${tokens[0].data.accessToken}`,
         },
     }).then((r) => r.json());
 
@@ -44,7 +44,7 @@ describe(meta.route, () => {
         const response = await fakeRequest(meta.route, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -52,7 +52,7 @@ describe(meta.route, () => {
 
         const newNotifications = await fakeRequest("/api/v1/notifications", {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         }).then((r) => r.json());
 

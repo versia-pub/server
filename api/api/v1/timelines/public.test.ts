@@ -15,7 +15,7 @@ describe(meta.route, () => {
     test("should correctly parse limit", async () => {
         const response = await fakeRequest(`${meta.route}?limit=5`, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -32,7 +32,7 @@ describe(meta.route, () => {
     test("should return 200 with statuses", async () => {
         const response = await fakeRequest(meta.route, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -58,7 +58,7 @@ describe(meta.route, () => {
             `${meta.route}?limit=20&local=true`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -85,7 +85,7 @@ describe(meta.route, () => {
             `${meta.route}?remote=true&allow_local_only=false&only_media=false`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
@@ -104,7 +104,7 @@ describe(meta.route, () => {
         test("should send correct Link header", async () => {
             const response = await fakeRequest(`${meta.route}?limit=20`, {
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             });
 
@@ -118,7 +118,7 @@ describe(meta.route, () => {
                 `${meta.route}?limit=20&max_id=${timeline[19].id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     },
                 },
             );
@@ -145,7 +145,7 @@ describe(meta.route, () => {
                 `${meta.route}?limit=20&max_id=${timeline[19].id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     },
                 },
             );
@@ -160,7 +160,7 @@ describe(meta.route, () => {
                 `${meta.route}?limit=20&min_id=${timeline[20].id}`,
                 {
                     headers: {
-                        Authorization: `Bearer ${tokens[0].accessToken}`,
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
                     },
                 },
             );
@@ -187,7 +187,7 @@ describe(meta.route, () => {
         const filterResponse = await fakeRequest("/api/v2/filters", {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
@@ -206,7 +206,7 @@ describe(meta.route, () => {
 
         const response = await fakeRequest(`${meta.route}?limit=20`, {
             headers: {
-                Authorization: `Bearer ${tokens[0].accessToken}`,
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
@@ -229,7 +229,7 @@ describe(meta.route, () => {
             {
                 method: "DELETE",
                 headers: {
-                    Authorization: `Bearer ${tokens[0].accessToken}`,
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );

@@ -29,7 +29,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
             },
         );
@@ -42,7 +42,7 @@ describe(meta.route, () => {
             await fakeRequest(`/api/v1/statuses/${timeline[1].id}/favourite`, {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
             });
         });
@@ -52,7 +52,7 @@ describe(meta.route, () => {
             {
                 method: "POST",
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
             },
         );
@@ -70,7 +70,7 @@ describe(meta.route, () => {
             `/api/v1/statuses/${timeline[1].id}`,
             {
                 headers: {
-                    Authorization: `Bearer ${tokens[1].accessToken}`,
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 },
             },
         );

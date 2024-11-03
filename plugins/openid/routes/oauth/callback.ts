@@ -1,16 +1,10 @@
 import { randomString } from "@/math.ts";
 import { setCookie } from "@hono/hono/cookie";
 import { createRoute, z } from "@hono/zod-openapi";
-import { User, db } from "@versia/kit/db";
+import { Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
-import {
-    OpenIdAccounts,
-    RolePermissions,
-    Tokens,
-    Users,
-} from "@versia/kit/tables";
+import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
 import { SignJWT } from "jose";
-import { TokenType } from "~/classes/functions/token.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
@@ -314,11 +308,11 @@ export default (plugin: PluginType): void => {
 
                 const code = randomString(32, "hex");
 
-                await db.insert(Tokens).values({
+                await Token.insert({
                     accessToken: randomString(64, "base64url"),
                     code,
                     scope: flow.application.scopes,
-                    tokenType: TokenType.Bearer,
+                    tokenType: "Bearer",
                     userId: user.id,
                     applicationId: flow.application.id,
                 });
