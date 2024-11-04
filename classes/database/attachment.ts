@@ -16,7 +16,7 @@ import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 
-export type AttachmentType = InferSelectModel<typeof Attachments>;
+type AttachmentType = InferSelectModel<typeof Attachments>;
 
 export class Attachment extends BaseInterface<typeof Attachments> {
     public static schema: z.ZodType<ApiAttachment> = z.object({
@@ -46,6 +46,8 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         description: z.string().nullable(),
         blurhash: z.string().nullable(),
     });
+
+    public static $type: AttachmentType;
 
     public async reload(): Promise<void> {
         const reloaded = await Attachment.fromId(this.data.id);

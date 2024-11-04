@@ -20,9 +20,11 @@ import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 
-export type InstanceType = InferSelectModel<typeof Instances>;
+type InstanceType = InferSelectModel<typeof Instances>;
 
 export class Instance extends BaseInterface<typeof Instances> {
+    public static $type: InstanceType;
+
     public async reload(): Promise<void> {
         const reloaded = await Instance.fromId(this.data.id);
 

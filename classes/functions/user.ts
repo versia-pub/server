@@ -3,25 +3,17 @@ import type {
     FollowAccept,
     FollowReject,
 } from "@versia/federation/types";
-import { type Application, type Token, type User, db } from "@versia/kit/db";
-import type { Instances, Roles, Users } from "@versia/kit/tables";
+import {
+    type Application,
+    type Emoji,
+    type Instance,
+    type Role,
+    type Token,
+    type User,
+    db,
+} from "@versia/kit/db";
+import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, type SQL, sql } from "drizzle-orm";
-import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
-
-export type UserType = InferSelectModel<typeof Users>;
-
-export type UserWithInstance = UserType & {
-    instance: InferSelectModel<typeof Instances> | null;
-};
-
-export type UserWithRelations = UserType & {
-    instance: InferSelectModel<typeof Instances> | null;
-    emojis: EmojiWithInstance[];
-    followerCount: number;
-    followingCount: number;
-    statusCount: number;
-    roles: InferSelectModel<typeof Roles>[];
-};
 
 export const userRelations = {
     instance: true,
@@ -84,24 +76,24 @@ export interface AuthData {
 }
 
 export const transformOutputToUserWithRelations = (
-    user: Omit<UserType, "endpoints"> & {
+    user: Omit<InferSelectModel<typeof Users>, "endpoints"> & {
         followerCount: unknown;
         followingCount: unknown;
         statusCount: unknown;
         emojis: {
             userId: string;
             emojiId: string;
-            emoji?: EmojiWithInstance;
+            emoji?: typeof Emoji.$type;
         }[];
-        instance: InferSelectModel<typeof Instances> | null;
+        instance: typeof Instance.$type | null;
         roles: {
             userId: string;
             roleId: string;
-            role?: InferSelectModel<typeof Roles>;
+            role?: typeof Role.$type;
         }[];
         endpoints: unknown;
     },
-): UserWithRelations => {
+): typeof User.$type => {
     return {
         ...user,
         followerCount: Number(user.followerCount),
@@ -121,17 +113,17 @@ export const transformOutputToUserWithRelations = (
         emojis: user.emojis.map(
             (emoji) =>
                 (emoji as unknown as Record<string, object>)
-                    .emoji as EmojiWithInstance,
+                    .emoji as typeof Emoji.$type,
         ),
         roles: user.roles
             .map((role) => role.role)
-            .filter(Boolean) as InferSelectModel<typeof Roles>[],
+            .filter(Boolean) as (typeof Role.$type)[],
     };
 };
 
 export const findManyUsers = async (
     query: Parameters<typeof db.query.Users.findMany>[0],
-): Promise<UserWithRelations[]> => {
+): Promise<(typeof User.$type)[]> => {
     const output = await db.query.Users.findMany({
         ...query,
         with: {

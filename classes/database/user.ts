@@ -33,6 +33,7 @@ import {
 import chalk from "chalk";
 import {
     type InferInsertModel,
+    type InferSelectModel,
     type SQL,
     and,
     countDistinct,
@@ -47,7 +48,6 @@ import {
 import { htmlToText } from "html-to-text";
 import { z } from "zod";
 import {
-    type UserWithRelations,
     findManyUsers,
     followAcceptToVersia,
     followRejectToVersia,
@@ -63,6 +63,18 @@ import { Like } from "./like.ts";
 import type { Note } from "./note.ts";
 import { Relationship } from "./relationship.ts";
 import { Role } from "./role.ts";
+
+type UserWithInstance = InferSelectModel<typeof Users> & {
+    instance: typeof Instance.$type | null;
+};
+
+type UserWithRelations = UserWithInstance & {
+    emojis: (typeof Emoji.$type)[];
+    followerCount: number;
+    followingCount: number;
+    statusCount: number;
+    roles: (typeof Role.$type)[];
+};
 
 /**
  * Gives helpers to fetch users from database in a nice format
@@ -124,6 +136,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         roles: z.array(Role.schema),
         mute_expires_at: z.string().optional(),
     });
+
+    public static $type: UserWithRelations;
 
     public async reload(): Promise<void> {
         const reloaded = await User.fromId(this.data.id);

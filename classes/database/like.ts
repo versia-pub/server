@@ -1,7 +1,12 @@
 import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
-import { Likes, Notifications } from "@versia/kit/tables";
+import {
+    Likes,
+    type Notes,
+    Notifications,
+    type Users,
+} from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -13,15 +18,13 @@ import {
 } from "drizzle-orm";
 import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
-import type { Status } from "../functions/status.ts";
-import type { UserType } from "../functions/user.ts";
 import { BaseInterface } from "./base.ts";
 import { Note } from "./note.ts";
 import { User } from "./user.ts";
 
-export type LikeType = InferSelectModel<typeof Likes> & {
-    liker: UserType;
-    liked: Status;
+type LikeType = InferSelectModel<typeof Likes> & {
+    liker: InferSelectModel<typeof Users>;
+    liked: InferSelectModel<typeof Notes>;
 };
 
 export class Like extends BaseInterface<typeof Likes, LikeType> {
@@ -34,6 +37,8 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         visible: z.boolean(),
         icon: z.string().nullable(),
     });
+
+    public static $type: LikeType;
 
     public async reload(): Promise<void> {
         const reloaded = await Like.fromId(this.data.id);

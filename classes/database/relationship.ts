@@ -14,9 +14,9 @@ import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 import type { User } from "./user.ts";
 
-export type RelationshipType = InferSelectModel<typeof Relationships>;
+type RelationshipType = InferSelectModel<typeof Relationships>;
 
-export type RelationshipWithOpposite = RelationshipType & {
+type RelationshipWithOpposite = RelationshipType & {
     followedBy: boolean;
     blockedBy: boolean;
     requestedBy: boolean;
@@ -42,6 +42,8 @@ export class Relationship extends BaseInterface<
         requested: z.boolean(),
         showing_reblogs: z.boolean(),
     });
+
+    public static $type: RelationshipWithOpposite;
 
     public async reload(): Promise<void> {
         const reloaded = await Relationship.fromId(this.data.id);

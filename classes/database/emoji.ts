@@ -17,7 +17,7 @@ import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 import { Instance } from "./instance.ts";
 
-export type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
+type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
     instance: InferSelectModel<typeof Instances> | null;
 };
 
@@ -29,6 +29,8 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         category: z.string().optional(),
         static_url: z.string(),
     });
+
+    public static $type: EmojiWithInstance;
 
     public async reload(): Promise<void> {
         const reloaded = await Emoji.fromId(this.data.id);

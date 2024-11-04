@@ -2,22 +2,9 @@ import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import type { ContentFormat } from "@versia/federation/types";
-import { User, db } from "@versia/kit/db";
-import {
-    type Attachments,
-    Instances,
-    type Notes,
-    Users,
-} from "@versia/kit/tables";
-import {
-    type InferSelectModel,
-    and,
-    eq,
-    inArray,
-    isNull,
-    or,
-    sql,
-} from "drizzle-orm";
+import { type Note, User, db } from "@versia/kit/db";
+import { Instances, Users } from "@versia/kit/tables";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
     anyOf,
@@ -31,41 +18,12 @@ import {
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
-import type { ApplicationType } from "~/classes/database/application.ts";
-import type { EmojiWithInstance } from "~/classes/database/emoji.ts";
 import { config } from "~/packages/config-manager/index.ts";
 import {
-    type UserWithInstance,
-    type UserWithRelations,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
 } from "./user.ts";
-
-export type Status = InferSelectModel<typeof Notes>;
-
-export type StatusWithRelations = Status & {
-    author: UserWithRelations;
-    mentions: UserWithInstance[];
-    attachments: InferSelectModel<typeof Attachments>[];
-    reblog: StatusWithoutRecursiveRelations | null;
-    emojis: EmojiWithInstance[];
-    reply: Status | null;
-    quote: Status | null;
-    application: ApplicationType | null;
-    reblogCount: number;
-    likeCount: number;
-    replyCount: number;
-    pinned: boolean;
-    reblogged: boolean;
-    muted: boolean;
-    liked: boolean;
-};
-
-export type StatusWithoutRecursiveRelations = Omit<
-    StatusWithRelations,
-    "reply" | "quote" | "reblog"
->;
 
 /**
  * Wrapper against the Status object to make it easier to work with
@@ -75,7 +33,7 @@ export type StatusWithoutRecursiveRelations = Omit<
 export const findManyNotes = async (
     query: Parameters<typeof db.query.Notes.findMany>[0],
     userId?: string,
-): Promise<StatusWithRelations[]> => {
+): Promise<(typeof Note.$type)[]> => {
     const output = await db.query.Notes.findMany({
         ...query,
         with: {

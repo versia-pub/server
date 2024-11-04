@@ -12,9 +12,7 @@ import {
 import { z } from "zod";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
-import type { StatusWithRelations } from "../functions/status.ts";
 import {
-    type UserWithRelations,
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
@@ -22,8 +20,8 @@ import {
 import { BaseInterface } from "./base.ts";
 
 export type NotificationType = InferSelectModel<typeof Notifications> & {
-    status: StatusWithRelations | null;
-    account: UserWithRelations;
+    status: typeof Note.$type | null;
+    account: typeof User.$type;
 };
 
 export class Notification extends BaseInterface<

@@ -14,7 +14,7 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
-import { Notification, db } from "@versia/kit/db";
+import { type Instance, Notification, db } from "@versia/kit/db";
 import {
     Attachments,
     EmojiToNote,
@@ -24,6 +24,7 @@ import {
 } from "@versia/kit/tables";
 import {
     type InferInsertModel,
+    type InferSelectModel,
     type SQL,
     and,
     desc,
@@ -36,7 +37,6 @@ import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
 import { z } from "zod";
 import {
-    type StatusWithRelations,
     contentToHtml,
     findManyNotes,
     parseTextMentions,
@@ -48,10 +48,37 @@ import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { User } from "./user.ts";
 
+type NoteType = InferSelectModel<typeof Notes>;
+
+type NoteTypeWithRelations = NoteType & {
+    author: typeof User.$type;
+    mentions: (InferSelectModel<typeof Users> & {
+        instance: typeof Instance.$type | null;
+    })[];
+    attachments: (typeof Attachment.$type)[];
+    reblog: NoteTypeWithoutRecursiveRelations | null;
+    emojis: (typeof Emoji.$type)[];
+    reply: NoteType | null;
+    quote: NoteType | null;
+    application: typeof Application.$type | null;
+    reblogCount: number;
+    likeCount: number;
+    replyCount: number;
+    pinned: boolean;
+    reblogged: boolean;
+    muted: boolean;
+    liked: boolean;
+};
+
+export type NoteTypeWithoutRecursiveRelations = Omit<
+    NoteTypeWithRelations,
+    "reply" | "quote" | "reblog"
+>;
+
 /**
  * Gives helpers to fetch notes from database in a nice format
  */
-export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
+export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public static schema: z.ZodType<ApiStatus> = z.object({
         id: z.string().uuid(),
         uri: z.string().url(),
@@ -142,7 +169,9 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         bookmarked: z.boolean(),
     });
 
-    public save(): Promise<StatusWithRelations> {
+    public static $type: NoteTypeWithRelations;
+
+    public save(): Promise<NoteTypeWithRelations> {
         return this.update(this.data);
     }
 
@@ -814,8 +843,8 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
     }
 
     public async update(
-        newStatus: Partial<StatusWithRelations>,
-    ): Promise<StatusWithRelations> {
+        newStatus: Partial<NoteTypeWithRelations>,
+    ): Promise<NoteTypeWithRelations> {
         await db.update(Notes).set(newStatus).where(eq(Notes.id, this.data.id));
 
         const updated = await Note.fromId(this.data.id);
@@ -932,7 +961,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
             // TODO: Add polls
             poll: null,
             reblog: data.reblog
-                ? await new Note(data.reblog as StatusWithRelations).toApi(
+                ? await new Note(data.reblog as NoteTypeWithRelations).toApi(
                       userFetching,
                   )
                 : null,

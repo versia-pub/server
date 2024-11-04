@@ -1,6 +1,6 @@
 import type { Token as ApiToken } from "@versia/client/types";
-import { User, db } from "@versia/kit/db";
-import { type Applications, Tokens } from "@versia/kit/tables";
+import { type Application, User, db } from "@versia/kit/db";
+import { Tokens } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -12,8 +12,8 @@ import {
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
-export type TokenType = InferSelectModel<typeof Tokens> & {
-    application: InferSelectModel<typeof Applications> | null;
+type TokenType = InferSelectModel<typeof Tokens> & {
+    application: typeof Application.$type | null;
 };
 
 export class Token extends BaseInterface<typeof Tokens, TokenType> {
@@ -23,6 +23,8 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
         scope: z.string(),
         created_at: z.number(),
     });
+
+    public static $type: TokenType;
 
     public async reload(): Promise<void> {
         const reloaded = await Token.fromId(this.data.id);

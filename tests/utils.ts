@@ -3,9 +3,8 @@ import { randomString } from "@/math";
 import { Note, Token, User, db } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
-import { asc, inArray, like } from "drizzle-orm";
+import { type InferSelectModel, asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
-import type { Status } from "~/classes/functions/status";
 import { searchManager } from "~/classes/search/search-manager";
 import { setupDatabase } from "~/drizzle/db";
 import { config } from "~/packages/config-manager";
@@ -92,7 +91,7 @@ export const getTestUsers = async (
 export const getTestStatuses = async (
     count: number,
     user: User,
-    partial?: Partial<Status>,
+    partial?: Partial<InferSelectModel<typeof Notes>>,
 ): Promise<Note["data"][]> => {
     const statuses: Note[] = [];
 

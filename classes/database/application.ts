@@ -12,7 +12,7 @@ import {
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
-export type ApplicationType = InferSelectModel<typeof Applications>;
+type ApplicationType = InferSelectModel<typeof Applications>;
 
 export class Application extends BaseInterface<typeof Applications> {
     public static schema: z.ZodType<APIApplication> = z.object({
@@ -22,6 +22,8 @@ export class Application extends BaseInterface<typeof Applications> {
         redirect_uris: z.string().optional(),
         scopes: z.string().optional(),
     });
+
+    public static $type: ApplicationType;
 
     public async reload(): Promise<void> {
         const reloaded = await Application.fromId(this.data.id);

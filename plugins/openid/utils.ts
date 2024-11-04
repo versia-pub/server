@@ -1,6 +1,6 @@
-import { db } from "@versia/kit/db";
+import { type Application, db } from "@versia/kit/db";
 import type { InferSelectModel, SQL } from "@versia/kit/drizzle";
-import type { Applications, OpenIdLoginFlows } from "@versia/kit/tables";
+import type { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     type AuthorizationResponseError,
     type AuthorizationServer,
@@ -18,7 +18,6 @@ import {
     userInfoRequest,
     validateAuthResponse,
 } from "oauth4webapi";
-import type { ApplicationType } from "~/classes/database/application";
 
 export const oauthDiscoveryRequest = (
     issuerUrl: string | URL,
@@ -37,7 +36,7 @@ const getFlow = (
     flowId: string,
 ): Promise<
     | (InferSelectModel<typeof OpenIdLoginFlows> & {
-          application?: ApplicationType | null;
+          application?: typeof Application.$type | null;
       })
     | undefined
 > => {
@@ -143,7 +142,7 @@ export const automaticOidcFlow = async (
         message: string,
         flow:
             | (InferSelectModel<typeof OpenIdLoginFlows> & {
-                  application?: InferSelectModel<typeof Applications> | null;
+                  application?: typeof Application.$type | null;
               })
             | null,
     ) => Response,
@@ -152,7 +151,7 @@ export const automaticOidcFlow = async (
     | {
           userInfo: UserInfoResponse;
           flow: InferSelectModel<typeof OpenIdLoginFlows> & {
-              application?: ApplicationType | null;
+              application?: typeof Application.$type | null;
           };
           claims: Record<string, unknown>;
       }

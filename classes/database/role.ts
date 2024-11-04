@@ -18,7 +18,7 @@ import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 
-export type RoleType = InferSelectModel<typeof Roles>;
+type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
     public static schema = z.object({
@@ -30,6 +30,8 @@ export class Role extends BaseInterface<typeof Roles> {
         visible: z.boolean(),
         icon: z.string().nullable(),
     });
+
+    public static $type: RoleType;
 
     public async reload(): Promise<void> {
         const reloaded = await Role.fromId(this.data.id);
