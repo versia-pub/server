@@ -3,5 +3,4 @@ on: [push]
 jobs:
   mirror:
     uses: versia-pub/.github/.github/workflows/mirror.yml@main
-    secrets:
-      CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+    secrets: inherit
