@@ -1,9 +1,7 @@
+import { Note, Notification, User } from "@versia/kit/db";
 import { Notes, Notifications, Users } from "@versia/kit/tables";
 import { type SQL, gt } from "drizzle-orm";
 import { config } from "~/packages/config-manager";
-import { Note } from "./note.ts";
-import { Notification } from "./notification.ts";
-import { User } from "./user.ts";
 
 enum TimelineType {
     Note = "Note",

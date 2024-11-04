@@ -19,7 +19,16 @@ import type {
     Unfollow,
     User as VersiaUser,
 } from "@versia/federation/types";
-import { Notification, db } from "@versia/kit/db";
+import {
+    Emoji,
+    Instance,
+    Like,
+    type Note,
+    Notification,
+    Relationship,
+    Role,
+    db,
+} from "@versia/kit/db";
 import {
     EmojiToUser,
     Likes,
@@ -57,12 +66,6 @@ import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { BaseInterface } from "./base.ts";
-import { Emoji } from "./emoji.ts";
-import { Instance } from "./instance.ts";
-import { Like } from "./like.ts";
-import type { Note } from "./note.ts";
-import { Relationship } from "./relationship.ts";
-import { Role } from "./role.ts";
 
 type UserWithInstance = InferSelectModel<typeof Users> & {
     instance: typeof Instance.$type | null;

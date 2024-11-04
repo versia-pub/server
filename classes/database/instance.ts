@@ -5,7 +5,7 @@ import {
     type ValidationError,
 } from "@versia/federation";
 import type { InstanceMetadata } from "@versia/federation/types";
-import { db } from "@versia/kit/db";
+import { User, db } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
 import chalk from "chalk";
 import {
@@ -18,7 +18,6 @@ import {
 } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
-import { User } from "./user.ts";
 
 type InstanceType = InferSelectModel<typeof Instances>;
 

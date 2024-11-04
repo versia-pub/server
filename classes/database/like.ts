@@ -1,6 +1,6 @@
 import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
-import { db } from "@versia/kit/db";
+import { Note, User, db } from "@versia/kit/db";
 import {
     Likes,
     type Notes,
@@ -19,8 +19,6 @@ import {
 import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
-import { Note } from "./note.ts";
-import { User } from "./user.ts";
 
 type LikeType = InferSelectModel<typeof Likes> & {
     liker: InferSelectModel<typeof Users>;
