@@ -1,0 +1,5 @@
+on: [push]
+
+jobs:
+  mirror:
+    uses: versia-pub/.github/.github/workflows/mirror.yml@main
