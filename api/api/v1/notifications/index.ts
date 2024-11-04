@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, Timeline, User } from "@versia/kit/db";
+import { Notification, Timeline } from "@versia/kit/db";
 import { Notifications, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -102,17 +102,7 @@ const route = createRoute({
             description: "Notifications",
             content: {
                 "application/json": {
-                    schema: z.array(
-                        z.object({
-                            account: z.lazy(() => User.schema).nullable(),
-                            created_at: z.string(),
-                            id: z.string().uuid(),
-                            status: z.lazy(() => Note.schema).optional(),
-                            // TODO: Add reactions
-                            type: z.string(),
-                            target: z.lazy(() => User.schema).optional(),
-                        }),
-                    ),
+                    schema: z.array(Notification.schema),
                 },
             },
         },

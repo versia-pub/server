@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, Notification, User } from "@versia/kit/db";
+import { Notification } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
@@ -37,36 +37,7 @@ const route = createRoute({
     responses: {
         200: {
             description: "Notification",
-            schema: z.object({
-                account: z.lazy(() => User.schema).nullable(),
-                created_at: z.string(),
-                id: z.string().uuid(),
-                status: z.lazy(() => Note.schema).optional(),
-                // TODO: Add reactions
-                type: z.enum([
-                    "mention",
-                    "status",
-                    "follow",
-                    "follow_request",
-                    "reblog",
-                    "poll",
-                    "favourite",
-                    "update",
-                    "admin.sign_up",
-                    "admin.report",
-                    "chat",
-                    "pleroma:chat_mention",
-                    "pleroma:emoji_reaction",
-                    "pleroma:event_reminder",
-                    "pleroma:participation_request",
-                    "pleroma:participation_accepted",
-                    "move",
-                    "group_reblog",
-                    "group_favourite",
-                    "user_approved",
-                ]),
-                target: z.lazy(() => User.schema).optional(),
-            }),
+            schema: Notification.schema,
         },
         401: {
             description: "Unauthorized",
