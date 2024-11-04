@@ -9,7 +9,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 
 ## Features
 
-- Upgraded Bun to `1.1.33`. This brings performance upgrades and better stability.
+- Upgraded Bun to `1.1.34`. This brings performance upgrades and better stability.
 - Added support for the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub).
 - Added support for the [Sonic](https://github.com/valeriansaliou/sonic) search indexer.
 - Note deletions are now federated.
