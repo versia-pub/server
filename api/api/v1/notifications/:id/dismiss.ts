@@ -1,8 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { db } from "@versia/kit/db";
-import { Notifications, RolePermissions } from "@versia/kit/tables";
-import { eq } from "drizzle-orm";
+import { Notification } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -59,12 +58,15 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        await db
-            .update(Notifications)
-            .set({
-                dismissed: true,
-            })
-            .where(eq(Notifications.id, id));
+        const notification = await Notification.fromId(id);
+
+        if (!notification) {
+            return context.json({ error: "Notification not found" }, 404);
+        }
+
+        await notification.update({
+            dismissed: true,
+        });
 
         return context.newResponse(null, 200);
     }),

@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { db } from "@versia/kit/db";
-import { Notifications, RolePermissions } from "@versia/kit/tables";
-import { eq } from "drizzle-orm";
+import { RolePermissions } from "@versia/kit/tables";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -47,12 +45,7 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        await db
-            .update(Notifications)
-            .set({
-                dismissed: true,
-            })
-            .where(eq(Notifications.notifiedId, user.id));
+        await user.clearAllNotifications();
 
         return context.newResponse(null, 200);
     }),

@@ -1,7 +1,7 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, db } from "@versia/kit/db";
-import { Notes, Notifications, RolePermissions } from "@versia/kit/tables";
+import { Note, Notification } from "@versia/kit/db";
+import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
@@ -141,7 +141,7 @@ export default apiRoute((app) =>
         }
 
         if (foundStatus.author.isLocal() && user.isLocal()) {
-            await db.insert(Notifications).values({
+            await Notification.insert({
                 accountId: user.id,
                 notifiedId: foundStatus.author.id,
                 type: "reblog",

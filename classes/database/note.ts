@@ -14,13 +14,12 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
-import { db } from "@versia/kit/db";
+import { Notification, db } from "@versia/kit/db";
 import {
     Attachments,
     EmojiToNote,
     NoteToMentions,
     Notes,
-    Notifications,
     Users,
 } from "@versia/kit/tables";
 import {
@@ -469,7 +468,7 @@ export class Note extends BaseInterface<typeof Notes, StatusWithRelations> {
         // Send notifications for mentioned local users
         for (const mention of parsedMentions ?? []) {
             if (mention.isLocal()) {
-                await db.insert(Notifications).values({
+                await Notification.insert({
                     accountId: data.author.id,
                     notifiedId: mention.id,
                     type: "mention",

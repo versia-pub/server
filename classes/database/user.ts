@@ -19,7 +19,7 @@ import type {
     Unfollow,
     User as VersiaUser,
 } from "@versia/federation/types";
-import { db } from "@versia/kit/db";
+import { Notification, db } from "@versia/kit/db";
 import {
     EmojiToUser,
     Likes,
@@ -264,7 +264,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 return foundRelationship;
             }
         } else {
-            await db.insert(Notifications).values({
+            await Notification.insert({
                 accountId: this.id,
                 type: otherUser.data.isLocked ? "follow_request" : "follow",
                 notifiedId: otherUser.id,
@@ -290,13 +290,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             }
         } else if (!this.data.isLocked) {
             if (relationship.data.following) {
-                await db.insert(Notifications).values({
+                await Notification.insert({
                     accountId: followee.id,
                     type: "unfollow",
                     notifiedId: this.id,
                 });
             } else {
-                await db.insert(Notifications).values({
+                await Notification.insert({
                     accountId: followee.id,
                     type: "cancel-follow",
                     notifiedId: this.id,
@@ -485,7 +485,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (this.isLocal() && note.author.isLocal()) {
             // Notify the user that their post has been favourited
-            await db.insert(Notifications).values({
+            await Notification.insert({
                 accountId: this.id,
                 type: "favourite",
                 notifiedId: note.author.id,
@@ -519,20 +519,34 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (this.isLocal() && note.author.isLocal()) {
             // Remove any eventual notifications for this like
-            await db
-                .delete(Notifications)
-                .where(
-                    and(
-                        eq(Notifications.accountId, this.id),
-                        eq(Notifications.type, "favourite"),
-                        eq(Notifications.notifiedId, note.author.id),
-                        eq(Notifications.noteId, note.id),
-                    ),
-                );
+            await likeToDelete.clearRelatedNotifications();
         } else if (this.isLocal() && note.author.isRemote()) {
             // User is local, federate the delete
             this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }
+    }
+
+    public async clearAllNotifications(): Promise<void> {
+        await db
+            .update(Notifications)
+            .set({
+                dismissed: true,
+            })
+            .where(eq(Notifications.notifiedId, this.id));
+    }
+
+    public async clearSomeNotifications(ids: string[]): Promise<void> {
+        await db
+            .update(Notifications)
+            .set({
+                dismissed: true,
+            })
+            .where(
+                and(
+                    inArray(Notifications.id, ids),
+                    eq(Notifications.notifiedId, this.id),
+                ),
+            );
     }
 
     public async updateFromRemote(): Promise<User> {

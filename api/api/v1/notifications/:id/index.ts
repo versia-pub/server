@@ -1,13 +1,8 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, User } from "@versia/kit/db";
+import { Note, Notification, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import type { SQL } from "drizzle-orm";
 import { z } from "zod";
-import {
-    findManyNotifications,
-    notificationToApi,
-} from "~/classes/functions/notification";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -101,21 +96,12 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const notification = (
-            await findManyNotifications(
-                {
-                    where: (notification, { eq }): SQL | undefined =>
-                        eq(notification.id, id),
-                    limit: 1,
-                },
-                user.id,
-            )
-        )[0];
+        const notification = await Notification.fromId(id, user.id);
 
         if (!notification) {
             return context.json({ error: "Notification not found" }, 404);
         }
 
-        return context.json(await notificationToApi(notification), 200);
+        return context.json(await notification.toApi(), 200);
     }),
 );

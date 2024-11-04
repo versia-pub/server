@@ -1,15 +1,9 @@
 import { apiRoute, applyConfig, auth, idValidator } from "@/api";
-import { fetchTimeline } from "@/timelines";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, User } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
-import { type SQL, sql } from "drizzle-orm";
+import { Note, Timeline, User } from "@versia/kit/db";
+import { Notifications, RolePermissions } from "@versia/kit/tables";
+import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 import { z } from "zod";
-import {
-    findManyNotifications,
-    notificationToApi,
-} from "~/classes/functions/notification";
-import type { NotificationWithRelations } from "~/classes/functions/notification";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -150,65 +144,48 @@ export default apiRoute((app) =>
             types,
         } = context.req.valid("query");
 
-        const { objects, link } =
-            await fetchTimeline<NotificationWithRelations>(
-                findManyNotifications,
-                {
-                    where: (
-                        // @ts-expect-error Yes I KNOW the types are wrong
-                        notification,
-                        // @ts-expect-error Yes I KNOW the types are wrong
-                        { lt, gte, gt, and, eq, not, inArray },
-                    ): SQL | undefined =>
-                        and(
-                            max_id ? lt(notification.id, max_id) : undefined,
-                            since_id
-                                ? gte(notification.id, since_id)
-                                : undefined,
-                            min_id ? gt(notification.id, min_id) : undefined,
-                            eq(notification.notifiedId, user.id),
-                            eq(notification.dismissed, false),
-                            account_id
-                                ? eq(notification.accountId, account_id)
-                                : undefined,
-                            not(eq(notification.accountId, user.id)),
-                            types
-                                ? inArray(notification.type, types)
-                                : undefined,
-                            exclude_types
-                                ? not(inArray(notification.type, exclude_types))
-                                : undefined,
-                            // Don't show notes that have filtered words in them (via Notification.note.content via Notification.noteId)
-                            // Filters in `Filters` table have keyword in `FilterKeywords` table (use LIKE)
-                            // Filters table has a userId and a context which is an array
-                            sql`NOT EXISTS (
-                                    SELECT 1 
-                                    FROM "Filters" 
-                                    WHERE "Filters"."userId" = ${user.id} 
-                                    AND "Filters"."filter_action" = 'hide' 
-                                    AND EXISTS (
-                                        SELECT 1 
-                                        FROM "FilterKeywords", "Notifications" as "n_inner", "Notes" 
-                                        WHERE "FilterKeywords"."filterId" = "Filters"."id" 
-                                        AND "n_inner"."noteId" = "Notes"."id" 
-                                        AND "Notes"."content" LIKE
-                                        '%' || "FilterKeywords"."keyword" || '%'
-                                        AND "n_inner"."id" = "Notifications"."id"
-                                    )
-                                    AND "Filters"."context" @> ARRAY['notifications']
-                                )`,
-                        ),
-                    limit,
-                    // @ts-expect-error Yes I KNOW the types are wrong
-                    orderBy: (notification, { desc }): SQL | undefined =>
-                        desc(notification.id),
-                },
-                context.req.raw,
-                user.id,
-            );
+        const { objects, link } = await Timeline.getNotificationTimeline(
+            and(
+                max_id ? lt(Notifications.id, max_id) : undefined,
+                since_id ? gte(Notifications.id, since_id) : undefined,
+                min_id ? gt(Notifications.id, min_id) : undefined,
+                eq(Notifications.notifiedId, user.id),
+                eq(Notifications.dismissed, false),
+                account_id
+                    ? eq(Notifications.accountId, account_id)
+                    : undefined,
+                not(eq(Notifications.accountId, user.id)),
+                types ? inArray(Notifications.type, types) : undefined,
+                exclude_types
+                    ? not(inArray(Notifications.type, exclude_types))
+                    : undefined,
+                // Don't show notes that have filtered words in them (via Notification.note.content via Notification.noteId)
+                // Filters in `Filters` table have keyword in `FilterKeywords` table (use LIKE)
+                // Filters table has a userId and a context which is an array
+                sql`NOT EXISTS (
+                            SELECT 1 
+                            FROM "Filters" 
+                            WHERE "Filters"."userId" = ${user.id} 
+                            AND "Filters"."filter_action" = 'hide' 
+                            AND EXISTS (
+                                SELECT 1 
+                                FROM "FilterKeywords", "Notifications" as "n_inner", "Notes" 
+                                WHERE "FilterKeywords"."filterId" = "Filters"."id" 
+                                AND "n_inner"."noteId" = "Notes"."id" 
+                                AND "Notes"."content" LIKE
+                                '%' || "FilterKeywords"."keyword" || '%'
+                                AND "n_inner"."id" = "Notifications"."id"
+                            )
+                            AND "Filters"."context" @> ARRAY['notifications']
+                        )`,
+            ),
+            limit,
+            context.req.url,
+            user?.id,
+        );
 
         return context.json(
-            await Promise.all(objects.map((n) => notificationToApi(n))),
+            await Promise.all(objects.map((n) => n.toApi())),
             200,
             {
                 Link: link,

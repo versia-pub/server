@@ -1,11 +1,12 @@
 import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
-import { Likes } from "@versia/kit/tables";
+import { Likes, Notifications } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
     type SQL,
+    and,
     desc,
     eq,
     inArray,
@@ -137,6 +138,19 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
 
     public get id(): string {
         return this.data.id;
+    }
+
+    public async clearRelatedNotifications(): Promise<void> {
+        await db
+            .delete(Notifications)
+            .where(
+                and(
+                    eq(Notifications.accountId, this.id),
+                    eq(Notifications.type, "favourite"),
+                    eq(Notifications.notifiedId, this.data.liked.authorId),
+                    eq(Notifications.noteId, this.data.liked.id),
+                ),
+            );
     }
 
     public getUri(): URL {

@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { db } from "@versia/kit/db";
-import { Notifications, RolePermissions } from "@versia/kit/tables";
-import { and, eq, inArray } from "drizzle-orm";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -60,17 +58,7 @@ export default apiRoute((app) =>
 
         const { "ids[]": ids } = context.req.valid("query");
 
-        await db
-            .update(Notifications)
-            .set({
-                dismissed: true,
-            })
-            .where(
-                and(
-                    inArray(Notifications.id, ids),
-                    eq(Notifications.notifiedId, user.id),
-                ),
-            );
+        await user.clearSomeNotifications(ids);
 
         return context.newResponse(null, 200);
     }),
