@@ -14,15 +14,7 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
-import {
-    Application,
-    Attachment,
-    Emoji,
-    type Instance,
-    Notification,
-    User,
-    db,
-} from "@versia/kit/db";
+import { type Instance, Notification, db } from "@versia/kit/db";
 import {
     Attachments,
     EmojiToNote,
@@ -50,7 +42,11 @@ import {
     parseTextMentions,
 } from "~/classes/functions/status";
 import { config } from "~/packages/config-manager";
+import { Application } from "./application.ts";
+import { Attachment } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
+import { Emoji } from "./emoji.ts";
+import { User } from "./user.ts";
 
 type NoteType = InferSelectModel<typeof Notes>;
 
