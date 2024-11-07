@@ -20,26 +20,25 @@ Versia Server is built using the following technologies:
 
 To get started, please follow these steps:
 
-1. Fork the repository, clone it on your local system and make your own branch
-2. Install the [Bun](https://bun.sh) runtime:
+1. Install the [Bun](https://bun.sh) runtime:
 ```sh
 curl -fsSL https://bun.sh/install | bash
 ```
-1. Clone this repository
+2. Clone this repository
 
 ```bash
 git clone https://github.com/versia-pub/server.git
 ```
 
-2. Install the dependencies
+3. Install the dependencies
 
 ```bash
 bun install
 ```
 
-3. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](docs/database.md))
+4. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](docs/database.md))
 
-4. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
+5. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
 ## HTTPS development
 
@@ -53,7 +52,7 @@ mkcert -install
 # *.localhost domains are automatically aliased to localhost by DNS
 mkcert -key-file config/versia.localhost-key.pem -cert-file config/versia.localhost.pem versia.localhost
 ```
-3. Edit the config:
+3. Edit the config to use your database and HTTPS certificates, e.g:
 ```toml
 [http]
 base_url = "https://versia.localhost:9900"
