@@ -183,3 +183,8 @@ config/extended_description_test.md
 oclif.manifest.json
 .direnv/
 tsconfig.tsbuildinfo
+
+# Vitepress Docs
+
+*/.vitepress/dist
+*/.vitepress/cache

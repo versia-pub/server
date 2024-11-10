@@ -12,6 +12,7 @@ bun cli help
 # Source installs
 bun run dist/cli.js help
 # Docker
+# Replace `versia` with the name of your container
 docker compose exec -it versia /bin/sh /app/entrypoint.sh cli help
 ```
 
@@ -19,6 +20,6 @@ You can use the `help` command to see a list of available commands. These includ
 
 ## Scripting with the CLI
 
-Some CLI commands that return data as tables can be used in scripts. To convert them to JSON or CSV, some commands allow you to specify a `--format` flag that can be either `"json"` or `"csv"`. See `bun cli help` or `bun cli <command> -h` for more information.
+Some CLI commands that return data as tables can be used in scripts. To convert them to JSON or CSV, some commands allow you to specify a `--format` flag that can be either `"json"` or `"csv"`. See `cli help` or `cli <command> -h` for more information.
 
-Flags can be used in any order and anywhere in the script (except for the `bun cli` command itself). The command arguments themselves must be in the correct order, however.Z
+Flags can be used in any order and anywhere in the script (except for the `cli` command itself).

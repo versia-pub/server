@@ -1,7 +1,7 @@
-import type { Status as ApiStatus } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { run, bench } from "mitata";
 import { configureLoggers } from "@/loggers";
+import type { Status as ApiStatus } from "@versia/client/types";
+import { bench, run } from "mitata";
+import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 await configureLoggers(true);
 

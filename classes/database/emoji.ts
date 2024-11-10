@@ -23,6 +23,7 @@ type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
     public static schema = z.object({
+        id: z.string(),
         shortcode: z.string(),
         url: z.string(),
         visible_in_picker: z.boolean(),
@@ -186,9 +187,8 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         );
     }
 
-    public toApi(): ApiEmoji {
+    public toApi(): ApiEmoji & { id: string } {
         return {
-            // @ts-expect-error ID is not in regular Mastodon API
             id: this.id,
             shortcode: this.data.shortcode,
             static_url: proxyUrl(this.data.url) ?? "", // TODO: Add static version
