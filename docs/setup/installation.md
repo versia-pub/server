@@ -67,10 +67,10 @@ git clone https://github.com/versia-pub/server.git
 bun install
 ```
 
-1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](database.md))
+1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](./database.md))
 
 2. (If you want search)
-Create a [Sonic](https://github.com/valeriansaliou/sonic) instance (using Docker is recommended). For a [`docker-compose`] file, copy the `sonic` service from the [`docker-compose.yml`](../docker-compose.yml) file. Don't forget to fill in the `config.cfg` for Sonic!
+Create a [Sonic](https://github.com/valeriansaliou/sonic) instance (using Docker is recommended). For a [`docker-compose`] file, copy the `sonic` service from the [`docker-compose.yml`](https://github.com/versia-pub/server/blob/main/docker-compose.yml) file. Don't forget to fill in the `config.cfg` for Sonic!
 
 1. Build everything:
 
@@ -80,21 +80,23 @@ bun run build
 
 4. Copy the `config.example.toml` file to `config.toml` inside `dist/config/` and fill in the values (you can leave most things to the default, but you will need to configure things such as the database connection)
 
-CD to the `dist/` directory: `cd dist`
+5. Move to the `dist/` directory
 
-You may now start the server with `bun run cli/index.js start`. It lives in the `dist/` directory, all the other code can be removed from this point onwards.
+```bash
+cd dist
+```
+
+You may now start the server with `bun run cli/index.js start`. All other code not in the `dist/` directory can be removed.
 
 ## Running the Server
 
 Database migrations are run automatically on startup.
 
-You may use the environment variables `NO_COLORS=true` and `NO_FANCY_DATES=true` to disable colors and date formatting in the console logs: the file logs will never have colors or fancy dates.
-
-Please see the [CLI documentation](cli.md) for more information on how to use the CLI.
+Please see the [CLI documentation](../cli/index.md) for more information on how to use the CLI.
 
 ## Updating the server
 
-Updating the server is as simple as pulling the latest changes from the repository and running `bun prod-build` again. You may need to run `bun install` again if there are new dependencies.
+Updating the server is as simple as pulling the latest changes from the repository and running `bun run build` again. You may need to run `bun install` again if there are new dependencies.
 
 For Docker, you can run `docker-compose pull` to update the Docker images.
 

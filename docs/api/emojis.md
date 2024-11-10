@@ -1,6 +1,24 @@
 # Emoji API
 
-An Emoji API is made available to users to manage custom emoji on the instance. We recommend using Versia Server's CLI to manage emoji, but this API is available for those who prefer to use it (both admin and non-admin users).
+This API allows users to create, read, update, and delete instance custom emojis.
+
+The **Versia Server CLI** can also be used to manage custom emojis.
+
+## Emoji
+
+```typescript
+type UUID = string;
+type URL = string;
+
+interface Emoji {
+    id: UUID;
+    shortcode: string;
+    url: URL;
+    static_url?: URL;
+    visible_in_picker: boolean;
+    category?: string;
+}
+```
 
 ## Create Emoji
 
@@ -8,29 +26,54 @@ An Emoji API is made available to users to manage custom emoji on the instance. 
 POST /api/v1/emojis
 ```
 
-Creates a new custom emoji on the instance. If the user is an administrator, they can create global emoji that are visible to all users on the instance. Otherwise, the emoji will only be visible to the user who created it (in `/api/v1/custom_emojis`).
+Upload a new custom emoji.
 
-### Parameters
+- **Returns:** [`Emoji`](#emoji)
+- **Authentication:** Required
+- **Permissions:** `owner:emoji`, or `emoji` if uploading a global emoji.
+- **Version History**:
+  - `0.7.0`: Added.
 
-- `Content-Type`: `multipart/form-data`, `application/json` or `application/x-www-form-urlencoded`. If uploading a file, use `multipart/form-data`.
+### Request
 
-- `shortcode`: string, required. The shortcode for the emoji. Must be 2-64 characters long and contain only alphanumeric characters, dashes, and underscores.
-- `element`: string or file, required. The image file for the emoji. This can be a URL or a file upload.
-- `alt`: string, optional. The alt text for the emoji. Defaults to the shortcode.
-- `global`: boolean, optional. For administrators only. Whether the emoji should be visible to all users on the instance. Defaults to `false`.
-- `category`: string, optional. The category for the emoji. Maximum 64 characters.
-  
+- `shortcode` (string, required): The shortcode for the emoji.
+  - 1-64 characters long, alphanumeric, and may contain dashes or underscores.
+- `element` (file/string, required): The image file to upload.
+  - Can be a URL, or a file upload (`multipart/form-data`).
+- `alt` (string): Emoji alt text.
+- `category` (string): Emoji category. Can be any string up to 64 characters long.
+- `global` (boolean): If set to `true`, the emoji will be visible to all users, not just the uploader.
+  - Requires `emoji` permission.
+
+#### Example
+
+```http
+POST /api/v1/emojis
+Content-Type: application/json
+Authorization: Bearer ...
+
+{
+    "shortcode": "blobfox-coffee",
+    "element": "https://example.com/blobfox-coffee.png",
+    "alt": "My emoji",
+    "category": "Blobmojis"
+}
+```
+
 ### Response
 
-```ts
-// 200 OK
+#### `201 Created`
+
+Emoji successfully uploaded.
+
+```json
 {
-    id: string,
-    shortcode: string,
-    url: string,
-    static_url: string,
-    visible_in_picker: boolean,
-    category: string | undefined,
+    "id": "f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b",
+    "shortcode": "blobfox-coffee",
+    "url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "static_url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "visible_in_picker": true,
+    "category": "Blobmojis"
 }
 ```
 
@@ -40,19 +83,37 @@ Creates a new custom emoji on the instance. If the user is an administrator, the
 GET /api/v1/emojis/:id
 ```
 
-Retrieves information about a custom emoji on the instance.
+Get a specific custom emoji.
+
+- **Returns:** [`Emoji`](#emoji)
+- **Authentication:** Required
+- **Permissions:** `owner:emoji`, or `emoji` if viewing a global emoji.
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+GET /api/v1/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b
+Authorization: Bearer ...
+```
 
 ### Response
 
-```ts
-// 200 OK
+#### `200 OK`
+
+Custom emoji data.
+
+```json
 {
-    id: string,
-    shortcode: string,
-    url: string,
-    static_url: string,
-    visible_in_picker: boolean,
-    category: string | undefined,
+    "id": "f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b",
+    "shortcode": "blobfox-coffee",
+    "url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "static_url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "visible_in_picker": true,
+    "category": "Blobmojis"
 }
 ```
 
@@ -62,29 +123,54 @@ Retrieves information about a custom emoji on the instance.
 PATCH /api/v1/emojis/:id
 ```
 
-Edits a custom emoji on the instance.
+Edit an existing custom emoji.
 
-### Parameters
+- **Returns:** [`Emoji`](#emoji)
+- **Authentication:** Required
+- **Permissions:** `owner:emoji`, or `emoji` if editing a global emoji.
+- **Version History**:
+  - `0.7.0`: Added.
 
-- `Content-Type`: `application/json`, `multipart/form-data` or `application/x-www-form-urlencoded`. If uploading a file, use `multipart/form-data`.
+### Request
 
-- `shortcode`: string, optional. The new shortcode for the emoji. Must be 2-64 characters long and contain only alphanumeric characters, dashes, and underscores.
-- `element`: string or file, optional. The new image file for the emoji. This can be a URL or a file upload.
-- `alt`: string, optional. The new alt text for the emoji. Defaults to the shortcode.
-- `global`: boolean, optional. For administrators only. Whether the emoji should be visible to all users on the instance. Defaults to `false`.
-- `category`: string, optional. The new category for the emoji. Maximum 64 characters.
+> [!NOTE]
+> All fields are optional.
+
+- `shortcode` (string): The shortcode for the emoji.
+  - 1-64 characters long, alphanumeric, and may contain dashes or underscores.
+- `element` (file/string): The image file to upload.
+  - Can be a URL, or a file upload (`multipart/form-data`).
+- `alt` (string): Emoji alt text.
+- `category` (string): Emoji category. Can be any string up to 64 characters long.
+- `global` (boolean): If set to `true`, the emoji will be visible to all users, not just the uploader.
+  - Requires `emoji` permission.
+
+#### Example
+
+```http
+PATCH /api/v1/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b
+Content-Type: application/json
+Authorization: Bearer ...
+
+{
+    "category": "Blobfoxes"
+}
+```
 
 ### Response
 
-```ts
-// 200 OK
+#### `200 OK`
+
+Emoji successfully edited.
+
+```json
 {
-    id: string,
-    shortcode: string,
-    url: string,
-    static_url: string,
-    visible_in_picker: boolean,
-    category: string | undefined,
+    "id": "f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b",
+    "shortcode": "blobfox-coffee",
+    "url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "static_url": "https://cdn.yourinstance.com/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1b1b.png",
+    "visible_in_picker": true,
+    "category": "Blobfoxes"
 }
 ```
 
@@ -94,4 +180,25 @@ Edits a custom emoji on the instance.
 DELETE /api/v1/emojis/:id
 ```
 
-Deletes a custom emoji on the instance.
+Delete an existing custom emoji.
+
+- **Returns:** `204 No Content`
+- **Authentication:** Required
+- **Permissions:** `owner:emoji`, or `emoji` if deleting a global emoji.
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+DELETE /api/v1/emojis/f7b1c1b0-0b1b-4b1b-8b1b-0b1b1b1b1
+Authorization: Bearer ...
+```
+
+### Response
+
+#### `204 No Content`
+
+Emoji successfully deleted.

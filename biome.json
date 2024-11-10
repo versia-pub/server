@@ -91,6 +91,6 @@
         "globals": ["Bun", "HTMLRewriter", "BufferEncoding"]
     },
     "files": {
-        "ignore": ["node_modules", "dist"]
+        "ignore": ["node_modules", "dist", "cache"]
     }
 }

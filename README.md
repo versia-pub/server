@@ -60,7 +60,7 @@ You can visit [social.lysand.org](https://social.lysand.org) to see a live insta
 
 ## How do I run it?
 
-Please see the [installation guide](docs/installation.md) for more information on how to install Versia.
+Please see the [installation guide](https://server.versia.pub/setup/installation) for more information on how to install Versia.
 
 ## Contributing
 
@@ -208,7 +208,7 @@ Working endpoints are:
 
 ## Versia Server API
 
-For Versia Server's own custom API, please see the [API documentation](docs/api/index.md).
+For Versia Server's own custom API, please see the [API documentation](https://server.versia.pub/api/emojis).
 
 ## License
 

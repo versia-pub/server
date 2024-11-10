@@ -73,8 +73,8 @@ const route = createRoute({
         },
     },
     responses: {
-        200: {
-            description: "uploaded emoji",
+        201: {
+            description: "Uploaded emoji",
             content: {
                 "application/json": {
                     schema: Emoji.schema,
@@ -173,6 +173,6 @@ export default apiRoute((app) =>
             alt,
         });
 
-        return context.json(emoji.toApi(), 200);
+        return context.json(emoji.toApi(), 201);
     }),
 );

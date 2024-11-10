@@ -36,9 +36,9 @@ git clone https://github.com/versia-pub/server.git
 bun install
 ```
 
-4. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](docs/database.md))
+1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](https://server.versia.pub/setup/database))
 
-5. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
+2. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
 ## HTTPS development
 

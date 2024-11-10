@@ -1,78 +1,81 @@
 # Roles API
 
-The Roles API lets users manage roles given to them by administrators. This API is available to all users.
-
 > [!WARNING]
-> The API for **administrators** is different (and unimplemented): this is the API for **users**.
 >
-> Furthermore, users can only manage roles if they have the `roles` permission, and the role they wish to manage does not have a higher priority than their highest priority role.
+> This API is due to be reworked in the future. The current implementation is not final.
+>
+> Missing features include the ability to create and delete roles, as well as the ability to assign roles to other users.
+
+This API allows users to create, read, update, and delete instance custom roles. Custom roles can be used to grant users specific permissions, such as managing the instance, uploading custom emojis, or moderating content.
 
 ## Priorities
 
-Roles have a priority, which determines the order in which they are applied. Roles with higher priorities take precedence over roles with lower priorities.
+Every role has a "priority" value, which determines the order in which roles are applied. Roles with higher priorities take precedence over roles with lower priorities. The default priority is `0`.
 
-Additionally, users cannot remove or add roles with a higher priority than their highest priority role.
+Additionally, users cannot edit roles with a higher priority than their highest priority role.
 
 ## Visibility
 
-Roles can be visible or invisible. Invisible roles are not shown to users in the UI, but they can still be managed via the API.
-
-> [!WARNING]
-> All roles assigned to a user are public information and can be retrieved via the API. The visibility of a role only affects whether it is shown in the UI, which clients can choose to respect or not.
+Roles can be visible or invisible. Invisible roles are not shown to users in the UI, but they can still be managed via the API. This is useful for cosmetic roles that do not grant any permissions, e.g. `#1 Most Prominent Glizzy Eater`.
 
 ## Permissions
 
-Default permissions for anonymous users, logged-in users and admins can be set in config. These are always applied in addition to the permissions granted by roles. You may set them to empty arrays to exclusively use roles for permissions (make sure your roles are set up correctly).
+Default permissions for anonymous users, logged-in users, and administrators can be set in the configuration. These permissions are always applied in addition to the permissions granted by roles. You may set them to empty arrays to exclusively use roles for permissions (make sure your roles are set up correctly).
+
+### List of Permissions
+
+- `Manage` permissions grant the ability to create, read, update, and delete resources.
+- `View` permissions grant the ability to read resources.
+- `Owner` permissions grant the ability to manage resources that the user owns.
 
 ```ts
-// Last updated: 2024-06-07
-// Search for "RolePermissions" in the source code (GitHub search bar) for the most up-to-date version
-export enum RolePermissions {
-    MANAGE_NOTES = "notes",
-    MANAGE_OWN_NOTES = "owner:note",
-    VIEW_NOTES = "read:note",
-    VIEW_NOTE_LIKES = "read:note_likes",
-    VIEW_NOTE_BOOSTS = "read:note_boosts",
-    MANAGE_ACCOUNTS = "accounts",
-    MANAGE_OWN_ACCOUNT = "owner:account",
-    VIEW_ACCOUNT_FOLLOWS = "read:account_follows",
-    MANAGE_LIKES = "likes",
-    MANAGE_OWN_LIKES = "owner:like",
-    MANAGE_BOOSTS = "boosts",
-    MANAGE_OWN_BOOSTS = "owner:boost",
-    VIEW_ACCOUNTS = "read:account",
-    MANAGE_EMOJIS = "emojis",
-    VIEW_EMOJIS = "read:emoji",
-    MANAGE_OWN_EMOJIS = "owner:emoji",
-    MANAGE_MEDIA = "media",
-    MANAGE_OWN_MEDIA = "owner:media",
-    MANAGE_BLOCKS = "blocks",
-    MANAGE_OWN_BLOCKS = "owner:block",
-    MANAGE_FILTERS = "filters",
-    MANAGE_OWN_FILTERS = "owner:filter",
-    MANAGE_MUTES = "mutes",
-    MANAGE_OWN_MUTES = "owner:mute",
-    MANAGE_REPORTS = "reports",
-    MANAGE_OWN_REPORTS = "owner:report",
-    MANAGE_SETTINGS = "settings",
-    MANAGE_OWN_SETTINGS = "owner:settings",
-    MANAGE_ROLES = "roles",
-    MANAGE_NOTIFICATIONS = "notifications",
-    MANAGE_OWN_NOTIFICATIONS = "owner:notification",
-    MANAGE_FOLLOWS = "follows",
-    MANAGE_OWN_FOLLOWS = "owner:follow",
-    MANAGE_OWN_APPS = "owner:app",
-    SEARCH = "search",
-    VIEW_PUBLIC_TIMELINES = "public_timelines",
-    VIEW_PRIVATE_TIMELINES = "private_timelines",
-    IGNORE_RATE_LIMITS = "ignore_rate_limits",
-    IMPERSONATE = "impersonate",
-    MANAGE_INSTANCE = "instance",
-    MANAGE_INSTANCE_FEDERATION = "instance:federation",
-    MANAGE_INSTANCE_SETTINGS = "instance:settings",
-    OAUTH = "oauth",
-}
+ManageNotes: "notes",
+ManageOwnNotes: "owner:note",
+ViewNotes: "read:note",
+ViewNoteLikes: "read:note_likes",
+ViewNoteBoosts: "read:note_boosts",
+ManageAccounts: "accounts",
+ManageOwnAccount: "owner:account",
+ViewAccountFollows: "read:account_follows",
+ManageLikes: "likes",
+ManageOwnLikes: "owner:like",
+ManageBoosts: "boosts",
+ManageOwnBoosts: "owner:boost",
+ViewAccounts: "read:account",
+ManageEmojis: "emojis",
+ViewEmojis: "read:emoji",
+ManageOwnEmojis: "owner:emoji",
+ManageMedia: "media",
+ManageOwnMedia: "owner:media",
+ManageBlocks: "blocks",
+ManageOwnBlocks: "owner:block",
+ManageFilters: "filters",
+ManageOwnFilters: "owner:filter",
+ManageMutes: "mutes",
+ManageOwnMutes: "owner:mute",
+ManageReports: "reports",
+ManageOwnReports: "owner:report",
+ManageSettings: "settings",
+ManageOwnSettings: "owner:settings",
+ManageRoles: "roles",
+ManageNotifications: "notifications",
+ManageOwnNotifications: "owner:notification",
+ManageFollows: "follows",
+ManageOwnFollows: "owner:follow",
+ManageOwnApps: "owner:app",
+Search: "search",
+ViewPublicTimelines: "public_timelines",
+ViewPrimateTimelines: "private_timelines",
+IgnoreRateLimits: "ignore_rate_limits",
+Impersonate: "impersonate",
+ManageInstance: "instance",
+ManageInstanceFederation: "instance:federation",
+ManageInstanceSettings: "instance:settings",
+/** Users who do not have this permission will not be able to login! */
+OAuth: "oauth",
 ```
+
+An example usage of these permissions would be to not give the `ViewPublicTimelines` permission to anonymous users, but give it to logged-in users, in order to restrict access to public timelines.
 
 ### Manage Roles
 
@@ -82,21 +85,29 @@ The `roles` permission allows the user to manage roles, including adding and rem
 
 The `impersonate` permission allows the user to impersonate other users (logging in with their credentials). This is a dangerous permission and should be used with caution.
 
-### Manage Instance
+Useful for administrators who need to troubleshoot user issues.
 
-The `instance` permission allows the user to manage the instance, including viewing logs, restarting the instance, and more.
+### OAuth
 
-### Manage Instance Federation
+The `oauth` permission is required for users to log in via OAuth. Users who do not have this permission will not be able to log in via OAuth.
 
-The `instance:federation` permission allows the user to manage the instance's federation settings, including blocking and unblocking other instances.
+## Role
 
-### Manage Instance Settings
+```ts
+type UUID = string;
+type URL = string;
+type Permission = string;
 
-The `instance:settings` permission allows the user to manage the instance's settings, including changing the instance's name, description, and more.
-
-### OAuth2
-
-The `oauth` permission is required for users to log in to the instance. Users who do not have this permission will not be able to log in.
+interface Role {
+    id: UUID;
+    name: string;
+    permissions: Permission[];
+    priority: number;
+    description?: string | null;
+    visible: boolean;
+    icon?: URL | null;
+}
+```
 
 ## Get Roles
 
@@ -104,21 +115,117 @@ The `oauth` permission is required for users to log in to the instance. Users wh
 GET /api/v1/roles
 ```
 
-Retrieves a list of roles that the user has.
+Get a list of all roles that the requesting user has.
+
+- **Returns**: Array of [`Role`](#role)
+- **Authentication**: Required
+- **Permissions**: None
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Example
+
+```http
+GET /api/v1/roles
+Authorization: Bearer ...
+```
 
 ### Response
 
-```ts
-// 200 OK
-{
-    id: string;
-    name: string;
-    permissions: RolePermissions[];
-    priority: number;
-    description: string | null;
-    visible: boolean;
-    icon: string | null
-}[];
+#### `200 OK`
+
+All roles owned by the user.
+
+```json
+[
+    {
+        "id": "default",
+        "name": "Default",
+        "permissions": [
+            "owner:note",
+            "read:note",
+            "read:note_likes",
+            "read:note_boosts",
+            "owner:account",
+            "read:account_follows",
+            "owner:like",
+            "owner:boost",
+            "read:account",
+            "owner:emoji",
+            "read:emoji",
+            "owner:media",
+            "owner:block",
+            "owner:filter",
+            "owner:mute",
+            "owner:report",
+            "owner:settings",
+            "owner:notification",
+            "owner:follow",
+            "owner:app",
+            "search",
+            "public_timelines",
+            "private_timelines",
+            "oauth"
+        ],
+        "priority": 0,
+        "description": "Default role for all users",
+        "visible": false,
+        "icon": null
+    },
+    {
+        "id": "admin",
+        "name": "Admin",
+        "permissions": [
+            "owner:note",
+            "read:note",
+            "read:note_likes",
+            "read:note_boosts",
+            "owner:account",
+            "read:account_follows",
+            "owner:like",
+            "owner:boost",
+            "read:account",
+            "owner:emoji",
+            "read:emoji",
+            "owner:media",
+            "owner:block",
+            "owner:filter",
+            "owner:mute",
+            "owner:report",
+            "owner:settings",
+            "owner:notification",
+            "owner:follow",
+            "owner:app",
+            "search",
+            "public_timelines",
+            "private_timelines",
+            "oauth",
+            "notes",
+            "accounts",
+            "likes",
+            "boosts",
+            "emojis",
+            "media",
+            "blocks",
+            "filters",
+            "mutes",
+            "reports",
+            "settings",
+            "roles",
+            "notifications",
+            "follows",
+            "impersonate",
+            "ignore_rate_limits",
+            "instance",
+            "instance:federation",
+            "instance:settings"
+        ],
+        "priority": 2147483647,
+        "description": "Default role for all administrators",
+        "visible": false,
+        "icon": null
+    }
+]
 ```
 
 ## Get Role
@@ -127,36 +234,94 @@ Retrieves a list of roles that the user has.
 GET /api/v1/roles/:id
 ```
 
-Retrieves information about a role.
+Get a specific role's data.
+
+- **Returns**: [`Role`](#role)
+- **Authentication**: Required
+- **Permissions**: None
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+GET /api/v1/roles/default
+Authorization: Bearer ...
+```
 
 ### Response
 
-```ts
-// 200 OK
+#### `200 OK`
+
+Role data.
+
+```json
 {
-    id: string;
-    name: string;
-    permissions: RolePermissions[];
-    priority: number;
-    description: string | null;
-    visible: boolean;
-    icon: string | null
+    "id": "default",
+    "name": "Default",
+    "permissions": [
+        "owner:note",
+        "read:note",
+        "read:note_likes",
+        "read:note_boosts",
+        "owner:account",
+        "read:account_follows",
+        "owner:like",
+        "owner:boost",
+        "read:account",
+        "owner:emoji",
+        "read:emoji",
+        "owner:media",
+        "owner:block",
+        "owner:filter",
+        "owner:mute",
+        "owner:report",
+        "owner:settings",
+        "owner:notification",
+        "owner:follow",
+        "owner:app",
+        "search",
+        "public_timelines",
+        "private_timelines",
+        "oauth"
+    ],
+    "priority": 0,
+    "description": "Default role for all users",
+    "visible": false,
+    "icon": null
 }
 ```
 
-## Add Role
+## Assign Role
 
 ```http
 POST /api/v1/roles/:id
 ```
 
-Adds the role with the given ID to the user making the request.
+Assign a role to the user making the request.
+
+- **Returns**: `204 No Content`
+- **Authentication**: Required
+- **Permissions**: `roles`
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+POST /api/v1/roles/364fd13f-28b5-4e88-badd-ce3e533f0d02
+Authorization: Bearer ...
+```
 
 ### Response
 
-```ts
-// 204 No Content
-```
+#### `204 No Content`
+
+Role successfully assigned.
 
 ## Remove Role
 
@@ -164,10 +329,25 @@ Adds the role with the given ID to the user making the request.
 DELETE /api/v1/roles/:id
 ```
 
-Removes the role with the given ID from the user making the request.
+Remove a role from the user making the request.
+
+- **Returns**: `204 No Content`
+- **Authentication**: Required
+- **Permissions**: `roles`
+- **Version History**:
+  - `0.7.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+DELETE /api/v1/roles/364fd13f-28b5-4e88-badd-ce3e533f0d
+Authorization: Bearer ...
+```
 
 ### Response
 
-```ts
-// 204 No Content
-```
+#### `204 No Content`
+
+Role successfully removed.
