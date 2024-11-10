@@ -25,7 +25,7 @@ beforeAll(async () => {
         }),
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
 
     await fakeRequest("/api/v1/emojis", {
         headers: {
