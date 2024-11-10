@@ -21,6 +21,7 @@ export default defineConfig({
         },
         math: true,
     },
+    cleanUrls: true,
     themeConfig: {
         // https://vitepress.dev/reference/default-theme-config
         nav: [
