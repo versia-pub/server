@@ -1,11 +1,14 @@
 import { readdir } from "node:fs/promises";
-import { getLogger } from "@logtape/logtape";
+import type { OpenAPIHono } from "@hono/zod-openapi";
+import { type Logger, getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { ZodTypeAny } from "zod";
-import { fromZodError } from "zod-validation-error";
+import { type ValidationError, fromZodError } from "zod-validation-error";
+import { config } from "~/packages/config-manager";
 import { Plugin } from "~/packages/plugin-kit/plugin";
 import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";
+import type { HonoEnv } from "~/types/api";
 
 /**
  * Class to manage plugins.
@@ -206,5 +209,47 @@ export class PluginLoader {
                 return { manifest, plugin: pluginInstance };
             }),
         ).then((data) => data.filter((d) => d !== null));
+    }
+
+    public static async addToApp(
+        plugins: {
+            manifest: Manifest;
+            plugin: Plugin<ZodTypeAny>;
+        }[],
+        app: OpenAPIHono<HonoEnv>,
+        logger: Logger,
+    ): Promise<void> {
+        for (const data of plugins) {
+            logger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
+
+            const time1 = performance.now();
+
+            try {
+                // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
+                await data.plugin["_loadConfig"](
+                    config.plugins?.config?.[data.manifest.name],
+                );
+            } catch (e) {
+                logger.fatal`Plugin configuration is invalid: ${chalk.redBright(e as ValidationError)}`;
+                logger.fatal`Put your configuration at ${chalk.blueBright(
+                    "plugins.config.<plugin-name>",
+                )}`;
+
+                await Bun.sleep(Number.POSITIVE_INFINITY);
+            }
+
+            const time2 = performance.now();
+
+            // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
+            await data.plugin["_addToApp"](app);
+
+            const time3 = performance.now();
+
+            logger.info`Plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(
+                data.manifest.version,
+            )} loaded in ${chalk.gray(
+                `${(time2 - time1).toFixed(2)}ms`,
+            )} and added to app in ${chalk.gray(`${(time3 - time2).toFixed(2)}ms`)}`;
+        }
     }
 }

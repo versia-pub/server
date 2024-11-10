@@ -11,7 +11,6 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
-import type { ValidationError } from "zod-validation-error";
 import pkg from "~/package.json" with { type: "application/json" };
 import { config } from "~/packages/config-manager/index.ts";
 import { PluginLoader } from "./classes/plugin/loader.ts";
@@ -117,6 +116,8 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
 
     serverLogger.info`Loading plugins`;
 
+    const time1 = performance.now();
+
     const loader = new PluginLoader();
 
     const plugins = await loader.loadPlugins(
@@ -126,27 +127,13 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         config.plugins?.overrides.disabled,
     );
 
-    for (const data of plugins) {
-        serverLogger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
-        try {
-            // biome-ignore lint/complexity/useLiteralKeys: loadConfig is a private method
-            await data.plugin["_loadConfig"](
-                config.plugins?.config?.[data.manifest.name],
-            );
-        } catch (e) {
-            serverLogger.fatal`Plugin configuration is invalid: ${chalk.redBright(e as ValidationError)}`;
-            serverLogger.fatal`Put your configuration at ${chalk.blueBright(
-                "plugins.config.<plugin-name>",
-            )}`;
+    await PluginLoader.addToApp(plugins, app, serverLogger);
 
-            await Bun.sleep(Number.POSITIVE_INFINITY);
-        }
+    const time2 = performance.now();
 
-        // biome-ignore lint/complexity/useLiteralKeys: AddToApp is a private method
-        await data.plugin["_addToApp"](app);
-    }
-
-    serverLogger.info`Plugins loaded`;
+    serverLogger.info`Plugins loaded in ${`${chalk.gray(
+        (time2 - time1).toFixed(2),
+    )}ms`}`;
 
     app.doc31("/openapi.json", {
         openapi: "3.1.0",
