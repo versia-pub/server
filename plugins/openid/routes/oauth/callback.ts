@@ -192,10 +192,7 @@ export default (plugin: PluginType): void => {
 
                 if (!userId) {
                     // Register new user
-                    if (
-                        context.get("config").signups.registration &&
-                        context.get("pluginConfig").allow_registration
-                    ) {
+                    if (context.get("pluginConfig").allow_registration) {
                         let username =
                             preferred_username ??
                             email?.split("@")[0] ??

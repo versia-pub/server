@@ -94,7 +94,7 @@ bait_user_agents = ["curl", "wget"]
 
 [frontend]
 # Enable custom frontends (warning: not enabling this will make Versia Server only accessible via the Mastodon API)
-# Frontends also control the OAuth flow, so if you disable this, you will need to use the Mastodon frontend
+# Frontends also control the OpenID flow, so if you disable this, you will need to use the Mastodon frontend
 enabled = true
 # The URL to reach the frontend at (should be on a local network)
 url = "http://localhost:3000"
@@ -406,11 +406,11 @@ enabled = []
 disabled = []
 
 [plugins.config."@versia/openid"]
-# If enabled, Versia will require users to log in with an OAuth provider
+# If enabled, Versia will require users to log in with an OpenID provider
 forced = false
 
-# Allow registration with OAuth providers
-# Overriden by the signups.registration setting
+# Allow registration with OpenID providers
+# If signups.registration is false, it will only be possible to register with OpenID
 allow_registration = true
 
 # [plugins.config."@versia/openid".keys]
@@ -420,7 +420,7 @@ allow_registration = true
 
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this
-# Redirect URLs in your OAuth provider can be set to this:
+# Redirect URLs in your OpenID provider can be set to this:
 # <base_url>/oauth/sso/<provider_id>/callback*
 # The asterisk is important, as it allows for any query parameters to be passed
 # Authentik for example uses regex so it can be set to (regex):
