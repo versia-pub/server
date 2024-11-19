@@ -75,18 +75,18 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const status = await Note.fromId(id, user.id);
+        const note = await Note.fromId(id, user.id);
 
-        if (!status?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
         return context.json(
             {
-                id: status.id,
+                id: note.id,
                 // TODO: Give real source for spoilerText
-                spoiler_text: status.data.spoilerText,
-                text: status.data.contentSource,
+                spoiler_text: note.data.spoilerText,
+                text: note.data.contentSource,
             } satisfies ApiStatusSource,
             200,
         );

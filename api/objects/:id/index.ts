@@ -81,7 +81,7 @@ export default apiRoute((app) =>
         foundAuthor = foundObject ? foundObject.author : null;
 
         if (foundObject) {
-            if (!foundObject.isViewableByUser(null)) {
+            if (!(await foundObject.isViewableByUser(null))) {
                 return context.json({ error: "Object not found" }, 404);
             }
         } else {

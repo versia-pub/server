@@ -1099,8 +1099,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         }
 
         // Filter for posts that are viewable by the user
-        const viewableAncestors = ancestors.filter((ancestor) =>
-            ancestor.isViewableByUser(fetcher),
+        const viewableAncestors = await Promise.all(
+            ancestors.map(async (ancestor) => {
+                const isViewable = await ancestor.isViewableByUser(fetcher);
+                return isViewable ? ancestor : null;
+            }),
+        ).then((filteredAncestors) =>
+            filteredAncestors.filter((n) => n !== null),
         );
 
         // Reverse the order so that the oldest posts are first
@@ -1133,8 +1138,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         // Filter for posts that are viewable by the user
 
-        const viewableDescendants = descendants.filter((descendant) =>
-            descendant.isViewableByUser(fetcher),
+        const viewableDescendants = await Promise.all(
+            descendants.map(async (descendant) => {
+                const isViewable = await descendant.isViewableByUser(fetcher);
+                return isViewable ? descendant : null;
+            }),
+        ).then((filteredDescendants) =>
+            filteredDescendants.filter((n) => n !== null),
         );
 
         return viewableDescendants;

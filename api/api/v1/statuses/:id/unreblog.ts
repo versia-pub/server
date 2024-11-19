@@ -79,18 +79,15 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const foundStatus = await Note.fromId(id, user.id);
+        const note = await Note.fromId(id, user.id);
 
         // Check if user is authorized to view this status (if it's private)
-        if (!foundStatus?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
         const existingReblog = await Note.fromSql(
-            and(
-                eq(Notes.authorId, user.id),
-                eq(Notes.reblogId, foundStatus.data.id),
-            ),
+            and(eq(Notes.authorId, user.id), eq(Notes.reblogId, note.data.id)),
             undefined,
             user?.id,
         );

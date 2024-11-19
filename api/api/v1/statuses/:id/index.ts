@@ -215,7 +215,7 @@ export default apiRoute((app) => {
 
         const note = await Note.fromId(id, user?.id);
 
-        if (!note?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
@@ -228,7 +228,7 @@ export default apiRoute((app) => {
 
         const note = await Note.fromId(id, user?.id);
 
-        if (!note?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
@@ -254,7 +254,7 @@ export default apiRoute((app) => {
 
         const note = await Note.fromId(id, user?.id);
 
-        if (!note?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 

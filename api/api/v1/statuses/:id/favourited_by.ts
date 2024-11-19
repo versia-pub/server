@@ -80,9 +80,9 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const status = await Note.fromId(id, user?.id);
+        const note = await Note.fromId(id, user?.id);
 
-        if (!status?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
@@ -91,7 +91,7 @@ export default apiRoute((app) =>
                 max_id ? lt(Users.id, max_id) : undefined,
                 since_id ? gte(Users.id, since_id) : undefined,
                 min_id ? gt(Users.id, min_id) : undefined,
-                sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${status.id} AND "Likes"."likerId" = ${Users.id})`,
+                sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = ${note.id} AND "Likes"."likerId" = ${Users.id})`,
             ),
             limit,
             context.req.url,

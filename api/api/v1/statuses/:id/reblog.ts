@@ -104,17 +104,14 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const foundStatus = await Note.fromId(id, user.id);
+        const note = await Note.fromId(id, user.id);
 
-        if (!foundStatus?.isViewableByUser(user)) {
+        if (!(note && (await note?.isViewableByUser(user)))) {
             return context.json({ error: "Record not found" }, 404);
         }
 
         const existingReblog = await Note.fromSql(
-            and(
-                eq(Notes.authorId, user.id),
-                eq(Notes.reblogId, foundStatus.data.id),
-            ),
+            and(eq(Notes.authorId, user.id), eq(Notes.reblogId, note.data.id)),
         );
 
         if (existingReblog) {
@@ -123,7 +120,7 @@ export default apiRoute((app) =>
 
         const newReblog = await Note.insert({
             authorId: user.id,
-            reblogId: foundStatus.data.id,
+            reblogId: note.data.id,
             visibility,
             sensitive: false,
             updatedAt: new Date().toISOString(),
@@ -140,10 +137,10 @@ export default apiRoute((app) =>
             return context.json({ error: "Failed to reblog" }, 500);
         }
 
-        if (foundStatus.author.isLocal() && user.isLocal()) {
+        if (note.author.isLocal() && user.isLocal()) {
             await Notification.insert({
                 accountId: user.id,
-                notifiedId: foundStatus.author.id,
+                notifiedId: note.author.id,
                 type: "reblog",
                 noteId: newReblog.data.reblogId,
             });
