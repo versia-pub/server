@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline, User } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
-import { and, eq, gt, gte, isNull, lt, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -122,6 +122,15 @@ export default apiRoute((app) =>
                 pinned
                     ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = ${Notes.id} AND "UserToPinnedNotes"."userId" = ${otherUser.id})`
                     : undefined,
+                // Visibility check
+                or(
+                    sql`EXISTS (SELECT 1 FROM "NoteToMentions" WHERE "NoteToMentions"."noteId" = ${Notes.id} AND "NoteToMentions"."userId" = ${otherUser.id})`,
+                    and(
+                        sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Notes.authorId} AND "Relationships"."ownerId" = ${otherUser.id} AND "Relationships"."following" = true)`,
+                        inArray(Notes.visibility, ["public", "private"]),
+                    ),
+                    inArray(Notes.visibility, ["public", "unlisted"]),
+                ),
                 exclude_reblogs ? isNull(Notes.reblogId) : undefined,
                 exclude_replies ? isNull(Notes.replyId) : undefined,
             ),

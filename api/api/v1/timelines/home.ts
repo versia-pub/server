@@ -2,7 +2,7 @@ import { apiRoute, applyConfig, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
-import { and, eq, gt, gte, lt, or, sql } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -79,10 +79,15 @@ export default apiRoute((app) =>
                     since_id ? gte(Notes.id, since_id) : undefined,
                     min_id ? gt(Notes.id, min_id) : undefined,
                 ),
+                // Visibility check
                 or(
                     eq(Notes.authorId, user.id),
                     sql`EXISTS (SELECT 1 FROM "NoteToMentions" WHERE "NoteToMentions"."noteId" = ${Notes.id} AND "NoteToMentions"."userId" = ${user.id})`,
-                    sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Notes.authorId} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."following" = true)`,
+                    and(
+                        sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Notes.authorId} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."following" = true)`,
+                        inArray(Notes.visibility, ["public", "private"]),
+                    ),
+                    eq(Notes.visibility, "public"),
                 ),
                 sql`NOT EXISTS (SELECT 1 FROM "Filters" WHERE "Filters"."userId" = ${user.id} AND "Filters"."filter_action" = 'hide' AND EXISTS (SELECT 1 FROM "FilterKeywords" WHERE "FilterKeywords"."filterId" = "Filters"."id" AND "Notes"."content" LIKE '%' || "FilterKeywords"."keyword" || '%') AND "Filters"."context" @> ARRAY['home'])`,
             ),
