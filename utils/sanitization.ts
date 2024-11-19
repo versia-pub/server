@@ -79,6 +79,7 @@ export const sanitizeHtml = async (
             audio: ["class", "src", "controls"],
             source: ["src", "type"],
             track: ["src", "label", "kind"],
+            input: ["type", "checked", "disabled", "class"],
         },
         stripIgnoreTag: false,
         escapeHtml: (unsafeHtml): string =>
@@ -99,6 +100,7 @@ export const sanitizeHtml = async (
         "hashtag",
         "ellipsis",
         "invisible",
+        "task-list-item-checkbox",
     ];
 
     return await new HTMLRewriter()
@@ -114,6 +116,17 @@ export const sanitizeHtml = async (
                     ) {
                         element.removeAttribute("class");
                     }
+                }
+            },
+        })
+        // Only allow disabled checkbox input
+        .on("input", {
+            element(element): void {
+                if (
+                    element.getAttribute("type") === "checkbox" &&
+                    element.getAttribute("disabled") === null
+                ) {
+                    element.removeAttribute("type");
                 }
             },
         })
