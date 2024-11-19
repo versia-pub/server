@@ -1,5 +1,5 @@
 import { apiRoute, applyConfig } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -18,20 +18,36 @@ const route = createRoute({
     path: "/.well-known/nodeinfo",
     summary: "Well-known nodeinfo",
     responses: {
-        301: {
-            description: "Redirect to 2.0 Nodeinfo",
+        200: {
+            description: "Nodeinfo links",
+            content: {
+                "application/json": {
+                    schema: z.object({
+                        links: z.array(
+                            z.object({
+                                rel: z.string(),
+                                href: z.string(),
+                            }),
+                        ),
+                    }),
+                },
+            },
         },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, (context) => {
-        return context.redirect(
-            new URL(
-                "/.well-known/nodeinfo/2.0",
-                config.http.base_url,
-            ).toString(),
-            301,
-        );
+        return context.json({
+            links: [
+                {
+                    rel: "http://nodeinfo.diaspora.software/ns/schema/2.0",
+                    href: new URL(
+                        "/.well-known/nodeinfo/2.0",
+                        config.http.base_url,
+                    ).toString(),
+                },
+            ],
+        });
     }),
 );
