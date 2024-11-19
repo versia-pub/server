@@ -122,11 +122,10 @@ export const sanitizeHtml = async (
         // Only allow disabled checkbox input
         .on("input", {
             element(element): void {
-                if (
-                    element.getAttribute("type") === "checkbox" &&
-                    element.getAttribute("disabled") === null
-                ) {
-                    element.removeAttribute("type");
+                if (element.getAttribute("type") === "checkbox") {
+                    element.setAttribute("disabled", "");
+                } else {
+                    element.remove();
                 }
             },
         })
