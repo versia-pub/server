@@ -1,6 +1,8 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Note, User } from "@versia/kit/db";
 import manifest from "~/package.json";
+import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
     auth: {
@@ -51,18 +53,34 @@ const route = createRoute({
 });
 
 export default apiRoute((app) =>
-    app.openapi(route, (context) => {
+    app.openapi(route, async (context) => {
+        const userCount = await User.getCount();
+        const userActiveMonth = await User.getActiveInPeriod(
+            1000 * 60 * 60 * 24 * 30,
+        );
+        const userActiveHalfyear = await User.getActiveInPeriod(
+            1000 * 60 * 60 * 24 * 30 * 6,
+        );
+        const noteCount = await Note.getCount();
+
         return context.json({
             version: "2.0",
             software: { name: "versia-server", version: manifest.version },
             protocols: ["versia"],
             services: { outbound: [], inbound: [] },
             usage: {
-                users: { total: 0, activeMonth: 0, activeHalfyear: 0 },
-                localPosts: 0,
+                users: {
+                    total: userCount,
+                    activeMonth: userActiveMonth,
+                    activeHalfyear: userActiveHalfyear,
+                },
+                localPosts: noteCount,
             },
             openRegistrations: false,
-            metadata: {},
+            metadata: {
+                nodeName: config.instance.name,
+                nodeDescription: config.instance.description,
+            },
         });
     }),
 );
