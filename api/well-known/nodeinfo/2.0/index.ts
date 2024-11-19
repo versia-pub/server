@@ -76,7 +76,7 @@ export default apiRoute((app) =>
                 },
                 localPosts: noteCount,
             },
-            openRegistrations: false,
+            openRegistrations: config.signups.registration,
             metadata: {
                 nodeName: config.instance.name,
                 nodeDescription: config.instance.description,
