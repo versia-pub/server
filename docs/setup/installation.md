@@ -22,22 +22,14 @@ Docker is the recommended way to run Versia Server (Podman also works). To run V
 > [!NOTE]
 > You may need to change the image from `ghcr.io/versia-pub/server:latest` to `ghcr.io/versia-pub/server:main` if you want to use the latest changes from the `main` branch. Make sure to use the config template from the same branch as the server.
 
-> [!CAUTION]
-> The `latest` tag on the Docker image refers to the latest release (currently `v0.6.0`), not the latest commit on the `main` branch.
->
-> **Do not mix configurations from different branches, or everything will break with confusing errors!**
-
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/versia-pub/server/main/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/versia-pub/server/v0.7.0/docker-compose.yml
 ```
 1. Edit the `docker-compose.yml` file to set up the database connection and other settings
 2. Download the `config.example.toml` file from the repository
 
 ```bash
-# From main branch
-curl -o config.example.toml https://raw.githubusercontent.com/versia-pub/server/main/config/config.example.toml
-# For a specific release (e.g. v0.6.0)
-curl -o config.example.toml https://raw.githubusercontent.com/versia-pub/server/v0.6.0/config/config.example.toml
+curl -o config.example.toml https://raw.githubusercontent.com/versia-pub/server/v0.7.0/config/config.example.toml
 ```
 4. Edit the `config.example.toml` file to set up the database connection and other settings, rename it to `config.toml`, then place it inside `config/` (create the `config/` directory if it does not exist)
 5. Run the following command to start the server:
@@ -70,7 +62,7 @@ bun install
 1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](./database.md))
 
 2. (If you want search)
-Create a [Sonic](https://github.com/valeriansaliou/sonic) instance (using Docker is recommended). For a [`docker-compose`] file, copy the `sonic` service from the [`docker-compose.yml`](https://github.com/versia-pub/server/blob/main/docker-compose.yml) file. Don't forget to fill in the `config.cfg` for Sonic!
+Create a [Sonic](https://github.com/valeriansaliou/sonic) instance (using Docker is recommended). For a [`docker-compose`] file, copy the `sonic` service from the [`docker-compose.yml`](https://github.com/versia-pub/server/blob/v0.7.0/docker-compose.yml) file. Don't forget to fill in the `config.cfg` for Sonic!
 
 1. Build everything:
 
