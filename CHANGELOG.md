@@ -63,8 +63,6 @@ Plugins using this framework support:
 - [x] Support for sending raw SQL to database (type-safe!)
 - [x] Plugin autoload on startup with override controls (enable/disable)
 
-The new `@versia/kit` NPM/JSR package is available for plugin developers.
-
 As a demonstration of the power of this system and an effort to modularize the codebase further, OpenID functionality has been moved to a plugin. This plugin is required for login.
 
 ## Bug Fixes
