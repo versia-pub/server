@@ -46,6 +46,7 @@ export const schemas = {
             .min(3)
             .trim()
             .max(config.validation.max_username_size)
+            .toLowerCase()
             .refine(
                 (s) =>
                     !config.filters.username.some((filter) => s.match(filter)),
