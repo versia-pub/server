@@ -47,6 +47,10 @@ export const schemas = {
             .trim()
             .max(config.validation.max_username_size)
             .toLowerCase()
+            .regex(
+                /^[a-z0-9_-]+$/,
+                "Username can only contain letters, numbers, underscores and hyphens",
+            )
             .refine(
                 (s) =>
                     !config.filters.username.some((filter) => s.match(filter)),
