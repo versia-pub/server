@@ -1,19 +1,8 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import {
-    anyOf,
-    charIn,
-    createRegExp,
-    digit,
-    exactly,
-    global,
-    letter,
-    maybe,
-    oneOrMore,
-} from "magic-regexp";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 
@@ -73,20 +62,7 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         // Check if acct is matching format username@domain.com or @username@domain.com
-        const accountMatches = acct?.trim().match(
-            createRegExp(
-                maybe("@"),
-                oneOrMore(
-                    anyOf(letter.lowercase, digit, charIn("-")),
-                ).groupedAs("username"),
-                exactly("@"),
-                oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs(
-                    "domain",
-                ),
-
-                [global],
-            ),
-        );
+        const accountMatches = acct?.trim().match(userAddressValidator);
 
         if (accountMatches) {
             // Remove leading @ if it exists

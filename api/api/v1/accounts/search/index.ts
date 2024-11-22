@@ -1,19 +1,8 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
-import {
-    anyOf,
-    charIn,
-    createRegExp,
-    digit,
-    exactly,
-    global,
-    letter,
-    maybe,
-    oneOrMore,
-} from "magic-regexp";
 import stringComparison from "string-comparison";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
@@ -35,25 +24,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     query: z.object({
-        q: z
-            .string()
-            .min(1)
-            .max(512)
-            .regex(
-                createRegExp(
-                    maybe("@"),
-                    oneOrMore(
-                        anyOf(letter.lowercase, digit, charIn("-")),
-                    ).groupedAs("username"),
-                    maybe(
-                        exactly("@"),
-                        oneOrMore(
-                            anyOf(letter, digit, charIn("_-.:")),
-                        ).groupedAs("domain"),
-                    ),
-                    [global],
-                ),
-            ),
+        q: z.string().min(1).max(512).regex(userAddressValidator),
         limit: z.coerce.number().int().min(1).max(80).default(40),
         offset: z.coerce.number().int().optional(),
         resolve: z
