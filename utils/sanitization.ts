@@ -81,6 +81,8 @@ export const sanitizeHtml = async (
             source: ["src", "type"],
             track: ["src", "label", "kind"],
             input: ["type", "checked", "disabled", "class"],
+            span: ["class", "translate"],
+            div: ["class"],
         },
         stripIgnoreTag: false,
         escapeHtml: (unsafeHtml): string =>
@@ -91,12 +93,9 @@ export const sanitizeHtml = async (
     });
 
     // Check text to only allow h-*, p-*, u-*, dt-*, e-*, mention, hashtag, ellipsis, invisible classes
+    const allowedClassesStart = ["h-", "p-", "u-", "dt-", "e-"];
+
     const allowedClasses = [
-        "h-",
-        "p-",
-        "u-",
-        "dt-",
-        "e-",
         "mention",
         "hashtag",
         "ellipsis",
@@ -111,8 +110,10 @@ export const sanitizeHtml = async (
 
                 for (const className of classes) {
                     if (
-                        !allowedClasses.some((allowedClass) =>
-                            className.startsWith(allowedClass),
+                        !(
+                            allowedClassesStart.some((allowedClass) =>
+                                className.startsWith(allowedClass),
+                            ) && allowedClasses.includes(className)
                         )
                     ) {
                         element.removeAttribute("class");
