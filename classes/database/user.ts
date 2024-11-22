@@ -594,7 +594,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             }
 
             const bridgeUri = new URL(
-                `/apbridge/lysand/query?${new URLSearchParams({
+                `/apbridge/versia/query?${new URLSearchParams({
                     user_url: uri,
                 })}`,
                 config.federation.bridge.url,
