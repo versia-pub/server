@@ -84,7 +84,7 @@ export const emojiValidatorWithIdentifiers = createRegExp(
 
 export const mentionValidator = createRegExp(
     exactly("@"),
-    oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
+    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
         "username",
     ),
     maybe(
@@ -96,7 +96,7 @@ export const mentionValidator = createRegExp(
 
 export const userAddressValidator = createRegExp(
     maybe("@"),
-    oneOrMore(anyOf(letter.lowercase, digit, charIn("-"))).groupedAs(
+    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
         "username",
     ),
     maybe(
@@ -108,7 +108,7 @@ export const userAddressValidator = createRegExp(
 
 export const webfingerMention = createRegExp(
     exactly("acct:"),
-    oneOrMore(anyOf(letter, digit, charIn("-"))).groupedAs("username"),
+    oneOrMore(anyOf(letter, digit, charIn("-_"))).groupedAs("username"),
     maybe(
         exactly("@"),
         oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
