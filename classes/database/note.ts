@@ -1,6 +1,5 @@
 import { idValidator } from "@/api";
 import { localObjectUri } from "@/constants";
-import { proxyUrl } from "@/response";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
@@ -902,17 +901,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             (mention) => mention.instanceId === null,
         );
 
-        // Rewrite all src tags to go through proxy
-        let replacedContent = new HTMLRewriter()
-            .on("[src]", {
-                element(element): void {
-                    element.setAttribute(
-                        "src",
-                        proxyUrl(element.getAttribute("src") ?? "") ?? "",
-                    );
-                },
-            })
-            .transform(data.content);
+        let replacedContent = data.content;
 
         for (const mention of mentionedLocalUsers) {
             replacedContent = replacedContent.replace(

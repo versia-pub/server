@@ -1,5 +1,6 @@
 import { stringifyEntitiesLight } from "stringify-entities";
 import xss, { type IFilterXSSOptions } from "xss";
+import { proxyUrl } from "./response.ts";
 
 export const sanitizedHtmlStrip = (html: string): Promise<string> => {
     return sanitizeHtml(html, {
@@ -127,6 +128,15 @@ export const sanitizeHtml = async (
                 } else {
                     element.remove();
                 }
+            },
+        })
+        // Rewrite all src tags to go through proxy
+        .on("[src]", {
+            element(element): void {
+                element.setAttribute(
+                    "src",
+                    proxyUrl(element.getAttribute("src") ?? "") ?? "",
+                );
             },
         })
         .transform(new Response(sanitizedHtml))
