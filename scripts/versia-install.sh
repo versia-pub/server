@@ -3,7 +3,6 @@ set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
-GREEN='\033[0;32m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
@@ -13,7 +12,6 @@ DOMAIN="versia-${RANDOM_SUFFIX}.localhost"
 INSTALL_DIR="./versia-install-${RANDOM_SUFFIX}"
 COMPOSE_FILE="${INSTALL_DIR}/docker-compose.yml"
 CONFIG_FILE="${INSTALL_DIR}/config/config.toml"
-CONFIG_EXAMPLE="${INSTALL_DIR}/config/config.example.toml"
 VERSION="v0.7.0"
 PORT=$(shuf -i 10000-65000 -n 1)
 
