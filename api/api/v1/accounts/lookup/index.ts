@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
+import { apiRoute, applyConfig, auth, userAddressValidatorRemote } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -62,7 +62,7 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         // Check if acct is matching format username@domain.com or @username@domain.com
-        const accountMatches = acct?.trim().match(userAddressValidator);
+        const accountMatches = acct?.trim().match(userAddressValidatorRemote);
 
         if (accountMatches) {
             // Remove leading @ if it exists

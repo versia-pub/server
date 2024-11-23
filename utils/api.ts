@@ -106,6 +106,16 @@ export const userAddressValidator = createRegExp(
     [global],
 );
 
+export const userAddressValidatorRemote = createRegExp(
+    maybe("@"),
+    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
+        "username",
+    ),
+    exactly("@"),
+    oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
+    [global],
+);
+
 export const webfingerMention = createRegExp(
     exactly("acct:"),
     oneOrMore(anyOf(letter, digit, charIn("-_"))).groupedAs("username"),
