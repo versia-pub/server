@@ -50,6 +50,11 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             default: false,
             exclusive: ["format"],
         }),
+        password: Flags.string({
+            description:
+                "Password. Make sure this isn't saved in the shell history",
+            exclusive: ["set-password"],
+        }),
     };
 
     public async run(): Promise<void> {
@@ -96,6 +101,10 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             password = password1;
         }
 
+        if (flags.password) {
+            password = flags.password;
+        }
+
         // TODO: Add password resets
 
         const user = await User.fromDataLocal({
@@ -137,7 +146,7 @@ export default class UserCreate extends BaseCommand<typeof UserCreate> {
             ),
         );
 
-        if (!(flags.format || flags["set-password"])) {
+        if (!(flags.format || flags["set-password"] || flags.password)) {
             const link = "";
 
             this.log(
