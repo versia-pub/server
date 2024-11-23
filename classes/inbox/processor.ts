@@ -16,7 +16,7 @@ import type {
     User as VersiaUser,
 } from "@versia/federation/types";
 import {
-    Instance,
+    type Instance,
     Like,
     Note,
     Notification,
@@ -70,7 +70,7 @@ export class InboxProcessor {
      *
      * @param context Hono request context.
      * @param body Entity JSON body.
-     * @param sender Sender of the request (from X-Signed-By header).
+     * @param senderInstance Sender of the request's instance (from X-Signed-By header).
      * @param headers Various request headers.
      * @param logger LogTape logger instance.
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
@@ -78,10 +78,10 @@ export class InboxProcessor {
     public constructor(
         private context: Context,
         private body: Entity,
-        private sender: User,
+        private senderInstance: Instance,
         private headers: {
-            signature: string;
-            nonce: string;
+            signature?: string;
+            nonce?: string;
             authorization?: string;
         },
         private logger: Logger = getLogger(["federation", "inbox"]),
@@ -94,13 +94,24 @@ export class InboxProcessor {
      * @returns {Promise<boolean>} - Whether the signature is valid.
      */
     private async isSignatureValid(): Promise<boolean> {
+        if (!this.senderInstance.data.publicKey?.key) {
+            throw new Error(
+                `Instance ${this.senderInstance.data.baseUrl} has no public key stored in database`,
+            );
+        }
+
         if (config.debug.federation) {
-            this.logger.debug`Sender public key: ${this.sender.data.publicKey}`;
+            this.logger
+                .debug`Sender public key: ${this.senderInstance.data.publicKey.key}`;
         }
 
         const validator = await SignatureValidator.fromStringKey(
-            this.sender.data.publicKey,
+            this.senderInstance.data.publicKey.key,
         );
+
+        if (!(this.headers.signature && this.headers.nonce)) {
+            throw new Error("Missing signature or nonce");
+        }
 
         // HACK: Making a fake Request object instead of passing the values directly is necessary because otherwise the validation breaks for some unknown reason
         const isValid = await validator.validate(
@@ -185,16 +196,7 @@ export class InboxProcessor {
     public async process(): Promise<
         (Response & TypedResponse<{ error: string }, 500, "json">) | Response
     > {
-        const remoteInstance = await Instance.fromUser(this.sender);
-
-        if (!remoteInstance) {
-            return this.context.json(
-                { error: "Could not resolve the remote instance." },
-                500,
-            );
-        }
-
-        if (isDefederated(remoteInstance.data.baseUrl)) {
+        if (isDefederated(this.senderInstance.data.baseUrl)) {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
@@ -439,11 +441,15 @@ export class InboxProcessor {
         const delete_ = this.body as unknown as VersiaDelete;
         const toDelete = delete_.deleted;
 
+        const author = delete_.author
+            ? await User.resolve(delete_.author)
+            : null;
+
         switch (delete_.deleted_type) {
             case "Note": {
                 const note = await Note.fromSql(
                     eq(Notes.uri, toDelete),
-                    eq(Notes.authorId, this.sender.id),
+                    author ? eq(Notes.authorId, author.id) : undefined,
                 );
 
                 if (!note) {
@@ -468,8 +474,8 @@ export class InboxProcessor {
                     );
                 }
 
-                if (userToDelete.id === this.sender.id) {
-                    await this.sender.delete();
+                if (!author || userToDelete.id === author.id) {
+                    await userToDelete.delete();
                     return this.context.text(
                         "Account deleted, goodbye 👋",
                         200,
@@ -486,7 +492,7 @@ export class InboxProcessor {
             case "pub.versia:likes/Like": {
                 const like = await Like.fromSql(
                     eq(Likes.uri, toDelete),
-                    eq(Likes.likerId, this.sender.id),
+                    author ? eq(Likes.likerId, author.id) : undefined,
                 );
 
                 if (!like) {

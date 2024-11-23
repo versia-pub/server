@@ -319,6 +319,18 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
+    public static resolveFromHost(host: string): Promise<Instance> {
+        if (host.startsWith("http")) {
+            const url = new URL(host).host;
+
+            return Instance.resolve(url);
+        }
+
+        const url = new URL(`https://${host}`);
+
+        return Instance.resolve(url.origin);
+    }
+
     public static async resolve(url: string): Promise<Instance> {
         const logger = getLogger("federation");
         const host = new URL(url).host;
@@ -346,6 +358,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             version: metadata.software.version,
             logo: metadata.logo,
             protocol,
+            publicKey: metadata.public_key,
         });
     }
 

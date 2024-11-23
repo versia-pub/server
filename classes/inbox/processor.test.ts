@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, jest, mock, test } from "bun:test";
 import { SignatureValidator } from "@versia/federation";
 import type { Entity, Note as VersiaNote } from "@versia/federation/types";
-import { Note, Notification, Relationship, User } from "@versia/kit/db";
+import {
+    type Instance,
+    Note,
+    Notification,
+    Relationship,
+    User,
+} from "@versia/kit/db";
 import type { Context } from "hono";
 import { ValidationError } from "zod-validation-error";
 import { config } from "~/packages/config-manager/index.ts";
@@ -71,7 +77,7 @@ mock.module("~/packages/config-manager/index.ts", () => ({
 describe("InboxProcessor", () => {
     let mockContext: Context;
     let mockBody: Entity;
-    let mockSender: User;
+    let mockSenderInstance: Instance;
     let mockHeaders: {
         signature: string;
         nonce: string;
@@ -98,12 +104,14 @@ describe("InboxProcessor", () => {
         } as unknown as Context;
 
         // Setup basic mock sender
-        mockSender = {
+        mockSenderInstance = {
             id: "test-id",
             data: {
-                publicKey: "test-key",
+                publicKey: {
+                    key: "test-key",
+                },
             },
-        } as unknown as User;
+        } as unknown as Instance;
 
         // Setup basic mock headers
         mockHeaders = {
@@ -118,7 +126,7 @@ describe("InboxProcessor", () => {
         processor = new InboxProcessor(
             mockContext,
             mockBody,
-            mockSender,
+            mockSenderInstance,
             mockHeaders,
         );
     });

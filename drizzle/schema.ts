@@ -1,5 +1,5 @@
 import type { Source as ApiSource } from "@versia/client/types";
-import type { ContentFormat } from "@versia/federation/types";
+import type { ContentFormat, InstanceMetadata } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -351,6 +351,7 @@ export const Instances = pgTable("Instances", {
         .notNull()
         .$type<"versia" | "activitypub">()
         .default("versia"),
+    publicKey: jsonb("public_key").$type<InstanceMetadata["public_key"]>(),
 });
 
 export const OpenIdAccounts = pgTable("OpenIdAccounts", {

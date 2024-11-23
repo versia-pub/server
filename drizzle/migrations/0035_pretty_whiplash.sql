@@ -1,0 +1,1 @@
+ALTER TABLE "Instances" ADD COLUMN "public_key" jsonb;

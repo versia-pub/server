@@ -2,7 +2,7 @@ import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { Entity } from "@versia/federation/types";
-import { User } from "@versia/kit/db";
+import { Instance, User } from "@versia/kit/db";
 import { z } from "zod";
 import { InboxProcessor } from "~/classes/inbox/processor";
 import { ErrorSchema } from "~/types/api";
@@ -23,9 +23,9 @@ export const schemas = {
         uuid: z.string().uuid(),
     }),
     header: z.object({
-        "x-signature": z.string(),
-        "x-nonce": z.string(),
-        "x-signed-by": z.string().url().or(z.literal("instance")),
+        "x-signature": z.string().optional(),
+        "x-nonce": z.string().optional(),
+        "x-signed-by": z.string().url().or(z.string().startsWith("instance ")),
         authorization: z.string().optional(),
     }),
     body: z.any(),
@@ -113,24 +113,37 @@ export default apiRoute((app) =>
 
         const sender = await User.resolve(signedBy);
 
-        if (!sender) {
+        if (!(sender || signedBy.startsWith("instance "))) {
             return context.json(
-                { error: `Couldn't resolve sender ${signedBy}` },
+                { error: `Couldn't resolve sender URI ${signedBy}` },
                 404,
             );
         }
 
         if (sender?.isLocal()) {
             return context.json(
-                { error: "Cannot send federation requests to local users" },
+                {
+                    error: "Cannot process federation requests from local users",
+                },
                 400,
+            );
+        }
+
+        const remoteInstance = sender
+            ? await Instance.fromUser(sender)
+            : await Instance.resolveFromHost(signedBy.split(" ")[1]);
+
+        if (!remoteInstance) {
+            return context.json(
+                { error: "Could not resolve the remote instance." },
+                500,
             );
         }
 
         const processor = new InboxProcessor(
             context,
             body,
-            sender,
+            remoteInstance,
             {
                 signature,
                 nonce,

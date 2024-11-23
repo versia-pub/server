@@ -246,6 +246,13 @@
             "when": 1729789587213,
             "tag": "0034_jittery_proemial_gods",
             "breakpoints": true
+        },
+        {
+            "idx": 35,
+            "version": "7",
+            "when": 1732398961365,
+            "tag": "0035_pretty_whiplash",
+            "breakpoints": true
         }
     ]
 }
