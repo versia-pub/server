@@ -716,7 +716,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public static async resolve(uri: string): Promise<User | null> {
-        getLogger("federation").debug`Resolving user ${chalk.bold(uri)}`;
+        getLogger("federation").debug`Resolving user ${chalk.gray(uri)}`;
         // Check if user not already in database
         const foundUser = await User.fromSql(eq(Users.uri, uri));
 

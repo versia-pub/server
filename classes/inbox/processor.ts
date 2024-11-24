@@ -25,6 +25,7 @@ import {
 } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
+import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import type { StatusCode } from "hono/utils/http-status";
 import { matches } from "ip-matching";
@@ -104,8 +105,9 @@ export class InboxProcessor {
         }
 
         if (config.debug.federation) {
-            this.logger
-                .debug`Sender public key: ${this.senderInstance.data.publicKey.key}`;
+            this.logger.debug`Sender public key: ${chalk.gray(
+                this.senderInstance.data.publicKey.key,
+            )}`;
         }
 
         const validator = await SignatureValidator.fromStringKey(
@@ -199,6 +201,9 @@ export class InboxProcessor {
      * @returns {Promise<Response>} - HTTP response to send back.
      */
     public async process(): Promise<Response> {
+        !this.senderInstance &&
+            this.logger.debug`Processing request from potential bridge`;
+
         if (
             this.senderInstance &&
             isDefederated(this.senderInstance.data.baseUrl)
@@ -211,6 +216,10 @@ export class InboxProcessor {
             });
         }
 
+        this.logger.debug`Instance ${chalk.gray(
+            this.senderInstance?.data.baseUrl,
+        )} is not defederated`;
+
         const shouldCheckSignature = this.shouldCheckSignature();
 
         if (shouldCheckSignature !== true && shouldCheckSignature !== false) {
@@ -219,6 +228,10 @@ export class InboxProcessor {
                 { status: shouldCheckSignature.code },
             );
         }
+
+        shouldCheckSignature
+            ? this.logger.debug`Checking signature`
+            : this.logger.debug`Skipping signature check`;
 
         if (shouldCheckSignature) {
             const isValid = await this.isSignatureValid();
@@ -230,6 +243,8 @@ export class InboxProcessor {
                 );
             }
         }
+
+        shouldCheckSignature && this.logger.debug`Signature is valid`;
 
         const validator = new EntityValidator();
         const handler = new RequestParserHandler(this.body, validator);
