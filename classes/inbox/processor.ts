@@ -70,7 +70,7 @@ export class InboxProcessor {
      *
      * @param context Hono request context.
      * @param body Entity JSON body.
-     * @param senderInstance Sender of the request's instance (from X-Signed-By header).
+     * @param senderInstance Sender of the request's instance (from X-Signed-By header). Null if request is from a bridge.
      * @param headers Various request headers.
      * @param logger LogTape logger instance.
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
@@ -78,7 +78,7 @@ export class InboxProcessor {
     public constructor(
         private context: Context,
         private body: Entity,
-        private senderInstance: Instance,
+        private senderInstance: Instance | null,
         private headers: {
             signature?: string;
             nonce?: string;
@@ -94,9 +94,9 @@ export class InboxProcessor {
      * @returns {Promise<boolean>} - Whether the signature is valid.
      */
     private async isSignatureValid(): Promise<boolean> {
-        if (!this.senderInstance.data.publicKey?.key) {
+        if (!this.senderInstance?.data.publicKey?.key) {
             throw new Error(
-                `Instance ${this.senderInstance.data.baseUrl} has no public key stored in database`,
+                `Instance ${this.senderInstance?.data.baseUrl} has no public key stored in database`,
             );
         }
 
@@ -196,7 +196,10 @@ export class InboxProcessor {
     public async process(): Promise<
         (Response & TypedResponse<{ error: string }, 500, "json">) | Response
     > {
-        if (isDefederated(this.senderInstance.data.baseUrl)) {
+        if (
+            this.senderInstance &&
+            isDefederated(this.senderInstance.data.baseUrl)
+        ) {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying

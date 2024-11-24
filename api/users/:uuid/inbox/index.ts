@@ -25,7 +25,11 @@ export const schemas = {
     header: z.object({
         "x-signature": z.string().optional(),
         "x-nonce": z.string().optional(),
-        "x-signed-by": z.string().url().or(z.string().startsWith("instance ")),
+        "x-signed-by": z
+            .string()
+            .url()
+            .or(z.string().startsWith("instance "))
+            .optional(),
         authorization: z.string().optional(),
     }),
     body: z.any(),
@@ -110,6 +114,32 @@ export default apiRoute((app) =>
 
         const logger = getLogger(["federation", "inbox"]);
         const body: Entity = await context.req.valid("json");
+
+        if (authorization) {
+            const processor = new InboxProcessor(
+                context,
+                body,
+                null,
+                {
+                    signature,
+                    nonce,
+                    authorization,
+                },
+                logger,
+            );
+
+            return await processor.process();
+        }
+
+        // If not potentially from bridge, check for required headers
+        if (!(signature && nonce && signedBy)) {
+            return context.json(
+                {
+                    error: "Missing required headers: x-signature, x-nonce, or x-signed-by",
+                },
+                400,
+            );
+        }
 
         const sender = await User.resolve(signedBy);
 
