@@ -716,7 +716,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public static async resolve(uri: string): Promise<User | null> {
-        getLogger("federation").debug`Resolving user ${chalk.gray(uri)}`;
+        getLogger(["federation", "resolvers"])
+            .debug`Resolving user ${chalk.gray(uri)}`;
         // Check if user not already in database
         const foundUser = await User.fromSql(eq(Users.uri, uri));
 
@@ -737,7 +738,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             return await User.fromId(uuid[0]);
         }
 
-        getLogger("federation")
+        getLogger(["federation", "resolvers"])
             .debug`User not found in database, fetching from remote`;
 
         return await User.saveFromRemote(uri);
@@ -1014,9 +1015,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 },
             );
         } catch (e) {
-            getLogger("federation")
+            getLogger(["federation", "outbox"])
                 .error`Federating ${chalk.gray(entity.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
-            getLogger("federation").error`${e}`;
+            getLogger(["federation", "outbox"]).error`${e}`;
             sentry?.captureException(e);
 
             return { ok: false };

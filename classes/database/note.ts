@@ -747,7 +747,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         author: User,
     ): Promise<Note> {
         const emojis: Emoji[] = [];
-        const logger = getLogger("federation");
+        const logger = getLogger(["federation", "resolvers"]);
 
         for (const emoji of note.extensions?.["pub.versia:custom_emojis"]
             ?.emojis ?? []) {

@@ -175,12 +175,22 @@ export const configureLoggers = (silent = false): Promise<void> =>
                 filters: ["configFilter"],
             },
             {
-                category: "federation",
+                category: ["federation", "inbox"],
                 sinks: ["console", "file"],
                 filters: ["configFilter"],
             },
             {
-                category: ["federation", "inbox"],
+                category: ["federation", "outbox"],
+                sinks: ["console", "file"],
+                filters: ["configFilter"],
+            },
+            {
+                category: ["federation", "bridge"],
+                sinks: ["console", "file"],
+                filters: ["configFilter"],
+            },
+            {
+                category: ["federation", "resolvers"],
                 sinks: ["console", "file"],
                 filters: ["configFilter"],
             },

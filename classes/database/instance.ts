@@ -144,7 +144,7 @@ export class Instance extends BaseInterface<typeof Instances> {
     } | null> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/versia", origin);
-        const logger = getLogger("federation");
+        const logger = getLogger(["federation", "resolvers"]);
 
         const requester = await User.getFederationRequester();
 
@@ -201,7 +201,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
         // Go to endpoint, then follow the links to the actual metadata
 
-        const logger = getLogger("federation");
+        const logger = getLogger(["federation", "resolvers"]);
         const requester = await User.getFederationRequester();
 
         try {
@@ -332,7 +332,7 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public static async resolve(url: string): Promise<Instance> {
-        const logger = getLogger("federation");
+        const logger = getLogger(["federation", "resolvers"]);
         const host = new URL(url).host;
 
         const existingInstance = await Instance.fromSql(
@@ -363,7 +363,7 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public async updateFromRemote(): Promise<Instance> {
-        const logger = getLogger("federation");
+        const logger = getLogger(["federation", "resolvers"]);
 
         const output = await Instance.fetchMetadata(
             `https://${this.data.baseUrl}`,

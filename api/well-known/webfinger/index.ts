@@ -108,7 +108,7 @@ export default apiRoute((app) =>
             } catch (e) {
                 const error = e as ResponseError;
 
-                getLogger("federation")
+                getLogger(["federation", "bridge"])
                     .error`Error from bridge: ${await error.response.data}`;
             }
         }
