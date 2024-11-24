@@ -16,8 +16,8 @@ export const commands = {
     "emoji:list": (await import("./commands/emoji/list.ts")).default,
     "emoji:import": (await import("./commands/emoji/import.ts")).default,
     "index:rebuild": (await import("./commands/index/rebuild.ts")).default,
-    "federation:instance:fetch": (
-        await import("./commands/federation/instance/fetch.ts")
+    "federation:instance:refetch": (
+        await import("./commands/federation/instance/refetch.ts")
     ).default,
     "federation:user:finger": (
         await import("./commands/federation/user/finger.ts")
