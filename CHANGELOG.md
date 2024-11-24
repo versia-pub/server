@@ -1,4 +1,22 @@
-# `0.7.0` (unreleased)
+# `0.8.0` • Federation 2: Electric Boogaloo (unreleased)
+
+## Backwards Compatibility
+
+Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
+
+## Features
+
+- Upgraded Bun to `1.1.36`.
+- Allowed `<div>` and `<span>` tags in Markdown.
+- Added `--password` flag to the user creation CLI.
+
+## Bug Fixes
+
+- Correctly proxy all URIs in custom Markdown text.
+- Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
+- Fixed incorrect content-type on some media when using S3.
+
+# `0.7.0` • The Auth and APIs Update
 
 > [!WARNING]
 > This release marks the rename of the project from `Lysand` to `Versia`.
