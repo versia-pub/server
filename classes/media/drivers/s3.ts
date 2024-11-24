@@ -44,6 +44,9 @@ export class S3MediaDriver implements MediaDriver {
 
         await this.s3Client.putObject(path, file.stream(), {
             size: file.size,
+            metadata: {
+                "Content-Type": file.type,
+            },
         });
 
         return {
