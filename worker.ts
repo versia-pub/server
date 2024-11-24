@@ -188,7 +188,15 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                     ip,
                 );
 
-                return await processor.process();
+                const output = await processor.process();
+
+                logger.debug(
+                    `${chalk.green(
+                        "✔",
+                    )} Finished processing entity ${chalk.bold(data.id)}`,
+                );
+
+                return output;
             }
 
             default: {
