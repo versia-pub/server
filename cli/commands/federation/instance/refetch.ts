@@ -1,5 +1,7 @@
 import { Args } from "@oclif/core";
 import { Instance } from "@versia/kit/db";
+import { Instances } from "@versia/kit/tables";
+import { eq } from "drizzle-orm";
 import ora from "ora";
 import { BaseCommand } from "~/cli/base";
 import { formatArray } from "~/cli/utils/format";
@@ -26,7 +28,15 @@ export default class FederationInstanceRefetch extends BaseCommand<
 
         const spinner = ora("Refetching instance metadata").start();
 
-        const data = await Instance.updateFromRemote(args.url);
+        const host = new URL(args.url).host;
+
+        const instance = await Instance.fromSql(eq(Instances.baseUrl, host));
+
+        if (!instance) {
+            throw new Error("Instance not found");
+        }
+
+        const data = await instance.updateFromRemote();
 
         if (!data) {
             spinner.fail("Failed to refetch instance metadata");

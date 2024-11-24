@@ -362,26 +362,21 @@ export class Instance extends BaseInterface<typeof Instances> {
         });
     }
 
-    public static async updateFromRemote(url: string): Promise<Instance> {
+    public async updateFromRemote(): Promise<Instance> {
         const logger = getLogger("federation");
-        const host = new URL(url).host;
 
-        const instance = await Instance.fromSql(eq(Instances.baseUrl, host));
-
-        if (!instance) {
-            throw new Error("Instance not found");
-        }
-
-        const output = await Instance.fetchMetadata(url);
+        const output = await Instance.fetchMetadata(
+            `https://${this.data.baseUrl}`,
+        );
 
         if (!output) {
-            logger.error`Failed to update instance ${chalk.bold(host)}`;
+            logger.error`Failed to update instance ${chalk.bold(this.data.baseUrl)}`;
             throw new Error("Failed to update instance");
         }
 
         const { metadata, protocol } = output;
 
-        await instance.update({
+        await this.update({
             name: metadata.name,
             version: metadata.software.version,
             logo: metadata.logo,
@@ -389,7 +384,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             publicKey: metadata.public_key,
         });
 
-        return instance;
+        return this;
     }
 
     public static getCount(): Promise<number> {
