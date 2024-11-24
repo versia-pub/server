@@ -123,9 +123,9 @@ export default apiRoute((app) =>
                 }
             });
 
-            inboxWorker.on("failed", (job) => {
+            inboxWorker.on("failed", (job, error) => {
                 if (job && job.id === result.id) {
-                    reject(job.returnvalue);
+                    reject(error);
                 }
             });
         });

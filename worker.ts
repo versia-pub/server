@@ -204,5 +204,5 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
             }
         }
     },
-    { connection },
+    { connection, removeOnComplete: { count: 0 } },
 );
