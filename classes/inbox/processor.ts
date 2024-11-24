@@ -167,6 +167,10 @@ export class InboxProcessor {
             };
         }
 
+        if (config.federation.bridge.allowed_ips.length === 0) {
+            return true;
+        }
+
         if (!this.requestIp) {
             return {
                 message: "The request IP address could not be determined.",
@@ -174,11 +178,9 @@ export class InboxProcessor {
             };
         }
 
-        if (config.federation.bridge.allowed_ips.length > 0) {
-            for (const ip of config.federation.bridge.allowed_ips) {
-                if (matches(ip, this.requestIp.address)) {
-                    return true;
-                }
+        for (const ip of config.federation.bridge.allowed_ips) {
+            if (matches(ip, this.requestIp.address)) {
+                return true;
             }
         }
 
