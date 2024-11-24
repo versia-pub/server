@@ -34,4 +34,28 @@ describe(meta.route, () => {
             }),
         );
     });
+
+    test("should automatically lowercase the acct", async () => {
+        const response = await fakeRequest(
+            `${meta.route}?acct=${users[0].data.username.toUpperCase()}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                },
+            },
+        );
+
+        expect(response.status).toBe(200);
+
+        const data = (await response.json()) as ApiAccount[];
+        expect(data).toEqual(
+            expect.objectContaining({
+                id: users[0].id,
+                username: users[0].data.username,
+                display_name: users[0].data.displayName,
+                avatar: expect.any(String),
+                header: expect.any(String),
+            }),
+        );
+    });
 });

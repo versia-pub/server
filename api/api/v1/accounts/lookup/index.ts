@@ -23,7 +23,7 @@ export const meta = applyConfig({
 
 export const schemas = {
     query: z.object({
-        acct: z.string().min(1).max(512),
+        acct: z.string().min(1).max(512).toLowerCase(),
     }),
 };
 
