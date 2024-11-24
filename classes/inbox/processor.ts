@@ -26,7 +26,6 @@ import {
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import { eq } from "drizzle-orm";
-import type { Context, TypedResponse } from "hono";
 import type { StatusCode } from "hono/utils/http-status";
 import { matches } from "ip-matching";
 import { type ValidationError, isValidationError } from "zod-validation-error";
@@ -68,7 +67,7 @@ export class InboxProcessor {
     /**
      * Creates a new InboxProcessor instance.
      *
-     * @param context Hono request context.
+     * @param request Request object.
      * @param body Entity JSON body.
      * @param senderInstance Sender of the request's instance (from X-Signed-By header). Null if request is from a bridge.
      * @param headers Various request headers.
@@ -76,7 +75,11 @@ export class InboxProcessor {
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
      */
     public constructor(
-        private context: Context,
+        private request: {
+            url: string;
+            method: string;
+            body: string;
+        },
         private body: Entity,
         private senderInstance: Instance | null,
         private headers: {
@@ -85,7 +88,7 @@ export class InboxProcessor {
             authorization?: string;
         },
         private logger: Logger = getLogger(["federation", "inbox"]),
-        private requestIp: SocketAddress | null = context.env?.ip ?? null,
+        private requestIp: SocketAddress | null = null,
     ) {}
 
     /**
@@ -115,13 +118,13 @@ export class InboxProcessor {
 
         // HACK: Making a fake Request object instead of passing the values directly is necessary because otherwise the validation breaks for some unknown reason
         const isValid = await validator.validate(
-            new Request(this.context.req.url, {
-                method: this.context.req.method,
+            new Request(this.request.url, {
+                method: this.request.method,
                 headers: {
                     "X-Signature": this.headers.signature,
                     "X-Nonce": this.headers.nonce,
                 },
-                body: await this.context.req.text(),
+                body: this.request.body,
             }),
         );
 
@@ -195,9 +198,7 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - HTTP response to send back.
      */
-    public async process(): Promise<
-        (Response & TypedResponse<{ error: string }, 500, "json">) | Response
-    > {
+    public async process(): Promise<Response> {
         if (
             this.senderInstance &&
             isDefederated(this.senderInstance.data.baseUrl)
@@ -205,15 +206,17 @@ export class InboxProcessor {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
-            return this.context.text("", 201);
+            return new Response("", {
+                status: 201,
+            });
         }
 
         const shouldCheckSignature = this.shouldCheckSignature();
 
         if (shouldCheckSignature !== true && shouldCheckSignature !== false) {
-            return this.context.json(
+            return Response.json(
                 { error: shouldCheckSignature.message },
-                shouldCheckSignature.code,
+                { status: shouldCheckSignature.code },
             );
         }
 
@@ -221,9 +224,9 @@ export class InboxProcessor {
             const isValid = await this.isSignatureValid();
 
             if (!isValid) {
-                return this.context.json(
+                return Response.json(
                     { error: "Signature is not valid" },
-                    401,
+                    { status: 401 },
                 );
             }
         }
@@ -243,9 +246,11 @@ export class InboxProcessor {
                     this.processLikeRequest(),
                 delete: (): Promise<Response> => this.processDelete(),
                 user: (): Promise<Response> => this.processUserRequest(),
-                unknown: (): Response &
-                    TypedResponse<{ error: string }, 400, "json"> =>
-                    this.context.json({ error: "Unknown entity type" }, 400),
+                unknown: (): Response =>
+                    Response.json(
+                        { error: "Unknown entity type" },
+                        { status: 400 },
+                    ),
             });
         } catch (e) {
             return this.handleError(e as Error);
@@ -257,27 +262,20 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processNote(): Promise<
-        Response &
-            TypedResponse<
-                | {
-                      error: string;
-                  }
-                | string,
-                404 | 500 | 201,
-                "json" | "text"
-            >
-    > {
+    private async processNote(): Promise<Response> {
         const note = this.body as VersiaNote;
         const author = await User.resolve(note.author);
 
         if (!author) {
-            return this.context.json({ error: "Author not found" }, 404);
+            return Response.json(
+                { error: "Author not found" },
+                { status: 404 },
+            );
         }
 
         await Note.fromVersia(note, author);
 
-        return this.context.text("Note created", 201);
+        return new Response("Note created", { status: 201 });
     }
 
     /**
@@ -285,27 +283,23 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processFollowRequest(): Promise<
-        Response &
-            TypedResponse<
-                | {
-                      error: string;
-                  }
-                | string,
-                200 | 404,
-                "text" | "json"
-            >
-    > {
+    private async processFollowRequest(): Promise<Response> {
         const follow = this.body as unknown as VersiaFollow;
         const author = await User.resolve(follow.author);
         const followee = await User.resolve(follow.followee);
 
         if (!author) {
-            return this.context.json({ error: "Author not found" }, 404);
+            return Response.json(
+                { error: "Author not found" },
+                { status: 404 },
+            );
         }
 
         if (!followee) {
-            return this.context.json({ error: "Followee not found" }, 404);
+            return Response.json(
+                { error: "Followee not found" },
+                { status: 404 },
+            );
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -314,7 +308,7 @@ export class InboxProcessor {
         );
 
         if (foundRelationship.data.following) {
-            return this.context.text("Already following", 200);
+            return new Response("Already following", { status: 200 });
         }
 
         await foundRelationship.update({
@@ -336,7 +330,7 @@ export class InboxProcessor {
             await followee.sendFollowAccept(author);
         }
 
-        return this.context.text("Follow request sent", 200);
+        return new Response("Follow request sent", { status: 200 });
     }
 
     /**
@@ -344,24 +338,23 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processFollowAccept(): Promise<
-        Response &
-            TypedResponse<
-                { error: string } | string,
-                200 | 404,
-                "text" | "json"
-            >
-    > {
+    private async processFollowAccept(): Promise<Response> {
         const followAccept = this.body as unknown as VersiaFollowAccept;
         const author = await User.resolve(followAccept.author);
         const follower = await User.resolve(followAccept.follower);
 
         if (!author) {
-            return this.context.json({ error: "Author not found" }, 404);
+            return Response.json(
+                { error: "Author not found" },
+                { status: 404 },
+            );
         }
 
         if (!follower) {
-            return this.context.json({ error: "Follower not found" }, 404);
+            return Response.json(
+                { error: "Follower not found" },
+                { status: 404 },
+            );
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -370,10 +363,9 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return this.context.text(
-                "There is no follow request to accept",
-                200,
-            );
+            return new Response("There is no follow request to accept", {
+                status: 200,
+            });
         }
 
         await foundRelationship.update({
@@ -381,7 +373,7 @@ export class InboxProcessor {
             following: true,
         });
 
-        return this.context.text("Follow request accepted", 200);
+        return new Response("Follow request accepted", { status: 200 });
     }
 
     /**
@@ -389,24 +381,23 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processFollowReject(): Promise<
-        Response &
-            TypedResponse<
-                { error: string } | string,
-                200 | 404,
-                "text" | "json"
-            >
-    > {
+    private async processFollowReject(): Promise<Response> {
         const followReject = this.body as unknown as VersiaFollowReject;
         const author = await User.resolve(followReject.author);
         const follower = await User.resolve(followReject.follower);
 
         if (!author) {
-            return this.context.json({ error: "Author not found" }, 404);
+            return Response.json(
+                { error: "Author not found" },
+                { status: 404 },
+            );
         }
 
         if (!follower) {
-            return this.context.json({ error: "Follower not found" }, 404);
+            return Response.json(
+                { error: "Follower not found" },
+                { status: 404 },
+            );
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -415,10 +406,9 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return this.context.text(
-                "There is no follow request to reject",
-                200,
-            );
+            return new Response("There is no follow request to reject", {
+                status: 200,
+            });
         }
 
         await foundRelationship.update({
@@ -426,7 +416,7 @@ export class InboxProcessor {
             following: false,
         });
 
-        return this.context.text("Follow request rejected", 200);
+        return new Response("Follow request rejected", { status: 200 });
     }
 
     /**
@@ -434,14 +424,7 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    public async processDelete(): Promise<
-        Response &
-            TypedResponse<
-                { error: string } | string,
-                200 | 400 | 404,
-                "text" | "json"
-            >
-    > {
+    public async processDelete(): Promise<Response> {
         // JS doesn't allow the use of `delete` as a variable name
         const delete_ = this.body as unknown as VersiaDelete;
         const toDelete = delete_.deleted;
@@ -458,40 +441,39 @@ export class InboxProcessor {
                 );
 
                 if (!note) {
-                    return this.context.json(
+                    return Response.json(
                         {
                             error: "Note to delete not found or not owned by sender",
                         },
-                        404,
+                        { status: 404 },
                     );
                 }
 
                 await note.delete();
-                return this.context.text("Note deleted", 200);
+                return new Response("Note deleted", { status: 200 });
             }
             case "User": {
                 const userToDelete = await User.resolve(toDelete);
 
                 if (!userToDelete) {
-                    return this.context.json(
+                    return Response.json(
                         { error: "User to delete not found" },
-                        404,
+                        { status: 404 },
                     );
                 }
 
                 if (!author || userToDelete.id === author.id) {
                     await userToDelete.delete();
-                    return this.context.text(
-                        "Account deleted, goodbye 👋",
-                        200,
-                    );
+                    return new Response("Account deleted, goodbye 👋", {
+                        status: 200,
+                    });
                 }
 
-                return this.context.json(
+                return Response.json(
                     {
                         error: "Cannot delete other users than self",
                     },
-                    400,
+                    { status: 400 },
                 );
             }
             case "pub.versia:likes/Like": {
@@ -501,21 +483,21 @@ export class InboxProcessor {
                 );
 
                 if (!like) {
-                    return this.context.json(
+                    return Response.json(
                         { error: "Like not found or not owned by sender" },
-                        404,
+                        { status: 404 },
                     );
                 }
 
                 await like.delete();
-                return this.context.text("Like deleted", 200);
+                return new Response("Like deleted", { status: 200 });
             }
             default: {
-                return this.context.json(
+                return Response.json(
                     {
                         error: `Deletion of object ${toDelete} not implemented`,
                     },
-                    400,
+                    { status: 400 },
                 );
             }
         }
@@ -526,29 +508,28 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processLikeRequest(): Promise<
-        Response &
-            TypedResponse<
-                { error: string } | string,
-                200 | 404,
-                "text" | "json"
-            >
-    > {
+    private async processLikeRequest(): Promise<Response> {
         const like = this.body as unknown as VersiaLikeExtension;
         const author = await User.resolve(like.author);
         const likedNote = await Note.resolve(like.liked);
 
         if (!author) {
-            return this.context.json({ error: "Author not found" }, 404);
+            return Response.json(
+                { error: "Author not found" },
+                { status: 404 },
+            );
         }
 
         if (!likedNote) {
-            return this.context.json({ error: "Liked Note not found" }, 404);
+            return Response.json(
+                { error: "Liked Note not found" },
+                { status: 404 },
+            );
         }
 
         await author.like(likedNote, like.uri);
 
-        return this.context.text("Like created", 200);
+        return new Response("Like created", { status: 200 });
     }
 
     /**
@@ -556,23 +537,19 @@ export class InboxProcessor {
      *
      * @returns {Promise<Response>} - The response.
      */
-    private async processUserRequest(): Promise<
-        Response &
-            TypedResponse<
-                { error: string } | string,
-                200 | 500,
-                "text" | "json"
-            >
-    > {
+    private async processUserRequest(): Promise<Response> {
         const user = this.body as unknown as VersiaUser;
         // FIXME: Instead of refetching the remote user, we should read the incoming json and update from that
         const updatedAccount = await User.saveFromRemote(user.uri);
 
         if (!updatedAccount) {
-            return this.context.json({ error: "Failed to update user" }, 500);
+            return Response.json(
+                { error: "Failed to update user" },
+                { status: 500 },
+            );
         }
 
-        return this.context.text("User updated", 200);
+        return new Response("User updated", { status: 200 });
     }
 
     /**
@@ -581,44 +558,26 @@ export class InboxProcessor {
      * @param {Error} e - The error object.
      * @returns {Response} - The error response.
      */
-    private handleError(e: Error):
-        | (Response &
-              TypedResponse<
-                  {
-                      error: string;
-                      error_description: string;
-                  },
-                  400,
-                  "json"
-              >)
-        | (Response &
-              TypedResponse<
-                  {
-                      error: string;
-                      message: string;
-                  },
-                  500,
-                  "json"
-              >) {
+    private handleError(e: Error): Response {
         if (isValidationError(e)) {
-            return this.context.json(
+            return Response.json(
                 {
                     error: "Failed to process request",
                     error_description: (e as ValidationError).message,
                 },
-                400,
+                { status: 400 },
             );
         }
 
         this.logger.error`${e}`;
         sentry?.captureException(e);
 
-        return this.context.json(
+        return Response.json(
             {
                 error: "Failed to process request",
                 message: (e as Error).message,
             },
-            500,
+            { status: 500 },
         );
     }
 }

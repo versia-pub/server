@@ -1,11 +1,9 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { getLogger } from "@logtape/logtape";
 import type { Entity } from "@versia/federation/types";
-import { Instance, User } from "@versia/kit/db";
 import { z } from "zod";
-import { InboxProcessor } from "~/classes/inbox/processor";
 import { ErrorSchema } from "~/types/api";
+import { InboxJobType, inboxQueue, inboxWorker } from "~/worker";
 
 export const meta = applyConfig({
     auth: {
@@ -105,83 +103,25 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const {
-            "x-signature": signature,
-            "x-nonce": nonce,
-            "x-signed-by": signedBy,
-            authorization,
-        } = context.req.valid("header");
-
-        const logger = getLogger(["federation", "inbox"]);
         const body: Entity = await context.req.valid("json");
 
-        if (authorization) {
-            const processor = new InboxProcessor(
-                context,
-                body,
-                null,
-                {
-                    signature,
-                    nonce,
-                    authorization,
-                },
-                logger,
-            );
-
-            return await processor.process();
-        }
-
-        // If not potentially from bridge, check for required headers
-        if (!(signature && nonce && signedBy)) {
-            return context.json(
-                {
-                    error: "Missing required headers: x-signature, x-nonce, or x-signed-by",
-                },
-                400,
-            );
-        }
-
-        const sender = await User.resolve(signedBy);
-
-        if (!(sender || signedBy.startsWith("instance "))) {
-            return context.json(
-                { error: `Couldn't resolve sender URI ${signedBy}` },
-                404,
-            );
-        }
-
-        if (sender?.isLocal()) {
-            return context.json(
-                {
-                    error: "Cannot process federation requests from local users",
-                },
-                400,
-            );
-        }
-
-        const remoteInstance = sender
-            ? await Instance.fromUser(sender)
-            : await Instance.resolveFromHost(signedBy.split(" ")[1]);
-
-        if (!remoteInstance) {
-            return context.json(
-                { error: "Could not resolve the remote instance." },
-                500,
-            );
-        }
-
-        const processor = new InboxProcessor(
-            context,
-            body,
-            remoteInstance,
-            {
-                signature,
-                nonce,
-                authorization,
+        const result = await inboxQueue.add(InboxJobType.ProcessEntity, {
+            data: body,
+            headers: context.req.valid("header"),
+            request: {
+                body: await context.req.text(),
+                method: context.req.method,
+                url: context.req.url,
             },
-            logger,
-        );
+            ip: context.env.ip ?? null,
+        });
 
-        return await processor.process();
+        return new Promise<Response>((resolve) => {
+            inboxWorker.on("completed", (job) => {
+                if (job.id === result.id) {
+                    resolve(job.returnvalue);
+                }
+            });
+        });
     }),
 );

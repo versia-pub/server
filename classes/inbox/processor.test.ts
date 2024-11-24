@@ -8,7 +8,7 @@ import {
     Relationship,
     User,
 } from "@versia/kit/db";
-import type { Context } from "hono";
+import type { SocketAddress } from "bun";
 import { ValidationError } from "zod-validation-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { InboxProcessor } from "./processor.ts";
@@ -75,7 +75,11 @@ mock.module("~/packages/config-manager/index.ts", () => ({
 }));
 
 describe("InboxProcessor", () => {
-    let mockContext: Context;
+    let mockRequest: {
+        url: string;
+        method: string;
+        body: string;
+    };
     let mockBody: Entity;
     let mockSenderInstance: Instance;
     let mockHeaders: {
@@ -90,18 +94,11 @@ describe("InboxProcessor", () => {
         mock.restore();
 
         // Setup basic mock context
-        mockContext = {
-            json: jest.fn(),
-            text: jest.fn(),
-            req: {
-                url: "https://test.com",
-                method: "POST",
-                text: jest.fn().mockResolvedValue("test-body"),
-            },
-            env: {
-                ip: { address: "127.0.0.1" },
-            },
-        } as unknown as Context;
+        mockRequest = {
+            url: "https://test.com",
+            method: "POST",
+            body: "test-body",
+        };
 
         // Setup basic mock sender
         mockSenderInstance = {
@@ -124,10 +121,14 @@ describe("InboxProcessor", () => {
 
         // Create processor instance
         processor = new InboxProcessor(
-            mockContext,
+            mockRequest,
             mockBody,
             mockSenderInstance,
             mockHeaders,
+            undefined,
+            {
+                address: "127.0.0.1",
+            } as SocketAddress,
         );
     });
 
@@ -197,28 +198,27 @@ describe("InboxProcessor", () => {
 
             User.resolve = jest.fn().mockResolvedValue(mockAuthor);
             Note.fromVersia = jest.fn().mockResolvedValue(true);
-            mockContext.text = jest.fn().mockReturnValue({ status: 201 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockNote as VersiaNote;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processNote"]();
+            const result = await processor["processNote"]();
 
             expect(User.resolve).toHaveBeenCalledWith("test-author");
             expect(Note.fromVersia).toHaveBeenCalledWith(mockNote, mockAuthor);
-            expect(mockContext.text).toHaveBeenCalledWith("Note created", 201);
+            expect(result).toEqual(
+                new Response("Note created", { status: 201 }),
+            );
         });
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
-            mockContext.json = jest.fn().mockReturnValue({ status: 404 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processNote"]();
+            const result = await processor["processNote"]();
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                { error: "Author not found" },
-                404,
+            expect(result).toEqual(
+                Response.json({ error: "Author not found" }, { status: 404 }),
             );
         });
     });
@@ -248,7 +248,6 @@ describe("InboxProcessor", () => {
                 .fn()
                 .mockResolvedValue(mockRelationship);
             Notification.insert = jest.fn();
-            mockContext.text = jest.fn().mockReturnValue({ status: 200 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockFollow as unknown as Entity;
@@ -266,14 +265,12 @@ describe("InboxProcessor", () => {
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
-            mockContext.json = jest.fn().mockReturnValue({ status: 404 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processFollowRequest"]();
+            const result = await processor["processFollowRequest"]();
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                { error: "Author not found" },
-                404,
+            expect(result).toEqual(
+                Response.json({ error: "Author not found" }, { status: 404 }),
             );
         });
     });
@@ -289,15 +286,14 @@ describe("InboxProcessor", () => {
             };
 
             Note.fromSql = jest.fn().mockResolvedValue(mockNote);
-            mockContext.text = jest.fn().mockReturnValue({ status: 200 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockDelete as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processDelete"]();
+            const result = await processor["processDelete"]();
 
             expect(mockNote.delete).toHaveBeenCalled();
-            expect(mockContext.text).toHaveBeenCalledWith("Note deleted", 200);
+            expect(await result.text()).toBe("Note deleted");
         });
 
         test("returns 404 when note not found", async () => {
@@ -307,16 +303,19 @@ describe("InboxProcessor", () => {
             };
 
             Note.fromSql = jest.fn().mockResolvedValue(null);
-            mockContext.json = jest.fn().mockReturnValue({ status: 404 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockDelete as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processDelete"]();
+            const result = await processor["processDelete"]();
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                { error: "Note to delete not found or not owned by sender" },
-                404,
+            expect(result).toEqual(
+                Response.json(
+                    {
+                        error: "Note to delete not found or not owned by sender",
+                    },
+                    { status: 404 },
+                ),
             );
         });
     });
@@ -335,27 +334,26 @@ describe("InboxProcessor", () => {
 
             User.resolve = jest.fn().mockResolvedValue(mockAuthor);
             Note.resolve = jest.fn().mockResolvedValue(mockNote);
-            mockContext.text = jest.fn().mockReturnValue({ status: 200 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockLike as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processLikeRequest"]();
+            const result = await processor["processLikeRequest"]();
 
             expect(mockAuthor.like).toHaveBeenCalledWith(mockNote, "test-uri");
-            expect(mockContext.text).toHaveBeenCalledWith("Like created", 200);
+            expect(result).toEqual(
+                new Response("Like created", { status: 200 }),
+            );
         });
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
-            mockContext.json = jest.fn().mockReturnValue({ status: 404 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processLikeRequest"]();
+            const result = await processor["processLikeRequest"]();
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                { error: "Author not found" },
-                404,
+            expect(result).toEqual(
+                Response.json({ error: "Author not found" }, { status: 404 }),
             );
         });
     });
@@ -368,27 +366,29 @@ describe("InboxProcessor", () => {
             const mockUpdatedUser = { id: "user-id" };
 
             User.saveFromRemote = jest.fn().mockResolvedValue(mockUpdatedUser);
-            mockContext.text = jest.fn().mockReturnValue({ status: 200 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockUser as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processUserRequest"]();
+            const result = await processor["processUserRequest"]();
 
             expect(User.saveFromRemote).toHaveBeenCalledWith("test-uri");
-            expect(mockContext.text).toHaveBeenCalledWith("User updated", 200);
+            expect(result).toEqual(
+                new Response("User updated", { status: 200 }),
+            );
         });
 
         test("returns 500 when update fails", async () => {
             User.saveFromRemote = jest.fn().mockResolvedValue(null);
-            mockContext.json = jest.fn().mockReturnValue({ status: 500 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            await processor["processUserRequest"]();
+            const result = await processor["processUserRequest"]();
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                { error: "Failed to update user" },
-                500,
+            expect(result).toEqual(
+                Response.json(
+                    { error: "Failed to update user" },
+                    { status: 500 },
+                ),
             );
         });
     });
@@ -396,33 +396,35 @@ describe("InboxProcessor", () => {
     describe("handleError", () => {
         test("handles validation errors", () => {
             const validationError = new ValidationError("Invalid data");
-            mockContext.json = jest.fn().mockReturnValue({ status: 400 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            processor["handleError"](validationError);
+            const result = processor["handleError"](validationError);
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                {
-                    error: "Failed to process request",
-                    error_description: "Invalid data",
-                },
-                400,
+            expect(result).toEqual(
+                Response.json(
+                    {
+                        error: "Failed to process request",
+                        error_description: "Invalid data",
+                    },
+                    { status: 400 },
+                ),
             );
         });
 
         test("handles general errors", () => {
             const error = new Error("Something went wrong");
-            mockContext.json = jest.fn().mockReturnValue({ status: 500 });
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
-            processor["handleError"](error);
+            const result = processor["handleError"](error);
 
-            expect(mockContext.json).toHaveBeenCalledWith(
-                {
-                    error: "Failed to process request",
-                    message: "Something went wrong",
-                },
-                500,
+            expect(result).toEqual(
+                Response.json(
+                    {
+                        error: "Failed to process request",
+                        message: "Something went wrong",
+                    },
+                    { status: 500 },
+                ),
             );
         });
     });
