@@ -100,9 +100,9 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                 const logger = getLogger(["federation", "inbox"]);
 
                 logger.debug(
-                    `Processing entity ${chalk.bold(
+                    `Processing entity ${chalk.gray(
                         data.id,
-                    )} from ${chalk.bold(signedBy)}`,
+                    )} from ${chalk.gray(signedBy)}`,
                 );
 
                 if (authorization) {
@@ -120,7 +120,7 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                     );
 
                     logger.debug(
-                        `Entity ${chalk.bold(
+                        `Entity ${chalk.gray(
                             data.id,
                         )} is potentially from a bridge`,
                     );
@@ -175,6 +175,14 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                     );
                 }
 
+                logger.debug(
+                    `Entity ${chalk.gray(
+                        data.id,
+                    )} is from remote instance ${chalk.gray(
+                        remoteInstance.data.baseUrl,
+                    )}`,
+                );
+
                 const processor = new InboxProcessor(
                     request,
                     data,
@@ -193,7 +201,7 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                 logger.debug(
                     `${chalk.green(
                         "✔",
-                    )} Finished processing entity ${chalk.bold(data.id)}`,
+                    )} Finished processing entity ${chalk.gray(data.id)}`,
                 );
 
                 return output;
