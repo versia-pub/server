@@ -70,7 +70,7 @@ export class InboxProcessor {
      *
      * @param request Request object.
      * @param body Entity JSON body.
-     * @param senderInstance Sender of the request's instance (from X-Signed-By header). Null if request is from a bridge.
+     * @param sender Sender of the request's instance and key (from X-Signed-By header). Null if request is from a bridge.
      * @param headers Various request headers.
      * @param logger LogTape logger instance.
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
@@ -82,7 +82,10 @@ export class InboxProcessor {
             body: string;
         },
         private body: Entity,
-        private senderInstance: Instance | null,
+        private sender: {
+            instance: Instance;
+            key: string;
+        } | null,
         private headers: {
             signature?: string;
             nonce?: string;
@@ -98,20 +101,18 @@ export class InboxProcessor {
      * @returns {Promise<boolean>} - Whether the signature is valid.
      */
     private async isSignatureValid(): Promise<boolean> {
-        if (!this.senderInstance?.data.publicKey?.key) {
-            throw new Error(
-                `Instance ${this.senderInstance?.data.baseUrl} has no public key stored in database`,
-            );
+        if (!this.sender) {
+            throw new Error("Sender is not defined");
         }
 
         if (config.debug.federation) {
             this.logger.debug`Sender public key: ${chalk.gray(
-                this.senderInstance.data.publicKey.key,
+                this.sender.key,
             )}`;
         }
 
         const validator = await SignatureValidator.fromStringKey(
-            this.senderInstance.data.publicKey.key,
+            this.sender.key,
         );
 
         if (!(this.headers.signature && this.headers.nonce)) {
@@ -201,13 +202,10 @@ export class InboxProcessor {
      * @returns {Promise<Response>} - HTTP response to send back.
      */
     public async process(): Promise<Response> {
-        !this.senderInstance &&
+        !this.sender &&
             this.logger.debug`Processing request from potential bridge`;
 
-        if (
-            this.senderInstance &&
-            isDefederated(this.senderInstance.data.baseUrl)
-        ) {
+        if (this.sender && isDefederated(this.sender.instance.data.baseUrl)) {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
@@ -217,7 +215,7 @@ export class InboxProcessor {
         }
 
         this.logger.debug`Instance ${chalk.gray(
-            this.senderInstance?.data.baseUrl,
+            this.sender?.instance.data.baseUrl,
         )} is not defederated`;
 
         const shouldCheckSignature = this.shouldCheckSignature();

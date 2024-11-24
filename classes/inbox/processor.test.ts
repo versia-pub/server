@@ -123,7 +123,10 @@ describe("InboxProcessor", () => {
         processor = new InboxProcessor(
             mockRequest,
             mockBody,
-            mockSenderInstance,
+            {
+                instance: mockSenderInstance,
+                key: "test-key",
+            },
             mockHeaders,
             undefined,
             {

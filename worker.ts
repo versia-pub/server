@@ -177,10 +177,21 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                     remoteInstance.data.baseUrl,
                 )}`;
 
+                if (!remoteInstance.data.publicKey?.key) {
+                    throw new Error(
+                        `Instance ${remoteInstance.data.baseUrl} has no public key stored in database`,
+                    );
+                }
+
                 const processor = new InboxProcessor(
                     request,
                     data,
-                    remoteInstance,
+                    {
+                        instance: remoteInstance,
+                        key:
+                            sender?.data.publicKey ??
+                            remoteInstance.data.publicKey.key,
+                    },
                     {
                         signature,
                         nonce,
