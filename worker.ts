@@ -3,6 +3,7 @@ import type { Entity } from "@versia/federation/types";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
+import chalk from "chalk";
 import IORedis from "ioredis";
 import { InboxProcessor } from "./classes/inbox/processor.ts";
 import { config } from "./packages/config-manager/index.ts";
@@ -98,6 +99,12 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
 
                 const logger = getLogger(["federation", "inbox"]);
 
+                logger.debug(
+                    `Processing entity ${chalk.bold(
+                        data.id,
+                    )} from ${chalk.bold(signedBy)}`,
+                );
+
                 if (authorization) {
                     const processor = new InboxProcessor(
                         request,
@@ -110,6 +117,12 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                         },
                         logger,
                         ip,
+                    );
+
+                    logger.debug(
+                        `Entity ${chalk.bold(
+                            data.id,
+                        )} is potentially from a bridge`,
                     );
 
                     return await processor.process();
