@@ -60,7 +60,7 @@ describe("S3MediaDriver", () => {
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
             "testhash/test.webp",
             expect.any(ReadableStream),
-            { size: file.size },
+            { size: file.size, metadata: { "Content-Type": file.type } },
         );
         expect(result).toEqual({
             uploadedFile: file,
@@ -77,7 +77,12 @@ describe("S3MediaDriver", () => {
         expect(mockS3Client.putObject).toHaveBeenCalledWith(
             expect.stringContaining("testhash"),
             expect.any(ReadableStream),
-            { size: file.size },
+            {
+                size: file.size,
+                metadata: {
+                    "Content-Type": file.type,
+                },
+            },
         );
         expect(result).toEqual({
             uploadedFile: expect.any(Blob),
