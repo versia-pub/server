@@ -99,11 +99,9 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
 
                 const logger = getLogger(["federation", "inbox"]);
 
-                logger.debug(
-                    `Processing entity ${chalk.gray(
-                        data.id,
-                    )} from ${chalk.gray(signedBy)}`,
-                );
+                logger.debug`Processing entity ${chalk.gray(
+                    data.id,
+                )} from ${chalk.gray(signedBy)}`;
 
                 if (authorization) {
                     const processor = new InboxProcessor(
@@ -119,11 +117,9 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                         ip,
                     );
 
-                    logger.debug(
-                        `Entity ${chalk.gray(
-                            data.id,
-                        )} is potentially from a bridge`,
-                    );
+                    logger.debug`Entity ${chalk.gray(
+                        data.id,
+                    )} is potentially from a bridge`;
 
                     return await processor.process();
                 }
@@ -175,13 +171,11 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
                     );
                 }
 
-                logger.debug(
-                    `Entity ${chalk.gray(
-                        data.id,
-                    )} is from remote instance ${chalk.gray(
-                        remoteInstance.data.baseUrl,
-                    )}`,
-                );
+                logger.debug`Entity ${chalk.gray(
+                    data.id,
+                )} is from remote instance ${chalk.gray(
+                    remoteInstance.data.baseUrl,
+                )}`;
 
                 const processor = new InboxProcessor(
                     request,
@@ -198,11 +192,9 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
 
                 const output = await processor.process();
 
-                logger.debug(
-                    `${chalk.green(
-                        "✔",
-                    )} Finished processing entity ${chalk.gray(data.id)}`,
-                );
+                logger.debug`${chalk.green(
+                    "✔",
+                )} Finished processing entity ${chalk.gray(data.id)}`;
 
                 return output;
             }

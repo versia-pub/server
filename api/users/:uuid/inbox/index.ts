@@ -116,10 +116,16 @@ export default apiRoute((app) =>
             ip: context.env.ip ?? null,
         });
 
-        return new Promise<Response>((resolve) => {
+        return new Promise<Response>((resolve, reject) => {
             inboxWorker.on("completed", (job) => {
                 if (job.id === result.id) {
                     resolve(job.returnvalue);
+                }
+            });
+
+            inboxWorker.on("failed", (job) => {
+                if (job && job.id === result.id) {
+                    reject(job.returnvalue);
                 }
             });
         });
