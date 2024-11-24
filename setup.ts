@@ -2,6 +2,7 @@ import { checkConfig } from "@/init";
 import { configureLoggers } from "@/loggers";
 import { getLogger } from "@logtape/logtape";
 import { Note } from "@versia/kit/db";
+import IORedis from "ioredis";
 import { setupDatabase } from "~/drizzle/db";
 import { config } from "~/packages/config-manager/index.ts";
 import { searchManager } from "./classes/search/search-manager.ts";
@@ -51,3 +52,16 @@ if (config.frontend.enabled) {
 } else {
     serverLogger.warn`Frontend is disabled, skipping check`;
 }
+
+// Check if Redis is reachable
+const connection = new IORedis({
+    host: config.redis.queue.host,
+    port: config.redis.queue.port,
+    password: config.redis.queue.password,
+    db: config.redis.queue.database,
+    maxRetriesPerRequest: null,
+});
+
+await connection.ping();
+
+serverLogger.info`Redis is online`;
