@@ -332,7 +332,8 @@ export default (plugin: PluginType): void => {
                     secure: true,
                     sameSite: "strict",
                     path: "/",
-                    maxAge: 60 * 60,
+                    // 2 weeks
+                    maxAge: 60 * 60 * 24 * 14,
                 });
 
                 return context.redirect(

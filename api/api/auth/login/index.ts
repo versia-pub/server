@@ -227,7 +227,8 @@ export default apiRoute((app) =>
             secure: true,
             sameSite: "Strict",
             path: "/",
-            maxAge: 60 * 60,
+            // 2 weeks
+            maxAge: 60 * 60 * 24 * 14,
         });
         return context.redirect(
             `${config.frontend.routes.consent}?${searchParams.toString()}`,
