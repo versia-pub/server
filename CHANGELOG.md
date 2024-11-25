@@ -6,7 +6,7 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
 
 ## Features
 
-- Outbound federation and inbox processing are now handled by a queue system (like most federated software).
+- Outbound federation, inbox processing and data fetching are now handled by a queue system (like most federated software).
   - Added an administration UI for managing the queue.
 - Upgraded Bun to `1.1.36`.
 - Implemented support for the [Instance Messaging Extension](https://versia.pub/extensions/instance-messaging)

@@ -274,6 +274,13 @@ remove_on_complete = 31536000
 # Time in seconds to remove failed jobs
 remove_on_failure = 31536000
 
+# Control the fetch queue (for remote data refreshes)
+[queues.fetch]
+# Time in seconds to remove completed jobs
+remove_on_complete = 31536000
+# Time in seconds to remove failed jobs
+remove_on_failure = 31536000
+
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
 # These changes will not retroactively apply to existing data before they were changed

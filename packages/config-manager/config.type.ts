@@ -561,6 +561,23 @@ export const configValidator = z
                         remove_on_complete: 60 * 60 * 24 * 365,
                         remove_on_failure: 60 * 60 * 24 * 365,
                     }),
+                fetch: z
+                    .object({
+                        remove_on_complete: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                        remove_on_failure: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                    })
+                    .default({
+                        remove_on_complete: 60 * 60 * 24 * 365,
+                        remove_on_failure: 60 * 60 * 24 * 365,
+                    }),
             })
             .default({
                 delivery: {
@@ -568,6 +585,10 @@ export const configValidator = z
                     remove_on_failure: 60 * 60 * 24 * 365,
                 },
                 inbox: {
+                    remove_on_complete: 60 * 60 * 24 * 365,
+                    remove_on_failure: 60 * 60 * 24 * 365,
+                },
+                fetch: {
                     remove_on_complete: 60 * 60 * 24 * 365,
                     remove_on_failure: 60 * 60 * 24 * 365,
                 },

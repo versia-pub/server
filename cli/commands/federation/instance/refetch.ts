@@ -4,7 +4,7 @@ import { Instances } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import ora from "ora";
 import { BaseCommand } from "~/cli/base";
-import { formatArray } from "~/cli/utils/format";
+import { FetchJobType, fetchQueue } from "~/worker";
 
 export default class FederationInstanceRefetch extends BaseCommand<
     typeof FederationInstanceRefetch
@@ -36,30 +36,11 @@ export default class FederationInstanceRefetch extends BaseCommand<
             throw new Error("Instance not found");
         }
 
-        const data = await instance.updateFromRemote();
+        await fetchQueue.add(FetchJobType.Instance, {
+            uri: args.url,
+        });
 
-        if (!data) {
-            spinner.fail("Failed to refetch instance metadata");
-            this.exit(1);
-        }
-
-        spinner.succeed("Refetched instance metadata");
-
-        const { name, baseUrl, protocol, version } = data.data;
-
-        this.log(
-            formatArray(
-                [
-                    {
-                        Name: name,
-                        "Base URL": baseUrl,
-                        Version: version,
-                        Protocol: protocol,
-                    },
-                ],
-                ["Name", "Base URL", "Version", "Protocol"],
-            ),
-        );
+        spinner.succeed("Task added to queue");
 
         this.exit(0);
     }
