@@ -525,6 +525,53 @@ export const configValidator = z
                     token: "",
                 },
             }),
+        queues: z
+            .object({
+                delivery: z
+                    .object({
+                        remove_on_complete: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                        remove_on_failure: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                    })
+                    .default({
+                        remove_on_complete: 60 * 60 * 24 * 365,
+                        remove_on_failure: 60 * 60 * 24 * 365,
+                    }),
+                inbox: z
+                    .object({
+                        remove_on_complete: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                        remove_on_failure: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                    })
+                    .default({
+                        remove_on_complete: 60 * 60 * 24 * 365,
+                        remove_on_failure: 60 * 60 * 24 * 365,
+                    }),
+            })
+            .default({
+                delivery: {
+                    remove_on_complete: 60 * 60 * 24 * 365,
+                    remove_on_failure: 60 * 60 * 24 * 365,
+                },
+                inbox: {
+                    remove_on_complete: 60 * 60 * 24 * 365,
+                    remove_on_failure: 60 * 60 * 24 * 365,
+                },
+            }),
         instance: z
             .object({
                 name: z.string().min(1).default("Versia"),

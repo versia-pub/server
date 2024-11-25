@@ -3298,6 +3298,58 @@
                 }
             }
         },
+        "queues": {
+            "type": "object",
+            "properties": {
+                "delivery": {
+                    "type": "object",
+                    "properties": {
+                        "remove_on_complete": {
+                            "type": "integer",
+                            "default": 31536000
+                        },
+                        "remove_on_failure": {
+                            "type": "integer",
+                            "default": 31536000
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "remove_on_complete": 31536000,
+                        "remove_on_failure": 31536000
+                    }
+                },
+                "inbox": {
+                    "type": "object",
+                    "properties": {
+                        "remove_on_complete": {
+                            "type": "integer",
+                            "default": 31536000
+                        },
+                        "remove_on_failure": {
+                            "type": "integer",
+                            "default": 31536000
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "remove_on_complete": 31536000,
+                        "remove_on_failure": 31536000
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "default": {
+                "delivery": {
+                    "remove_on_complete": 31536000,
+                    "remove_on_failure": 31536000
+                },
+                "inbox": {
+                    "remove_on_complete": 31536000,
+                    "remove_on_failure": 31536000
+                }
+            }
+        },
         "instance": {
             "type": "object",
             "properties": {

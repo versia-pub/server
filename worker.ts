@@ -104,7 +104,15 @@ export const deliveryWorker = new Worker<
             }
         }
     },
-    { connection },
+    {
+        connection,
+        removeOnComplete: {
+            age: config.queues.delivery.remove_on_complete,
+        },
+        removeOnFail: {
+            age: config.queues.delivery.remove_on_failure,
+        },
+    },
 );
 
 export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
@@ -242,5 +250,13 @@ export const inboxWorker = new Worker<InboxJobData, Response, InboxJobType>(
             }
         }
     },
-    { connection, removeOnComplete: { count: 0 } },
+    {
+        connection,
+        removeOnComplete: {
+            age: config.queues.inbox.remove_on_complete,
+        },
+        removeOnFail: {
+            age: config.queues.inbox.remove_on_failure,
+        },
+    },
 );
