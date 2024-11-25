@@ -132,6 +132,20 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
 
                         await job.log(`Failed processing entity [${data.id}]`);
 
+                        await job.log(
+                            `Sending error message to instance [${remoteInstance.data.baseUrl}]`,
+                        );
+
+                        await remoteInstance.sendMessage(
+                            `Failed processing entity [${data.uri}] delivered to inbox. Returned error:\n\n${JSON.stringify(
+                                error,
+                                null,
+                                4,
+                            )}`,
+                        );
+
+                        await job.log("Message sent");
+
                         return;
                     }
 
