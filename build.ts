@@ -36,8 +36,8 @@ await Bun.build({
 buildSpinner.text = "Transforming";
 
 // Fix Bun incorrectly transforming aliased imports
-await $`sed -i 's/var serveStatic = (options) => {/var serveStaticBase = (options) => {/g' dist/index.js`;
-await $`sed -i 's/    return serveStatic({/    return serveStaticBase({/g' dist/index.js`;
+await $`sed -i 's/var serveStatic = (options) => {/var serveStaticBase = (options) => {/g' dist/*.js`;
+await $`sed -i 's/    return serveStatic({/    return serveStaticBase({/g' dist/*.js`;
 
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
