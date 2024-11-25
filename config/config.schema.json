@@ -89,10 +89,6 @@
                         "database": {
                             "type": "integer",
                             "default": 0
-                        },
-                        "enabled": {
-                            "type": "boolean",
-                            "default": false
                         }
                     },
                     "additionalProperties": false,
@@ -100,8 +96,7 @@
                         "host": "localhost",
                         "port": 6379,
                         "password": "",
-                        "database": 0,
-                        "enabled": false
+                        "database": 0
                     }
                 },
                 "cache": {

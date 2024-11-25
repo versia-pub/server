@@ -24,7 +24,6 @@ host = "localhost"
 port = 6379
 password = ""
 database = 0
-enabled = true
 
 [redis.cache]
 # Redis instance to be used as a timeline cache

@@ -72,7 +72,6 @@ export const configValidator = z
                             .default(6379),
                         password: z.string().default(""),
                         database: z.number().int().default(0),
-                        enabled: z.boolean().default(false),
                     })
                     .strict()
                     .default({
@@ -80,7 +79,6 @@ export const configValidator = z
                         port: 6379,
                         password: "",
                         database: 0,
-                        enabled: false,
                     }),
                 cache: z
                     .object({
@@ -540,6 +538,7 @@ export const configValidator = z
                             // 1 year
                             .default(60 * 60 * 24 * 365),
                     })
+                    .strict()
                     .default({
                         remove_on_complete: 60 * 60 * 24 * 365,
                         remove_on_failure: 60 * 60 * 24 * 365,
@@ -557,6 +556,7 @@ export const configValidator = z
                             // 1 year
                             .default(60 * 60 * 24 * 365),
                     })
+                    .strict()
                     .default({
                         remove_on_complete: 60 * 60 * 24 * 365,
                         remove_on_failure: 60 * 60 * 24 * 365,
@@ -574,11 +574,13 @@ export const configValidator = z
                             // 1 year
                             .default(60 * 60 * 24 * 365),
                     })
+                    .strict()
                     .default({
                         remove_on_complete: 60 * 60 * 24 * 365,
                         remove_on_failure: 60 * 60 * 24 * 365,
                     }),
             })
+            .strict()
             .default({
                 delivery: {
                     remove_on_complete: 60 * 60 * 24 * 365,
