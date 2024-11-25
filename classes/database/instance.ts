@@ -391,6 +391,32 @@ export class Instance extends BaseInterface<typeof Instances> {
         return this;
     }
 
+    public async sendMessage(content: string): Promise<void> {
+        const logger = getLogger(["federation", "messaging"]);
+
+        if (
+            !this.data.extensions?.["pub.versia:instance_messaging"]?.endpoint
+        ) {
+            logger.info`Instance ${chalk.gray(
+                this.data.baseUrl,
+            )} does not support Instance Messaging, skipping message`;
+
+            return;
+        }
+
+        const endpoint = new URL(
+            this.data.extensions["pub.versia:instance_messaging"].endpoint,
+        );
+
+        await fetch(endpoint.href, {
+            method: "POST",
+            headers: {
+                "Content-Type": "text/plain",
+            },
+            body: content,
+        });
+    }
+
     public static getCount(): Promise<number> {
         return db.$count(Instances);
     }

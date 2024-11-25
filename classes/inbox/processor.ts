@@ -199,9 +199,9 @@ export class InboxProcessor {
     /**
      * Performs request processing.
      *
-     * @returns {Promise<Response>} - HTTP response to send back.
+     * @returns {Promise<Response | null>} - HTTP response to send back. Null if no response is needed (no errors).
      */
-    public async process(): Promise<Response> {
+    public async process(): Promise<Response | null> {
         !this.sender &&
             this.logger.debug`Processing request from potential bridge`;
 
@@ -209,9 +209,7 @@ export class InboxProcessor {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
-            return new Response("", {
-                status: 201,
-            });
+            return null;
         }
 
         this.logger.debug`Instance ${chalk.gray(
@@ -248,17 +246,18 @@ export class InboxProcessor {
         const handler = new RequestParserHandler(this.body, validator);
 
         try {
-            return await handler.parseBody<Response>({
-                note: (): Promise<Response> => this.processNote(),
-                follow: (): Promise<Response> => this.processFollowRequest(),
-                followAccept: (): Promise<Response> =>
+            return await handler.parseBody<Response | null>({
+                note: (): Promise<Response | null> => this.processNote(),
+                follow: (): Promise<Response | null> =>
+                    this.processFollowRequest(),
+                followAccept: (): Promise<Response | null> =>
                     this.processFollowAccept(),
-                followReject: (): Promise<Response> =>
+                followReject: (): Promise<Response | null> =>
                     this.processFollowReject(),
-                "pub.versia:likes/Like": (): Promise<Response> =>
+                "pub.versia:likes/Like": (): Promise<Response | null> =>
                     this.processLikeRequest(),
-                delete: (): Promise<Response> => this.processDelete(),
-                user: (): Promise<Response> => this.processUserRequest(),
+                delete: (): Promise<Response | null> => this.processDelete(),
+                user: (): Promise<Response | null> => this.processUserRequest(),
                 unknown: (): Response =>
                     Response.json(
                         { error: "Unknown entity type" },
@@ -273,9 +272,9 @@ export class InboxProcessor {
     /**
      * Handles Note entity processing.
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processNote(): Promise<Response> {
+    private async processNote(): Promise<Response | null> {
         const note = this.body as VersiaNote;
         const author = await User.resolve(note.author);
 
@@ -288,15 +287,15 @@ export class InboxProcessor {
 
         await Note.fromVersia(note, author);
 
-        return new Response("Note created", { status: 201 });
+        return null;
     }
 
     /**
      * Handles Follow entity processing.
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processFollowRequest(): Promise<Response> {
+    private async processFollowRequest(): Promise<Response | null> {
         const follow = this.body as unknown as VersiaFollow;
         const author = await User.resolve(follow.author);
         const followee = await User.resolve(follow.followee);
@@ -321,7 +320,7 @@ export class InboxProcessor {
         );
 
         if (foundRelationship.data.following) {
-            return new Response("Already following", { status: 200 });
+            return null;
         }
 
         await foundRelationship.update({
@@ -343,15 +342,15 @@ export class InboxProcessor {
             await followee.sendFollowAccept(author);
         }
 
-        return new Response("Follow request sent", { status: 200 });
+        return null;
     }
 
     /**
      * Handles FollowAccept entity processing
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processFollowAccept(): Promise<Response> {
+    private async processFollowAccept(): Promise<Response | null> {
         const followAccept = this.body as unknown as VersiaFollowAccept;
         const author = await User.resolve(followAccept.author);
         const follower = await User.resolve(followAccept.follower);
@@ -376,9 +375,7 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return new Response("There is no follow request to accept", {
-                status: 200,
-            });
+            return null;
         }
 
         await foundRelationship.update({
@@ -386,15 +383,15 @@ export class InboxProcessor {
             following: true,
         });
 
-        return new Response("Follow request accepted", { status: 200 });
+        return null;
     }
 
     /**
      * Handles FollowReject entity processing
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processFollowReject(): Promise<Response> {
+    private async processFollowReject(): Promise<Response | null> {
         const followReject = this.body as unknown as VersiaFollowReject;
         const author = await User.resolve(followReject.author);
         const follower = await User.resolve(followReject.follower);
@@ -419,9 +416,7 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return new Response("There is no follow request to reject", {
-                status: 200,
-            });
+            return null;
         }
 
         await foundRelationship.update({
@@ -429,15 +424,15 @@ export class InboxProcessor {
             following: false,
         });
 
-        return new Response("Follow request rejected", { status: 200 });
+        return null;
     }
 
     /**
      * Handles Delete entity processing.
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    public async processDelete(): Promise<Response> {
+    public async processDelete(): Promise<Response | null> {
         // JS doesn't allow the use of `delete` as a variable name
         const delete_ = this.body as unknown as VersiaDelete;
         const toDelete = delete_.deleted;
@@ -463,7 +458,7 @@ export class InboxProcessor {
                 }
 
                 await note.delete();
-                return new Response("Note deleted", { status: 200 });
+                return null;
             }
             case "User": {
                 const userToDelete = await User.resolve(toDelete);
@@ -477,9 +472,7 @@ export class InboxProcessor {
 
                 if (!author || userToDelete.id === author.id) {
                     await userToDelete.delete();
-                    return new Response("Account deleted, goodbye 👋", {
-                        status: 200,
-                    });
+                    return null;
                 }
 
                 return Response.json(
@@ -503,7 +496,7 @@ export class InboxProcessor {
                 }
 
                 await like.delete();
-                return new Response("Like deleted", { status: 200 });
+                return null;
             }
             default: {
                 return Response.json(
@@ -519,9 +512,9 @@ export class InboxProcessor {
     /**
      * Handles Like entity processing.
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processLikeRequest(): Promise<Response> {
+    private async processLikeRequest(): Promise<Response | null> {
         const like = this.body as unknown as VersiaLikeExtension;
         const author = await User.resolve(like.author);
         const likedNote = await Note.resolve(like.liked);
@@ -542,15 +535,15 @@ export class InboxProcessor {
 
         await author.like(likedNote, like.uri);
 
-        return new Response("Like created", { status: 200 });
+        return null;
     }
 
     /**
      * Handles User entity processing (profile edits).
      *
-     * @returns {Promise<Response>} - The response.
+     * @returns {Promise<Response | null>} - The response.
      */
-    private async processUserRequest(): Promise<Response> {
+    private async processUserRequest(): Promise<Response | null> {
         const user = this.body as unknown as VersiaUser;
         // FIXME: Instead of refetching the remote user, we should read the incoming json and update from that
         const updatedAccount = await User.saveFromRemote(user.uri);
@@ -562,7 +555,7 @@ export class InboxProcessor {
             );
         }
 
-        return new Response("User updated", { status: 200 });
+        return null;
     }
 
     /**

@@ -1,7 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { Instance, User } from "@versia/kit/db";
 import { Worker } from "bullmq";
-import chalk from "chalk";
 import { config } from "~/packages/config-manager/index.ts";
 import { connection } from "~/utils/redis.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
@@ -11,88 +10,76 @@ import {
     inboxQueue,
 } from "../queues/inbox.ts";
 
-export const getInboxWorker = (): Worker<
-    InboxJobData,
-    Response,
-    InboxJobType
-> =>
-    new Worker<InboxJobData, Response, InboxJobType>(
+export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
+    new Worker<InboxJobData, void, InboxJobType>(
         inboxQueue.name,
         async (job) => {
             switch (job.name) {
                 case InboxJobType.ProcessEntity: {
-                    const {
-                        data,
-                        headers: {
-                            "x-signature": signature,
-                            "x-nonce": nonce,
-                            "x-signed-by": signedBy,
-                            authorization,
-                        },
-                        request,
-                        ip,
-                    } = job.data;
+                    const { data, headers, request, ip } = job.data;
 
-                    const logger = getLogger(["federation", "inbox"]);
+                    await job.log(`Processing entity [${data.id}]`);
 
-                    logger.debug`Processing entity ${chalk.gray(
-                        data.id,
-                    )} from ${chalk.gray(signedBy)}`;
-
-                    if (authorization) {
+                    if (headers.authorization) {
                         const processor = new InboxProcessor(
                             request,
                             data,
                             null,
                             {
-                                signature,
-                                nonce,
-                                authorization,
+                                authorization: headers.authorization,
                             },
-                            logger,
+                            getLogger(["federation", "inbox"]),
                             ip,
                         );
 
-                        logger.debug`Entity ${chalk.gray(
-                            data.id,
-                        )} is potentially from a bridge`;
-
-                        return await processor.process();
-                    }
-
-                    // If not potentially from bridge, check for required headers
-                    if (!(signature && nonce && signedBy)) {
-                        return Response.json(
-                            {
-                                error: "Missing required headers: x-signature, x-nonce, or x-signed-by",
-                            },
-                            {
-                                status: 400,
-                            },
+                        await job.log(
+                            `Entity [${data.id}] is potentially from a bridge`,
                         );
+
+                        const output = await processor.process();
+
+                        if (output instanceof Response) {
+                            // Error occurred
+                            const error = await output.json();
+                            await job.log(`Error during processing: ${error}`);
+
+                            await job.log(
+                                `Failed processing entity [${data.id}]`,
+                            );
+
+                            return;
+                        }
+
+                        await job.log(
+                            `Finished processing entity [${data.id}]`,
+                        );
+
+                        return;
                     }
+
+                    const {
+                        "x-signature": signature,
+                        "x-nonce": nonce,
+                        "x-signed-by": signedBy,
+                    } = headers as {
+                        "x-signature": string;
+                        "x-nonce": string;
+                        "x-signed-by": string;
+                    };
 
                     const sender = await User.resolve(signedBy);
 
                     if (!(sender || signedBy.startsWith("instance "))) {
-                        return Response.json(
-                            {
-                                error: `Couldn't resolve sender URI ${signedBy}`,
-                            },
-                            {
-                                status: 404,
-                            },
+                        await job.log(
+                            `Could not resolve sender URI [${signedBy}]`,
                         );
+
+                        return;
                     }
 
                     if (sender?.isLocal()) {
-                        return Response.json(
-                            {
-                                error: "Cannot process federation requests from local users",
-                            },
-                            {
-                                status: 400,
-                            },
+                        throw new Error(
+                            "Cannot process federation requests from local users",
                         );
                     }
 
@@ -103,19 +90,14 @@ export const getInboxWorker = (): Worker<
                           );
 
                     if (!remoteInstance) {
-                        return Response.json(
-                            { error: "Could not resolve the remote instance." },
-                            {
-                                status: 500,
-                            },
-                        );
+                        await job.log("Could not resolve the remote instance.");
+
+                        return;
                     }
 
-                    logger.debug`Entity ${chalk.gray(
-                        data.id,
-                    )} is from remote instance ${chalk.gray(
-                        remoteInstance.data.baseUrl,
-                    )}`;
+                    await job.log(
+                        `Entity [${data.id}] is from remote instance [${remoteInstance.data.baseUrl}]`,
+                    );
 
                     if (!remoteInstance.data.publicKey?.key) {
                         throw new Error(
@@ -135,19 +117,27 @@ export const getInboxWorker = (): Worker<
                         {
                             signature,
                             nonce,
-                            authorization,
+                            authorization: undefined,
                         },
-                        logger,
+                        getLogger(["federation", "inbox"]),
                         ip,
                     );
 
                     const output = await processor.process();
 
-                    logger.debug`${chalk.green(
-                        "✔",
-                    )} Finished processing entity ${chalk.gray(data.id)}`;
+                    if (output instanceof Response) {
+                        // Error occurred
+                        const error = await output.json();
+                        await job.log(`Error during processing: ${error}`);
 
-                    return output;
+                        await job.log(`Failed processing entity [${data.id}]`);
+
+                        return;
+                    }
+
+                    await job.log(`Finished processing entity [${data.id}]`);
+
+                    return;
                 }
 
                 default: {

@@ -209,9 +209,7 @@ describe("InboxProcessor", () => {
 
             expect(User.resolve).toHaveBeenCalledWith("test-author");
             expect(Note.fromVersia).toHaveBeenCalledWith(mockNote, mockAuthor);
-            expect(result).toEqual(
-                new Response("Note created", { status: 201 }),
-            );
+            expect(result).toBeNull();
         });
 
         test("returns 404 when author not found", async () => {
@@ -296,7 +294,7 @@ describe("InboxProcessor", () => {
             const result = await processor["processDelete"]();
 
             expect(mockNote.delete).toHaveBeenCalled();
-            expect(await result.text()).toBe("Note deleted");
+            expect(result).toBeNull();
         });
 
         test("returns 404 when note not found", async () => {
@@ -344,9 +342,7 @@ describe("InboxProcessor", () => {
             const result = await processor["processLikeRequest"]();
 
             expect(mockAuthor.like).toHaveBeenCalledWith(mockNote, "test-uri");
-            expect(result).toEqual(
-                new Response("Like created", { status: 200 }),
-            );
+            expect(result).toBeNull();
         });
 
         test("returns 404 when author not found", async () => {
@@ -376,9 +372,7 @@ describe("InboxProcessor", () => {
             const result = await processor["processUserRequest"]();
 
             expect(User.saveFromRemote).toHaveBeenCalledWith("test-uri");
-            expect(result).toEqual(
-                new Response("User updated", { status: 200 }),
-            );
+            expect(result).toBeNull();
         });
 
         test("returns 500 when update fails", async () => {
