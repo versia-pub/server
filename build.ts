@@ -25,7 +25,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["unzipit", "acorn"],
+    external: ["unzipit", "acorn", "@bull-board/ui"],
 }).then((output) => {
     if (!output.success) {
         console.error(output.logs);
@@ -56,6 +56,10 @@ await $`cp -r node_modules/uzip-module dist/node_modules/uzip-module`;
 
 // Copy acorn to dist
 await $`cp -r node_modules/acorn dist/node_modules/acorn`;
+
+// Copy bull-board to dist
+await $`mkdir -p dist/node_modules/@bull-board`;
+await $`cp -r node_modules/@bull-board/ui dist/node_modules/@bull-board/ui`;
 
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;
