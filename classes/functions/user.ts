@@ -1,8 +1,3 @@
-import type {
-    Follow,
-    FollowAccept,
-    FollowReject,
-} from "@versia/federation/types";
 import {
     type Application,
     type Emoji,
@@ -137,68 +132,4 @@ export const findManyUsers = async (
     });
 
     return output.map((user) => transformOutputToUserWithRelations(user));
-};
-
-export const followRequestToVersia = (
-    follower: User,
-    followee: User,
-): Follow => {
-    if (follower.isRemote()) {
-        throw new Error("Follower must be a local user");
-    }
-
-    if (!followee.isRemote()) {
-        throw new Error("Followee must be a remote user");
-    }
-
-    if (!followee.data.uri) {
-        throw new Error("Followee must have a URI in database");
-    }
-
-    const id = crypto.randomUUID();
-
-    return {
-        type: "Follow",
-        id,
-        author: follower.getUri(),
-        followee: followee.getUri(),
-        created_at: new Date().toISOString(),
-    };
-};
-
-export const followAcceptToVersia = (
-    follower: User,
-    followee: User,
-): FollowAccept => {
-    if (!follower.isRemote()) {
-        throw new Error("Follower must be a remote user");
-    }
-
-    if (followee.isRemote()) {
-        throw new Error("Followee must be a local user");
-    }
-
-    if (!follower.data.uri) {
-        throw new Error("Follower must have a URI in database");
-    }
-
-    const id = crypto.randomUUID();
-
-    return {
-        type: "FollowAccept",
-        id,
-        author: followee.getUri(),
-        created_at: new Date().toISOString(),
-        follower: follower.getUri(),
-    };
-};
-
-export const followRejectToVersia = (
-    follower: User,
-    followee: User,
-): FollowReject => {
-    return {
-        ...followAcceptToVersia(follower, followee),
-        type: "FollowReject",
-    };
 };
