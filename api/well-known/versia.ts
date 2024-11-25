@@ -44,7 +44,10 @@ export default apiRoute((app) =>
             {
                 type: "InstanceMetadata" as const,
                 compatibility: {
-                    extensions: ["pub.versia:custom_emojis"],
+                    extensions: [
+                        "pub.versia:custom_emojis",
+                        "pub.versia:instance_messaging",
+                    ],
                     versions: ["0.4.0"],
                 },
                 host: new URL(config.http.base_url).host,
@@ -63,6 +66,14 @@ export default apiRoute((app) =>
                 created_at: new Date(
                     firstUser?.data.createdAt ?? 0,
                 ).toISOString(),
+                extensions: {
+                    "pub.versia:instance_messaging": {
+                        endpoint: new URL(
+                            "/messaging",
+                            config.http.base_url,
+                        ).toString(),
+                    },
+                },
             },
             200,
         );

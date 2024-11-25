@@ -70,6 +70,7 @@ Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) fil
 
 The following extensions are currently supported or being worked on:
 - `pub.versia:custom_emojis`: Custom emojis
+- `pub.versia:instance_messaging`: Instance Messaging
 - `pub.versia:polls`: Polls
 - `pub.versia:share`: Share
 

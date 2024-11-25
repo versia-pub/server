@@ -195,6 +195,11 @@ export const configureLoggers = (silent = false): Promise<void> =>
                 filters: ["configFilter"],
             },
             {
+                category: ["federation", "messaging"],
+                sinks: ["console", "file"],
+                filters: ["configFilter"],
+            },
+            {
                 category: "database",
                 sinks: ["console", "file"],
                 filters: ["configFilter"],
