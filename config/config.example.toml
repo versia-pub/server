@@ -1,5 +1,5 @@
 # You can change the URL to the commit/tag you are using
-#:schema https://raw.githubusercontent.com/versia-pub/server/v0.7.0/config/config.schema.json
+#:schema https://raw.githubusercontent.com/versia-pub/server/main/config/config.schema.json
 
 [database]
 # Main PostgreSQL database connection

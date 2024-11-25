@@ -6,9 +6,30 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
 
 ## Features
 
+- Outbound federation and inbox processing are now handled by a queue system (like most federated software).
+  - Added an administration UI for managing the queue.
 - Upgraded Bun to `1.1.36`.
 - Allowed `<div>` and `<span>` tags in Markdown.
 - Added `--password` flag to the user creation CLI.
+
+## New Configuration Options
+
+```toml
+[queues]
+# Control the delivery queue (for outbound federation)
+[queues.delivery]
+# Time in seconds to remove completed jobs
+remove_on_complete = 31536000
+# Time in seconds to remove failed jobs
+remove_on_failure = 31536000
+
+# Control the inbox processing queue (for inbound federation)
+[queues.inbox]
+# Time in seconds to remove completed jobs
+remove_on_complete = 31536000
+# Time in seconds to remove failed jobs
+remove_on_failure = 31536000
+```
 
 ## Bug Fixes
 
