@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { handleZodError } from "@/api";
+import { applyToHono } from "@/bull-board.ts";
 import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
 import { cors } from "@hono/hono/cors";
@@ -160,6 +161,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         },
     });
     app.get("/docs", swaggerUI({ url: "/openapi.json" }));
+    applyToHono(app);
 
     app.options("*", (context) => {
         return context.text("", 204);

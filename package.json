@@ -107,6 +107,8 @@
     },
     "dependencies": {
         "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
+        "@bull-board/api": "^6.5.3",
+        "@bull-board/hono": "^6.5.3",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
         "@hono/hono": "npm:@jsr/hono__hono@4.6.11",
         "@hono/prometheus": "^1.0.1",
@@ -164,5 +166,8 @@
         "xss": "^1.0.15",
         "zod": "^3.23.8",
         "zod-validation-error": "^3.4.0"
+    },
+    "patchedDependencies": {
+        "@bull-board/api@6.5.3": "patches/@bull-board%2Fapi@6.5.3.patch"
     }
 }
