@@ -1,15 +1,9 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Entity } from "@versia/federation/types";
-import type { Job } from "bullmq";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
-import {
-    type InboxJobData,
-    InboxJobType,
-    inboxQueue,
-    inboxWorker,
-} from "~/worker";
+import { InboxJobType, inboxQueue } from "~/worker";
 
 export const meta = applyConfig({
     auth: {
@@ -111,7 +105,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const body: Entity = await context.req.valid("json");
 
-        const result = await inboxQueue.add(InboxJobType.ProcessEntity, {
+        await inboxQueue.add(InboxJobType.ProcessEntity, {
             data: body,
             headers: context.req.valid("header"),
             request: {
@@ -122,31 +116,9 @@ export default apiRoute((app) =>
             ip: context.env.ip ?? null,
         });
 
-        return new Promise<Response>((resolve, reject) => {
-            const successCallback = (
-                job: Job<InboxJobData, Response, InboxJobType>,
-            ): void => {
-                if (job.id === result.id) {
-                    inboxWorker.off("completed", successCallback);
-                    inboxWorker.off("failed", failureCallback);
-                    resolve(job.returnvalue);
-                }
-            };
-
-            const failureCallback = (
-                job: Job<InboxJobData, Response, InboxJobType> | undefined,
-                error: Error,
-            ): void => {
-                if (job && job.id === result.id) {
-                    inboxWorker.off("completed", successCallback);
-                    inboxWorker.off("failed", failureCallback);
-                    reject(error);
-                }
-            };
-
-            inboxWorker.on("completed", successCallback);
-
-            inboxWorker.on("failed", failureCallback);
-        });
+        return context.newResponse(
+            "Request processing initiated.\nImplement the Instance Messaging Extension to receive any eventual feedback (errors, etc.)",
+            200,
+        );
     }),
 );

@@ -66,7 +66,7 @@ export default apiRoute((app) =>
         });
 
         return context.newResponse(
-            "Request processing initiated.\nImplement the Instance Messaging Extension to receive any eventual errors",
+            "Request processing initiated.\nImplement the Instance Messaging Extension to receive any eventual feedback (errors, etc.)",
             200,
         );
     }),
