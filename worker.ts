@@ -24,7 +24,7 @@ export enum InboxJobType {
     ProcessEntity = "processEntity",
 }
 
-type InboxJobData = {
+export type InboxJobData = {
     data: Entity;
     headers: {
         "x-signature"?: string;

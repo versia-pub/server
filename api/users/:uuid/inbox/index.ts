@@ -1,9 +1,15 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Entity } from "@versia/federation/types";
+import type { Job } from "bullmq";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
-import { InboxJobType, inboxQueue, inboxWorker } from "~/worker";
+import {
+    type InboxJobData,
+    InboxJobType,
+    inboxQueue,
+    inboxWorker,
+} from "~/worker";
 
 export const meta = applyConfig({
     auth: {
@@ -117,17 +123,30 @@ export default apiRoute((app) =>
         });
 
         return new Promise<Response>((resolve, reject) => {
-            inboxWorker.on("completed", (job) => {
+            const successCallback = (
+                job: Job<InboxJobData, Response, InboxJobType>,
+            ): void => {
                 if (job.id === result.id) {
+                    inboxWorker.off("completed", successCallback);
+                    inboxWorker.off("failed", failureCallback);
                     resolve(job.returnvalue);
                 }
-            });
+            };
 
-            inboxWorker.on("failed", (job, error) => {
+            const failureCallback = (
+                job: Job<InboxJobData, Response, InboxJobType> | undefined,
+                error: Error,
+            ): void => {
                 if (job && job.id === result.id) {
+                    inboxWorker.off("completed", successCallback);
+                    inboxWorker.off("failed", failureCallback);
                     reject(error);
                 }
-            });
+            };
+
+            inboxWorker.on("completed", successCallback);
+
+            inboxWorker.on("failed", failureCallback);
         });
     }),
 );
