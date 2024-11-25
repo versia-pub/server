@@ -63,6 +63,10 @@ export default apiRoute((app) =>
                 },
                 banner: urlToContentFormat(config.instance.banner),
                 logo: urlToContentFormat(config.instance.logo),
+                shared_inbox: new URL(
+                    "/inbox",
+                    config.http.base_url,
+                ).toString(),
                 created_at: new Date(
                     firstUser?.data.createdAt ?? 0,
                 ).toISOString(),

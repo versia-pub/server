@@ -10,6 +10,7 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
   - Added an administration UI for managing the queue.
 - Upgraded Bun to `1.1.36`.
 - Implemented support for the [Instance Messaging Extension](https://versia.pub/extensions/instance-messaging)
+- Implement [Shared Inboxes](https://versia.pub/federation#inboxes)
 - Allowed `<div>` and `<span>` tags in Markdown.
 - Added `--password` flag to the user creation CLI.
 
