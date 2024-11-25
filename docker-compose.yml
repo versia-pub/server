@@ -3,7 +3,7 @@ services:
         image: ghcr.io/versia-pub/server:latest
         volumes:
             - ./logs:/app/dist/logs
-            - ./config:/app/dist/config
+            - ./config:/app/dist/config:ro
             - ./uploads:/app/dist/uploads
         restart: unless-stopped
         container_name: versia
@@ -17,10 +17,10 @@ services:
             - fe
 
     worker:
-        image: ghcr.io/versia-pub/worker:latest
+        image: ghcr.io/versia-pub/worker:main
         volumes:
             - ./logs:/app/dist/logs
-            - ./config:/app/dist/config
+            - ./config:/app/dist/config:ro
         restart: unless-stopped
         container_name: versia-worker
         tty: true
