@@ -3,8 +3,8 @@ import { Instance } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import ora from "ora";
+import { FetchJobType, fetchQueue } from "~/classes/queues/fetch";
 import { BaseCommand } from "~/cli/base";
-import { FetchJobType, fetchQueue } from "~/worker";
 
 export default class FederationInstanceRefetch extends BaseCommand<
     typeof FederationInstanceRefetch

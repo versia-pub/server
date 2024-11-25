@@ -1,25 +1,25 @@
-name: Nix Build 
+name: Nix Build
 
 on:
-  pull_request:
-  push:
-    branches: ["*"]
-  workflow_dispatch:
+    pull_request:
+    push:
+        branches: ["*"]
+    workflow_dispatch:
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: "write"
-      contents: "read"
-    steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@main
-        with:
-          extra-conf: accept-flake-config = true
-      - uses: DeterminateSystems/magic-nix-cache-action@main
-      - uses: DeterminateSystems/flake-checker-action@main
-      - name: Build default package
-        run: nix build .
-      - name: Check flakes
-        run: nix flake check --allow-import-from-derivation
+    check:
+        runs-on: ubuntu-latest
+        permissions:
+            id-token: "write"
+            contents: "read"
+        steps:
+            - uses: actions/checkout@v4
+            - uses: DeterminateSystems/nix-installer-action@main
+              with:
+                  extra-conf: accept-flake-config = true
+            - uses: DeterminateSystems/magic-nix-cache-action@main
+            - uses: DeterminateSystems/flake-checker-action@main
+            - name: Build default package
+              run: nix build .
+            - name: Check flakes
+              run: nix flake check --allow-import-from-derivation

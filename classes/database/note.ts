@@ -41,7 +41,7 @@ import {
     parseTextMentions,
 } from "~/classes/functions/status";
 import { config } from "~/packages/config-manager";
-import { DeliveryJobType, deliveryQueue } from "~/worker.ts";
+import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
 import { Attachment } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";

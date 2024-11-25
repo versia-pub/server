@@ -53,7 +53,7 @@ import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
-import { DeliveryJobType, deliveryQueue } from "~/worker.ts";
+import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";

@@ -1,61 +1,75 @@
 services:
-  versia:
-    image: ghcr.io/versia-pub/server:latest
-    volumes:
-      - ./logs:/app/dist/logs
-      - ./config:/app/dist/config
-      - ./uploads:/app/dist/uploads
-    restart: unless-stopped
-    container_name: versia
-    tty: true
-    networks:
-      - versia-net
-    depends_on:
-      - db
-      - redis
-      - sonic
-      - fe
+    versia:
+        image: ghcr.io/versia-pub/server:latest
+        volumes:
+            - ./logs:/app/dist/logs
+            - ./config:/app/dist/config
+            - ./uploads:/app/dist/uploads
+        restart: unless-stopped
+        container_name: versia
+        tty: true
+        networks:
+            - versia-net
+        depends_on:
+            - db
+            - redis
+            - sonic
+            - fe
 
-  fe:
-    image: ghcr.io/versia-pub/frontend:main
-    container_name: versia-fe
-    restart: unless-stopped
-    networks:
-      - versia-net
-    environment:
-      NUXT_PUBLIC_API_HOST: https://yourserver.com
+    worker:
+        image: ghcr.io/versia-pub/worker:latest
+        volumes:
+            - ./logs:/app/dist/logs
+            - ./config:/app/dist/config
+        restart: unless-stopped
+        container_name: versia-worker
+        tty: true
+        networks:
+            - versia-net
+        depends_on:
+            - db
+            - redis
 
-  db:
-    image: ghcr.io/versia-pub/postgres:main
-    container_name: versia-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: versia
-      POSTGRES_USER: versia
-      POSTGRES_PASSWORD: _______________
-    networks:
-      - versia-net
-    volumes:
-      - ./db-data:/var/lib/postgresql/data
+    fe:
+        image: ghcr.io/versia-pub/frontend:main
+        container_name: versia-fe
+        restart: unless-stopped
+        networks:
+            - versia-net
+        environment:
+            NUXT_PUBLIC_API_HOST: https://yourserver.com
 
-  redis:
-    image: redis:alpine
-    container_name: versia-redis
-    volumes:
-      - ./redis-data:/data
-    restart: unless-stopped
-    networks:
-      - versia-net
+    db:
+        image: ghcr.io/versia-pub/postgres:main
+        container_name: versia-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: versia
+            POSTGRES_USER: versia
+            POSTGRES_PASSWORD: _______________
+        networks:
+            - versia-net
+        volumes:
+            - ./db-data:/var/lib/postgresql/data
 
-  sonic:
-    volumes:
-      - ./config.cfg:/etc/sonic.cfg
-      - ./store/:/var/lib/sonic/store/
-    image: valeriansaliou/sonic:v1.4.9
-    container_name: versia-sonic
-    restart: unless-stopped
-    networks:
-      - versia-net
+    redis:
+        image: redis:alpine
+        container_name: versia-redis
+        volumes:
+            - ./redis-data:/data
+        restart: unless-stopped
+        networks:
+            - versia-net
+
+    sonic:
+        volumes:
+            - ./config.cfg:/etc/sonic.cfg
+            - ./store/:/var/lib/sonic/store/
+        image: valeriansaliou/sonic:v1.4.9
+        container_name: versia-sonic
+        restart: unless-stopped
+        networks:
+            - versia-net
 
 networks:
-  versia-net:
+    versia-net:

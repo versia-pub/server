@@ -33,6 +33,7 @@
         "start": "NODE_ENV=production bun run dist/index.js --prod",
         "lint": "bunx @biomejs/biome check .",
         "build": "bun run build.ts",
+        "build:worker": "bun run build-worker.ts",
         "cloc": "cloc . --exclude-dir node_modules,dist,.output,.nuxt,meta,logs --exclude-ext sql,log,pem",
         "wc": "find server database *.ts docs packages types utils drizzle tests -type f -print0 | wc -m --files0-from=-",
         "cli": "bun run cli/index.ts",

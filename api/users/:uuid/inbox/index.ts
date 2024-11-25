@@ -2,8 +2,8 @@ import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Entity } from "@versia/federation/types";
 import { z } from "zod";
+import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
 import { ErrorSchema } from "~/types/api";
-import { InboxJobType, inboxQueue } from "~/worker";
 
 export const meta = applyConfig({
     auth: {

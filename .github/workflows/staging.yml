@@ -1,50 +1,50 @@
 name: Staging build bundle
 
 on:
-  push:
-    branches: ["staging"]
+    push:
+        branches: ["staging"]
 
 jobs:
-  tests:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    tests:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
 
-      - name: Install NPM packages
-        run: |
-          bun install
+            - name: Install NPM packages
+              run: |
+                  bun install
 
-      - name: Build dist
-        run: |
-          bun run build
+            - name: Build dist
+              run: |
+                  bun run build
 
-      - name: Bundle
-        run: |
-          mkdir bundle
-          cp -r dist bundle/
-          cp -r config bundle/
-          cp -r docs bundle/
-          cp -r CODE_OF_CONDUCT.md bundle/
-          cp -r CONTRIBUTING.md bundle/
-          cp -r README.md bundle/
-          cp -r flake.nix bundle/
-          cp -r shell.nix bundle/
-          cp -r flake.lock bundle/
-          cp -r LICENSE bundle/
-          cp -r SECURITY.md bundle/
-          tar cfJ archive.tar.xz bundle/
+            - name: Bundle
+              run: |
+                  mkdir bundle
+                  cp -r dist bundle/
+                  cp -r config bundle/
+                  cp -r docs bundle/
+                  cp -r CODE_OF_CONDUCT.md bundle/
+                  cp -r CONTRIBUTING.md bundle/
+                  cp -r README.md bundle/
+                  cp -r flake.nix bundle/
+                  cp -r shell.nix bundle/
+                  cp -r flake.lock bundle/
+                  cp -r LICENSE bundle/
+                  cp -r SECURITY.md bundle/
+                  tar cfJ archive.tar.xz bundle/
 
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: staging-dist
-          path: archive.tar.xz
+            - name: Upload
+              uses: actions/upload-artifact@v4
+              with:
+                  name: staging-dist
+                  path: archive.tar.xz
