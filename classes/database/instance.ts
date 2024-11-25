@@ -359,6 +359,8 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.logo,
             protocol,
             publicKey: metadata.public_key,
+            inbox: metadata.shared_inbox ?? null,
+            extensions: metadata.extensions ?? null,
         });
     }
 
@@ -382,6 +384,8 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.logo,
             protocol,
             publicKey: metadata.public_key,
+            inbox: metadata.shared_inbox ?? null,
+            extensions: metadata.extensions ?? null,
         });
 
         return this;

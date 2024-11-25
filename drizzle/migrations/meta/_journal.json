@@ -253,6 +253,13 @@
             "when": 1732398961365,
             "tag": "0035_pretty_whiplash",
             "breakpoints": true
+        },
+        {
+            "idx": 36,
+            "version": "7",
+            "when": 1732563077877,
+            "tag": "0036_cuddly_ironclad",
+            "breakpoints": true
         }
     ]
 }

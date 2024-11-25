@@ -351,7 +351,9 @@ export const Instances = pgTable("Instances", {
         .notNull()
         .$type<"versia" | "activitypub">()
         .default("versia"),
+    inbox: text("inbox"),
     publicKey: jsonb("public_key").$type<InstanceMetadata["public_key"]>(),
+    extensions: jsonb("extensions").$type<InstanceMetadata["extensions"]>(),
 });
 
 export const OpenIdAccounts = pgTable("OpenIdAccounts", {
