@@ -33,6 +33,10 @@ remove_on_complete = 31536000
 remove_on_failure = 31536000
 ```
 
+### Configuration Changes
+
+- The `enabled` field in `redis.queue` has been removed. This field was never functional in the first place, as Redis is required for federation.
+
 ## Bug Fixes
 
 - Correctly proxy all URIs in custom Markdown text.
