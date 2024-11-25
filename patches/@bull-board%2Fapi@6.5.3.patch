@@ -7,7 +7,7 @@ index b7fa76b4861aefc96e27b3167b1511c3723ad318..c56d37721672b9ede3c85c84cb40c91c
  function createBullBoard({ queues, serverAdapter, options = { uiConfig: {} }, }) {
      const { bullBoardQueues, setQueues, replaceQueues, addQueue, removeQueue } = (0, queuesApi_1.getQueuesApi)(queues);
 -    const uiBasePath = options.uiBasePath || path_1.default.dirname(eval(`require.resolve('@bull-board/ui/package.json')`));
-+    const uiBasePath = options.uiBasePath || path_1.default.dirname(import.meta.resolve('@bull-board/ui/package.json'));
++    const uiBasePath = options.uiBasePath || path_1.default.dirname(import.meta.require.resolve('@bull-board/ui/package.json'));
      serverAdapter
          .setQueues(bullBoardQueues)
          .setViewsPath(path_1.default.join(uiBasePath, 'dist'))
