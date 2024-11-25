@@ -1,12 +1,13 @@
 import { getLogger } from "@logtape/logtape";
 import type { Entity } from "@versia/federation/types";
-import { Instance, Note, User } from "@versia/kit/db";
+import { Instance, User } from "@versia/kit/db";
 import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import chalk from "chalk";
 import IORedis from "ioredis";
 import { InboxProcessor } from "./classes/inbox/processor.ts";
 import { config } from "./packages/config-manager/index.ts";
+import type { KnownEntity } from "./types/api.ts";
 
 const connection = new IORedis({
     host: config.redis.queue.host,
@@ -17,7 +18,7 @@ const connection = new IORedis({
 });
 
 export enum DeliveryJobType {
-    FederateNote = "federateNote",
+    FederateEntity = "federateEntity",
 }
 
 export enum InboxJobType {
@@ -40,7 +41,13 @@ export type InboxJobData = {
     ip: SocketAddress | null;
 };
 
-const deliveryQueue = new Queue<{ noteId: string }, void, DeliveryJobType>(
+export type DeliveryJobData = {
+    entity: KnownEntity;
+    recipientId: string;
+    senderId: string;
+};
+
+export const deliveryQueue = new Queue<DeliveryJobData, void, DeliveryJobType>(
     "delivery",
     {
         connection,
@@ -55,25 +62,45 @@ export const inboxQueue = new Queue<InboxJobData, Response, InboxJobType>(
 );
 
 export const deliveryWorker = new Worker<
-    { noteId: string },
+    DeliveryJobData,
     void,
     DeliveryJobType
 >(
     deliveryQueue.name,
     async (job) => {
         switch (job.name) {
-            case DeliveryJobType.FederateNote: {
-                const noteId = job.data.noteId;
+            case DeliveryJobType.FederateEntity: {
+                const { entity, recipientId, senderId } = job.data;
 
-                const note = await Note.fromId(noteId);
+                const logger = getLogger(["federation", "delivery"]);
 
-                if (!note) {
+                const sender = await User.fromId(senderId);
+
+                if (!sender) {
                     throw new Error(
-                        `Note with ID ${noteId} not found in database`,
+                        `Could not resolve sender ID ${chalk.gray(senderId)}`,
                     );
                 }
 
-                await note.federateToUsers();
+                const recipient = await User.fromId(recipientId);
+
+                if (!recipient) {
+                    throw new Error(
+                        `Could not resolve recipient ID ${chalk.gray(recipientId)}`,
+                    );
+                }
+
+                logger.debug`Federating entity ${chalk.gray(
+                    entity.id,
+                )} from ${chalk.gray(`@${sender.getAcct()}`)} to ${chalk.gray(
+                    recipient.getAcct(),
+                )}`;
+
+                await sender.federateToUser(entity, recipient);
+
+                logger.debug`${chalk.green(
+                    "✔",
+                )} Finished federating entity ${chalk.gray(entity.id)}`;
             }
         }
     },

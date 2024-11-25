@@ -180,7 +180,7 @@ export const configureLoggers = (silent = false): Promise<void> =>
                 filters: ["configFilter"],
             },
             {
-                category: ["federation", "outbox"],
+                category: ["federation", "delivery"],
                 sinks: ["console", "file"],
                 filters: ["configFilter"],
             },

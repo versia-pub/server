@@ -1015,9 +1015,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 },
             );
         } catch (e) {
-            getLogger(["federation", "outbox"])
+            getLogger(["federation", "delivery"])
                 .error`Federating ${chalk.gray(entity.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
-            getLogger(["federation", "outbox"]).error`${e}`;
+            getLogger(["federation", "delivery"]).error`${e}`;
             sentry?.captureException(e);
 
             return { ok: false };

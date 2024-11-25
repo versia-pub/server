@@ -41,6 +41,7 @@ import {
     parseTextMentions,
 } from "~/classes/functions/status";
 import { config } from "~/packages/config-manager";
+import { DeliveryJobType, deliveryQueue } from "~/worker.ts";
 import { Application } from "./application.ts";
 import { Attachment } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
@@ -310,9 +311,16 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public async federateToUsers(): Promise<void> {
         const users = await this.getUsersToFederateTo();
 
-        for (const user of users) {
-            await this.author.federateToUser(this.toVersia(), user);
-        }
+        await deliveryQueue.addBulk(
+            users.map((user) => ({
+                data: {
+                    entity: this.toVersia(),
+                    recipientId: user.id,
+                    senderId: this.author.id,
+                },
+                name: DeliveryJobType.FederateEntity,
+            })),
+        );
     }
 
     /**
