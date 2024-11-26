@@ -1,12 +1,6 @@
 # Roles API
 
-> [!WARNING]
->
-> This API is due to be reworked in the future. The current implementation is not final.
->
-> Missing features include the ability to create and delete roles, as well as the ability to assign roles to other users.
-
-This API allows users to create, read, update, and delete instance custom roles. Custom roles can be used to grant users specific permissions, such as managing the instance, uploading custom emojis, or moderating content.
+This API allows users to create, read, update, delete and assign instance custom roles. Custom roles can be used to grant users specific permissions, such as managing the instance, uploading custom emojis, or moderating content.
 
 ## Priorities
 
@@ -109,19 +103,20 @@ interface Role {
 }
 ```
 
-## Get Roles
+## Get All Roles
 
 ```http
 GET /api/v1/roles
 ```
 
-Get a list of all roles that the requesting user has.
+Get a list of all roles on the instance.
 
 - **Returns**: Array of [`Role`](#role)
-- **Authentication**: Required
+- **Authentication**: Not required
 - **Permissions**: None
 - **Version History**:
   - `0.7.0`: Added.
+  - `0.8.0`: Now returns all instance roles.
 
 ### Example
 
@@ -134,7 +129,7 @@ Authorization: Bearer ...
 
 #### `200 OK`
 
-All roles owned by the user.
+All roles on the instance.
 
 ```json
 [
@@ -294,48 +289,159 @@ Role data.
 }
 ```
 
-## Assign Role
+## Create Role
 
 ```http
-POST /api/v1/roles/:id
+POST /api/v1/roles
 ```
 
-Assign a role to the user making the request.
+Create a new role.
 
-- **Returns**: `204 No Content`
+- **Returns**: [`Role`](#role)
 - **Authentication**: Required
 - **Permissions**: `roles`
 - **Version History**:
-  - `0.7.0`: Added.
+  - `0.8.0`: Added.
 
 ### Request
 
 #### Example
 
 ```http
-POST /api/v1/roles/364fd13f-28b5-4e88-badd-ce3e533f0d02
+POST /api/v1/roles
 Authorization: Bearer ...
+Content-Type: application/json
+
+{
+    "name": "Moderator",
+    "permissions": [
+        "notes",
+        "accounts",
+        "likes",
+        "boosts",
+        "emojis",
+        "media",
+        "blocks",
+        "filters",
+        "mutes",
+        "reports",
+        "settings",
+        "roles",
+        "notifications",
+        "follows",
+        "impersonate",
+        "ignore_rate_limits",
+        "instance",
+        "instance:federation",
+        "instance:settings"
+    ],
+    "priority": 100,
+    "description": "Moderator role for managing content",
+    "visible": true,
+    "icon": "https://example.com/moderator.png"
+}
+```
+
+### Response
+
+#### `201 Created`
+
+Role successfully created.
+
+```json
+{
+    "id": "364fd13f-28b5-4e88-badd-ce3e533f0d02",
+    "name": "Moderator",
+    "permissions": [
+        "notes",
+        "accounts",
+        "likes",
+        "boosts",
+        "emojis",
+        "media",
+        "blocks",
+        "filters",
+        "mutes",
+        "reports",
+        "settings",
+        "roles",
+        "notifications",
+        "follows",
+        "impersonate",
+        "ignore_rate_limits",
+        "instance",
+        "instance:federation",
+        "instance:settings"
+    ],
+    "priority": 100,
+    "description": "Moderator role for managing content",
+    "visible": true,
+    "icon": "https://example.com/moderator.png"
+}
+```
+
+## Update Role
+
+```http
+PATCH /api/v1/roles/:id
+```
+
+Update a role's data.
+
+- **Returns**: `204 No Content`
+- **Authentication**: Required
+- **Permissions**: `roles`
+- **Version History**:
+  - `0.8.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+PATCH /api/v1/roles/364fd13f-28b5-4e88-badd-ce3e533f0d02
+Authorization: Bearer ...
+Content-Type: application/json
+
+{
+    "name": "Moderator",
+    "permissions": [
+        "notes",
+        "accounts",
+        "likes",
+        "boosts",
+        "emojis",
+        "media",
+        "blocks",
+        "filters",
+        "mutes",
+    ],
+    "priority": 10,
+    "description": "Moderator role for managing content",
+    "visible": true,
+    "icon": "https://example.com/moderator.png"
+}
 ```
 
 ### Response
 
 #### `204 No Content`
 
-Role successfully assigned.
+Role successfully updated.
 
-## Remove Role
+## Delete Role
 
 ```http
 DELETE /api/v1/roles/:id
 ```
 
-Remove a role from the user making the request.
+Delete a role.
 
 - **Returns**: `204 No Content`
 - **Authentication**: Required
 - **Permissions**: `roles`
 - **Version History**:
-  - `0.7.0`: Added.
+  - `0.8.0`: Added.
 
 ### Request
 
@@ -350,4 +456,124 @@ Authorization: Bearer ...
 
 #### `204 No Content`
 
-Role successfully removed.
+Role successfully deleted.
+
+## Assign Role
+
+```http
+POST /api/v1/accounts/:id/roles/:role_id
+```
+
+Assign a role to an account.
+
+- **Returns**: `204 No Content`
+- **Authentication**: Required
+- **Permissions**: `roles`
+- **Version History**:
+  - `0.8.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+POST /api/v1/accounts/04608f74-6263-4a9a-bd7a-e778d4ac2ce4/roles/364fd13f-28b5-4e88-badd-ce3e533
+Authorization: Bearer ...
+```
+
+### Response
+
+#### `204 No Content`
+
+Role successfully assigned.
+
+## Unassign Role
+
+```http
+DELETE /api/v1/accounts/:id/roles/:role_id
+```
+
+Unassign a role from an account.
+
+- **Returns**: `204 No Content`
+- **Authentication**: Required
+- **Permissions**: `roles`
+- **Version History**:
+  - `0.8.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+DELETE /api/v1/accounts/04608f74-6263-4a9a-bd7a-e778d4ac2ce4/roles/364fd13f-28b5-4e88-badd-ce3e533
+Authorization: Bearer ...
+```
+
+### Response
+
+#### `204 No Content`
+
+Role successfully unassigned.
+
+## Get Account Roles
+
+```http
+GET /api/v1/accounts/:id/roles
+```
+
+Get a list of roles assigned to an account.
+
+- **Returns**: Array of [`Role`](#role)
+- **Authentication**: Not required
+- **Permissions**: None
+- **Version History**:
+  - `0.8.0`: Added.
+
+### Request
+
+#### Example
+
+```http
+GET /api/v1/accounts/04608f74-6263-4a9a-bd7a-e778d4ac2ce4/roles
+```
+
+### Response
+
+#### `200 OK`
+
+Roles assigned to the account.
+
+```json
+[
+    {
+        "id": "364fd13f-28b5-4e88-badd-ce3e533f0d02",
+        "name": "Moderator",
+        "permissions": [
+            "notes",
+            "accounts",
+            "likes",
+            "boosts",
+            "emojis",
+            "media",
+            "blocks",
+            "filters",
+            "mutes",
+            "reports",
+            "settings",
+            "roles",
+            "notifications",
+            "follows",
+            "impersonate",
+            "ignore_rate_limits",
+            "instance",
+            "instance:federation",
+            "instance:settings"
+        ],
+        "priority": 100,
+        "description": "Moderator role for managing content",
+        "visible": true,
+        "icon": "https://example.com/moderator.png"
+    }
+]
+```

@@ -9,10 +9,11 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
 - Outbound federation, inbox processing and data fetching are now handled by a queue system (like most federated software).
   - Added an administration UI for managing the queue.
 - Upgraded Bun to `1.1.36`.
-- Implemented support for the [Instance Messaging Extension](https://versia.pub/extensions/instance-messaging)
-- Implement [Shared Inboxes](https://versia.pub/federation#inboxes) support.
+- Implemented support for the [**Instance Messaging Extension**](https://versia.pub/extensions/instance-messaging)
+- Implement [**Shared Inboxes**](https://versia.pub/federation#inboxes) support.
 - Allowed `<div>` and `<span>` tags in Markdown.
 - Added `--password` flag to the user creation CLI.
+- Overhaul [**Roles API**](https://server.versia.pub/api/roles) to allow for full role control (create, update, delete, assign).
 
 ## New Configuration Options
 
@@ -86,7 +87,7 @@ Versia Server `0.7.0` is backwards compatible with `0.6.0`. However, some new fe
 A new plugin system for extending Versia Server has been added in this release!
 
 > [!NOTE]
-> 
+>
 > This is an internal feature and is not documented. Support for third-party plugins will be given on a "if we have time" basis, until the API is fully stabilized and documented
 
 Plugins using this framework support:

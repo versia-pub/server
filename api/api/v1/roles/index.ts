@@ -6,7 +6,10 @@ import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     auth: {
-        required: true,
+        required: false,
+        methodOverrides: {
+            POST: true,
+        },
     },
     ratelimits: {
         duration: 60,
