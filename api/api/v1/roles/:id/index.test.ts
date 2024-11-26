@@ -1,23 +1,17 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
-import {
-    ADMIN_ROLES,
-    DEFAULT_ROLES,
-    RolePermissions,
-} from "@versia/kit/tables";
+import { RolePermissions } from "@versia/kit/tables";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
-const { users, tokens, deleteUsers } = await getTestUsers(1);
+const { users, tokens, deleteUsers } = await getTestUsers(2);
 let role: Role;
-let roleNotLinked: Role;
 let higherPriorityRole: Role;
 
 beforeAll(async () => {
     // Create new role
     role = await Role.insert({
         name: "test",
-        permissions: DEFAULT_ROLES,
+        permissions: [RolePermissions.ManageRoles],
         priority: 2,
         description: "test",
         visible: true,
@@ -26,25 +20,12 @@ beforeAll(async () => {
 
     expect(role).toBeDefined();
 
-    // Link role to user
     await role.linkUser(users[0].id);
-
-    // Create new role
-    roleNotLinked = await Role.insert({
-        name: "test2",
-        permissions: ADMIN_ROLES,
-        priority: 0,
-        description: "test2",
-        visible: true,
-        icon: "test2",
-    });
-
-    expect(roleNotLinked).toBeDefined();
 
     // Create a role with higher priority than the user's role
     higherPriorityRole = await Role.insert({
         name: "higherPriorityRole",
-        permissions: DEFAULT_ROLES,
+        permissions: [RolePermissions.ManageRoles],
         priority: 3, // Higher priority than the user's role
         description: "Higher priority role",
         visible: true,
@@ -56,15 +37,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await role.delete();
-    await roleNotLinked.delete();
     await higherPriorityRole.delete();
     await deleteUsers();
 });
 
 // /api/v1/roles/:id
-describe(meta.route, () => {
+describe("/api/v1/roles/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
             method: "GET",
         });
 
@@ -73,7 +53,7 @@ describe(meta.route, () => {
 
     test("should return 404 if role does not exist", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
+            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
             {
                 method: "GET",
                 headers: {
@@ -85,90 +65,141 @@ describe(meta.route, () => {
         expect(response.status).toBe(404);
     });
 
-    test("should return the role", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+    test("should return role data", async () => {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
         });
 
-        expect(response.ok).toBe(true);
-        const output = await response.json();
-        expect(output).toMatchObject({
-            name: "test",
-            permissions: DEFAULT_ROLES,
-            priority: 2,
-            description: "test",
-            visible: true,
+        expect(response.status).toBe(200);
+        const responseData = await response.json();
+        expect(responseData).toMatchObject({
+            id: role.id,
+            name: role.data.name,
+            permissions: role.data.permissions,
+            priority: role.data.priority,
+            description: role.data.description,
+            visible: role.data.visible,
             icon: expect.any(String),
         });
     });
 
-    test("should return 403 if user does not have MANAGE_ROLES permission", async () => {
+    test("should return 401 if not authenticated", async () => {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: "updatedName" }),
+        });
+
+        expect(response.status).toBe(401);
+    });
+
+    test("should return 404 if role does not exist", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", roleNotLinked.id),
+            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
             {
-                method: "POST",
+                method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                    "Content-Type": "application/json",
                 },
+                body: JSON.stringify({ name: "updatedName" }),
+            },
+        );
+
+        expect(response.status).toBe(404);
+    });
+
+    test("should update role data", async () => {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: "updatedName" }),
+        });
+
+        expect(response.status).toBe(204);
+
+        const updatedRole = await Role.fromId(role.id);
+        expect(updatedRole?.data.name).toBe("updatedName");
+    });
+
+    test("should return 403 if user tries to update role with higher priority", async () => {
+        const response = await fakeRequest(
+            `/api/v1/roles/${higherPriorityRole.id}`,
+            {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name: "updatedName" }),
             },
         );
 
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "You do not have the required permissions to access this route. Missing: roles",
+            error: `Cannot edit role 'higherPriorityRole' with priority 3: your highest role priority is 2`,
         });
     });
 
-    test("should assign new role", async () => {
-        await role.update({
-            permissions: [RolePermissions.ManageRoles],
+    test("should return 403 if user tries to update role with permissions they do not have", async () => {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                permissions: [RolePermissions.Impersonate],
+            }),
         });
 
+        expect(response.status).toBe(403);
+        const output = await response.json();
+        expect(output).toMatchObject({
+            error: "You cannot add or remove the following permissions you do not yourself have: impersonate",
+        });
+    });
+
+    test("should return 401 if not authenticated", async () => {
+        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
+            method: "DELETE",
+        });
+
+        expect(response.status).toBe(401);
+    });
+
+    test("should return 404 if role does not exist", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", roleNotLinked.id),
+            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
             {
-                method: "POST",
+                method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
             },
         );
 
-        expect(response.status).toBe(204);
-
-        // Check if role was assigned
-        const response2 = await fakeRequest("/api/v1/roles", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
-
-        expect(response2.ok).toBe(true);
-        const roles = await response2.json();
-        // The default role will still be there
-        expect(roles).toHaveLength(3);
-        expect(roles).toContainEqual({
-            id: roleNotLinked.id,
-            name: "test2",
-            permissions: ADMIN_ROLES,
-            priority: 0,
-            description: "test2",
-            visible: true,
-            icon: expect.any(String),
-        });
-
-        await role.update({
-            permissions: [],
-        });
+        expect(response.status).toBe(404);
     });
 
-    test("should unassign role", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", role.id), {
+    test("should delete role", async () => {
+        const newRole = await Role.insert({
+            name: "test2",
+            permissions: [RolePermissions.ManageRoles],
+            priority: 2,
+            description: "test",
+            visible: true,
+            icon: "test",
+        });
+
+        const response = await fakeRequest(`/api/v1/roles/${newRole.id}`, {
             method: "DELETE",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -177,38 +208,15 @@ describe(meta.route, () => {
 
         expect(response.status).toBe(204);
 
-        // Check if role was unassigned
-        const response2 = await fakeRequest("/api/v1/roles", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
-
-        expect(response2.ok).toBe(true);
-        const roles = await response2.json();
-        // The default role will still be there
-        expect(roles).toHaveLength(2);
-        expect(roles).not.toContainEqual({
-            name: "test",
-            permissions: ADMIN_ROLES,
-            priority: 0,
-            description: "test",
-            visible: true,
-            icon: "test",
-        });
+        const deletedRole = await Role.fromId(newRole.id);
+        expect(deletedRole).toBeNull();
     });
 
-    test("should return 403 if user tries to add role with higher priority", async () => {
-        // Add MANAGE_ROLES permission to user
-        await role.update({
-            permissions: [RolePermissions.ManageRoles],
-        });
-
+    test("should return 403 if user tries to delete role with higher priority", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", higherPriorityRole.id),
+            `/api/v1/roles/${higherPriorityRole.id}`,
             {
-                method: "POST",
+                method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 },
@@ -218,11 +226,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "Cannot assign role 'higherPriorityRole' with priority 3 to user with highest role priority 0",
-        });
-
-        await role.update({
-            permissions: [],
+            error: `Cannot delete role 'higherPriorityRole' with priority 3: your highest role priority is 2`,
         });
     });
 });

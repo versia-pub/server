@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Role } from "@versia/kit/db";
+import { Role, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
@@ -13,7 +13,7 @@ export const meta = applyConfig({
         duration: 60,
         max: 20,
     },
-    route: "/api/v1/roles/:id",
+    route: "/api/v1/accounts/:id/roles/:role_id",
     permissions: {
         required: [],
         methodOverrides: {
@@ -26,63 +26,21 @@ export const meta = applyConfig({
 export const schemas = {
     param: z.object({
         id: z.string().uuid(),
+        role_id: z.string().uuid(),
     }),
 };
 
-const routeGet = createRoute({
-    method: "get",
-    path: "/api/v1/roles/{id}",
-    summary: "Get role data",
-    middleware: [auth(meta.auth)],
-    request: {
-        params: schemas.param,
-    },
-    responses: {
-        200: {
-            description: "Role",
-            content: {
-                "application/json": {
-                    schema: Role.schema,
-                },
-            },
-        },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        404: {
-            description: "Role not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-    },
-});
-
-const routePatch = createRoute({
-    method: "patch",
-    path: "/api/v1/roles/{id}",
-    summary: "Update role data",
+const routePost = createRoute({
+    method: "post",
+    path: "/api/v1/accounts/{id}/roles/{role_id}",
+    summary: "Assign role to user",
     middleware: [auth(meta.auth, meta.permissions)],
     request: {
         params: schemas.param,
-        body: {
-            content: {
-                "application/json": {
-                    schema: Role.schema.partial(),
-                },
-            },
-        },
     },
     responses: {
         204: {
-            description: "Role updated",
+            description: "Role assigned",
         },
         401: {
             description: "Unauthorized",
@@ -93,7 +51,7 @@ const routePatch = createRoute({
             },
         },
         404: {
-            description: "Role not found",
+            description: "User or role not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -113,15 +71,15 @@ const routePatch = createRoute({
 
 const routeDelete = createRoute({
     method: "delete",
-    path: "/api/v1/roles/{id}",
-    summary: "Delete role",
+    path: "/api/v1/accounts/{id}/roles/{role_id}",
+    summary: "Remove role from user",
     middleware: [auth(meta.auth, meta.permissions)],
     request: {
         params: schemas.param,
     },
     responses: {
         204: {
-            description: "Role deleted",
+            description: "Role removed",
         },
         401: {
             description: "Unauthorized",
@@ -132,7 +90,7 @@ const routeDelete = createRoute({
             },
         },
         404: {
-            description: "Role not found",
+            description: "User or role not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -151,37 +109,23 @@ const routeDelete = createRoute({
 });
 
 export default apiRoute((app) => {
-    app.openapi(routeGet, async (context) => {
+    app.openapi(routePost, async (context) => {
         const { user } = context.get("auth");
-        const { id } = context.req.valid("param");
+        const { id, role_id } = context.req.valid("param");
 
         if (!user) {
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const role = await Role.fromId(id);
+        const targetUser = await User.fromId(id);
+        const role = await Role.fromId(role_id);
 
         if (!role) {
             return context.json({ error: "Role not found" }, 404);
         }
 
-        return context.json(role.toApi(), 200);
-    });
-
-    app.openapi(routePatch, async (context) => {
-        const { user } = context.get("auth");
-        const { id } = context.req.valid("param");
-        const { permissions, priority, description, icon, name, visible } =
-            context.req.valid("json");
-
-        if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
-        }
-
-        const role = await Role.fromId(id);
-
-        if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+        if (!targetUser) {
+            return context.json({ error: "User not found" }, 404);
         }
 
         // Priority check
@@ -194,53 +138,34 @@ export default apiRoute((app) => {
         if (role.data.priority > userHighestRole.data.priority) {
             return context.json(
                 {
-                    error: `Cannot edit role '${role.data.name}' with priority ${role.data.priority}: your highest role priority is ${userHighestRole.data.priority}`,
+                    error: `Cannot assign role '${role.data.name}' with priority ${role.data.priority} to user: your highest role priority is ${userHighestRole.data.priority}`,
                 },
                 403,
             );
         }
 
-        // If updating role permissions, the user must already have the permissions they wish to add/remove
-        if (permissions) {
-            const userPermissions = user.getAllPermissions();
-            const hasPermissions = (
-                permissions as unknown as RolePermissions[]
-            ).every((p) => userPermissions.includes(p));
-
-            if (!hasPermissions) {
-                return context.json(
-                    {
-                        error: `You cannot add or remove the following permissions you do not yourself have: ${permissions.join(", ")}`,
-                    },
-                    403,
-                );
-            }
-        }
-
-        await role.update({
-            permissions: permissions as unknown as RolePermissions[],
-            priority,
-            description,
-            icon,
-            name,
-            visible,
-        });
+        await role.linkUser(targetUser.id);
 
         return context.newResponse(null, 204);
     });
 
     app.openapi(routeDelete, async (context) => {
         const { user } = context.get("auth");
-        const { id } = context.req.valid("param");
+        const { id, role_id } = context.req.valid("param");
 
         if (!user) {
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const role = await Role.fromId(id);
+        const targetUser = await User.fromId(id);
+        const role = await Role.fromId(role_id);
 
         if (!role) {
             return context.json({ error: "Role not found" }, 404);
+        }
+
+        if (!targetUser) {
+            return context.json({ error: "User not found" }, 404);
         }
 
         // Priority check
@@ -253,13 +178,13 @@ export default apiRoute((app) => {
         if (role.data.priority > userHighestRole.data.priority) {
             return context.json(
                 {
-                    error: `Cannot delete role '${role.data.name}' with priority ${role.data.priority}: your highest role priority is ${userHighestRole.data.priority}`,
+                    error: `Cannot remove role '${role.data.name}' with priority ${role.data.priority} from user: your highest role priority is ${userHighestRole.data.priority}`,
                 },
                 403,
             );
         }
 
-        await role.delete();
+        await role.unlinkUser(targetUser.id);
 
         return context.newResponse(null, 204);
     });

@@ -22,13 +22,13 @@ type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
     public static schema = z.object({
-        id: z.string(),
-        name: z.string(),
+        id: z.string().uuid(),
+        name: z.string().min(1).max(128),
         permissions: z.array(z.nativeEnum(RolePermission)),
-        priority: z.number(),
-        description: z.string().nullable(),
+        priority: z.number().int(),
+        description: z.string().min(0).max(1024).nullable(),
         visible: z.boolean(),
-        icon: z.string().nullable(),
+        icon: z.string().url().nullable(),
     });
 
     public static $type: RoleType;
@@ -68,6 +68,29 @@ export class Role extends BaseInterface<typeof Roles> {
             return null;
         }
         return new Role(found);
+    }
+
+    public static async getAll(): Promise<Role[]> {
+        return (await Role.manyFromSql(undefined)).concat(
+            new Role({
+                id: "default",
+                name: "Default",
+                permissions: config.permissions.default,
+                priority: 0,
+                description: "Default role for all users",
+                visible: false,
+                icon: null,
+            }),
+            new Role({
+                id: "admin",
+                name: "Admin",
+                permissions: config.permissions.admin,
+                priority: 2 ** 31 - 1,
+                description: "Default role for all administrators",
+                visible: false,
+                icon: null,
+            }),
+        );
     }
 
     public static async getUserRoles(

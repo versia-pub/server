@@ -314,6 +314,17 @@ export const auth = (
         // Only exists for type casting, as otherwise weird errors happen with Hono
         const fakeResponse = context.json({});
 
+        // Authentication check
+        const authCheck = checkRouteNeedsAuth(auth, authData, context) as
+            | typeof fakeResponse
+            | AuthData;
+
+        if (authCheck instanceof Response) {
+            return authCheck;
+        }
+
+        context.set("auth", authCheck);
+
         // Permissions check
         if (permissionData) {
             const permissionCheck = checkPermissions(
@@ -326,6 +337,7 @@ export const auth = (
             }
         }
 
+        // Challenge check
         if (challengeData && config.validation.challenges.enabled) {
             const challengeCheck = await checkRouteNeedsChallenge(
                 challengeData,
@@ -335,16 +347,6 @@ export const auth = (
                 return challengeCheck as typeof fakeResponse;
             }
         }
-
-        const authCheck = checkRouteNeedsAuth(auth, authData, context) as
-            | typeof fakeResponse
-            | AuthData;
-
-        if (authCheck instanceof Response) {
-            return authCheck;
-        }
-
-        context.set("auth", authCheck);
 
         await next();
     });

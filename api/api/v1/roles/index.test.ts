@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
-import { ADMIN_ROLES } from "@versia/kit/tables";
+import { RolePermissions } from "@versia/kit/tables";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 import { meta } from "./index.ts";
@@ -12,8 +12,8 @@ beforeAll(async () => {
     // Create new role
     role = await Role.insert({
         name: "test",
-        permissions: ADMIN_ROLES,
-        priority: 0,
+        permissions: [RolePermissions.ManageRoles],
+        priority: 10,
         description: "test",
         visible: true,
         icon: "test",
@@ -27,6 +27,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await deleteUsers();
+    await role.delete();
 });
 
 // /api/v1/roles
@@ -49,23 +50,108 @@ describe(meta.route, () => {
 
         expect(response.ok).toBe(true);
         const roles = await response.json();
-        expect(roles).toHaveLength(2);
-        expect(roles[0]).toMatchObject({
+        expect(roles).toContainEqual({
             name: "test",
-            permissions: ADMIN_ROLES,
-            priority: 0,
+            permissions: [RolePermissions.ManageRoles],
+            priority: 10,
             description: "test",
             visible: true,
             icon: expect.any(String),
+            id: role.id,
         });
 
-        expect(roles[1]).toMatchObject({
+        expect(roles).toContainEqual({
+            id: "default",
             name: "Default",
             permissions: config.permissions.default,
             priority: 0,
             description: "Default role for all users",
             visible: false,
             icon: null,
+        });
+    });
+
+    test("should create a new role", async () => {
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: "newRole",
+                permissions: [RolePermissions.ManageRoles],
+                priority: 1,
+                description: "newRole",
+                visible: true,
+                icon: "https://example.com/icon.png",
+            }),
+        });
+
+        expect(response.ok).toBe(true);
+        const newRole = await response.json();
+        expect(newRole).toMatchObject({
+            name: "newRole",
+            permissions: [RolePermissions.ManageRoles],
+            priority: 1,
+            description: "newRole",
+            visible: true,
+            icon: expect.any(String),
+        });
+
+        // Cleanup
+        const createdRole = await Role.fromId(newRole.id);
+
+        expect(createdRole).toBeDefined();
+
+        await createdRole?.delete();
+    });
+
+    test("should return 403 if user tries to create a role with higher priority", async () => {
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: "newRole",
+                permissions: [RolePermissions.ManageBlocks],
+                priority: 11,
+                description: "newRole",
+                visible: true,
+                icon: "https://example.com/icon.png",
+            }),
+        });
+
+        expect(response.status).toBe(403);
+        const output = await response.json();
+        expect(output).toMatchObject({
+            error: "You cannot create a role with higher priority than your own",
+        });
+    });
+
+    test("should return 403 if user tries to create a role with permissions they do not have", async () => {
+        const response = await fakeRequest(meta.route, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: "newRole",
+                permissions: [RolePermissions.Impersonate],
+                priority: 1,
+                description: "newRole",
+                visible: true,
+                icon: "https://example.com/icon.png",
+            }),
+        });
+
+        expect(response.status).toBe(403);
+        const output = await response.json();
+        expect(output).toMatchObject({
+            error: "You cannot create a role with the following permissions you do not yourself have: impersonate",
         });
     });
 });
