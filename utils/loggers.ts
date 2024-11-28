@@ -216,7 +216,7 @@ export const configureLoggers = (silent = false): Promise<void> =>
             },
             {
                 category: ["logtape", "meta"],
-                level: "error",
+                lowestLevel: "error",
             },
             {
                 category: "plugin",

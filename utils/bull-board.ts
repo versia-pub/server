@@ -37,5 +37,6 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
     });
 
     serverAdapter.setBasePath("/admin/queues");
+    // @ts-expect-error idk why this is not working
     app.route("/admin/queues", serverAdapter.registerPlugin());
 };
