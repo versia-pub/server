@@ -118,7 +118,9 @@ Get a list of all roles on the instance.
   - `0.7.0`: Added.
   - `0.8.0`: Now returns all instance roles.
 
-### Example
+### Request
+
+#### Example
 
 ```http
 GET /api/v1/roles
@@ -305,6 +307,14 @@ Create a new role.
 
 ### Request
 
+- `name` (string, required): The name of the role.
+  - 1-128 characters.
+- `permissions` (array of strings, optional): The permissions granted by the role. Defaults to an empty array.
+- `priority` (number, optional): The priority of the role. Defaults to `0`.
+- `description` (string, optional): A description of the role.
+- `visible` (boolean, optional): Whether the role is visible in the UI. Defaults to `false`.
+- `icon` (string, optional): An icon URL for the role.
+
 #### Example
 
 ```http
@@ -395,6 +405,14 @@ Update a role's data.
   - `0.8.0`: Added.
 
 ### Request
+
+- `name` (string, required): The name of the role.
+  - 1-128 characters.
+- `permissions` (array of strings, optional): The permissions granted by the role. Defaults to an empty array.
+- `priority` (number, optional): The priority of the role. Defaults to `0`.
+- `description` (string, optional): A description of the role.
+- `visible` (boolean, optional): Whether the role is visible in the UI. Defaults to `false`.
+- `icon` (string, optional): An icon URL for the role.
 
 #### Example
 
