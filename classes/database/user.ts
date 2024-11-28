@@ -78,6 +78,7 @@ type UserWithRelations = UserWithInstance & {
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
+    // @ts-expect-error Roles are weird
     public static schema: z.ZodType<ApiAccount> = z.object({
         id: z.string(),
         username: z.string(),

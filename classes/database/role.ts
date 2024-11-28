@@ -24,11 +24,11 @@ export class Role extends BaseInterface<typeof Roles> {
     public static schema = z.object({
         id: z.string().uuid(),
         name: z.string().min(1).max(128),
-        permissions: z.array(z.nativeEnum(RolePermission)),
-        priority: z.number().int(),
-        description: z.string().min(0).max(1024).nullable(),
-        visible: z.boolean(),
-        icon: z.string().url().nullable(),
+        permissions: z.array(z.nativeEnum(RolePermission)).default([]),
+        priority: z.number().int().default(0),
+        description: z.string().min(0).max(1024).optional(),
+        visible: z.boolean().default(true),
+        icon: z.string().url().optional(),
     });
 
     public static $type: RoleType;
@@ -225,9 +225,9 @@ export class Role extends BaseInterface<typeof Roles> {
             name: this.data.name,
             permissions: this.data.permissions as unknown as RolePermission[],
             priority: this.data.priority,
-            description: this.data.description,
+            description: this.data.description ?? undefined,
             visible: this.data.visible,
-            icon: proxyUrl(this.data.icon),
+            icon: proxyUrl(this.data.icon) ?? undefined,
         };
     }
 }
