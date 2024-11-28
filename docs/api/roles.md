@@ -406,7 +406,7 @@ Update a role's data.
 
 ### Request
 
-- `name` (string, required): The name of the role.
+- `name` (string, optional): The name of the role.
   - 1-128 characters.
 - `permissions` (array of strings, optional): The permissions granted by the role. Defaults to an empty array.
 - `priority` (number, optional): The priority of the role. Defaults to `0`.
