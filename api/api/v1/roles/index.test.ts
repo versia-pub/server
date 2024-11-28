@@ -67,7 +67,6 @@ describe(meta.route, () => {
             priority: 0,
             description: "Default role for all users",
             visible: false,
-            icon: null,
         });
     });
 
