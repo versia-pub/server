@@ -1,6 +1,6 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
-import type { Emoji as ApiEmoji } from "@versia/client/types";
+import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Emojis, Instances } from "@versia/kit/tables";
@@ -187,7 +187,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         );
     }
 
-    public toApi(): ApiEmoji & { id: string } {
+    public toApi(): APIEmoji {
         return {
             id: this.id,
             shortcode: this.data.shortcode,
@@ -195,6 +195,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             url: proxyUrl(this.data.url) ?? "",
             visible_in_picker: this.data.visibleInPicker,
             category: this.data.category ?? undefined,
+            global: this.data.ownerId === null,
         };
     }
 
