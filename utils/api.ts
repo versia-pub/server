@@ -130,7 +130,7 @@ export const parseUserAddress = (
     address: string,
 ): {
     username: string;
-    domain: string;
+    domain?: string;
 } => {
     let output = address;
     // Remove leading @ if it exists

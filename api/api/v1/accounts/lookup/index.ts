@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
+import { apiRoute, applyConfig, auth, parseUserAddress } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Instance, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -71,23 +71,14 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         // Check if acct is matching format username@domain.com or @username@domain.com
-        const accountMatches = [...acct.trim().matchAll(userAddressValidator)];
-
-        if (accountMatches.length === 0) {
-            return context.json({ error: 'Invalid parameter "acct"' }, 422);
-        }
-
-        const [, username, instanceHost] = accountMatches[0];
+        const { username, domain } = parseUserAddress(acct);
 
         if (!username) {
             throw new Error("Invalid username");
         }
 
         // User is local
-        if (
-            !instanceHost ||
-            instanceHost === new URL(config.http.base_url).host
-        ) {
+        if (!domain || domain === new URL(config.http.base_url).host) {
             const account = await User.fromSql(
                 and(eq(Users.username, username), isNull(Users.instanceId)),
             );
@@ -104,13 +95,10 @@ export default apiRoute((app) =>
 
         // User is remote
         // Try to fetch it from database
-        const instance = await Instance.resolveFromHost(instanceHost);
+        const instance = await Instance.resolveFromHost(domain);
 
         if (!instance) {
-            return context.json(
-                { error: `Instance ${instanceHost} not found` },
-                404,
-            );
+            return context.json({ error: `Instance ${domain} not found` }, 404);
         }
 
         const account = await User.fromSql(
@@ -127,7 +115,7 @@ export default apiRoute((app) =>
         // Fetch from remote instance
         const manager = await (user ?? User).getFederationRequester();
 
-        const uri = await User.webFinger(manager, username, instanceHost);
+        const uri = await User.webFinger(manager, username, domain);
 
         const foundAccount = await User.resolve(uri);
 

@@ -8,7 +8,7 @@ import {
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
@@ -136,7 +136,9 @@ export default apiRoute((app) =>
                         .where(
                             and(
                                 eq(Users.username, username),
-                                eq(Instances.baseUrl, domain),
+                                domain
+                                    ? eq(Instances.baseUrl, domain)
+                                    : isNull(Users.instanceId),
                             ),
                         )
                 )[0]?.id;
@@ -154,7 +156,7 @@ export default apiRoute((app) =>
                     );
                 }
 
-                if (resolve) {
+                if (resolve && domain) {
                     const manager = await (
                         self ?? User
                     ).getFederationRequester();
