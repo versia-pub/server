@@ -106,6 +106,13 @@ export default apiRoute((app) =>
         // Try to fetch it from database
         const instance = await Instance.resolveFromHost(instanceHost);
 
+        if (!instance) {
+            return context.json(
+                { error: `Instance ${instanceHost} not found` },
+                404,
+            );
+        }
+
         const account = await User.fromSql(
             and(
                 eq(Users.username, username),

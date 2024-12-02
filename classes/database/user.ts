@@ -599,17 +599,25 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const updated = await User.saveFromRemote(this.getUri());
 
+        if (!updated) {
+            throw new Error("Failed to update user from remote");
+        }
+
         this.data = updated.data;
 
         return this;
     }
 
-    public static async saveFromRemote(uri: string): Promise<User> {
+    public static async saveFromRemote(uri: string): Promise<User | null> {
         if (!URL.canParse(uri)) {
             throw new Error(`Invalid URI: ${uri}`);
         }
 
         const instance = await Instance.resolve(uri);
+
+        if (!instance) {
+            return null;
+        }
 
         if (instance.data.protocol === "versia") {
             return await User.saveFromVersia(uri, instance);
@@ -636,12 +644,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     private static async saveFromVersia(
         uri: string,
         instance: Instance,
-    ): Promise<User> {
+    ): Promise<User | null> {
         const requester = await User.getFederationRequester();
-        const { data: json } = await requester.get<Partial<VersiaUser>>(uri, {
-            // @ts-expect-error Bun extension
-            proxy: config.http.proxy.address,
-        });
+        const output = await requester
+            .get<Partial<VersiaUser>>(uri, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy.address,
+            })
+            .catch(() => null);
+
+        if (!output) {
+            return null;
+        }
+
+        const { data: json } = output;
 
         const validator = new EntityValidator();
         const data = await validator.User(json);

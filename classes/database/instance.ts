@@ -319,7 +319,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
-    public static resolveFromHost(host: string): Promise<Instance> {
+    public static resolveFromHost(host: string): Promise<Instance | null> {
         if (host.startsWith("http")) {
             const url = new URL(host).host;
 
@@ -331,7 +331,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return Instance.resolve(url.origin);
     }
 
-    public static async resolve(url: string): Promise<Instance> {
+    public static async resolve(url: string): Promise<Instance | null> {
         const logger = getLogger(["federation", "resolvers"]);
         const host = new URL(url).host;
 
@@ -347,7 +347,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
         if (!output) {
             logger.error`Failed to resolve instance ${chalk.bold(host)}`;
-            throw new Error("Failed to resolve instance");
+            return null;
         }
 
         const { metadata, protocol } = output;

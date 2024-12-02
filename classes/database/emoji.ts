@@ -29,6 +29,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         visible_in_picker: z.boolean(),
         category: z.string().optional(),
         static_url: z.string(),
+        global: z.boolean(),
     });
 
     public static $type: EmojiWithInstance;
