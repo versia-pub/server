@@ -37,6 +37,11 @@ export default class FederationUserFetch extends BaseCommand<
 
         const { username, domain: host } = parseUserAddress(args.address);
 
+        if (!host) {
+            this.log("Address must contain a domain.");
+            this.exit(1);
+        }
+
         // Check instance exists, if not, create it
         await Instance.resolve(`https://${host}`);
 
