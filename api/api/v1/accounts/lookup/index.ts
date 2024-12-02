@@ -1,9 +1,10 @@
-import { apiRoute, applyConfig, auth, userAddressValidatorRemote } from "@/api";
+import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
+import { Instance, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
+import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -53,6 +54,14 @@ const route = createRoute({
                 },
             },
         },
+        422: {
+            description: "Invalid parameter",
+            content: {
+                "application/json": {
+                    schema: ErrorSchema,
+                },
+            },
+        },
     },
 });
 
@@ -62,43 +71,63 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         // Check if acct is matching format username@domain.com or @username@domain.com
-        const accountMatches = acct?.trim().match(userAddressValidatorRemote);
+        const accountMatches = [...acct.trim().matchAll(userAddressValidator)];
 
-        if (accountMatches) {
-            // Remove leading @ if it exists
-            if (accountMatches[0].startsWith("@")) {
-                accountMatches[0] = accountMatches[0].slice(1);
-            }
-
-            const [username, domain] = accountMatches[0].split("@");
-
-            const manager = await (user ?? User).getFederationRequester();
-
-            const uri = await User.webFinger(manager, username, domain);
-
-            const foundAccount = await User.resolve(uri);
-
-            if (foundAccount) {
-                return context.json(foundAccount.toApi(), 200);
-            }
-
-            return context.json({ error: "Account not found" }, 404);
+        if (accountMatches.length === 0) {
+            return context.json({ error: 'Invalid parameter "acct"' }, 422);
         }
 
-        let username = acct;
-        if (username.startsWith("@")) {
-            username = username.slice(1);
+        const [, username, instanceHost] = accountMatches[0];
+
+        if (!username) {
+            throw new Error("Invalid username");
         }
 
-        const account = await User.fromSql(eq(Users.username, username));
+        // User is local
+        if (
+            !instanceHost ||
+            instanceHost === new URL(config.http.base_url).host
+        ) {
+            const account = await User.fromSql(
+                and(eq(Users.username, username), isNull(Users.instanceId)),
+            );
+
+            if (account) {
+                return context.json(account.toApi(), 200);
+            }
+
+            return context.json(
+                { error: `Account with username ${username} not found` },
+                404,
+            );
+        }
+
+        // User is remote
+        // Try to fetch it from database
+        const instance = await Instance.resolveFromHost(instanceHost);
+
+        const account = await User.fromSql(
+            and(
+                eq(Users.username, username),
+                eq(Users.instanceId, instance.id),
+            ),
+        );
 
         if (account) {
             return context.json(account.toApi(), 200);
         }
 
-        return context.json(
-            { error: `Account with username ${username} not found` },
-            404,
-        );
+        // Fetch from remote instance
+        const manager = await (user ?? User).getFederationRequester();
+
+        const uri = await User.webFinger(manager, username, instanceHost);
+
+        const foundAccount = await User.resolve(uri);
+
+        if (foundAccount) {
+            return context.json(foundAccount.toApi(), 200);
+        }
+
+        return context.json({ error: "Account not found" }, 404);
     }),
 );
