@@ -197,6 +197,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             visible_in_picker: this.data.visibleInPicker,
             category: this.data.category ?? undefined,
             global: this.data.ownerId === null,
+            description: this.data.alt ?? undefined,
         };
     }
 

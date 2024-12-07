@@ -309,7 +309,10 @@ export default apiRoute((app) => {
         modified.shortcode = shortcode ?? modified.shortcode;
         modified.alt = alt ?? modified.alt;
         modified.category = category ?? modified.category;
-        modified.ownerId = emojiGlobal ? null : user.data.id;
+
+        if (emojiGlobal !== undefined) {
+            modified.ownerId = emojiGlobal ? null : user.data.id;
+        }
 
         await emoji.update(modified);
 
