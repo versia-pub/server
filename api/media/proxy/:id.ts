@@ -85,7 +85,7 @@ export default apiRoute((app) =>
                 .get("Content-Disposition")
                 ?.match(/filename="(.+)"/)?.[1] || id.split("/").pop();
 
-        return context.newResponse(media.body, media.status as StatusCode, {
+        return context.body(media.body, media.status as StatusCode, {
             "Content-Type":
                 media.headers.get("Content-Type") || "application/octet-stream",
             "Content-Length": media.headers.get("Content-Length") || "0",

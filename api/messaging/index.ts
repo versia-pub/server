@@ -43,6 +43,6 @@ export default apiRoute((app) =>
         getLogger(["federation", "messaging"])
             .info`Received message via ${chalk.bold("Instance Messaging")}:\n${content}`;
 
-        return context.newResponse(null, 200);
+        return context.body(null, 200);
     }),
 );

@@ -76,7 +76,7 @@ export default apiRoute((app) =>
         }
 
         // Can't directly copy file into Response because this crashes Bun for now
-        return context.newResponse(buffer, 200, {
+        return context.body(buffer, 200, {
             "Content-Type": file.type || "application/octet-stream",
             "Content-Length": `${file.size - start}`,
             "Content-Range": `bytes ${start}-${end}/${file.size}`,

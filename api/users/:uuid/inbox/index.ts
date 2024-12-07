@@ -116,7 +116,7 @@ export default apiRoute((app) =>
             ip: context.env.ip ?? null,
         });
 
-        return context.newResponse(
+        return context.body(
             "Request processing initiated.\nImplement the Instance Messaging Extension to receive any eventual feedback (errors, etc.)",
             200,
         );

@@ -68,6 +68,6 @@ export default apiRoute((app) =>
             dismissed: true,
         });
 
-        return context.newResponse(null, 200);
+        return context.body(null, 200);
     }),
 );

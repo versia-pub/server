@@ -33,7 +33,7 @@ export const bait = createMiddleware(async (context, next) => {
     if (requestIp?.address) {
         for (const ip of config.http.bait.bait_ips) {
             if (matches(ip, requestIp.address)) {
-                return context.newResponse(file.stream());
+                return context.body(file.stream());
             }
         }
     }
@@ -43,7 +43,7 @@ export const bait = createMiddleware(async (context, next) => {
 
     for (const agent of config.http.bait.bait_user_agents) {
         if (new RegExp(agent).test(ua)) {
-            return context.newResponse(file.stream());
+            return context.body(file.stream());
         }
     }
 

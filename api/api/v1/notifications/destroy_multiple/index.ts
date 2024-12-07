@@ -60,6 +60,6 @@ export default apiRoute((app) =>
 
         await user.clearSomeNotifications(ids);
 
-        return context.newResponse(null, 200);
+        return context.body(null, 200);
     }),
 );

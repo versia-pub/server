@@ -226,7 +226,7 @@ export default apiRoute((app) => {
             visible,
         });
 
-        return context.newResponse(null, 204);
+        return context.body(null, 204);
     });
 
     app.openapi(routeDelete, async (context) => {
@@ -261,6 +261,6 @@ export default apiRoute((app) => {
 
         await role.delete();
 
-        return context.newResponse(null, 204);
+        return context.body(null, 204);
     });
 });
