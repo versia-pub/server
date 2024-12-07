@@ -47,6 +47,6 @@ export default apiRoute((app) =>
 
         await user.clearAllNotifications();
 
-        return context.body(null, 200);
+        return context.text("", 200);
     }),
 );

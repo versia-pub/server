@@ -337,6 +337,6 @@ export default apiRoute((app) =>
             email: email ?? "",
         });
 
-        return context.body(null, 200);
+        return context.text("", 200);
     }),
 );

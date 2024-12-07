@@ -34,6 +34,7 @@ describe(meta.route, () => {
         });
 
         expect(response.ok).toBe(true);
+        expect(response.headers.get("Content-Type")).not.toContain("json");
     });
 
     test("should refuse invalid emails", async () => {

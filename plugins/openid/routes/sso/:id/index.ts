@@ -201,7 +201,7 @@ export default (plugin: PluginType): void => {
                     .delete(OpenIdAccounts)
                     .where(eq(OpenIdAccounts.id, account.id));
 
-                return context.body(null, 204);
+                return context.text("", 204);
             },
         );
     });

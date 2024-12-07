@@ -343,6 +343,6 @@ export default apiRoute((app) => {
             .delete(Filters)
             .where(and(eq(Filters.userId, user.id), eq(Filters.id, id)));
 
-        return context.body(null, 204);
+        return context.text("", 204);
     });
 });

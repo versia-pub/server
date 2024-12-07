@@ -146,7 +146,7 @@ export default apiRoute((app) => {
 
         await role.linkUser(targetUser.id);
 
-        return context.body(null, 204);
+        return context.text("", 204);
     });
 
     app.openapi(routeDelete, async (context) => {
@@ -186,6 +186,6 @@ export default apiRoute((app) => {
 
         await role.unlinkUser(targetUser.id);
 
-        return context.body(null, 204);
+        return context.text("", 204);
     });
 });
