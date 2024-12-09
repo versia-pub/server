@@ -51,6 +51,12 @@ jobs:
               uses: docker/metadata-action@v5 # v5.0.0
               with:
                   images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+                  tags: |
+                      type=schedule
+                      type=ref,event=branch
+                      type=ref,event=tag
+                      type=ref,event=pr
+                      type=sha
 
             - name: Get the commit hash
               run: echo "GIT_COMMIT=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
