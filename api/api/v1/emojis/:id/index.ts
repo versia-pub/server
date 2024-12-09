@@ -306,13 +306,13 @@ export default apiRoute((app) => {
             if (element instanceof File) {
                 const uploaded = await mediaManager.addFile(element);
 
-                url = uploaded.path;
+                url = Attachment.getUrl(uploaded.path);
                 contentType = uploaded.uploadedFile.type;
             } else {
                 url = element;
             }
 
-            modified.url = Attachment.getUrl(url);
+            modified.url = url;
             modified.contentType = contentType;
         }
 

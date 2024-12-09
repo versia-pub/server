@@ -167,7 +167,7 @@ export default apiRoute((app) =>
 
             const uploaded = await mediaManager.addFile(element);
 
-            url = uploaded.path;
+            url = Attachment.getUrl(uploaded.path);
             contentType = uploaded.uploadedFile.type;
         } else {
             url = element;
@@ -175,7 +175,7 @@ export default apiRoute((app) =>
 
         const emoji = await Emoji.insert({
             shortcode,
-            url: Attachment.getUrl(url),
+            url,
             visibleInPicker: true,
             ownerId: global ? null : user.id,
             category,
