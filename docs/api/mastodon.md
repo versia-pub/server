@@ -15,7 +15,7 @@ Refetches the user's profile information from remote servers. Does not work for 
 - **Permissions**: `read:account`
 - **Version History**:
   - `0.7.0`: Added.
-  
+
 ### Request
 
 #### Example
@@ -317,6 +317,13 @@ Extra attributes have been added to the `/api/v2/instance` endpoint. These are i
 ```ts
 type ExtendedInstanceV2 = Instance & {
     versia_version: string;
+    configuration: Instance["configuration"] & {
+        emojis: {
+            // In bytes
+            emoji_size_limit: number;
+            max_emoji_description_characters: number;
+        };
+    };
     sso: {
         forced: boolean;
         providers: SSOProvider[];

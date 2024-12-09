@@ -200,6 +200,11 @@ export default apiRoute((app) =>
                     max_description_characters:
                         config.validation.max_media_description_size,
                 },
+                emojis: {
+                    emoji_size_limit: config.validation.max_emoji_size,
+                    max_emoji_description_characters:
+                        config.validation.max_emoji_description_size,
+                },
                 polls: {
                     max_characters_per_option:
                         config.validation.max_poll_option_size,
