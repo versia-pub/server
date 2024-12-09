@@ -315,12 +315,13 @@ Single Sign-On (SSO) settings for the instance. This object contains two fields:
 Extra attributes have been added to the `/api/v2/instance` endpoint. These are identical to the `/api/v1/instance` endpoint, except that the `banner` attribute uses the normal Mastodon API attribute.
 
 ```ts
-type ExtendedInstanceV2 = Instance & {
+type ExtendedInstanceV2 = InstanceV2 & {
     versia_version: string;
     configuration: Instance["configuration"] & {
         emojis: {
             // In bytes
             emoji_size_limit: number;
+            max_emoji_shortcode_characters: number;
             max_emoji_description_characters: number;
         };
     };

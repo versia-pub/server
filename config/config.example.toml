@@ -165,6 +165,7 @@ max_media_size = 40_000_000
 max_media_attachments = 10
 max_media_description_size = 1000
 max_emoji_size = 1000000
+max_emoji_shortcode_size = 100
 max_emoji_description_size = 1000
 max_poll_options = 20
 max_poll_option_size = 500

@@ -33,7 +33,7 @@ export const schemas = {
                 .string()
                 .trim()
                 .min(1)
-                .max(64)
+                .max(config.validation.max_emoji_shortcode_size)
                 .regex(
                     emojiValidator,
                     "Shortcode must only contain letters (any case), numbers, dashes or underscores.",

@@ -202,6 +202,8 @@ export default apiRoute((app) =>
                 },
                 emojis: {
                     emoji_size_limit: config.validation.max_emoji_size,
+                    max_emoji_shortcode_characters:
+                        config.validation.max_emoji_shortcode_size,
                     max_emoji_description_characters:
                         config.validation.max_emoji_description_size,
                 },

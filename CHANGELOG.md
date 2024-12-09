@@ -35,6 +35,7 @@ remove_on_failure = 31536000
 
 [validation]
 max_emoji_size = 1000000
+max_emoji_shortcode_size = 100
 max_emoji_description_size = 1000
 ```
 
