@@ -298,20 +298,17 @@ export const replaceTextMentions = (text: string, mentions: User[]): string => {
             );
         }
 
-        return finalText
-            .replace(
-                createRegExp(
+        return finalText.replace(
+            createRegExp(
+                exactly(
                     exactly(`@${username}`)
                         .notBefore(anyOf(letter, digit, charIn("@")))
                         .notAfter(anyOf(letter, digit, charIn("@"))),
-                    [global],
-                ),
-                linkTemplate(`@${username}@${baseHost}`),
-            )
-            .replaceAll(
-                `@${username}@${baseHost}`,
-                linkTemplate(`@${username}@${baseHost}`),
-            );
+                ).or(exactly(`@${username}@${baseHost}`)),
+                [global],
+            ),
+            linkTemplate(`@${username}@${baseHost}`),
+        );
     }, text);
 };
 

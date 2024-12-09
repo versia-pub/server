@@ -43,7 +43,6 @@ mock.module("@versia/kit/db", () => ({
     },
     Notification: {
         fromSql: jest.fn(),
-        insert: jest.fn(),
     },
 }));
 
@@ -242,6 +241,7 @@ describe("InboxProcessor", () => {
                 id: "followee-id",
                 data: { isLocked: false },
                 sendFollowAccept: jest.fn(),
+                notify: jest.fn(),
             };
             const mockRelationship = {
                 data: { following: false },

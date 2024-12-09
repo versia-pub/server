@@ -310,6 +310,9 @@ describe(meta.route, () => {
 
             const object = (await response.json()) as ApiStatus;
 
+            expect(object.content).toBe(
+                `<p>Hello, <a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${users[1].getUri()}">@${users[1].data.username}</a>!</p>`,
+            );
             expect(object.mentions).toBeArrayOfSize(1);
             expect(object.mentions[0]).toMatchObject({
                 id: users[1].id,
