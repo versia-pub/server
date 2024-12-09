@@ -275,11 +275,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 senderId: this.id,
             });
         } else {
-            await Notification.insert({
-                accountId: this.id,
-                type: otherUser.data.isLocked ? "follow_request" : "follow",
-                notifiedId: otherUser.id,
-            });
+            await otherUser.createNotification(
+                otherUser.data.isLocked ? "follow_request" : "follow",
+                this,
+            );
         }
 
         return foundRelationship;
@@ -295,20 +294,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 recipientId: followee.id,
                 senderId: this.id,
             });
-        } else if (!this.data.isLocked) {
-            if (relationship.data.following) {
-                await Notification.insert({
-                    accountId: followee.id,
-                    type: "unfollow",
-                    notifiedId: this.id,
-                });
-            } else {
-                await Notification.insert({
-                    accountId: followee.id,
-                    type: "cancel-follow",
-                    notifiedId: this.id,
-                });
-            }
         }
 
         await relationship.update({
@@ -526,12 +511,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (this.isLocal() && note.author.isLocal()) {
             // Notify the user that their post has been favourited
-            await Notification.insert({
-                accountId: this.id,
-                type: "favourite",
-                notifiedId: note.author.id,
-                noteId: note.id,
-            });
+            await note.author.createNotification("favourite", this, note);
         } else if (this.isLocal() && note.author.isRemote()) {
             // Federate the like
             this.federateToFollowers(newLike.toVersia());
@@ -565,6 +545,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             // User is local, federate the delete
             this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }
+    }
+
+    public async createNotification(
+        type: "mention" | "follow_request" | "follow" | "favourite" | "reblog",
+        relatedUser: User,
+        note?: Note,
+    ): Promise<void> {
+        await Notification.insert({
+            accountId: relatedUser.id,
+            type,
+            notifiedId: this.id,
+            noteId: note?.id ?? null,
+        });
     }
 
     public async clearAllNotifications(): Promise<void> {

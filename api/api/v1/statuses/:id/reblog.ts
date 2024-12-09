@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, Notification } from "@versia/kit/db";
+import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -138,12 +138,7 @@ export default apiRoute((app) =>
         }
 
         if (note.author.isLocal() && user.isLocal()) {
-            await Notification.insert({
-                accountId: user.id,
-                notifiedId: note.author.id,
-                type: "reblog",
-                noteId: newReblog.data.reblogId,
-            });
+            await note.author.createNotification("reblog", user, newReblog);
         }
 
         return context.json(await finalNewReblog.toApi(user), 201);

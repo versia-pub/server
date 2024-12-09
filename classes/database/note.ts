@@ -1,5 +1,6 @@
 import { idValidator } from "@/api";
 import { localObjectUri } from "@/constants";
+import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
@@ -13,7 +14,7 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
-import { Instance, Notification, db } from "@versia/kit/db";
+import { Instance, db } from "@versia/kit/db";
 import {
     Attachments,
     EmojiToNote,
@@ -364,14 +365,12 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             },
         );
 
-        const fusedUsers = [...mentionedUsers, ...usersThatCanSeePost];
-
-        const deduplicatedUsersById = fusedUsers.filter(
-            (user, index, self) =>
-                index === self.findIndex((t) => t.id === user.id),
+        const fusedUsers = mergeAndDeduplicate(
+            mentionedUsers,
+            usersThatCanSeePost,
         );
 
-        return deduplicatedUsersById;
+        return fusedUsers;
     }
 
     public get author(): User {
@@ -452,22 +451,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             data.content["text/plain"]?.content ??
             Object.entries(data.content)[0][1].content;
 
-        const parsedMentions = [
-            ...(data.mentions ?? []),
-            ...(await parseTextMentions(plaintextContent, data.author)),
-            // Deduplicate by .id
-        ].filter(
-            (mention, index, self) =>
-                index === self.findIndex((t) => t.id === mention.id),
+        const parsedMentions = mergeAndDeduplicate(
+            data.mentions ?? [],
+            await parseTextMentions(plaintextContent, data.author),
         );
-
-        const parsedEmojis = [
-            ...(data.emojis ?? []),
-            ...(await Emoji.parseFromText(plaintextContent)),
-            // Deduplicate by .id
-        ].filter(
-            (emoji, index, self) =>
-                index === self.findIndex((t) => t.id === emoji.id),
+        const parsedEmojis = mergeAndDeduplicate(
+            data.emojis ?? [],
+            await Emoji.parseFromText(plaintextContent),
         );
 
         const htmlContent = await contentToHtml(data.content, parsedMentions);
@@ -500,14 +490,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         await newNote.updateAttachments(data.mediaAttachments ?? []);
 
         // Send notifications for mentioned local users
-        for (const mention of parsedMentions ?? []) {
+        for (const mention of parsedMentions) {
             if (mention.isLocal()) {
-                await Notification.insert({
-                    accountId: data.author.id,
-                    notifiedId: mention.id,
-                    type: "mention",
-                    noteId: newNote.id,
-                });
+                await mention.createNotification(
+                    "mention",
+                    data.author,
+                    newNote,
+                );
             }
         }
 
@@ -540,26 +529,15 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
               Object.entries(data.content)[0][1].content)
             : undefined;
 
-        const parsedMentions = [
-            ...(data.mentions ?? []),
-            ...(plaintextContent
+        const parsedMentions = mergeAndDeduplicate(
+            data.mentions ?? [],
+            plaintextContent
                 ? await parseTextMentions(plaintextContent, data.author)
-                : []),
-            // Deduplicate by .id
-        ].filter(
-            (mention, index, self) =>
-                index === self.findIndex((t) => t.id === mention.id),
+                : [],
         );
-
-        const parsedEmojis = [
-            ...(data.emojis ?? []),
-            ...(plaintextContent
-                ? await Emoji.parseFromText(plaintextContent)
-                : []),
-            // Deduplicate by .id
-        ].filter(
-            (emoji, index, self) =>
-                index === self.findIndex((t) => t.id === emoji.id),
+        const parsedEmojis = mergeAndDeduplicate(
+            data.emojis ?? [],
+            plaintextContent ? await Emoji.parseFromText(plaintextContent) : [],
         );
 
         const htmlContent = data.content
@@ -608,18 +586,12 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             return;
         }
 
-        // Fuse and deduplicate
-        const fusedEmojis = emojis.filter(
-            (emoji, index, self) =>
-                index === self.findIndex((t) => t.id === emoji.id),
-        );
-
         // Connect emojis
         await db
             .delete(EmojiToNote)
             .where(eq(EmojiToNote.noteId, this.data.id));
         await db.insert(EmojiToNote).values(
-            fusedEmojis.map((emoji) => ({
+            emojis.map((emoji) => ({
                 emojiId: emoji.id,
                 noteId: this.data.id,
             })),

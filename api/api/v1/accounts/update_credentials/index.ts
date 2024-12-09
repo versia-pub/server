@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Emoji, User } from "@versia/kit/db";
@@ -335,14 +336,10 @@ export default apiRoute((app) =>
             await Emoji.parseFromText(sanitizedDisplayName);
         const noteEmojis = await Emoji.parseFromText(self.note);
 
-        const emojis = [
-            ...displaynameEmojis,
-            ...noteEmojis,
-            ...fieldEmojis,
-        ].filter(
-            // Deduplicate emojis
-            (emoji, index, self) =>
-                self.findIndex((e) => e.id === emoji.id) === index,
+        const emojis = mergeAndDeduplicate(
+            displaynameEmojis,
+            noteEmojis,
+            fieldEmojis,
         );
 
         // Connect emojis, if any

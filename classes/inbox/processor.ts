@@ -15,14 +15,7 @@ import type {
     Note as VersiaNote,
     User as VersiaUser,
 } from "@versia/federation/types";
-import {
-    Instance,
-    Like,
-    Note,
-    Notification,
-    Relationship,
-    User,
-} from "@versia/kit/db";
+import { Instance, Like, Note, Relationship, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import chalk from "chalk";
@@ -340,11 +333,10 @@ export class InboxProcessor {
             languages: [],
         });
 
-        await Notification.insert({
-            accountId: author.id,
-            type: followee.data.isLocked ? "follow_request" : "follow",
-            notifiedId: followee.id,
-        });
+        await followee.createNotification(
+            followee.data.isLocked ? "follow_request" : "follow",
+            author,
+        );
 
         if (!followee.data.isLocked) {
             await followee.sendFollowAccept(author);
