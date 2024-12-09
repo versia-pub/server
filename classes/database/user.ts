@@ -667,7 +667,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const userEmojis =
             data.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
         const emojis = await Promise.all(
-            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance.id)),
+            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance)),
         );
 
         if (emojis.length > 0) {

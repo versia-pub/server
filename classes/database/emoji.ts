@@ -2,7 +2,7 @@ import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
-import { db } from "@versia/kit/db";
+import { type Instance, db } from "@versia/kit/db";
 import { Emojis, Instances } from "@versia/kit/tables";
 import {
     type InferInsertModel,
@@ -12,10 +12,10 @@ import {
     desc,
     eq,
     inArray,
+    isNull,
 } from "drizzle-orm";
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";
-import { Instance } from "./instance.ts";
 
 type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
     instance: InferSelectModel<typeof Instances> | null;
@@ -135,7 +135,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
 
     public static async fetchFromRemote(
         emojiToFetch: CustomEmojiExtension["emojis"][0],
-        host?: string,
+        instance: Instance,
     ): Promise<Emoji> {
         const existingEmoji = await db
             .select()
@@ -144,7 +144,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             .where(
                 and(
                     eq(Emojis.shortcode, emojiToFetch.name),
-                    host ? eq(Instances.baseUrl, host) : undefined,
+                    eq(Instances.id, instance.id),
                 ),
             )
             .limit(1);
@@ -159,9 +159,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             return found;
         }
 
-        const foundInstance = host ? await Instance.resolve(host) : null;
-
-        return await Emoji.fromVersia(emojiToFetch, foundInstance?.id ?? null);
+        return await Emoji.fromVersia(emojiToFetch, instance);
     }
 
     public get id(): string {
@@ -181,9 +179,12 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         }
 
         return Emoji.manyFromSql(
-            inArray(
-                Emojis.shortcode,
-                matches.map((match) => match.replace(/:/g, "")),
+            and(
+                inArray(
+                    Emojis.shortcode,
+                    matches.map((match) => match.replace(/:/g, "")),
+                ),
+                isNull(Emojis.instanceId),
             ),
         );
     }
@@ -216,7 +217,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
 
     public static fromVersia(
         emoji: CustomEmojiExtension["emojis"][0],
-        instanceId: string | null,
+        instance: Instance,
     ): Promise<Emoji> {
         // Extracts the shortcode from the emoji name (e.g. :shortcode: -> shortcode)
         const shortcode = [
@@ -233,7 +234,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             alt: Object.entries(emoji.url)[0][1].description || undefined,
             contentType: Object.keys(emoji.url)[0],
             visibleInPicker: true,
-            instanceId,
+            instanceId: instance.id,
         });
     }
 }

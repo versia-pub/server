@@ -16,7 +16,7 @@ import type {
     User as VersiaUser,
 } from "@versia/federation/types";
 import {
-    type Instance,
+    Instance,
     Like,
     Note,
     Notification,
@@ -277,6 +277,14 @@ export class InboxProcessor {
     private async processNote(): Promise<Response | null> {
         const note = this.body as VersiaNote;
         const author = await User.resolve(note.author);
+        const instance = await Instance.resolve(note.uri);
+
+        if (!instance) {
+            return Response.json(
+                { error: "Instance not found" },
+                { status: 404 },
+            );
+        }
 
         if (!author) {
             return Response.json(
@@ -285,7 +293,7 @@ export class InboxProcessor {
             );
         }
 
-        await Note.fromVersia(note, author);
+        await Note.fromVersia(note, author, instance);
 
         return null;
     }

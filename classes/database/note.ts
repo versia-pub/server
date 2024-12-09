@@ -13,7 +13,7 @@ import type {
     Delete as VersiaDelete,
     Note as VersiaNote,
 } from "@versia/federation/types";
-import { type Instance, Notification, db } from "@versia/kit/db";
+import { Instance, Notification, db } from "@versia/kit/db";
 import {
     Attachments,
     EmojiToNote,
@@ -715,6 +715,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      */
     public static async saveFromRemote(uri: string): Promise<Note | null> {
         let note: VersiaNote | null = null;
+        const instance = await Instance.resolve(uri);
+
+        if (!instance) {
+            return null;
+        }
 
         if (uri) {
             if (!URL.canParse(uri)) {
@@ -741,7 +746,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             throw new Error("Invalid object author");
         }
 
-        return await Note.fromVersia(note, author);
+        return await Note.fromVersia(note, author, instance);
     }
 
     /**
@@ -753,19 +758,21 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public static async fromVersia(
         note: VersiaNote,
         author: User,
+        instance: Instance,
     ): Promise<Note> {
         const emojis: Emoji[] = [];
         const logger = getLogger(["federation", "resolvers"]);
 
         for (const emoji of note.extensions?.["pub.versia:custom_emojis"]
             ?.emojis ?? []) {
-            const resolvedEmoji = await Emoji.fetchFromRemote(emoji).catch(
-                (e) => {
-                    logger.error`${e}`;
-                    sentry?.captureException(e);
-                    return null;
-                },
-            );
+            const resolvedEmoji = await Emoji.fetchFromRemote(
+                emoji,
+                instance,
+            ).catch((e) => {
+                logger.error`${e}`;
+                sentry?.captureException(e);
+                return null;
+            });
 
             if (resolvedEmoji) {
                 emojis.push(resolvedEmoji);
