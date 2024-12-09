@@ -1,4 +1,10 @@
-import { apiRoute, applyConfig, auth, userAddressValidator } from "@/api";
+import {
+    apiRoute,
+    applyConfig,
+    auth,
+    parseUserAddress,
+    userAddressValidator,
+} from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -77,19 +83,21 @@ export default apiRoute((app) =>
             return context.json({ error: "Unauthorized" }, 401);
         }
 
-        const [username, host] = q.replace(/^@/, "").split("@");
+        const { username, domain } = parseUserAddress(q);
 
         const accounts: User[] = [];
 
-        if (resolve && username && host) {
+        if (resolve && domain) {
             const manager = await (self ?? User).getFederationRequester();
 
-            const uri = await User.webFinger(manager, username, host);
+            const uri = await User.webFinger(manager, username, domain);
 
-            const resolvedUser = await User.resolve(uri);
+            if (uri) {
+                const resolvedUser = await User.resolve(uri);
 
-            if (resolvedUser) {
-                accounts.push(resolvedUser);
+                if (resolvedUser) {
+                    accounts.push(resolvedUser);
+                }
             }
         } else {
             accounts.push(

@@ -49,6 +49,12 @@ export default class FederationUserFetch extends BaseCommand<
 
         const uri = await User.webFinger(manager, username, host);
 
+        if (!uri) {
+            spinner.fail();
+            this.log(chalk.red("User not found"));
+            this.exit(1);
+        }
+
         const newUser = await User.resolve(uri);
 
         if (newUser) {

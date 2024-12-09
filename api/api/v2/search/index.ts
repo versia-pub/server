@@ -163,17 +163,19 @@ export default apiRoute((app) =>
 
                     const uri = await User.webFinger(manager, username, domain);
 
-                    const newUser = await User.resolve(uri);
+                    if (uri) {
+                        const newUser = await User.resolve(uri);
 
-                    if (newUser) {
-                        return context.json(
-                            {
-                                accounts: [newUser.toApi()],
-                                statuses: [],
-                                hashtags: [],
-                            },
-                            200,
-                        );
+                        if (newUser) {
+                            return context.json(
+                                {
+                                    accounts: [newUser.toApi()],
+                                    statuses: [],
+                                    hashtags: [],
+                                },
+                                200,
+                            );
+                        }
                     }
                 }
             }

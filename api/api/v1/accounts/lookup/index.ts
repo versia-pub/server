@@ -117,6 +117,10 @@ export default apiRoute((app) =>
 
         const uri = await User.webFinger(manager, username, domain);
 
+        if (!uri) {
+            return context.json({ error: "Account not found" }, 404);
+        }
+
         const foundAccount = await User.resolve(uri);
 
         if (foundAccount) {

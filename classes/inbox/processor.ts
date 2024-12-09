@@ -333,7 +333,7 @@ export class InboxProcessor {
             languages: [],
         });
 
-        await followee.createNotification(
+        await followee.notify(
             followee.data.isLocked ? "follow_request" : "follow",
             author,
         );

@@ -492,11 +492,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         // Send notifications for mentioned local users
         for (const mention of parsedMentions) {
             if (mention.isLocal()) {
-                await mention.createNotification(
-                    "mention",
-                    data.author,
-                    newNote,
-                );
+                await mention.notify("mention", data.author, newNote);
             }
         }
 

@@ -3,7 +3,7 @@ import { proxyUrl } from "@/response";
 import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, db } from "@versia/kit/db";
-import { Emojis, Instances } from "@versia/kit/tables";
+import { Emojis, type Instances } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -137,26 +137,15 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         emojiToFetch: CustomEmojiExtension["emojis"][0],
         instance: Instance,
     ): Promise<Emoji> {
-        const existingEmoji = await db
-            .select()
-            .from(Emojis)
-            .innerJoin(Instances, eq(Emojis.instanceId, Instances.id))
-            .where(
-                and(
-                    eq(Emojis.shortcode, emojiToFetch.name),
-                    eq(Instances.id, instance.id),
-                ),
-            )
-            .limit(1);
+        const existingEmoji = await Emoji.fromSql(
+            and(
+                eq(Emojis.shortcode, emojiToFetch.name),
+                eq(Emojis.instanceId, instance.id),
+            ),
+        );
 
-        if (existingEmoji[0]) {
-            const found = await Emoji.fromId(existingEmoji[0].Emojis.id);
-
-            if (!found) {
-                throw new Error("Failed to fetch emoji");
-            }
-
-            return found;
+        if (existingEmoji) {
+            return existingEmoji;
         }
 
         return await Emoji.fromVersia(emojiToFetch, instance);

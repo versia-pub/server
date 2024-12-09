@@ -138,7 +138,7 @@ export default apiRoute((app) =>
         }
 
         if (note.author.isLocal() && user.isLocal()) {
-            await note.author.createNotification("reblog", user, newReblog);
+            await note.author.notify("reblog", user, newReblog);
         }
 
         return context.json(await finalNewReblog.toApi(user), 201);

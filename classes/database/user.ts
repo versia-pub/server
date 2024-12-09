@@ -275,7 +275,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 senderId: this.id,
             });
         } else {
-            await otherUser.createNotification(
+            await otherUser.notify(
                 otherUser.data.isLocked ? "follow_request" : "follow",
                 this,
             );
@@ -362,19 +362,31 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         });
     }
 
-    public static async webFinger(
+    /**
+     * Perform a WebFinger lookup to find a user's URI
+     * @param manager
+     * @param username
+     * @param hostname
+     * @returns URI, or null if not found
+     */
+    public static webFinger(
         manager: FederationRequester,
         username: string,
         hostname: string,
-    ): Promise<string> {
-        return (
-            (await manager.webFinger(username, hostname).catch(() => null)) ??
-            (await manager.webFinger(
-                username,
-                hostname,
-                "application/activity+json",
-            ))
-        );
+    ): Promise<string | null> {
+        try {
+            return manager.webFinger(username, hostname);
+        } catch {
+            try {
+                return manager.webFinger(
+                    username,
+                    hostname,
+                    "application/activity+json",
+                );
+            } catch {
+                return Promise.resolve(null);
+            }
+        }
     }
 
     public static getCount(): Promise<number> {
@@ -511,7 +523,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (this.isLocal() && note.author.isLocal()) {
             // Notify the user that their post has been favourited
-            await note.author.createNotification("favourite", this, note);
+            await note.author.notify("favourite", this, note);
         } else if (this.isLocal() && note.author.isRemote()) {
             // Federate the like
             this.federateToFollowers(newLike.toVersia());
@@ -547,7 +559,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
-    public async createNotification(
+    public async notify(
         type: "mention" | "follow_request" | "follow" | "favourite" | "reblog",
         relatedUser: User,
         note?: Note,

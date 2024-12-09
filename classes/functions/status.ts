@@ -218,9 +218,9 @@ export const parseTextMentions = async (
     }
 
     const baseUrlHost = new URL(config.http.base_url).host;
-
     const isLocal = (host?: string): boolean => host === baseUrlHost || !host;
 
+    // Find local and matching users
     const foundUsers = await db
         .select({
             id: Users.id,
@@ -233,46 +233,45 @@ export const parseTextMentions = async (
             or(
                 ...mentionedPeople.map((person) =>
                     and(
-                        eq(Users.username, person?.[1] ?? ""),
-                        isLocal(person?.[2])
+                        eq(Users.username, person[1] ?? ""),
+                        isLocal(person[2])
                             ? isNull(Users.instanceId)
-                            : eq(Instances.baseUrl, person?.[2] ?? ""),
+                            : eq(Instances.baseUrl, person[2] ?? ""),
                     ),
                 ),
             ),
         );
 
+    // Separate found and unresolved users
+    const finalList = await User.manyFromSql(
+        inArray(
+            Users.id,
+            foundUsers.map((u) => u.id),
+        ),
+    );
+
+    // Every remote user that isn't in database
     const notFoundRemoteUsers = mentionedPeople.filter(
-        (person) =>
+        (p) =>
             !(
-                isLocal(person?.[2]) ||
-                foundUsers.find(
-                    (user) =>
-                        user.username === person?.[1] &&
-                        user.baseUrl === person?.[2],
-                )
+                foundUsers.some(
+                    (user) => user.username === p[1] && user.baseUrl === p[2],
+                ) || isLocal(p[2])
             ),
     );
 
-    const finalList =
-        foundUsers.length > 0
-            ? await User.manyFromSql(
-                  inArray(
-                      Users.id,
-                      foundUsers.map((u) => u.id),
-                  ),
-              )
-            : [];
-
-    // Attempt to resolve mentions that were not found
+    // Resolve remote mentions not in database
     for (const person of notFoundRemoteUsers) {
         const manager = await author.getFederationRequester();
-
         const uri = await User.webFinger(
             manager,
-            person?.[1] ?? "",
-            person?.[2] ?? "",
+            person[1] ?? "",
+            person[2] ?? "",
         );
+
+        if (!uri) {
+            continue;
+        }
 
         const user = await User.resolve(uri);
 
@@ -285,51 +284,35 @@ export const parseTextMentions = async (
 };
 
 export const replaceTextMentions = (text: string, mentions: User[]): string => {
-    let finalText = text;
-    for (const mention of mentions) {
-        const user = mention.data;
-        // Replace @username and @username@domain
-        if (user.instance) {
-            finalText = finalText.replace(
-                createRegExp(
-                    exactly(`@${user.username}@${user.instance.baseUrl}`),
-                    [global],
-                ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
-                    user.username
-                }@${user.instance.baseUrl}</a>`,
+    return mentions.reduce((finalText, mention) => {
+        const { username, instance } = mention.data;
+        const uri = mention.getUri();
+        const baseHost = new URL(config.http.base_url).host;
+        const linkTemplate = (displayText: string): string =>
+            `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${uri}">${displayText}</a>`;
+
+        if (mention.isRemote()) {
+            return finalText.replaceAll(
+                `@${username}@${instance?.baseUrl}`,
+                linkTemplate(`@${username}@${instance?.baseUrl}`),
             );
-        } else {
-            finalText = finalText.replace(
-                // Only replace @username if it doesn't have another @ right after
+        }
+
+        return finalText
+            .replace(
                 createRegExp(
-                    exactly(`@${user.username}`)
+                    exactly(`@${username}`)
                         .notBefore(anyOf(letter, digit, charIn("@")))
                         .notAfter(anyOf(letter, digit, charIn("@"))),
                     [global],
                 ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
-                    user.username
-                }</a>`,
+                linkTemplate(`@${username}@${baseHost}`),
+            )
+            .replaceAll(
+                `@${username}@${baseHost}`,
+                linkTemplate(`@${username}@${baseHost}`),
             );
-
-            finalText = finalText.replace(
-                createRegExp(
-                    exactly(
-                        `@${user.username}@${
-                            new URL(config.http.base_url).host
-                        }`,
-                    ),
-                    [global],
-                ),
-                `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${mention.getUri()}">@${
-                    user.username
-                }</a>`,
-            );
-        }
-    }
-
-    return finalText;
+    }, text);
 };
 
 export const contentToHtml = async (
@@ -337,8 +320,8 @@ export const contentToHtml = async (
     mentions: User[] = [],
     inline = false,
 ): Promise<string> => {
-    let htmlContent: string;
     const sanitizer = inline ? sanitizeHtmlInline : sanitizeHtml;
+    let htmlContent = "";
 
     if (content["text/html"]) {
         htmlContent = await sanitizer(content["text/html"].content);
@@ -347,29 +330,20 @@ export const contentToHtml = async (
             await markdownParse(content["text/markdown"].content),
         );
     } else if (content["text/plain"]?.content) {
-        // Split by newline and add <p> tags
         htmlContent = (await sanitizer(content["text/plain"].content))
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");
-    } else {
-        htmlContent = "";
     }
 
-    // Replace mentions text
-    htmlContent = await replaceTextMentions(htmlContent, mentions ?? []);
+    htmlContent = replaceTextMentions(htmlContent, mentions);
 
-    // Linkify
-    htmlContent = linkifyHtml(htmlContent, {
+    return linkifyHtml(htmlContent, {
         defaultProtocol: "https",
-        validate: {
-            email: (): false => false,
-        },
+        validate: { email: (): false => false },
         target: "_blank",
         rel: "nofollow noopener noreferrer",
     });
-
-    return htmlContent;
 };
 
 export const markdownParse = async (content: string): Promise<string> => {
