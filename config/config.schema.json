@@ -530,6 +530,14 @@
                     "type": "integer",
                     "default": 1000
                 },
+                "max_emoji_size": {
+                    "type": "integer",
+                    "default": 1000000
+                },
+                "max_emoji_description_size": {
+                    "type": "integer",
+                    "default": 1000
+                },
                 "max_poll_options": {
                     "type": "integer",
                     "default": 20
@@ -1864,6 +1872,8 @@
                 "max_media_size": 40000000,
                 "max_media_attachments": 10,
                 "max_media_description_size": 1000,
+                "max_emoji_size": 1000000,
+                "max_emoji_description_size": 1000,
                 "max_poll_options": 20,
                 "max_poll_option_size": 500,
                 "min_poll_duration": 60,

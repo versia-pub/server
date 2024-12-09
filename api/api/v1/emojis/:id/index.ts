@@ -44,9 +44,19 @@ export const schemas = {
                 .min(1)
                 .max(2000)
                 .url()
-                .or(z.instanceof(File)),
+                .or(
+                    z
+                        .instanceof(File)
+                        .refine(
+                            (v) => v.size <= config.validation.max_emoji_size,
+                            `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
+                        ),
+                ),
             category: z.string().max(64).optional(),
-            alt: z.string().max(1000).optional(),
+            alt: z
+                .string()
+                .max(config.validation.max_emoji_description_size)
+                .optional(),
             global: z
                 .string()
                 .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))

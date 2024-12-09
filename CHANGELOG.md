@@ -32,6 +32,10 @@ remove_on_failure = 31536000
 remove_on_complete = 31536000
 # Time in seconds to remove failed jobs
 remove_on_failure = 31536000
+
+[validation]
+max_emoji_size = 1000000
+max_emoji_description_size = 1000
 ```
 
 ### Configuration Changes
