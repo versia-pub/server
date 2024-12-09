@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, jest, mock, test } from "bun:test";
 import { SignatureValidator } from "@versia/federation";
 import type { Entity, Note as VersiaNote } from "@versia/federation/types";
 import {
-    type Instance,
+    Instance,
     Note,
     Notification,
     Relationship,
@@ -23,11 +23,12 @@ mock.module("@versia/kit/db", () => ({
     },
     User: {
         resolve: jest.fn(),
-        saveFromRemote: jest.fn(),
+        fetchFromRemote: jest.fn(),
         sendFollowAccept: jest.fn(),
     },
     Instance: {
         fromUser: jest.fn(),
+        resolve: jest.fn(),
     },
     Note: {
         resolve: jest.fn(),
@@ -198,9 +199,11 @@ describe("InboxProcessor", () => {
         test("successfully processes valid note", async () => {
             const mockNote = { author: "test-author" };
             const mockAuthor = { id: "test-id" };
+            const mockInstance = { id: "test-id" };
 
             User.resolve = jest.fn().mockResolvedValue(mockAuthor);
             Note.fromVersia = jest.fn().mockResolvedValue(true);
+            Instance.resolve = jest.fn().mockResolvedValue(mockInstance);
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockNote as VersiaNote;
@@ -208,7 +211,11 @@ describe("InboxProcessor", () => {
             const result = await processor["processNote"]();
 
             expect(User.resolve).toHaveBeenCalledWith("test-author");
-            expect(Note.fromVersia).toHaveBeenCalledWith(mockNote, mockAuthor);
+            expect(Note.fromVersia).toHaveBeenCalledWith(
+                mockNote,
+                mockAuthor,
+                mockInstance,
+            );
             expect(result).toBeNull();
         });
 
@@ -364,19 +371,19 @@ describe("InboxProcessor", () => {
             };
             const mockUpdatedUser = { id: "user-id" };
 
-            User.saveFromRemote = jest.fn().mockResolvedValue(mockUpdatedUser);
+            User.fetchFromRemote = jest.fn().mockResolvedValue(mockUpdatedUser);
 
             // biome-ignore lint/complexity/useLiteralKeys: Private variable
             processor["body"] = mockUser as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processUserRequest"]();
 
-            expect(User.saveFromRemote).toHaveBeenCalledWith("test-uri");
+            expect(User.fetchFromRemote).toHaveBeenCalledWith("test-uri");
             expect(result).toBeNull();
         });
 
         test("returns 500 when update fails", async () => {
-            User.saveFromRemote = jest.fn().mockResolvedValue(null);
+            User.fetchFromRemote = jest.fn().mockResolvedValue(null);
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processUserRequest"]();

@@ -417,7 +417,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             throw new Error("Cannot refetch a local note (it is not remote)");
         }
 
-        const updated = await Note.saveFromRemote(this.getUri());
+        const updated = await Note.fetchFromRemote(this.getUri());
 
         if (!updated) {
             throw new Error("Note not found after update");
@@ -443,7 +443,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         uri?: string;
         mentions?: User[];
         /** List of IDs of database Attachment objects */
-        mediaAttachments?: string[];
+        mediaAttachments?: Attachment[];
         replyId?: string;
         quoteId?: string;
         application?: Application;
@@ -491,15 +491,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         });
 
         // Connect emojis
-        await newNote.recalculateDatabaseEmojis(parsedEmojis);
+        await newNote.updateEmojis(parsedEmojis);
 
         // Connect mentions
-        await newNote.recalculateDatabaseMentions(parsedMentions);
+        await newNote.updateMentions(parsedMentions);
 
         // Set attachment parents
-        await newNote.recalculateDatabaseAttachments(
-            data.mediaAttachments ?? [],
-        );
+        await newNote.updateAttachments(data.mediaAttachments ?? []);
 
         // Send notifications for mentioned local users
         for (const mention of parsedMentions ?? []) {
@@ -532,8 +530,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         emojis?: Emoji[];
         uri?: string;
         mentions?: User[];
-        /** List of IDs of database Attachment objects */
-        mediaAttachments?: string[];
+        mediaAttachments?: Attachment[];
         replyId?: string;
         quoteId?: string;
         application?: Application;
@@ -587,13 +584,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         });
 
         // Connect emojis
-        await this.recalculateDatabaseEmojis(parsedEmojis);
+        await this.updateEmojis(parsedEmojis);
 
         // Connect mentions
-        await this.recalculateDatabaseMentions(parsedMentions);
+        await this.updateMentions(parsedMentions);
 
         // Set attachment parents
-        await this.recalculateDatabaseAttachments(data.mediaAttachments ?? []);
+        await this.updateAttachments(data.mediaAttachments ?? []);
 
         await this.reload(data.author.id);
 
@@ -606,7 +603,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Deletes all existing emojis associated with this note, then replaces them with the provided emojis.
      * @param emojis - The emojis to associate with this note
      */
-    public async recalculateDatabaseEmojis(emojis: Emoji[]): Promise<void> {
+    public async updateEmojis(emojis: Emoji[]): Promise<void> {
+        if (emojis.length === 0) {
+            return;
+        }
+
         // Fuse and deduplicate
         const fusedEmojis = emojis.filter(
             (emoji, index, self) =>
@@ -617,16 +618,12 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         await db
             .delete(EmojiToNote)
             .where(eq(EmojiToNote.noteId, this.data.id));
-
-        for (const emoji of fusedEmojis) {
-            await db
-                .insert(EmojiToNote)
-                .values({
-                    emojiId: emoji.id,
-                    noteId: this.data.id,
-                })
-                .execute();
-        }
+        await db.insert(EmojiToNote).values(
+            fusedEmojis.map((emoji) => ({
+                emojiId: emoji.id,
+                noteId: this.data.id,
+            })),
+        );
     }
 
     /**
@@ -635,21 +632,21 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Deletes all existing mentions associated with this note, then replaces them with the provided mentions.
      * @param mentions - The mentions to associate with this note
      */
-    public async recalculateDatabaseMentions(mentions: User[]): Promise<void> {
+    public async updateMentions(mentions: User[]): Promise<void> {
+        if (mentions.length === 0) {
+            return;
+        }
+
         // Connect mentions
         await db
             .delete(NoteToMentions)
             .where(eq(NoteToMentions.noteId, this.data.id));
-
-        for (const mention of mentions) {
-            await db
-                .insert(NoteToMentions)
-                .values({
-                    noteId: this.data.id,
-                    userId: mention.id,
-                })
-                .execute();
-        }
+        await db.insert(NoteToMentions).values(
+            mentions.map((mention) => ({
+                noteId: this.data.id,
+                userId: mention.id,
+            })),
+        );
     }
 
     /**
@@ -658,25 +655,31 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Deletes all existing attachments associated with this note, then replaces them with the provided attachments.
      * @param mediaAttachments - The IDs of the attachments to associate with this note
      */
-    public async recalculateDatabaseAttachments(
-        mediaAttachments: string[],
+    public async updateAttachments(
+        mediaAttachments: Attachment[],
     ): Promise<void> {
-        // Set attachment parents
+        if (mediaAttachments.length === 0) {
+            return;
+        }
+
+        // Remove old attachments
         await db
             .update(Attachments)
             .set({
                 noteId: null,
             })
             .where(eq(Attachments.noteId, this.data.id));
-
-        if (mediaAttachments.length > 0) {
-            await db
-                .update(Attachments)
-                .set({
-                    noteId: this.data.id,
-                })
-                .where(inArray(Attachments.id, mediaAttachments));
-        }
+        await db
+            .update(Attachments)
+            .set({
+                noteId: this.data.id,
+            })
+            .where(
+                inArray(
+                    Attachments.id,
+                    mediaAttachments.map((i) => i.id),
+                ),
+            );
     }
 
     /**
@@ -705,7 +708,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             return await Note.fromId(uuid[0]);
         }
 
-        return await Note.saveFromRemote(uri);
+        return await Note.fetchFromRemote(uri);
     }
 
     /**
@@ -713,32 +716,21 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * @param uri - The URI of the note to save
      * @returns The saved note, or null if the note could not be fetched
      */
-    public static async saveFromRemote(uri: string): Promise<Note | null> {
-        let note: VersiaNote | null = null;
+    public static async fetchFromRemote(uri: string): Promise<Note | null> {
         const instance = await Instance.resolve(uri);
 
         if (!instance) {
             return null;
         }
 
-        if (uri) {
-            if (!URL.canParse(uri)) {
-                throw new Error(`Invalid URI to parse ${uri}`);
-            }
+        const requester = await User.getFederationRequester();
 
-            const requester = await User.getFederationRequester();
+        const { data } = await requester.get(uri, {
+            // @ts-expect-error Bun extension
+            proxy: config.http.proxy.address,
+        });
 
-            const { data } = await requester.get(uri, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
-            });
-
-            note = await new EntityValidator().Note(data);
-        }
-
-        if (!note) {
-            throw new Error("No note was able to be fetched");
-        }
+        const note = await new EntityValidator().Note(data);
 
         const author = await User.resolve(note.author);
 
@@ -753,6 +745,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Turns a Versia Note into a database note (saved)
      * @param note Versia Note
      * @param author Author of the note
+     * @param instance Instance of the note
      * @returns The saved note
      */
     public static async fromVersia(
@@ -824,7 +817,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     .map((mention) => User.resolve(mention))
                     .filter((mention) => mention !== null) as Promise<User>[],
             ),
-            mediaAttachments: attachments.map((a) => a.id),
+            mediaAttachments: attachments,
             replyId: note.replies_to
                 ? (await Note.resolve(note.replies_to))?.data.id
                 : undefined,

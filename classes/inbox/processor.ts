@@ -554,7 +554,7 @@ export class InboxProcessor {
     private async processUserRequest(): Promise<Response | null> {
         const user = this.body as unknown as VersiaUser;
         // FIXME: Instead of refetching the remote user, we should read the incoming json and update from that
-        const updatedAccount = await User.saveFromRemote(user.uri);
+        const updatedAccount = await User.fetchFromRemote(user.uri);
 
         if (!updatedAccount) {
             return Response.json(

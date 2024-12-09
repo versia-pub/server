@@ -271,12 +271,11 @@ export default apiRoute((app) => {
             sensitive,
         } = context.req.valid("json");
 
-        if (media_ids.length > 0) {
-            const foundAttachments = await Attachment.fromIds(media_ids);
+        const foundAttachments =
+            media_ids.length > 0 ? await Attachment.fromIds(media_ids) : [];
 
-            if (foundAttachments.length !== media_ids.length) {
-                return context.json({ error: "Invalid media IDs" }, 422);
-            }
+        if (foundAttachments.length !== media_ids.length) {
+            return context.json({ error: "Invalid media IDs" }, 422);
         }
 
         const newNote = await note.updateFromData({
@@ -291,7 +290,7 @@ export default apiRoute((app) => {
                 : undefined,
             isSensitive: sensitive,
             spoilerText: spoiler_text,
-            mediaAttachments: media_ids,
+            mediaAttachments: foundAttachments,
         });
 
         return context.json(await newNote.toApi(user), 200);

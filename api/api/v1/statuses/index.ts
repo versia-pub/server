@@ -168,12 +168,11 @@ export default apiRoute((app) =>
         } = context.req.valid("json");
 
         // Check if media attachments are all valid
-        if (media_ids.length > 0) {
-            const foundAttachments = await Attachment.fromIds(media_ids);
+        const foundAttachments =
+            media_ids.length > 0 ? await Attachment.fromIds(media_ids) : [];
 
-            if (foundAttachments.length !== media_ids.length) {
-                return context.json({ error: "Invalid media IDs" }, 422);
-            }
+        if (foundAttachments.length !== media_ids.length) {
+            return context.json({ error: "Invalid media IDs" }, 422);
         }
 
         // Check that in_reply_to_id and quote_id are real posts if provided
@@ -199,7 +198,7 @@ export default apiRoute((app) =>
             visibility,
             isSensitive: sensitive ?? false,
             spoilerText: spoiler_text ?? "",
-            mediaAttachments: media_ids,
+            mediaAttachments: foundAttachments,
             replyId: in_reply_to_id ?? undefined,
             quoteId: quote_id ?? undefined,
             application: application ?? undefined,

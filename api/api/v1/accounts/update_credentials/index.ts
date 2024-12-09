@@ -1,8 +1,8 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Emoji, User, db } from "@versia/kit/db";
-import { EmojiToUser, RolePermissions, Users } from "@versia/kit/tables";
+import { Attachment, Emoji, User } from "@versia/kit/db";
+import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -335,36 +335,19 @@ export default apiRoute((app) =>
             await Emoji.parseFromText(sanitizedDisplayName);
         const noteEmojis = await Emoji.parseFromText(self.note);
 
-        self.emojis = [...displaynameEmojis, ...noteEmojis, ...fieldEmojis]
-            .map((e) => e.data)
-            .filter(
-                // Deduplicate emojis
-                (emoji, index, self) =>
-                    self.findIndex((e) => e.id === emoji.id) === index,
-            );
+        const emojis = [
+            ...displaynameEmojis,
+            ...noteEmojis,
+            ...fieldEmojis,
+        ].filter(
+            // Deduplicate emojis
+            (emoji, index, self) =>
+                self.findIndex((e) => e.id === emoji.id) === index,
+        );
 
         // Connect emojis, if any
         // Do it before updating user, so that federation takes that into account
-        for (const emoji of self.emojis) {
-            await db
-                .delete(EmojiToUser)
-                .where(
-                    and(
-                        eq(EmojiToUser.emojiId, emoji.id),
-                        eq(EmojiToUser.userId, self.id),
-                    ),
-                )
-                .execute();
-
-            await db
-                .insert(EmojiToUser)
-                .values({
-                    emojiId: emoji.id,
-                    userId: self.id,
-                })
-                .execute();
-        }
-
+        await user.updateEmojis(emojis);
         await user.update({
             displayName: self.displayName,
             username: self.username,
@@ -379,6 +362,7 @@ export default apiRoute((app) =>
         });
 
         const output = await User.fromId(self.id);
+
         if (!output) {
             return context.json({ error: "Couldn't edit user" }, 500);
         }

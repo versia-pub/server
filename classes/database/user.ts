@@ -597,7 +597,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
         }
 
-        const updated = await User.saveFromRemote(this.getUri());
+        const updated = await User.fetchFromRemote(this.getUri());
 
         if (!updated) {
             throw new Error("Failed to update user from remote");
@@ -608,7 +608,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this;
     }
 
-    public static async saveFromRemote(uri: string): Promise<User | null> {
+    public static async fetchFromRemote(uri: string): Promise<User | null> {
         if (!URL.canParse(uri)) {
             throw new Error(`Invalid URI: ${uri}`);
         }
@@ -644,18 +644,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     private static async saveFromVersia(
         uri: string,
         instance: Instance,
-    ): Promise<User | null> {
+    ): Promise<User> {
         const requester = await User.getFederationRequester();
-        const output = await requester
-            .get<Partial<VersiaUser>>(uri, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
-            })
-            .catch(() => null);
-
-        if (!output) {
-            return null;
-        }
+        const output = await requester.get<Partial<VersiaUser>>(uri, {
+            // @ts-expect-error Bun extension
+            proxy: config.http.proxy.address,
+        });
 
         const { data: json } = output;
 
@@ -664,30 +658,28 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const user = await User.fromVersia(data, instance);
 
-        const userEmojis =
-            data.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
-        const emojis = await Promise.all(
-            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance)),
+        await searchManager.addUser(user);
+
+        return user;
+    }
+
+    /**
+     * Change the emojis linked to this user in database
+     * @param emojis
+     * @returns
+     */
+    public async updateEmojis(emojis: Emoji[]): Promise<void> {
+        if (emojis.length === 0) {
+            return;
+        }
+
+        await db.delete(EmojiToUser).where(eq(EmojiToUser.userId, this.id));
+        await db.insert(EmojiToUser).values(
+            emojis.map((emoji) => ({
+                emojiId: emoji.id,
+                userId: this.id,
+            })),
         );
-
-        if (emojis.length > 0) {
-            await db.delete(EmojiToUser).where(eq(EmojiToUser.userId, user.id));
-            await db.insert(EmojiToUser).values(
-                emojis.map((emoji) => ({
-                    emojiId: emoji.id,
-                    userId: user.id,
-                })),
-            );
-        }
-
-        const finalUser = await User.fromId(user.id);
-        if (!finalUser) {
-            throw new Error("Failed to save user from remote");
-        }
-
-        await searchManager.addUser(finalUser);
-
-        return finalUser;
     }
 
     public static async fromVersia(
@@ -729,19 +721,29 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             },
         };
 
-        // Check if new user already exists
+        const userEmojis =
+            user.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
 
+        const emojis = await Promise.all(
+            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance)),
+        );
+
+        // Check if new user already exists
         const foundUser = await User.fromSql(eq(Users.uri, user.uri));
 
         // If it exists, simply update it
         if (foundUser) {
             await foundUser.update(data);
+            await foundUser.updateEmojis(emojis);
 
             return foundUser;
         }
 
         // Else, create a new user
-        return await User.insert(data);
+        const newUser = await User.insert(data);
+        await newUser.updateEmojis(emojis);
+
+        return newUser;
     }
 
     public static async insert(
@@ -784,7 +786,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         getLogger(["federation", "resolvers"])
             .debug`User not found in database, fetching from remote`;
 
-        return await User.saveFromRemote(uri);
+        return await User.fetchFromRemote(uri);
     }
 
     /**
