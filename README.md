@@ -214,3 +214,5 @@ For Versia Server's own custom API, please see the [API documentation](https://s
 ## License
 
 This project is licensed under the [AGPL-3.0-or-later](LICENSE).
+
+All Versia assets (icon, logo, banners, etc) are licensed under [CC-BY-NC-SA-4.0](https://creativecommons.org/licenses/by-nc-sa/4.0)
