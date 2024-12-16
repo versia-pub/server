@@ -69,17 +69,33 @@ export const schemas = {
             )
             .optional(),
         avatar: z
-            .instanceof(File)
-            .refine(
-                (v) => v.size <= config.validation.max_avatar_size,
-                `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+            .string()
+            .trim()
+            .min(1)
+            .max(2000)
+            .url()
+            .or(
+                z
+                    .instanceof(File)
+                    .refine(
+                        (v) => v.size <= config.validation.max_avatar_size,
+                        `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+                    ),
             )
             .optional(),
         header: z
-            .instanceof(File)
-            .refine(
-                (v) => v.size <= config.validation.max_header_size,
-                `Header must be less than ${config.validation.max_header_size} bytes`,
+            .string()
+            .trim()
+            .min(1)
+            .max(2000)
+            .url()
+            .or(
+                z
+                    .instanceof(File)
+                    .refine(
+                        (v) => v.size <= config.validation.max_header_size,
+                        `Header must be less than ${config.validation.max_header_size} bytes`,
+                    ),
             )
             .optional(),
         locked: z
@@ -250,15 +266,23 @@ export default apiRoute((app) =>
         }
 
         if (avatar) {
-            const { path } = await mediaManager.addFile(avatar);
+            if (avatar instanceof File) {
+                const { path } = await mediaManager.addFile(avatar);
 
-            self.avatar = Attachment.getUrl(path);
+                self.avatar = Attachment.getUrl(path);
+            } else {
+                self.avatar = avatar;
+            }
         }
 
         if (header) {
-            const { path } = await mediaManager.addFile(header);
+            if (header instanceof File) {
+                const { path } = await mediaManager.addFile(header);
 
-            self.header = Attachment.getUrl(path);
+                self.header = Attachment.getUrl(path);
+            } else {
+                self.header = header;
+            }
         }
 
         if (locked) {
