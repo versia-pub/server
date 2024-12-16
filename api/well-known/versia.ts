@@ -61,8 +61,12 @@ export default apiRoute((app) =>
                     name: "Versia Server",
                     version: pkg.version,
                 },
-                banner: urlToContentFormat(config.instance.banner),
-                logo: urlToContentFormat(config.instance.logo),
+                banner: config.instance.banner
+                    ? urlToContentFormat(config.instance.banner)
+                    : undefined,
+                logo: config.instance.logo
+                    ? urlToContentFormat(config.instance.logo)
+                    : undefined,
                 shared_inbox: new URL(
                     "/inbox",
                     config.http.base_url,

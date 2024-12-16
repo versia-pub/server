@@ -1,4 +1,5 @@
 import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { mimeLookup } from "@/content_types";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
@@ -267,21 +268,37 @@ export default apiRoute((app) =>
 
         if (avatar) {
             if (avatar instanceof File) {
-                const { path } = await mediaManager.addFile(avatar);
+                const { path, uploadedFile } =
+                    await mediaManager.addFile(avatar);
+                const contentType = uploadedFile.type;
 
                 self.avatar = Attachment.getUrl(path);
+                self.source.avatar = {
+                    content_type: contentType,
+                };
             } else {
                 self.avatar = avatar;
+                self.source.avatar = {
+                    content_type: await mimeLookup(avatar),
+                };
             }
         }
 
         if (header) {
             if (header instanceof File) {
-                const { path } = await mediaManager.addFile(header);
+                const { path, uploadedFile } =
+                    await mediaManager.addFile(header);
+                const contentType = uploadedFile.type;
 
                 self.header = Attachment.getUrl(path);
+                self.source.header = {
+                    content_type: contentType,
+                };
             } else {
                 self.header = header;
+                self.source.header = {
+                    content_type: await mimeLookup(header),
+                };
             }
         }
 

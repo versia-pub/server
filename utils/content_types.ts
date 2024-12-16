@@ -28,7 +28,10 @@ export const getBestContentType = (
     return { content: "", format: "text/plain" };
 };
 
-export const urlToContentFormat = (url?: string): ContentFormat | null => {
+export const urlToContentFormat = (
+    url: string,
+    contentType?: string,
+): ContentFormat | null => {
     if (!url) {
         return null;
     }
@@ -41,6 +44,7 @@ export const urlToContentFormat = (url?: string): ContentFormat | null => {
         };
     }
     const mimeType =
+        contentType ||
         lookup(url.replace(new URL(url).search, "")) ||
         "application/octet-stream";
 
@@ -63,7 +67,13 @@ export const mimeLookup = (url: string): Promise<string> => {
         method: "HEAD",
         // @ts-expect-error Proxy is a Bun-specific feature
         proxy: config.http.proxy.address,
-    }).then((response) => response.headers.get("content-type") || "");
+    })
+        .then(
+            (response) =>
+                response.headers.get("content-type") ||
+                "application/octet-stream",
+        )
+        .catch(() => "application/octet-stream");
 
     return fetchLookup;
 };

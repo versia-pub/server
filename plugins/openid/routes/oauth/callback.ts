@@ -1,3 +1,4 @@
+import { mimeLookup } from "@/content_types.ts";
 import { randomString } from "@/math.ts";
 import { setCookie } from "@hono/hono/cookie";
 import { createRoute, z } from "@hono/zod-openapi";
@@ -245,7 +246,12 @@ export default (plugin: PluginType): void => {
                         const user = await User.fromDataLocal({
                             email: doesEmailExist ? undefined : email,
                             username,
-                            avatar: picture,
+                            avatar: picture
+                                ? {
+                                      url: picture,
+                                      content_type: await mimeLookup(picture),
+                                  }
+                                : undefined,
                             password: undefined,
                         });
 

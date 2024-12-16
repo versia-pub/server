@@ -125,6 +125,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                         value: z.string(),
                     }),
                 ),
+                avatar: z
+                    .object({
+                        content_type: z.string(),
+                    })
+                    .optional(),
+                header: z
+                    .object({
+                        content_type: z.string(),
+                    })
+                    .optional(),
             })
             .optional(),
         role: z
@@ -691,6 +701,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         user: VersiaUser,
         instance: Instance,
     ): Promise<User> {
+        const avatar = user.avatar ? Object.entries(user.avatar)[0] : null;
+        const header = user.header ? Object.entries(user.header)[0] : null;
+
         const data = {
             username: user.username,
             uri: user.uri,
@@ -708,12 +721,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             fields: user.fields ?? [],
             updatedAt: new Date(user.created_at).toISOString(),
             instanceId: instance.id,
-            avatar: user.avatar
-                ? Object.entries(user.avatar)[0][1].content
-                : "",
-            header: user.header
-                ? Object.entries(user.header)[0][1].content
-                : "",
+            avatar: avatar?.[1].content || "",
+            header: header?.[1].content || "",
             displayName: user.display_name ?? "",
             note: getBestContentType(user.bio).content,
             publicKey: user.public_key.key,
@@ -723,6 +732,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 privacy: "public",
                 sensitive: false,
                 fields: [],
+                avatar: avatar
+                    ? {
+                          content_type: avatar[0],
+                      }
+                    : undefined,
+                header: header
+                    ? {
+                          content_type: header[0],
+                      }
+                    : undefined,
             },
         };
 
@@ -840,8 +859,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         password: string | undefined;
         email: string | undefined;
         bio?: string;
-        avatar?: string;
-        header?: string;
+        avatar?: {
+            url: string;
+            content_type: string;
+        };
+        header?: {
+            url: string;
+            content_type: string;
+        };
         admin?: boolean;
         skipPasswordHash?: boolean;
     }): Promise<User> {
@@ -859,8 +884,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                             : await Bun.password.hash(data.password),
                     email: data.email,
                     note: data.bio ?? "",
-                    avatar: data.avatar ?? config.defaults.avatar ?? "",
-                    header: data.header ?? config.defaults.avatar ?? "",
+                    avatar: data.avatar?.url ?? config.defaults.avatar ?? "",
+                    header: data.header?.url ?? config.defaults.avatar ?? "",
                     isAdmin: data.admin ?? false,
                     publicKey: keys.public_key,
                     fields: [],
@@ -872,6 +897,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                         privacy: "public",
                         sensitive: false,
                         fields: [],
+                        avatar: data.avatar
+                            ? {
+                                  content_type: data.avatar.content_type,
+                              }
+                            : undefined,
+                        header: data.header
+                            ? {
+                                  content_type: data.header.content_type,
+                              }
+                            : undefined,
                     },
                 })
                 .returning()
@@ -1209,8 +1244,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             indexable: false,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
-            avatar: urlToContentFormat(this.getAvatarUrl(config)) ?? undefined,
-            header: urlToContentFormat(this.getHeaderUrl(config)) ?? undefined,
+            avatar:
+                urlToContentFormat(
+                    this.getAvatarUrl(config),
+                    this.data.source.avatar?.content_type,
+                ) ?? undefined,
+            header:
+                urlToContentFormat(
+                    this.getHeaderUrl(config),
+                    this.data.source.header?.content_type,
+                ) ?? undefined,
             display_name: user.displayName,
             fields: user.fields,
             public_key: {

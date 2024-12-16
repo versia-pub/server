@@ -48,6 +48,7 @@ max_emoji_description_size = 1000
 - Correctly proxy all URIs in custom Markdown text.
 - Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
 - Fixed incorrect content-type on some media when using S3.
+- All media content-type is now correctly fetched, instead of guessed from the file extension.
 
 # `0.7.0` • The Auth and APIs Update
 

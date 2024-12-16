@@ -394,7 +394,16 @@ export const Users = pgTable(
             inbox: string;
             outbox: string;
         }> | null>(),
-        source: jsonb("source").notNull().$type<ApiSource>(),
+        source: jsonb("source").notNull().$type<
+            ApiSource & {
+                avatar?: {
+                    content_type: string;
+                };
+                header?: {
+                    content_type: string;
+                };
+            }
+        >(),
         avatar: text("avatar").notNull(),
         header: text("header").notNull(),
         createdAt: timestamp("created_at", { precision: 3, mode: "string" })
