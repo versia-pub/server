@@ -1,8 +1,30 @@
-<p align="center">
-  <a href="https://versia.pub"><img src="https://cdn.versia.pub/branding/logo-dark.svg" alt="Versia Logo" height="110"></a>
-</p>
+<div align="center">
+    <a href="https://versia.pub">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="https://cdn.versia.pub/branding/logo-dark.svg">
+            <source media="(prefers-color-scheme: light)" srcset="https://cdn.versia.pub/branding/logo-light.svg">
+            <img src="https://cdn.versia.pub/branding/logo-dark.svg" alt="Versia Logo" height="110" />
+        </picture>
+    </a>
+</div>
 
-![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Bun](https://img.shields.io/badge/Bun-%23000000.svg?style=for-the-badge&logo=bun&logoColor=white) ![VS Code Insiders](https://img.shields.io/badge/VS%20Code%20Insiders-35b393.svg?style=for-the-badge&logo=visual-studio-code&logoColor=white) ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white) ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa?style=for-the-badge)](code_of_conduct.md)
+
+<h2 align="center">
+  <strong><code>Versia Server</code></strong>
+</h2>
+
+<div align="center">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg" height="42" width="52" alt="TypeScript logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg" height="42" width="52" alt="PostgreSQL logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" height="42" width="52" alt="Docker logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/bun/bun-original.svg" height="42" width="52" alt="Bun logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" height="42" width="52" alt="VSCode logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/sentry/sentry-original.svg" height="42" width="52" alt="Sentry logo">
+    <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg" height="42" width="52" alt="Linux logo">
+</div>
+
+
+<br/>
 
 ## What is this?
 
@@ -189,7 +211,7 @@ Working endpoints are:
 - [x] `/oauth/authorize`
 - [x] `/oauth/token`
 - [x] `/oauth/revoke`
-- Admin API  
+- Admin API
 
 ### Main work to do for API
 
