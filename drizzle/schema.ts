@@ -51,14 +51,15 @@ export const Emojis = pgTable("Emojis", {
     category: text("category"),
 });
 
-export const Reaction = pgTable("Reaction", {
+export const Reactions = pgTable("Reaction", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
-    emojiId: uuid("emojiId")
-        .notNull()
-        .references(() => Emojis.id, {
-            onDelete: "cascade",
-            onUpdate: "cascade",
-        }),
+    uri: text("uri").unique(),
+    // Emoji ID is nullable, in which case it is a text emoji, and the emojiText field is used
+    emojiId: uuid("emojiId").references(() => Emojis.id, {
+        onDelete: "cascade",
+        onUpdate: "cascade",
+    }),
+    emojiText: text("emoji_text"),
     noteId: uuid("noteId")
         .notNull()
         .references(() => Notes.id, {
@@ -71,19 +72,28 @@ export const Reaction = pgTable("Reaction", {
             onDelete: "cascade",
             onUpdate: "cascade",
         }),
+    createdAt: timestamp("created_at", { precision: 3, mode: "string" })
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp("update_at", {
+        precision: 3,
+        mode: "string",
+    })
+        .defaultNow()
+        .notNull(),
 });
 
-export const ReactionRelations = relations(Reaction, ({ one }) => ({
+export const ReactionRelations = relations(Reactions, ({ one }) => ({
     emoji: one(Emojis, {
-        fields: [Reaction.emojiId],
+        fields: [Reactions.emojiId],
         references: [Emojis.id],
     }),
     note: one(Notes, {
-        fields: [Reaction.noteId],
+        fields: [Reactions.noteId],
         references: [Notes.id],
     }),
     author: one(Users, {
-        fields: [Reaction.authorId],
+        fields: [Reactions.authorId],
         references: [Users.id],
     }),
 }));

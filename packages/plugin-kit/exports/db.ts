@@ -12,3 +12,4 @@ export { Relationship } from "~/classes/database/relationship.ts";
 export { Like } from "~/classes/database/like.ts";
 export { Token } from "~/classes/database/token.ts";
 export { Notification } from "~/classes/database/notification.ts";
+export { Reaction } from "~/classes/database/reaction.ts";
