@@ -1,8 +1,8 @@
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { HonoAdapter } from "@bull-board/hono";
-import { serveStatic } from "@hono/hono/bun";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { serveStatic } from "hono/bun";
 import { deliveryQueue } from "~/classes/queues/delivery";
 import { fetchQueue } from "~/classes/queues/fetch";
 import { inboxQueue } from "~/classes/queues/inbox";
@@ -37,6 +37,5 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
     });
 
     serverAdapter.setBasePath("/admin/queues");
-    // @ts-expect-error idk why this is not working
     app.route("/admin/queues", serverAdapter.registerPlugin());
 };

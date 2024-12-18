@@ -1,7 +1,7 @@
-import { getCookie } from "@hono/hono/cookie";
 import { Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
 import chalk from "chalk";
+import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { z } from "zod";

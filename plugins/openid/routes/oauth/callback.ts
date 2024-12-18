@@ -1,10 +1,10 @@
 import { mimeLookup } from "@/content_types.ts";
 import { randomString } from "@/math.ts";
-import { setCookie } from "@hono/hono/cookie";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
+import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";

@@ -1,4 +1,4 @@
-import { createMiddleware } from "@hono/hono/factory";
+import { createMiddleware } from "hono/factory";
 
 export const boundaryCheck = createMiddleware(async (context, next) => {
     // Checks that FormData boundary is present

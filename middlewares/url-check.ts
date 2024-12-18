@@ -1,4 +1,4 @@
-import { createMiddleware } from "@hono/hono/factory";
+import { createMiddleware } from "hono/factory";
 import { config } from "~/packages/config-manager";
 
 export const urlCheck = createMiddleware(async (context, next) => {

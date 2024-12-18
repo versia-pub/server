@@ -1,7 +1,7 @@
 import { sentry } from "@/sentry";
-import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
+import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
 import { config } from "~/packages/config-manager";
 

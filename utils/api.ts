@@ -1,5 +1,3 @@
-import type { Context, MiddlewareHandler } from "@hono/hono";
-import { createMiddleware } from "@hono/hono/factory";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import { Application, Token, db } from "@versia/kit/db";
@@ -7,6 +5,8 @@ import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { type SQL, eq } from "drizzle-orm";
+import type { Context, MiddlewareHandler } from "hono";
+import { createMiddleware } from "hono/factory";
 import {
     anyOf,
     caseInsensitive,
@@ -429,7 +429,7 @@ export const setContextFormDataToObject = (
  * Add it to random Hono routes and hope it works
  * @returns
  */
-export const jsonOrForm = (): MiddlewareHandler => {
+export const jsonOrForm = (): MiddlewareHandler<HonoEnv> => {
     return createMiddleware(async (context, next) => {
         const contentType = context.req.header("content-type");
 

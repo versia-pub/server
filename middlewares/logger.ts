@@ -1,6 +1,6 @@
-import { createMiddleware } from "@hono/hono/factory";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
+import { createMiddleware } from "hono/factory";
 import { config } from "~/packages/config-manager";
 
 export const logger = createMiddleware(async (context, next) => {
