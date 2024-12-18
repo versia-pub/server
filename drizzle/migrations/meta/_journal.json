@@ -260,6 +260,13 @@
             "when": 1732563077877,
             "tag": "0036_cuddly_ironclad",
             "breakpoints": true
+        },
+        {
+            "idx": 37,
+            "version": "7",
+            "when": 1734546300555,
+            "tag": "0037_condemned_talisman",
+            "breakpoints": true
         }
     ]
 }

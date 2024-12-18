@@ -51,6 +51,43 @@ export const Emojis = pgTable("Emojis", {
     category: text("category"),
 });
 
+export const Reaction = pgTable("Reaction", {
+    id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
+    emojiId: uuid("emojiId")
+        .notNull()
+        .references(() => Emojis.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    noteId: uuid("noteId")
+        .notNull()
+        .references(() => Notes.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    authorId: uuid("authorId")
+        .notNull()
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+});
+
+export const ReactionRelations = relations(Reaction, ({ one }) => ({
+    emoji: one(Emojis, {
+        fields: [Reaction.emojiId],
+        references: [Emojis.id],
+    }),
+    note: one(Notes, {
+        fields: [Reaction.noteId],
+        references: [Notes.id],
+    }),
+    author: one(Users, {
+        fields: [Reaction.authorId],
+        references: [Users.id],
+    }),
+}));
+
 export const Filters = pgTable("Filters", {
     id: uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull(),
     userId: uuid("userId")
