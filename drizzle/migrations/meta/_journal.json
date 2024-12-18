@@ -274,6 +274,13 @@
             "when": 1734548407684,
             "tag": "0038_friendly_supernaut",
             "breakpoints": true
+        },
+        {
+            "idx": 39,
+            "version": "7",
+            "when": 1734555117380,
+            "tag": "0039_special_serpent_society",
+            "breakpoints": true
         }
     ]
 }
