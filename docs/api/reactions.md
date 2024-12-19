@@ -11,7 +11,6 @@ interface NoteReaction {
     name: string;
     count: number;
     me: boolean;
-    url: URL;
 }
 
 type NoteReactionWithAccounts = NoteReaction & {
