@@ -59,6 +59,10 @@ export default defineConfig({
                         link: "/api/emojis",
                     },
                     {
+                        text: "Reactions",
+                        link: "/api/reactions",
+                    },
+                    {
                         text: "Roles",
                         link: "/api/roles",
                     },

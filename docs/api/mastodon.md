@@ -369,6 +369,49 @@ An array of [`Roles`](./roles.md#role) that the user has.
 
 URI of the account's Versia entity (for federation). Similar to Mastodon's `uri` field on notes.
 
+## `Status`
+
+One attribute has been added to all returned [`Status`](https://docs.joinmastodon.org/entities/Status/) objects.
+
+This object is returned on routes such as `/api/v1/statuses/:id`, `/api/v1/statuses/:id/context`, etc.
+
+```ts
+type URL = string;
+
+interface NoteReaction {
+    name: string;
+    count: number;
+    me: boolean;
+    url: URL;
+}
+
+type ExtendedStatus = Status & {
+    reactions: NoteReaction[];
+}
+```
+
+```json
+{
+    ...
+    "reactions": [
+        {
+            "name": "like",
+            "count": 3,
+            "me": true,
+        },
+        {
+            "name": "blobfox",
+            "count": 1,
+            "me": false,
+        }
+    ]
+}
+```
+
+### `reactions`
+
+An array of all the [`NoteReactions`](./reactions.md#reaction) for the note. Data for the custom emoji (e.g. URL) can be found in the `emojis` field of the [`Status`](https://docs.joinmastodon.org/entities/Status#emojis).
+
 ## `/api/v1/accounts/update_credentials`
 
 The `username` parameter can now (optionally) be set to change the user's handle.
