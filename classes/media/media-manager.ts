@@ -78,12 +78,12 @@ export class MediaManager {
 
         for (const preprocessor of this.preprocessors) {
             const result = await preprocessor.process(processedFile);
+
             if ("blurhash" in result) {
                 blurhash = result.blurhash as string;
-                processedFile = result.file;
-            } else {
-                processedFile = result.file;
             }
+
+            processedFile = result.file;
         }
 
         const uploadResult = await this.driver.addFile(processedFile);

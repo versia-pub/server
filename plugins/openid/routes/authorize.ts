@@ -5,6 +5,7 @@ import { RolePermissions } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
+import { errorRedirect, errors } from "../errors.ts";
 import type { PluginType } from "../index.ts";
 
 const schemas = {
@@ -107,14 +108,7 @@ export default (plugin: PluginType): void =>
                 const { keys } = context.get("pluginConfig");
 
                 const errorSearchParams = new URLSearchParams(
-                    Object.fromEntries(
-                        Object.entries(context.req.valid("json")).filter(
-                            ([k, v]) =>
-                                v !== undefined &&
-                                k !== "password" &&
-                                k !== "email",
-                        ),
-                    ),
+                    context.req.valid("json"),
                 );
 
                 const result = await jwtVerify(jwt, keys.public, {
@@ -130,14 +124,10 @@ export default (plugin: PluginType): void =>
                 });
 
                 if (!result) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid JWT, could not verify",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.InvalidJWT,
+                        errorSearchParams,
                     );
                 }
 
@@ -146,78 +136,54 @@ export default (plugin: PluginType): void =>
                 } = result;
 
                 if (!(aud && sub && exp)) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid JWT, missing required fields (aud, sub, exp)",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.MissingJWTFields,
+                        errorSearchParams,
                     );
                 }
 
                 if (!z.string().uuid().safeParse(sub).success) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid JWT, sub is not a valid user ID",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.InvalidSub,
+                        errorSearchParams,
                     );
                 }
 
                 const user = await User.fromId(sub);
 
                 if (!user) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid JWT, could not find associated user",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.UserNotFound,
+                        errorSearchParams,
                     );
                 }
 
                 if (!user.hasPermission(RolePermissions.OAuth)) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        `User is missing the required permission ${RolePermissions.OAuth}`,
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.MissingOauthPermission,
+                        errorSearchParams,
                     );
                 }
 
                 const application = await Application.fromClientId(client_id);
 
                 if (!application) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid client_id: no associated application found",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.MissingApplication,
+                        errorSearchParams,
                     );
                 }
 
                 if (application.data.redirectUri !== redirect_uri) {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid redirect_uri: does not match application's redirect_uri",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.InvalidRedirectUri,
+                        errorSearchParams,
                     );
                 }
 
@@ -228,14 +194,10 @@ export default (plugin: PluginType): void =>
                         .split(" ")
                         .every((s) => application.data.scopes.includes(s))
                 ) {
-                    errorSearchParams.append("error", "invalid_scope");
-                    errorSearchParams.append(
-                        "error_description",
-                        "Invalid scope: not a subset of the application's scopes",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
+                    return errorRedirect(
+                        context,
+                        errors.InvalidScope,
+                        errorSearchParams,
                     );
                 }
 
