@@ -10,7 +10,7 @@ import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     json: z.object({
         shortcode: z
             .string()

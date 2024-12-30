@@ -5,7 +5,7 @@ import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         id: z
             .array(z.string().uuid())

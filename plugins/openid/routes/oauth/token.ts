@@ -5,7 +5,7 @@ import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import type { PluginType } from "../../index.ts";
 
-export const schemas = {
+const schemas = {
     json: z.object({
         code: z.string().optional(),
         code_verifier: z.string().optional(),

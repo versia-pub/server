@@ -9,7 +9,7 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
-export const schemas = {
+const schemas = {
     json: z.object({
         username: z.string(),
         email: z.string().toLowerCase(),

@@ -8,7 +8,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     json: z
         .object({
             status: z

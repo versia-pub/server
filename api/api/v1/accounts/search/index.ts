@@ -7,7 +7,7 @@ import stringComparison from "string-comparison";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         q: z.string().min(1).max(512).regex(userAddressValidator),
         limit: z.coerce.number().int().min(1).max(80).default(40),

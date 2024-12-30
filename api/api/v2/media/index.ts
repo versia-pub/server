@@ -9,7 +9,7 @@ import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     form: z.object({
         file: z.instanceof(File),
         thumbnail: z.instanceof(File).optional(),

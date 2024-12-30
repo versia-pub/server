@@ -1,15 +1,15 @@
-import { apiRoute, auth, idValidator } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     query: z.object({
-        max_id: z.string().regex(idValidator).optional(),
-        since_id: z.string().regex(idValidator).optional(),
-        min_id: z.string().regex(idValidator).optional(),
+        max_id: z.string().uuid().optional(),
+        since_id: z.string().uuid().optional(),
+        min_id: z.string().uuid().optional(),
         limit: z.coerce.number().int().min(1).max(80).default(20),
     }),
 };

@@ -4,7 +4,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     json: z.object({
         client_name: z.string().trim().min(1).max(100),
         redirect_uris: z

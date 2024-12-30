@@ -7,7 +7,7 @@ import type { Context } from "hono";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
 
-export const schemas = {
+const schemas = {
     form: z.object({
         token: z.string().min(1),
         password: z.string().min(3).max(100),

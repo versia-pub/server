@@ -6,12 +6,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
-
 const routeGet = createRoute({
     method: "get",
     path: "/api/v1/roles/{id}",
@@ -22,7 +16,9 @@ const routeGet = createRoute({
         }),
     ],
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         200: {
@@ -56,7 +52,9 @@ const routePatch = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
         body: {
             content: {
                 "application/json": {
@@ -100,7 +98,9 @@ const routeDelete = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         204: {

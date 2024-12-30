@@ -5,7 +5,7 @@ import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     json: z.object({
         title: z.string().trim().min(1).max(100),
         context: z

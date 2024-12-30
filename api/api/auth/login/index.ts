@@ -10,7 +10,7 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
-export const schemas = {
+const schemas = {
     form: z.object({
         identifier: z
             .string()

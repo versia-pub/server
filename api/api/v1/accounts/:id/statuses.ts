@@ -1,4 +1,4 @@
-import { apiRoute, auth, idValidator } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline, User } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
@@ -7,14 +7,14 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
         id: z.string().uuid(),
     }),
     query: z.object({
-        max_id: z.string().regex(idValidator).optional(),
-        since_id: z.string().regex(idValidator).optional(),
-        min_id: z.string().regex(idValidator).optional(),
+        max_id: z.string().uuid().optional(),
+        since_id: z.string().uuid().optional(),
+        min_id: z.string().uuid().optional(),
         limit: z.coerce.number().int().min(1).max(40).optional().default(20),
         only_media: z
             .string()

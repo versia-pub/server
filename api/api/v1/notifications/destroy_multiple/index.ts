@@ -3,7 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         "ids[]": z.array(z.string().uuid()),
     }),

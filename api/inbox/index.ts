@@ -4,7 +4,7 @@ import type { Entity } from "@versia/federation/types";
 import { z } from "zod";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
 
-export const schemas = {
+const schemas = {
     header: z.object({
         "x-signature": z.string().optional(),
         "x-nonce": z.string().optional(),

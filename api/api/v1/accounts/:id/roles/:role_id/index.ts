@@ -6,7 +6,7 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
         id: z.string().uuid(),
         role_id: z.string().uuid(),

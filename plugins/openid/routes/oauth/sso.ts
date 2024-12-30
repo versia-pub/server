@@ -10,7 +10,7 @@ import {
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         issuer: z.string(),
         client_id: z.string().optional(),

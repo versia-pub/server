@@ -5,12 +5,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
-
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/{id}/roles",
@@ -21,7 +15,9 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         200: {

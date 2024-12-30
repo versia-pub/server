@@ -9,7 +9,7 @@ import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         q: z.string().trim(),
         type: z.string().optional(),

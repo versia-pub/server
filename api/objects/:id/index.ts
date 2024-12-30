@@ -12,18 +12,14 @@ import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
 
-export const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
-
 const route = createRoute({
     method: "get",
     path: "/objects/{id}",
     summary: "Get object",
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         200: {

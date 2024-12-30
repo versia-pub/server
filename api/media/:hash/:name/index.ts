@@ -4,7 +4,7 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
         hash: z.string(),
         name: z.string(),

@@ -8,7 +8,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         acct: z.string().min(1).max(512).toLowerCase(),
     }),

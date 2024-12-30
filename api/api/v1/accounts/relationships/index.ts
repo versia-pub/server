@@ -4,7 +4,7 @@ import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         id: z.array(z.string().uuid()).min(1).max(10).or(z.string().uuid()),
     }),

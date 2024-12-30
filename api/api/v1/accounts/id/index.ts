@@ -7,7 +7,7 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         username: z.string().min(1).max(512).toLowerCase(),
     }),

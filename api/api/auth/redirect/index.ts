@@ -6,7 +6,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         redirect_uri: z.string().url(),
         client_id: z.string(),

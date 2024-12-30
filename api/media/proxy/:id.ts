@@ -6,7 +6,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
         id: z
             .string()

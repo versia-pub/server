@@ -5,12 +5,6 @@ import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 
-export const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
-
 const route = createRoute({
     method: "post",
     path: "/api/v1/notifications/{id}/dismiss",
@@ -23,7 +17,9 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         200: {

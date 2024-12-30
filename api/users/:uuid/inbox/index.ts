@@ -5,7 +5,7 @@ import { z } from "zod";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
         uuid: z.string().uuid(),
     }),

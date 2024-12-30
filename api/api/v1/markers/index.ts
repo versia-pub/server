@@ -1,4 +1,4 @@
-import { apiRoute, auth, idValidator } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
 import { db } from "@versia/kit/db";
@@ -6,11 +6,11 @@ import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-export const schemas = {
+const schemas = {
     markers: z.object({
         home: z
             .object({
-                last_read_id: z.string().regex(idValidator),
+                last_read_id: z.string().uuid(),
                 version: z.number(),
                 updated_at: z.string(),
             })
@@ -18,7 +18,7 @@ export const schemas = {
             .optional(),
         notifications: z
             .object({
-                last_read_id: z.string().regex(idValidator),
+                last_read_id: z.string().uuid(),
                 version: z.number(),
                 updated_at: z.string(),
             })
@@ -70,11 +70,8 @@ const routePost = createRoute({
     ] as const,
     request: {
         query: z.object({
-            "home[last_read_id]": z.string().regex(idValidator).optional(),
-            "notifications[last_read_id]": z
-                .string()
-                .regex(idValidator)
-                .optional(),
+            "home[last_read_id]": z.string().uuid().optional(),
+            "notifications[last_read_id]": z.string().uuid().optional(),
         }),
     },
     responses: {

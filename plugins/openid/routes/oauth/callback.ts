@@ -10,7 +10,7 @@ import { ApiError } from "~/classes/errors/api-error.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
-export const schemas = {
+const schemas = {
     query: z.object({
         client_id: z.string().optional(),
         flow: z.string(),

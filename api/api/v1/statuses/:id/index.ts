@@ -1,4 +1,4 @@
-import { apiRoute, auth, idValidator, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -8,9 +8,9 @@ import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
-export const schemas = {
+const schemas = {
     param: z.object({
-        id: z.string().regex(idValidator),
+        id: z.string().uuid(),
     }),
     json: z
         .object({
@@ -27,7 +27,7 @@ export const schemas = {
                 .optional(),
             content_type: z.string().optional().default("text/plain"),
             media_ids: z
-                .array(z.string().regex(idValidator))
+                .array(z.string().uuid())
                 .max(config.validation.max_media_attachments)
                 .default([]),
             spoiler_text: z.string().max(255).optional(),
