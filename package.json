@@ -2,7 +2,7 @@
     "name": "versia-server",
     "module": "index.ts",
     "type": "module",
-    "version": "0.7.0",
+    "version": "0.8.0-alpha",
     "description": "A project to build a federated social network",
     "author": {
         "email": "contact@cpluspatch.com",
