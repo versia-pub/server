@@ -103,7 +103,7 @@
         "zod-to-json-schema": "^3.24.1"
     },
     "peerDependencies": {
-        "typescript": "^5.3.2"
+        "typescript": "^5.7.2"
     },
     "dependencies": {
         "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client",
