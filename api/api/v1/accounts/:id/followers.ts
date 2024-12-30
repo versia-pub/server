@@ -1,11 +1,9 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     query: z.object({
@@ -34,6 +32,7 @@ const route = createRoute({
                 RolePermissions.ViewAccounts,
             ],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -53,30 +52,15 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "The specified account was not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
         const { max_id, since_id, min_id, limit } = context.req.valid("query");
-
-        const otherUser = await User.fromId(id);
+        const otherUser = context.get("user");
 
         // TODO: Add follower/following privacy settings
-
-        if (!otherUser) {
-            throw new ApiError(404, "User not found");
-        }
-
         const { objects, link } = await Timeline.getUserTimeline(
             and(
                 max_id ? lt(Users.id, max_id) : undefined,

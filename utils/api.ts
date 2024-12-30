@@ -1,11 +1,13 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
-import { Application, Token, db } from "@versia/kit/db";
+import { Application, Note, Token, User, db } from "@versia/kit/db";
 import { Challenges, type RolePermissions } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { type SQL, eq } from "drizzle-orm";
 import type { Context, MiddlewareHandler } from "hono";
+import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
 import {
     anyOf,
@@ -22,7 +24,7 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
-import type { z } from "zod";
+import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
@@ -291,6 +293,85 @@ export const auth = <AuthRequired extends boolean>(options: {
         await next();
     });
 };
+
+type WithIdParam = {
+    in: { param: { id: string } };
+    out: { param: { id: string } };
+};
+
+/**
+ * Middleware to check if a note exists and is viewable by the user.
+ *
+ * Useful in /api/v1/statuses/:id/* routes
+ * @returns MiddlewareHandler
+ */
+export const withNoteParam = every(
+    zValidator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    createMiddleware<
+        HonoEnv & {
+            Variables: {
+                note: Note;
+            };
+        },
+        string,
+        WithIdParam
+    >(async (context, next) => {
+        const { id } = context.req.valid("param");
+        const { user } = context.get("auth");
+
+        const note = await Note.fromId(id, user?.id);
+
+        if (!(note && (await note.isViewableByUser(user)))) {
+            throw new ApiError(404, "Note not found");
+        }
+
+        context.set("note", note);
+
+        await next();
+    }),
+) as MiddlewareHandler<
+    HonoEnv & {
+        Variables: {
+            note: Note;
+        };
+    }
+>;
+
+/**
+ * Middleware to check if a user exists
+ *
+ * Useful in /api/v1/accounts/:id/* routes
+ * @returns MiddlewareHandler
+ */
+export const withUserParam = every(
+    zValidator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    createMiddleware<
+        HonoEnv & {
+            Variables: {
+                user: User;
+            };
+        },
+        string,
+        WithIdParam
+    >(async (context, next) => {
+        const { id } = context.req.valid("param");
+        const user = await User.fromId(id);
+
+        if (!user) {
+            throw new ApiError(404, "User not found");
+        }
+
+        context.set("user", user);
+
+        await next();
+    }),
+) as MiddlewareHandler<
+    HonoEnv & {
+        Variables: {
+            user: User;
+        };
+    }
+>;
 
 // Helper function to parse form data
 async function parseFormData(context: Context): Promise<{

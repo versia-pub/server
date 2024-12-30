@@ -1,4 +1,4 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -17,6 +17,7 @@ const route = createRoute({
             scopes: ["write:accounts"],
             permissions: [RolePermissions.ViewAccounts],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: z.object({
@@ -29,14 +30,6 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: User.schema,
-                },
-            },
-        },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
                 },
             },
         },
@@ -53,13 +46,7 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
-
-        const otherUser = await User.fromId(id);
-
-        if (!otherUser) {
-            throw new ApiError(404, "User not found");
-        }
+        const otherUser = context.get("user");
 
         if (otherUser.isLocal()) {
             throw new ApiError(400, "Cannot refetch a local user");

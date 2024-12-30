@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, withNoteParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -75,6 +75,7 @@ const routeGet = createRoute({
             auth: false,
             permissions: [RolePermissions.ViewNotes],
         }),
+        withNoteParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -111,6 +112,7 @@ const routeDelete = createRoute({
                 RolePermissions.ViewNotes,
             ],
         }),
+        withNoteParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -156,6 +158,7 @@ const routePut = createRoute({
             ],
         }),
         jsonOrForm(),
+        withNoteParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -190,14 +193,6 @@ const routePut = createRoute({
                 },
             },
         },
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
         422: {
             description: "Invalid media IDs",
             content: {
@@ -211,27 +206,15 @@ const routePut = createRoute({
 
 export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const note = await Note.fromId(id, user?.id);
-
-        if (!(note && (await note?.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
-        }
+        const note = context.get("note");
 
         return context.json(await note.toApi(user), 200);
     });
 
     app.openapi(routeDelete, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const note = await Note.fromId(id, user?.id);
-
-        if (!(note && (await note?.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
-        }
+        const note = context.get("note");
 
         if (note.author.id !== user.id) {
             throw new ApiError(401, "Unauthorized");
@@ -246,14 +229,8 @@ export default apiRoute((app) => {
     });
 
     app.openapi(routePut, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const note = await Note.fromId(id, user?.id);
-
-        if (!(note && (await note?.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
-        }
+        const note = context.get("note");
 
         if (note.author.id !== user.id) {
             throw new ApiError(401, "Unauthorized");

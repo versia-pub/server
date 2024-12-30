@@ -1,4 +1,4 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
@@ -19,6 +19,7 @@ const route = createRoute({
                 RolePermissions.ViewNotes,
             ],
         }),
+        withNoteParam,
     ] as const,
     request: {
         params: z.object({
@@ -31,15 +32,6 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: Note.schema,
-                },
-            },
-        },
-
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
                 },
             },
         },
@@ -58,13 +50,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const note = await Note.fromId(id, user.id);
-
-        // Check if user is authorized to view this status (if it's private)
-        if (!(note && (await note?.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
-        }
+        const note = context.get("note");
 
         const existingReblog = await Note.fromSql(
             and(eq(Notes.authorId, user.id), eq(Notes.reblogId, note.data.id)),

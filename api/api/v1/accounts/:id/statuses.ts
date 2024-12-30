@@ -1,11 +1,9 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, Timeline, User } from "@versia/kit/db";
+import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -53,6 +51,7 @@ const route = createRoute({
             ],
             scopes: ["read:statuses"],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -72,27 +71,13 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const otherUser = await User.fromId(id);
-
-        if (!otherUser) {
-            throw new ApiError(404, "User not found");
-        }
+        const otherUser = context.get("user");
 
         const {
             max_id,
@@ -110,7 +95,7 @@ export default apiRoute((app) =>
                 max_id ? lt(Notes.id, max_id) : undefined,
                 since_id ? gte(Notes.id, since_id) : undefined,
                 min_id ? gt(Notes.id, min_id) : undefined,
-                eq(Notes.authorId, id),
+                eq(Notes.authorId, otherUser.id),
                 only_media
                     ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
                     : undefined,

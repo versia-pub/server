@@ -1,10 +1,8 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "get",
@@ -16,6 +14,7 @@ const route = createRoute({
             auth: false,
             permissions: [RolePermissions.ViewAccounts],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: z.object({
@@ -31,28 +30,14 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
-    app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
+    app.openapi(route, (context) => {
         const { user } = context.get("auth");
+        const otherUser = context.get("user");
 
-        const foundUser = await User.fromId(id);
-
-        if (!foundUser) {
-            throw new ApiError(404, "User not found");
-        }
-
-        return context.json(foundUser.toApi(user?.id === foundUser.id), 200);
+        return context.json(otherUser.toApi(user?.id === otherUser.id), 200);
     }),
 );

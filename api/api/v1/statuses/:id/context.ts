@@ -1,9 +1,8 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -14,6 +13,7 @@ const route = createRoute({
             auth: false,
             permissions: [RolePermissions.ViewNotes],
         }),
+        withNoteParam,
     ] as const,
     summary: "Get status context",
     request: {
@@ -46,19 +46,12 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
-
         const { user } = context.get("auth");
+        const note = context.get("note");
 
-        const foundStatus = await Note.fromId(id, user?.id);
+        const ancestors = await note.getAncestors(user ?? null);
 
-        if (!foundStatus) {
-            throw new ApiError(404, "Note not found");
-        }
-
-        const ancestors = await foundStatus.getAncestors(user ?? null);
-
-        const descendants = await foundStatus.getDescendants(user ?? null);
+        const descendants = await note.getDescendants(user ?? null);
 
         return context.json(
             {

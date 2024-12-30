@@ -1,11 +1,9 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Note, Timeline, User } from "@versia/kit/db";
+import { Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -31,6 +29,7 @@ const route = createRoute({
                 RolePermissions.ViewNoteBoosts,
             ],
         }),
+        withNoteParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -45,29 +44,13 @@ const route = createRoute({
                 },
             },
         },
-
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
         const { max_id, min_id, since_id, limit } = context.req.valid("query");
-        const { user } = context.get("auth");
-
-        const note = await Note.fromId(id, user.id);
-
-        if (!(note && (await note?.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
-        }
+        const note = context.get("note");
 
         const { objects, link } = await Timeline.getUserTimeline(
             and(

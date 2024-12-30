@@ -32,7 +32,6 @@ describe("/api/v1/statuses/:id/favourite", () => {
                 },
             },
         );
-
         expect(response.status).toBe(200);
 
         const json = (await response.json()) as ApiStatus;

@@ -1,6 +1,6 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Role, User } from "@versia/kit/db";
+import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
@@ -22,6 +22,7 @@ const routePost = createRoute({
             auth: true,
             permissions: [RolePermissions.ManageRoles],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -30,9 +31,8 @@ const routePost = createRoute({
         204: {
             description: "Role assigned",
         },
-
         404: {
-            description: "User or role not found",
+            description: "Role not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -59,6 +59,7 @@ const routeDelete = createRoute({
             auth: true,
             permissions: [RolePermissions.ManageRoles],
         }),
+        withUserParam,
     ] as const,
     request: {
         params: schemas.param,
@@ -67,9 +68,8 @@ const routeDelete = createRoute({
         204: {
             description: "Role removed",
         },
-
         404: {
-            description: "User or role not found",
+            description: "Role not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -90,19 +90,14 @@ const routeDelete = createRoute({
 export default apiRoute((app) => {
     app.openapi(routePost, async (context) => {
         const { user } = context.get("auth");
-        const { id, role_id } = context.req.valid("param");
+        const { role_id } = context.req.valid("param");
+        const targetUser = context.get("user");
 
-        const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);
 
         if (!role) {
             throw new ApiError(404, "Role not found");
         }
-
-        if (!targetUser) {
-            throw new ApiError(404, "User not found");
-        }
-
         // Priority check
         const userRoles = await Role.getUserRoles(user.id, user.data.isAdmin);
 
@@ -125,17 +120,13 @@ export default apiRoute((app) => {
 
     app.openapi(routeDelete, async (context) => {
         const { user } = context.get("auth");
-        const { id, role_id } = context.req.valid("param");
+        const { role_id } = context.req.valid("param");
+        const targetUser = context.get("user");
 
-        const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);
 
         if (!role) {
             throw new ApiError(404, "Role not found");
-        }
-
-        if (!targetUser) {
-            throw new ApiError(404, "User not found");
         }
 
         // Priority check

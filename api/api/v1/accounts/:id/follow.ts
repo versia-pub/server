@@ -1,11 +1,9 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Relationship, User } from "@versia/kit/db";
+import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -37,6 +35,7 @@ const route = createRoute({
                 RolePermissions.ViewAccounts,
             ],
         }),
+        withUserParam,
     ] as const,
     responses: {
         200: {
@@ -44,14 +43,6 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: Relationship.schema,
-                },
-            },
-        },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
                 },
             },
         },
@@ -70,15 +61,9 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
         const { reblogs, notify, languages } = context.req.valid("json");
-
-        const otherUser = await User.fromId(id);
-
-        if (!otherUser) {
-            throw new ApiError(404, "User not found");
-        }
+        const otherUser = context.get("user");
 
         let relationship = await Relationship.fromOwnerAndSubject(
             user,

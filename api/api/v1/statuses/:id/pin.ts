@@ -1,4 +1,4 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, db } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -6,12 +6,6 @@ import type { SQL } from "drizzle-orm";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
 
 const route = createRoute({
     method: "post",
@@ -25,9 +19,12 @@ const route = createRoute({
                 RolePermissions.ViewNotes,
             ],
         }),
+        withNoteParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: z.string().uuid(),
+        }),
     },
     responses: {
         200: {
@@ -40,14 +37,6 @@ const route = createRoute({
         },
         401: {
             description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        404: {
-            description: "Record not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -67,16 +56,10 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
+        const note = context.get("note");
 
-        const foundStatus = await Note.fromId(id, user?.id);
-
-        if (!foundStatus) {
-            throw new ApiError(404, "Note not found");
-        }
-
-        if (foundStatus.author.id !== user.id) {
+        if (note.author.id !== user.id) {
             throw new ApiError(401, "Unauthorized");
         }
 
@@ -84,7 +67,7 @@ export default apiRoute((app) =>
             await db.query.UserToPinnedNotes.findFirst({
                 where: (userPinnedNote, { and, eq }): SQL | undefined =>
                     and(
-                        eq(userPinnedNote.noteId, foundStatus.data.id),
+                        eq(userPinnedNote.noteId, note.data.id),
                         eq(userPinnedNote.userId, user.id),
                     ),
             })
@@ -92,8 +75,8 @@ export default apiRoute((app) =>
             throw new ApiError(422, "Already pinned");
         }
 
-        await user.pin(foundStatus);
+        await user.pin(note);
 
-        return context.json(await foundStatus.toApi(user), 200);
+        return context.json(await note.toApi(user), 200);
     }),
 );
