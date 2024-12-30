@@ -21,7 +21,7 @@ export const meta = applyConfig({
             RolePermissions.ManageOwnNotes,
             RolePermissions.ViewNotes,
             RolePermissions.ViewAccounts,
-            RolePermissions.ViewPrimateTimelines,
+            RolePermissions.ViewPrivateTimelines,
         ],
     },
 });
@@ -39,7 +39,17 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/timelines/home",
     summary: "Get home timeline",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnNotes,
+                RolePermissions.ViewNotes,
+                RolePermissions.ViewAccounts,
+                RolePermissions.ViewPrivateTimelines,
+            ],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

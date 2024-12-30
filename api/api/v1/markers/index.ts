@@ -48,7 +48,12 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/markers",
     summary: "Get markers",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnAccount],
+        }),
+    ] as const,
     request: {
         query: z.object({
             "timeline[]": z
@@ -82,7 +87,12 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v1/markers",
     summary: "Update markers",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnAccount],
+        }),
+    ] as const,
     request: {
         query: z.object({
             "home[last_read_id]": z.string().regex(idValidator).optional(),

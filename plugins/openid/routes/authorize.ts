@@ -71,7 +71,7 @@ export default (plugin: PluginType): void =>
                 path: "/oauth/authorize",
                 middleware: [
                     auth({
-                        required: false,
+                        auth: false,
                     }),
                     jsonOrForm(),
                     plugin.middleware,

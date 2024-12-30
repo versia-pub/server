@@ -30,7 +30,13 @@ const route = createRoute({
     method: "delete",
     path: "/api/v1/notifications/destroy_multiple",
     summary: "Dismiss multiple notifications",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnNotifications],
+            scopes: ["write:notifications"],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

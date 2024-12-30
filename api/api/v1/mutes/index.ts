@@ -35,7 +35,13 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/mutes",
     summary: "Get muted users",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["read:mutes"],
+            permissions: [RolePermissions.ManageOwnMutes],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

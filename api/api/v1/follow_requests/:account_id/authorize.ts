@@ -30,7 +30,12 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/follow_requests/{account_id}/authorize",
     summary: "Authorize follow request",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFollows],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

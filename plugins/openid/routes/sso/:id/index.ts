@@ -16,14 +16,10 @@ export default (plugin: PluginType): void => {
                 path: "/api/v1/sso/{id}",
                 summary: "Get linked account",
                 middleware: [
-                    auth(
-                        {
-                            required: true,
-                        },
-                        {
-                            required: [RolePermissions.OAuth],
-                        },
-                    ),
+                    auth({
+                        auth: true,
+                        permissions: [RolePermissions.OAuth],
+                    }),
                     plugin.middleware,
                 ] as const,
                 request: {
@@ -115,14 +111,10 @@ export default (plugin: PluginType): void => {
                 path: "/api/v1/sso/{id}",
                 summary: "Unlink account",
                 middleware: [
-                    auth(
-                        {
-                            required: true,
-                        },
-                        {
-                            required: [RolePermissions.OAuth],
-                        },
-                    ),
+                    auth({
+                        auth: true,
+                        permissions: [RolePermissions.OAuth],
+                    }),
                     plugin.middleware,
                 ] as const,
                 request: {

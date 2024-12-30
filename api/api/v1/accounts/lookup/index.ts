@@ -34,7 +34,12 @@ const route = createRoute({
     path: "/api/v1/accounts/lookup",
     summary: "Lookup account",
     description: "Lookup an account by acct",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: false,
+            permissions: [RolePermissions.Search],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

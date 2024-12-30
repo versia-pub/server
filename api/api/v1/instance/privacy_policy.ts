@@ -18,7 +18,11 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/instance/privacy_policy",
     summary: "Get instance privacy policy",
-    middleware: [auth(meta.auth)],
+    middleware: [
+        auth({
+            auth: false,
+        }),
+    ],
     responses: {
         200: {
             description: "Instance privacy policy",

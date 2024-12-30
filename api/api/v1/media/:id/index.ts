@@ -41,7 +41,13 @@ const routePut = createRoute({
     method: "put",
     path: "/api/v1/media/{id}",
     summary: "Update media",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:media"],
+            permissions: [RolePermissions.ManageOwnMedia],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
         body: {
@@ -84,7 +90,12 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/media/{id}",
     summary: "Get media",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnMedia],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

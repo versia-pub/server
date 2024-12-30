@@ -31,7 +31,13 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/notifications/{id}/dismiss",
     summary: "Dismiss notification",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:notifications"],
+            permissions: [RolePermissions.ManageOwnNotifications],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

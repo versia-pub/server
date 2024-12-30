@@ -31,14 +31,24 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/notifications/{id}",
     summary: "Get notification",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnNotifications],
+            scopes: ["read:notifications"],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
     responses: {
         200: {
             description: "Notification",
-            schema: Notification.schema,
+            content: {
+                "application/json": {
+                    schema: Notification.schema,
+                },
+            },
         },
         401: {
             description: "Unauthorized",

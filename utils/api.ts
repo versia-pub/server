@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import { Application, Token, db } from "@versia/kit/db";
-import { Challenges } from "@versia/kit/tables";
+import { Challenges, type RolePermissions } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { type SQL, eq } from "drizzle-orm";
@@ -27,7 +27,7 @@ import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
-import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
+import type { ApiRouteMetadata, HonoEnv } from "~/types/api";
 
 export const applyConfig = (routeMeta: ApiRouteMetadata): ApiRouteMetadata => {
     const newMeta = routeMeta;
@@ -161,19 +161,14 @@ export const handleZodError = (
 
 const checkPermissions = (
     auth: AuthData | null,
-    permissionData: ApiRouteMetadata["permissions"],
-    context: Context,
+    required: RolePermissions[],
 ): void => {
     const userPerms = auth?.user
         ? auth.user.getAllPermissions()
         : config.permissions.anonymous;
-    const requiredPerms =
-        permissionData?.methodOverrides?.[context.req.method as HttpVerb] ??
-        permissionData?.required ??
-        [];
 
-    if (!requiredPerms.every((perm) => userPerms.includes(perm))) {
-        const missingPerms = requiredPerms.filter(
+    if (!required.every((perm) => userPerms.includes(perm))) {
+        const missingPerms = required.filter(
             (perm) => !userPerms.includes(perm),
         );
         throw new ApiError(
@@ -186,8 +181,7 @@ const checkPermissions = (
 
 const checkRouteNeedsAuth = (
     auth: AuthData | null,
-    authData: ApiRouteMetadata["auth"],
-    context: Context,
+    required: boolean,
 ): AuthData => {
     if (auth?.user && auth?.token) {
         return {
@@ -196,10 +190,7 @@ const checkRouteNeedsAuth = (
             application: auth.application,
         };
     }
-    if (
-        authData.required ||
-        authData.methodOverrides?.[context.req.method as HttpVerb]
-    ) {
+    if (required) {
         throw new ApiError(401, "This route requires authentication");
     }
 
@@ -211,10 +202,10 @@ const checkRouteNeedsAuth = (
 };
 
 export const checkRouteNeedsChallenge = async (
-    challengeData: ApiRouteMetadata["challenge"],
+    required: boolean,
     context: Context,
 ): Promise<void> => {
-    if (!challengeData) {
+    if (!required) {
         return;
     }
 
@@ -265,12 +256,22 @@ export const checkRouteNeedsChallenge = async (
         .where(eq(Challenges.id, challenge_id));
 };
 
-export const auth = (
-    authData: ApiRouteMetadata["auth"],
-    permissionData?: ApiRouteMetadata["permissions"],
-    challengeData?: ApiRouteMetadata["challenge"],
-): MiddlewareHandler<HonoEnv, string> =>
-    createMiddleware<HonoEnv>(async (context, next) => {
+type HonoEnvWithAuth = HonoEnv & {
+    Variables: {
+        auth: AuthData & { user: NonNullable<AuthData["user"]> };
+    };
+};
+
+export const auth = <AuthRequired extends boolean>(options: {
+    auth: AuthRequired;
+    permissions?: RolePermissions[];
+    challenge?: boolean;
+    scopes?: string[];
+    // If authRequired is true, HonoEnv.Variables.auth.user will never be null
+}): MiddlewareHandler<
+    AuthRequired extends true ? HonoEnvWithAuth : HonoEnv
+> => {
+    return createMiddleware(async (context, next) => {
         const header = context.req.header("Authorization");
         const tokenString = header?.split(" ")[1];
 
@@ -287,22 +288,23 @@ export const auth = (
         };
 
         // Authentication check
-        const authCheck = checkRouteNeedsAuth(auth, authData, context);
+        const authCheck = checkRouteNeedsAuth(auth, options.auth);
 
         context.set("auth", authCheck);
 
         // Permissions check
-        if (permissionData) {
-            checkPermissions(auth, permissionData, context);
+        if (options.permissions) {
+            checkPermissions(auth, options.permissions);
         }
 
         // Challenge check
-        if (challengeData && config.validation.challenges.enabled) {
-            await checkRouteNeedsChallenge(challengeData, context);
+        if (options.challenge && config.validation.challenges.enabled) {
+            await checkRouteNeedsChallenge(options.challenge, context);
         }
 
         await next();
     });
+};
 
 // Helper function to parse form data
 async function parseFormData(context: Context): Promise<{

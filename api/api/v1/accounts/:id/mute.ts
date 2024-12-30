@@ -44,7 +44,16 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/mute",
     summary: "Mute user",
     description: "Mute a user",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:mutes"],
+            permissions: [
+                RolePermissions.ManageOwnMutes,
+                RolePermissions.ViewAccounts,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
         body: {
@@ -89,10 +98,6 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
         // TODO: Add duration support
         const { notifications } = context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const otherUser = await User.fromId(id);
 

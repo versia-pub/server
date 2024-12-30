@@ -92,7 +92,12 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}",
     summary: "Get status",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: false,
+            permissions: [RolePermissions.ViewNotes],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
@@ -120,7 +125,15 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/statuses/{id}",
     summary: "Delete a status",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnNotes,
+                RolePermissions.ViewNotes,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
@@ -156,7 +169,16 @@ const routePut = createRoute({
     method: "put",
     path: "/api/v1/statuses/{id}",
     summary: "Update a status",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnNotes,
+                RolePermissions.ViewNotes,
+            ],
+        }),
+        jsonOrForm(),
+    ] as const,
     request: {
         params: schemas.param,
         body: {

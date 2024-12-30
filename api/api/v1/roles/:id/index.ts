@@ -34,7 +34,11 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/roles/{id}",
     summary: "Get role data",
-    middleware: [auth(meta.auth)],
+    middleware: [
+        auth({
+            auth: true,
+        }),
+    ],
     request: {
         params: schemas.param,
     },
@@ -70,7 +74,12 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/roles/{id}",
     summary: "Update role data",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageRoles],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
         body: {
@@ -116,7 +125,12 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/roles/{id}",
     summary: "Delete role",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageRoles],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

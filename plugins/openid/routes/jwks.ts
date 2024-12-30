@@ -34,7 +34,7 @@ export default (plugin: PluginType): void => {
                 },
                 middleware: [
                     auth({
-                        required: false,
+                        auth: false,
                     }),
                     plugin.middleware,
                 ] as const,

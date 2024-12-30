@@ -34,7 +34,12 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/favourites",
     summary: "Get favourites",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnLikes],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

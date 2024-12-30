@@ -20,7 +20,7 @@ export const meta = applyConfig({
     permissions: {
         required: [
             RolePermissions.ManageOwnNotifications,
-            RolePermissions.ViewPrimateTimelines,
+            RolePermissions.ViewPrivateTimelines,
         ],
     },
 });
@@ -94,7 +94,15 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/notifications",
     summary: "Get notifications",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnNotifications,
+                RolePermissions.ViewPrivateTimelines,
+            ],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

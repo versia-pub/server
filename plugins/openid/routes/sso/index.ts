@@ -19,14 +19,10 @@ export default (plugin: PluginType): void => {
                 path: "/api/v1/sso",
                 summary: "Get linked accounts",
                 middleware: [
-                    auth(
-                        {
-                            required: true,
-                        },
-                        {
-                            required: [RolePermissions.OAuth],
-                        },
-                    ),
+                    auth({
+                        auth: true,
+                        permissions: [RolePermissions.OAuth],
+                    }),
                     plugin.middleware,
                 ] as const,
                 responses: {
@@ -82,14 +78,10 @@ export default (plugin: PluginType): void => {
                 path: "/api/v1/sso",
                 summary: "Link account",
                 middleware: [
-                    auth(
-                        {
-                            required: true,
-                        },
-                        {
-                            required: [RolePermissions.OAuth],
-                        },
-                    ),
+                    auth({
+                        auth: true,
+                        permissions: [RolePermissions.OAuth],
+                    }),
                     plugin.middleware,
                 ] as const,
                 request: {

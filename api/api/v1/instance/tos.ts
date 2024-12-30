@@ -18,7 +18,11 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/instance/tos",
     summary: "Get instance terms of service",
-    middleware: [auth(meta.auth)],
+    middleware: [
+        auth({
+            auth: false,
+        }),
+    ],
     responses: {
         200: {
             description: "Instance terms of service",

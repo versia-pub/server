@@ -29,7 +29,11 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/roles",
     summary: "Get all roles",
-    middleware: [auth(meta.auth)],
+    middleware: [
+        auth({
+            auth: true,
+        }),
+    ] as const,
     responses: {
         200: {
             description: "List of all roles",
@@ -54,7 +58,12 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v1/roles",
     summary: "Create a new role",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageRoles],
+        }),
+    ] as const,
     request: {
         body: {
             content: {

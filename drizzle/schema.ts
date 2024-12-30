@@ -549,7 +549,7 @@ export enum RolePermissions {
     ManageOwnApps = "owner:app",
     Search = "search",
     ViewPublicTimelines = "public_timelines",
-    ViewPrimateTimelines = "private_timelines",
+    ViewPrivateTimelines = "private_timelines",
     IgnoreRateLimits = "ignore_rate_limits",
     Impersonate = "impersonate",
     ManageInstance = "instance",
@@ -584,7 +584,7 @@ export const DEFAULT_ROLES = [
     RolePermissions.ManageOwnApps,
     RolePermissions.Search,
     RolePermissions.ViewPublicTimelines,
-    RolePermissions.ViewPrimateTimelines,
+    RolePermissions.ViewPrivateTimelines,
     RolePermissions.OAuth,
 ];
 

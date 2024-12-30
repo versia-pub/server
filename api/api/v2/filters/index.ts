@@ -77,7 +77,13 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v2/filters",
     summary: "Get filters",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFilters],
+        }),
+        jsonOrForm(),
+    ] as const,
     responses: {
         200: {
             description: "Filters",
@@ -102,7 +108,13 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v2/filters",
     summary: "Create filter",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFilters],
+        }),
+        jsonOrForm(),
+    ] as const,
     request: {
         body: {
             content: {

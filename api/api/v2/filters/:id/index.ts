@@ -89,7 +89,12 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v2/filters/{id}",
     summary: "Get filter",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFilters],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
@@ -125,7 +130,13 @@ const routePut = createRoute({
     method: "put",
     path: "/api/v2/filters/{id}",
     summary: "Update filter",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFilters],
+        }),
+        jsonOrForm(),
+    ] as const,
     request: {
         params: schemas.param,
         body: {
@@ -168,7 +179,12 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v2/filters/{id}",
     summary: "Delete filter",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFilters],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

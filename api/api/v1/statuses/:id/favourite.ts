@@ -30,7 +30,15 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/favourite",
     summary: "Favourite a status",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnLikes,
+                RolePermissions.ViewNotes,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

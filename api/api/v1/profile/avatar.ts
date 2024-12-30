@@ -23,7 +23,13 @@ const route = createRoute({
     method: "delete",
     path: "/api/v1/profile/avatar",
     summary: "Delete avatar",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnAccount],
+            scopes: ["write:account"],
+        }),
+    ] as const,
     responses: {
         200: {
             description: "User",

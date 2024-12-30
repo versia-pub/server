@@ -35,7 +35,16 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/unblock",
     summary: "Unblock user",
     description: "Unblock a user",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:blocks"],
+            permissions: [
+                RolePermissions.ManageOwnBlocks,
+                RolePermissions.ViewAccounts,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

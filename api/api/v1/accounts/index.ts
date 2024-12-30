@@ -44,7 +44,11 @@ const route = createRoute({
     summary: "Create account",
     description: "Register a new account",
     middleware: [
-        auth(meta.auth, meta.permissions, meta.challenge),
+        auth({
+            auth: false,
+            scopes: ["write:accounts"],
+            challenge: true,
+        }),
         jsonOrForm(),
     ],
     request: {

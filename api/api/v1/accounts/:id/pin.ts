@@ -35,7 +35,16 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/pin",
     summary: "Pin user",
     description: "Pin a user to your profile",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:accounts"],
+            permissions: [
+                RolePermissions.ManageOwnAccount,
+                RolePermissions.ViewAccounts,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },

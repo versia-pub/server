@@ -22,7 +22,11 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/instance",
     summary: "Get instance information",
-    middleware: [auth(meta.auth)],
+    middleware: [
+        auth({
+            auth: false,
+        }),
+    ],
     responses: {
         200: {
             description: "Instance information",

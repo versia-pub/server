@@ -34,7 +34,12 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/follow_requests",
     summary: "Get follow requests",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ManageOwnFollows],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

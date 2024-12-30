@@ -71,7 +71,12 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/emojis/{id}",
     summary: "Get emoji data",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [RolePermissions.ViewEmojis],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
@@ -86,14 +91,6 @@ const routeGet = createRoute({
         },
         401: {
             description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        403: {
-            description: "Insufficient credentials",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -115,7 +112,16 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/emojis/{id}",
     summary: "Modify emoji",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnEmojis,
+                RolePermissions.ViewEmojis,
+            ],
+        }),
+        jsonOrForm(),
+    ] as const,
     request: {
         params: schemas.param,
         body: {
@@ -180,7 +186,15 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/emojis/{id}",
     summary: "Delete emoji",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            permissions: [
+                RolePermissions.ManageOwnEmojis,
+                RolePermissions.ViewEmojis,
+            ],
+        }),
+    ] as const,
     request: {
         params: schemas.param,
     },
@@ -222,16 +236,12 @@ export default apiRoute((app) => {
             throw new ApiError(404, "Emoji not found");
         }
 
-        // Check if user is admin
+        // Don't leak non-global emojis to non-admins
         if (
             !user.hasPermission(RolePermissions.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
-            throw new ApiError(
-                403,
-                "Cannot modify emoji not owned by you",
-                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
-            );
+            throw new ApiError(404, "Emoji not found");
         }
 
         return context.json(emoji.toApi(), 200);

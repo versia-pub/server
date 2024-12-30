@@ -50,7 +50,13 @@ export const route = createRoute({
     path: "/api/v1/accounts/search",
     summary: "Search accounts",
     description: "Search for accounts",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: false,
+            permissions: [RolePermissions.Search, RolePermissions.ViewAccounts],
+            scopes: ["read:accounts"],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },

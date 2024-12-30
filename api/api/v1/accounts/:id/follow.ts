@@ -46,7 +46,16 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/follow",
     summary: "Follow user",
     description: "Follow a user",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: true,
+            scopes: ["write:follows"],
+            permissions: [
+                RolePermissions.ManageOwnFollows,
+                RolePermissions.ViewAccounts,
+            ],
+        }),
+    ] as const,
     responses: {
         200: {
             description: "Updated relationship",

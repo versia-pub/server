@@ -49,7 +49,16 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/timelines/public",
     summary: "Get public timeline",
-    middleware: [auth(meta.auth, meta.permissions)] as const,
+    middleware: [
+        auth({
+            auth: false,
+            permissions: [
+                RolePermissions.ViewNotes,
+                RolePermissions.ViewAccounts,
+                RolePermissions.ViewPublicTimelines,
+            ],
+        }),
+    ] as const,
     request: {
         query: schemas.query,
     },
