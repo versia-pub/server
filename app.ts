@@ -164,7 +164,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
     applyToHono(app);
 
     app.options("*", (context) => {
-        return context.text("", 204);
+        return context.body(null, 204);
     });
 
     app.all("*", async (context) => {

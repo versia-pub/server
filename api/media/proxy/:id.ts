@@ -1,6 +1,6 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import type { StatusCode } from "hono/utils/http-status";
+import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -85,7 +85,11 @@ export default apiRoute((app) =>
                 .get("Content-Disposition")
                 ?.match(/filename="(.+)"/)?.[1] || id.split("/").pop();
 
-        return context.body(media.body, media.status as StatusCode, {
+        if (!media.body) {
+            return context.body(null, media.status as StatusCode);
+        }
+
+        return context.body(media.body, media.status as ContentfulStatusCode, {
             "Content-Type":
                 media.headers.get("Content-Type") || "application/octet-stream",
             "Content-Length": media.headers.get("Content-Length") || "0",

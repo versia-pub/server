@@ -52,7 +52,7 @@ const routePut = createRoute({
         },
     },
     responses: {
-        204: {
+        200: {
             description: "Media updated",
             content: {
                 "application/json": {
@@ -147,10 +147,10 @@ export default apiRoute((app) => {
                 thumbnailUrl,
             });
 
-            return context.json(attachment.toApi(), 204);
+            return context.json(attachment.toApi(), 200);
         }
 
-        return context.json(attachment.toApi(), 204);
+        return context.json(attachment.toApi(), 200);
     });
 
     app.openapi(routeGet, async (context) => {

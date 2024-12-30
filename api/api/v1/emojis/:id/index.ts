@@ -362,6 +362,6 @@ export default apiRoute((app) => {
 
         await db.delete(Emojis).where(eq(Emojis.id, id));
 
-        return context.text("", 204);
+        return context.body(null, 204);
     });
 });
