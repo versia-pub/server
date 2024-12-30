@@ -85,7 +85,6 @@
         "@types/cli-progress": "^3.11.6",
         "@types/cli-table": "^0.3.4",
         "@types/html-to-text": "^9.0.4",
-        "@types/ioredis": "^5.0.0",
         "@types/jsonld": "^1.5.15",
         "@types/markdown-it-container": "^2.0.10",
         "@types/mime-types": "^2.1.4",
