@@ -3,7 +3,6 @@ import { db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let id = "";
@@ -40,9 +39,9 @@ afterAll(async () => {
 });
 
 // /api/v1/emojis/:id (PATCH, DELETE, GET)
-describe(meta.route, () => {
+describe("/api/v1/emojis/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             method: "GET",
         });
 
@@ -51,8 +50,7 @@ describe(meta.route, () => {
 
     test("should return 404 if emoji does not exist", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
-
+            "/api/v1/emojis/00000000-0000-0000-0000-000000000000",
             {
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,
@@ -65,7 +63,7 @@ describe(meta.route, () => {
     });
 
     test("should not work if the user is trying to update an emoji they don't own", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
                 "Content-Type": "application/json",
@@ -80,7 +78,7 @@ describe(meta.route, () => {
     });
 
     test("should return the emoji", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
@@ -93,7 +91,7 @@ describe(meta.route, () => {
     });
 
     test("should update the emoji", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
@@ -110,7 +108,7 @@ describe(meta.route, () => {
     });
 
     test("should update the emoji with another url, but keep the shortcode", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
@@ -127,7 +125,7 @@ describe(meta.route, () => {
     });
 
     test("should update the emoji to be non-global", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
                 "Content-Type": "application/json",
@@ -154,7 +152,7 @@ describe(meta.route, () => {
     });
 
     test("should delete the emoji", async () => {
-        const response = await fakeRequest(meta.route.replace(":id", id), {
+        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },

@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import {
     LikeExtension as LikeSchema,
@@ -11,17 +11,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 500,
-    },
-    route: "/objects/:id",
-});
 
 export const schemas = {
     param: z.object({

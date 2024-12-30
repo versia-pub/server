@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, emojiValidator, jsonOrForm } from "@/api";
+import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Emoji } from "@versia/kit/db";
@@ -9,20 +9,6 @@ import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/api/v1/emojis",
-    ratelimits: {
-        max: 30,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnEmojis, RolePermissions.ViewEmojis],
-    },
-});
 
 export const schemas = {
     json: z.object({

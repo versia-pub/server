@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
@@ -6,17 +6,6 @@ import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    route: "/api/v2/instance",
-    ratelimits: {
-        max: 300,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-    },
-});
 
 const route = createRoute({
     method: "get",

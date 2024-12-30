@@ -1,25 +1,10 @@
-import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { apiRoute, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/markers",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["read:blocks"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnAccount],
-    },
-});
 
 export const schemas = {
     markers: z.object({

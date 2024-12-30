@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -7,20 +7,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 300,
-        duration: 60,
-    },
-    route: "/api/v1/statuses",
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnNotes],
-    },
-});
 
 export const schemas = {
     json: z

@@ -1,18 +1,6 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts/verify_credentials",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["read:accounts"],
-    },
-});
 
 const route = createRoute({
     method: "get",

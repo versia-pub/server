@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./favourited_by.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();
@@ -22,10 +21,10 @@ beforeAll(async () => {
 });
 
 // /api/v1/statuses/:id/favourited_by
-describe(meta.route, () => {
+describe("/api/v1/statuses/:id/favourited_by", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", timeline[0].id),
+            `/api/v1/statuses/${timeline[0].id}/favourited_by`,
         );
 
         expect(response.status).toBe(401);
@@ -33,7 +32,7 @@ describe(meta.route, () => {
 
     test("should return 200 with users", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", timeline[0].id),
+            `/api/v1/statuses/${timeline[0].id}/favourited_by`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

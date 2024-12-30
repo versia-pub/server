@@ -1,23 +1,9 @@
-import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { apiRoute, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/favourites",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnLikes],
-    },
-});
 
 export const schemas = {
     query: z.object({

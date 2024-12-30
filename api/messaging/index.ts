@@ -1,19 +1,8 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 500,
-    },
-    route: "/messaging",
-});
 
 const route = createRoute({
     method: "post",

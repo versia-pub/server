@@ -3,7 +3,6 @@ import { db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 
@@ -60,9 +59,9 @@ afterAll(async () => {
         .where(inArray(Emojis.shortcode, ["test1", "test2", "test3"]));
 });
 
-describe(meta.route, () => {
+describe("/api/v1/custom_emojis", () => {
     test("should return all global emojis", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/custom_emojis", {
             headers: {
                 Authorization: `Bearer ${tokens[1].data.accessToken}`,
             },
@@ -94,7 +93,7 @@ describe(meta.route, () => {
     });
 
     test("should return all user emojis", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/custom_emojis", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
@@ -126,7 +125,7 @@ describe(meta.route, () => {
     });
 
     test("should return all global emojis when signed out", async () => {
-        const response = await fakeRequest(meta.route);
+        const response = await fakeRequest("/api/v1/custom_emojis");
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(

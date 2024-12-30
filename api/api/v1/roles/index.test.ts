@@ -3,7 +3,6 @@ import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, deleteUsers, tokens } = await getTestUsers(1);
 let role: Role;
@@ -31,9 +30,9 @@ afterAll(async () => {
 });
 
 // /api/v1/roles
-describe(meta.route, () => {
+describe("/api/v1/roles", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/roles", {
             method: "GET",
         });
 
@@ -41,7 +40,7 @@ describe(meta.route, () => {
     });
 
     test("should return a list of roles", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/roles", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -71,7 +70,7 @@ describe(meta.route, () => {
     });
 
     test("should create a new role", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/roles", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -107,7 +106,7 @@ describe(meta.route, () => {
     });
 
     test("should return 403 if user tries to create a role with higher priority", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/roles", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -131,7 +130,7 @@ describe(meta.route, () => {
     });
 
     test("should return 403 if user tries to create a role with permissions they do not have", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/roles", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,

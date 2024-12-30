@@ -1,6 +1,5 @@
 import {
     apiRoute,
-    applyConfig,
     idValidator,
     parseUserAddress,
     webfingerMention,
@@ -16,17 +15,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 60,
-    },
-    route: "/.well-known/webfinger",
-});
 
 export const schemas = {
     query: z.object({

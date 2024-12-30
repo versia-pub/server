@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { tokens, deleteUsers } = await getTestUsers(2);
 
@@ -30,29 +29,23 @@ afterAll(async () => {
 });
 
 // /api/v2/filters/:id
-describe(meta.route, () => {
+describe("/api/v2/filters/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
+        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
             },
-        );
+        });
 
         expect(response.status).toBe(401);
     });
 
     test("should get that filter", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
+        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+        });
 
         expect(response.status).toBe(200);
 
@@ -70,25 +63,22 @@ describe(meta.route, () => {
     });
 
     test("should edit that filter", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: new URLSearchParams({
-                    title: "New Filter",
-                    "context[]": "notifications",
-                    filter_action: "hide",
-                    expires_in: "86400",
-                    "keywords_attributes[0][keyword]": "new",
-                    "keywords_attributes[0][id]": filter.keywords[0].id,
-                    "keywords_attributes[0][whole_word]": "false",
-                }),
+        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                "Content-Type": "application/x-www-form-urlencoded",
             },
-        );
+            body: new URLSearchParams({
+                title: "New Filter",
+                "context[]": "notifications",
+                filter_action: "hide",
+                expires_in: "86400",
+                "keywords_attributes[0][keyword]": "new",
+                "keywords_attributes[0][id]": filter.keywords[0].id,
+                "keywords_attributes[0][whole_word]": "false",
+            }),
+        });
 
         expect(response.status).toBe(200);
 
@@ -106,19 +96,16 @@ describe(meta.route, () => {
     });
 
     test("should delete keyword", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-                body: new URLSearchParams({
-                    "keywords_attributes[0][id]": filter.keywords[0].id,
-                    "keywords_attributes[0][_destroy]": "true",
-                }),
+        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+            body: new URLSearchParams({
+                "keywords_attributes[0][id]": filter.keywords[0].id,
+                "keywords_attributes[0][_destroy]": "true",
+            }),
+        });
 
         expect(response.status).toBe(200);
 
@@ -127,14 +114,11 @@ describe(meta.route, () => {
         expect(json.keywords).toBeEmpty();
 
         // Get the filter again and check
-        const getResponse = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
+        const getResponse = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+        });
 
         expect(getResponse.status).toBe(200);
         expect((await getResponse.json()).keywords).toBeEmpty();
@@ -143,28 +127,22 @@ describe(meta.route, () => {
     test("should delete filter", async () => {
         const formData = new FormData();
 
-        const response = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-                body: formData,
+        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+            body: formData,
+        });
 
         expect(response.status).toBe(204);
 
         // Try to GET the filter again
-        const getResponse = await fakeRequest(
-            meta.route.replace(":id", filter.id),
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
+        const getResponse = await fakeRequest(`/api/v2/filters/${filter.id}`, {
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+        });
 
         expect(getResponse.status).toBe(404);
     });

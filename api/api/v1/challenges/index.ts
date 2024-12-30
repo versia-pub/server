@@ -1,23 +1,9 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/api/v1/challenges",
-    ratelimits: {
-        max: 10,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-    },
-    permissions: {
-        required: [],
-    },
-});
 
 const route = createRoute({
     method: "post",

@@ -2,7 +2,6 @@ import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as APIAccount } from "@versia/client/types";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { tokens, deleteUsers } = await getTestUsers(1);
 
@@ -11,18 +10,21 @@ afterAll(async () => {
 });
 
 // /api/v1/accounts/update_credentials
-describe(meta.route, () => {
+describe("/api/v1/accounts/update_credentials", () => {
     describe("HTML injection testing", () => {
         test("should not allow HTML injection", async () => {
-            const response = await fakeRequest(meta.route, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+            const response = await fakeRequest(
+                "/api/v1/accounts/update_credentials",
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                    },
+                    body: new URLSearchParams({
+                        note: "Hi! <script>alert('Hello, world!');</script>",
+                    }),
                 },
-                body: new URLSearchParams({
-                    note: "Hi! <script>alert('Hello, world!');</script>",
-                }),
-            });
+            );
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
@@ -37,15 +39,18 @@ describe(meta.route, () => {
         });
 
         test("should rewrite all image and video src to go through proxy", async () => {
-            const response = await fakeRequest(meta.route, {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+            const response = await fakeRequest(
+                "/api/v1/accounts/update_credentials",
+                {
+                    method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                    },
+                    body: new URLSearchParams({
+                        note: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
+                    }),
                 },
-                body: new URLSearchParams({
-                    note: "<img src='https://example.com/image.jpg'> <video src='https://example.com/video.mp4'> Test!",
-                }),
-            });
+            );
 
             expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(

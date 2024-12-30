@@ -1,27 +1,9 @@
-import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { apiRoute, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Notification, Timeline } from "@versia/kit/db";
 import { Notifications, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/notifications",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["read:notifications"],
-    },
-    permissions: {
-        required: [
-            RolePermissions.ManageOwnNotifications,
-            RolePermissions.ViewPrivateTimelines,
-        ],
-    },
-});
 
 export const schemas = {
     query: z

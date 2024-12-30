@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Relationship as ApiRelationship } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./unmute.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 
@@ -19,10 +18,10 @@ beforeAll(async () => {
 });
 
 // /api/v1/accounts/:id/unmute
-describe(meta.route, () => {
+describe("/api/v1/accounts/:id/unmute", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
+            `/api/v1/accounts/${users[1].id}/unmute`,
             {
                 method: "POST",
             },
@@ -32,7 +31,7 @@ describe(meta.route, () => {
 
     test("should return 404 if user not found", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
+            "/api/v1/accounts/00000000-0000-0000-0000-000000000000/unmute",
             {
                 method: "POST",
                 headers: {
@@ -45,7 +44,7 @@ describe(meta.route, () => {
 
     test("should unmute user", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
+            `/api/v1/accounts/${users[1].id}/unmute`,
             {
                 method: "POST",
                 headers: {
@@ -61,7 +60,7 @@ describe(meta.route, () => {
 
     test("should return 200 if user already unmuted", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
+            `/api/v1/accounts/${users[1].id}/unmute`,
             {
                 method: "POST",
                 headers: {

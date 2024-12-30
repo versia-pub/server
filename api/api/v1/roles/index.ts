@@ -1,29 +1,9 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-        methodOverrides: {
-            POST: true,
-        },
-    },
-    ratelimits: {
-        duration: 60,
-        max: 20,
-    },
-    route: "/api/v1/roles",
-    permissions: {
-        required: [],
-        methodOverrides: {
-            POST: [RolePermissions.ManageRoles],
-        },
-    },
-});
 
 const routeGet = createRoute({
     method: "get",

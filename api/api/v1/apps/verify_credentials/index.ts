@@ -1,23 +1,9 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/api/v1/apps/verify_credentials",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnApps],
-    },
-});
 
 const route = createRoute({
     method: "get",

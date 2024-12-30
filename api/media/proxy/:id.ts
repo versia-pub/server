@@ -1,21 +1,10 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/media/proxy/:id",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-    },
-});
 
 export const schemas = {
     param: z.object({

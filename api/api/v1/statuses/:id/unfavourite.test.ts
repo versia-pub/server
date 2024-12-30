@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./unfavourite.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(2, users[0])).toReversed();
@@ -11,10 +10,10 @@ afterAll(async () => {
 });
 
 // /api/v1/statuses/:id/unfavourite
-describe(meta.route, () => {
+describe("/api/v1/statuses/:id/unfavourite", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", timeline[0].id),
+            `/api/v1/statuses/${timeline[0].id}/unfavourite`,
             {
                 method: "POST",
             },
@@ -25,7 +24,7 @@ describe(meta.route, () => {
 
     test("should be able to unfavourite post that is not favourited", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", timeline[0].id),
+            `/api/v1/statuses/${timeline[0].id}/unfavourite`,
             {
                 method: "POST",
                 headers: {
@@ -48,7 +47,7 @@ describe(meta.route, () => {
         });
 
         const response = await fakeRequest(
-            meta.route.replace(":id", timeline[1].id),
+            `/api/v1/statuses/${timeline[1].id}/unfavourite`,
             {
                 method: "POST",
                 headers: {

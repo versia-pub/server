@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let notifications: ApiNotification[] = [];
@@ -31,9 +30,9 @@ afterAll(async () => {
 });
 
 // /api/v1/notifications/clear
-describe(meta.route, () => {
+describe("/api/v1/notifications/clear", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/notifications/clear", {
             method: "POST",
         });
 
@@ -41,7 +40,7 @@ describe(meta.route, () => {
     });
 
     test("should clear notifications", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/notifications/clear", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,

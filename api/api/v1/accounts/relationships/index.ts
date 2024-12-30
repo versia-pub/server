@@ -1,23 +1,8 @@
-import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
+import { apiRoute, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts/relationships",
-    ratelimits: {
-        max: 30,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["read:follows"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnFollows],
-    },
-});
 
 export const schemas = {
     query: z.object({

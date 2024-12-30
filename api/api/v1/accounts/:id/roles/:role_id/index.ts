@@ -1,28 +1,10 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Role, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    auth: {
-        required: true,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 20,
-    },
-    route: "/api/v1/accounts/:id/roles/:role_id",
-    permissions: {
-        required: [],
-        methodOverrides: {
-            POST: [RolePermissions.ManageRoles],
-            DELETE: [RolePermissions.ManageRoles],
-        },
-    },
-});
 
 export const schemas = {
     param: z.object({

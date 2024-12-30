@@ -1,10 +1,4 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    parseUserAddress,
-    userAddressValidator,
-} from "@/api";
+import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -12,21 +6,6 @@ import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts/search",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-        oauthPermissions: ["read:accounts"],
-    },
-    permissions: {
-        required: [RolePermissions.Search, RolePermissions.ViewAccounts],
-    },
-});
 
 export const schemas = {
     query: z.object({

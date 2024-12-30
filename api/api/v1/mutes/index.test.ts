@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(3);
 
@@ -9,27 +8,22 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
-    const response = await fakeRequest(
-        `/api/v1/accounts/${users[1].id}/mute`,
-
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
+    const response = await fakeRequest(`/api/v1/accounts/${users[1].id}/mute`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${tokens[0].data.accessToken}`,
+            "Content-Type": "application/json",
         },
-    );
+        body: JSON.stringify({}),
+    });
     expect(response.status).toBe(200);
 });
 
 // /api/v1/mutes
-describe(meta.route, () => {
+describe("/api/v1/mutes", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
-
+            "/api/v1/mutes".replace(":id", users[1].id),
             {
                 method: "GET",
             },
@@ -38,7 +32,7 @@ describe(meta.route, () => {
     });
 
     test("should return mutes", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/mutes", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -58,7 +52,6 @@ describe(meta.route, () => {
     test("should return mutes after unmute", async () => {
         const response = await fakeRequest(
             `/api/v1/accounts/${users[1].id}/unmute`,
-
             {
                 method: "POST",
                 headers: {
@@ -70,7 +63,7 @@ describe(meta.route, () => {
         );
         expect(response.status).toBe(200);
 
-        const response2 = await fakeRequest(meta.route, {
+        const response2 = await fakeRequest("/api/v1/mutes", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,

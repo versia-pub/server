@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./dismiss.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let notifications: ApiNotification[] = [];
@@ -30,11 +29,10 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v1/notifications/:id/dismiss
-describe(meta.route, () => {
+describe("/api/v1/notifications/:id/dismiss", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", notifications[0].id),
+            `/api/v1/notifications/${notifications[0].id}/dismiss`,
             {
                 method: "POST",
             },
@@ -45,7 +43,7 @@ describe(meta.route, () => {
 
     test("should dismiss notification", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", notifications[0].id),
+            `/api/v1/notifications/${notifications[0].id}/dismiss`,
             {
                 method: "POST",
                 headers: {
@@ -73,7 +71,7 @@ describe(meta.route, () => {
 
     test("should not be able to dismiss other user's notifications", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", notifications[0].id),
+            `/api/v1/notifications/${notifications[0].id}/dismiss`,
             {
                 method: "POST",
                 headers: {

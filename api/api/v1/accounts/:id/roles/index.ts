@@ -1,23 +1,9 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Role, User } from "@versia/kit/db";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 20,
-    },
-    route: "/api/v1/accounts/:id/roles",
-    permissions: {
-        required: [],
-    },
-});
 
 export const schemas = {
     param: z.object({

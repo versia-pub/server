@@ -3,7 +3,6 @@ import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 const token = randomString(32, "hex");
@@ -24,7 +23,7 @@ afterAll(async () => {
 });
 
 // /api/auth/reset
-describe(meta.route, () => {
+describe("/api/auth/reset", () => {
     test("should login with normal password", async () => {
         const formData = new FormData();
 

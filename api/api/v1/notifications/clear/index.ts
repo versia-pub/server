@@ -1,21 +1,6 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-
-export const meta = applyConfig({
-    route: "/api/v1/notifications/clear",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["write:notifications"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnNotifications],
-    },
-});
 
 const route = createRoute({
     method: "post",

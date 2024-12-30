@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 let notifications: ApiNotification[] = [];
@@ -31,30 +30,27 @@ afterAll(async () => {
 });
 
 // /api/v1/notifications/:id
-describe(meta.route, () => {
+describe("/api/v1/notifications/:id", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
+            "/api/v1/notifications/00000000-0000-0000-0000-000000000000",
         );
 
         expect(response.status).toBe(401);
     });
 
     test("should return 422 if ID is invalid", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", "invalid"),
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
+        const response = await fakeRequest("/api/v1/notifications/invalid", {
+            headers: {
+                Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
-        );
+        });
         expect(response.status).toBe(422);
     });
 
     test("should return 404 if notification not found", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", "00000000-0000-0000-0000-000000000000"),
+            "/api/v1/notifications/00000000-0000-0000-0000-000000000000",
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -67,7 +63,7 @@ describe(meta.route, () => {
 
     test("should return notification", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", notifications[0].id),
+            `/api/v1/notifications/${notifications[0].id}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -88,7 +84,7 @@ describe(meta.route, () => {
 
     test("should not be able to view other user's notifications", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", notifications[0].id),
+            `/api/v1/notifications/${notifications[0].id}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,

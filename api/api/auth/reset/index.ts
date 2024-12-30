@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -6,17 +6,6 @@ import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 4,
-        duration: 60,
-    },
-    route: "/api/auth/reset",
-    auth: {
-        required: false,
-    },
-});
 
 export const schemas = {
     form: z.object({

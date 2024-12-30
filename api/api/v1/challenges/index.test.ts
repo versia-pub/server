@@ -1,11 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 // /api/v1/challenges
-describe(meta.route, () => {
+describe("/api/v1/challenges", () => {
     test("should get a challenge", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/challenges", {
             method: "POST",
         });
 

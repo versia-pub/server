@@ -2,7 +2,6 @@ import { afterAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./public.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();
@@ -11,9 +10,9 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-describe(meta.route, () => {
+describe("/api/v1/timelines/public", () => {
     test("should correctly parse limit", async () => {
-        const response = await fakeRequest(`${meta.route}?limit=5`, {
+        const response = await fakeRequest("/api/v1/timelines/public?limit=5", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
@@ -30,7 +29,7 @@ describe(meta.route, () => {
     });
 
     test("should return 200 with statuses", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/timelines/public", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
@@ -55,7 +54,7 @@ describe(meta.route, () => {
 
     test("should only fetch local statuses", async () => {
         const response = await fakeRequest(
-            `${meta.route}?limit=20&local=true`,
+            "/api/v1/timelines/public?limit=20&local=true",
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -82,7 +81,7 @@ describe(meta.route, () => {
 
     test("should only fetch remote statuses", async () => {
         const response = await fakeRequest(
-            `${meta.route}?remote=true&allow_local_only=false&only_media=false`,
+            "/api/v1/timelines/public?remote=true&allow_local_only=false&only_media=false",
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -102,11 +101,14 @@ describe(meta.route, () => {
 
     describe("should paginate properly", () => {
         test("should send correct Link header", async () => {
-            const response = await fakeRequest(`${meta.route}?limit=20`, {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+            const response = await fakeRequest(
+                "/api/v1/timelines/public?limit=20",
+                {
+                    headers: {
+                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                    },
                 },
-            });
+            );
 
             expect(response.headers.get("link")).toBe(
                 `<${config.http.base_url}/api/v1/timelines/public?limit=20&max_id=${timeline[19].id}>; rel="next"`,
@@ -115,7 +117,7 @@ describe(meta.route, () => {
 
         test("should correct statuses with max", async () => {
             const response = await fakeRequest(
-                `${meta.route}?limit=20&max_id=${timeline[19].id}`,
+                `/api/v1/timelines/public?limit=20&max_id=${timeline[19].id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -142,7 +144,7 @@ describe(meta.route, () => {
 
         test("should send correct Link prev header", async () => {
             const response = await fakeRequest(
-                `${meta.route}?limit=20&max_id=${timeline[19].id}`,
+                `/api/v1/timelines/public?limit=20&max_id=${timeline[19].id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -157,7 +159,7 @@ describe(meta.route, () => {
 
         test("should correct statuses with min_id", async () => {
             const response = await fakeRequest(
-                `${meta.route}?limit=20&min_id=${timeline[20].id}`,
+                `/api/v1/timelines/public?limit=20&min_id=${timeline[20].id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -204,11 +206,14 @@ describe(meta.route, () => {
 
         expect(filterResponse.status).toBe(200);
 
-        const response = await fakeRequest(`${meta.route}?limit=20`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+        const response = await fakeRequest(
+            "/api/v1/timelines/public?limit=20",
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(

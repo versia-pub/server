@@ -4,7 +4,6 @@ import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
 import sharp from "sharp";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(3);
 
@@ -38,9 +37,9 @@ const createImage = async (name: string): Promise<File> => {
     });
 };
 
-describe(meta.route, () => {
+describe("/api/v1/emojis", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/emojis", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -61,7 +60,7 @@ describe(meta.route, () => {
             formData.append("element", await createImage("test.png"));
             formData.append("global", "true");
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,
@@ -80,7 +79,7 @@ describe(meta.route, () => {
             formData.append("shortcode", "test2");
             formData.append("element", new File(["test"], "test.txt"));
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,
@@ -92,7 +91,7 @@ describe(meta.route, () => {
         });
 
         test("should upload an emoji by url", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,
@@ -115,7 +114,7 @@ describe(meta.route, () => {
             formData.append("shortcode", "test1");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[1].data.accessToken}`,
@@ -133,7 +132,7 @@ describe(meta.route, () => {
             formData.append("shortcode", "test4");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -152,7 +151,7 @@ describe(meta.route, () => {
             formData.append("shortcode", "test1");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -168,7 +167,7 @@ describe(meta.route, () => {
             formData.append("shortcode", "test4");
             formData.append("element", await createImage("test-image.png"));
 
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/emojis", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[2].data.accessToken}`,

@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, parseUserAddress } from "@/api";
+import { apiRoute, auth, parseUserAddress } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Instance, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -7,21 +7,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 30,
-        duration: 60,
-    },
-    route: "/api/v1/accounts/lookup",
-    auth: {
-        required: false,
-        oauthPermissions: [],
-    },
-    permissions: {
-        required: [RolePermissions.Search],
-    },
-});
 
 export const schemas = {
     query: z.object({

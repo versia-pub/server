@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./followers.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 
@@ -27,10 +26,10 @@ beforeAll(async () => {
 });
 
 // /api/v1/accounts/:id/followers
-describe(meta.route, () => {
+describe("/api/v1/accounts/:id/followers", () => {
     test("should return 200 with followers", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
+            `/api/v1/accounts/${users[1].id}/followers`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -62,7 +61,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(200);
 
         const response2 = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
+            `/api/v1/accounts/${users[1].id}/followers`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

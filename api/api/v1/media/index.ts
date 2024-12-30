@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -8,21 +8,6 @@ import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 10,
-        duration: 60,
-    },
-    route: "/api/v1/media",
-    auth: {
-        required: true,
-        oauthPermissions: ["write:media"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnMedia],
-    },
-});
 
 export const schemas = {
     form: z.object({

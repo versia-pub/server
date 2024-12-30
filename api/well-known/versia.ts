@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { urlToContentFormat } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
 import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/schemas";
@@ -7,17 +7,6 @@ import { Users } from "@versia/kit/tables";
 import { asc } from "drizzle-orm";
 import pkg from "~/package.json";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 60,
-    },
-    route: "/.well-known/versia",
-});
 
 const route = createRoute({
     method: "get",

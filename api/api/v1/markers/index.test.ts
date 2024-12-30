@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 const timeline = await getTestStatuses(10, users[0]);
@@ -10,9 +9,9 @@ afterAll(async () => {
 });
 
 // /api/v1/markers
-describe(meta.route, () => {
+describe("/api/v1/markers", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/markers", {
             method: "GET",
         });
         expect(response.status).toBe(401);
@@ -20,7 +19,7 @@ describe(meta.route, () => {
 
     test("should return empty markers", async () => {
         const response = await fakeRequest(
-            `${meta.route}?${new URLSearchParams([
+            `/api/v1/markers?${new URLSearchParams([
                 ["timeline[]", "home"],
                 ["timeline[]", "notifications"],
             ])}`,
@@ -38,7 +37,7 @@ describe(meta.route, () => {
 
     test("should create markers", async () => {
         const response = await fakeRequest(
-            `${meta.route}?${new URLSearchParams({
+            `/api/v1/markers?${new URLSearchParams({
                 "home[last_read_id]": timeline[0].id,
             })}`,
 
@@ -62,7 +61,7 @@ describe(meta.route, () => {
 
     test("should return markers", async () => {
         const response = await fakeRequest(
-            `${meta.route}?${new URLSearchParams([
+            `/api/v1/markers?${new URLSearchParams([
                 ["timeline[]", "home"],
                 ["timeline[]", "notifications"],
             ])}`,

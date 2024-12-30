@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, idValidator, jsonOrForm } from "@/api";
+import { apiRoute, auth, idValidator, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Attachment, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -7,28 +7,6 @@ import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    route: "/api/v1/statuses/:id",
-    auth: {
-        required: false,
-        methodOverrides: {
-            DELETE: true,
-            PUT: true,
-        },
-    },
-    permissions: {
-        required: [RolePermissions.ViewNotes],
-        methodOverrides: {
-            DELETE: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
-            PUT: [RolePermissions.ManageOwnNotes, RolePermissions.ViewNotes],
-        },
-    },
-});
 
 export const schemas = {
     param: z.object({

@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestUsers } from "~/tests/utils.ts";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 
@@ -83,13 +82,16 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-describe(meta.route, () => {
+describe("/api/v1/accounts/familiar_followers", () => {
     test("should return 0 familiar followers", async () => {
-        const response = await fakeRequest(`${meta.route}?id=${users[4].id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+        const response = await fakeRequest(
+            `/api/v1/accounts/familiar_followers?id=${users[4].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(200);
 
@@ -100,11 +102,14 @@ describe(meta.route, () => {
     });
 
     test("should return 1 familiar follower", async () => {
-        const response = await fakeRequest(`${meta.route}?id=${users[2].id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+        const response = await fakeRequest(
+            `/api/v1/accounts/familiar_followers?id=${users[2].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(200);
 
@@ -115,11 +120,14 @@ describe(meta.route, () => {
     });
 
     test("should return 2 familiar followers", async () => {
-        const response = await fakeRequest(`${meta.route}?id=${users[3].id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
+        const response = await fakeRequest(
+            `/api/v1/accounts/familiar_followers?id=${users[3].id}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
+                },
             },
-        });
+        );
 
         expect(response.status).toBe(200);
 
@@ -133,7 +141,7 @@ describe(meta.route, () => {
 
     test("should work with multiple ids", async () => {
         const response = await fakeRequest(
-            `${meta.route}?id[]=${users[2].id}&id[]=${users[3].id}&id[]=${users[4].id}`,
+            `/api/v1/accounts/familiar_followers?id[]=${users[2].id}&id[]=${users[3].id}&id[]=${users[4].id}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

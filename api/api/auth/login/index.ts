@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Application, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -9,17 +9,6 @@ import { SignJWT } from "jose";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 4,
-        duration: 60,
-    },
-    route: "/api/auth/login",
-    auth: {
-        required: false,
-    },
-});
 
 export const schemas = {
     form: z.object({

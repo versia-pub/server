@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
@@ -13,21 +13,6 @@ import { contentToHtml } from "~/classes/functions/status";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts/update_credentials",
-    ratelimits: {
-        max: 2,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["write:accounts"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnAccount],
-    },
-});
 
 export const schemas = {
     json: z.object({

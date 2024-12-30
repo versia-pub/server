@@ -1,19 +1,8 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { Entity } from "@versia/federation/types";
 import { z } from "zod";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 500,
-    },
-    route: "/inbox",
-});
 
 export const schemas = {
     header: z.object({

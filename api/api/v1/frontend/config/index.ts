@@ -1,17 +1,6 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    auth: {
-        required: false,
-    },
-    ratelimits: {
-        duration: 60,
-        max: 120,
-    },
-    route: "/api/v1/frontend/config",
-});
 
 const route = createRoute({
     method: "get",

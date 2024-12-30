@@ -1,19 +1,8 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    route: "/media/:hash/:name",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-    },
-});
 
 export const schemas = {
     param: z.object({

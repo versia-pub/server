@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[0])).toReversed();
@@ -24,18 +23,14 @@ beforeAll(async () => {
 });
 
 // /api/v1/accounts/:id
-describe(meta.route, () => {
+describe("/api/v1/accounts/:id", () => {
     test("should return 404 if ID is invalid", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", "invalid"),
-        );
+        const response = await fakeRequest("/api/v1/accounts/invalid-id");
         expect(response.status).toBe(422);
     });
 
     test("should return user", async () => {
-        const response = await fakeRequest(
-            meta.route.replace(":id", users[0].id),
-        );
+        const response = await fakeRequest(`/api/v1/accounts/${users[0].id}`);
 
         expect(response.status).toBe(200);
 

@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -6,20 +6,6 @@ import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    route: "/api/v1/statuses/:id/reblogged_by",
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [RolePermissions.ViewNotes, RolePermissions.ViewNoteBoosts],
-    },
-});
 
 export const schemas = {
     param: z.object({

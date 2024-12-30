@@ -27,21 +27,7 @@ import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
-import type { ApiRouteMetadata, HonoEnv } from "~/types/api";
-
-export const applyConfig = (routeMeta: ApiRouteMetadata): ApiRouteMetadata => {
-    const newMeta = routeMeta;
-
-    // Apply ratelimits from config
-    newMeta.ratelimits.duration *= config.ratelimits.duration_coeff;
-    newMeta.ratelimits.max *= config.ratelimits.max_coeff;
-
-    if (config.ratelimits.custom[routeMeta.route]) {
-        newMeta.ratelimits = config.ratelimits.custom[routeMeta.route];
-    }
-
-    return newMeta;
-};
+import type { HonoEnv } from "~/types/api";
 
 export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
     fn;

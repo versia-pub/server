@@ -1,24 +1,9 @@
-import { apiRoute, applyConfig, auth, qsQuery } from "@/api";
+import { apiRoute, auth, qsQuery } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts/familiar_followers",
-    ratelimits: {
-        max: 5,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["read:follows"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnFollows],
-    },
-});
 
 export const schemas = {
     query: z.object({

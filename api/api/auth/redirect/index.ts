@@ -1,21 +1,10 @@
-import { apiRoute, applyConfig } from "@/api";
+import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { Applications, Tokens } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 4,
-        duration: 60,
-    },
-    route: "/api/auth/redirect",
-    auth: {
-        required: false,
-    },
-});
 
 export const schemas = {
     query: z.object({

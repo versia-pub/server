@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils.ts";
-import { meta } from "./statuses.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(40, users[1])).toReversed();
@@ -26,11 +25,10 @@ beforeAll(async () => {
 });
 
 // /api/v1/accounts/:id/statuses
-describe(meta.route, () => {
+describe("/api/v1/accounts/:id/statuses", () => {
     test("should return 200 with statuses", async () => {
         const response = await fakeRequest(
-            meta.route.replace(":id", users[1].id),
-
+            `/api/v1/accounts/${users[1].id}/statuses`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -49,8 +47,7 @@ describe(meta.route, () => {
 
     test("should exclude reblogs", async () => {
         const response = await fakeRequest(
-            `${meta.route.replace(":id", users[1].id)}?exclude_reblogs=true`,
-
+            `/api/v1/accounts/${users[1].id}/statuses?exclude_reblogs=true`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -84,8 +81,7 @@ describe(meta.route, () => {
         expect(replyResponse.status).toBe(201);
 
         const response = await fakeRequest(
-            `${meta.route.replace(":id", users[1].id)}?exclude_replies=true`,
-
+            `/api/v1/accounts/${users[1].id}/statuses?exclude_replies=true`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -104,8 +100,7 @@ describe(meta.route, () => {
 
     test("should only include pins", async () => {
         const response = await fakeRequest(
-            `${meta.route.replace(":id", users[1].id)}?pinned=true`,
-
+            `/api/v1/accounts/${users[1].id}/statuses?pinned=true`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -134,8 +129,7 @@ describe(meta.route, () => {
         expect(pinResponse.status).toBe(200);
 
         const response2 = await fakeRequest(
-            `${meta.route.replace(":id", users[1].id)}?pinned=true`,
-
+            `/api/v1/accounts/${users[1].id}/statuses?pinned=true`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

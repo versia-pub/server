@@ -1,10 +1,4 @@
-import {
-    apiRoute,
-    applyConfig,
-    auth,
-    parseUserAddress,
-    userAddressValidator,
-} from "@/api";
+import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
@@ -14,25 +8,6 @@ import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 10,
-        duration: 60,
-    },
-    route: "/api/v2/search",
-    auth: {
-        required: false,
-        oauthPermissions: ["read:search"],
-    },
-    permissions: {
-        required: [
-            RolePermissions.Search,
-            RolePermissions.ViewAccounts,
-            RolePermissions.ViewNotes,
-        ],
-    },
-});
 
 export const schemas = {
     query: z.object({

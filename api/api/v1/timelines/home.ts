@@ -1,28 +1,9 @@
-import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { apiRoute, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 200,
-        duration: 60,
-    },
-    route: "/api/v1/timelines/home",
-    auth: {
-        required: true,
-    },
-    permissions: {
-        required: [
-            RolePermissions.ManageOwnNotes,
-            RolePermissions.ViewNotes,
-            RolePermissions.ViewAccounts,
-            RolePermissions.ViewPrivateTimelines,
-        ],
-    },
-});
 
 export const schemas = {
     query: z.object({

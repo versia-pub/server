@@ -1,11 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
-import { meta } from "./privacy_policy.ts";
 
 // /api/v1/instance/privacy_policy
-describe(meta.route, () => {
+describe("/api/v1/instance/privacy_policy", () => {
     test("should return privacy policy", async () => {
-        const response = await fakeRequest(meta.route);
+        const response = await fakeRequest("/api/v1/instance/privacy_policy");
 
         expect(response.status).toBe(200);
 

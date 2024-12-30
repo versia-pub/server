@@ -5,7 +5,6 @@ import { Emojis } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 
@@ -23,9 +22,9 @@ beforeAll(async () => {
     });
 });
 
-describe(meta.route, () => {
+describe("/api/v1/statuses", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             body: new URLSearchParams({
                 status: "Hello, world!",
@@ -36,7 +35,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is status is empty", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -48,7 +47,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is status is too long", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -63,7 +62,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is visibility is invalid", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -79,7 +78,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 if scheduled_at is invalid", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -95,7 +94,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is in_reply_to_id is invalid", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -111,7 +110,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is quote_id is invalid", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -127,7 +126,7 @@ describe(meta.route, () => {
     });
 
     test("should return 422 is media_ids is invalid", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -143,7 +142,7 @@ describe(meta.route, () => {
     });
 
     test("should create a post", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -166,7 +165,7 @@ describe(meta.route, () => {
 
     test("should create a post with visibility", async () => {
         // This one uses JSON to test the interop
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -191,7 +190,7 @@ describe(meta.route, () => {
     });
 
     test("should create a post with a reply", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -204,7 +203,7 @@ describe(meta.route, () => {
 
         const object = (await response.json()) as ApiStatus;
 
-        const response2 = await fakeRequest(meta.route, {
+        const response2 = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -228,7 +227,7 @@ describe(meta.route, () => {
     });
 
     test("should create a post with a quote", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -241,7 +240,7 @@ describe(meta.route, () => {
 
         const object = (await response.json()) as ApiStatus;
 
-        const response2 = await fakeRequest(meta.route, {
+        const response2 = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -265,7 +264,7 @@ describe(meta.route, () => {
     });
 
     test("should correctly parse emojis", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/statuses", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -292,7 +291,7 @@ describe(meta.route, () => {
 
     describe("mentions testing", () => {
         test("should correctly parse @mentions", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -322,7 +321,7 @@ describe(meta.route, () => {
         });
 
         test("should correctly parse @mentions@domain", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -353,7 +352,7 @@ describe(meta.route, () => {
 
     describe("HTML injection testing", () => {
         test("should not allow HTML injection", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -377,7 +376,7 @@ describe(meta.route, () => {
         });
 
         test("should not allow HTML injection in spoiler_text", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -403,7 +402,7 @@ describe(meta.route, () => {
         });
 
         test("should rewrite all image and video src to go through proxy", async () => {
-            const response = await fakeRequest(meta.route, {
+            const response = await fakeRequest("/api/v1/statuses", {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

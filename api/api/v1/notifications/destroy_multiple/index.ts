@@ -1,22 +1,7 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-
-export const meta = applyConfig({
-    route: "/api/v1/notifications/destroy_multiple",
-    ratelimits: {
-        max: 100,
-        duration: 60,
-    },
-    auth: {
-        required: true,
-        oauthPermissions: ["write:notifications"],
-    },
-    permissions: {
-        required: [RolePermissions.ManageOwnNotifications],
-    },
-});
 
 export const schemas = {
     query: z.object({

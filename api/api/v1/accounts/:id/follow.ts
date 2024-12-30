@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
@@ -6,24 +6,6 @@ import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 30,
-        duration: 60,
-    },
-    route: "/api/v1/accounts/:id/follow",
-    auth: {
-        required: true,
-        oauthPermissions: ["write:follows"],
-    },
-    permissions: {
-        required: [
-            RolePermissions.ManageOwnFollows,
-            RolePermissions.ViewAccounts,
-        ],
-    },
-});
 
 export const schemas = {
     param: z.object({

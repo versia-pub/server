@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const getFormData = (
     object: Record<string, string | number | boolean>,
@@ -73,15 +72,15 @@ afterAll(async () => {
 });
 
 // /api/v1/notifications
-describe(meta.route, () => {
+describe("/api/v1/notifications", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route);
+        const response = await fakeRequest("/api/v1/notifications");
 
         expect(response.status).toBe(401);
     });
 
     test("should return 200 with notifications", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v1/notifications", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
@@ -130,7 +129,7 @@ describe(meta.route, () => {
 
         expect(filterResponse.status).toBe(200);
 
-        const response = await fakeRequest(`${meta.route}?limit=20`, {
+        const response = await fakeRequest("/api/v1/notifications?limit=20", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },

@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification as ApiNotification } from "@versia/client/types";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 const statuses = await getTestStatuses(40, users[0]);
@@ -43,10 +42,10 @@ afterAll(async () => {
 });
 
 // /api/v1/notifications/destroy_multiple
-describe(meta.route, () => {
+describe("/api/v1/notifications/destroy_multiple", () => {
     test("should return 401 if not authenticated", async () => {
         const response = await fakeRequest(
-            `${meta.route}?${new URLSearchParams(
+            `/api/v1/notifications/destroy_multiple?${new URLSearchParams(
                 notifications.slice(1).map((n) => ["ids[]", n.id]),
             ).toString()}`,
             {
@@ -59,7 +58,7 @@ describe(meta.route, () => {
 
     test("should dismiss notifications", async () => {
         const response = await fakeRequest(
-            `${meta.route}?${new URLSearchParams(
+            `/api/v1/notifications/destroy_multiple?${new URLSearchParams(
                 notifications.slice(1).map((n) => ["ids[]", n.id]),
             ).toString()}`,
             {

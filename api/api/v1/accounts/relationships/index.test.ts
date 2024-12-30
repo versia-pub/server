@@ -3,7 +3,6 @@ import { db } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 
@@ -44,16 +43,18 @@ afterAll(async () => {
 });
 
 // /api/v1/accounts/relationships
-describe(meta.route, () => {
+describe("/api/v1/accounts/relationships", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`${meta.route}?id[]=${users[2].id}`);
+        const response = await fakeRequest(
+            `/api/v1/accounts/relationships?id[]=${users[2].id}`,
+        );
 
         expect(response.status).toBe(401);
     });
 
     test("should return relationships", async () => {
         const response = await fakeRequest(
-            `${meta.route}?id[]=${users[2].id}`,
+            `/api/v1/accounts/relationships?id[]=${users[2].id}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -83,7 +84,7 @@ describe(meta.route, () => {
 
     test("should be requested_by user1", async () => {
         const response = await fakeRequest(
-            `${meta.route}?id[]=${users[1].id}`,
+            `/api/v1/accounts/relationships?id[]=${users[1].id}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

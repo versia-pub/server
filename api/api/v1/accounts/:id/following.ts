@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, idValidator } from "@/api";
+import { apiRoute, auth, idValidator } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
@@ -6,24 +6,6 @@ import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
-
-export const meta = applyConfig({
-    ratelimits: {
-        max: 60,
-        duration: 60,
-    },
-    route: "/api/v1/accounts/:id/following",
-    auth: {
-        required: false,
-        oauthPermissions: ["read:accounts"],
-    },
-    permissions: {
-        required: [
-            RolePermissions.ViewAccountFollows,
-            RolePermissions.ViewAccounts,
-        ],
-    },
-});
 
 export const schemas = {
     query: z.object({

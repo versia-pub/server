@@ -1,6 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { tokens, deleteUsers } = await getTestUsers(2);
 
@@ -9,15 +8,15 @@ afterAll(async () => {
 });
 
 // /api/v2/filters
-describe(meta.route, () => {
+describe("/api/v2/filters", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(meta.route);
+        const response = await fakeRequest("/api/v2/filters");
 
         expect(response.status).toBe(401);
     });
 
     test("should return user filters (none)", async () => {
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v2/filters", {
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
@@ -40,7 +39,7 @@ describe(meta.route, () => {
         formData.append("keywords_attributes[0][keyword]", "test");
         formData.append("keywords_attributes[0][whole_word]", "true");
 
-        const response = await fakeRequest(meta.route, {
+        const response = await fakeRequest("/api/v2/filters", {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,

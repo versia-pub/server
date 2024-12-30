@@ -1,7 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 
@@ -10,10 +9,10 @@ afterAll(async () => {
 });
 
 // /api/v1/accounts/lookup
-describe(meta.route, () => {
+describe("/api/v1/accounts/lookup", () => {
     test("should return 200 with users", async () => {
         const response = await fakeRequest(
-            `${meta.route}?acct=${users[0].data.username}`,
+            `/api/v1/accounts/lookup?acct=${users[0].data.username}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,
@@ -37,7 +36,7 @@ describe(meta.route, () => {
 
     test("should automatically lowercase the acct", async () => {
         const response = await fakeRequest(
-            `${meta.route}?acct=${users[0].data.username.toUpperCase()}`,
+            `/api/v1/accounts/lookup?acct=${users[0].data.username.toUpperCase()}`,
             {
                 headers: {
                     Authorization: `Bearer ${tokens[0].data.accessToken}`,

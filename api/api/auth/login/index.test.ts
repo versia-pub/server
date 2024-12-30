@@ -3,7 +3,6 @@ import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
 import { config } from "~/packages/config-manager";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
-import { meta } from "./index.ts";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 
@@ -22,7 +21,7 @@ afterAll(async () => {
 });
 
 // /api/auth/login
-describe(meta.route, () => {
+describe("/api/auth/login", () => {
     test("should get a JWT with email", async () => {
         const formData = new FormData();
 

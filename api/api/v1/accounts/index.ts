@@ -1,4 +1,4 @@
-import { apiRoute, applyConfig, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
@@ -8,21 +8,6 @@ import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
-
-export const meta = applyConfig({
-    route: "/api/v1/accounts",
-    ratelimits: {
-        max: 2,
-        duration: 60,
-    },
-    auth: {
-        required: false,
-        oauthPermissions: ["write:accounts"],
-    },
-    challenge: {
-        required: true,
-    },
-});
 
 export const schemas = {
     json: z.object({

@@ -109,7 +109,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         // use app.get(path, handler) to add routes
         const route: ApiRouteExports = await import(path);
 
-        if (!(route.meta && route.default)) {
+        if (!route.default) {
             throw new Error(`Route ${path} does not have the correct exports.`);
         }
 
