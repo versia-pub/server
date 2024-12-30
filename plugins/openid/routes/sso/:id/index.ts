@@ -40,14 +40,6 @@ export default (plugin: PluginType): void => {
                             },
                         },
                     },
-                    401: {
-                        description: "Unauthorized",
-                        content: {
-                            "application/json": {
-                                schema: ErrorSchema,
-                            },
-                        },
-                    },
                     404: {
                         description: "Account not found",
                         content: {
@@ -61,10 +53,6 @@ export default (plugin: PluginType): void => {
             async (context) => {
                 const { id: issuerId } = context.req.valid("param");
                 const { user } = context.get("auth");
-
-                if (!user) {
-                    throw new ApiError(401, "Unauthorized");
-                }
 
                 const issuer = context
                     .get("pluginConfig")
@@ -126,14 +114,6 @@ export default (plugin: PluginType): void => {
                     204: {
                         description: "Account unlinked",
                     },
-                    401: {
-                        description: "Unauthorized",
-                        content: {
-                            "application/json": {
-                                schema: ErrorSchema,
-                            },
-                        },
-                    },
                     404: {
                         description: "Account not found",
                         content: {
@@ -147,10 +127,6 @@ export default (plugin: PluginType): void => {
             async (context) => {
                 const { id: issuerId } = context.req.valid("param");
                 const { user } = context.get("auth");
-
-                if (!user) {
-                    throw new ApiError(401, "Unauthorized");
-                }
 
                 // Check if issuer exists
                 const issuer = context

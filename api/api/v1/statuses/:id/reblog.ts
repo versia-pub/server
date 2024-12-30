@@ -69,14 +69,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Record not found",
             content: {
@@ -109,10 +102,6 @@ export default apiRoute((app) =>
         const { id } = context.req.valid("param");
         const { visibility } = context.req.valid("json");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const note = await Note.fromId(id, user.id);
 

@@ -73,14 +73,6 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
         404: {
             description: "User not found",
             content: {

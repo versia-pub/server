@@ -2,8 +2,6 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     ratelimits: {
@@ -39,29 +37,17 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { user: self } = context.get("auth");
+        const { user } = context.get("auth");
 
-        if (!self) {
-            throw new ApiError(401, "Unauthorized");
-        }
-
-        await self.update({
+        await user.update({
             avatar: "",
         });
 
-        return context.json(self.toApi(true), 200);
+        return context.json(user.toApi(true), 200);
     }),
 );

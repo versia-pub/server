@@ -255,7 +255,7 @@ export default apiRoute((app) => {
             throw new ApiError(404, "Note not found");
         }
 
-        if (note.author.id !== user?.id) {
+        if (note.author.id !== user.id) {
             throw new ApiError(401, "Unauthorized");
         }
 
@@ -270,10 +270,6 @@ export default apiRoute((app) => {
     app.openapi(routePut, async (context) => {
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const note = await Note.fromId(id, user?.id);
 

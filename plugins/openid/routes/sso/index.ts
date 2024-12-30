@@ -6,7 +6,6 @@ import {
     generateRandomCodeVerifier,
 } from "oauth4webapi";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error.ts";
 import { ErrorSchema } from "~/types/api";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
@@ -40,22 +39,10 @@ export default (plugin: PluginType): void => {
                             },
                         },
                     },
-                    401: {
-                        description: "Unauthorized",
-                        content: {
-                            "application/json": {
-                                schema: ErrorSchema,
-                            },
-                        },
-                    },
                 },
             },
             async (context) => {
                 const { user } = context.get("auth");
-
-                if (!user) {
-                    throw new ApiError(401, "Unauthorized");
-                }
 
                 const linkedAccounts = await user.getLinkedOidcAccounts(
                     context.get("pluginConfig").providers,
@@ -99,14 +86,6 @@ export default (plugin: PluginType): void => {
                     302: {
                         description: "Redirect to OpenID provider",
                     },
-                    401: {
-                        description: "Unauthorized",
-                        content: {
-                            "application/json": {
-                                schema: ErrorSchema,
-                            },
-                        },
-                    },
                     404: {
                         description: "Issuer not found",
                         content: {
@@ -119,10 +98,6 @@ export default (plugin: PluginType): void => {
             },
             async (context) => {
                 const { user } = context.get("auth");
-
-                if (!user) {
-                    throw new ApiError(401, "Unauthorized");
-                }
 
                 const { issuer: issuerId } = context.req.valid("json");
 

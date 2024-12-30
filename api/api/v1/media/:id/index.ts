@@ -67,14 +67,7 @@ const routePut = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Media not found",
             content: {
@@ -110,14 +103,6 @@ const routeGet = createRoute({
         },
         404: {
             description: "Media not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        401: {
-            description: "Unauthorized",
             content: {
                 "application/json": {
                     schema: ErrorSchema,

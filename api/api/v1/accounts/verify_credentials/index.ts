@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/accounts/verify_credentials",
@@ -36,14 +34,6 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -51,10 +41,6 @@ export default apiRoute((app) =>
     app.openapi(route, (context) => {
         // TODO: Add checks for disabled/unverified accounts
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         return context.json(user.toApi(true), 200);
     }),

@@ -101,14 +101,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         422: {
             description: "Invalid data",
             content: {
@@ -125,10 +118,6 @@ export default apiRoute((app) =>
         const { shortcode, element, alt, global, category } =
             context.req.valid("json");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         if (!user.hasPermission(RolePermissions.ManageEmojis) && global) {
             throw new ApiError(

@@ -65,14 +65,6 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
         404: {
             description: "User not found",
             content: {
@@ -99,10 +91,6 @@ export default apiRoute((app) =>
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
         const { reblogs, notify, languages } = context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const otherUser = await User.fromId(id);
 

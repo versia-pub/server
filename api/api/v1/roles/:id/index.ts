@@ -51,14 +51,7 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Role not found",
             content: {
@@ -94,14 +87,7 @@ const routePatch = createRoute({
         204: {
             description: "Role updated",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Role not found",
             content: {
@@ -138,14 +124,7 @@ const routeDelete = createRoute({
         204: {
             description: "Role deleted",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Role not found",
             content: {
@@ -167,12 +146,7 @@ const routeDelete = createRoute({
 
 export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
-        const { user } = context.get("auth");
         const { id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const role = await Role.fromId(id);
 
@@ -188,10 +162,6 @@ export default apiRoute((app) => {
         const { id } = context.req.valid("param");
         const { permissions, priority, description, icon, name, visible } =
             context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const role = await Role.fromId(id);
 
@@ -245,10 +215,6 @@ export default apiRoute((app) => {
     app.openapi(routeDelete, async (context) => {
         const { user } = context.get("auth");
         const { id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const role = await Role.fromId(id);
 

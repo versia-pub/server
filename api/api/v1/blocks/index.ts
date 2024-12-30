@@ -4,8 +4,6 @@ import { Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/blocks",
@@ -55,14 +53,6 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -71,10 +61,6 @@ export default apiRoute((app) =>
         const { max_id, since_id, min_id, limit } = context.req.valid("query");
 
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const { objects: blocks, link } = await Timeline.getUserTimeline(
             and(

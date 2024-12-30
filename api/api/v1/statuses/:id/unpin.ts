@@ -75,10 +75,6 @@ export default apiRoute((app) =>
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
 
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
-
         const status = await Note.fromId(id, user.id);
 
         if (!status) {

@@ -70,4 +70,18 @@ describe(meta.route, () => {
 
         expect(output.length).toBe(0);
     });
+
+    test("should not be able to dismiss other user's notifications", async () => {
+        const response = await fakeRequest(
+            meta.route.replace(":id", notifications[0].id),
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
+                },
+            },
+        );
+
+        expect(response.status).toBe(404);
+    });
 });

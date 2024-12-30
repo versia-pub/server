@@ -57,14 +57,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "User not found",
             content: {
@@ -79,11 +72,7 @@ const route = createRoute({
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { id } = context.req.valid("param");
-        const { user: self } = context.get("auth");
-
-        if (!self) {
-            throw new ApiError(401, "Unauthorized");
-        }
+        const { user } = context.get("auth");
 
         const otherUser = await User.fromId(id);
 
@@ -92,7 +81,7 @@ export default apiRoute((app) =>
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
-            self,
+            user,
             otherUser,
         );
 

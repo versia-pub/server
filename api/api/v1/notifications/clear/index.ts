@@ -1,8 +1,6 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/notifications/clear",
@@ -34,23 +32,12 @@ const route = createRoute({
         200: {
             description: "Notifications cleared",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user } = context.get("auth");
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         await user.clearAllNotifications();
 

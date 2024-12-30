@@ -12,7 +12,6 @@ import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/accounts/search",
@@ -69,14 +68,6 @@ export const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -84,10 +75,10 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { q, limit, offset, resolve, following } =
             context.req.valid("query");
-        const { user: self } = context.get("auth");
+        const { user } = context.get("auth");
 
-        if (!self && following) {
-            throw new ApiError(401, "Unauthorized");
+        if (!user && following) {
+            throw new ApiError(401, "Must be authenticated to use 'following'");
         }
 
         const { username, domain } = parseUserAddress(q);
@@ -95,7 +86,7 @@ export default apiRoute((app) =>
         const accounts: User[] = [];
 
         if (resolve && domain) {
-            const manager = await (self ?? User).getFederationRequester();
+            const manager = await (user ?? User).getFederationRequester();
 
             const uri = await User.webFinger(manager, username, domain);
 
@@ -112,10 +103,10 @@ export default apiRoute((app) =>
                     or(
                         ilike(Users.displayName, `%${q}%`),
                         ilike(Users.username, `%${q}%`),
-                        following && self
-                            ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${self.id} AND "Relationships"."following" = true)`
+                        following && user
+                            ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${Users.id} AND "Relationships"."ownerId" = ${user.id} AND "Relationships"."following" = true)`
                             : undefined,
-                        self ? not(eq(Users.id, self.id)) : undefined,
+                        user ? not(eq(Users.id, user.id)) : undefined,
                     ),
                     undefined,
                     limit,

@@ -4,7 +4,6 @@ import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     ratelimits: {
@@ -68,14 +67,6 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: z.array(Note.schema),
-                },
-            },
-        },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
                 },
             },
         },

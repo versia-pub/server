@@ -48,14 +48,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Account not found",
             content: {
@@ -70,10 +63,6 @@ const route = createRoute({
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const { account_id } = context.req.valid("param");
 

@@ -4,8 +4,6 @@ import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     ratelimits: {
@@ -62,14 +60,6 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -78,10 +68,6 @@ export default apiRoute((app) =>
         const { max_id, since_id, min_id, limit } = context.req.valid("query");
 
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const { objects, link } = await Timeline.getNoteTimeline(
             and(

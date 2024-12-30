@@ -349,8 +349,8 @@ async function parseUrlEncoded(context: Context): Promise<ParsedQs> {
     return parsed;
 }
 
-export const qsQuery = (): MiddlewareHandler => {
-    return createMiddleware(async (context, next) => {
+export const qsQuery = (): MiddlewareHandler<HonoEnv> => {
+    return createMiddleware<HonoEnv>(async (context, next) => {
         const parsed = parse(new URL(context.req.url).searchParams.toString(), {
             parseArrays: true,
             interpretNumericEntities: true,

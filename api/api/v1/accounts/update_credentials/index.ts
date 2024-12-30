@@ -177,14 +177,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         422: {
             description: "Validation error",
             content: {
@@ -219,10 +212,6 @@ export default apiRoute((app) =>
             source,
             fields_attributes,
         } = context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const self = user.data;
 

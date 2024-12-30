@@ -50,14 +50,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Notification not found",
             content: {
@@ -74,13 +67,10 @@ export default apiRoute((app) =>
         const { id } = context.req.valid("param");
 
         const { user } = context.get("auth");
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const notification = await Notification.fromId(id, user.id);
 
-        if (!notification) {
+        if (!notification || notification.data.notifiedId !== user.id) {
             throw new ApiError(404, "Notification not found");
         }
 

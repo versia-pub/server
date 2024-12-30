@@ -135,14 +135,7 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         422: {
             description: "Invalid data",
             content: {
@@ -157,10 +150,6 @@ const route = createRoute({
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user, application } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const {
             status,

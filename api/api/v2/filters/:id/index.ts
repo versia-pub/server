@@ -107,14 +107,7 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Filter not found",
             content: {
@@ -156,14 +149,7 @@ const routePut = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Filter not found",
             content: {
@@ -192,14 +178,7 @@ const routeDelete = createRoute({
         204: {
             description: "Filter deleted",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Filter not found",
             content: {
@@ -215,10 +194,6 @@ export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
         const { user } = context.get("auth");
         const { id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const userFilter = await db.query.Filters.findFirst({
             where: (filter, { eq, and }): SQL | undefined =>
@@ -262,10 +237,6 @@ export default apiRoute((app) => {
             expires_in,
             keywords_attributes,
         } = context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         await db
             .update(Filters)
@@ -351,10 +322,6 @@ export default apiRoute((app) => {
     app.openapi(routeDelete, async (context) => {
         const { user } = context.get("auth");
         const { id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         await db
             .delete(Filters)

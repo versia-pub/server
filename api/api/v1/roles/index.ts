@@ -43,14 +43,6 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -82,14 +74,7 @@ const routePost = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         403: {
             description: "Forbidden",
             content: {
@@ -103,12 +88,6 @@ const routePost = createRoute({
 
 export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
-        const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
-
         const roles = await Role.getAll();
 
         return context.json(
@@ -121,10 +100,6 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
         const { description, icon, name, permissions, priority, visible } =
             context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         // Priority check
         const userRoles = await Role.getUserRoles(user.id, user.data.isAdmin);

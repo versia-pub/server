@@ -101,14 +101,14 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { user: self } = context.get("auth");
+        const { user } = context.get("auth");
         const { q, type, resolve, following, account_id, limit, offset } =
             context.req.valid("query");
 
-        if (!self && (resolve || offset)) {
+        if (!user && (resolve || offset)) {
             throw new ApiError(
                 401,
-                "Usage of resolve or offset requires authentication",
+                "Usage of 'resolve' or 'offset' requires authentication",
             );
         }
 
@@ -164,7 +164,7 @@ export default apiRoute((app) =>
 
                 if (resolve && domain) {
                     const manager = await (
-                        self ?? User
+                        user ?? User
                     ).getFederationRequester();
 
                     const uri = await User.webFinger(manager, username, domain);
@@ -209,9 +209,9 @@ export default apiRoute((app) =>
                               Users.id,
                               accountResults.map((hit) => hit),
                           ),
-                          self && following
+                          user && following
                               ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${
-                                    self?.id
+                                    user?.id
                                 } AND "Relationships".following = ${!!following} AND "Relationships"."ownerId" = ${
                                     Users.id
                                 })`
@@ -231,9 +231,9 @@ export default apiRoute((app) =>
                           account_id
                               ? eq(Notes.authorId, account_id)
                               : undefined,
-                          self && following
+                          user && following
                               ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${
-                                    self?.id
+                                    user?.id
                                 } AND "Relationships".following = ${!!following} AND "Relationships"."ownerId" = ${
                                     Notes.authorId
                                 })`
@@ -242,7 +242,7 @@ export default apiRoute((app) =>
                       undefined,
                       undefined,
                       undefined,
-                      self?.id,
+                      user?.id,
                   )
                 : [];
 
@@ -250,7 +250,7 @@ export default apiRoute((app) =>
             {
                 accounts: accounts.map((account) => account.toApi()),
                 statuses: await Promise.all(
-                    statuses.map((status) => status.toApi(self)),
+                    statuses.map((status) => status.toApi(user)),
                 ),
                 hashtags: [],
             },

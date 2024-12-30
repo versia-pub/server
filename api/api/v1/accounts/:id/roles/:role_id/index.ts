@@ -48,14 +48,7 @@ const routePost = createRoute({
         204: {
             description: "Role assigned",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "User or role not found",
             content: {
@@ -92,14 +85,7 @@ const routeDelete = createRoute({
         204: {
             description: "Role removed",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "User or role not found",
             content: {
@@ -123,10 +109,6 @@ export default apiRoute((app) => {
     app.openapi(routePost, async (context) => {
         const { user } = context.get("auth");
         const { id, role_id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);
@@ -162,10 +144,6 @@ export default apiRoute((app) => {
     app.openapi(routeDelete, async (context) => {
         const { user } = context.get("auth");
         const { id, role_id } = context.req.valid("param");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);

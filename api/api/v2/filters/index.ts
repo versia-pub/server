@@ -4,8 +4,6 @@ import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 export const meta = applyConfig({
     route: "/api/v2/filters",
     ratelimits: {
@@ -93,14 +91,6 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
@@ -133,24 +123,12 @@ const routePost = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const userFilters = await db.query.Filters.findMany({
             where: (filter, { eq }): SQL | undefined =>
@@ -189,10 +167,6 @@ export default apiRoute((app) => {
             expires_in,
             keywords_attributes,
         } = context.req.valid("json");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const newFilter = (
             await db

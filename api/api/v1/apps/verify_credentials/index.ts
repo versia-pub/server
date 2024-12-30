@@ -52,12 +52,9 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { user, token } = context.get("auth");
+        const { token } = context.get("auth");
 
         if (!token) {
-            throw new ApiError(401, "Unauthorized");
-        }
-        if (!user) {
             throw new ApiError(401, "Unauthorized");
         }
 
@@ -66,7 +63,7 @@ export default apiRoute((app) =>
         );
 
         if (!application) {
-            throw new ApiError(401, "Unauthorized");
+            throw new ApiError(401, "Application not found");
         }
 
         return context.json(

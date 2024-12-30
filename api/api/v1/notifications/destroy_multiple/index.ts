@@ -2,8 +2,6 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/notifications/destroy_multiple",
@@ -44,24 +42,12 @@ const route = createRoute({
         200: {
             description: "Notifications dismissed",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const { "ids[]": ids } = context.req.valid("query");
 

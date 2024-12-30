@@ -89,14 +89,7 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Emoji not found",
             content: {
@@ -147,14 +140,7 @@ const routePatch = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         403: {
             description: "Insufficient credentials",
             content: {
@@ -202,14 +188,7 @@ const routeDelete = createRoute({
         204: {
             description: "Emoji deleted",
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+
         404: {
             description: "Emoji not found",
             content: {
@@ -225,10 +204,6 @@ export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const emoji = await Emoji.fromId(id);
 
@@ -250,10 +225,6 @@ export default apiRoute((app) => {
     app.openapi(routePatch, async (context) => {
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const emoji = await Emoji.fromId(id);
 
@@ -339,10 +310,6 @@ export default apiRoute((app) => {
     app.openapi(routeDelete, async (context) => {
         const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        if (!user) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         const emoji = await Emoji.fromId(id);
 

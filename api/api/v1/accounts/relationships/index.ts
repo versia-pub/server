@@ -3,8 +3,6 @@ import { createRoute } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/accounts/relationships",
@@ -52,30 +50,18 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { user: self } = context.get("auth");
+        const { user } = context.get("auth");
         const { id } = context.req.valid("query");
 
         const ids = Array.isArray(id) ? id : [id];
 
-        if (!self) {
-            throw new ApiError(401, "Unauthorized");
-        }
-
         const relationships = await Relationship.fromOwnerAndSubjects(
-            self,
+            user,
             ids,
         );
 

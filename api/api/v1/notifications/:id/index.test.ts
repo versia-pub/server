@@ -85,4 +85,17 @@ describe(meta.route, () => {
         expect(notification.account).toBeDefined();
         expect(notification.account?.id).toBe(users[1].id);
     });
+
+    test("should not be able to view other user's notifications", async () => {
+        const response = await fakeRequest(
+            meta.route.replace(":id", notifications[0].id),
+            {
+                headers: {
+                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
+                },
+            },
+        );
+
+        expect(response.status).toBe(404);
+    });
 });

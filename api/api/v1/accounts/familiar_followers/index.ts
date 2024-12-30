@@ -4,8 +4,6 @@ import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { z } from "zod";
-import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
     route: "/api/v1/accounts/familiar_followers",
@@ -64,25 +62,13 @@ const route = createRoute({
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { user: self } = context.get("auth");
+        const { user } = context.get("auth");
         const { id: ids } = context.req.valid("query");
-
-        if (!self) {
-            throw new ApiError(401, "Unauthorized");
-        }
 
         // Find followers of the accounts in "ids", that you also follow
         const finalUsers = await Promise.all(
@@ -94,7 +80,7 @@ export default apiRoute((app) =>
                         SELECT "Users"."id" FROM "Users"
                         INNER JOIN "Relationships" AS "SelfFollowing"
                             ON "SelfFollowing"."subjectId" = "Users"."id"
-                        WHERE "SelfFollowing"."ownerId" = ${self.id}
+                        WHERE "SelfFollowing"."ownerId" = ${user.id}
                             AND "SelfFollowing"."following" = true
                             AND EXISTS (
                                 SELECT 1 FROM "Relationships" AS "IdsFollowers"
