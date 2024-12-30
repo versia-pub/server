@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { User as UserSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -68,14 +69,11 @@ export default apiRoute((app) =>
         const user = await User.fromId(uuid);
 
         if (!user) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         if (user.isRemote()) {
-            return context.json(
-                { error: "Cannot view users from remote instances" },
-                403,
-            );
+            throw new ApiError(403, "User is not on this instance");
         }
 
         // Try to detect a web browser and redirect to the user's profile page

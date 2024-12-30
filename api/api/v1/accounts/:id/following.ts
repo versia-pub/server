@@ -4,6 +4,7 @@ import { Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -81,7 +82,7 @@ export default apiRoute((app) =>
         const otherUser = await User.fromId(id);
 
         if (!otherUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         // TODO: Add follower/following privacy settings

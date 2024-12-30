@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Role, User } from "@versia/kit/db";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -59,7 +60,7 @@ export default apiRoute((app) => {
         const targetUser = await User.fromId(id);
 
         if (!targetUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         const roles = await Role.getUserRoles(

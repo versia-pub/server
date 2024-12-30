@@ -24,6 +24,7 @@ import {
 import { type ParsedQs, parse } from "qs";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
 import type { ApiRouteMetadata, HonoEnv, HttpVerb } from "~/types/api";
@@ -162,7 +163,7 @@ const checkPermissions = (
     auth: AuthData | null,
     permissionData: ApiRouteMetadata["permissions"],
     context: Context,
-): Response | undefined => {
+): void => {
     const userPerms = auth?.user
         ? auth.user.getAllPermissions()
         : config.permissions.anonymous;
@@ -175,11 +176,10 @@ const checkPermissions = (
         const missingPerms = requiredPerms.filter(
             (perm) => !userPerms.includes(perm),
         );
-        return context.json(
-            {
-                error: `You do not have the required permissions to access this route. Missing: ${missingPerms.join(", ")}`,
-            },
+        throw new ApiError(
             403,
+            "Missing permissions",
+            `Missing: ${missingPerms.join(", ")}`,
         );
     }
 };
@@ -188,7 +188,7 @@ const checkRouteNeedsAuth = (
     auth: AuthData | null,
     authData: ApiRouteMetadata["auth"],
     context: Context,
-): Response | AuthData => {
+): AuthData => {
     if (auth?.user && auth?.token) {
         return {
             user: auth.user,
@@ -200,12 +200,7 @@ const checkRouteNeedsAuth = (
         authData.required ||
         authData.methodOverrides?.[context.req.method as HttpVerb]
     ) {
-        return context.json(
-            {
-                error: "This route requires authentication.",
-            },
-            401,
-        );
+        throw new ApiError(401, "This route requires authentication");
     }
 
     return {
@@ -218,31 +213,25 @@ const checkRouteNeedsAuth = (
 export const checkRouteNeedsChallenge = async (
     challengeData: ApiRouteMetadata["challenge"],
     context: Context,
-): Promise<true | Response> => {
+): Promise<void> => {
     if (!challengeData) {
-        return true;
+        return;
     }
 
     const challengeSolution = context.req.header("X-Challenge-Solution");
 
     if (!challengeSolution) {
-        return context.json(
-            {
-                error: "This route requires a challenge solution to be sent to it via the X-Challenge-Solution header. Please check the documentation for more information.",
-            },
+        throw new ApiError(
             401,
+            "Challenge required",
+            "This route requires a challenge solution to be sent to it via the X-Challenge-Solution header. Please check the documentation for more information.",
         );
     }
 
     const { challenge_id } = extractParams(challengeSolution);
 
     if (!challenge_id) {
-        return context.json(
-            {
-                error: "The challenge solution provided is invalid.",
-            },
-            401,
-        );
+        throw new ApiError(401, "The challenge solution provided is invalid.");
     }
 
     const challenge = await db.query.Challenges.findFirst({
@@ -250,21 +239,11 @@ export const checkRouteNeedsChallenge = async (
     });
 
     if (!challenge) {
-        return context.json(
-            {
-                error: "The challenge solution provided is invalid.",
-            },
-            401,
-        );
+        throw new ApiError(401, "The challenge solution provided is invalid.");
     }
 
     if (new Date(challenge.expiresAt) < new Date()) {
-        return context.json(
-            {
-                error: "The challenge provided has expired.",
-            },
-            401,
-        );
+        throw new ApiError(401, "The challenge provided has expired.");
     }
 
     const isValid = await verifySolution(
@@ -273,11 +252,9 @@ export const checkRouteNeedsChallenge = async (
     );
 
     if (!isValid) {
-        return context.json(
-            {
-                error: "The challenge solution provided is incorrect.",
-            },
+        throw new ApiError(
             401,
+            "The challenge solution provided is incorrect.",
         );
     }
 
@@ -286,8 +263,6 @@ export const checkRouteNeedsChallenge = async (
         .update(Challenges)
         .set({ expiresAt: new Date().toISOString() })
         .where(eq(Challenges.id, challenge_id));
-
-    return true;
 };
 
 export const auth = (
@@ -311,41 +286,19 @@ export const auth = (
             user: (await token?.getUser()) ?? null,
         };
 
-        // Only exists for type casting, as otherwise weird errors happen with Hono
-        const fakeResponse = context.json({});
-
         // Authentication check
-        const authCheck = checkRouteNeedsAuth(auth, authData, context) as
-            | typeof fakeResponse
-            | AuthData;
-
-        if (authCheck instanceof Response) {
-            return authCheck;
-        }
+        const authCheck = checkRouteNeedsAuth(auth, authData, context);
 
         context.set("auth", authCheck);
 
         // Permissions check
         if (permissionData) {
-            const permissionCheck = checkPermissions(
-                auth,
-                permissionData,
-                context,
-            );
-            if (permissionCheck) {
-                return permissionCheck as typeof fakeResponse;
-            }
+            checkPermissions(auth, permissionData, context);
         }
 
         // Challenge check
         if (challengeData && config.validation.challenges.enabled) {
-            const challengeCheck = await checkRouteNeedsChallenge(
-                challengeData,
-                context,
-            );
-            if (challengeCheck !== true) {
-                return challengeCheck as typeof fakeResponse;
-            }
+            await checkRouteNeedsChallenge(challengeData, context);
         }
 
         await next();

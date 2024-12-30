@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -80,13 +81,13 @@ export default apiRoute((app) =>
         const { user: self } = context.get("auth");
 
         if (!self) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const otherUser = await User.fromId(id);
 
         if (!otherUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -94,9 +95,7 @@ export default apiRoute((app) =>
             otherUser,
         );
 
-        if (!(await self.unfollow(otherUser, foundRelationship))) {
-            return context.json({ error: "Failed to unfollow user" }, 500);
-        }
+        await self.unfollow(otherUser, foundRelationship);
 
         return context.json(foundRelationship.toApi(), 200);
     }),

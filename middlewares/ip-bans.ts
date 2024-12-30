@@ -3,6 +3,7 @@ import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
 export const ipBans = createMiddleware(async (context, next) => {
@@ -18,7 +19,7 @@ export const ipBans = createMiddleware(async (context, next) => {
     for (const ip of config.http.banned_ips) {
         try {
             if (matches(ip, requestIp?.address)) {
-                return context.json({ error: "Forbidden" }, 403);
+                throw new ApiError(403, "Forbidden");
             }
         } catch (e) {
             const logger = getLogger("server");

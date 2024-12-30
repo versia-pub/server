@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -47,7 +48,7 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         return context.json(user.toApi(true), 200);

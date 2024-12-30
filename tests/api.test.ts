@@ -25,7 +25,7 @@ describe("API Tests", () => {
         const data = await response.json();
 
         expect(data.error).toBeString();
-        expect(data.error).toContain("https://stackoverflow.com");
+        expect(data.details).toContain("https://stackoverflow.com");
     });
 
     // Now automatically mitigated by the server
@@ -35,7 +35,7 @@ describe("API Tests", () => {
         }
 
         const response = await fakeRequest(
-            
+
                     "/api/v1/instance",
                     base_url.replace("https://", "http://"),
                 ),

@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -66,7 +67,7 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const { account_id } = context.req.valid("param");
@@ -74,7 +75,7 @@ export default apiRoute((app) =>
         const account = await User.fromId(account_id);
 
         if (!account) {
-            return context.json({ error: "Account not found" }, 404);
+            throw new ApiError(404, "Account not found");
         }
 
         const oppositeRelationship = await Relationship.fromOwnerAndSubject(

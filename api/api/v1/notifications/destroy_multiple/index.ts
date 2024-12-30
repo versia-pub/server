@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -53,7 +54,7 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const { "ids[]": ids } = context.req.valid("query");

@@ -5,6 +5,7 @@ import { Attachment, Emoji } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -117,15 +118,14 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         if (!user.hasPermission(RolePermissions.ManageEmojis) && global) {
-            return context.json(
-                {
-                    error: `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
-                },
+            throw new ApiError(
                 401,
+                "Missing permissions",
+                `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
             );
         }
 
@@ -139,11 +139,10 @@ export default apiRoute((app) =>
         );
 
         if (existing) {
-            return context.json(
-                {
-                    error: `An emoji with the shortcode ${shortcode} already exists, either owned by you or global.`,
-                },
+            throw new ApiError(
                 422,
+                "Emoji already exists",
+                `An emoji with the shortcode ${shortcode} already exists, either owned by you or global.`,
             );
         }
 
@@ -154,11 +153,10 @@ export default apiRoute((app) =>
             element instanceof File ? element.type : await mimeLookup(element);
 
         if (!contentType.startsWith("image/")) {
-            return context.json(
-                {
-                    error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
-                },
+            throw new ApiError(
                 422,
+                "Invalid content type",
+                `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
             );
         }
 

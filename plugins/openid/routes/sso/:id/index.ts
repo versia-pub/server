@@ -4,6 +4,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { type SQL, eq } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions } from "@versia/kit/tables";
+import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 import { ErrorSchema } from "~/types/api";
 
@@ -66,12 +67,7 @@ export default (plugin: PluginType): void => {
                 const { user } = context.get("auth");
 
                 if (!user) {
-                    return context.json(
-                        {
-                            error: "Unauthorized",
-                        },
-                        401,
-                    );
+                    throw new ApiError(401, "Unauthorized");
                 }
 
                 const issuer = context
@@ -96,11 +92,9 @@ export default (plugin: PluginType): void => {
                 });
 
                 if (!account) {
-                    return context.json(
-                        {
-                            error: "Account not found or is not linked to this issuer",
-                        },
+                    throw new ApiError(
                         404,
+                        "Account not found or is not linked to this issuer",
                     );
                 }
 
@@ -163,7 +157,7 @@ export default (plugin: PluginType): void => {
                 const { user } = context.get("auth");
 
                 if (!user) {
-                    return context.json({ error: "Unauthorized" }, 401);
+                    throw new ApiError(401, "Unauthorized");
                 }
 
                 // Check if issuer exists
@@ -189,11 +183,9 @@ export default (plugin: PluginType): void => {
                 });
 
                 if (!account) {
-                    return context.json(
-                        {
-                            error: "Account not found or is not linked to this issuer",
-                        },
+                    throw new ApiError(
                         404,
+                        "Account not found or is not linked to this issuer",
                     );
                 }
 

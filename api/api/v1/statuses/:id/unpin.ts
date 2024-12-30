@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -67,23 +68,23 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const status = await Note.fromId(id, user.id);
 
         if (!status) {
-            return context.json({ error: "Record not found" }, 404);
+            throw new ApiError(404, "Note not found");
         }
 
         if (status.author.id !== user.id) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         await user.unpin(status);
 
         if (!status) {
-            return context.json({ error: "Record not found" }, 404);
+            throw new ApiError(404, "Note not found");
         }
 
         return context.json(await status.toApi(user), 200);

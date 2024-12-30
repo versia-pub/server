@@ -10,6 +10,7 @@ import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -95,19 +96,14 @@ export default apiRoute((app) =>
             context.req.valid("query");
 
         if (!self && (resolve || offset)) {
-            return context.json(
-                {
-                    error: "Cannot use resolve or offset without being authenticated",
-                },
+            throw new ApiError(
                 401,
+                "Usage of resolve or offset requires authentication",
             );
         }
 
         if (!config.sonic.enabled) {
-            return context.json(
-                { error: "Search is not enabled on this server" },
-                501,
-            );
+            throw new ApiError(501, "Search is not enabled on this server");
         }
 
         let accountResults: string[] = [];

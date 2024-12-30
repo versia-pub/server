@@ -116,7 +116,9 @@ describe("/api/v1/accounts/:id/roles/:role_id", () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: `Cannot assign role 'higherPriorityRole' with priority 3 to user: your highest role priority is 2`,
+            error: "Forbidden",
+            details:
+                "User with highest role priority 2 cannot assign role with priority 3",
         });
     });
 
@@ -156,7 +158,9 @@ describe("/api/v1/accounts/:id/roles/:role_id", () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: `Cannot remove role 'higherPriorityRole' with priority 3 from user: your highest role priority is 2`,
+            error: "Forbidden",
+            details:
+                "User with highest role priority 2 cannot remove role with priority 3",
         });
 
         await higherPriorityRole.unlinkUser(users[1].id);

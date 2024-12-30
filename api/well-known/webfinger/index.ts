@@ -1,4 +1,10 @@
-import { apiRoute, applyConfig, idValidator, webfingerMention } from "@/api";
+import {
+    apiRoute,
+    applyConfig,
+    idValidator,
+    parseUserAddress,
+    webfingerMention,
+} from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
@@ -7,6 +13,7 @@ import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -71,25 +78,27 @@ export default apiRoute((app) =>
 
         const host = new URL(config.http.base_url).host;
 
+        const { username, domain } = parseUserAddress(requestedUser);
+
         // Check if user is a local user
-        if (requestedUser.split("@")[1] !== host) {
-            return context.json({ error: "User is a remote user" }, 404);
+        if (domain !== host) {
+            throw new ApiError(
+                404,
+                `User domain ${domain} does not match ${host}`,
+            );
         }
 
-        const isUuid = requestedUser.split("@")[0].match(idValidator);
+        const isUuid = username.match(idValidator);
 
         const user = await User.fromSql(
             and(
-                eq(
-                    isUuid ? Users.id : Users.username,
-                    requestedUser.split("@")[0],
-                ),
+                eq(isUuid ? Users.id : Users.username, username),
                 isNull(Users.instanceId),
             ),
         );
 
         if (!user) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         let activityPubUrl = "";

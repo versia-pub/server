@@ -8,6 +8,7 @@ import { Like, Note, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
 
@@ -82,7 +83,7 @@ export default apiRoute((app) =>
 
         if (foundObject) {
             if (!(await foundObject.isViewableByUser(null))) {
-                return context.json({ error: "Object not found" }, 404);
+                throw new ApiError(404, "Object not found");
             }
         } else {
             foundObject = await Like.fromSql(
@@ -98,18 +99,15 @@ export default apiRoute((app) =>
         }
 
         if (!(foundObject && apiObject)) {
-            return context.json({ error: "Object not found" }, 404);
+            throw new ApiError(404, "Object not found");
         }
 
         if (!foundAuthor) {
-            return context.json({ error: "Author not found" }, 404);
+            throw new ApiError(404, "Author not found");
         }
 
         if (foundAuthor?.isRemote()) {
-            return context.json(
-                { error: "Cannot view objects from remote instances" },
-                403,
-            );
+            throw new ApiError(403, "Object is from a remote instance");
         }
         // If base_url uses https and request uses http, rewrite request to use https
         // This fixes reverse proxy errors

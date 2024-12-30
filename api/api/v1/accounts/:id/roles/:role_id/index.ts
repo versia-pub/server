@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Role, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -114,18 +115,18 @@ export default apiRoute((app) => {
         const { id, role_id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);
 
         if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+            throw new ApiError(404, "Role not found");
         }
 
         if (!targetUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         // Priority check
@@ -136,11 +137,10 @@ export default apiRoute((app) => {
         );
 
         if (role.data.priority > userHighestRole.data.priority) {
-            return context.json(
-                {
-                    error: `Cannot assign role '${role.data.name}' with priority ${role.data.priority} to user: your highest role priority is ${userHighestRole.data.priority}`,
-                },
+            throw new ApiError(
                 403,
+                "Forbidden",
+                `User with highest role priority ${userHighestRole.data.priority} cannot assign role with priority ${role.data.priority}`,
             );
         }
 
@@ -154,18 +154,18 @@ export default apiRoute((app) => {
         const { id, role_id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const targetUser = await User.fromId(id);
         const role = await Role.fromId(role_id);
 
         if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+            throw new ApiError(404, "Role not found");
         }
 
         if (!targetUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         // Priority check
@@ -176,11 +176,10 @@ export default apiRoute((app) => {
         );
 
         if (role.data.priority > userHighestRole.data.priority) {
-            return context.json(
-                {
-                    error: `Cannot remove role '${role.data.name}' with priority ${role.data.priority} from user: your highest role priority is ${userHighestRole.data.priority}`,
-                },
+            throw new ApiError(
                 403,
+                "Forbidden",
+                `User with highest role priority ${userHighestRole.data.priority} cannot remove role with priority ${role.data.priority}`,
             );
         }
 

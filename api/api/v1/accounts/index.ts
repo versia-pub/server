@@ -6,6 +6,7 @@ import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -143,12 +144,7 @@ export default apiRoute((app) =>
             context.req.valid("json");
 
         if (!config.signups.registration) {
-            return context.json(
-                {
-                    error: "Registration is disabled",
-                },
-                422,
-            );
+            throw new ApiError(422, "Registration is disabled");
         }
 
         const errors: {
@@ -318,16 +314,14 @@ export default apiRoute((app) =>
                             .join(", ")}`,
                 )
                 .join(", ");
-            return context.json(
-                {
-                    error: `Validation failed: ${errorsText}`,
-                    details: Object.fromEntries(
-                        Object.entries(errors.details).filter(
-                            ([_, errors]) => errors.length > 0,
-                        ),
-                    ),
-                },
+            throw new ApiError(
                 422,
+                `Validation failed: ${errorsText}`,
+                Object.fromEntries(
+                    Object.entries(errors.details).filter(
+                        ([_, errors]) => errors.length > 0,
+                    ),
+                ),
             );
         }
 

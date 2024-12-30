@@ -1,9 +1,5 @@
 import { getLogger } from "@logtape/logtape";
-import {
-    EntityValidator,
-    type ResponseError,
-    type ValidationError,
-} from "@versia/federation";
+import { EntityValidator, type ResponseError } from "@versia/federation";
 import type { InstanceMetadata } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
@@ -17,6 +13,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
+import { ApiError } from "../errors/api-error.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 
@@ -141,55 +138,48 @@ export class Instance extends BaseInterface<typeof Instances> {
     public static async fetchMetadata(url: string): Promise<{
         metadata: InstanceMetadata;
         protocol: "versia" | "activitypub";
-    } | null> {
+    }> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/versia", origin);
-        const logger = getLogger(["federation", "resolvers"]);
 
         const requester = await User.getFederationRequester();
 
-        try {
-            const { ok, raw, data } = await requester
-                .get(wellKnownUrl, {
-                    // @ts-expect-error Bun extension
-                    proxy: config.http.proxy.address,
-                })
-                .catch((e) => ({
-                    ...(e as ResponseError).response,
-                }));
+        const { ok, raw, data } = await requester
+            .get(wellKnownUrl, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy.address,
+            })
+            .catch((e) => ({
+                ...(e as ResponseError).response,
+            }));
 
-            if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
-                // If the server doesn't have a Versia well-known endpoint, it's not a Versia instance
-                // Try to resolve ActivityPub metadata instead
-                const data = await Instance.fetchActivityPubMetadata(url);
+        if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
+            // If the server doesn't have a Versia well-known endpoint, it's not a Versia instance
+            // Try to resolve ActivityPub metadata instead
+            const data = await Instance.fetchActivityPubMetadata(url);
 
-                if (!data) {
-                    return null;
-                }
-
-                return {
-                    metadata: data,
-                    protocol: "activitypub",
-                };
-            }
-
-            try {
-                const metadata = await new EntityValidator().InstanceMetadata(
-                    data,
+            if (!data) {
+                throw new ApiError(
+                    404,
+                    `Instance at ${origin} is not reachable or does not exist`,
                 );
-
-                return { metadata, protocol: "versia" };
-            } catch (error) {
-                logger.error`Instance ${chalk.bold(
-                    origin,
-                )} has invalid metadata: ${(error as ValidationError).message}`;
-                return null;
             }
-        } catch (error) {
-            logger.error`Failed to fetch Versia metadata for instance ${chalk.bold(
-                origin,
-            )} - Error! ${error}`;
-            return null;
+
+            return {
+                metadata: data,
+                protocol: "activitypub",
+            };
+        }
+
+        try {
+            const metadata = await new EntityValidator().InstanceMetadata(data);
+
+            return { metadata, protocol: "versia" };
+        } catch {
+            throw new ApiError(
+                404,
+                `Instance at ${origin} has invalid metadata`,
+            );
         }
     }
 
@@ -319,7 +309,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
-    public static resolveFromHost(host: string): Promise<Instance | null> {
+    public static resolveFromHost(host: string): Promise<Instance> {
         if (host.startsWith("http")) {
             const url = new URL(host).host;
 
@@ -331,8 +321,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return Instance.resolve(url.origin);
     }
 
-    public static async resolve(url: string): Promise<Instance | null> {
-        const logger = getLogger(["federation", "resolvers"]);
+    public static async resolve(url: string): Promise<Instance> {
         const host = new URL(url).host;
 
         const existingInstance = await Instance.fromSql(
@@ -344,11 +333,6 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
 
         const output = await Instance.fetchMetadata(url);
-
-        if (!output) {
-            logger.error`Failed to resolve instance ${chalk.bold(host)}`;
-            return null;
-        }
 
         const { metadata, protocol } = output;
 

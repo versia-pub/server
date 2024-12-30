@@ -144,7 +144,9 @@ describe("/api/v1/roles/:id", () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: `Cannot edit role 'higherPriorityRole' with priority 3: your highest role priority is 2`,
+            error: "Forbidden",
+            details:
+                "User with highest role priority 2 cannot edit role with priority 3",
         });
     });
 
@@ -163,7 +165,8 @@ describe("/api/v1/roles/:id", () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "You cannot add or remove the following permissions you do not yourself have: impersonate",
+            error: "Forbidden",
+            details: "User cannot add or remove permissions they do not have",
         });
     });
 
@@ -226,7 +229,9 @@ describe("/api/v1/roles/:id", () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: `Cannot delete role 'higherPriorityRole' with priority 3: your highest role priority is 2`,
+            error: "Forbidden",
+            details:
+                "User with highest role priority 2 cannot delete role with priority 3",
         });
     });
 });

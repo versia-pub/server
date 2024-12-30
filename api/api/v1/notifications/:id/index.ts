@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Notification } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -64,13 +65,13 @@ export default apiRoute((app) =>
 
         const { user } = context.get("auth");
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const notification = await Notification.fromId(id, user.id);
 
         if (!notification) {
-            return context.json({ error: "Notification not found" }, 404);
+            throw new ApiError(404, "Notification not found");
         }
 
         return context.json(await notification.toApi(), 200);

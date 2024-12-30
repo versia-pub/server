@@ -2,6 +2,7 @@ import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -49,10 +50,10 @@ export default apiRoute((app) =>
         const { user, token } = context.get("auth");
 
         if (!token) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const application = await Application.getFromToken(
@@ -60,7 +61,7 @@ export default apiRoute((app) =>
         );
 
         if (!application) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         return context.json(

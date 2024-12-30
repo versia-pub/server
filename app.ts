@@ -14,6 +14,7 @@ import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
 import pkg from "~/package.json" with { type: "application/json" };
 import { config } from "~/packages/config-manager/index.ts";
+import { ApiError } from "./classes/errors/api-error.ts";
 import { PluginLoader } from "./classes/plugin/loader.ts";
 import { agentBans } from "./middlewares/agent-bans.ts";
 import { bait } from "./middlewares/bait.ts";
@@ -192,11 +193,9 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         proxy?.headers.set("Cache-Control", "max-age=31536000");
 
         if (!proxy || proxy.status === 404) {
-            return context.json(
-                {
-                    error: "Route not found on proxy or API route. Are you using the correct HTTP method?",
-                },
+            throw new ApiError(
                 404,
+                "Route not found on proxy or API route. Are you using the correct HTTP method?",
             );
         }
 
@@ -214,6 +213,16 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
     });
 
     app.onError((error, c) => {
+        if (error instanceof ApiError) {
+            return c.json(
+                {
+                    error: error.message,
+                    details: error.details,
+                },
+                error.status,
+            );
+        }
+
         serverLogger.error`${error}`;
         sentry?.captureException(error);
         return c.json(

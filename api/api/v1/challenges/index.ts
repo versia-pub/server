@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 import { createRoute, z } from "@hono/zod-openapi";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -54,10 +55,7 @@ const route = createRoute({
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         if (!config.validation.challenges.enabled) {
-            return context.json(
-                { error: "Challenges are disabled in config" },
-                400,
-            );
+            throw new ApiError(400, "Challenges are disabled in config");
         }
 
         const result = await generateChallenge();

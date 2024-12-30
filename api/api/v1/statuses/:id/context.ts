@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -65,7 +66,7 @@ export default apiRoute((app) =>
         const foundStatus = await Note.fromId(id, user?.id);
 
         if (!foundStatus) {
-            return context.json({ error: "Record not found" }, 404);
+            throw new ApiError(404, "Note not found");
         }
 
         const ancestors = await foundStatus.getAncestors(user ?? null);

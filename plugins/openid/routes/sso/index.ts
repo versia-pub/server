@@ -6,6 +6,7 @@ import {
     generateRandomCodeVerifier,
 } from "oauth4webapi";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error.ts";
 import { ErrorSchema } from "~/types/api";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
@@ -57,12 +58,7 @@ export default (plugin: PluginType): void => {
                 const { user } = context.get("auth");
 
                 if (!user) {
-                    return context.json(
-                        {
-                            error: "Unauthorized",
-                        },
-                        401,
-                    );
+                    throw new ApiError(401, "Unauthorized");
                 }
 
                 const linkedAccounts = await user.getLinkedOidcAccounts(
@@ -133,12 +129,7 @@ export default (plugin: PluginType): void => {
                 const { user } = context.get("auth");
 
                 if (!user) {
-                    return context.json(
-                        {
-                            error: "Unauthorized",
-                        },
-                        401,
-                    );
+                    throw new ApiError(401, "Unauthorized");
                 }
 
                 const { issuer: issuerId } = context.req.valid("json");

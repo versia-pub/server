@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -72,7 +73,7 @@ export default apiRoute((app) =>
         const buffer = await file.arrayBuffer();
 
         if (!(await file.exists())) {
-            return context.json({ error: "File not found" }, 404);
+            throw new ApiError(404, "File not found");
         }
 
         // Can't directly copy file into Response because this crashes Bun for now

@@ -4,6 +4,7 @@ import { Note, Timeline, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -76,13 +77,13 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const note = await Note.fromId(id, user.id);
 
         if (!(note && (await note?.isViewableByUser(user)))) {
-            return context.json({ error: "Record not found" }, 404);
+            throw new ApiError(404, "Note not found");
         }
 
         const { objects, link } = await Timeline.getUserTimeline(

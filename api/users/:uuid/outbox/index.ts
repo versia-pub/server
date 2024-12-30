@@ -8,6 +8,7 @@ import { Note, User, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -78,14 +79,11 @@ export default apiRoute((app) =>
         const author = await User.fromId(uuid);
 
         if (!author) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         if (author.isRemote()) {
-            return context.json(
-                { error: "Cannot view users from remote instances" },
-                403,
-            );
+            throw new ApiError(403, "User is not on this instance");
         }
 
         const pageNumber = Number(context.req.valid("query").page) || 1;

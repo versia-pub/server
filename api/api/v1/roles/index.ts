@@ -1,6 +1,7 @@
 import { apiRoute, applyConfig, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
+import { ApiError } from "~/classes/errors/api-error";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
@@ -96,7 +97,7 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const roles = await Role.getAll();
@@ -113,7 +114,7 @@ export default apiRoute((app) => {
             context.req.valid("json");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         // Priority check
@@ -124,11 +125,9 @@ export default apiRoute((app) => {
         );
 
         if (priority > userHighestRole.data.priority) {
-            return context.json(
-                {
-                    error: "You cannot create a role with higher priority than your own",
-                },
+            throw new ApiError(
                 403,
+                "Cannot create role with higher priority than your own",
             );
         }
 
@@ -140,11 +139,10 @@ export default apiRoute((app) => {
             ).every((p) => userPermissions.includes(p));
 
             if (!hasPermissions) {
-                return context.json(
-                    {
-                        error: `You cannot create a role with the following permissions you do not yourself have: ${permissions.join(", ")}`,
-                    },
+                throw new ApiError(
                     403,
+                    "Cannot create role with permissions you do not have",
+                    `Forbidden permissions: ${permissions.join(", ")}`,
                 );
             }
         }

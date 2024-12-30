@@ -4,6 +4,7 @@ import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -73,7 +74,7 @@ export default apiRoute((app) =>
         const { id: ids } = context.req.valid("query");
 
         if (!self) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         // Find followers of the accounts in "ids", that you also follow
@@ -84,7 +85,7 @@ export default apiRoute((app) =>
                     (
                         await db.execute(sql<InferSelectModel<typeof Users>>`
                         SELECT "Users"."id" FROM "Users"
-                        INNER JOIN "Relationships" AS "SelfFollowing" 
+                        INNER JOIN "Relationships" AS "SelfFollowing"
                             ON "SelfFollowing"."subjectId" = "Users"."id"
                         WHERE "SelfFollowing"."ownerId" = ${self.id}
                             AND "SelfFollowing"."following" = true

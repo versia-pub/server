@@ -4,6 +4,7 @@ import { Attachment, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -152,7 +153,7 @@ export default apiRoute((app) =>
         const { user, application } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const {
@@ -172,19 +173,22 @@ export default apiRoute((app) =>
             media_ids.length > 0 ? await Attachment.fromIds(media_ids) : [];
 
         if (foundAttachments.length !== media_ids.length) {
-            return context.json({ error: "Invalid media IDs" }, 422);
+            throw new ApiError(
+                422,
+                "Some attachments referenced by media_ids not found",
+            );
         }
 
         // Check that in_reply_to_id and quote_id are real posts if provided
         if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
-            return context.json(
-                { error: "Invalid in_reply_to_id (not found)" },
+            throw new ApiError(
                 422,
+                "Note referenced by in_reply_to_id not found",
             );
         }
 
         if (quote_id && !(await Note.fromId(quote_id))) {
-            return context.json({ error: "Invalid quote_id (not found)" }, 422);
+            throw new ApiError(422, "Note referenced by quote_id not found");
         }
 
         const newNote = await Note.fromData({

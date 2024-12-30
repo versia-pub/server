@@ -11,6 +11,7 @@ import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -80,7 +81,7 @@ export default apiRoute((app) =>
         const { user: self } = context.get("auth");
 
         if (!self && following) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const { username, domain } = parseUserAddress(q);

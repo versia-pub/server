@@ -102,7 +102,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
-            "Invalid JWT, could not verify",
+            "Invalid JWT: could not verify",
         );
     });
 
@@ -141,7 +141,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
-            "Invalid JWT, missing required fields (aud, sub, exp)",
+            "Invalid JWT: missing required fields (aud, sub, exp, iss)",
         );
     });
 
@@ -183,7 +183,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
-            "Invalid JWT, sub is not a valid user ID",
+            "Invalid JWT: sub is not a valid user ID",
         );
 
         const jwt2 = await new SignJWT({
@@ -266,9 +266,9 @@ describe("/oauth/authorize", () => {
             config.http.base_url,
         );
         const params = new URLSearchParams(location.search);
-        expect(params.get("error")).toBe("invalid_request");
+        expect(params.get("error")).toBe("unauthorized");
         expect(params.get("error_description")).toBe(
-            `User is missing the required permission ${RolePermissions.OAuth}`,
+            `User missing required '${RolePermissions.OAuth}' permission`,
         );
 
         config.permissions.default = oldPermissions;
@@ -312,7 +312,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
-            "Invalid client_id: no associated application found",
+            "Invalid client_id: no associated API application found",
         );
     });
 
@@ -354,7 +354,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
-            "Invalid redirect_uri: does not match application's redirect_uri",
+            "Invalid redirect_uri: does not match API application's redirect_uri",
         );
     });
 
@@ -394,7 +394,7 @@ describe("/oauth/authorize", () => {
             config.http.base_url,
         );
         const params = new URLSearchParams(location.search);
-        expect(params.get("error")).toBe("invalid_scope");
+        expect(params.get("error")).toBe("invalid_request");
         expect(params.get("error_description")).toBe(
             "Invalid scope: not a subset of the application's scopes",
         );

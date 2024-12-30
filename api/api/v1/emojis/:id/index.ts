@@ -5,6 +5,7 @@ import { Attachment, Emoji, db } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -212,13 +213,13 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const emoji = await Emoji.fromId(id);
 
         if (!emoji) {
-            return context.json({ error: "Emoji not found" }, 404);
+            throw new ApiError(404, "Emoji not found");
         }
 
         // Check if user is admin
@@ -226,11 +227,10 @@ export default apiRoute((app) => {
             !user.hasPermission(RolePermissions.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
-            return context.json(
-                {
-                    error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
-                },
+            throw new ApiError(
                 403,
+                "Cannot modify emoji not owned by you",
+                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
             );
         }
 
@@ -242,13 +242,13 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const emoji = await Emoji.fromId(id);
 
         if (!emoji) {
-            return context.json({ error: "Emoji not found" }, 404);
+            throw new ApiError(404, "Emoji not found");
         }
 
         // Check if user is admin
@@ -256,11 +256,10 @@ export default apiRoute((app) => {
             !user.hasPermission(RolePermissions.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
-            return context.json(
-                {
-                    error: `You cannot modify this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
-                },
+            throw new ApiError(
                 403,
+                "Cannot modify emoji not owned by you",
+                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
             );
         }
 
@@ -275,11 +274,10 @@ export default apiRoute((app) => {
         } = context.req.valid("json");
 
         if (!user.hasPermission(RolePermissions.ManageEmojis) && emojiGlobal) {
-            return context.json(
-                {
-                    error: `Only users with the '${RolePermissions.ManageEmojis}' permission can make an emoji global or not`,
-                },
+            throw new ApiError(
                 401,
+                "Missing permissions",
+                `'${RolePermissions.ManageEmojis}' permission is needed to upload global emojis`,
             );
         }
 
@@ -293,11 +291,10 @@ export default apiRoute((app) => {
                     : await mimeLookup(element);
 
             if (!contentType.startsWith("image/")) {
-                return context.json(
-                    {
-                        error: `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
-                    },
+                throw new ApiError(
                     422,
+                    "Invalid content type",
+                    `Emojis must be images (png, jpg, gif, etc.). Detected: ${contentType}`,
                 );
             }
 
@@ -334,13 +331,13 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const emoji = await Emoji.fromId(id);
 
         if (!emoji) {
-            return context.json({ error: "Emoji not found" }, 404);
+            throw new ApiError(404, "Emoji not found");
         }
 
         // Check if user is admin
@@ -348,11 +345,10 @@ export default apiRoute((app) => {
             !user.hasPermission(RolePermissions.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
-            return context.json(
-                {
-                    error: `You cannot delete this emoji, as it is either global, not owned by you, or you do not have the '${RolePermissions.ManageEmojis}' permission to manage global emojis`,
-                },
+            throw new ApiError(
                 403,
+                "Cannot delete emoji not owned by you",
+                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
             );
         }
 

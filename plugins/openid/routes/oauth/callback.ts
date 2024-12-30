@@ -6,6 +6,7 @@ import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
+import { ApiError } from "~/classes/errors/api-error.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
@@ -78,7 +79,7 @@ export default (plugin: PluginType): void => {
                     .providers.find((provider) => provider.id === issuerParam);
 
                 if (!issuer) {
-                    return context.json({ error: "Issuer not found" }, 404);
+                    throw new ApiError(404, "Issuer not found");
                 }
 
                 const userInfo = await automaticOidcFlow(
@@ -303,10 +304,7 @@ export default (plugin: PluginType): void => {
                 }
 
                 if (!flow.application) {
-                    return context.json(
-                        { error: "Application not found" },
-                        500,
-                    );
+                    throw new ApiError(500, "Application not found");
                 }
 
                 const code = randomString(32, "hex");

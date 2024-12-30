@@ -126,7 +126,7 @@ describe(meta.route, () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "You cannot create a role with higher priority than your own",
+            error: "Cannot create role with higher priority than your own",
         });
     });
 
@@ -150,7 +150,8 @@ describe(meta.route, () => {
         expect(response.status).toBe(403);
         const output = await response.json();
         expect(output).toMatchObject({
-            error: "You cannot create a role with the following permissions you do not yourself have: impersonate",
+            error: "Cannot create role with permissions you do not have",
+            details: "Forbidden permissions: impersonate",
         });
     });
 });

@@ -4,6 +4,7 @@ import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -200,7 +201,7 @@ export default apiRoute((app) => {
         const { id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const userFilter = await db.query.Filters.findFirst({
@@ -212,7 +213,7 @@ export default apiRoute((app) => {
         });
 
         if (!userFilter) {
-            return context.json({ error: "Filter not found" }, 404);
+            throw new ApiError(404, "Filter not found");
         }
 
         return context.json(
@@ -247,7 +248,7 @@ export default apiRoute((app) => {
         } = context.req.valid("json");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         await db
@@ -336,7 +337,7 @@ export default apiRoute((app) => {
         const { id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         await db

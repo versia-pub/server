@@ -2,6 +2,7 @@ import { apiRoute, applyConfig } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -57,9 +58,10 @@ export default apiRoute((app) =>
 
         // Check if URL is valid
         if (!URL.canParse(id)) {
-            return context.json(
-                { error: "Invalid URL (it should be encoded as base64url" },
+            throw new ApiError(
                 400,
+                "Invalid URL",
+                "Should be encoded as base64url",
             );
         }
 

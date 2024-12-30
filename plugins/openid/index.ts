@@ -5,6 +5,7 @@ import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error.ts";
 import { RolePermissions } from "~/drizzle/schema.ts";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
@@ -108,13 +109,7 @@ plugin.registerRoute("/admin/*", (app) => {
         const jwtCookie = getCookie(context, "jwt");
 
         if (!jwtCookie) {
-            return context.json(
-                {
-                    error: "Unauthorized",
-                    message: "No JWT cookie provided",
-                },
-                401,
-            );
+            throw new ApiError(401, "Missing JWT cookie");
         }
 
         const { keys } = context.get("pluginConfig");
@@ -132,22 +127,10 @@ plugin.registerRoute("/admin/*", (app) => {
 
         if (result instanceof JOSEError) {
             if (result instanceof JWTExpired) {
-                return context.json(
-                    {
-                        error: "Unauthorized",
-                        message: "JWT has expired. Please log in again.",
-                    },
-                    401,
-                );
+                throw new ApiError(401, "JWT has expired");
             }
 
-            return context.json(
-                {
-                    error: "Unauthorized",
-                    message: "Invalid JWT",
-                },
-                401,
-            );
+            throw new ApiError(401, "Invalid JWT");
         }
 
         const {
@@ -155,25 +138,15 @@ plugin.registerRoute("/admin/*", (app) => {
         } = result;
 
         if (!sub) {
-            return context.json(
-                {
-                    error: "Unauthorized",
-                    message: "Invalid JWT (no sub)",
-                },
-                401,
-            );
+            throw new ApiError(401, "Invalid JWT (no sub)");
         }
 
         const user = await User.fromId(sub);
 
         if (!user?.hasPermission(RolePermissions.ManageInstanceFederation)) {
-            return context.json(
-                {
-                    error: "Unauthorized",
-                    message:
-                        "You do not have permission to access this resource",
-                },
+            throw new ApiError(
                 403,
+                `Missing '${RolePermissions.ManageInstanceFederation}' permission`,
             );
         }
 

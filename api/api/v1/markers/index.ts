@@ -5,6 +5,7 @@ import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -119,7 +120,7 @@ export default apiRoute((app) => {
         const timeline = Array.isArray(timelines) ? timelines : [];
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         if (!timeline) {
@@ -191,7 +192,7 @@ export default apiRoute((app) => {
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const markers: ApiMarker = {

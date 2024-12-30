@@ -297,7 +297,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     public async unfollow(
         followee: User,
         relationship: Relationship,
-    ): Promise<boolean> {
+    ): Promise<void> {
         if (followee.isRemote()) {
             await deliveryQueue.add(DeliveryJobType.FederateEntity, {
                 entity: this.unfollowToVersia(followee),
@@ -309,8 +309,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         await relationship.update({
             following: false,
         });
-
-        return true;
     }
 
     private unfollowToVersia(followee: User): Unfollow {

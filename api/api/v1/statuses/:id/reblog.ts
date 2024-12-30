@@ -4,6 +4,7 @@ import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -101,13 +102,13 @@ export default apiRoute((app) =>
         const { user } = context.get("auth");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const note = await Note.fromId(id, user.id);
 
         if (!(note && (await note?.isViewableByUser(user)))) {
-            return context.json({ error: "Record not found" }, 404);
+            throw new ApiError(404, "Note not found");
         }
 
         const existingReblog = await Note.fromSql(
@@ -115,7 +116,7 @@ export default apiRoute((app) =>
         );
 
         if (existingReblog) {
-            return context.json({ error: "Already reblogged" }, 422);
+            throw new ApiError(422, "Already reblogged");
         }
 
         const newReblog = await Note.insert({
@@ -127,14 +128,10 @@ export default apiRoute((app) =>
             applicationId: null,
         });
 
-        if (!newReblog) {
-            return context.json({ error: "Failed to reblog" }, 500);
-        }
-
         const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
 
         if (!finalNewReblog) {
-            return context.json({ error: "Failed to reblog" }, 500);
+            throw new ApiError(500, "Failed to reblog");
         }
 
         if (note.author.isLocal() && user.isLocal()) {

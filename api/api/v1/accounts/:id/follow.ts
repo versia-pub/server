@@ -4,6 +4,7 @@ import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -91,13 +92,13 @@ export default apiRoute((app) =>
         const { reblogs, notify, languages } = context.req.valid("json");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const otherUser = await User.fromId(id);
 
         if (!otherUser) {
-            return context.json({ error: "User not found" }, 404);
+            throw new ApiError(404, "User not found");
         }
 
         let relationship = await Relationship.fromOwnerAndSubject(

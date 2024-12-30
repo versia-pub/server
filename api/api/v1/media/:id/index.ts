@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Attachment } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
@@ -122,7 +123,7 @@ export default apiRoute((app) => {
         const attachment = await Attachment.fromId(id);
 
         if (!attachment) {
-            return context.json({ error: "Media not found" }, 404);
+            throw new ApiError(404, "Media not found");
         }
 
         const { description, thumbnail } = context.req.valid("form");
@@ -159,7 +160,7 @@ export default apiRoute((app) => {
         const attachment = await Attachment.fromId(id);
 
         if (!attachment) {
-            return context.json({ error: "Media not found" }, 404);
+            throw new ApiError(404, "Media not found");
         }
 
         return context.json(attachment.toApi(), 200);

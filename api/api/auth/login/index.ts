@@ -7,6 +7,7 @@ import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
 export const meta = applyConfig({
@@ -203,7 +204,7 @@ export default apiRoute((app) =>
         const application = await Application.fromClientId(client_id);
 
         if (!application) {
-            return context.json({ error: "Invalid application" }, 400);
+            throw new ApiError(400, "Invalid application");
         }
 
         const searchParams = new URLSearchParams({

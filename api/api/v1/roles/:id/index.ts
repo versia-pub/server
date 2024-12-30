@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
 export const meta = applyConfig({
@@ -156,13 +157,13 @@ export default apiRoute((app) => {
         const { id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const role = await Role.fromId(id);
 
         if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+            throw new ApiError(404, "Role not found");
         }
 
         return context.json(role.toApi(), 200);
@@ -175,13 +176,13 @@ export default apiRoute((app) => {
             context.req.valid("json");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const role = await Role.fromId(id);
 
         if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+            throw new ApiError(404, "Role not found");
         }
 
         // Priority check
@@ -192,11 +193,10 @@ export default apiRoute((app) => {
         );
 
         if (role.data.priority > userHighestRole.data.priority) {
-            return context.json(
-                {
-                    error: `Cannot edit role '${role.data.name}' with priority ${role.data.priority}: your highest role priority is ${userHighestRole.data.priority}`,
-                },
+            throw new ApiError(
                 403,
+                "Forbidden",
+                `User with highest role priority ${userHighestRole.data.priority} cannot edit role with priority ${role.data.priority}`,
             );
         }
 
@@ -208,11 +208,10 @@ export default apiRoute((app) => {
             ).every((p) => userPermissions.includes(p));
 
             if (!hasPermissions) {
-                return context.json(
-                    {
-                        error: `You cannot add or remove the following permissions you do not yourself have: ${permissions.join(", ")}`,
-                    },
+                throw new ApiError(
                     403,
+                    "Forbidden",
+                    "User cannot add or remove permissions they do not have",
                 );
             }
         }
@@ -234,13 +233,13 @@ export default apiRoute((app) => {
         const { id } = context.req.valid("param");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const role = await Role.fromId(id);
 
         if (!role) {
-            return context.json({ error: "Role not found" }, 404);
+            throw new ApiError(404, "Role not found");
         }
 
         // Priority check
@@ -251,11 +250,10 @@ export default apiRoute((app) => {
         );
 
         if (role.data.priority > userHighestRole.data.priority) {
-            return context.json(
-                {
-                    error: `Cannot delete role '${role.data.name}' with priority ${role.data.priority}: your highest role priority is ${userHighestRole.data.priority}`,
-                },
+            throw new ApiError(
                 403,
+                "Forbidden",
+                `User with highest role priority ${userHighestRole.data.priority} cannot delete role with priority ${role.data.priority}`,
             );
         }
 

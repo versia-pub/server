@@ -4,6 +4,7 @@ import { Attachment } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import sharp from "sharp";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
@@ -82,11 +83,9 @@ export default apiRoute((app) =>
         const { file, thumbnail, description } = context.req.valid("form");
 
         if (file.size > config.validation.max_media_size) {
-            return context.json(
-                {
-                    error: `File too large, max size is ${config.validation.max_media_size} bytes`,
-                },
+            throw new ApiError(
                 413,
+                `File too large, max size is ${config.validation.max_media_size} bytes`,
             );
         }
 
@@ -94,7 +93,11 @@ export default apiRoute((app) =>
             config.validation.enforce_mime_types &&
             !config.validation.allowed_mime_types.includes(file.type)
         ) {
-            return context.json({ error: "Invalid file type" }, 415);
+            throw new ApiError(
+                415,
+                `File type ${file.type} is not allowed`,
+                `Allowed types: ${config.validation.allowed_mime_types.join(", ")}`,
+            );
         }
 
         const sha256 = new Bun.SHA256();

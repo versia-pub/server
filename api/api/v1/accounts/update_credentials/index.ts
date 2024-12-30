@@ -8,6 +8,7 @@ import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
@@ -213,7 +214,7 @@ export default apiRoute((app) =>
         } = context.req.valid("json");
 
         if (!user) {
-            return context.json({ error: "Unauthorized" }, 401);
+            throw new ApiError(401, "Unauthorized");
         }
 
         const self = user.data;
@@ -257,10 +258,7 @@ export default apiRoute((app) =>
             );
 
             if (existingUser) {
-                return context.json(
-                    { error: "Username is already taken" },
-                    422,
-                );
+                throw new ApiError(422, "Username is already taken");
             }
 
             self.username = username;
@@ -402,7 +400,7 @@ export default apiRoute((app) =>
         const output = await User.fromId(self.id);
 
         if (!output) {
-            return context.json({ error: "Couldn't edit user" }, 500);
+            throw new ApiError(500, "Couldn't edit user");
         }
 
         return context.json(output.toApi(), 200);
