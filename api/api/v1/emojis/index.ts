@@ -67,7 +67,7 @@ const route = createRoute({
     path: "/api/v1/emojis",
     summary: "Upload emoji",
     description: "Upload an emoji",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
     request: {
         body: {
             content: {

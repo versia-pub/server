@@ -28,7 +28,7 @@ export default (plugin: PluginType): void => {
                         },
                     ),
                     plugin.middleware,
-                ],
+                ] as const,
                 responses: {
                     200: {
                         description: "Linked accounts",
@@ -91,7 +91,7 @@ export default (plugin: PluginType): void => {
                         },
                     ),
                     plugin.middleware,
-                ],
+                ] as const,
                 request: {
                     body: {
                         content: {

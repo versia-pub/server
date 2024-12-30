@@ -103,7 +103,7 @@ export const schemas = {
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
     summary: "Post a new status",
     request: {
         body: {

@@ -36,7 +36,7 @@ const route = createRoute({
     path: "/api/v1/blocks",
     summary: "Get blocks",
     description: "Get users you have blocked",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         query: schemas.query,
     },

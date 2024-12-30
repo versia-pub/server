@@ -23,7 +23,7 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/notifications/clear",
     summary: "Clear notifications",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     responses: {
         200: {
             description: "Notifications cleared",

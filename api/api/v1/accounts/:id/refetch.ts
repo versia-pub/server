@@ -32,7 +32,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/refetch",
     summary: "Refetch user",
     description: "Refetch a user's profile from the remote server",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

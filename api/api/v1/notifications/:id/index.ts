@@ -31,7 +31,7 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/notifications/{id}",
     summary: "Get notification",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

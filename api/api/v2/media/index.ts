@@ -40,7 +40,7 @@ const route = createRoute({
     method: "post",
     path: "/api/v2/media",
     summary: "Upload media",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         body: {
             content: {

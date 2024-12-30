@@ -71,7 +71,7 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/emojis/{id}",
     summary: "Get emoji data",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },
@@ -115,7 +115,7 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/emojis/{id}",
     summary: "Modify emoji",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
     request: {
         params: schemas.param,
         body: {
@@ -180,7 +180,7 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/emojis/{id}",
     summary: "Delete emoji",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

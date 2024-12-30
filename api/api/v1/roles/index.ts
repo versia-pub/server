@@ -54,7 +54,7 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v1/roles",
     summary: "Create a new role",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         body: {
             content: {

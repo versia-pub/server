@@ -38,7 +38,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/note",
     summary: "Set note",
     description: "Set a note on a user's profile, visible only to you",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
         body: {

@@ -22,7 +22,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
 
     public constructor(private configSchema: ConfigSchema) {}
 
-    public get middleware(): MiddlewareHandler {
+    public get middleware(): MiddlewareHandler<HonoPluginEnv<ConfigSchema>> {
         // Middleware that adds the plugin's configuration to the request object
         return createMiddleware<HonoPluginEnv<ConfigSchema>>(
             async (context, next) => {

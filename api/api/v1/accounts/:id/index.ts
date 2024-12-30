@@ -32,7 +32,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}",
     summary: "Get account data",
     description: "Gets the specified account data",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

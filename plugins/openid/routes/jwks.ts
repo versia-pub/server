@@ -37,7 +37,7 @@ export default (plugin: PluginType): void => {
                         required: false,
                     }),
                     plugin.middleware,
-                ],
+                ] as const,
             }),
             async (context) => {
                 const jwk = await exportJWK(

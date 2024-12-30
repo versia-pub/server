@@ -23,7 +23,7 @@ const route = createRoute({
     method: "delete",
     path: "/api/v1/profile/header",
     summary: "Delete header",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     responses: {
         200: {
             description: "User",

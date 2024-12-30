@@ -35,7 +35,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/unpin",
     summary: "Unpin user",
     description: "Unpin a user from your profile",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

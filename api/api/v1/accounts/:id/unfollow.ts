@@ -35,7 +35,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/unfollow",
     summary: "Unfollow user",
     description: "Unfollow a user",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

@@ -34,7 +34,7 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/reblog",
     summary: "Reblog a status",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
     request: {
         params: schemas.param,
         body: {

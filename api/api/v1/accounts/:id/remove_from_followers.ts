@@ -35,7 +35,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/remove_from_followers",
     summary: "Remove user from followers",
     description: "Remove a user from your followers",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

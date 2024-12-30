@@ -39,7 +39,7 @@ const route = createRoute({
     summary: "Get familiar followers",
     description:
         "Obtain a list of all accounts that follow a given account, filtered for accounts you follow.",
-    middleware: [auth(meta.auth, meta.permissions), qsQuery()],
+    middleware: [auth(meta.auth, meta.permissions), qsQuery()] as const,
     request: {
         query: schemas.query,
     },

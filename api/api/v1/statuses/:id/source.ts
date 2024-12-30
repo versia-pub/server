@@ -31,7 +31,7 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}/source",
     summary: "Get status source",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

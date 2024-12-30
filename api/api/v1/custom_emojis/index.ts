@@ -23,7 +23,7 @@ const route = createRoute({
     path: "/api/v1/custom_emojis",
     summary: "Get custom emojis",
     description: "Get custom emojis",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     responses: {
         200: {
             description: "Emojis",

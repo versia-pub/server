@@ -35,7 +35,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/block",
     summary: "Block user",
     description: "Block a user",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     responses: {
         200: {
             description: "Updated relationship",

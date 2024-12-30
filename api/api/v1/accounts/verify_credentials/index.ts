@@ -21,7 +21,7 @@ const route = createRoute({
     path: "/api/v1/accounts/verify_credentials",
     summary: "Verify credentials",
     description: "Get your own account information",
-    middleware: [auth(meta.auth)],
+    middleware: [auth(meta.auth)] as const,
     responses: {
         200: {
             description: "Account",

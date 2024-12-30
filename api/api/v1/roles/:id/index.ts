@@ -70,7 +70,7 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/roles/{id}",
     summary: "Update role data",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
         body: {
@@ -116,7 +116,7 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/roles/{id}",
     summary: "Delete role",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

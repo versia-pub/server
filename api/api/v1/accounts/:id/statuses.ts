@@ -59,7 +59,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/statuses",
     summary: "Get account statuses",
     description: "Gets an paginated list of statuses by the specified account",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
         query: schemas.query,

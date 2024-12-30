@@ -32,7 +32,7 @@ const route = createRoute({
     path: "/api/v1/accounts/relationships",
     summary: "Get relationships",
     description: "Get relationships by account ID",
-    middleware: [auth(meta.auth, meta.permissions), qsQuery()],
+    middleware: [auth(meta.auth, meta.permissions), qsQuery()] as const,
     request: {
         query: schemas.query,
     },

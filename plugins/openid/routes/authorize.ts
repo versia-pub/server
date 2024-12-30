@@ -75,7 +75,7 @@ export default (plugin: PluginType): void =>
                     }),
                     jsonOrForm(),
                     plugin.middleware,
-                ],
+                ] as const,
                 responses: {
                     302: {
                         description: "Redirect to the application",

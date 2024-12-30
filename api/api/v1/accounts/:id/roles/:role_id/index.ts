@@ -35,7 +35,7 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/roles/{role_id}",
     summary: "Assign role to user",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },
@@ -74,7 +74,7 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/accounts/{id}/roles/{role_id}",
     summary: "Remove role from user",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

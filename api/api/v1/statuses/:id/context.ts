@@ -29,7 +29,7 @@ export const schemas = {
 const route = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}/context",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     summary: "Get status context",
     request: {
         params: schemas.param,

@@ -24,7 +24,7 @@ const route = createRoute({
     path: "/api/v1/challenges",
     summary: "Generate a challenge",
     description: "Generate a challenge to solve",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     responses: {
         200: {
             description: "Challenge",

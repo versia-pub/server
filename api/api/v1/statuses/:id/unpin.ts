@@ -30,7 +30,7 @@ const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/unpin",
     summary: "Unpin a status",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

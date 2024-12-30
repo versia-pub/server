@@ -37,7 +37,7 @@ const route = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}/reblogged_by",
     summary: "Get users who reblogged a status",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
         query: schemas.query,

@@ -35,7 +35,7 @@ const route = createRoute({
     path: "/api/v1/accounts/{id}/unmute",
     summary: "Unmute user",
     description: "Unmute a user",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
     },

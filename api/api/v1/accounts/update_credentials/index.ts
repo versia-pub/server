@@ -151,7 +151,7 @@ const route = createRoute({
     path: "/api/v1/accounts/update_credentials",
     summary: "Update credentials",
     description: "Update user credentials",
-    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()],
+    middleware: [auth(meta.auth, meta.permissions), jsonOrForm()] as const,
     request: {
         body: {
             content: {

@@ -52,7 +52,7 @@ const route = createRoute({
     method: "get",
     path: "/api/v2/search",
     summary: "Instance database search",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         query: schemas.query,
     },

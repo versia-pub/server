@@ -43,7 +43,7 @@ const route = createRoute({
     summary: "Get account followers",
     description:
         "Gets an paginated list of accounts that follow the specified account",
-    middleware: [auth(meta.auth, meta.permissions)],
+    middleware: [auth(meta.auth, meta.permissions)] as const,
     request: {
         params: schemas.param,
         query: schemas.query,

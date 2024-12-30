@@ -30,7 +30,7 @@ export default (plugin: PluginType): void => {
                 request: {
                     query: schemas.query,
                 },
-                middleware: [plugin.middleware],
+                middleware: [plugin.middleware] as const,
                 responses: {
                     302: {
                         description:
