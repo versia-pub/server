@@ -171,6 +171,6 @@
         "zod": "^3.24.1"
     },
     "patchedDependencies": {
-        "@bull-board/api@6.5.3": "patches/@bull-board%2Fapi@6.5.3.patch"
+        "@bull-board/api@6.5.4": "patches/@bull-board%2Fapi@6.5.3.patch"
     }
 }
