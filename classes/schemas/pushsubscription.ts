@@ -16,7 +16,7 @@ export const WebPushSubscriptionInput = z
                         example:
                             "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEoKCJeHCy69ywHcb3dAR/T8Sud5ljSFHJkuiR6it1ycqAjGTe5F1oZ0ef5QiMX/zdQ+d4jSKiO7RztIz+o/eGuQ==",
                     }),
-                    auth: z.string().base64().length(24).openapi({
+                    auth: z.string().base64().openapi({
                         description:
                             "Auth secret. Base64 encoded string of 16 bytes of random data.",
                         example: "u67u09PXZW4ncK9l9mAXkA==",

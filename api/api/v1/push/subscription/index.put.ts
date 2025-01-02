@@ -61,20 +61,15 @@ export default apiRoute((app) =>
                 alerts["admin.report"] &&
                 !user.hasPermission(RolePermissions.ManageReports)
             ) {
-                throw new ApiError(
-                    403,
-                    `You do not have the '${RolePermissions.ManageReports}' permission to receive report alerts`,
-                );
+                // This shouldn't throw an error in mastodon either
+                alerts["admin.report"] = false;
             }
 
             if (
                 alerts["admin.sign_up"] &&
                 !user.hasPermission(RolePermissions.ManageAccounts)
             ) {
-                throw new ApiError(
-                    403,
-                    `You do not have the '${RolePermissions.ManageAccounts}' permission to receive sign-up alerts`,
-                );
+                alerts["admin.sign_up"] = false;
             }
 
             await ps.update({

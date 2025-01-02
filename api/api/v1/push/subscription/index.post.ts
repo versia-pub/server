@@ -2,7 +2,6 @@ import { apiRoute } from "@/api";
 import { auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { PushSubscription } from "@versia/kit/db";
-import { ApiError } from "~/classes/errors/api-error";
 import { WebPushSubscriptionInput } from "~/classes/schemas/pushsubscription";
 import { RolePermissions } from "~/drizzle/schema";
 
@@ -54,20 +53,15 @@ export default apiRoute((app) =>
                 data.alerts["admin.report"] &&
                 !user.hasPermission(RolePermissions.ManageReports)
             ) {
-                throw new ApiError(
-                    403,
-                    `You do not have the '${RolePermissions.ManageReports}' permission to receive report alerts`,
-                );
+                // This shouldn't throw an error in mastodon either
+                data.alerts["admin.report"] = false;
             }
 
             if (
                 data.alerts["admin.sign_up"] &&
                 !user.hasPermission(RolePermissions.ManageAccounts)
             ) {
-                throw new ApiError(
-                    403,
-                    `You do not have the '${RolePermissions.ManageAccounts}' permission to receive sign-up alerts`,
-                );
+                data.alerts["admin.sign_up"] = false;
             }
 
             await PushSubscription.clearAllOfToken(token);

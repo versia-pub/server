@@ -159,9 +159,11 @@ describe("/api/v1/push/subscriptions", () => {
                 }),
             });
 
-            expect(res.status).toBe(403);
+            expect(res.status).toBe(200);
             expect(await res.json()).toMatchObject({
-                error: expect.stringContaining("permission"),
+                alerts: {
+                    "admin.report": false,
+                },
             });
         });
 
@@ -235,9 +237,11 @@ describe("/api/v1/push/subscriptions", () => {
                 }),
             });
 
-            expect(res.status).toBe(403);
+            expect(res.status).toBe(200);
             expect(await res.json()).toMatchObject({
-                error: expect.stringContaining("permission"),
+                alerts: {
+                    "admin.report": false,
+                },
             });
         });
 
