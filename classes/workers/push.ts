@@ -1,6 +1,5 @@
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
 import { Worker } from "bullmq";
-import { htmlToText } from "html-to-text";
 import { sendNotification } from "web-push";
 import { config } from "~/packages/config-manager";
 import { connection } from "~/utils/redis.ts";
@@ -9,6 +8,7 @@ import {
     type PushJobType,
     pushQueue,
 } from "../queues/push.ts";
+import { htmlToText } from "@/content_types.ts";
 
 export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
     new Worker<PushJobData, void, PushJobType>(
@@ -70,7 +70,7 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                 case "reply":
                     title = `${name} replied to you`;
                     break;
-                case "like":
+                case "favourite":
                     title = `${name} liked your note`;
                     break;
                 case "reblog":

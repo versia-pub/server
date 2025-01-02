@@ -1,6 +1,7 @@
 import type { ContentFormat } from "@versia/federation/types";
 import { lookup } from "mime-types";
 import { config } from "~/packages/config-manager";
+import { htmlToText as htmlToTextLib } from "html-to-text";
 
 export const getBestContentType = (
     content?: ContentFormat | null,
@@ -76,4 +77,18 @@ export const mimeLookup = (url: string): Promise<string> => {
         .catch(() => "application/octet-stream");
 
     return fetchLookup;
+};
+
+export const htmlToText = (html: string): string => {
+    return htmlToTextLib(html, {
+        selectors: [
+            {
+                selector: "a",
+                options: {
+                    hideLinkHrefIfSameAsText: true,
+                    ignoreHref: true,
+                },
+            },
+        ],
+    });
 };
