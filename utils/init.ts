@@ -1,6 +1,7 @@
 import { getLogger } from "@logtape/logtape";
 import { User } from "@versia/kit/db";
 import chalk from "chalk";
+import { generateVAPIDKeys } from "web-push";
 import type { Config } from "~/packages/config-manager";
 
 export const checkConfig = async (config: Config): Promise<void> => {
@@ -9,6 +10,8 @@ export const checkConfig = async (config: Config): Promise<void> => {
     await checkHttpProxyConfig(config);
 
     await checkChallengeConfig(config);
+
+    await checkVapidConfig(config);
 };
 
 const checkHttpProxyConfig = async (config: Config): Promise<void> => {
@@ -107,6 +110,43 @@ const checkFederationConfig = async (config: Config): Promise<void> => {
     if (privateKey instanceof Error || publicKey instanceof Error) {
         throw new Error(
             "The federation keys could not be imported! You may generate new ones by removing the old ones from the config and restarting the server.",
+        );
+    }
+};
+
+const checkVapidConfig = async (config: Config): Promise<void> => {
+    const logger = getLogger("server");
+
+    if (
+        config.notifications.push.enabled &&
+        !(
+            config.notifications.push.vapid.public ||
+            config.notifications.push.vapid.private
+        )
+    ) {
+        logger.fatal`The VAPID keys are not set in the config, but push notifications are enabled.`;
+        logger.fatal`Below are generated keys for you to copy in the config at notifications.push.vapid`;
+
+        const { privateKey, publicKey } = await generateVAPIDKeys();
+
+        logger.fatal`Generated public key: ${chalk.gray(publicKey)}`;
+        logger.fatal`Generated private key: ${chalk.gray(privateKey)}`;
+
+        // Hang until Ctrl+C is pressed
+        await Bun.sleep(Number.POSITIVE_INFINITY);
+    }
+
+    // These use a format I don't understand, so I'm just going to check the length
+    const validateKey = (key: string): boolean => key.length > 10;
+
+    if (
+        !(
+            validateKey(config.notifications.push.vapid.public) &&
+            validateKey(config.notifications.push.vapid.private)
+        )
+    ) {
+        throw new Error(
+            "The VAPID keys could not be imported! You may generate new ones by removing the old ones from the config and restarting the server.",
         );
     }
 };

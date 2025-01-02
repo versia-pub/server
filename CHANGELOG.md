@@ -19,16 +19,44 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
 ## New Configuration Options
 
 ```toml
+[notifications]
+
+[notifications.push]
+# Whether to enable push notifications
+enabled = true
+
+[notifications.push.vapid]
+# VAPID keys for push notifications
+# Run Versia Server with those values missing to generate new keys
+public = ""
+private = ""
+# Optional
+# subject = "mailto:joe@example.com"
+
 [queues]
-# Control the delivery queue (for outbound federation)
+# Controls the delivery queue (for outbound federation)
 [queues.delivery]
 # Time in seconds to remove completed jobs
 remove_on_complete = 31536000
 # Time in seconds to remove failed jobs
 remove_on_failure = 31536000
 
-# Control the inbox processing queue (for inbound federation)
+# Controls the inbox processing queue (for inbound federation)
 [queues.inbox]
+# Time in seconds to remove completed jobs
+remove_on_complete = 31536000
+# Time in seconds to remove failed jobs
+remove_on_failure = 31536000
+
+# Controls the fetch queue (for remote data refreshes)
+[queues.fetch]
+# Time in seconds to remove completed jobs
+remove_on_complete = 31536000
+# Time in seconds to remove failed jobs
+remove_on_failure = 31536000
+
+# Controls the push queue (for push notification delivery)
+[queues.push]
 # Time in seconds to remove completed jobs
 remove_on_complete = 31536000
 # Time in seconds to remove failed jobs

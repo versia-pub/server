@@ -3,8 +3,8 @@ import type {
     Alerts,
     PushSubscription as ApiPushSubscription,
 } from "@versia/client/types";
-import { type Token, db } from "@versia/kit/db";
-import { PushSubscriptions } from "@versia/kit/tables";
+import { type Token, type User, db } from "@versia/kit/db";
+import { PushSubscriptions, Users } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -134,6 +134,27 @@ export class PushSubscription extends BaseInterface<
         return await PushSubscription.fromSql(
             eq(PushSubscriptions.tokenId, token.id),
         );
+    }
+
+    public static async manyFromUser(
+        user: User,
+        limit?: number,
+        offset?: number,
+    ): Promise<PushSubscription[]> {
+        const found = await db.query.PushSubscriptions.findMany({
+            where: (): SQL => eq(Users.id, user.id),
+            limit,
+            offset,
+            with: {
+                token: {
+                    with: {
+                        user: true,
+                    },
+                },
+            },
+        });
+
+        return found.map((s) => new PushSubscription(s));
     }
 
     public static async fromSql(

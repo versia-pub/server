@@ -3126,6 +3126,49 @@
                 }
             }
         },
+        "notifications": {
+            "type": "object",
+            "properties": {
+                "push": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "vapid": {
+                            "type": "object",
+                            "properties": {
+                                "public": {
+                                    "type": "string"
+                                },
+                                "private": {
+                                    "type": "string"
+                                },
+                                "subject": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": ["public", "private"],
+                            "additionalProperties": false,
+                            "default": {
+                                "public": "",
+                                "private": ""
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "enabled": true,
+                        "vapid": {
+                            "public": "",
+                            "private": ""
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
         "defaults": {
             "type": "object",
             "properties": {
@@ -3364,6 +3407,24 @@
                         "remove_on_complete": 31536000,
                         "remove_on_failure": 31536000
                     }
+                },
+                "push": {
+                    "type": "object",
+                    "properties": {
+                        "remove_on_complete": {
+                            "type": "integer",
+                            "default": 31536000
+                        },
+                        "remove_on_failure": {
+                            "type": "integer",
+                            "default": 31536000
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "remove_on_complete": 31536000,
+                        "remove_on_failure": 31536000
+                    }
                 }
             },
             "additionalProperties": false,
@@ -3377,6 +3438,10 @@
                     "remove_on_failure": 31536000
                 },
                 "fetch": {
+                    "remove_on_complete": 31536000,
+                    "remove_on_failure": 31536000
+                },
+                "push": {
                     "remove_on_complete": 31536000,
                     "remove_on_failure": 31536000
                 }
@@ -3482,6 +3547,9 @@
                             "emojis",
                             "read:emoji",
                             "owner:emoji",
+                            "read:reaction",
+                            "reactions",
+                            "owner:reaction",
                             "media",
                             "owner:media",
                             "blocks",
@@ -3501,6 +3569,7 @@
                             "owner:follow",
                             "owner:app",
                             "search",
+                            "push_notifications",
                             "public_timelines",
                             "private_timelines",
                             "ignore_rate_limits",
@@ -3522,6 +3591,8 @@
                         "owner:boost",
                         "read:account",
                         "owner:emoji",
+                        "read:reaction",
+                        "owner:reaction",
                         "read:emoji",
                         "owner:media",
                         "owner:block",
@@ -3533,6 +3604,7 @@
                         "owner:follow",
                         "owner:app",
                         "search",
+                        "push_notifications",
                         "public_timelines",
                         "private_timelines",
                         "oauth"
@@ -3559,6 +3631,9 @@
                             "emojis",
                             "read:emoji",
                             "owner:emoji",
+                            "read:reaction",
+                            "reactions",
+                            "owner:reaction",
                             "media",
                             "owner:media",
                             "blocks",
@@ -3578,6 +3653,7 @@
                             "owner:follow",
                             "owner:app",
                             "search",
+                            "push_notifications",
                             "public_timelines",
                             "private_timelines",
                             "ignore_rate_limits",
@@ -3599,6 +3675,8 @@
                         "owner:boost",
                         "read:account",
                         "owner:emoji",
+                        "read:reaction",
+                        "owner:reaction",
                         "read:emoji",
                         "owner:media",
                         "owner:block",
@@ -3610,6 +3688,7 @@
                         "owner:follow",
                         "owner:app",
                         "search",
+                        "push_notifications",
                         "public_timelines",
                         "private_timelines",
                         "oauth"
@@ -3636,6 +3715,9 @@
                             "emojis",
                             "read:emoji",
                             "owner:emoji",
+                            "read:reaction",
+                            "reactions",
+                            "owner:reaction",
                             "media",
                             "owner:media",
                             "blocks",
@@ -3655,6 +3737,7 @@
                             "owner:follow",
                             "owner:app",
                             "search",
+                            "push_notifications",
                             "public_timelines",
                             "private_timelines",
                             "ignore_rate_limits",
@@ -3676,6 +3759,8 @@
                         "owner:boost",
                         "read:account",
                         "owner:emoji",
+                        "read:reaction",
+                        "owner:reaction",
                         "read:emoji",
                         "owner:media",
                         "owner:block",
@@ -3687,6 +3772,7 @@
                         "owner:follow",
                         "owner:app",
                         "search",
+                        "push_notifications",
                         "public_timelines",
                         "private_timelines",
                         "oauth",
@@ -3695,6 +3781,7 @@
                         "likes",
                         "boosts",
                         "emojis",
+                        "reactions",
                         "media",
                         "blocks",
                         "filters",
@@ -3725,6 +3812,8 @@
                     "owner:boost",
                     "read:account",
                     "owner:emoji",
+                    "read:reaction",
+                    "owner:reaction",
                     "read:emoji",
                     "owner:media",
                     "owner:block",
@@ -3736,6 +3825,7 @@
                     "owner:follow",
                     "owner:app",
                     "search",
+                    "push_notifications",
                     "public_timelines",
                     "private_timelines",
                     "oauth"
@@ -3751,6 +3841,8 @@
                     "owner:boost",
                     "read:account",
                     "owner:emoji",
+                    "read:reaction",
+                    "owner:reaction",
                     "read:emoji",
                     "owner:media",
                     "owner:block",
@@ -3762,6 +3854,7 @@
                     "owner:follow",
                     "owner:app",
                     "search",
+                    "push_notifications",
                     "public_timelines",
                     "private_timelines",
                     "oauth"
@@ -3777,6 +3870,8 @@
                     "owner:boost",
                     "read:account",
                     "owner:emoji",
+                    "read:reaction",
+                    "owner:reaction",
                     "read:emoji",
                     "owner:media",
                     "owner:block",
@@ -3788,6 +3883,7 @@
                     "owner:follow",
                     "owner:app",
                     "search",
+                    "push_notifications",
                     "public_timelines",
                     "private_timelines",
                     "oauth",
@@ -3796,6 +3892,7 @@
                     "likes",
                     "boosts",
                     "emojis",
+                    "reactions",
                     "media",
                     "blocks",
                     "filters",
@@ -4066,6 +4163,7 @@
         "signups",
         "http",
         "smtp",
+        "notifications",
         "filters",
         "ratelimits"
     ],

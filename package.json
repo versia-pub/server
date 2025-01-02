@@ -90,6 +90,7 @@
         "@types/mime-types": "^2.1.4",
         "@types/pg": "^8.11.10",
         "@types/qs": "^6.9.17",
+        "@types/web-push": "^3.6.4",
         "drizzle-kit": "^0.30.1",
         "markdown-it-image-figures": "^2.1.1",
         "markdown-it-mathjax3": "^4.3.2",
@@ -163,6 +164,7 @@
         "table": "^6.9.0",
         "unzipit": "^1.4.3",
         "uqr": "^0.1.2",
+        "web-push": "^3.6.7",
         "xss": "^1.0.15",
         "zod": "^3.24.1",
         "zod-validation-error": "^3.4.0"

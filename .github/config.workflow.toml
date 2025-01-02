@@ -189,6 +189,20 @@ expiration = 300 # 5 minutes
 # Leave this empty to generate a new key
 key = "YBpAV0KZOeM/MZ4kOb2E9moH9gCUr00Co9V7ncGRJ3wbd/a9tLDKKFdI0BtOcnlpfx0ZBh0+w3WSvsl0TsesTg=="
 
+[notifications]
+
+[notifications.push]
+# Whether to enable push notifications
+enabled = true
+
+[notifications.push.vapid]
+# VAPID keys for push notifications
+# Run Versia Server with those values missing to generate new keys
+public = "BBanhyj2_xWwbTsWld3T49VcAoKZHrVJTzF1f6Av2JwQY_wUi3CF9vZ0WeEcACRj6EEqQ7N35CkUh5epF7n4P_s"
+private = "Eujaz7NsF0rKZOVrAFL7mMpFdl96f591ERsRn81unq0"
+# Optional
+# subject = "mailto:joe@example.com"
+
 [defaults]
 # Default visibility for new notes
 visibility = "public"

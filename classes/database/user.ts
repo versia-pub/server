@@ -21,7 +21,7 @@ import type {
     FollowReject as VersiaFollowReject,
     User as VersiaUser,
 } from "@versia/federation/types";
-import { Notification, db } from "@versia/kit/db";
+import { Notification, PushSubscription, db } from "@versia/kit/db";
 import {
     EmojiToUser,
     Likes,
@@ -54,6 +54,7 @@ import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
+import { PushJobType, pushQueue } from "../queues/push.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -572,12 +573,40 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         relatedUser: User,
         note?: Note,
     ): Promise<void> {
-        await Notification.insert({
+        const notification = await Notification.insert({
             accountId: relatedUser.id,
             type,
             notifiedId: this.id,
             noteId: note?.id ?? null,
         });
+
+        // Also do push notifications
+        if (config.notifications.push.enabled) {
+            await this.notifyPush(notification.id, type, relatedUser, note);
+        }
+    }
+
+    private async notifyPush(
+        notificationId: string,
+        type: "mention" | "follow_request" | "follow" | "favourite" | "reblog",
+        relatedUser: User,
+        note?: Note,
+    ): Promise<void> {
+        // Fetch all push subscriptions
+        const ps = await PushSubscription.manyFromUser(this);
+
+        pushQueue.addBulk(
+            ps.map((p) => ({
+                data: {
+                    psId: p.id,
+                    type,
+                    relatedUserId: relatedUser.id,
+                    noteId: note?.id,
+                    notificationId,
+                },
+                name: PushJobType.Notify,
+            })),
+        );
     }
 
     public async clearAllNotifications(): Promise<void> {
