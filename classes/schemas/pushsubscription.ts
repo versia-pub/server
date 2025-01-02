@@ -10,15 +10,15 @@ export const WebPushSubscriptionInput = z
             }),
             keys: z
                 .object({
-                    p256dh: z.string().base64().openapi({
+                    p256dh: z.string().base64url().openapi({
                         description:
-                            "User agent public key. Base64 encoded string of a public key from a ECDH keypair using the prime256v1 curve.",
+                            "User agent public key. Base64url encoded string of a public key from a ECDH keypair using the prime256v1 curve.",
                         example:
                             "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEoKCJeHCy69ywHcb3dAR/T8Sud5ljSFHJkuiR6it1ycqAjGTe5F1oZ0ef5QiMX/zdQ+d4jSKiO7RztIz+o/eGuQ==",
                     }),
-                    auth: z.string().base64().openapi({
+                    auth: z.string().base64url().openapi({
                         description:
-                            "Auth secret. Base64 encoded string of 16 bytes of random data.",
+                            "Auth secret. Base64url encoded string of 16 bytes of random data.",
                         example: "u67u09PXZW4ncK9l9mAXkA==",
                     }),
                 })
