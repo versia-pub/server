@@ -6,6 +6,7 @@ import { serveStatic } from "hono/bun";
 import { deliveryQueue } from "~/classes/queues/delivery";
 import { fetchQueue } from "~/classes/queues/fetch";
 import { inboxQueue } from "~/classes/queues/inbox";
+import { pushQueue } from "~/classes/queues/push";
 import { config } from "~/packages/config-manager";
 import type { HonoEnv } from "~/types/api";
 
@@ -17,6 +18,7 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
             new BullMQAdapter(inboxQueue),
             new BullMQAdapter(deliveryQueue),
             new BullMQAdapter(fetchQueue),
+            new BullMQAdapter(pushQueue),
         ],
         serverAdapter,
         options: {
