@@ -1,7 +1,7 @@
 import type { ContentFormat } from "@versia/federation/types";
+import { htmlToText as htmlToTextLib } from "html-to-text";
 import { lookup } from "mime-types";
 import { config } from "~/packages/config-manager";
-import { htmlToText as htmlToTextLib } from "html-to-text";
 
 export const getBestContentType = (
     content?: ContentFormat | null,

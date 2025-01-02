@@ -1,3 +1,4 @@
+import { htmlToText } from "@/content_types.ts";
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import { sendNotification } from "web-push";
@@ -8,7 +9,6 @@ import {
     type PushJobType,
     pushQueue,
 } from "../queues/push.ts";
-import { htmlToText } from "@/content_types.ts";
 
 export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
     new Worker<PushJobData, void, PushJobType>(
