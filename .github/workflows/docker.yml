@@ -33,8 +33,10 @@ jobs:
                 include:
                     - container: worker
                       image_name: ${{ github.repository_owner }}/worker
+                      dockerfile: Worker.Dockerfile
                     - container: server
                       image_name: ${{ github.repository_owner }}/server
+                      dockerfile: Dockerfile
         env:
             REGISTRY: ghcr.io
 
@@ -85,6 +87,7 @@ jobs:
                   labels: ${{ steps.meta.outputs.labels }}
                   build-args: |
                       GIT_COMMIT=${{ env.GIT_COMMIT }}
+                  file: ${{ matrix.dockerfile }}
                   provenance: mode=max
                   sbom: true
                   platforms: linux/amd64,linux/arm64
