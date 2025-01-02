@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { getDeliveryWorker } from "~/classes/workers/delivery";
 import { getFetchWorker } from "~/classes/workers/fetch";
 import { getInboxWorker } from "~/classes/workers/inbox";
+import { getPushWorker } from "~/classes/workers/push";
 
 process.on("SIGINT", () => {
     process.exit();
@@ -26,4 +27,8 @@ serverLogger.info`Starting Inbox Worker...`;
 getInboxWorker();
 serverLogger.info`${chalk.green("✔")} Inbox Worker started`;
 
-serverLogger.info`${chalk.green("✔✔✔")} All workers started`;
+serverLogger.info`Starting Push Worker...`;
+getPushWorker();
+serverLogger.info`${chalk.green("✔")} Push Worker started`;
+
+serverLogger.info`${chalk.green("✔✔✔✔")} All workers started`;
