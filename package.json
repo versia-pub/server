@@ -121,7 +121,7 @@
         "@oclif/core": "^4.2.0",
         "@sentry/bun": "^8.47.0",
         "@tufjs/canonical-json": "^2.0.0",
-        "@versia/client": "^0.1.4",
+        "@versia/client": "^0.1.5",
         "@versia/federation": "^0.1.4",
         "@versia/kit": "workspace:*",
         "altcha-lib": "^1.2.0",

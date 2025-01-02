@@ -110,7 +110,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         const route: ApiRouteExports = await import(path);
 
         if (!route.default) {
-            throw new Error(`Route ${path} does not have the correct exports.`);
+            continue;
         }
 
         route.default(app);

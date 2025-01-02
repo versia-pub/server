@@ -246,7 +246,10 @@ export const checkRouteNeedsChallenge = async (
 
 type HonoEnvWithAuth = HonoEnv & {
     Variables: {
-        auth: AuthData & { user: NonNullable<AuthData["user"]> };
+        auth: AuthData & {
+            user: NonNullable<AuthData["user"]>;
+            token: NonNullable<AuthData["token"]>;
+        };
     };
 };
 

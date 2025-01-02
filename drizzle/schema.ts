@@ -67,6 +67,49 @@ export const Emojis = pgTable("Emojis", {
     category: text("category"),
 });
 
+export const PushSubscriptions = pgTable("PushSubscriptions", {
+    id: id(),
+    endpoint: text("endpoint").notNull(),
+    publicKey: text("public_key").notNull(),
+    authSecret: text("auth_secret").notNull(),
+    alerts: jsonb("alerts").notNull().$type<
+        Partial<{
+            mention: boolean;
+            favourite: boolean;
+            reblog: boolean;
+            follow: boolean;
+            poll: boolean;
+            follow_request: boolean;
+            status: boolean;
+            update: boolean;
+            "admin.sign_up": boolean;
+            "admin.report": boolean;
+        }>
+    >(),
+    policy: text("policy")
+        .notNull()
+        .$type<"all" | "followed" | "follower" | "none">(),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+    tokenId: uuid("tokenId")
+        .references(() => Tokens.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull()
+        .unique(),
+});
+
+export const PushSubscriptionsRelations = relations(
+    PushSubscriptions,
+    ({ one }) => ({
+        token: one(Tokens, {
+            fields: [PushSubscriptions.tokenId],
+            references: [Tokens.id],
+        }),
+    }),
+);
+
 export const Reactions = pgTable("Reaction", {
     id: id(),
     uri: uri(),
@@ -548,6 +591,7 @@ export enum RolePermissions {
     ManageOwnFollows = "owner:follow",
     ManageOwnApps = "owner:app",
     Search = "search",
+    UsePushNotifications = "push_notifications",
     ViewPublicTimelines = "public_timelines",
     ViewPrivateTimelines = "private_timelines",
     IgnoreRateLimits = "ignore_rate_limits",
@@ -583,6 +627,7 @@ export const DEFAULT_ROLES = [
     RolePermissions.ManageOwnFollows,
     RolePermissions.ManageOwnApps,
     RolePermissions.Search,
+    RolePermissions.UsePushNotifications,
     RolePermissions.ViewPublicTimelines,
     RolePermissions.ViewPrivateTimelines,
     RolePermissions.OAuth,
