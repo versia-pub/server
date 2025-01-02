@@ -4,7 +4,7 @@ import type {
     PushSubscription as ApiPushSubscription,
 } from "@versia/client/types";
 import { type Token, type User, db } from "@versia/kit/db";
-import { PushSubscriptions, Users } from "@versia/kit/tables";
+import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -141,20 +141,15 @@ export class PushSubscription extends BaseInterface<
         limit?: number,
         offset?: number,
     ): Promise<PushSubscription[]> {
-        const found = await db.query.PushSubscriptions.findMany({
-            where: (): SQL => eq(Users.id, user.id),
-            limit,
-            offset,
-            with: {
-                token: {
-                    with: {
-                        user: true,
-                    },
-                },
-            },
-        });
+        const found = await db
+            .select()
+            .from(PushSubscriptions)
+            .leftJoin(Tokens, eq(Tokens.id, PushSubscriptions.tokenId))
+            .where(eq(Tokens.userId, user.id))
+            .limit(limit ?? 9e10)
+            .offset(offset ?? 0);
 
-        return found.map((s) => new PushSubscription(s));
+        return found.map((s) => new PushSubscription(s.PushSubscriptions));
     }
 
     public static async fromSql(
