@@ -18,6 +18,10 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                 data: { psId, relatedUserId, type, noteId, notificationId },
             } = job;
 
+            await job.log(
+                `Sending push notification for note [${notificationId}]`,
+            );
+
             const ps = await PushSubscription.fromId(psId);
 
             if (!ps) {
@@ -87,7 +91,7 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                 ? htmlToText(note.data.spoilerText || note.data.content)
                 : htmlToText(relatedUser.data.note);
 
-            sendNotification(
+            await sendNotification(
                 {
                     endpoint: ps.data.endpoint,
                     keys: {
@@ -114,6 +118,10 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                         publicKey: config.notifications.push.vapid.public,
                     },
                 },
+            );
+
+            await job.log(
+                `✔ Finished delivering push notification for note [${notificationId}]`,
             );
         },
         {
