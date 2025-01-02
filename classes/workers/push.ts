@@ -117,6 +117,7 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                         privateKey: config.notifications.push.vapid.private,
                         publicKey: config.notifications.push.vapid.public,
                     },
+                    contentEncoding: "aesgcm",
                 },
             );
 
