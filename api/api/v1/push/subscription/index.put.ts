@@ -28,7 +28,10 @@ export default apiRoute((app) =>
                 body: {
                     content: {
                         "application/json": {
-                            schema: WebPushSubscriptionInput.shape.data,
+                            schema: WebPushSubscriptionInput.pick({
+                                data: true,
+                                policy: true,
+                            }),
                         },
                     },
                 },
@@ -46,7 +49,7 @@ export default apiRoute((app) =>
         }),
         async (context) => {
             const { user, token } = context.get("auth");
-            const { alerts, policy } = context.req.valid("json");
+            const { data, policy } = context.req.valid("json");
 
             const ps = await PushSubscription.fromToken(token);
 
@@ -58,25 +61,25 @@ export default apiRoute((app) =>
             }
 
             if (
-                alerts["admin.report"] &&
+                data.alerts["admin.report"] &&
                 !user.hasPermission(RolePermissions.ManageReports)
             ) {
                 // This shouldn't throw an error in mastodon either
-                alerts["admin.report"] = false;
+                data.alerts["admin.report"] = false;
             }
 
             if (
-                alerts["admin.sign_up"] &&
+                data.alerts["admin.sign_up"] &&
                 !user.hasPermission(RolePermissions.ManageAccounts)
             ) {
-                alerts["admin.sign_up"] = false;
+                data.alerts["admin.sign_up"] = false;
             }
 
             await ps.update({
                 policy,
                 alerts: {
                     ...ps.data.alerts,
-                    ...alerts,
+                    ...data.alerts,
                 },
             });
 

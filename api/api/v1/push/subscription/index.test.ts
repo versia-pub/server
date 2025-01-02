@@ -26,8 +26,8 @@ describe("/api/v1/push/subscriptions", () => {
                     alerts: {
                         update: true,
                     },
-                    policy: "all",
                 },
+                policy: "all",
                 subscription: {
                     endpoint: "https://example.com",
                     keys: {
@@ -117,9 +117,11 @@ describe("/api/v1/push/subscriptions", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                alerts: {
-                    update: false,
-                    favourite: true,
+                data: {
+                    alerts: {
+                        update: false,
+                        favourite: true,
+                    },
                 },
                 policy: "follower",
             }),
@@ -147,8 +149,8 @@ describe("/api/v1/push/subscriptions", () => {
                         alerts: {
                             "admin.report": true,
                         },
-                        policy: "all",
                     },
+                    policy: "all",
                     subscription: {
                         endpoint: "https://example.com",
                         keys: {
@@ -183,8 +185,8 @@ describe("/api/v1/push/subscriptions", () => {
                         alerts: {
                             "admin.report": true,
                         },
-                        policy: "all",
                     },
+                    policy: "all",
                     subscription: {
                         endpoint: "https://example.com",
                         keys: {
@@ -230,8 +232,10 @@ describe("/api/v1/push/subscriptions", () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    alerts: {
-                        "admin.report": true,
+                    data: {
+                        alerts: {
+                            "admin.report": true,
+                        },
                     },
                     policy: "all",
                 }),
@@ -277,8 +281,10 @@ describe("/api/v1/push/subscriptions", () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    alerts: {
-                        "admin.report": true,
+                    data: {
+                        alerts: {
+                            "admin.report": true,
+                        },
                     },
                     policy: "all",
                 }),

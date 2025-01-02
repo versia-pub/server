@@ -47,7 +47,7 @@ export default apiRoute((app) =>
         }),
         async (context) => {
             const { user, token } = context.get("auth");
-            const { subscription, data } = context.req.valid("json");
+            const { subscription, data, policy } = context.req.valid("json");
 
             if (
                 data.alerts["admin.report"] &&
@@ -68,7 +68,7 @@ export default apiRoute((app) =>
 
             const ps = await PushSubscription.insert({
                 alerts: data.alerts,
-                policy: data.policy,
+                policy,
                 endpoint: subscription.endpoint,
                 publicKey: subscription.keys.p256dh,
                 authSecret: subscription.keys.auth,

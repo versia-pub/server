@@ -24,20 +24,19 @@ export const WebPushSubscriptionInput = z
                 })
                 .strict(),
         }),
+        policy: z
+            .enum(["all", "followed", "follower", "none"])
+            .default("all")
+            .openapi({
+                description:
+                    "Specify whether to receive push notifications from all, followed, follower, or none users.",
+            }),
         data: z
             .object({
-                policy: z
-                    .enum(["all", "followed", "follower", "none"])
-                    .default("all")
-                    .openapi({
-                        description:
-                            "Specify whether to receive push notifications from all, followed, follower, or none users.",
-                    }),
                 alerts: PushSubscription.schema.shape.alerts,
             })
             .strict()
             .default({
-                policy: "all",
                 alerts: {
                     mention: false,
                     favourite: false,
