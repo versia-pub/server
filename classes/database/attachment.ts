@@ -189,7 +189,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
 
         const mediaManager = new MediaManager(config);
 
-        const { path, blurhash } = await mediaManager.addFile(file);
+        const { path } = await mediaManager.addFile(file);
 
         const url = Attachment.getUrl(path);
 
@@ -208,7 +208,6 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             mimeType: file.type,
             description: options?.description ?? "",
             size: file.size,
-            blurhash: blurhash ?? undefined,
             width: metadata?.width ?? undefined,
             height: metadata?.height ?? undefined,
         });

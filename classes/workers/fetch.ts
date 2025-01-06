@@ -1,7 +1,6 @@
 import { Instance } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
 import { Worker } from "bullmq";
-import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import { config } from "~/packages/config-manager";
 import { connection } from "~/utils/redis.ts";
@@ -45,9 +44,7 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
                     await Instance.resolve(uri);
 
                     await job.log(
-                        `${chalk.green(
-                            "✔",
-                        )} Finished fetching instance metadata from [${uri}]`,
+                        `✔ Finished fetching instance metadata from [${uri}]`,
                     );
                 }
             }

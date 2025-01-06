@@ -6,7 +6,8 @@
         "cli",
         "federation",
         "config",
-        "plugin"
+        "plugin",
+        "worker"
     ],
     "languageToolLinter.languageTool.ignoredWordsInWorkspace": ["versia"]
 }

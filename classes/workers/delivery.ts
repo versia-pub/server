@@ -1,4 +1,3 @@
-import { getLogger } from "@logtape/logtape";
 import { User } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import chalk from "chalk";
@@ -22,8 +21,6 @@ export const getDeliveryWorker = (): Worker<
                 case DeliveryJobType.FederateEntity: {
                     const { entity, recipientId, senderId } = job.data;
 
-                    const logger = getLogger(["federation", "delivery"]);
-
                     const sender = await User.fromId(senderId);
 
                     if (!sender) {
@@ -40,17 +37,15 @@ export const getDeliveryWorker = (): Worker<
                         );
                     }
 
-                    logger.debug`Federating entity ${chalk.gray(
-                        entity.id,
-                    )} from ${chalk.gray(`@${sender.getAcct()}`)} to ${chalk.gray(
-                        recipient.getAcct(),
-                    )}`;
+                    await job.log(
+                        `Federating entity [${entity.id}] from @${sender.getAcct()} to @${recipient.getAcct()}`,
+                    );
 
                     await sender.federateToUser(entity, recipient);
 
-                    logger.debug`${chalk.green(
-                        "✔",
-                    )} Finished federating entity ${chalk.gray(entity.id)}`;
+                    await job.log(
+                        `✔ Finished federating entity [${entity.id}]`,
+                    );
                 }
             }
         },

@@ -86,7 +86,6 @@ describe("MediaManager", () => {
             uploadedFile: new File(["hey"], "test.webp"),
             path: "test/test.webp",
             hash: "testhash",
-            blurhash: null,
         });
     });
 

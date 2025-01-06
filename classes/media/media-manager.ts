@@ -7,7 +7,6 @@ import type { Config } from "~/packages/config-manager/config.type";
 import { DiskMediaDriver } from "./drivers/disk.ts";
 import type { MediaDriver } from "./drivers/media-driver.ts";
 import { S3MediaDriver } from "./drivers/s3.ts";
-import { BlurhashPreprocessor } from "./preprocessors/blurhash.ts";
 import type { MediaPreprocessor } from "./preprocessors/media-preprocessor.ts";
 
 /**
@@ -33,7 +32,6 @@ export class MediaManager {
      */
     public constructor(private config: Config) {
         this.driver = this.initializeDriver();
-        this.initializePreprocessors();
     }
 
     /**
@@ -54,35 +52,22 @@ export class MediaManager {
     }
 
     /**
-     * Initializes the preprocessors based on the configuration.
-     */
-    private initializePreprocessors(): void {
-        this.preprocessors.push(new BlurhashPreprocessor());
-        // Add other preprocessors here as needed
-    }
-
-    /**
      * Adds a file to the media storage.
      * @param file - The file to add.
      * @returns A promise that resolves to the metadata of the uploaded file.
      */
     public async addFile(file: File): Promise<UploadedFileMetadata> {
         let processedFile = file;
-        let blurhash: string | null = null;
 
         for (const preprocessor of this.preprocessors) {
             const result = await preprocessor.process(processedFile);
-
-            if ("blurhash" in result) {
-                blurhash = result.blurhash as string;
-            }
 
             processedFile = result.file;
         }
 
         const uploadResult = await this.driver.addFile(processedFile);
 
-        return { ...uploadResult, blurhash };
+        return uploadResult;
     }
     /**
      * Retrieves a file from the media storage by its hash.
@@ -123,5 +108,4 @@ export interface UploadedFileMetadata {
     uploadedFile: File;
     path: string;
     hash: string;
-    blurhash: string | null;
 }

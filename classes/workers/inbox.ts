@@ -51,7 +51,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         }
 
                         await job.log(
-                            `Finished processing entity [${data.id}]`,
+                            `✔ Finished processing entity [${data.id}]`,
                         );
 
                         return;

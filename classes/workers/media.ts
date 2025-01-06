@@ -3,6 +3,7 @@ import { Worker } from "bullmq";
 import { config } from "~/packages/config-manager";
 import { connection } from "~/utils/redis.ts";
 import { MediaManager } from "../media/media-manager.ts";
+import { BlurhashPreprocessor } from "../media/preprocessors/blurhash.ts";
 import { ImageConversionPreprocessor } from "../media/preprocessors/image-conversion.ts";
 import {
     type MediaJobData,
@@ -18,6 +19,8 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                 case MediaJobType.ConvertMedia: {
                     const { attachmentId, filename } = job.data;
 
+                    await job.log(`Fetching attachment ID [${attachmentId}]`);
+
                     const attachment = await Attachment.fromId(attachmentId);
 
                     if (!attachment) {
@@ -27,6 +30,7 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                     }
 
                     const processor = new ImageConversionPreprocessor(config);
+                    const blurhashProcessor = new BlurhashPreprocessor();
 
                     const hash = attachment?.data.sha256;
 
@@ -36,6 +40,11 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                         );
                     }
 
+                    await job.log(`Processing attachment [${attachmentId}]`);
+                    await job.log(
+                        `Fetching file from [${attachment.data.url}]`,
+                    );
+
                     // Download the file and process it.
                     const blob = await (
                         await fetch(attachment.data.url)
@@ -43,10 +52,18 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     const file = new File([blob], filename);
 
+                    await job.log(`Converting attachment [${attachmentId}]`);
+
                     const { file: processedFile } =
                         await processor.process(file);
 
+                    await job.log(`Generating blurhash for [${attachmentId}]`);
+
+                    const { blurhash } = await blurhashProcessor.process(file);
+
                     const mediaManager = new MediaManager(config);
+
+                    await job.log(`Uploading attachment [${attachmentId}]`);
 
                     const { path, uploadedFile } =
                         await mediaManager.addFile(processedFile);
@@ -62,7 +79,12 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                             .digest("hex"),
                         mimeType: uploadedFile.type,
                         size: uploadedFile.size,
+                        blurhash,
                     });
+
+                    await job.log(
+                        `✔ Finished processing attachment [${attachmentId}]`,
+                    );
                 }
             }
         },
