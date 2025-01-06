@@ -45,11 +45,6 @@ await $`cp -r drizzle dist/drizzle`;
 // Copy plugin manifests
 await $`cp plugins/openid/manifest.json dist/plugins/openid/manifest.json`;
 
-// Copy Sharp to dist
-await $`mkdir -p dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-libvips-linuxmusl-* dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-linuxmusl-* dist/node_modules/@img`;
-
 // Copy unzipit and uzip-module to dist
 await $`cp -r node_modules/unzipit dist/node_modules/unzipit`;
 await $`cp -r node_modules/uzip-module dist/node_modules/uzip-module`;
