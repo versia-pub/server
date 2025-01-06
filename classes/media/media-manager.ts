@@ -8,7 +8,6 @@ import { DiskMediaDriver } from "./drivers/disk.ts";
 import type { MediaDriver } from "./drivers/media-driver.ts";
 import { S3MediaDriver } from "./drivers/s3.ts";
 import { BlurhashPreprocessor } from "./preprocessors/blurhash.ts";
-import { ImageConversionPreprocessor } from "./preprocessors/image-conversion.ts";
 import type { MediaPreprocessor } from "./preprocessors/media-preprocessor.ts";
 
 /**
@@ -58,11 +57,6 @@ export class MediaManager {
      * Initializes the preprocessors based on the configuration.
      */
     private initializePreprocessors(): void {
-        if (this.config.media.conversion.convert_images) {
-            this.preprocessors.push(
-                new ImageConversionPreprocessor(this.config),
-            );
-        }
         this.preprocessors.push(new BlurhashPreprocessor());
         // Add other preprocessors here as needed
     }
@@ -87,6 +81,7 @@ export class MediaManager {
         }
 
         const uploadResult = await this.driver.addFile(processedFile);
+
         return { ...uploadResult, blurhash };
     }
     /**

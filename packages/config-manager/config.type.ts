@@ -630,6 +630,24 @@ export const configValidator = z
                         remove_on_complete: 60 * 60 * 24 * 365,
                         remove_on_failure: 60 * 60 * 24 * 365,
                     }),
+                media: z
+                    .object({
+                        remove_on_complete: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                        remove_on_failure: z
+                            .number()
+                            .int()
+                            // 1 year
+                            .default(60 * 60 * 24 * 365),
+                    })
+                    .strict()
+                    .default({
+                        remove_on_complete: 60 * 60 * 24 * 365,
+                        remove_on_failure: 60 * 60 * 24 * 365,
+                    }),
             })
             .strict()
             .default({
@@ -646,6 +664,10 @@ export const configValidator = z
                     remove_on_failure: 60 * 60 * 24 * 365,
                 },
                 push: {
+                    remove_on_complete: 60 * 60 * 24 * 365,
+                    remove_on_failure: 60 * 60 * 24 * 365,
+                },
+                media: {
                     remove_on_complete: 60 * 60 * 24 * 365,
                     remove_on_failure: 60 * 60 * 24 * 365,
                 },

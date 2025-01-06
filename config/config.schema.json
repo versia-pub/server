@@ -3425,6 +3425,24 @@
                         "remove_on_complete": 31536000,
                         "remove_on_failure": 31536000
                     }
+                },
+                "media": {
+                    "type": "object",
+                    "properties": {
+                        "remove_on_complete": {
+                            "type": "integer",
+                            "default": 31536000
+                        },
+                        "remove_on_failure": {
+                            "type": "integer",
+                            "default": 31536000
+                        }
+                    },
+                    "additionalProperties": false,
+                    "default": {
+                        "remove_on_complete": 31536000,
+                        "remove_on_failure": 31536000
+                    }
                 }
             },
             "additionalProperties": false,
@@ -3442,6 +3460,10 @@
                     "remove_on_failure": 31536000
                 },
                 "push": {
+                    "remove_on_complete": 31536000,
+                    "remove_on_failure": 31536000
+                },
+                "media": {
                     "remove_on_complete": 31536000,
                     "remove_on_failure": 31536000
                 }

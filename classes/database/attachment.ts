@@ -11,9 +11,13 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import sharp from "sharp";
 import { z } from "zod";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
+import { ApiError } from "../errors/api-error.ts";
+import { MediaManager } from "../media/media-manager.ts";
+import { MediaJobType, mediaQueue } from "../queues/media.ts";
 import { BaseInterface } from "./base.ts";
 
 type AttachmentType = InferSelectModel<typeof Attachments>;
@@ -148,6 +152,75 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         }
 
         return attachment;
+    }
+
+    public static async fromFile(
+        file: File,
+        options?: {
+            description?: string;
+            thumbnail?: File;
+        },
+    ): Promise<Attachment> {
+        if (file.size > config.validation.max_media_size) {
+            throw new ApiError(
+                413,
+                `File too large, max size is ${config.validation.max_media_size} bytes`,
+            );
+        }
+
+        if (
+            config.validation.enforce_mime_types &&
+            !config.validation.allowed_mime_types.includes(file.type)
+        ) {
+            throw new ApiError(
+                415,
+                `File type ${file.type} is not allowed`,
+                `Allowed types: ${config.validation.allowed_mime_types.join(", ")}`,
+            );
+        }
+
+        const sha256 = new Bun.SHA256();
+
+        const isImage = file.type.startsWith("image/");
+
+        const metadata = isImage
+            ? await sharp(await file.arrayBuffer()).metadata()
+            : null;
+
+        const mediaManager = new MediaManager(config);
+
+        const { path, blurhash } = await mediaManager.addFile(file);
+
+        const url = Attachment.getUrl(path);
+
+        let thumbnailUrl = "";
+
+        if (options?.thumbnail) {
+            const { path } = await mediaManager.addFile(options.thumbnail);
+
+            thumbnailUrl = Attachment.getUrl(path);
+        }
+
+        const newAttachment = await Attachment.insert({
+            url,
+            thumbnailUrl: thumbnailUrl || undefined,
+            sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
+            mimeType: file.type,
+            description: options?.description ?? "",
+            size: file.size,
+            blurhash: blurhash ?? undefined,
+            width: metadata?.width ?? undefined,
+            height: metadata?.height ?? undefined,
+        });
+
+        if (config.media.conversion.convert_images) {
+            await mediaQueue.add(MediaJobType.ConvertMedia, {
+                attachmentId: newAttachment.id,
+                filename: file.name,
+            });
+        }
+
+        return newAttachment;
     }
 
     public get id(): string {
