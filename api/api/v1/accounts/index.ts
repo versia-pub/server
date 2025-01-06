@@ -226,8 +226,7 @@ export default apiRoute((app) =>
         // Check if username is taken
         if (
             await User.fromSql(
-                and(eq(Users.username, username)),
-                isNull(Users.instanceId),
+                and(eq(Users.username, username), isNull(Users.instanceId)),
             )
         ) {
             errors.details.username.push({
