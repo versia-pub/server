@@ -23,4 +23,9 @@ buildSpinner.text = "Transforming";
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
 
+// Copy Sharp to dist
+await $`mkdir -p dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-libvips-linuxmusl-* dist/node_modules/@img`;
+await $`cp -r node_modules/@img/sharp-linuxmusl-* dist/node_modules/@img`;
+
 buildSpinner.stop();
