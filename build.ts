@@ -45,6 +45,8 @@ await $`cp -r drizzle dist/drizzle`;
 // Copy plugin manifests
 await $`cp plugins/openid/manifest.json dist/plugins/openid/manifest.json`;
 
+await $`mkdir -p dist/node_modules`;
+
 // Copy unzipit and uzip-module to dist
 await $`cp -r node_modules/unzipit dist/node_modules/unzipit`;
 await $`cp -r node_modules/uzip-module dist/node_modules/uzip-module`;
