@@ -309,10 +309,6 @@ export const Medias = pgTable("Medias", {
     originalContent: jsonb("original_content").$type<ContentFormat>(),
     thumbnail: jsonb("thumbnail").$type<ContentFormat>(),
     blurhash: text("blurhash"),
-    noteId: uuid("noteId").references(() => Notes.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-    }),
 });
 
 export const Notifications = pgTable("Notifications", {
@@ -791,10 +787,38 @@ export const UserToPinnedNotes = pgTable(
     ],
 );
 
-export const AttachmentsRelations = relations(Medias, ({ one }) => ({
-    notes: one(Notes, {
-        fields: [Medias.noteId],
+export const MediasRelations = relations(Medias, ({ many }) => ({
+    notes: many(Notes),
+}));
+
+export const MediasToNotes = pgTable(
+    "MediasToNote",
+    {
+        mediaId: uuid("mediaId")
+            .notNull()
+            .references(() => Medias.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        noteId: uuid("noteId")
+            .notNull()
+            .references(() => Notes.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+    },
+    (table) => [index().on(table.mediaId), index().on(table.noteId)],
+);
+
+export const MediasToNotesRelations = relations(MediasToNotes, ({ one }) => ({
+    media: one(Medias, {
+        fields: [MediasToNotes.mediaId],
+        references: [Medias.id],
+    }),
+    note: one(Notes, {
+        fields: [MediasToNotes.noteId],
         references: [Notes.id],
+        relationName: "AttachmentToNote",
     }),
 }));
 
@@ -886,7 +910,9 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
         references: [Users.id],
         relationName: "NoteToAuthor",
     }),
-    attachments: many(Medias),
+    attachments: many(MediasToNotes, {
+        relationName: "AttachmentToNote",
+    }),
     mentions: many(NoteToMentions),
     reblog: one(Notes, {
         fields: [Notes.reblogId],
