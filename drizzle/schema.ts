@@ -305,18 +305,10 @@ export const Tokens = pgTable("Tokens", {
 
 export const Medias = pgTable("Medias", {
     id: id(),
-    url: text("url").notNull(),
-    remoteUrl: text("remote_url"),
-    thumbnailUrl: text("thumbnail_url"),
-    mimeType: text("mime_type").notNull(),
-    description: text("description"),
+    content: jsonb("content").notNull().$type<ContentFormat>(),
+    originalContent: jsonb("original_content").$type<ContentFormat>(),
+    thumbnail: jsonb("thumbnail").$type<ContentFormat>(),
     blurhash: text("blurhash"),
-    sha256: text("sha256"),
-    fps: integer("fps"),
-    duration: integer("duration"),
-    width: integer("width"),
-    height: integer("height"),
-    size: integer("size"),
     noteId: uuid("noteId").references(() => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",

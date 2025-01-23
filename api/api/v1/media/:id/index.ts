@@ -107,26 +107,35 @@ export default apiRoute((app) => {
             throw new ApiError(404, "Media not found");
         }
 
-        const { description, thumbnail } = context.req.valid("form");
-
-        let thumbnailUrl = attachment.data.thumbnailUrl;
+        const { description, thumbnail: thumbnailFile } =
+            context.req.valid("form");
 
         const mediaManager = new MediaManager(config);
 
-        if (thumbnail) {
-            const { path } = await mediaManager.addFile(thumbnail);
-            thumbnailUrl = Media.getUrl(path);
+        // TODO: Generate thumbnail if not provided
+        if (thumbnailFile) {
+            const { path } = await mediaManager.addFile(thumbnailFile);
+            const thumbnail = attachment.data.thumbnail;
+
+            // FIXME: Also update thumbnail if it hasn't been set
+            if (thumbnail) {
+                thumbnail[Object.keys(thumbnail)[0]].content =
+                    Media.getUrl(path);
+            }
+
+            attachment.data.thumbnail = thumbnail;
         }
 
-        const descriptionText = description || attachment.data.description;
+        if (description) {
+            for (const type of Object.keys(attachment.data.content)) {
+                attachment.data.content[type].description = description;
+            }
+        }
 
-        if (
-            descriptionText !== attachment.data.description ||
-            thumbnailUrl !== attachment.data.thumbnailUrl
-        ) {
+        if (description || thumbnailFile) {
             await attachment.update({
-                description: descriptionText,
-                thumbnailUrl,
+                content: attachment.data.content,
+                thumbnail: attachment.data.thumbnail,
             });
 
             return context.json(attachment.toApi(), 200);

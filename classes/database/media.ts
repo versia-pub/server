@@ -3,6 +3,7 @@ import type { Attachment as ApiAttachment } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
+import { SHA256 } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -175,14 +176,6 @@ export class Media extends BaseInterface<typeof Medias> {
             );
         }
 
-        const sha256 = new Bun.SHA256();
-
-        const isImage = file.type.startsWith("image/");
-
-        const metadata = isImage
-            ? await sharp(await file.arrayBuffer()).metadata()
-            : null;
-
         const mediaManager = new MediaManager(config);
 
         const { path } = await mediaManager.addFile(file);
@@ -197,15 +190,18 @@ export class Media extends BaseInterface<typeof Medias> {
             thumbnailUrl = Media.getUrl(path);
         }
 
+        const content = await Media.fileToContentFormat(file, url, {
+            description: options?.description,
+        });
+        const thumbnailContent = options?.thumbnail
+            ? await Media.fileToContentFormat(options.thumbnail, thumbnailUrl, {
+                  description: options?.description,
+              })
+            : undefined;
+
         const newAttachment = await Media.insert({
-            url,
-            thumbnailUrl: thumbnailUrl || undefined,
-            sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
-            mimeType: file.type,
-            description: options?.description ?? "",
-            size: file.size,
-            width: metadata?.width ?? undefined,
-            height: metadata?.height ?? undefined,
+            content,
+            thumbnail: thumbnailContent,
         });
 
         if (config.media.conversion.convert_images) {
@@ -214,6 +210,11 @@ export class Media extends BaseInterface<typeof Medias> {
                 filename: file.name,
             });
         }
+
+        await mediaQueue.add(MediaJobType.CalculateMetadata, {
+            attachmentId: newAttachment.id,
+            filename: file.name,
+        });
 
         return newAttachment;
     }
@@ -232,105 +233,165 @@ export class Media extends BaseInterface<typeof Medias> {
         return "";
     }
 
+    public getUrl(): string {
+        const type = this.getPreferredMimeType();
+
+        return this.data.content[type]?.content;
+    }
+
+    /**
+     * Gets favourite MIME type for the attachment
+     * Uses a hardcoded list of preferred types, for images
+     *
+     * @returns {string} Preferred MIME type
+     */
+    public getPreferredMimeType(): string {
+        return Media.getPreferredMimeType(Object.keys(this.data.content));
+    }
+
+    /**
+     * Gets favourite MIME type from a list
+     * Uses a hardcoded list of preferred types, for images
+     *
+     * @returns {string} Preferred MIME type
+     */
+    public static getPreferredMimeType(types: string[]): string {
+        const ranking = [
+            "image/svg+xml",
+            "image/avif",
+            "image/jxl",
+            "image/webp",
+            "image/heif",
+            "image/heif-sequence",
+            "image/heic",
+            "image/heic-sequence",
+            "image/apng",
+            "image/gif",
+            "image/png",
+            "image/jpeg",
+            "image/bmp",
+        ];
+
+        return ranking.find((type) => types.includes(type)) ?? types[0];
+    }
+
+    /**
+     * Maps MIME type to Mastodon attachment type
+     *
+     * @returns
+     */
     public getMastodonType(): ApiAttachment["type"] {
-        if (this.data.mimeType.startsWith("image/")) {
+        const type = this.getPreferredMimeType();
+
+        if (type.startsWith("image/")) {
             return "image";
         }
-        if (this.data.mimeType.startsWith("video/")) {
+        if (type.startsWith("video/")) {
             return "video";
         }
-        if (this.data.mimeType.startsWith("audio/")) {
+        if (type.startsWith("audio/")) {
             return "audio";
         }
 
         return "unknown";
     }
 
-    public toApiMeta(): ApiAttachment["meta"] {
+    /**
+     * Extracts metadata from a file and outputs as ContentFormat
+     *
+     * Does not calculate thumbhash (do this in a worker)
+     * @param file
+     * @param uri Uploaded file URI
+     * @param options Extra metadata, such as description
+     * @returns
+     */
+    public static async fileToContentFormat(
+        file: File,
+        uri: string,
+        options?: Partial<{
+            description: string;
+        }>,
+    ): Promise<ContentFormat> {
+        const buffer = await file.arrayBuffer();
+        const isImage = file.type.startsWith("image/");
+        const { width, height } = isImage ? await sharp(buffer).metadata() : {};
+        const hash = new SHA256().update(file).digest("hex");
+
+        // Missing: fps, duration
+        // Thumbhash should be added in a worker after the file is uploaded
         return {
-            width: this.data.width || undefined,
-            height: this.data.height || undefined,
-            fps: this.data.fps || undefined,
-            size:
-                this.data.width && this.data.height
-                    ? `${this.data.width}x${this.data.height}`
-                    : undefined,
-            duration: this.data.duration || undefined,
-            length: undefined,
-            aspect:
-                this.data.width && this.data.height
-                    ? this.data.width / this.data.height
-                    : undefined,
-            original: {
-                width: this.data.width || undefined,
-                height: this.data.height || undefined,
-                size:
-                    this.data.width && this.data.height
-                        ? `${this.data.width}x${this.data.height}`
-                        : undefined,
-                aspect:
-                    this.data.width && this.data.height
-                        ? this.data.width / this.data.height
-                        : undefined,
+            [file.type]: {
+                content: uri,
+                remote: true,
+                hash: {
+                    sha256: hash,
+                },
+                width,
+                height,
+                description: options?.description,
+                size: file.size,
             },
+        };
+    }
+
+    public toApiMeta(): ApiAttachment["meta"] {
+        const type = this.getPreferredMimeType();
+        const data = this.data.content[type];
+        const size =
+            data.width && data.height
+                ? `${data.width}x${data.height}`
+                : undefined;
+        const aspect =
+            data.width && data.height ? data.width / data.height : undefined;
+
+        return {
+            width: data.width || undefined,
+            height: data.height || undefined,
+            fps: data.fps || undefined,
+            size,
             // Idk whether size or length is the right value
+            duration: data.duration || undefined,
+            // Versia doesn't have a concept of length in ContentFormat
+            length: undefined,
+            aspect,
+            original: {
+                width: data.width || undefined,
+                height: data.height || undefined,
+                size,
+                aspect,
+            },
         };
     }
 
     public toApi(): ApiAttachment {
+        const type = this.getPreferredMimeType();
+        const data = this.data.content[type];
+
+        // Thumbnail should only have a single MIME type
+        const thumbnailData =
+            this.data.thumbnail?.[Object.keys(this.data.thumbnail)[0]];
+
         return {
             id: this.data.id,
             type: this.getMastodonType(),
-            url: proxyUrl(this.data.url) ?? "",
-            remote_url: proxyUrl(this.data.remoteUrl),
-            preview_url: proxyUrl(this.data.thumbnailUrl || this.data.url),
+            url: proxyUrl(data.content) ?? "",
+            remote_url: null,
+            preview_url: proxyUrl(thumbnailData?.content),
             text_url: null,
             meta: this.toApiMeta(),
-            description: this.data.description,
+            description: data.description || null,
             blurhash: this.data.blurhash,
         };
     }
 
     public toVersia(): ContentFormat {
-        return {
-            [this.data.mimeType]: {
-                content: this.data.url,
-                remote: true,
-                // TODO: Replace BlurHash with thumbhash
-                // thumbhash: this.data.blurhash ?? undefined,
-                description: this.data.description ?? undefined,
-                duration: this.data.duration ?? undefined,
-                fps: this.data.fps ?? undefined,
-                height: this.data.height ?? undefined,
-                size: this.data.size ?? undefined,
-                hash: this.data.sha256
-                    ? {
-                          sha256: this.data.sha256,
-                      }
-                    : undefined,
-                width: this.data.width ?? undefined,
-            },
-        };
+        return this.data.content;
     }
 
-    public static fromVersia(
-        attachmentToConvert: ContentFormat,
-    ): Promise<Media> {
-        const key = Object.keys(attachmentToConvert)[0];
-        const value = attachmentToConvert[key];
-
+    public static fromVersia(contentFormat: ContentFormat): Promise<Media> {
         return Media.insert({
-            mimeType: key,
-            url: value.content,
-            description: value.description || undefined,
-            duration: value.duration || undefined,
-            fps: value.fps || undefined,
-            height: value.height || undefined,
-            // biome-ignore lint/style/useExplicitLengthCheck: Biome thinks we're checking if size is not zero
-            size: value.size || undefined,
-            width: value.width || undefined,
-            sha256: value.hash?.sha256 || undefined,
-            // blurhash: value.blurhash || undefined,
+            content: contentFormat,
+            originalContent: contentFormat,
         });
     }
 }

@@ -3,6 +3,7 @@ import { connection } from "~/utils/redis.ts";
 
 export enum MediaJobType {
     ConvertMedia = "convertMedia",
+    CalculateMetadata = "calculateMetadata",
 }
 
 export type MediaJobData = {

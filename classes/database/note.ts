@@ -44,9 +44,9 @@ import {
 import { config } from "~/packages/config-manager";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
-import { Media } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
+import { Media } from "./media.ts";
 import { User } from "./user.ts";
 
 type NoteType = InferSelectModel<typeof Notes>;

@@ -30,24 +30,15 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                     }
 
                     const processor = new ImageConversionPreprocessor(config);
-                    const blurhashProcessor = new BlurhashPreprocessor();
-
-                    const hash = attachment?.data.sha256;
-
-                    if (!hash) {
-                        throw new Error(
-                            `Attachment [${attachmentId}] has no hash, cannot process.`,
-                        );
-                    }
 
                     await job.log(`Processing attachment [${attachmentId}]`);
                     await job.log(
-                        `Fetching file from [${attachment.data.url}]`,
+                        `Fetching file from [${attachment.getUrl()}]`,
                     );
 
                     // Download the file and process it.
                     const blob = await (
-                        await fetch(attachment.data.url)
+                        await fetch(attachment.getUrl())
                     ).blob();
 
                     const file = new File([blob], filename);
@@ -56,10 +47,6 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     const { file: processedFile } =
                         await processor.process(file);
-
-                    await job.log(`Generating blurhash for [${attachmentId}]`);
-
-                    const { blurhash } = await blurhashProcessor.process(file);
 
                     const mediaManager = new MediaManager(config);
 
@@ -70,21 +57,66 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     const url = Media.getUrl(path);
 
-                    const sha256 = new Bun.SHA256();
+                    await attachment.update({
+                        content: await Media.fileToContentFormat(
+                            uploadedFile,
+                            url,
+                            {
+                                description:
+                                    attachment.data.content[0].description ||
+                                    undefined,
+                            },
+                        ),
+                    });
+
+                    await job.log(
+                        `✔ Finished processing attachment [${attachmentId}]`,
+                    );
+
+                    break;
+                }
+                case MediaJobType.CalculateMetadata: {
+                    // Calculate blurhash
+                    const { attachmentId } = job.data;
+
+                    await job.log(`Fetching attachment ID [${attachmentId}]`);
+
+                    const attachment = await Media.fromId(attachmentId);
+
+                    if (!attachment) {
+                        throw new Error(
+                            `Attachment not found: [${attachmentId}]`,
+                        );
+                    }
+
+                    const blurhashProcessor = new BlurhashPreprocessor();
+
+                    await job.log(`Processing attachment [${attachmentId}]`);
+                    await job.log(
+                        `Fetching file from [${attachment.getUrl()}]`,
+                    );
+
+                    // Download the file and process it.
+                    const blob = await (
+                        await fetch(attachment.getUrl())
+                    ).blob();
+
+                    // Filename is not important for blurhash
+                    const file = new File([blob], "");
+
+                    await job.log(`Generating blurhash for [${attachmentId}]`);
+
+                    const { blurhash } = await blurhashProcessor.process(file);
 
                     await attachment.update({
-                        url,
-                        sha256: sha256
-                            .update(await uploadedFile.arrayBuffer())
-                            .digest("hex"),
-                        mimeType: uploadedFile.type,
-                        size: uploadedFile.size,
                         blurhash,
                     });
 
                     await job.log(
                         `✔ Finished processing attachment [${attachmentId}]`,
                     );
+
+                    break;
                 }
             }
         },
