@@ -1,6 +1,6 @@
 import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Note } from "@versia/kit/db";
+import { Media, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
@@ -151,7 +151,7 @@ export default apiRoute((app) =>
 
         // Check if media attachments are all valid
         const foundAttachments =
-            media_ids.length > 0 ? await Attachment.fromIds(media_ids) : [];
+            media_ids.length > 0 ? await Media.fromIds(media_ids) : [];
 
         if (foundAttachments.length !== media_ids.length) {
             throw new ApiError(

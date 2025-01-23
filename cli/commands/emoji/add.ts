@@ -1,5 +1,5 @@
 import { Args } from "@oclif/core";
-import { Attachment, Emoji } from "@versia/kit/db";
+import { Emoji, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
@@ -115,7 +115,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
 
         await Emoji.insert({
             shortcode: args.shortcode,
-            url: Attachment.getUrl(uploaded.path),
+            url: Media.getUrl(uploaded.path),
             visibleInPicker: true,
             contentType: uploaded.uploadedFile.type,
         });
@@ -124,7 +124,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
             `${chalk.green("✓")} Created emoji ${chalk.green(
                 args.shortcode,
             )} with url ${chalk.blue(
-                chalk.underline(Attachment.getUrl(uploaded.path)),
+                chalk.underline(Media.getUrl(uploaded.path)),
             )}`,
         );
 

@@ -1,6 +1,6 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment } from "@versia/kit/db";
+import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
@@ -43,7 +43,7 @@ const route = createRoute({
             description: "Attachment",
             content: {
                 "application/json": {
-                    schema: Attachment.schema,
+                    schema: Media.schema,
                 },
             },
         },
@@ -71,7 +71,7 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { file, thumbnail, description } = context.req.valid("form");
 
-        const attachment = await Attachment.fromFile(file, {
+        const attachment = await Media.fromFile(file, {
             thumbnail,
             description,
         });

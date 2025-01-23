@@ -97,7 +97,7 @@ export default apiRoute((app) =>
                 min_id ? gt(Notes.id, min_id) : undefined,
                 eq(Notes.authorId, otherUser.id),
                 only_media
-                    ? sql`EXISTS (SELECT 1 FROM "Attachments" WHERE "Attachments"."noteId" = ${Notes.id})`
+                    ? sql`EXISTS (SELECT 1 FROM "Medias" WHERE "Medias"."noteId" = ${Notes.id})`
                     : undefined,
                 pinned
                     ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = ${Notes.id} AND "UserToPinnedNotes"."userId" = ${otherUser.id})`

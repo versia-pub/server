@@ -2,7 +2,7 @@ import { proxyUrl } from "@/response";
 import type { Attachment as ApiAttachment } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
-import { Attachments } from "@versia/kit/tables";
+import { Medias } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -20,9 +20,9 @@ import { MediaManager } from "../media/media-manager.ts";
 import { MediaJobType, mediaQueue } from "../queues/media.ts";
 import { BaseInterface } from "./base.ts";
 
-type AttachmentType = InferSelectModel<typeof Attachments>;
+type MediaType = InferSelectModel<typeof Medias>;
 
-export class Attachment extends BaseInterface<typeof Attachments> {
+export class Media extends BaseInterface<typeof Medias> {
     public static schema: z.ZodType<ApiAttachment> = z.object({
         id: z.string().uuid(),
         type: z.enum(["unknown", "image", "gifv", "video", "audio"]),
@@ -51,10 +51,10 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         blurhash: z.string().nullable(),
     });
 
-    public static $type: AttachmentType;
+    public static $type: MediaType;
 
     public async reload(): Promise<void> {
-        const reloaded = await Attachment.fromId(this.data.id);
+        const reloaded = await Media.fromId(this.data.id);
 
         if (!reloaded) {
             throw new Error("Failed to reload attachment");
@@ -63,23 +63,23 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         this.data = reloaded.data;
     }
 
-    public static async fromId(id: string | null): Promise<Attachment | null> {
+    public static async fromId(id: string | null): Promise<Media | null> {
         if (!id) {
             return null;
         }
 
-        return await Attachment.fromSql(eq(Attachments.id, id));
+        return await Media.fromSql(eq(Medias.id, id));
     }
 
-    public static async fromIds(ids: string[]): Promise<Attachment[]> {
-        return await Attachment.manyFromSql(inArray(Attachments.id, ids));
+    public static async fromIds(ids: string[]): Promise<Media[]> {
+        return await Media.manyFromSql(inArray(Medias.id, ids));
     }
 
     public static async fromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(Attachments.id),
-    ): Promise<Attachment | null> {
-        const found = await db.query.Attachments.findFirst({
+        orderBy: SQL<unknown> | undefined = desc(Medias.id),
+    ): Promise<Media | null> {
+        const found = await db.query.Medias.findFirst({
             where: sql,
             orderBy,
         });
@@ -87,17 +87,17 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         if (!found) {
             return null;
         }
-        return new Attachment(found);
+        return new Media(found);
     }
 
     public static async manyFromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(Attachments.id),
+        orderBy: SQL<unknown> | undefined = desc(Medias.id),
         limit?: number,
         offset?: number,
-        extra?: Parameters<typeof db.query.Attachments.findMany>[0],
-    ): Promise<Attachment[]> {
-        const found = await db.query.Attachments.findMany({
+        extra?: Parameters<typeof db.query.Medias.findMany>[0],
+    ): Promise<Media[]> {
+        const found = await db.query.Medias.findMany({
             where: sql,
             orderBy,
             limit,
@@ -105,18 +105,16 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             with: extra?.with,
         });
 
-        return found.map((s) => new Attachment(s));
+        return found.map((s) => new Media(s));
     }
 
-    public async update(
-        newAttachment: Partial<AttachmentType>,
-    ): Promise<AttachmentType> {
+    public async update(newAttachment: Partial<MediaType>): Promise<MediaType> {
         await db
-            .update(Attachments)
+            .update(Medias)
             .set(newAttachment)
-            .where(eq(Attachments.id, this.id));
+            .where(eq(Medias.id, this.id));
 
-        const updated = await Attachment.fromId(this.data.id);
+        const updated = await Media.fromId(this.data.id);
 
         if (!updated) {
             throw new Error("Failed to update attachment");
@@ -126,26 +124,24 @@ export class Attachment extends BaseInterface<typeof Attachments> {
         return updated.data;
     }
 
-    public save(): Promise<AttachmentType> {
+    public save(): Promise<MediaType> {
         return this.update(this.data);
     }
 
     public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
-            await db.delete(Attachments).where(inArray(Attachments.id, ids));
+            await db.delete(Medias).where(inArray(Medias.id, ids));
         } else {
-            await db.delete(Attachments).where(eq(Attachments.id, this.id));
+            await db.delete(Medias).where(eq(Medias.id, this.id));
         }
     }
 
     public static async insert(
-        data: InferInsertModel<typeof Attachments>,
-    ): Promise<Attachment> {
-        const inserted = (
-            await db.insert(Attachments).values(data).returning()
-        )[0];
+        data: InferInsertModel<typeof Medias>,
+    ): Promise<Media> {
+        const inserted = (await db.insert(Medias).values(data).returning())[0];
 
-        const attachment = await Attachment.fromId(inserted.id);
+        const attachment = await Media.fromId(inserted.id);
 
         if (!attachment) {
             throw new Error("Failed to insert attachment");
@@ -160,7 +156,7 @@ export class Attachment extends BaseInterface<typeof Attachments> {
             description?: string;
             thumbnail?: File;
         },
-    ): Promise<Attachment> {
+    ): Promise<Media> {
         if (file.size > config.validation.max_media_size) {
             throw new ApiError(
                 413,
@@ -191,17 +187,17 @@ export class Attachment extends BaseInterface<typeof Attachments> {
 
         const { path } = await mediaManager.addFile(file);
 
-        const url = Attachment.getUrl(path);
+        const url = Media.getUrl(path);
 
         let thumbnailUrl = "";
 
         if (options?.thumbnail) {
             const { path } = await mediaManager.addFile(options.thumbnail);
 
-            thumbnailUrl = Attachment.getUrl(path);
+            thumbnailUrl = Media.getUrl(path);
         }
 
-        const newAttachment = await Attachment.insert({
+        const newAttachment = await Media.insert({
             url,
             thumbnailUrl: thumbnailUrl || undefined,
             sha256: sha256.update(await file.arrayBuffer()).digest("hex"),
@@ -319,11 +315,11 @@ export class Attachment extends BaseInterface<typeof Attachments> {
 
     public static fromVersia(
         attachmentToConvert: ContentFormat,
-    ): Promise<Attachment> {
+    ): Promise<Media> {
         const key = Object.keys(attachmentToConvert)[0];
         const value = attachmentToConvert[key];
 
-        return Attachment.insert({
+        return Media.insert({
             mimeType: key,
             url: value.content,
             description: value.description || undefined,

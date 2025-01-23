@@ -288,6 +288,13 @@
             "when": 1735776034097,
             "tag": "0040_good_nocturne",
             "breakpoints": true
+        },
+        {
+            "idx": 41,
+            "version": "7",
+            "when": 1737644734501,
+            "tag": "0041_bright_doctor_spectrum",
+            "breakpoints": true
         }
     ]
 }

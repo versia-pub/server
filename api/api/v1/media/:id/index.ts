@@ -1,6 +1,6 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment } from "@versia/kit/db";
+import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
@@ -48,7 +48,7 @@ const routePut = createRoute({
             description: "Media updated",
             content: {
                 "application/json": {
-                    schema: Attachment.schema,
+                    schema: Media.schema,
                 },
             },
         },
@@ -82,7 +82,7 @@ const routeGet = createRoute({
             description: "Media",
             content: {
                 "application/json": {
-                    schema: Attachment.schema,
+                    schema: Media.schema,
                 },
             },
         },
@@ -101,7 +101,7 @@ export default apiRoute((app) => {
     app.openapi(routePut, async (context) => {
         const { id } = context.req.valid("param");
 
-        const attachment = await Attachment.fromId(id);
+        const attachment = await Media.fromId(id);
 
         if (!attachment) {
             throw new ApiError(404, "Media not found");
@@ -115,7 +115,7 @@ export default apiRoute((app) => {
 
         if (thumbnail) {
             const { path } = await mediaManager.addFile(thumbnail);
-            thumbnailUrl = Attachment.getUrl(path);
+            thumbnailUrl = Media.getUrl(path);
         }
 
         const descriptionText = description || attachment.data.description;
@@ -138,7 +138,7 @@ export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
         const { id } = context.req.valid("param");
 
-        const attachment = await Attachment.fromId(id);
+        const attachment = await Media.fromId(id);
 
         if (!attachment) {
             throw new ApiError(404, "Media not found");

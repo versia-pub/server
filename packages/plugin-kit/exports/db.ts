@@ -1,7 +1,7 @@
 // biome-ignore lint/performance/noBarrelFile: <explanation>
 export { User } from "~/classes/database/user.ts";
 export { Role } from "~/classes/database/role.ts";
-export { Attachment } from "~/classes/database/attachment.ts";
+export { Media } from "~/classes/database/attachment.ts";
 export { Emoji } from "~/classes/database/emoji.ts";
 export { Instance } from "~/classes/database/instance.ts";
 export { Note } from "~/classes/database/note.ts";

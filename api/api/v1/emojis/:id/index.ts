@@ -1,7 +1,7 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Emoji, db } from "@versia/kit/db";
+import { Emoji, Media, db } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -270,7 +270,7 @@ export default apiRoute((app) => {
             if (element instanceof File) {
                 const uploaded = await mediaManager.addFile(element);
 
-                url = Attachment.getUrl(uploaded.path);
+                url = Media.getUrl(uploaded.path);
                 contentType = uploaded.uploadedFile.type;
             } else {
                 url = element;

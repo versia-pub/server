@@ -21,7 +21,7 @@
         "@tufjs/canonical-json": "^2.0.0",
         "@versia/client": "^0.1.5",
         "@versia/federation": "^0.1.4",
-        "@versia/kit": "packages/plugin-kit",
+        "@versia/kit": "workspace:*",
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",
         "bullmq": "^5.35.1",

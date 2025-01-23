@@ -1,5 +1,5 @@
 import { Args, Flags } from "@oclif/core";
-import { Attachment, Emoji } from "@versia/kit/db";
+import { Emoji, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
 import { and, inArray, isNull } from "drizzle-orm";
@@ -214,7 +214,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
 
             await Emoji.insert({
                 shortcode: emoji.emoji.name,
-                url: Attachment.getUrl(uploaded.path),
+                url: Media.getUrl(uploaded.path),
                 visibleInPicker: true,
                 contentType: uploaded.uploadedFile.type,
             });

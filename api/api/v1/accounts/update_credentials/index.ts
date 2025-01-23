@@ -3,7 +3,7 @@ import { mimeLookup } from "@/content_types";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
-import { Attachment, Emoji, User } from "@versia/kit/db";
+import { Emoji, Media, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
@@ -251,7 +251,7 @@ export default apiRoute((app) =>
                     await mediaManager.addFile(avatar);
                 const contentType = uploadedFile.type;
 
-                self.avatar = Attachment.getUrl(path);
+                self.avatar = Media.getUrl(path);
                 self.source.avatar = {
                     content_type: contentType,
                 };
@@ -269,7 +269,7 @@ export default apiRoute((app) =>
                     await mediaManager.addFile(header);
                 const contentType = uploadedFile.type;
 
-                self.header = Attachment.getUrl(path);
+                self.header = Media.getUrl(path);
                 self.source.header = {
                     content_type: contentType,
                 };

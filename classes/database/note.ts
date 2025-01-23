@@ -16,8 +16,8 @@ import type {
 } from "@versia/federation/types";
 import { Instance, db } from "@versia/kit/db";
 import {
-    Attachments,
     EmojiToNote,
+    Medias,
     NoteToMentions,
     Notes,
     Users,
@@ -44,7 +44,7 @@ import {
 import { config } from "~/packages/config-manager";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
-import { Attachment } from "./attachment.ts";
+import { Media } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { User } from "./user.ts";
@@ -56,7 +56,7 @@ type NoteTypeWithRelations = NoteType & {
     mentions: (InferSelectModel<typeof Users> & {
         instance: typeof Instance.$type | null;
     })[];
-    attachments: (typeof Attachment.$type)[];
+    attachments: (typeof Media.$type)[];
     reblog: NoteTypeWithoutRecursiveRelations | null;
     emojis: (typeof Emoji.$type)[];
     reply: NoteType | null;
@@ -102,7 +102,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         sensitive: z.boolean(),
         spoiler_text: z.string(),
         visibility: z.enum(["public", "unlisted", "private", "direct"]),
-        media_attachments: z.array(Attachment.schema),
+        media_attachments: z.array(Media.schema),
         mentions: z.array(
             z.object({
                 id: z.string().uuid(),
@@ -442,7 +442,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         uri?: string;
         mentions?: User[];
         /** List of IDs of database Attachment objects */
-        mediaAttachments?: Attachment[];
+        mediaAttachments?: Media[];
         replyId?: string;
         quoteId?: string;
         application?: Application;
@@ -515,7 +515,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         emojis?: Emoji[];
         uri?: string;
         mentions?: User[];
-        mediaAttachments?: Attachment[];
+        mediaAttachments?: Media[];
         replyId?: string;
         quoteId?: string;
         application?: Application;
@@ -623,28 +623,26 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Deletes all existing attachments associated with this note, then replaces them with the provided attachments.
      * @param mediaAttachments - The IDs of the attachments to associate with this note
      */
-    public async updateAttachments(
-        mediaAttachments: Attachment[],
-    ): Promise<void> {
+    public async updateAttachments(mediaAttachments: Media[]): Promise<void> {
         if (mediaAttachments.length === 0) {
             return;
         }
 
         // Remove old attachments
         await db
-            .update(Attachments)
+            .update(Medias)
             .set({
                 noteId: null,
             })
-            .where(eq(Attachments.noteId, this.data.id));
+            .where(eq(Medias.noteId, this.data.id));
         await db
-            .update(Attachments)
+            .update(Medias)
             .set({
                 noteId: this.data.id,
             })
             .where(
                 inArray(
-                    Attachments.id,
+                    Medias.id,
                     mediaAttachments.map((i) => i.id),
                 ),
             );
@@ -740,16 +738,16 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             }
         }
 
-        const attachments: Attachment[] = [];
+        const attachments: Media[] = [];
 
         for (const attachment of note.attachments ?? []) {
-            const resolvedAttachment = await Attachment.fromVersia(
-                attachment,
-            ).catch((e) => {
-                logger.error`${e}`;
-                sentry?.captureException(e);
-                return null;
-            });
+            const resolvedAttachment = await Media.fromVersia(attachment).catch(
+                (e) => {
+                    logger.error`${e}`;
+                    sentry?.captureException(e);
+                    return null;
+                },
+            );
 
             if (resolvedAttachment) {
                 attachments.push(resolvedAttachment);
@@ -908,7 +906,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map(
-                (a) => new Attachment(a).toApi() as ApiAttachment,
+                (a) => new Media(a).toApi() as ApiAttachment,
             ),
             mentions: data.mentions.map((mention) => ({
                 id: mention.id,
@@ -1014,7 +1012,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 },
             },
             attachments: (status.attachments ?? []).map((attachment) =>
-                new Attachment(attachment).toVersia(),
+                new Media(attachment).toVersia(),
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) =>

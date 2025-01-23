@@ -303,7 +303,7 @@ export const Tokens = pgTable("Tokens", {
     }),
 });
 
-export const Attachments = pgTable("Attachments", {
+export const Medias = pgTable("Medias", {
     id: id(),
     url: text("url").notNull(),
     remoteUrl: text("remote_url"),
@@ -799,9 +799,9 @@ export const UserToPinnedNotes = pgTable(
     ],
 );
 
-export const AttachmentsRelations = relations(Attachments, ({ one }) => ({
+export const AttachmentsRelations = relations(Medias, ({ one }) => ({
     notes: one(Notes, {
-        fields: [Attachments.noteId],
+        fields: [Medias.noteId],
         references: [Notes.id],
     }),
 }));
@@ -894,7 +894,7 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
         references: [Users.id],
         relationName: "NoteToAuthor",
     }),
-    attachments: many(Attachments),
+    attachments: many(Medias),
     mentions: many(NoteToMentions),
     reblog: one(Notes, {
         fields: [Notes.reblogId],

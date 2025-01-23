@@ -1,4 +1,4 @@
-import { Attachment } from "@versia/kit/db";
+import { Media } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import { config } from "~/packages/config-manager";
 import { connection } from "~/utils/redis.ts";
@@ -21,7 +21,7 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     await job.log(`Fetching attachment ID [${attachmentId}]`);
 
-                    const attachment = await Attachment.fromId(attachmentId);
+                    const attachment = await Media.fromId(attachmentId);
 
                     if (!attachment) {
                         throw new Error(
@@ -68,7 +68,7 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                     const { path, uploadedFile } =
                         await mediaManager.addFile(processedFile);
 
-                    const url = Attachment.getUrl(path);
+                    const url = Media.getUrl(path);
 
                     const sha256 = new Bun.SHA256();
 
