@@ -80,6 +80,12 @@ export class DiskMediaDriver implements MediaDriver {
      */
     public async deleteFileByUrl(url: string): Promise<void> {
         const urlObj = new URL(url);
+
+        // Check if URL is from the local uploads folder
+        if (urlObj.host !== new URL(this.config.http.base_url).host) {
+            return Promise.resolve();
+        }
+
         const hash = urlObj.pathname.split("/").at(-2);
         if (!hash) {
             throw new Error("Invalid URL");

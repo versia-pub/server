@@ -29,6 +29,9 @@ describe("DiskMediaDriver", () => {
             media: {
                 local_uploads_folder: "/test/uploads",
             },
+            http: {
+                base_url: "http://localhost:3000",
+            },
         } as Config;
 
         mockMediaHasher = mock(() => Promise.resolve("testhash"));
