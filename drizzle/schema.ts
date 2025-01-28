@@ -67,6 +67,15 @@ export const Emojis = pgTable("Emojis", {
     category: text("category"),
 });
 
+export const EmojisRelations = relations(Emojis, ({ one, many }) => ({
+    instance: one(Instances, {
+        fields: [Emojis.instanceId],
+        references: [Instances.id],
+    }),
+    users: many(EmojiToUser),
+    notes: many(EmojiToNote),
+}));
+
 export const PushSubscriptions = pgTable("PushSubscriptions", {
     id: id(),
     endpoint: text("endpoint").notNull(),
@@ -231,6 +240,17 @@ export const Likes = pgTable("Likes", {
     createdAt: createdAt(),
 });
 
+export const LikesRelations = relations(Likes, ({ one }) => ({
+    liker: one(Users, {
+        fields: [Likes.likerId],
+        references: [Users.id],
+    }),
+    liked: one(Notes, {
+        fields: [Likes.likedId],
+        references: [Notes.id],
+    }),
+}));
+
 export const Relationships = pgTable("Relationships", {
     id: id(),
     ownerId: uuid("ownerId")
@@ -259,6 +279,19 @@ export const Relationships = pgTable("Relationships", {
     createdAt: createdAt(),
     updatedAt: updatedAt(),
 });
+
+export const RelationshipsRelations = relations(Relationships, ({ one }) => ({
+    owner: one(Users, {
+        fields: [Relationships.ownerId],
+        references: [Users.id],
+        relationName: "RelationshipToOwner",
+    }),
+    subject: one(Users, {
+        fields: [Relationships.subjectId],
+        references: [Users.id],
+        relationName: "RelationshipToSubject",
+    }),
+}));
 
 export const Applications = pgTable(
     "Applications",
@@ -303,6 +336,17 @@ export const Tokens = pgTable("Tokens", {
     }),
 });
 
+export const TokensRelations = relations(Tokens, ({ one }) => ({
+    user: one(Users, {
+        fields: [Tokens.userId],
+        references: [Users.id],
+    }),
+    application: one(Applications, {
+        fields: [Tokens.applicationId],
+        references: [Applications.id],
+    }),
+}));
+
 export const Medias = pgTable("Medias", {
     id: id(),
     content: jsonb("content").notNull().$type<ContentFormat>(),
@@ -310,6 +354,10 @@ export const Medias = pgTable("Medias", {
     thumbnail: jsonb("thumbnail").$type<ContentFormat>(),
     blurhash: text("blurhash"),
 });
+
+export const MediasRelations = relations(Medias, ({ many }) => ({
+    notes: many(Notes),
+}));
 
 export const Notifications = pgTable("Notifications", {
     id: id(),
@@ -333,6 +381,23 @@ export const Notifications = pgTable("Notifications", {
     }),
     dismissed: boolean("dismissed").default(false).notNull(),
 });
+
+export const NotificationsRelations = relations(Notifications, ({ one }) => ({
+    account: one(Users, {
+        fields: [Notifications.accountId],
+        references: [Users.id],
+        relationName: "NotificationToAccount",
+    }),
+    notified: one(Users, {
+        fields: [Notifications.notifiedId],
+        references: [Users.id],
+        relationName: "NotificationToNotified",
+    }),
+    note: one(Notes, {
+        fields: [Notifications.noteId],
+        references: [Notes.id],
+    }),
+}));
 
 export const Notes = pgTable("Notes", {
     id: id(),
@@ -369,6 +434,50 @@ export const Notes = pgTable("Notes", {
     contentSource: text("content_source").default("").notNull(),
 });
 
+export const NotesRelations = relations(Notes, ({ many, one }) => ({
+    emojis: many(EmojiToNote),
+    author: one(Users, {
+        fields: [Notes.authorId],
+        references: [Users.id],
+        relationName: "NoteToAuthor",
+    }),
+    attachments: many(MediasToNotes, {
+        relationName: "AttachmentToNote",
+    }),
+    mentions: many(NoteToMentions),
+    reblog: one(Notes, {
+        fields: [Notes.reblogId],
+        references: [Notes.id],
+        relationName: "NoteToReblogs",
+    }),
+    usersThatHavePinned: many(UserToPinnedNotes),
+    reply: one(Notes, {
+        fields: [Notes.replyId],
+        references: [Notes.id],
+        relationName: "NoteToReplies",
+    }),
+    quote: one(Notes, {
+        fields: [Notes.quotingId],
+        references: [Notes.id],
+        relationName: "NoteToQuotes",
+    }),
+    application: one(Applications, {
+        fields: [Notes.applicationId],
+        references: [Applications.id],
+    }),
+    quotes: many(Notes, {
+        relationName: "NoteToQuotes",
+    }),
+    replies: many(Notes, {
+        relationName: "NoteToReplies",
+    }),
+    likes: many(Likes),
+    reblogs: many(Notes, {
+        relationName: "NoteToReblogs",
+    }),
+    notifications: many(Notifications),
+}));
+
 export const Instances = pgTable("Instances", {
     id: id(),
     baseUrl: text("base_url").notNull(),
@@ -386,6 +495,11 @@ export const Instances = pgTable("Instances", {
     publicKey: jsonb("public_key").$type<InstanceMetadata["public_key"]>(),
     extensions: jsonb("extensions").$type<InstanceMetadata["extensions"]>(),
 });
+
+export const InstancesRelations = relations(Instances, ({ many }) => ({
+    users: many(Users),
+    emojis: many(Emojis),
+}));
 
 export const OpenIdAccounts = pgTable("OpenIdAccounts", {
     id: id(),
@@ -459,6 +573,38 @@ export const Users = pgTable(
         uniqueIndex().on(table.email),
     ],
 );
+
+export const UsersRelations = relations(Users, ({ many, one }) => ({
+    emojis: many(EmojiToUser),
+    pinnedNotes: many(UserToPinnedNotes),
+    notes: many(Notes, {
+        relationName: "NoteToAuthor",
+    }),
+    likes: many(Likes),
+    relationships: many(Relationships, {
+        relationName: "RelationshipToOwner",
+    }),
+    relationshipSubjects: many(Relationships, {
+        relationName: "RelationshipToSubject",
+    }),
+    notificationsMade: many(Notifications, {
+        relationName: "NotificationToAccount",
+    }),
+    notificationsReceived: many(Notifications, {
+        relationName: "NotificationToNotified",
+    }),
+    openIdAccounts: many(OpenIdAccounts),
+    flags: many(Flags),
+    modNotes: many(ModNotes),
+    modTags: many(ModTags),
+    tokens: many(Tokens),
+    instance: one(Instances, {
+        fields: [Users.instanceId],
+        references: [Instances.id],
+    }),
+    mentionedIn: many(NoteToMentions),
+    roles: many(RoleToUsers),
+}));
 
 export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
     id: id(),
@@ -743,6 +889,17 @@ export const EmojiToNote = pgTable(
     ],
 );
 
+export const EmojisToNotesRelations = relations(EmojiToNote, ({ one }) => ({
+    emoji: one(Emojis, {
+        fields: [EmojiToNote.emojiId],
+        references: [Emojis.id],
+    }),
+    note: one(Notes, {
+        fields: [EmojiToNote.noteId],
+        references: [Notes.id],
+    }),
+}));
+
 export const NoteToMentions = pgTable(
     "NoteToMentions",
     {
@@ -763,6 +920,20 @@ export const NoteToMentions = pgTable(
         uniqueIndex().on(table.noteId, table.userId),
         index().on(table.userId),
     ],
+);
+
+export const NotesToMentionsRelations = relations(
+    NoteToMentions,
+    ({ one }) => ({
+        note: one(Notes, {
+            fields: [NoteToMentions.noteId],
+            references: [Notes.id],
+        }),
+        user: one(Users, {
+            fields: [NoteToMentions.userId],
+            references: [Users.id],
+        }),
+    }),
 );
 
 export const UserToPinnedNotes = pgTable(
@@ -787,9 +958,19 @@ export const UserToPinnedNotes = pgTable(
     ],
 );
 
-export const MediasRelations = relations(Medias, ({ many }) => ({
-    notes: many(Notes),
-}));
+export const UserToPinnedNotesRelations = relations(
+    UserToPinnedNotes,
+    ({ one }) => ({
+        note: one(Notes, {
+            fields: [UserToPinnedNotes.noteId],
+            references: [Notes.id],
+        }),
+        user: one(Users, {
+            fields: [UserToPinnedNotes.userId],
+            references: [Users.id],
+        }),
+    }),
+);
 
 export const MediasToNotes = pgTable(
     "MediasToNote",
@@ -819,183 +1000,5 @@ export const MediasToNotesRelations = relations(MediasToNotes, ({ one }) => ({
         fields: [MediasToNotes.noteId],
         references: [Notes.id],
         relationName: "AttachmentToNote",
-    }),
-}));
-
-export const UsersRelations = relations(Users, ({ many, one }) => ({
-    emojis: many(EmojiToUser),
-    pinnedNotes: many(UserToPinnedNotes),
-    notes: many(Notes, {
-        relationName: "NoteToAuthor",
-    }),
-    likes: many(Likes),
-    relationships: many(Relationships, {
-        relationName: "RelationshipToOwner",
-    }),
-    relationshipSubjects: many(Relationships, {
-        relationName: "RelationshipToSubject",
-    }),
-    notificationsMade: many(Notifications, {
-        relationName: "NotificationToAccount",
-    }),
-    notificationsReceived: many(Notifications, {
-        relationName: "NotificationToNotified",
-    }),
-    openIdAccounts: many(OpenIdAccounts),
-    flags: many(Flags),
-    modNotes: many(ModNotes),
-    modTags: many(ModTags),
-    tokens: many(Tokens),
-    instance: one(Instances, {
-        fields: [Users.instanceId],
-        references: [Instances.id],
-    }),
-    mentionedIn: many(NoteToMentions),
-    roles: many(RoleToUsers),
-}));
-
-export const RelationshipsRelations = relations(Relationships, ({ one }) => ({
-    owner: one(Users, {
-        fields: [Relationships.ownerId],
-        references: [Users.id],
-        relationName: "RelationshipToOwner",
-    }),
-    subject: one(Users, {
-        fields: [Relationships.subjectId],
-        references: [Users.id],
-        relationName: "RelationshipToSubject",
-    }),
-}));
-
-export const TokensRelations = relations(Tokens, ({ one }) => ({
-    user: one(Users, {
-        fields: [Tokens.userId],
-        references: [Users.id],
-    }),
-    application: one(Applications, {
-        fields: [Tokens.applicationId],
-        references: [Applications.id],
-    }),
-}));
-
-export const NotesToUsersRelations = relations(NoteToMentions, ({ one }) => ({
-    note: one(Notes, {
-        fields: [NoteToMentions.noteId],
-        references: [Notes.id],
-    }),
-    user: one(Users, {
-        fields: [NoteToMentions.userId],
-        references: [Users.id],
-    }),
-}));
-
-export const UserToPinnedNotesRelations = relations(
-    UserToPinnedNotes,
-    ({ one }) => ({
-        note: one(Notes, {
-            fields: [UserToPinnedNotes.noteId],
-            references: [Notes.id],
-        }),
-        user: one(Users, {
-            fields: [UserToPinnedNotes.userId],
-            references: [Users.id],
-        }),
-    }),
-);
-
-export const NotesRelations = relations(Notes, ({ many, one }) => ({
-    emojis: many(EmojiToNote),
-    author: one(Users, {
-        fields: [Notes.authorId],
-        references: [Users.id],
-        relationName: "NoteToAuthor",
-    }),
-    attachments: many(MediasToNotes, {
-        relationName: "AttachmentToNote",
-    }),
-    mentions: many(NoteToMentions),
-    reblog: one(Notes, {
-        fields: [Notes.reblogId],
-        references: [Notes.id],
-        relationName: "NoteToReblogs",
-    }),
-    usersThatHavePinned: many(UserToPinnedNotes),
-    reply: one(Notes, {
-        fields: [Notes.replyId],
-        references: [Notes.id],
-        relationName: "NoteToReplies",
-    }),
-    quote: one(Notes, {
-        fields: [Notes.quotingId],
-        references: [Notes.id],
-        relationName: "NoteToQuotes",
-    }),
-    application: one(Applications, {
-        fields: [Notes.applicationId],
-        references: [Applications.id],
-    }),
-    quotes: many(Notes, {
-        relationName: "NoteToQuotes",
-    }),
-    replies: many(Notes, {
-        relationName: "NoteToReplies",
-    }),
-    likes: many(Likes),
-    reblogs: many(Notes, {
-        relationName: "NoteToReblogs",
-    }),
-    notifications: many(Notifications),
-}));
-
-export const NotificationsRelations = relations(Notifications, ({ one }) => ({
-    account: one(Users, {
-        fields: [Notifications.accountId],
-        references: [Users.id],
-        relationName: "NotificationToAccount",
-    }),
-    notified: one(Users, {
-        fields: [Notifications.notifiedId],
-        references: [Users.id],
-        relationName: "NotificationToNotified",
-    }),
-    note: one(Notes, {
-        fields: [Notifications.noteId],
-        references: [Notes.id],
-    }),
-}));
-
-export const LikesRelations = relations(Likes, ({ one }) => ({
-    liker: one(Users, {
-        fields: [Likes.likerId],
-        references: [Users.id],
-    }),
-    liked: one(Notes, {
-        fields: [Likes.likedId],
-        references: [Notes.id],
-    }),
-}));
-
-export const EmojisRelations = relations(Emojis, ({ one, many }) => ({
-    instance: one(Instances, {
-        fields: [Emojis.instanceId],
-        references: [Instances.id],
-    }),
-    users: many(EmojiToUser),
-    notes: many(EmojiToNote),
-}));
-
-export const InstancesRelations = relations(Instances, ({ many }) => ({
-    users: many(Users),
-    emojis: many(Emojis),
-}));
-
-export const EmojisToNotesRelations = relations(EmojiToNote, ({ one }) => ({
-    emoji: one(Emojis, {
-        fields: [EmojiToNote.emojiId],
-        references: [Emojis.id],
-    }),
-    note: one(Notes, {
-        fields: [EmojiToNote.noteId],
-        references: [Notes.id],
     }),
 }));
