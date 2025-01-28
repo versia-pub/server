@@ -61,6 +61,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((a) => new URL(a))
             .or(
                 z
                     .instanceof(File)
@@ -76,6 +77,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((v) => new URL(v))
             .or(
                 z
                     .instanceof(File)
@@ -256,7 +258,7 @@ export default apiRoute((app) =>
                     content_type: contentType,
                 };
             } else {
-                self.avatar = avatar;
+                self.avatar = avatar.toString();
                 self.source.avatar = {
                     content_type: await mimeLookup(avatar),
                 };
@@ -274,7 +276,7 @@ export default apiRoute((app) =>
                     content_type: contentType,
                 };
             } else {
-                self.header = header;
+                self.header = header.toString();
                 self.source.header = {
                     content_type: await mimeLookup(header),
                 };

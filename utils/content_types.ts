@@ -57,8 +57,11 @@ export const urlToContentFormat = (
     };
 };
 
-export const mimeLookup = (url: string): Promise<string> => {
-    const naiveLookup = lookup(url.replace(new URL(url).search, ""));
+export const mimeLookup = (url: URL): Promise<string> => {
+    const urlWithoutSearch = url.toString().replace(url.search, "");
+
+    // Strip query params from URL to get the proper file extension
+    const naiveLookup = lookup(urlWithoutSearch);
 
     if (naiveLookup) {
         return Promise.resolve(naiveLookup);

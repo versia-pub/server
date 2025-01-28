@@ -1,8 +1,7 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
-import type { ContentFormat } from "@versia/federation/types";
-import { Emoji, Media, db } from "@versia/kit/db";
+import { Emoji, db } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -32,6 +31,7 @@ const schemas = {
                 .min(1)
                 .max(2000)
                 .url()
+                .transform((a) => new URL(a))
                 .or(
                     z
                         .instanceof(File)
@@ -247,9 +247,6 @@ export default apiRoute((app) => {
             );
         }
 
-        const modifiedMedia = structuredClone(emoji.data.media);
-        const modified = structuredClone(emoji.data);
-
         if (element) {
             // Check of emoji is an image
             const contentType =
@@ -265,40 +262,24 @@ export default apiRoute((app) => {
                 );
             }
 
-            let contentFormat: ContentFormat | undefined;
-
             if (element instanceof File) {
-                const mediaManager = new MediaManager(config);
-
-                const { uploadedFile, path } =
-                    await mediaManager.addFile(element);
-
-                contentFormat = await Media.fileToContentFormat(
-                    uploadedFile,
-                    Media.getUrl(path),
-                    { description: alt },
-                );
+                await emoji.media.updateFromFile(element);
             } else {
-                contentFormat = {
-                    [contentType]: {
-                        content: element,
-                        remote: true,
-                        description: alt,
-                    },
-                };
+                await emoji.media.updateFromUrl(element);
             }
-
-            modifiedMedia.content = contentFormat;
         }
 
-        modified.shortcode = shortcode ?? modified.shortcode;
-        modified.category = category ?? modified.category;
-
-        if (emojiGlobal !== undefined) {
-            modified.ownerId = emojiGlobal ? null : user.data.id;
+        if (alt) {
+            await emoji.media.updateMetadata({
+                description: alt,
+            });
         }
 
-        await emoji.update(modified);
+        await emoji.update({
+            shortcode,
+            ownerId: emojiGlobal ? null : user.data.id,
+            category,
+        });
 
         return context.json(emoji.toApi(), 200);
     });

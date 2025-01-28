@@ -250,7 +250,9 @@ export default (plugin: PluginType): void => {
                             avatar: picture
                                 ? {
                                       url: picture,
-                                      content_type: await mimeLookup(picture),
+                                      content_type: await mimeLookup(
+                                          new URL(picture),
+                                      ),
                                   }
                                 : undefined,
                             password: undefined,

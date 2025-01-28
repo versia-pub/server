@@ -1,3 +1,4 @@
+import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
 import type { Attachment as ApiAttachment } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
@@ -158,23 +159,7 @@ export class Media extends BaseInterface<typeof Medias> {
             thumbnail?: File;
         },
     ): Promise<Media> {
-        if (file.size > config.validation.max_media_size) {
-            throw new ApiError(
-                413,
-                `File too large, max size is ${config.validation.max_media_size} bytes`,
-            );
-        }
-
-        if (
-            config.validation.enforce_mime_types &&
-            !config.validation.allowed_mime_types.includes(file.type)
-        ) {
-            throw new ApiError(
-                415,
-                `File type ${file.type} is not allowed`,
-                `Allowed types: ${config.validation.allowed_mime_types.join(", ")}`,
-            );
-        }
+        Media.checkFile(file);
 
         const mediaManager = new MediaManager(config);
 
@@ -217,6 +202,137 @@ export class Media extends BaseInterface<typeof Medias> {
         });
 
         return newAttachment;
+    }
+
+    public static async fromUrl(
+        uri: URL,
+        options?: {
+            description?: string;
+        },
+    ): Promise<Media> {
+        const mimeType = await mimeLookup(uri);
+
+        const content: ContentFormat = {
+            [mimeType]: {
+                content: uri.toString(),
+                remote: true,
+                description: options?.description,
+            },
+        };
+
+        const newAttachment = await Media.insert({
+            content,
+        });
+
+        await mediaQueue.add(MediaJobType.CalculateMetadata, {
+            attachmentId: newAttachment.id,
+            // CalculateMetadata doesn't use the filename, but the type is annoying
+            // and requires it anyway
+            filename: "blank",
+        });
+
+        return newAttachment;
+    }
+
+    private static checkFile(file: File): void {
+        if (file.size > config.validation.max_media_size) {
+            throw new ApiError(
+                413,
+                `File too large, max size is ${config.validation.max_media_size} bytes`,
+            );
+        }
+
+        if (
+            config.validation.enforce_mime_types &&
+            !config.validation.allowed_mime_types.includes(file.type)
+        ) {
+            throw new ApiError(
+                415,
+                `File type ${file.type} is not allowed`,
+                `Allowed types: ${config.validation.allowed_mime_types.join(", ")}`,
+            );
+        }
+    }
+
+    public async updateFromFile(file: File): Promise<void> {
+        Media.checkFile(file);
+
+        const mediaManager = new MediaManager(config);
+
+        const { path } = await mediaManager.addFile(file);
+
+        const url = Media.getUrl(path);
+
+        const content = await Media.fileToContentFormat(file, url, {
+            description:
+                this.data.content[Object.keys(this.data.content)[0]]
+                    .description || undefined,
+        });
+
+        await this.update({
+            content,
+        });
+
+        await mediaQueue.add(MediaJobType.CalculateMetadata, {
+            attachmentId: this.id,
+            filename: file.name,
+        });
+    }
+
+    public async updateFromUrl(uri: URL): Promise<void> {
+        const mimeType = await mimeLookup(uri);
+
+        const content: ContentFormat = {
+            [mimeType]: {
+                content: uri.toString(),
+                remote: true,
+                description:
+                    this.data.content[Object.keys(this.data.content)[0]]
+                        .description || undefined,
+            },
+        };
+
+        await this.update({
+            content,
+        });
+
+        await mediaQueue.add(MediaJobType.CalculateMetadata, {
+            attachmentId: this.id,
+            filename: "blank",
+        });
+    }
+
+    public async updateThumbnail(file: File): Promise<void> {
+        Media.checkFile(file);
+
+        const mediaManager = new MediaManager(config);
+
+        const { path } = await mediaManager.addFile(file);
+
+        const url = Media.getUrl(path);
+
+        const content = await Media.fileToContentFormat(file, url);
+
+        await this.update({
+            thumbnail: content,
+        });
+    }
+
+    public async updateMetadata(
+        metadata: Partial<Omit<ContentFormat[keyof ContentFormat], "content">>,
+    ): Promise<void> {
+        const content = this.data.content;
+
+        for (const type of Object.keys(content)) {
+            content[type] = {
+                ...content[type],
+                ...metadata,
+            };
+        }
+
+        await this.update({
+            content,
+        });
     }
 
     public get id(): string {

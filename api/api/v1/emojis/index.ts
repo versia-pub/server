@@ -1,13 +1,11 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
-import type { ContentFormat } from "@versia/federation/types";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -28,6 +26,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((a) => new URL(a))
             .or(
                 z
                     .instanceof(File)
@@ -143,31 +142,14 @@ export default apiRoute((app) =>
             );
         }
 
-        let contentFormat: ContentFormat | undefined;
-
-        if (element instanceof File) {
-            const mediaManager = new MediaManager(config);
-
-            const { uploadedFile, path } = await mediaManager.addFile(element);
-
-            contentFormat = await Media.fileToContentFormat(
-                uploadedFile,
-                Media.getUrl(path),
-                { description: alt },
-            );
-        } else {
-            contentFormat = {
-                [contentType]: {
-                    content: element,
-                    remote: true,
-                    description: alt,
-                },
-            };
-        }
-
-        const media = await Media.insert({
-            content: contentFormat,
-        });
+        const media =
+            element instanceof File
+                ? await Media.fromFile(element, {
+                      description: alt,
+                  })
+                : await Media.fromUrl(element, {
+                      description: alt,
+                  });
 
         const emoji = await Emoji.insert({
             shortcode,
