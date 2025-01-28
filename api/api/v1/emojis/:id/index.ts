@@ -1,6 +1,7 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
+import type { ContentFormat } from "@versia/federation/types";
 import { Emoji, Media, db } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
@@ -230,8 +231,6 @@ export default apiRoute((app) => {
             );
         }
 
-        const mediaManager = new MediaManager(config);
-
         const {
             global: emojiGlobal,
             alt,
@@ -248,11 +247,12 @@ export default apiRoute((app) => {
             );
         }
 
+        const modifiedMedia = structuredClone(emoji.data.media);
         const modified = structuredClone(emoji.data);
 
         if (element) {
             // Check of emoji is an image
-            let contentType =
+            const contentType =
                 element instanceof File
                     ? element.type
                     : await mimeLookup(element);
@@ -265,23 +265,33 @@ export default apiRoute((app) => {
                 );
             }
 
-            let url = "";
+            let contentFormat: ContentFormat | undefined;
 
             if (element instanceof File) {
-                const uploaded = await mediaManager.addFile(element);
+                const mediaManager = new MediaManager(config);
 
-                url = Media.getUrl(uploaded.path);
-                contentType = uploaded.uploadedFile.type;
+                const { uploadedFile, path } =
+                    await mediaManager.addFile(element);
+
+                contentFormat = await Media.fileToContentFormat(
+                    uploadedFile,
+                    Media.getUrl(path),
+                    { description: alt },
+                );
             } else {
-                url = element;
+                contentFormat = {
+                    [contentType]: {
+                        content: element,
+                        remote: true,
+                        description: alt,
+                    },
+                };
             }
 
-            modified.url = url;
-            modified.contentType = contentType;
+            modifiedMedia.content = contentFormat;
         }
 
         modified.shortcode = shortcode ?? modified.shortcode;
-        modified.alt = alt ?? modified.alt;
         modified.category = category ?? modified.category;
 
         if (emojiGlobal !== undefined) {
@@ -317,7 +327,7 @@ export default apiRoute((app) => {
 
         const mediaManager = new MediaManager(config);
 
-        await mediaManager.deleteFileByUrl(emoji.data.url);
+        await mediaManager.deleteFileByUrl(emoji.media.getUrl());
 
         await db.delete(Emojis).where(eq(Emojis.id, id));
 

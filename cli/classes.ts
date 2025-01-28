@@ -1,9 +1,9 @@
 import { parseUserAddress, userAddressValidator } from "@/api";
 import { Args, type Command, Flags, type Interfaces } from "@oclif/core";
-import { type Emoji, Instance, User, db } from "@versia/kit/db";
+import { Emoji, Instance, User } from "@versia/kit/db";
 import { Emojis, Instances, Users } from "@versia/kit/tables";
 import chalk from "chalk";
-import { and, eq, getTableColumns, like } from "drizzle-orm";
+import { and, eq, inArray, like } from "drizzle-orm";
 import { BaseCommand } from "./base.ts";
 
 export type FlagsType<T extends typeof Command> = Interfaces.InferredFlags<
@@ -203,14 +203,7 @@ export abstract class EmojiFinderCommand<
         this.args = args as ArgsType<T>;
     }
 
-    public async findEmojis(): Promise<
-        Omit<
-            typeof Emoji.$type & {
-                instanceUrl: string | null;
-            },
-            "instance"
-        >[]
-    > {
+    public async findEmojis(): Promise<Emoji[]> {
         // Check if there are asterisks in the identifier but no pattern flag, warn the user if so
         if (this.args.identifier.includes("*") && !this.flags.pattern) {
             this.log(
@@ -228,22 +221,26 @@ export abstract class EmojiFinderCommand<
             ? this.args.identifier.replace(/\*/g, "%")
             : this.args.identifier;
 
-        return await db
-            .select({
-                ...getTableColumns(Emojis),
-                instanceUrl: Instances.baseUrl,
-            })
-            .from(Emojis)
-            .leftJoin(Instances, eq(Emojis.instanceId, Instances.id))
-            .where(
-                and(
-                    this.flags.type === "shortcode"
-                        ? operator(Emojis.shortcode, identifier)
-                        : undefined,
-                    this.flags.type === "instance"
-                        ? operator(Instances.baseUrl, identifier)
-                        : undefined,
-                ),
-            );
+        const instanceIds =
+            this.flags.type === "instance"
+                ? (
+                      await Instance.manyFromSql(
+                          operator(Instances.baseUrl, identifier),
+                      )
+                  ).map((instance) => instance.id)
+                : undefined;
+
+        return await Emoji.manyFromSql(
+            and(
+                this.flags.type === "shortcode"
+                    ? operator(Emojis.shortcode, identifier)
+                    : undefined,
+                instanceIds && instanceIds.length > 0
+                    ? inArray(Emojis.instanceId, instanceIds)
+                    : undefined,
+            ),
+            undefined,
+            this.flags.limit,
+        );
     }
 }

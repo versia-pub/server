@@ -302,6 +302,20 @@
             "when": 1737660317024,
             "tag": "0042_swift_the_phantom",
             "breakpoints": true
+        },
+        {
+            "idx": 43,
+            "version": "7",
+            "when": 1738080562679,
+            "tag": "0043_mute_jigsaw",
+            "breakpoints": true
+        },
+        {
+            "idx": 44,
+            "version": "7",
+            "when": 1738082427051,
+            "tag": "0044_quiet_jasper_sitwell",
+            "breakpoints": true
         }
     ]
 }

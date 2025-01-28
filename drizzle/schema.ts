@@ -52,10 +52,13 @@ export const Challenges = pgTable("Challenges", {
 export const Emojis = pgTable("Emojis", {
     id: id(),
     shortcode: text("shortcode").notNull(),
-    url: text("url").notNull(),
+    mediaId: uuid("mediaId")
+        .references(() => Medias.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
     visibleInPicker: boolean("visible_in_picker").notNull(),
-    alt: text("alt"),
-    contentType: text("content_type").notNull(),
     instanceId: uuid("instanceId").references(() => Instances.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
@@ -68,6 +71,10 @@ export const Emojis = pgTable("Emojis", {
 });
 
 export const EmojisRelations = relations(Emojis, ({ one, many }) => ({
+    media: one(Medias, {
+        fields: [Emojis.mediaId],
+        references: [Medias.id],
+    }),
     instance: one(Instances, {
         fields: [Emojis.instanceId],
         references: [Instances.id],
@@ -357,6 +364,7 @@ export const Medias = pgTable("Medias", {
 
 export const MediasRelations = relations(Medias, ({ many }) => ({
     notes: many(Notes),
+    emojis: many(Emojis),
 }));
 
 export const Notifications = pgTable("Notifications", {

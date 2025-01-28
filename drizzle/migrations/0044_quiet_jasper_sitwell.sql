@@ -1,0 +1,1 @@
+ALTER TABLE "Emojis" ALTER COLUMN "mediaId" SET NOT NULL;

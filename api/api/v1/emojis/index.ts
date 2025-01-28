@@ -1,6 +1,7 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
+import type { ContentFormat } from "@versia/federation/types";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
@@ -130,10 +131,8 @@ export default apiRoute((app) =>
             );
         }
 
-        let url = "";
-
         // Check of emoji is an image
-        let contentType =
+        const contentType =
             element instanceof File ? element.type : await mimeLookup(element);
 
         if (!contentType.startsWith("image/")) {
@@ -144,25 +143,38 @@ export default apiRoute((app) =>
             );
         }
 
+        let contentFormat: ContentFormat | undefined;
+
         if (element instanceof File) {
             const mediaManager = new MediaManager(config);
 
-            const uploaded = await mediaManager.addFile(element);
+            const { uploadedFile, path } = await mediaManager.addFile(element);
 
-            url = Media.getUrl(uploaded.path);
-            contentType = uploaded.uploadedFile.type;
+            contentFormat = await Media.fileToContentFormat(
+                uploadedFile,
+                Media.getUrl(path),
+                { description: alt },
+            );
         } else {
-            url = element;
+            contentFormat = {
+                [contentType]: {
+                    content: element,
+                    remote: true,
+                    description: alt,
+                },
+            };
         }
+
+        const media = await Media.insert({
+            content: contentFormat,
+        });
 
         const emoji = await Emoji.insert({
             shortcode,
-            url,
+            mediaId: media.id,
             visibleInPicker: true,
             ownerId: global ? null : user.id,
             category,
-            contentType,
-            alt,
         });
 
         return context.json(emoji.toApi(), 201);

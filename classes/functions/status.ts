@@ -48,6 +48,7 @@ export const findManyNotes = async (
                     emoji: {
                         with: {
                             instance: true,
+                            media: true,
                         },
                     },
                 },
@@ -79,6 +80,7 @@ export const findManyNotes = async (
                             emoji: {
                                 with: {
                                     instance: true,
+                                    media: true,
                                 },
                             },
                         },

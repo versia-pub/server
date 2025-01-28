@@ -17,6 +17,7 @@ export const userRelations = {
             emoji: {
                 with: {
                     instance: true,
+                    media: true,
                 },
             },
         },

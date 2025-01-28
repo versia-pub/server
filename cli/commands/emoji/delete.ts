@@ -55,13 +55,10 @@ export default class EmojiDelete extends EmojiFinderCommand<
 
         flags.print &&
             this.log(
-                formatArray(emojis, [
-                    "id",
-                    "shortcode",
-                    "alt",
-                    "contentType",
-                    "instanceUrl",
-                ]),
+                formatArray(
+                    emojis.map((e) => e.data),
+                    ["id", "shortcode", "alt", "contentType", "instanceUrl"],
+                ),
             );
 
         if (flags.confirm) {
@@ -80,13 +77,13 @@ export default class EmojiDelete extends EmojiFinderCommand<
         const spinner = ora("Deleting emoji(s)").start();
 
         for (const emoji of emojis) {
-            spinner.text = `Deleting emoji ${chalk.gray(emoji.shortcode)} (${
+            spinner.text = `Deleting emoji ${chalk.gray(emoji.data.shortcode)} (${
                 emojis.findIndex((e) => e.id === emoji.id) + 1
             }/${emojis.length})`;
 
             const mediaManager = new MediaManager(config);
 
-            await mediaManager.deleteFileByUrl(emoji.url);
+            await mediaManager.deleteFileByUrl(emoji.media.getUrl());
 
             await db.delete(Emojis).where(eq(Emojis.id, emoji.id));
         }
