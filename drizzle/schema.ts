@@ -365,6 +365,12 @@ export const Medias = pgTable("Medias", {
 export const MediasRelations = relations(Medias, ({ many }) => ({
     notes: many(Notes),
     emojis: many(Emojis),
+    avatars: many(Users, {
+        relationName: "UserToAvatar",
+    }),
+    headers: many(Users, {
+        relationName: "UserToHeader",
+    }),
 }));
 
 export const Notifications = pgTable("Notifications", {
@@ -557,8 +563,14 @@ export const Users = pgTable(
                 };
             }
         >(),
-        avatar: text("avatar").notNull(),
-        header: text("header").notNull(),
+        avatarId: uuid("avatarId").references(() => Medias.id, {
+            onDelete: "set null",
+            onUpdate: "cascade",
+        }),
+        headerId: uuid("headerId").references(() => Medias.id, {
+            onDelete: "set null",
+            onUpdate: "cascade",
+        }),
         createdAt: createdAt(),
         updatedAt: updatedAt(),
         isBot: boolean("is_bot").default(false).notNull(),
@@ -587,6 +599,16 @@ export const UsersRelations = relations(Users, ({ many, one }) => ({
     pinnedNotes: many(UserToPinnedNotes),
     notes: many(Notes, {
         relationName: "NoteToAuthor",
+    }),
+    avatar: one(Medias, {
+        fields: [Users.avatarId],
+        references: [Medias.id],
+        relationName: "UserToAvatar",
+    }),
+    header: one(Medias, {
+        fields: [Users.headerId],
+        references: [Medias.id],
+        relationName: "UserToHeader",
     }),
     likes: many(Likes),
     relationships: many(Relationships, {

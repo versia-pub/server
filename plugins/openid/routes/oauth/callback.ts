@@ -1,7 +1,6 @@
-import { mimeLookup } from "@/content_types.ts";
 import { randomString } from "@/math.ts";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Token, User, db } from "@versia/kit/db";
+import { Media, Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
 import { setCookie } from "hono/cookie";
@@ -243,18 +242,15 @@ export default (plugin: PluginType): void => {
                             ? !!(await User.fromSql(eq(Users.email, email)))
                             : false;
 
+                        const avatar = picture
+                            ? await Media.fromUrl(new URL(picture))
+                            : null;
+
                         // Create new user
                         const user = await User.fromDataLocal({
                             email: doesEmailExist ? undefined : email,
                             username,
-                            avatar: picture
-                                ? {
-                                      url: picture,
-                                      content_type: await mimeLookup(
-                                          new URL(picture),
-                                      ),
-                                  }
-                                : undefined,
+                            avatar: avatar ?? undefined,
                             password: undefined,
                         });
 

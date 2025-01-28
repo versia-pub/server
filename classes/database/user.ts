@@ -21,7 +21,7 @@ import type {
     FollowReject as VersiaFollowReject,
     User as VersiaUser,
 } from "@versia/federation/types";
-import { Notification, PushSubscription, db } from "@versia/kit/db";
+import { Media, Notification, PushSubscription, db } from "@versia/kit/db";
 import {
     EmojiToUser,
     Likes,
@@ -69,6 +69,8 @@ type UserWithInstance = InferSelectModel<typeof Users> & {
 
 type UserWithRelations = UserWithInstance & {
     emojis: (typeof Emoji.$type)[];
+    avatar: typeof Media.$type | null;
+    header: typeof Media.$type | null;
     followerCount: number;
     followingCount: number;
     statusCount: number;
@@ -148,6 +150,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     });
 
     public static $type: UserWithRelations;
+
+    public avatar: Media | null;
+    public header: Media | null;
+
+    public constructor(data: UserWithRelations) {
+        super(data);
+
+        this.avatar = data.avatar ? new Media(data.avatar) : null;
+        this.header = data.header ? new Media(data.header) : null;
+    }
 
     public async reload(): Promise<void> {
         const reloaded = await User.fromId(this.data.id);
@@ -728,9 +740,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         user: VersiaUser,
         instance: Instance,
     ): Promise<User> {
-        const avatar = user.avatar ? Object.entries(user.avatar)[0] : null;
-        const header = user.header ? Object.entries(user.header)[0] : null;
-
         const data = {
             username: user.username,
             uri: user.uri,
@@ -748,8 +757,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             fields: user.fields ?? [],
             updatedAt: new Date(user.created_at).toISOString(),
             instanceId: instance.id,
-            avatar: avatar?.[1].content || "",
-            header: header?.[1].content || "",
             displayName: user.display_name ?? "",
             note: getBestContentType(user.bio).content,
             publicKey: user.public_key.key,
@@ -759,16 +766,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 privacy: "public",
                 sensitive: false,
                 fields: [],
-                avatar: avatar
-                    ? {
-                          content_type: avatar[0],
-                      }
-                    : undefined,
-                header: header
-                    ? {
-                          content_type: header[0],
-                      }
-                    : undefined,
             },
         };
 
@@ -784,14 +781,65 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         // If it exists, simply update it
         if (foundUser) {
-            await foundUser.update(data);
+            let avatar: Media | null = null;
+            let header: Media | null = null;
+
+            if (user.avatar) {
+                if (foundUser.avatar) {
+                    avatar = new Media(
+                        await foundUser.avatar.update({
+                            content: user.avatar,
+                        }),
+                    );
+                } else {
+                    avatar = await Media.insert({
+                        content: user.avatar,
+                    });
+                }
+            }
+
+            if (user.header) {
+                if (foundUser.header) {
+                    header = new Media(
+                        await foundUser.header.update({
+                            content: user.header,
+                        }),
+                    );
+                } else {
+                    header = await Media.insert({
+                        content: user.header,
+                    });
+                }
+            }
+
+            await foundUser.update({
+                ...data,
+                avatarId: avatar?.id,
+                headerId: header?.id,
+            });
             await foundUser.updateEmojis(emojis);
 
             return foundUser;
         }
 
         // Else, create a new user
-        const newUser = await User.insert(data);
+        const avatar = user.avatar
+            ? await Media.insert({
+                  content: user.avatar,
+              })
+            : null;
+
+        const header = user.header
+            ? await Media.insert({
+                  content: user.header,
+              })
+            : null;
+
+        const newUser = await User.insert({
+            ...data,
+            avatarId: avatar?.id,
+            headerId: header?.id,
+        });
         await newUser.updateEmojis(emojis);
 
         return newUser;
@@ -846,13 +894,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The raw URL for the user's avatar
      */
     public getAvatarUrl(config: Config): string {
-        if (!this.data.avatar) {
+        if (!this.avatar) {
             return (
                 config.defaults.avatar ||
                 `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`
             );
         }
-        return this.data.avatar;
+        return this.avatar?.getUrl();
     }
 
     public static async generateKeys(): Promise<{
@@ -886,14 +934,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         password: string | undefined;
         email: string | undefined;
         bio?: string;
-        avatar?: {
-            url: string;
-            content_type: string;
-        };
-        header?: {
-            url: string;
-            content_type: string;
-        };
+        avatar?: Media;
+        header?: Media;
         admin?: boolean;
         skipPasswordHash?: boolean;
     }): Promise<User> {
@@ -911,8 +953,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                             : await Bun.password.hash(data.password),
                     email: data.email,
                     note: data.bio ?? "",
-                    avatar: data.avatar?.url ?? config.defaults.avatar ?? "",
-                    header: data.header?.url ?? config.defaults.avatar ?? "",
+                    avatarId: data.avatar?.id,
+                    headerId: data.header?.id,
                     isAdmin: data.admin ?? false,
                     publicKey: keys.public_key,
                     fields: [],
@@ -924,16 +966,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                         privacy: "public",
                         sensitive: false,
                         fields: [],
-                        avatar: data.avatar
-                            ? {
-                                  content_type: data.avatar.content_type,
-                              }
-                            : undefined,
-                        header: data.header
-                            ? {
-                                  content_type: data.header.content_type,
-                              }
-                            : undefined,
                     },
                 })
                 .returning()
@@ -957,10 +989,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @returns The raw URL for the user's header
      */
     public getHeaderUrl(config: Config): string {
-        if (!this.data.header) {
+        if (!this.header) {
             return config.defaults.header || "";
         }
-        return this.data.header;
+        return this.header.getUrl();
     }
 
     public getAcct(): string {

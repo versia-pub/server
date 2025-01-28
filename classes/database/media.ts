@@ -136,6 +136,8 @@ export class Media extends BaseInterface<typeof Medias> {
         } else {
             await db.delete(Medias).where(eq(Medias.id, this.id));
         }
+
+        // TODO: Also delete the file from the media manager
     }
 
     public static async insert(
