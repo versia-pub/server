@@ -4,7 +4,6 @@
     "": {
       "name": "versia-server",
       "dependencies": {
-        "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client@0.8.0",
         "@bull-board/api": "^6.7.1",
         "@bull-board/hono": "^6.7.1",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
@@ -261,8 +260,6 @@
     "@biomejs/cli-win32-arm64": ["@biomejs/cli-win32-arm64@1.9.4", "", { "os": "win32", "cpu": "arm64" }, "sha512-tlbhLk+WXZmgwoIKwHIHEBZUwxml7bRJgk0X2sPyNR3S93cdRq6XulAZRQJ17FYGGzWne0fgrXBKpl7l4M87Hg=="],
 
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@1.9.4", "", { "os": "win32", "cpu": "x64" }, "sha512-8Y5wMhVIPaWe6jw2H+KlEm4wP/f7EW3810ZLmDlrEEy5KvBsb9ECEfu/kMWD484ijfQ8+nIi0giMgu9g1UAuuA=="],
-
-    "@bradenmacdonald/s3-lite-client": ["@jsr/bradenmacdonald__s3-lite-client@0.8.0", "https://npm.jsr.io/~/11/@jsr/bradenmacdonald__s3-lite-client/0.8.0.tgz", {}, "sha512-q4n9/bqDPdNVOnljSOY0eVKHz1WpRAuJebPIpl2YH4iWSaSduxKJBucnomEEgfEMM5zA0ohRd2biWCwB53QaBg=="],
 
     "@bull-board/api": ["@bull-board/api@6.7.1", "", { "dependencies": { "redis-info": "^3.0.8" }, "peerDependencies": { "@bull-board/ui": "6.7.1" } }, "sha512-Gv+0jo0QYBjNE0DatcUSavMLfGAOuhsLVPxJHR3QjN7Rp0s1VM/O2ExNTezDip1Q67G8fq8Tp9ZfleJZb1KP2Q=="],
 

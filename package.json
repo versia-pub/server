@@ -107,7 +107,6 @@
         "typescript": "^5.7.2"
     },
     "dependencies": {
-        "@bradenmacdonald/s3-lite-client": "npm:@jsr/bradenmacdonald__s3-lite-client@0.8.0",
         "@bull-board/api": "^6.7.1",
         "@bull-board/hono": "^6.7.1",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
