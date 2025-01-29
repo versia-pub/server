@@ -11,11 +11,6 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-}).then((output) => {
-    if (!output.success) {
-        console.error(output.logs);
-        throw new Error("Build failed");
-    }
 });
 
 buildSpinner.text = "Transforming";
