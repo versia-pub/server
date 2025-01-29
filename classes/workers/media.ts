@@ -2,9 +2,8 @@ import { Media } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import { config } from "~/packages/config-manager";
 import { connection } from "~/utils/redis.ts";
-import { MediaManager } from "../media/media-manager.ts";
-import { BlurhashPreprocessor } from "../media/preprocessors/blurhash.ts";
-import { ImageConversionPreprocessor } from "../media/preprocessors/image-conversion.ts";
+import { calculateBlurhash } from "../media/preprocessors/blurhash.ts";
+import { convertImage } from "../media/preprocessors/image-conversion.ts";
 import {
     type MediaJobData,
     MediaJobType,
@@ -29,8 +28,6 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                         );
                     }
 
-                    const processor = new ImageConversionPreprocessor(config);
-
                     await job.log(`Processing attachment [${attachmentId}]`);
                     await job.log(
                         `Fetching file from [${attachment.getUrl()}]`,
@@ -45,29 +42,11 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     await job.log(`Converting attachment [${attachmentId}]`);
 
-                    const { file: processedFile } =
-                        await processor.process(file);
-
-                    const mediaManager = new MediaManager(config);
+                    const processedFile = await convertImage(file);
 
                     await job.log(`Uploading attachment [${attachmentId}]`);
 
-                    const { path, uploadedFile } =
-                        await mediaManager.addFile(processedFile);
-
-                    const url = Media.getUrl(path);
-
-                    await attachment.update({
-                        content: await Media.fileToContentFormat(
-                            uploadedFile,
-                            url,
-                            {
-                                description:
-                                    attachment.data.content[0].description ||
-                                    undefined,
-                            },
-                        ),
-                    });
+                    await attachment.updateFromFile(processedFile);
 
                     await job.log(
                         `✔ Finished processing attachment [${attachmentId}]`,
@@ -89,8 +68,6 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
                         );
                     }
 
-                    const blurhashProcessor = new BlurhashPreprocessor();
-
                     await job.log(`Processing attachment [${attachmentId}]`);
                     await job.log(
                         `Fetching file from [${attachment.getUrl()}]`,
@@ -106,7 +83,7 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     await job.log(`Generating blurhash for [${attachmentId}]`);
 
-                    const { blurhash } = await blurhashProcessor.process(file);
+                    const blurhash = await calculateBlurhash(file);
 
                     await attachment.update({
                         blurhash,

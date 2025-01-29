@@ -1,12 +1,10 @@
 import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute } from "@hono/zod-openapi";
-import { Emoji, db } from "@versia/kit/db";
-import { Emojis, RolePermissions } from "@versia/kit/tables";
-import { eq } from "drizzle-orm";
+import { Emoji } from "@versia/kit/db";
+import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -306,11 +304,7 @@ export default apiRoute((app) => {
             );
         }
 
-        const mediaManager = new MediaManager(config);
-
-        await mediaManager.deleteFileByUrl(emoji.media.getUrl());
-
-        await db.delete(Emojis).where(eq(Emojis.id, id));
+        await emoji.delete();
 
         return context.body(null, 204);
     });

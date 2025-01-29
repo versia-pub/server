@@ -1,14 +1,9 @@
 import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
-import { db } from "@versia/kit/db";
-import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
-import { eq } from "drizzle-orm";
 import ora from "ora";
-import { MediaManager } from "~/classes/media/media-manager";
 import { EmojiFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
-import { config } from "~/packages/config-manager";
 
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete
@@ -81,11 +76,7 @@ export default class EmojiDelete extends EmojiFinderCommand<
                 emojis.findIndex((e) => e.id === emoji.id) + 1
             }/${emojis.length})`;
 
-            const mediaManager = new MediaManager(config);
-
-            await mediaManager.deleteFileByUrl(emoji.media.getUrl());
-
-            await db.delete(Emojis).where(eq(Emojis.id, emoji.id));
+            await emoji.delete();
         }
 
         spinner.succeed("Emoji(s) deleted");

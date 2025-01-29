@@ -125,9 +125,8 @@ enabled = false
 
 [media]
 # Can be "s3" or "local", where "local" uploads the file to the local filesystem
-# If you need to change this value after setting up your instance, you must move all the files
-# from one backend to the other manually (the CLI will have an option to do this later)
-# TODO: Add CLI command to move files
+# Changing this value will not retroactively apply to existing data
+# Don't forget to fill in the s3 config :3
 backend = "s3"
 # Whether to check the hash of media when uploading to avoid duplication
 deduplicate_media = true
@@ -145,7 +144,7 @@ convert_to = "image/webp"
 convert_vector = false
 
 # [s3]
-# Can be left blank if you don't use the S3 media backend
+# Can be left commented if you don't use the S3 media backend
 # endpoint = ""
 # access_key = "XXXXX"
 # secret_access_key = "XXX"

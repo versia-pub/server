@@ -1,10 +1,11 @@
+import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
 import type { Attachment as ApiAttachment } from "@versia/client/types";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
-import { SHA256 } from "bun";
+import { S3Client, SHA256, randomUUIDv7, write } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -18,7 +19,7 @@ import { z } from "zod";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
 import { ApiError } from "../errors/api-error.ts";
-import { MediaManager } from "../media/media-manager.ts";
+import { getMediaHash } from "../media/media-hasher.ts";
 import { MediaJobType, mediaQueue } from "../queues/media.ts";
 import { BaseInterface } from "./base.ts";
 
@@ -154,6 +155,47 @@ export class Media extends BaseInterface<typeof Medias> {
         return attachment;
     }
 
+    private static async upload(file: File): Promise<{
+        path: string;
+    }> {
+        const fileName = file.name ?? randomUUIDv7();
+        const hash = await getMediaHash(file);
+
+        switch (config.media.backend) {
+            case MediaBackendType.Local: {
+                const path = join(
+                    config.media.local_uploads_folder,
+                    hash,
+                    fileName,
+                );
+
+                await write(path, file);
+
+                return { path: join(hash, fileName) };
+            }
+
+            case MediaBackendType.S3: {
+                const path = join(hash, fileName);
+
+                if (!config.s3) {
+                    throw new ApiError(500, "S3 configuration missing");
+                }
+
+                const client = new S3Client({
+                    endpoint: config.s3.endpoint,
+                    region: config.s3.region,
+                    bucket: config.s3.bucket_name,
+                    accessKeyId: config.s3.access_key,
+                    secretAccessKey: config.s3.secret_access_key,
+                });
+
+                await client.write(path, file);
+
+                return { path };
+            }
+        }
+    }
+
     public static async fromFile(
         file: File,
         options?: {
@@ -163,16 +205,14 @@ export class Media extends BaseInterface<typeof Medias> {
     ): Promise<Media> {
         Media.checkFile(file);
 
-        const mediaManager = new MediaManager(config);
-
-        const { path } = await mediaManager.addFile(file);
+        const { path } = await Media.upload(file);
 
         const url = Media.getUrl(path);
 
         let thumbnailUrl = "";
 
         if (options?.thumbnail) {
-            const { path } = await mediaManager.addFile(options.thumbnail);
+            const { path } = await Media.upload(options.thumbnail);
 
             thumbnailUrl = Media.getUrl(path);
         }
@@ -259,9 +299,7 @@ export class Media extends BaseInterface<typeof Medias> {
     public async updateFromFile(file: File): Promise<void> {
         Media.checkFile(file);
 
-        const mediaManager = new MediaManager(config);
-
-        const { path } = await mediaManager.addFile(file);
+        const { path } = await Media.upload(file);
 
         const url = Media.getUrl(path);
 
@@ -307,9 +345,7 @@ export class Media extends BaseInterface<typeof Medias> {
     public async updateThumbnail(file: File): Promise<void> {
         Media.checkFile(file);
 
-        const mediaManager = new MediaManager(config);
-
-        const { path } = await mediaManager.addFile(file);
+        const { path } = await Media.upload(file);
 
         const url = Media.getUrl(path);
 
@@ -346,7 +382,7 @@ export class Media extends BaseInterface<typeof Medias> {
             return new URL(`/media/${name}`, config.http.base_url).toString();
         }
         if (config.media.backend === MediaBackendType.S3) {
-            return new URL(`/${name}`, config.s3.public_url).toString();
+            return new URL(`/${name}`, config.s3?.public_url).toString();
         }
         return "";
     }

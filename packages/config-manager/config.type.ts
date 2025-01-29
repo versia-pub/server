@@ -276,14 +276,7 @@ export const configValidator = z
                 public_url: zUrl,
             })
             .strict()
-            .default({
-                endpoint: "",
-                access_key: "",
-                secret_access_key: "",
-                region: undefined,
-                bucket_name: "versia",
-                public_url: "https://cdn.example.com",
-            }),
+            .optional(),
         validation: z
             .object({
                 max_displayname_size: z.number().int().default(50),
@@ -854,6 +847,11 @@ export const configValidator = z
             .strict()
             .optional(),
     })
-    .strict();
+    .strict()
+    .refine(
+        // If media backend is S3, s3 config must be set
+        (arg) => arg.media.backend === MediaBackendType.Local || !!arg.s3,
+        "S3 config must be set when using S3 media backend",
+    );
 
 export type Config = z.infer<typeof configValidator>;
