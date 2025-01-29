@@ -86,6 +86,7 @@ max_emoji_description_size = 1000
 - Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
 - Fixed incorrect content-type on some media when using S3.
 - All media content-type is now correctly fetched, instead of guessed from the file extension.
+- Added missing attributes to `/api/v1/instance` (some clients were expecting them).
 
 # `0.7.0` • The Auth and APIs Update
 

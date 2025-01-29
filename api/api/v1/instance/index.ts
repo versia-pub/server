@@ -72,6 +72,17 @@ export default apiRoute((app) =>
                     max_media_attachments:
                         config.validation.max_media_attachments,
                 },
+                media_attachments: {
+                    supported_mime_types: config.validation.allowed_mime_types,
+                    image_size_limit: config.validation.max_media_size,
+                    image_matrix_limit: config.validation.max_media_size,
+                    video_size_limit: config.validation.max_media_size,
+                    video_frame_rate_limit: config.validation.max_media_size,
+                    video_matrix_limit: config.validation.max_media_size,
+                },
+                accounts: {
+                    max_featured_tags: 100,
+                },
             },
             description: config.instance.description,
             email: "",
