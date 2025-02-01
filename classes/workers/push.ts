@@ -113,7 +113,7 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                     vapidDetails: {
                         subject:
                             config.notifications.push.vapid.subject ||
-                            config.http.base_url,
+                            config.http.base_url.origin,
                         privateKey: config.notifications.push.vapid.private,
                         publicKey: config.notifications.push.vapid.public,
                     },

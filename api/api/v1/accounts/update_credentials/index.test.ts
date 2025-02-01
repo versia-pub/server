@@ -60,11 +60,11 @@ describe("/api/v1/accounts/update_credentials", () => {
             const object = (await response.json()) as APIAccount;
             // Proxy url is base_url/media/proxy/<base64url encoded url>
             expect(object.note).toBe(
-                `<p><img src="${config.http.base_url}/media/proxy/${Buffer.from(
+                `<p><img src="${config.http.base_url}media/proxy/${Buffer.from(
                     "https://example.com/image.jpg",
                 ).toString("base64url")}"> <video src="${
                     config.http.base_url
-                }/media/proxy/${Buffer.from(
+                }media/proxy/${Buffer.from(
                     "https://example.com/video.mp4",
                 ).toString("base64url")}"> Test!</p>\n`,
             );

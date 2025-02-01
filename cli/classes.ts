@@ -101,7 +101,7 @@ export abstract class UserFinderCommand<
 
             // Check instance exists, if not, create it
             await Instance.resolve(
-                `https://${parseUserAddress(identifier).domain}`,
+                new URL(`https://${parseUserAddress(identifier).domain}`),
             );
         }
 

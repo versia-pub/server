@@ -30,28 +30,25 @@ export const getBestContentType = (
 };
 
 export const urlToContentFormat = (
-    url: string,
+    url: URL,
     contentType?: string,
 ): ContentFormat | null => {
-    if (!url) {
-        return null;
-    }
-    if (url.startsWith("https://api.dicebear.com/")) {
+    if (url.href.startsWith("https://api.dicebear.com/")) {
         return {
             "image/svg+xml": {
-                content: url,
+                content: url.toString(),
                 remote: true,
             },
         };
     }
     const mimeType =
         contentType ||
-        lookup(url.replace(new URL(url).search, "")) ||
+        lookup(url.toString().replace(url.search, "")) ||
         "application/octet-stream";
 
     return {
         [mimeType]: {
-            content: url,
+            content: url.toString(),
             remote: true,
         },
     };

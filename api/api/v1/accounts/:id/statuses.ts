@@ -115,7 +115,7 @@ export default apiRoute((app) =>
                 exclude_replies ? isNull(Notes.replyId) : undefined,
             ),
             limit,
-            context.req.url,
+            new URL(context.req.url),
             user?.id,
         );
 

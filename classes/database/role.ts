@@ -227,7 +227,9 @@ export class Role extends BaseInterface<typeof Roles> {
             priority: this.data.priority,
             description: this.data.description ?? undefined,
             visible: this.data.visible,
-            icon: proxyUrl(this.data.icon) ?? undefined,
+            icon: this.data.icon
+                ? proxyUrl(new URL(this.data.icon)).toString()
+                : undefined,
         };
     }
 }

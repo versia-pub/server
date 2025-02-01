@@ -209,7 +209,7 @@ export class Media extends BaseInterface<typeof Medias> {
 
         const url = Media.getUrl(path);
 
-        let thumbnailUrl = "";
+        let thumbnailUrl: URL | null = null;
 
         if (options?.thumbnail) {
             const { path } = await Media.upload(options.thumbnail);
@@ -220,11 +220,16 @@ export class Media extends BaseInterface<typeof Medias> {
         const content = await Media.fileToContentFormat(file, url, {
             description: options?.description,
         });
-        const thumbnailContent = options?.thumbnail
-            ? await Media.fileToContentFormat(options.thumbnail, thumbnailUrl, {
-                  description: options?.description,
-              })
-            : undefined;
+        const thumbnailContent =
+            thumbnailUrl && options?.thumbnail
+                ? await Media.fileToContentFormat(
+                      options.thumbnail,
+                      thumbnailUrl,
+                      {
+                          description: options?.description,
+                      },
+                  )
+                : undefined;
 
         const newAttachment = await Media.insert({
             content,
@@ -246,6 +251,12 @@ export class Media extends BaseInterface<typeof Medias> {
         return newAttachment;
     }
 
+    /**
+     * Creates and adds a new media attachment from a URL
+     * @param uri
+     * @param options
+     * @returns
+     */
     public static async fromUrl(
         uri: URL,
         options?: {
@@ -377,20 +388,21 @@ export class Media extends BaseInterface<typeof Medias> {
         return this.data.id;
     }
 
-    public static getUrl(name: string): string {
+    public static getUrl(name: string): URL {
         if (config.media.backend === MediaBackendType.Local) {
-            return new URL(`/media/${name}`, config.http.base_url).toString();
+            return new URL(`/media/${name}`, config.http.base_url);
         }
         if (config.media.backend === MediaBackendType.S3) {
-            return new URL(`/${name}`, config.s3?.public_url).toString();
+            return new URL(`/${name}`, config.s3?.public_url);
         }
-        return "";
+
+        throw new Error("Unknown media backend");
     }
 
-    public getUrl(): string {
+    public getUrl(): URL {
         const type = this.getPreferredMimeType();
 
-        return this.data.content[type]?.content;
+        return new URL(this.data.content[type]?.content ?? "");
     }
 
     /**
@@ -461,7 +473,7 @@ export class Media extends BaseInterface<typeof Medias> {
      */
     public static async fileToContentFormat(
         file: File,
-        uri: string,
+        uri: URL,
         options?: Partial<{
             description: string;
         }>,
@@ -475,7 +487,7 @@ export class Media extends BaseInterface<typeof Medias> {
         // Thumbhash should be added in a worker after the file is uploaded
         return {
             [file.type]: {
-                content: uri,
+                content: uri.toString(),
                 remote: true,
                 hash: {
                     sha256: hash,
@@ -528,9 +540,11 @@ export class Media extends BaseInterface<typeof Medias> {
         return {
             id: this.data.id,
             type: this.getMastodonType(),
-            url: proxyUrl(data.content) ?? "",
+            url: proxyUrl(new URL(data.content)).toString(),
             remote_url: null,
-            preview_url: proxyUrl(thumbnailData?.content),
+            preview_url: thumbnailData?.content
+                ? proxyUrl(new URL(thumbnailData.content)).toString()
+                : null,
             text_url: null,
             meta: this.toApiMeta(),
             description: data.description || null,

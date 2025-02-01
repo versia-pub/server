@@ -72,7 +72,11 @@ export default apiRoute((app) =>
 
         const userJson = user.toVersia();
 
-        const { headers } = await user.sign(userJson, context.req.url, "GET");
+        const { headers } = await user.sign(
+            userJson,
+            new URL(context.req.url),
+            "GET",
+        );
 
         return context.json(userJson, 200, headers.toJSON());
     }),

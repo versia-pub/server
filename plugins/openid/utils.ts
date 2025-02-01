@@ -20,17 +20,15 @@ import {
 } from "oauth4webapi";
 
 export const oauthDiscoveryRequest = (
-    issuerUrl: string | URL,
+    issuerUrl: URL,
 ): Promise<AuthorizationServer> => {
-    const issuerUrlurl = new URL(issuerUrl);
-
-    return discoveryRequest(issuerUrlurl, {
+    return discoveryRequest(issuerUrl, {
         algorithm: "oidc",
-    }).then((res) => processDiscoveryResponse(issuerUrlurl, res));
+    }).then((res) => processDiscoveryResponse(issuerUrl, res));
 };
 
-export const oauthRedirectUri = (baseUrl: string, issuer: string): string =>
-    new URL(`/oauth/sso/${issuer}/callback`, baseUrl).toString();
+export const oauthRedirectUri = (baseUrl: URL, issuer: string): URL =>
+    new URL(`/oauth/sso/${issuer}/callback`, baseUrl);
 
 const getFlow = (
     flowId: string,
@@ -73,7 +71,7 @@ const getOIDCResponse = (
     authServer: AuthorizationServer,
     clientId: string,
     clientSecret: string,
-    redirectUri: string,
+    redirectUri: URL,
     codeVerifier: string,
     parameters: URLSearchParams,
 ): Promise<Response> => {
@@ -84,7 +82,7 @@ const getOIDCResponse = (
         },
         ClientSecretPost(clientSecret),
         parameters,
-        redirectUri,
+        redirectUri.toString(),
         codeVerifier,
     );
 };
@@ -177,7 +175,7 @@ export const automaticOidcFlow = async (
             authServer,
             issuer.client_id,
             issuer.client_secret,
-            redirectUrl.toString(),
+            redirectUrl,
             flow.codeVerifier,
             parameters,
         );

@@ -44,7 +44,7 @@ export default class FederationUserFinger extends BaseCommand<
         }
 
         // Check instance exists, if not, create it
-        await Instance.resolve(`https://${host}`);
+        await Instance.resolve(new URL(`https://${host}`));
 
         const manager = await User.getFederationRequester();
 

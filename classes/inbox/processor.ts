@@ -40,7 +40,7 @@ function isDefederated(hostname: string): boolean {
 
     return (
         config.federation.blocked.find(
-            (blocked) => pattern.match(blocked) !== null,
+            (blocked) => pattern.match(blocked.toString()) !== null,
         ) !== undefined
     );
 }
@@ -70,7 +70,7 @@ export class InboxProcessor {
      */
     public constructor(
         private request: {
-            url: string;
+            url: URL;
             method: string;
             body: string;
         },
@@ -269,8 +269,8 @@ export class InboxProcessor {
      */
     private async processNote(): Promise<Response | null> {
         const note = this.body as VersiaNote;
-        const author = await User.resolve(note.author);
-        const instance = await Instance.resolve(note.uri);
+        const author = await User.resolve(new URL(note.author));
+        const instance = await Instance.resolve(new URL(note.uri));
 
         if (!instance) {
             return Response.json(
@@ -298,8 +298,8 @@ export class InboxProcessor {
      */
     private async processFollowRequest(): Promise<Response | null> {
         const follow = this.body as unknown as VersiaFollow;
-        const author = await User.resolve(follow.author);
-        const followee = await User.resolve(follow.followee);
+        const author = await User.resolve(new URL(follow.author));
+        const followee = await User.resolve(new URL(follow.followee));
 
         if (!author) {
             return Response.json(
@@ -352,8 +352,8 @@ export class InboxProcessor {
      */
     private async processFollowAccept(): Promise<Response | null> {
         const followAccept = this.body as unknown as VersiaFollowAccept;
-        const author = await User.resolve(followAccept.author);
-        const follower = await User.resolve(followAccept.follower);
+        const author = await User.resolve(new URL(followAccept.author));
+        const follower = await User.resolve(new URL(followAccept.follower));
 
         if (!author) {
             return Response.json(
@@ -393,8 +393,8 @@ export class InboxProcessor {
      */
     private async processFollowReject(): Promise<Response | null> {
         const followReject = this.body as unknown as VersiaFollowReject;
-        const author = await User.resolve(followReject.author);
-        const follower = await User.resolve(followReject.follower);
+        const author = await User.resolve(new URL(followReject.author));
+        const follower = await User.resolve(new URL(followReject.follower));
 
         if (!author) {
             return Response.json(
@@ -438,7 +438,7 @@ export class InboxProcessor {
         const toDelete = delete_.deleted;
 
         const author = delete_.author
-            ? await User.resolve(delete_.author)
+            ? await User.resolve(new URL(delete_.author))
             : null;
 
         switch (delete_.deleted_type) {
@@ -461,7 +461,7 @@ export class InboxProcessor {
                 return null;
             }
             case "User": {
-                const userToDelete = await User.resolve(toDelete);
+                const userToDelete = await User.resolve(new URL(toDelete));
 
                 if (!userToDelete) {
                     return Response.json(
@@ -516,8 +516,8 @@ export class InboxProcessor {
      */
     private async processLikeRequest(): Promise<Response | null> {
         const like = this.body as unknown as VersiaLikeExtension;
-        const author = await User.resolve(like.author);
-        const likedNote = await Note.resolve(like.liked);
+        const author = await User.resolve(new URL(like.author));
+        const likedNote = await Note.resolve(new URL(like.liked));
 
         if (!author) {
             return Response.json(
@@ -546,7 +546,7 @@ export class InboxProcessor {
     private async processUserRequest(): Promise<Response | null> {
         const user = this.body as unknown as VersiaUser;
         // FIXME: Instead of refetching the remote user, we should read the incoming json and update from that
-        const updatedAccount = await User.fetchFromRemote(user.uri);
+        const updatedAccount = await User.fetchFromRemote(new URL(user.uri));
 
         if (!updatedAccount) {
             return Response.json(

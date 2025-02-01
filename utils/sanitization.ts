@@ -136,7 +136,11 @@ export const sanitizeHtml = async (
             element(element): void {
                 element.setAttribute(
                     "src",
-                    proxyUrl(element.getAttribute("src") ?? "") ?? "",
+                    element.getAttribute("src")
+                        ? proxyUrl(
+                              new URL(element.getAttribute("src") as string),
+                          ).toString()
+                        : "",
                 );
             },
         })

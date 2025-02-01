@@ -14,7 +14,7 @@ beforeAll(async () => {
         priority: 2,
         description: "test",
         visible: true,
-        icon: "test",
+        icon: "https://test.com",
     });
 
     expect(role).toBeDefined();

@@ -23,7 +23,8 @@ const zUrl = z
     .trim()
     .min(1)
     .refine((arg) => URL.canParse(arg), "Invalid url")
-    .transform((arg) => arg.replace(/\/$/, ""));
+    .transform((arg) => arg.replace(/\/$/, ""))
+    .transform((arg) => new URL(arg));
 
 export const configValidator = z
     .object({
@@ -124,7 +125,7 @@ export const configValidator = z
             .strict(),
         http: z
             .object({
-                base_url: z.string().min(1).default("http://versia.social"),
+                base_url: zUrl.default("http://versia.social"),
                 bind: z.string().min(1).default("0.0.0.0"),
                 bind_port: z
                     .number()

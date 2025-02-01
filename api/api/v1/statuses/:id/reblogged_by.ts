@@ -60,7 +60,7 @@ export default apiRoute((app) =>
                 sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."reblogId" = ${note.id} AND "Notes"."authorId" = ${Users.id})`,
             ),
             limit,
-            context.req.url,
+            new URL(context.req.url),
         );
 
         return context.json(

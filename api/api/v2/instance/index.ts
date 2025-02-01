@@ -147,10 +147,14 @@ export default apiRoute((app) =>
                 },
             },
             thumbnail: {
-                url: proxyUrl(config.instance.logo),
+                url: config.instance.logo
+                    ? proxyUrl(config.instance.logo)
+                    : null,
             },
             banner: {
-                url: proxyUrl(config.instance.banner),
+                url: config.instance.banner
+                    ? proxyUrl(config.instance.banner)
+                    : null,
             },
             languages: ["en"],
             configuration: {
@@ -227,7 +231,7 @@ export default apiRoute((app) =>
                 providers:
                     oidcConfig?.providers?.map((p) => ({
                         name: p.name,
-                        icon: proxyUrl(p.icon) ?? "",
+                        icon: p.icon ? proxyUrl(new URL(p.icon)) : "",
                         id: p.id,
                     })) ?? [],
             },

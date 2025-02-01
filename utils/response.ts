@@ -9,12 +9,9 @@ export type Json =
     | Json[]
     | { [key: string]: Json };
 
-export const proxyUrl = (url: string | null = null): string | null => {
-    const urlAsBase64Url = Buffer.from(url || "").toString("base64url");
-    return url
-        ? new URL(
-              `/media/proxy/${urlAsBase64Url}`,
-              config.http.base_url,
-          ).toString()
-        : url;
+export const proxyUrl = (url: URL): URL => {
+    const urlAsBase64Url = Buffer.from(url.toString() || "").toString(
+        "base64url",
+    );
+    return new URL(`/media/proxy/${urlAsBase64Url}`, config.http.base_url);
 };

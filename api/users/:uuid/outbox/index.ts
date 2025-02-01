@@ -107,7 +107,7 @@ export default apiRoute((app) =>
                 config.http.base_url,
             ).toString(),
             total: totalNotes,
-            author: author.getUri(),
+            author: author.getUri().toString(),
             next:
                 notes.length === NOTES_PER_PAGE
                     ? new URL(
@@ -125,7 +125,11 @@ export default apiRoute((app) =>
             items: notes.map((note) => note.toVersia()),
         };
 
-        const { headers } = await author.sign(json, context.req.url, "GET");
+        const { headers } = await author.sign(
+            json,
+            new URL(context.req.url),
+            "GET",
+        );
 
         return context.json(json, 200, headers.toJSON());
     }),

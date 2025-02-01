@@ -17,7 +17,7 @@ export class Timeline<Type extends Note | User | Notification> {
     public static getNoteTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
-        url: string,
+        url: URL,
         userId?: string,
     ): Promise<{ link: string; objects: Note[] }> {
         return new Timeline<Note>(TimelineType.Note).fetchTimeline(
@@ -31,7 +31,7 @@ export class Timeline<Type extends Note | User | Notification> {
     public static getUserTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
-        url: string,
+        url: URL,
     ): Promise<{ link: string; objects: User[] }> {
         return new Timeline<User>(TimelineType.User).fetchTimeline(
             sql,
@@ -43,7 +43,7 @@ export class Timeline<Type extends Note | User | Notification> {
     public static getNotificationTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
-        url: string,
+        url: URL,
         userId?: string,
     ): Promise<{ link: string; objects: Notification[] }> {
         return new Timeline<Notification>(
@@ -85,14 +85,11 @@ export class Timeline<Type extends Note | User | Notification> {
 
     private async fetchLinkHeader(
         objects: Type[],
-        url: string,
+        url: URL,
         limit: number,
     ): Promise<string> {
         const linkHeader: string[] = [];
-        const urlWithoutQuery = new URL(
-            new URL(url).pathname,
-            config.http.base_url,
-        ).toString();
+        const urlWithoutQuery = new URL(url.pathname, config.http.base_url);
 
         if (objects.length > 0) {
             switch (this.type) {
@@ -130,7 +127,7 @@ export class Timeline<Type extends Note | User | Notification> {
 
     private static async fetchNoteLinkHeader(
         notes: Note[],
-        urlWithoutQuery: string,
+        urlWithoutQuery: URL,
         limit: number,
     ): Promise<string[]> {
         const linkHeader: string[] = [];
@@ -158,7 +155,7 @@ export class Timeline<Type extends Note | User | Notification> {
 
     private static async fetchUserLinkHeader(
         users: User[],
-        urlWithoutQuery: string,
+        urlWithoutQuery: URL,
         limit: number,
     ): Promise<string[]> {
         const linkHeader: string[] = [];
@@ -186,7 +183,7 @@ export class Timeline<Type extends Note | User | Notification> {
 
     private static async fetchNotificationLinkHeader(
         notifications: Notification[],
-        urlWithoutQuery: string,
+        urlWithoutQuery: URL,
         limit: number,
     ): Promise<string[]> {
         const linkHeader: string[] = [];
@@ -220,7 +217,7 @@ export class Timeline<Type extends Note | User | Notification> {
     private async fetchTimeline(
         sql: SQL<unknown> | undefined,
         limit: number,
-        url: string,
+        url: URL,
         userId?: string,
     ): Promise<{ link: string; objects: Type[] }> {
         const objects = await this.fetchObjects(sql, limit, userId);

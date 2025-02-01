@@ -69,7 +69,7 @@ export default apiRoute((app) =>
                 sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${otherUser.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
             ),
             limit,
-            context.req.url,
+            new URL(context.req.url),
         );
 
         return context.json(

@@ -179,14 +179,13 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         };
     }
 
-    public getUri(baseUrl: string): string {
-        return (
-            this.data.uri ||
-            new URL(
-                `/objects/${this.data.noteId}/reactions/${this.id}`,
-                baseUrl,
-            ).toString()
-        );
+    public getUri(baseUrl: URL): URL {
+        return this.data.uri
+            ? new URL(this.data.uri)
+            : new URL(
+                  `/objects/${this.data.noteId}/reactions/${this.id}`,
+                  baseUrl,
+              );
     }
 
     public isLocal(): boolean {
@@ -203,19 +202,21 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         }
 
         return {
-            uri: this.getUri(config.http.base_url),
+            uri: this.getUri(config.http.base_url).toString(),
             type: "pub.versia:reactions/Reaction",
             author: User.getUri(
                 this.data.authorId,
-                this.data.author.uri,
-                config.http.base_url,
-            ),
+                this.data.author.uri ? new URL(this.data.author.uri) : null,
+            ).toString(),
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.id,
-            object: Note.getUri(
-                this.data.note.id,
-                this.data.note.uri,
-            ) as string,
+            object:
+                Note.getUri(
+                    this.data.note.id,
+                    this.data.note.uri
+                        ? new URL(this.data.note.uri)
+                        : undefined,
+                )?.toString() ?? "",
             content: this.hasCustomEmoji()
                 ? `:${this.data.emoji?.shortcode}:`
                 : this.data.emojiText || "",

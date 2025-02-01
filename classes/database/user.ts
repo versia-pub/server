@@ -228,19 +228,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return !this.isLocal();
     }
 
-    public getUri(): string {
-        return (
-            this.data.uri ||
-            new URL(`/users/${this.data.id}`, config.http.base_url).toString()
-        );
+    public getUri(): URL {
+        return this.data.uri
+            ? new URL(this.data.uri)
+            : new URL(`/users/${this.data.id}`, config.http.base_url);
     }
 
-    public static getUri(
-        id: string,
-        uri: string | null,
-        baseUrl: string,
-    ): string {
-        return uri || new URL(`/users/${id}`, baseUrl).toString();
+    public static getUri(id: string, uri: URL | null): URL {
+        return uri ? uri : new URL(`/users/${id}`, config.http.base_url);
     }
 
     public hasPermission(permission: RolePermissions): boolean {
@@ -290,8 +285,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 entity: {
                     type: "Follow",
                     id: crypto.randomUUID(),
-                    author: this.getUri(),
-                    followee: otherUser.getUri(),
+                    author: this.getUri().toString(),
+                    followee: otherUser.getUri().toString(),
                     created_at: new Date().toISOString(),
                 },
                 recipientId: otherUser.id,
@@ -329,9 +324,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return {
             type: "Unfollow",
             id,
-            author: this.getUri(),
+            author: this.getUri().toString(),
             created_at: new Date().toISOString(),
-            followee: followee.getUri(),
+            followee: followee.getUri().toString(),
         };
     }
 
@@ -347,9 +342,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity: VersiaFollowAccept = {
             type: "FollowAccept",
             id: crypto.randomUUID(),
-            author: this.getUri(),
+            author: this.getUri().toString(),
             created_at: new Date().toISOString(),
-            follower: follower.getUri(),
+            follower: follower.getUri().toString(),
         };
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -371,9 +366,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity: VersiaFollowReject = {
             type: "FollowReject",
             id: crypto.randomUUID(),
-            author: this.getUri(),
+            author: this.getUri().toString(),
             created_at: new Date().toISOString(),
-            follower: follower.getUri(),
+            follower: follower.getUri().toString(),
         };
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -390,19 +385,21 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param hostname
      * @returns URI, or null if not found
      */
-    public static webFinger(
+    public static async webFinger(
         manager: FederationRequester,
         username: string,
         hostname: string,
-    ): Promise<string | null> {
+    ): Promise<URL | null> {
         try {
-            return manager.webFinger(username, hostname);
+            return new URL(await manager.webFinger(username, hostname));
         } catch {
             try {
-                return manager.webFinger(
-                    username,
-                    hostname,
-                    "application/activity+json",
+                return new URL(
+                    await manager.webFinger(
+                        username,
+                        hostname,
+                        "application/activity+json",
+                    ),
                 );
             } catch {
                 return Promise.resolve(null);
@@ -511,7 +508,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     id: issuer.id,
                     name: issuer.name,
                     url: issuer.url,
-                    icon: proxyUrl(issuer.icon) || undefined,
+                    icon: issuer.icon
+                        ? proxyUrl(new URL(issuer.icon)).toString()
+                        : undefined,
                     server_id: account.serverId,
                 };
             })
@@ -662,11 +661,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this;
     }
 
-    public static async fetchFromRemote(uri: string): Promise<User | null> {
-        if (!URL.canParse(uri)) {
-            throw new Error(`Invalid URI: ${uri}`);
-        }
-
+    public static async fetchFromRemote(uri: URL): Promise<User | null> {
         const instance = await Instance.resolve(uri);
 
         if (!instance) {
@@ -684,19 +679,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
             const bridgeUri = new URL(
                 `/apbridge/versia/query?${new URLSearchParams({
-                    user_url: uri,
+                    user_url: uri.toString(),
                 })}`,
                 config.federation.bridge.url,
             );
 
-            return await User.saveFromVersia(bridgeUri.toString(), instance);
+            return await User.saveFromVersia(bridgeUri, instance);
         }
 
         throw new Error(`Unsupported protocol: ${instance.data.protocol}`);
     }
 
     private static async saveFromVersia(
-        uri: string,
+        uri: URL,
         instance: Instance,
     ): Promise<User> {
         const requester = await User.getFederationRequester();
@@ -859,19 +854,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return user;
     }
 
-    public static async resolve(uri: string): Promise<User | null> {
+    public static async resolve(uri: URL): Promise<User | null> {
         getLogger(["federation", "resolvers"])
             .debug`Resolving user ${chalk.gray(uri)}`;
         // Check if user not already in database
-        const foundUser = await User.fromSql(eq(Users.uri, uri));
+        const foundUser = await User.fromSql(eq(Users.uri, uri.toString()));
 
         if (foundUser) {
             return foundUser;
         }
 
         // Check if URI is of a local user
-        if (uri.startsWith(config.http.base_url)) {
-            const uuid = uri.match(idValidator);
+        if (uri.origin === config.http.base_url.origin) {
+            const uuid = uri.href.match(idValidator);
 
             if (!uuid?.[0]) {
                 throw new Error(
@@ -893,11 +888,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's avatar
      */
-    public getAvatarUrl(config: Config): string {
+    public getAvatarUrl(config: Config): URL {
         if (!this.avatar) {
             return (
                 config.defaults.avatar ||
-                `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`
+                new URL(
+                    `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`,
+                )
             );
         }
         return this.avatar?.getUrl();
@@ -988,9 +985,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param config The config to use
      * @returns The raw URL for the user's header
      */
-    public getHeaderUrl(config: Config): string {
+    public getHeaderUrl(config: Config): URL | null {
         if (!this.header) {
-            return config.defaults.header || "";
+            return config.defaults.header ?? null;
         }
         return this.header.getUrl();
     }
@@ -1052,7 +1049,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      */
     public async sign(
         entity: KnownEntity | Collection,
-        signatureUrl: string | URL,
+        signatureUrl: URL,
         signatureMethod: HttpVerb = "POST",
     ): Promise<{
         headers: Headers;
@@ -1065,7 +1062,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const output = await signatureConstructor.sign(
             signatureMethod,
-            new URL(signatureUrl),
+            signatureUrl,
             JSON.stringify(entity),
         );
 
@@ -1155,7 +1152,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
         }
 
-        const { headers } = await this.sign(entity, inbox);
+        const { headers } = await this.sign(entity, new URL(inbox));
 
         try {
             await new FederationRequester().post(inbox, entity, {
@@ -1185,12 +1182,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             username: user.username,
             display_name: user.displayName,
             note: user.note,
-            uri: this.getUri(),
+            uri: this.getUri().toString(),
             url:
                 user.uri ||
                 new URL(`/@${user.username}`, config.http.base_url).toString(),
-            avatar: proxyUrl(this.getAvatarUrl(config)) ?? "",
-            header: proxyUrl(this.getHeaderUrl(config)) ?? "",
+            avatar: proxyUrl(this.getAvatarUrl(config)).toString(),
+            header: this.getHeaderUrl(config)
+                ? proxyUrl(this.getHeaderUrl(config) as URL).toString()
+                : "",
             locked: user.isLocked,
             created_at: new Date(user.createdAt).toISOString(),
             followers_count: user.followerCount,
@@ -1204,8 +1203,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
             // TODO: Add static avatar and header
-            avatar_static: proxyUrl(this.getAvatarUrl(config)) ?? "",
-            header_static: proxyUrl(this.getHeaderUrl(config)) ?? "",
+            avatar_static: proxyUrl(this.getAvatarUrl(config)).toString(),
+            header_static: this.getHeaderUrl(config)
+                ? proxyUrl(this.getHeaderUrl(config) as URL).toString()
+                : "",
             acct: this.getAcct(),
             // TODO: Add these fields
             limited: false,
@@ -1258,7 +1259,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return {
             id: user.id,
             type: "User",
-            uri: this.getUri(),
+            uri: this.getUri().toString(),
             bio: {
                 "text/html": {
                     content: user.note,
@@ -1308,11 +1309,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     this.getAvatarUrl(config),
                     this.data.source.avatar?.content_type,
                 ) ?? undefined,
-            header:
-                urlToContentFormat(
-                    this.getHeaderUrl(config),
-                    this.data.source.header?.content_type,
-                ) ?? undefined,
+            header: this.getHeaderUrl(config)
+                ? (urlToContentFormat(
+                      this.getHeaderUrl(config) as URL,
+                      this.data.source.header?.content_type,
+                  ) ?? undefined)
+                : undefined,
             display_name: user.displayName,
             fields: user.fields,
             public_key: {
@@ -1335,7 +1337,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public toMention(): ApiMention {
         return {
-            url: this.getUri(),
+            url: this.getUri().toString(),
             username: this.data.username,
             acct: this.getAcct(),
             id: this.id,

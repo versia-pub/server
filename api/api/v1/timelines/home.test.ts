@@ -70,7 +70,7 @@ describe("/api/v1/timelines/home", () => {
             );
 
             expect(response.headers.get("link")).toBe(
-                `<${config.http.base_url}/api/v1/timelines/home?limit=20&max_id=${timeline[19].id}>; rel="next"`,
+                `<${config.http.base_url}api/v1/timelines/home?limit=20&max_id=${timeline[19].id}>; rel="next"`,
             );
         });
 
@@ -112,7 +112,7 @@ describe("/api/v1/timelines/home", () => {
             );
 
             expect(response.headers.get("link")).toInclude(
-                `${config.http.base_url}/api/v1/timelines/home?limit=20&min_id=${timeline[20].id}>; rel="prev"`,
+                `${config.http.base_url}api/v1/timelines/home?limit=20&min_id=${timeline[20].id}>; rel="prev"`,
             );
         });
 

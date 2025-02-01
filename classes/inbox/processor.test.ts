@@ -76,7 +76,7 @@ mock.module("~/packages/config-manager/index.ts", () => ({
 
 describe("InboxProcessor", () => {
     let mockRequest: {
-        url: string;
+        url: URL;
         method: string;
         body: string;
     };
@@ -95,7 +95,7 @@ describe("InboxProcessor", () => {
 
         // Setup basic mock context
         mockRequest = {
-            url: "https://test.com",
+            url: new URL("https://test.com"),
             method: "POST",
             body: "test-body",
         };
@@ -196,7 +196,10 @@ describe("InboxProcessor", () => {
 
     describe("processNote", () => {
         test("successfully processes valid note", async () => {
-            const mockNote = { author: "test-author" };
+            const mockNote = {
+                author: "https://example.com",
+                uri: "https://note.example.com",
+            };
             const mockAuthor = { id: "test-id" };
             const mockInstance = { id: "test-id" };
 
@@ -209,7 +212,9 @@ describe("InboxProcessor", () => {
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processNote"]();
 
-            expect(User.resolve).toHaveBeenCalledWith("test-author");
+            expect(User.resolve).toHaveBeenCalledWith(
+                new URL("https://example.com"),
+            );
             expect(Note.fromVersia).toHaveBeenCalledWith(
                 mockNote,
                 mockAuthor,
@@ -220,7 +225,13 @@ describe("InboxProcessor", () => {
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
+            const mockNote = {
+                author: "https://example.com",
+                uri: "https://note.example.com",
+            };
 
+            // biome-ignore lint/complexity/useLiteralKeys: Private variable
+            processor["body"] = mockNote as VersiaNote;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processNote"]();
 
@@ -233,8 +244,8 @@ describe("InboxProcessor", () => {
     describe("processFollowRequest", () => {
         test("successfully processes follow request for unlocked account", async () => {
             const mockFollow = {
-                author: "test-author",
-                followee: "test-followee",
+                author: "https://example.com",
+                followee: "https://followee.note.com",
             };
             const mockAuthor = { id: "author-id" };
             const mockFollowee = {
@@ -273,7 +284,13 @@ describe("InboxProcessor", () => {
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
+            const mockFollow = {
+                author: "https://example.com",
+                followee: "https://followee.note.com",
+            };
 
+            // biome-ignore lint/complexity/useLiteralKeys: Private variable
+            processor["body"] = mockFollow as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processFollowRequest"]();
 
@@ -287,7 +304,7 @@ describe("InboxProcessor", () => {
         test("successfully deletes a note", async () => {
             const mockDelete = {
                 deleted_type: "Note",
-                deleted: "test-uri",
+                deleted: "https://example.com",
             };
             const mockNote = {
                 delete: jest.fn(),
@@ -307,7 +324,7 @@ describe("InboxProcessor", () => {
         test("returns 404 when note not found", async () => {
             const mockDelete = {
                 deleted_type: "Note",
-                deleted: "test-uri",
+                deleted: "https://example.com",
             };
 
             Note.fromSql = jest.fn().mockResolvedValue(null);
@@ -331,9 +348,9 @@ describe("InboxProcessor", () => {
     describe("processLikeRequest", () => {
         test("successfully processes like request", async () => {
             const mockLike = {
-                author: "test-author",
-                liked: "test-note",
-                uri: "test-uri",
+                author: "https://example.com",
+                liked: "https://example.note.com",
+                uri: "https://example.com",
             };
             const mockAuthor = {
                 like: jest.fn(),
@@ -348,13 +365,23 @@ describe("InboxProcessor", () => {
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processLikeRequest"]();
 
-            expect(mockAuthor.like).toHaveBeenCalledWith(mockNote, "test-uri");
+            expect(mockAuthor.like).toHaveBeenCalledWith(
+                mockNote,
+                "https://example.com",
+            );
             expect(result).toBeNull();
         });
 
         test("returns 404 when author not found", async () => {
             User.resolve = jest.fn().mockResolvedValue(null);
+            const mockLike = {
+                author: "https://example.com",
+                liked: "https://example.note.com",
+                uri: "https://example.com",
+            };
 
+            // biome-ignore lint/complexity/useLiteralKeys: Private variable
+            processor["body"] = mockLike as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processLikeRequest"]();
 
@@ -367,7 +394,7 @@ describe("InboxProcessor", () => {
     describe("processUserRequest", () => {
         test("successfully processes user update", async () => {
             const mockUser = {
-                uri: "test-uri",
+                uri: "https://example.com",
             };
             const mockUpdatedUser = { id: "user-id" };
 
@@ -378,13 +405,20 @@ describe("InboxProcessor", () => {
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processUserRequest"]();
 
-            expect(User.fetchFromRemote).toHaveBeenCalledWith("test-uri");
+            expect(User.fetchFromRemote).toHaveBeenCalledWith(
+                new URL("https://example.com"),
+            );
             expect(result).toBeNull();
         });
 
         test("returns 500 when update fails", async () => {
+            const mockUser = {
+                uri: "https://example.com",
+            };
             User.fetchFromRemote = jest.fn().mockResolvedValue(null);
 
+            // biome-ignore lint/complexity/useLiteralKeys: Private variable
+            processor["body"] = mockUser as unknown as Entity;
             // biome-ignore lint/complexity/useLiteralKeys: Private method
             const result = await processor["processUserRequest"]();
 

@@ -41,7 +41,7 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
                         return;
                     }
 
-                    await Instance.resolve(uri);
+                    await Instance.resolve(new URL(uri));
 
                     await job.log(
                         `✔ Finished fetching instance metadata from [${uri}]`,

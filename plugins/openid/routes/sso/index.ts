@@ -114,7 +114,9 @@ export default (plugin: PluginType): void => {
                     );
                 }
 
-                const authServer = await oauthDiscoveryRequest(issuer.url);
+                const authServer = await oauthDiscoveryRequest(
+                    new URL(issuer.url),
+                );
 
                 const codeVerifier = generateRandomCodeVerifier();
 
@@ -130,7 +132,7 @@ export default (plugin: PluginType): void => {
                             crypto.getRandomValues(new Uint8Array(32)),
                         ).toString("base64"),
                     name: "Versia",
-                    redirectUri,
+                    redirectUri: redirectUri.toString(),
                     scopes: "openid profile email",
                     secret: "",
                 });

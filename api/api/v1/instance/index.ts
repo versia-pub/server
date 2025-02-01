@@ -98,8 +98,12 @@ export default apiRoute((app) =>
                 status_count: statusCount,
                 user_count: userCount,
             },
-            thumbnail: proxyUrl(config.instance.logo),
-            banner: proxyUrl(config.instance.banner),
+            thumbnail: config.instance.logo
+                ? proxyUrl(config.instance.logo).toString()
+                : null,
+            banner: config.instance.banner
+                ? proxyUrl(config.instance.banner).toString()
+                : null,
             title: config.instance.name,
             uri: config.http.base_url,
             urls: {
@@ -113,7 +117,9 @@ export default apiRoute((app) =>
                 providers:
                     oidcConfig?.providers?.map((p) => ({
                         name: p.name,
-                        icon: proxyUrl(p.icon) || undefined,
+                        icon: p.icon
+                            ? proxyUrl(new URL(p.icon)).toString()
+                            : undefined,
                         id: p.id,
                     })) ?? [],
             },

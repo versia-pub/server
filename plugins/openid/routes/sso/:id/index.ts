@@ -86,7 +86,9 @@ export default (plugin: PluginType): void => {
                     {
                         id: issuer.id,
                         name: issuer.name,
-                        icon: proxyUrl(issuer.icon) ?? undefined,
+                        icon: issuer.icon
+                            ? proxyUrl(new URL(issuer.icon))
+                            : undefined,
                     },
                     200,
                 );

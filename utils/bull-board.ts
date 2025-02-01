@@ -32,7 +32,7 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
                 },
                 boardLogo: {
                     path:
-                        config.instance.logo ??
+                        config.instance.logo?.toString() ??
                         "https://cdn.versia.pub/branding/icon.svg",
                     height: 40,
                 },

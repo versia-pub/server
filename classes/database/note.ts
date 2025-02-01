@@ -646,17 +646,17 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * @param uri - The URI of the note to resolve
      * @returns The resolved note
      */
-    public static async resolve(uri: string): Promise<Note | null> {
+    public static async resolve(uri: URL): Promise<Note | null> {
         // Check if note not already in database
-        const foundNote = await Note.fromSql(eq(Notes.uri, uri));
+        const foundNote = await Note.fromSql(eq(Notes.uri, uri.toString()));
 
         if (foundNote) {
             return foundNote;
         }
 
         // Check if URI is of a local note
-        if (uri.startsWith(config.http.base_url)) {
-            const uuid = uri.match(idValidator);
+        if (uri.origin === config.http.base_url.origin) {
+            const uuid = uri.pathname.match(idValidator);
 
             if (!uuid?.[0]) {
                 throw new Error(
@@ -675,7 +675,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * @param uri - The URI of the note to save
      * @returns The saved note, or null if the note could not be fetched
      */
-    public static async fetchFromRemote(uri: string): Promise<Note | null> {
+    public static async fetchFromRemote(uri: URL): Promise<Note | null> {
         const instance = await Instance.resolve(uri);
 
         if (!instance) {
@@ -691,7 +691,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const note = await new EntityValidator().Note(data);
 
-        const author = await User.resolve(note.author);
+        const author = await User.resolve(new URL(note.author));
 
         if (!author) {
             throw new Error("Invalid object author");
@@ -773,15 +773,15 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             uri: note.uri,
             mentions: await Promise.all(
                 (note.mentions ?? [])
-                    .map((mention) => User.resolve(mention))
+                    .map((mention) => User.resolve(new URL(mention)))
                     .filter((mention) => mention !== null) as Promise<User>[],
             ),
             mediaAttachments: attachments,
             replyId: note.replies_to
-                ? (await Note.resolve(note.replies_to))?.data.id
+                ? (await Note.resolve(new URL(note.replies_to)))?.data.id
                 : undefined,
             quoteId: note.quotes
-                ? (await Note.resolve(note.quotes))?.data.id
+                ? (await Note.resolve(new URL(note.quotes)))?.data.id
                 : undefined,
         };
 
@@ -908,7 +908,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     mention.username,
                     mention.instance?.baseUrl,
                 ),
-                url: User.getUri(mention.id, mention.uri, config.http.base_url),
+                url: User.getUri(
+                    mention.id,
+                    mention.uri ? new URL(mention.uri) : null,
+                ).toString(),
                 username: mention.username,
             })),
             language: null,
@@ -927,9 +930,9 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             sensitive: data.sensitive,
             spoiler_text: data.spoilerText,
             tags: [],
-            uri: data.uri || this.getUri(),
+            uri: data.uri || this.getUri().toString(),
             visibility: data.visibility as ApiStatus["visibility"],
-            url: data.uri || this.getMastoUri(),
+            url: data.uri || this.getMastoUri().toString(),
             bookmarked: false,
             quote: data.quotingId
                 ? ((await Note.fromId(data.quotingId, userFetching?.id).then(
@@ -944,14 +947,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         };
     }
 
-    public getUri(): string {
-        return this.data.uri || localObjectUri(this.id);
+    public getUri(): URL {
+        return new URL(this.data.uri || localObjectUri(this.id));
     }
 
-    public static getUri(
-        id: string | null,
-        uri?: string | null,
-    ): string | null {
+    public static getUri(id: string | null, uri?: URL | null): URL | null {
         if (!id) {
             return null;
         }
@@ -962,11 +962,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * Get the frontend URI of this note
      * @returns The frontend URI of this note
      */
-    public getMastoUri(): string {
+    public getMastoUri(): URL {
         return new URL(
             `/@${this.author.data.username}/${this.id}`,
             config.http.base_url,
-        ).toString();
+        );
     }
 
     public deleteToVersia(): VersiaDelete {
@@ -975,9 +975,9 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         return {
             type: "Delete",
             id,
-            author: this.author.getUri(),
+            author: this.author.getUri().toString(),
             deleted_type: "Note",
-            deleted: this.getUri(),
+            deleted: this.getUri().toString(),
             created_at: new Date().toISOString(),
         };
     }
@@ -992,8 +992,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: this.author.getUri(),
-            uri: this.getUri(),
+            author: this.author.getUri().toString(),
+            uri: this.getUri().toString(),
             content: {
                 "text/html": {
                     content: status.content,
@@ -1009,12 +1009,19 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) =>
-                User.getUri(mention.id, mention.uri, config.http.base_url),
+                User.getUri(
+                    mention.id,
+                    mention.uri ? new URL(mention.uri) : null,
+                ).toString(),
             ),
-            quotes:
-                Note.getUri(status.quotingId, status.quote?.uri) ?? undefined,
-            replies_to:
-                Note.getUri(status.replyId, status.reply?.uri) ?? undefined,
+            quotes: Note.getUri(
+                status.quotingId,
+                status.quote?.uri ? new URL(status.quote.uri) : null,
+            )?.toString(),
+            replies_to: Note.getUri(
+                status.replyId,
+                status.reply?.uri ? new URL(status.reply.uri) : null,
+            )?.toString(),
             subject: status.spoilerText,
             // TODO: Refactor as part of groups
             group: status.visibility === "public" ? "public" : "followers",

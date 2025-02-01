@@ -93,7 +93,7 @@ export default apiRoute((app) =>
                     : eq(Notes.visibility, "public"),
             ),
             limit,
-            context.req.url,
+            new URL(context.req.url),
             user?.id,
         );
 

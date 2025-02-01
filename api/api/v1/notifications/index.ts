@@ -148,7 +148,7 @@ export default apiRoute((app) =>
                 )`,
             ),
             limit,
-            context.req.url,
+            new URL(context.req.url),
             user.id,
         );
 

@@ -22,7 +22,10 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
 
                     if (headers.authorization) {
                         const processor = new InboxProcessor(
-                            request,
+                            {
+                                ...request,
+                                url: new URL(request.url),
+                            },
                             data,
                             null,
                             {
@@ -67,7 +70,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         "x-signed-by": string;
                     };
 
-                    const sender = await User.resolve(signedBy);
+                    const sender = await User.resolve(new URL(signedBy));
 
                     if (!(sender || signedBy.startsWith("instance "))) {
                         await job.log(
@@ -106,7 +109,10 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                     }
 
                     const processor = new InboxProcessor(
-                        request,
+                        {
+                            ...request,
+                            url: new URL(request.url),
+                        },
                         data,
                         {
                             instance: remoteInstance,

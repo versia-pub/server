@@ -135,7 +135,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         return this.data.id;
     }
 
-    public static async fetchMetadata(url: string): Promise<{
+    public static async fetchMetadata(url: URL): Promise<{
         metadata: InstanceMetadata;
         protocol: "versia" | "activitypub";
     }> {
@@ -184,7 +184,7 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     private static async fetchActivityPubMetadata(
-        url: string,
+        url: URL,
     ): Promise<InstanceMetadata | null> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/nodeinfo", origin);
@@ -311,18 +311,18 @@ export class Instance extends BaseInterface<typeof Instances> {
 
     public static resolveFromHost(host: string): Promise<Instance> {
         if (host.startsWith("http")) {
-            const url = new URL(host).host;
+            const url = new URL(host);
 
             return Instance.resolve(url);
         }
 
         const url = new URL(`https://${host}`);
 
-        return Instance.resolve(url.origin);
+        return Instance.resolve(url);
     }
 
-    public static async resolve(url: string): Promise<Instance> {
-        const host = new URL(url).host;
+    public static async resolve(url: URL): Promise<Instance> {
+        const host = url.host;
 
         const existingInstance = await Instance.fromSql(
             eq(Instances.baseUrl, host),
@@ -352,7 +352,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         const logger = getLogger(["federation", "resolvers"]);
 
         const output = await Instance.fetchMetadata(
-            `https://${this.data.baseUrl}`,
+            new URL(`https://${this.data.baseUrl}`),
         );
 
         if (!output) {

@@ -99,7 +99,7 @@ export default apiRoute((app) =>
                     user.data.username,
                     new URL(config.http.base_url).host,
                     "application/activity+json",
-                    config.federation.bridge.url,
+                    config.federation.bridge.url?.toString(),
                 );
             } catch (e) {
                 const error = e as ResponseError;
