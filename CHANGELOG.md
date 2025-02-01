@@ -10,7 +10,7 @@ Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
   - Added an administration UI for managing the queue.
 - Media processing is now also handled by a queue system.
 - Added [Push Notifications](https://docs.joinmastodon.org/methods/push) support.
-- Upgraded Bun to `1.2.1`.
+- Upgraded Bun to `1.2.2`.
 - Implemented support for the [**Instance Messaging Extension**](https://versia.pub/extensions/instance-messaging)
 - Implement [**Shared Inboxes**](https://versia.pub/federation#inboxes) support.
 - Allowed `<div>` and `<span>` tags in Markdown.
