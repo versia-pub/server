@@ -6,7 +6,6 @@ import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -27,6 +26,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((a) => new URL(a))
             .or(
                 z
                     .instanceof(File)
@@ -130,10 +130,8 @@ export default apiRoute((app) =>
             );
         }
 
-        let url = "";
-
         // Check of emoji is an image
-        let contentType =
+        const contentType =
             element instanceof File ? element.type : await mimeLookup(element);
 
         if (!contentType.startsWith("image/")) {
@@ -144,25 +142,21 @@ export default apiRoute((app) =>
             );
         }
 
-        if (element instanceof File) {
-            const mediaManager = new MediaManager(config);
-
-            const uploaded = await mediaManager.addFile(element);
-
-            url = Media.getUrl(uploaded.path);
-            contentType = uploaded.uploadedFile.type;
-        } else {
-            url = element;
-        }
+        const media =
+            element instanceof File
+                ? await Media.fromFile(element, {
+                      description: alt,
+                  })
+                : await Media.fromUrl(element, {
+                      description: alt,
+                  });
 
         const emoji = await Emoji.insert({
             shortcode,
-            url,
+            mediaId: media.id,
             visibleInPicker: true,
             ownerId: global ? null : user.id,
             category,
-            contentType,
-            alt,
         });
 
         return context.json(emoji.toApi(), 201);

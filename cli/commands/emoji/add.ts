@@ -4,7 +4,6 @@ import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
-import { MediaManager } from "~/classes/media/media-manager";
 import { BaseCommand } from "~/cli/base";
 import { config } from "~/packages/config-manager";
 
@@ -97,35 +96,22 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
             );
         }
 
-        const mediaManager = new MediaManager(config);
-
         const spinner = ora("Uploading emoji").start();
 
-        const uploaded = await mediaManager.addFile(file).catch((e: Error) => {
-            spinner.fail();
-            this.log(`${chalk.red("✗")} Error: ${chalk.red(e.message)}`);
-            return null;
-        });
-
-        if (!uploaded) {
-            return this.exit(1);
-        }
+        const media = await Media.fromFile(file);
 
         spinner.succeed();
 
         await Emoji.insert({
             shortcode: args.shortcode,
-            url: Media.getUrl(uploaded.path),
+            mediaId: media.id,
             visibleInPicker: true,
-            contentType: uploaded.uploadedFile.type,
         });
 
         this.log(
             `${chalk.green("✓")} Created emoji ${chalk.green(
                 args.shortcode,
-            )} with url ${chalk.blue(
-                chalk.underline(Media.getUrl(uploaded.path)),
-            )}`,
+            )} with url ${chalk.blue(chalk.underline(media.getUrl()))}`,
         );
 
         this.exit(0);

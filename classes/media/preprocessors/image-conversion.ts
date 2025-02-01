@@ -4,8 +4,7 @@
  */
 
 import sharp from "sharp";
-import type { Config } from "~/packages/config-manager/config.type";
-import type { MediaPreprocessor } from "./media-preprocessor.ts";
+import { config } from "~/packages/config-manager/index.ts";
 
 /**
  * Supported input media formats.
@@ -33,92 +32,73 @@ const supportedOutputFormats = [
 ];
 
 /**
- * Implements the MediaPreprocessor interface for image conversion.
+ * Checks if a file is convertible.
+ * @param file - The file to check.
+ * @returns True if the file is convertible, false otherwise.
  */
-export class ImageConversionPreprocessor implements MediaPreprocessor {
-    /**
-     * Creates a new ImageConversionPreprocessor instance.
-     * @param config - The configuration object.
-     */
-    public constructor(private config: Config) {}
+const isConvertible = (file: File): boolean => {
+    if (
+        file.type === "image/svg+xml" &&
+        !config.media.conversion.convert_vector
+    ) {
+        return false;
+    }
+    return supportedInputFormats.includes(file.type);
+};
 
-    /**
-     * @inheritdoc
-     */
-    public async process(file: File): Promise<{ file: File }> {
-        if (!this.isConvertible(file)) {
-            return { file };
-        }
+/**
+ * Extracts the filename from a path.
+ * @param path - The path to extract the filename from.
+ * @returns The extracted filename.
+ */
+const extractFilenameFromPath = (path: string): string => {
+    const pathParts = path.split(/(?<!\\)\//);
+    return pathParts[pathParts.length - 1];
+};
 
-        const targetFormat = this.config.media.conversion.convert_to;
-        if (!supportedOutputFormats.includes(targetFormat)) {
-            throw new Error(`Unsupported output format: ${targetFormat}`);
-        }
+/**
+ * Replaces the file extension in the filename.
+ * @param fileName - The original filename.
+ * @param newExtension - The new extension.
+ * @returns The filename with the new extension.
+ */
+const getReplacedFileName = (fileName: string, newExtension: string): string =>
+    extractFilenameFromPath(fileName).replace(/\.[^/.]+$/, `.${newExtension}`);
 
-        const sharpCommand = sharp(await file.arrayBuffer(), {
-            animated: true,
-        });
-        const commandName = targetFormat.split("/")[1] as
-            | "jpeg"
-            | "png"
-            | "webp"
-            | "avif"
-            | "gif"
-            | "tiff";
-        const convertedBuffer = await sharpCommand[commandName]().toBuffer();
-
-        return {
-            file: new File(
-                [convertedBuffer],
-                ImageConversionPreprocessor.getReplacedFileName(
-                    file.name,
-                    commandName,
-                ),
-                {
-                    type: targetFormat,
-                    lastModified: Date.now(),
-                },
-            ),
-        };
+/**
+ * Converts an image file to the format specified in the configuration.
+ *
+ * @param file - The image file to convert.
+ * @returns The converted image file.
+ */
+export const convertImage = async (file: File): Promise<File> => {
+    if (!isConvertible(file)) {
+        return file;
     }
 
-    /**
-     * Checks if a file is convertible.
-     * @param file - The file to check.
-     * @returns True if the file is convertible, false otherwise.
-     */
-    private isConvertible(file: File): boolean {
-        if (
-            file.type === "image/svg+xml" &&
-            !this.config.media.conversion.convert_vector
-        ) {
-            return false;
-        }
-        return supportedInputFormats.includes(file.type);
+    const targetFormat = config.media.conversion.convert_to;
+    if (!supportedOutputFormats.includes(targetFormat)) {
+        throw new Error(`Unsupported output format: ${targetFormat}`);
     }
 
-    /**
-     * Replaces the file extension in the filename.
-     * @param fileName - The original filename.
-     * @param newExtension - The new extension.
-     * @returns The filename with the new extension.
-     */
-    private static getReplacedFileName(
-        fileName: string,
-        newExtension: string,
-    ): string {
-        return ImageConversionPreprocessor.extractFilenameFromPath(
-            fileName,
-        ).replace(/\.[^/.]+$/, `.${newExtension}`);
-    }
+    const sharpCommand = sharp(await file.arrayBuffer(), {
+        animated: true,
+    });
+    const commandName = targetFormat.split("/")[1] as
+        | "jpeg"
+        | "png"
+        | "webp"
+        | "avif"
+        | "gif"
+        | "tiff";
+    const convertedBuffer = await sharpCommand[commandName]().toBuffer();
 
-    /**
-     * Extracts the filename from a path.
-     * @param path - The path to extract the filename from.
-     * @returns The extracted filename.
-     */
-    private static extractFilenameFromPath(path: string): string {
-        const pathParts = path.split(/(?<!\\)\//);
-        return pathParts[pathParts.length - 1];
-    }
-}
+    return new File(
+        [convertedBuffer],
+        getReplacedFileName(file.name, commandName),
+        {
+            type: targetFormat,
+            lastModified: Date.now(),
+        },
+    );
+};

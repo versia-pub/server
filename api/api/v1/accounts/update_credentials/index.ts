@@ -1,16 +1,14 @@
 import { apiRoute, auth, jsonOrForm } from "@/api";
-import { mimeLookup } from "@/content_types";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute } from "@hono/zod-openapi";
-import { Emoji, Media, User } from "@versia/kit/db";
+import { Emoji, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
-import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -61,6 +59,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((a) => new URL(a))
             .or(
                 z
                     .instanceof(File)
@@ -76,6 +75,7 @@ const schemas = {
             .min(1)
             .max(2000)
             .url()
+            .transform((v) => new URL(v))
             .or(
                 z
                     .instanceof(File)
@@ -204,8 +204,6 @@ export default apiRoute((app) =>
             display_name ?? "",
         );
 
-        const mediaManager = new MediaManager(config);
-
         if (display_name) {
             self.displayName = sanitizedDisplayName;
         }
@@ -247,37 +245,17 @@ export default apiRoute((app) =>
 
         if (avatar) {
             if (avatar instanceof File) {
-                const { path, uploadedFile } =
-                    await mediaManager.addFile(avatar);
-                const contentType = uploadedFile.type;
-
-                self.avatar = Media.getUrl(path);
-                self.source.avatar = {
-                    content_type: contentType,
-                };
+                await user.avatar?.updateFromFile(avatar);
             } else {
-                self.avatar = avatar;
-                self.source.avatar = {
-                    content_type: await mimeLookup(avatar),
-                };
+                await user.avatar?.updateFromUrl(avatar);
             }
         }
 
         if (header) {
             if (header instanceof File) {
-                const { path, uploadedFile } =
-                    await mediaManager.addFile(header);
-                const contentType = uploadedFile.type;
-
-                self.header = Media.getUrl(path);
-                self.source.header = {
-                    content_type: contentType,
-                };
+                await user.header?.updateFromFile(header);
             } else {
-                self.header = header;
-                self.source.header = {
-                    content_type: await mimeLookup(header),
-                };
+                await user.header?.updateFromUrl(header);
             }
         }
 

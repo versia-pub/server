@@ -1,6 +1,10 @@
 import type { Config } from "drizzle-kit";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "./packages/config-manager/index.ts";
 
+/**
+ * Drizzle can't properly resolve imports with top-level await, so uncomment
+ * this line when generating migrations.
+ */
 export default {
     dialect: "postgresql",
     out: "./drizzle/migrations",

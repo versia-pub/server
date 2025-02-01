@@ -26,11 +26,6 @@ await Bun.build({
     splitting: true,
     minify: false,
     external: ["unzipit", "acorn", "@bull-board/ui"],
-}).then((output) => {
-    if (!output.success) {
-        console.error(output.logs);
-        throw new Error("Build failed");
-    }
 });
 
 buildSpinner.text = "Transforming";

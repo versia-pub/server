@@ -38,12 +38,17 @@ export const findManyNotes = async (
         ...query,
         with: {
             ...query?.with,
-            attachments: true,
+            attachments: {
+                with: {
+                    media: true,
+                },
+            },
             emojis: {
                 with: {
                     emoji: {
                         with: {
                             instance: true,
+                            media: true,
                         },
                     },
                 },
@@ -65,12 +70,17 @@ export const findManyNotes = async (
             },
             reblog: {
                 with: {
-                    attachments: true,
+                    attachments: {
+                        with: {
+                            media: true,
+                        },
+                    },
                     emojis: {
                         with: {
                             emoji: {
                                 with: {
                                     instance: true,
+                                    media: true,
                                 },
                             },
                         },
@@ -176,6 +186,7 @@ export const findManyNotes = async (
             ...mention.user,
             endpoints: mention.user.endpoints,
         })),
+        attachments: post.attachments.map((attachment) => attachment.media),
         emojis: (post.emojis ?? []).map((emoji) => emoji.emoji),
         reblog: post.reblog && {
             ...post.reblog,
@@ -184,6 +195,9 @@ export const findManyNotes = async (
                 ...mention.user,
                 endpoints: mention.user.endpoints,
             })),
+            attachments: post.reblog.attachments.map(
+                (attachment) => attachment.media,
+            ),
             emojis: (post.reblog.emojis ?? []).map((emoji) => emoji.emoji),
             reblogCount: Number(post.reblog.reblogCount),
             likeCount: Number(post.reblog.likeCount),

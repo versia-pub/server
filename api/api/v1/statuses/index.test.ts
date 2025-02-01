@@ -1,12 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status as ApiStatus } from "@versia/client/types";
-import { db } from "@versia/kit/db";
+import { Media, db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
+let media: Media;
 
 afterAll(async () => {
     await deleteUsers();
@@ -14,10 +15,17 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
+    media = await Media.insert({
+        content: {
+            "image/png": {
+                content: "https://example.com/test.png",
+                remote: true,
+            },
+        },
+    });
     await db.insert(Emojis).values({
-        contentType: "image/png",
         shortcode: "test",
-        url: "https://example.com/test.png",
+        mediaId: media.id,
         visibleInPicker: true,
     });
 });

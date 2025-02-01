@@ -2,6 +2,7 @@ import {
     type Application,
     type Emoji,
     type Instance,
+    type Media,
     type Role,
     type Token,
     type User,
@@ -17,10 +18,13 @@ export const userRelations = {
             emoji: {
                 with: {
                     instance: true,
+                    media: true,
                 },
             },
         },
     },
+    avatar: true,
+    header: true,
     roles: {
         with: {
             role: true,
@@ -75,6 +79,8 @@ export const transformOutputToUserWithRelations = (
         followerCount: unknown;
         followingCount: unknown;
         statusCount: unknown;
+        avatar: typeof Media.$type | null;
+        header: typeof Media.$type | null;
         emojis: {
             userId: string;
             emojiId: string;

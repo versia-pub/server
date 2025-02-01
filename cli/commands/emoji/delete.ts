@@ -1,14 +1,9 @@
 import confirm from "@inquirer/confirm";
 import { Flags } from "@oclif/core";
-import { db } from "@versia/kit/db";
-import { Emojis } from "@versia/kit/tables";
 import chalk from "chalk";
-import { eq } from "drizzle-orm";
 import ora from "ora";
-import { MediaManager } from "~/classes/media/media-manager";
 import { EmojiFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
-import { config } from "~/packages/config-manager";
 
 export default class EmojiDelete extends EmojiFinderCommand<
     typeof EmojiDelete
@@ -55,13 +50,10 @@ export default class EmojiDelete extends EmojiFinderCommand<
 
         flags.print &&
             this.log(
-                formatArray(emojis, [
-                    "id",
-                    "shortcode",
-                    "alt",
-                    "contentType",
-                    "instanceUrl",
-                ]),
+                formatArray(
+                    emojis.map((e) => e.data),
+                    ["id", "shortcode", "alt", "contentType", "instanceUrl"],
+                ),
             );
 
         if (flags.confirm) {
@@ -80,15 +72,11 @@ export default class EmojiDelete extends EmojiFinderCommand<
         const spinner = ora("Deleting emoji(s)").start();
 
         for (const emoji of emojis) {
-            spinner.text = `Deleting emoji ${chalk.gray(emoji.shortcode)} (${
+            spinner.text = `Deleting emoji ${chalk.gray(emoji.data.shortcode)} (${
                 emojis.findIndex((e) => e.id === emoji.id) + 1
             }/${emojis.length})`;
 
-            const mediaManager = new MediaManager(config);
-
-            await mediaManager.deleteFileByUrl(emoji.url);
-
-            await db.delete(Emojis).where(eq(Emojis.id, emoji.id));
+            await emoji.delete();
         }
 
         spinner.succeed("Emoji(s) deleted");

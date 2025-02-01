@@ -67,6 +67,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                 emoji: {
                     with: {
                         instance: true,
+                        media: true,
                     },
                 },
                 author: true,
@@ -98,6 +99,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                 emoji: {
                     with: {
                         instance: true,
+                        media: true,
                     },
                 },
                 author: true,

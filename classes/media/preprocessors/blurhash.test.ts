@@ -1,14 +1,8 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 import sharp from "sharp";
-import { BlurhashPreprocessor } from "./blurhash.ts";
+import { calculateBlurhash } from "./blurhash.ts";
 
 describe("BlurhashPreprocessor", () => {
-    let preprocessor: BlurhashPreprocessor;
-
-    beforeEach(() => {
-        preprocessor = new BlurhashPreprocessor();
-    });
-
     it("should calculate blurhash for a valid image", async () => {
         const inputBuffer = await sharp({
             create: {
@@ -24,21 +18,19 @@ describe("BlurhashPreprocessor", () => {
         const inputFile = new File([inputBuffer], "test.png", {
             type: "image/png",
         });
-        const result = await preprocessor.process(inputFile);
+        const result = await calculateBlurhash(inputFile);
 
-        expect(result.file).toBe(inputFile);
-        expect(result.blurhash).toBeTypeOf("string");
-        expect(result.blurhash).not.toBe("");
+        expect(result).toBeTypeOf("string");
+        expect(result).not.toBe("");
     });
 
     it("should return null blurhash for an invalid image", async () => {
         const invalidFile = new File(["invalid image data"], "invalid.png", {
             type: "image/png",
         });
-        const result = await preprocessor.process(invalidFile);
+        const result = await calculateBlurhash(invalidFile);
 
-        expect(result.file).toBe(invalidFile);
-        expect(result.blurhash).toBeNull();
+        expect(result).toBeNull();
     });
 
     it("should handle errors during blurhash calculation", async () => {
@@ -63,9 +55,8 @@ describe("BlurhashPreprocessor", () => {
             },
         }));
 
-        const result = await preprocessor.process(inputFile);
+        const result = await calculateBlurhash(inputFile);
 
-        expect(result.file).toBe(inputFile);
-        expect(result.blurhash).toBeNull();
+        expect(result).toBeNull();
     });
 });

@@ -4,7 +4,6 @@ import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { MediaManager } from "~/classes/media/media-manager";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -101,38 +100,26 @@ export default apiRoute((app) => {
     app.openapi(routePut, async (context) => {
         const { id } = context.req.valid("param");
 
-        const attachment = await Media.fromId(id);
+        const media = await Media.fromId(id);
 
-        if (!attachment) {
+        if (!media) {
             throw new ApiError(404, "Media not found");
         }
 
-        const { description, thumbnail } = context.req.valid("form");
+        const { description, thumbnail: thumbnailFile } =
+            context.req.valid("form");
 
-        let thumbnailUrl = attachment.data.thumbnailUrl;
-
-        const mediaManager = new MediaManager(config);
-
-        if (thumbnail) {
-            const { path } = await mediaManager.addFile(thumbnail);
-            thumbnailUrl = Media.getUrl(path);
+        if (thumbnailFile) {
+            await media.updateThumbnail(thumbnailFile);
         }
 
-        const descriptionText = description || attachment.data.description;
-
-        if (
-            descriptionText !== attachment.data.description ||
-            thumbnailUrl !== attachment.data.thumbnailUrl
-        ) {
-            await attachment.update({
-                description: descriptionText,
-                thumbnailUrl,
+        if (description) {
+            await media.updateMetadata({
+                description,
             });
-
-            return context.json(attachment.toApi(), 200);
         }
 
-        return context.json(attachment.toApi(), 200);
+        return context.json(media.toApi(), 200);
     });
 
     app.openapi(routeGet, async (context) => {

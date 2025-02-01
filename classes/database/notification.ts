@@ -10,8 +10,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { z } from "zod";
-import { MediaBackendType } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
@@ -213,16 +211,6 @@ export class Notification extends BaseInterface<
 
     public get id(): string {
         return this.data.id;
-    }
-
-    public static getUrl(name: string): string {
-        if (config.media.backend === MediaBackendType.Local) {
-            return new URL(`/media/${name}`, config.http.base_url).toString();
-        }
-        if (config.media.backend === MediaBackendType.S3) {
-            return new URL(`/${name}`, config.s3.public_url).toString();
-        }
-        return "";
     }
 
     public async toApi(): Promise<APINotification> {

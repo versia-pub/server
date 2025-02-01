@@ -17,7 +17,7 @@ import type {
 import { Instance, db } from "@versia/kit/db";
 import {
     EmojiToNote,
-    Medias,
+    MediasToNotes,
     NoteToMentions,
     Notes,
     Users,
@@ -44,9 +44,9 @@ import {
 import { config } from "~/packages/config-manager";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
-import { Media } from "./attachment.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
+import { Media } from "./media.ts";
 import { User } from "./user.ts";
 
 type NoteType = InferSelectModel<typeof Notes>;
@@ -630,22 +630,15 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         // Remove old attachments
         await db
-            .update(Medias)
-            .set({
-                noteId: null,
-            })
-            .where(eq(Medias.noteId, this.data.id));
-        await db
-            .update(Medias)
-            .set({
+            .delete(MediasToNotes)
+            .where(eq(MediasToNotes.noteId, this.data.id));
+
+        await db.insert(MediasToNotes).values(
+            mediaAttachments.map((media) => ({
                 noteId: this.data.id,
-            })
-            .where(
-                inArray(
-                    Medias.id,
-                    mediaAttachments.map((i) => i.id),
-                ),
-            );
+                mediaId: media.id,
+            })),
+        );
     }
 
     /**

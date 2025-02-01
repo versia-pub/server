@@ -2,8 +2,8 @@ import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
 import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { CustomEmojiExtension } from "@versia/federation/types";
-import { type Instance, db } from "@versia/kit/db";
-import { Emojis, type Instances } from "@versia/kit/tables";
+import { type Instance, Media, db } from "@versia/kit/db";
+import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -17,11 +17,12 @@ import {
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
-type EmojiWithInstance = InferSelectModel<typeof Emojis> & {
+type EmojiType = InferSelectModel<typeof Emojis> & {
+    media: InferSelectModel<typeof Medias>;
     instance: InferSelectModel<typeof Instances> | null;
 };
 
-export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
+export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
     public static schema = z.object({
         id: z.string(),
         shortcode: z.string(),
@@ -32,7 +33,13 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         global: z.boolean(),
     });
 
-    public static $type: EmojiWithInstance;
+    public static $type: EmojiType;
+    public media: Media;
+
+    public constructor(data: EmojiType) {
+        super(data);
+        this.media = new Media(data.media);
+    }
 
     public async reload(): Promise<void> {
         const reloaded = await Emoji.fromId(this.data.id);
@@ -65,6 +72,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             orderBy,
             with: {
                 instance: true,
+                media: true,
             },
         });
 
@@ -86,15 +94,13 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             orderBy,
             limit,
             offset,
-            with: { ...extra?.with, instance: true },
+            with: { ...extra?.with, instance: true, media: true },
         });
 
         return found.map((s) => new Emoji(s));
     }
 
-    public async update(
-        newEmoji: Partial<EmojiWithInstance>,
-    ): Promise<EmojiWithInstance> {
+    public async update(newEmoji: Partial<EmojiType>): Promise<EmojiType> {
         await db.update(Emojis).set(newEmoji).where(eq(Emojis.id, this.id));
 
         const updated = await Emoji.fromId(this.data.id);
@@ -107,7 +113,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return updated.data;
     }
 
-    public save(): Promise<EmojiWithInstance> {
+    public save(): Promise<EmojiType> {
         return this.update(this.data);
     }
 
@@ -182,29 +188,25 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
         return {
             id: this.id,
             shortcode: this.data.shortcode,
-            static_url: proxyUrl(this.data.url) ?? "", // TODO: Add static version
-            url: proxyUrl(this.data.url) ?? "",
+            static_url: proxyUrl(this.media.getUrl()) ?? "", // TODO: Add static version
+            url: proxyUrl(this.media.getUrl()) ?? "",
             visible_in_picker: this.data.visibleInPicker,
             category: this.data.category ?? undefined,
             global: this.data.ownerId === null,
-            description: this.data.alt ?? undefined,
+            description:
+                this.media.data.content[this.media.getPreferredMimeType()]
+                    .description ?? undefined,
         };
     }
 
     public toVersia(): CustomEmojiExtension["emojis"][0] {
         return {
             name: `:${this.data.shortcode}:`,
-            url: {
-                [this.data.contentType]: {
-                    content: this.data.url,
-                    description: this.data.alt || undefined,
-                    remote: true,
-                },
-            },
+            url: this.media.toVersia(),
         };
     }
 
-    public static fromVersia(
+    public static async fromVersia(
         emoji: CustomEmojiExtension["emojis"][0],
         instance: Instance,
     ): Promise<Emoji> {
@@ -217,11 +219,11 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiWithInstance> {
             throw new Error("Could not extract shortcode from emoji name");
         }
 
+        const media = await Media.fromVersia(emoji.url);
+
         return Emoji.insert({
             shortcode,
-            url: Object.entries(emoji.url)[0][1].content,
-            alt: Object.entries(emoji.url)[0][1].description || undefined,
-            contentType: Object.keys(emoji.url)[0],
+            mediaId: media.id,
             visibleInPicker: true,
             instanceId: instance.id,
         });
