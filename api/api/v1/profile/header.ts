@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Account } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "delete",
@@ -19,7 +19,7 @@ const route = createRoute({
             description: "User",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },

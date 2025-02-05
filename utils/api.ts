@@ -1,4 +1,5 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { z } from "@hono/zod-openapi";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import { Application, Note, Token, User, db } from "@versia/kit/db";
@@ -24,7 +25,6 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
-import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";

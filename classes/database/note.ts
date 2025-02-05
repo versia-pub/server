@@ -3,6 +3,7 @@ import { localObjectUri } from "@/constants";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
+import { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type {
     Attachment as ApiAttachment,
@@ -35,7 +36,6 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
-import { z } from "zod";
 import {
     contentToHtml,
     findManyNotes,
@@ -43,6 +43,7 @@ import {
 } from "~/classes/functions/status";
 import { config } from "~/packages/config-manager";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
+import { Account } from "../schemas/account.ts";
 import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
@@ -84,7 +85,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         id: z.string().uuid(),
         uri: z.string().url(),
         url: z.string().url(),
-        account: z.lazy(() => User.schema),
+        account: Account,
         in_reply_to_id: z.string().uuid().nullable(),
         in_reply_to_account_id: z.string().uuid().nullable(),
         reblog: z.lazy(() => Note.schema).nullable(),
@@ -162,7 +163,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 name: z.string(),
                 url: z.string().url().optional(),
                 static_url: z.string().url().optional(),
-                accounts: z.array(z.lazy(() => User.schema)).optional(),
+                accounts: z.array(Account).optional(),
                 account_ids: z.array(z.string().uuid()).optional(),
             }),
         ),

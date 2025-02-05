@@ -4,10 +4,7 @@ import { randomString } from "@/math";
 import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
-import type {
-    Account as ApiAccount,
-    Mention as ApiMention,
-} from "@versia/client/types";
+import type { Mention as ApiMention } from "@versia/client/types";
 import {
     EntityValidator,
     FederationRequester,
@@ -48,13 +45,14 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import { z } from "zod";
+import type { z } from "zod";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
+import type { Account } from "../schemas/account.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -81,74 +79,6 @@ type UserWithRelations = UserWithInstance & {
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
-    // @ts-expect-error Roles are weird
-    public static schema: z.ZodType<ApiAccount> = z.object({
-        id: z.string(),
-        username: z.string(),
-        acct: z.string(),
-        display_name: z.string(),
-        locked: z.boolean(),
-        discoverable: z.boolean().optional(),
-        group: z.boolean().nullable(),
-        noindex: z.boolean().nullable(),
-        suspended: z.boolean().nullable(),
-        limited: z.boolean().nullable(),
-        created_at: z.string(),
-        followers_count: z.number(),
-        following_count: z.number(),
-        statuses_count: z.number(),
-        note: z.string(),
-        uri: z.string(),
-        url: z.string(),
-        avatar: z.string(),
-        avatar_static: z.string(),
-        header: z.string(),
-        header_static: z.string(),
-        emojis: z.array(Emoji.schema),
-        fields: z.array(
-            z.object({
-                name: z.string(),
-                value: z.string(),
-                verified: z.boolean().optional(),
-                verified_at: z.string().nullable().optional(),
-            }),
-        ),
-        // FIXME: Use a proper type
-        moved: z.lazy(() => User.schema).nullable(),
-        bot: z.boolean().nullable(),
-        source: z
-            .object({
-                privacy: z.string().nullable(),
-                sensitive: z.boolean().nullable(),
-                language: z.string().nullable(),
-                note: z.string(),
-                fields: z.array(
-                    z.object({
-                        name: z.string(),
-                        value: z.string(),
-                    }),
-                ),
-                avatar: z
-                    .object({
-                        content_type: z.string(),
-                    })
-                    .optional(),
-                header: z
-                    .object({
-                        content_type: z.string(),
-                    })
-                    .optional(),
-            })
-            .optional(),
-        role: z
-            .object({
-                name: z.string(),
-            })
-            .optional(),
-        roles: z.array(Role.schema),
-        mute_expires_at: z.string().optional(),
-    });
-
     public static $type: UserWithRelations;
 
     public avatar: Media | null;
@@ -1175,7 +1105,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return { ok: true };
     }
 
-    public toApi(isOwnAccount = false): ApiAccount {
+    public toApi(isOwnAccount = false): z.infer<typeof Account> {
         const user = this.data;
         return {
             id: user.id,
@@ -1199,6 +1129,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             fields: user.fields.map((field) => ({
                 name: htmlToText(getBestContentType(field.key).content),
                 value: getBestContentType(field.value).content,
+                verified_at: null,
             })),
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
@@ -1213,8 +1144,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             moved: null,
             noindex: false,
             suspended: false,
-            discoverable: undefined,
-            mute_expires_at: undefined,
+            discoverable: null,
+            mute_expires_at: null,
             roles: user.roles
                 .map((role) => new Role(role))
                 .concat(

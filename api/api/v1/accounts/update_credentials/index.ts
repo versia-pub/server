@@ -1,134 +1,72 @@
 import { apiRoute, auth, jsonOrForm } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Emoji, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import ISO6391 from "iso-639-1";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
+import { Account } from "~/classes/schemas/account";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {
-    json: z.object({
-        display_name: z
-            .string()
-            .min(3)
-            .trim()
-            .max(config.validation.max_displayname_size)
-            .refine(
-                (s) =>
-                    !config.filters.displayname.some((filter) =>
-                        s.match(filter),
-                    ),
-                "Display name contains blocked words",
-            )
-            .optional(),
-        username: z
-            .string()
-            .min(3)
-            .trim()
-            .max(config.validation.max_username_size)
-            .toLowerCase()
-            .regex(
-                /^[a-z0-9_-]+$/,
-                "Username can only contain letters, numbers, underscores and hyphens",
-            )
-            .refine(
-                (s) =>
-                    !config.filters.username.some((filter) => s.match(filter)),
-                "Username contains blocked words",
-            )
-            .optional(),
-        note: z
-            .string()
-            .min(0)
-            .max(config.validation.max_bio_size)
-            .trim()
-            .refine(
-                (s) => !config.filters.bio.some((filter) => s.match(filter)),
-                "Bio contains blocked words",
-            )
-            .optional(),
-        avatar: z
-            .string()
-            .trim()
-            .min(1)
-            .max(2000)
-            .url()
-            .transform((a) => new URL(a))
-            .or(
-                z
-                    .instanceof(File)
-                    .refine(
-                        (v) => v.size <= config.validation.max_avatar_size,
-                        `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
-                    ),
-            )
-            .optional(),
-        header: z
-            .string()
-            .trim()
-            .min(1)
-            .max(2000)
-            .url()
-            .transform((v) => new URL(v))
-            .or(
-                z
-                    .instanceof(File)
-                    .refine(
-                        (v) => v.size <= config.validation.max_header_size,
-                        `Header must be less than ${config.validation.max_header_size} bytes`,
-                    ),
-            )
-            .optional(),
-        locked: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        bot: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        discoverable: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        source: z
-            .object({
-                privacy: z
-                    .enum(["public", "unlisted", "private", "direct"])
-                    .optional(),
-                sensitive: z
-                    .string()
-                    .transform((v) =>
-                        ["true", "1", "on"].includes(v.toLowerCase()),
-                    )
-                    .optional(),
-                language: z
-                    .enum(ISO6391.getAllCodes() as [string, ...string[]])
-                    .optional(),
-            })
-            .optional(),
-        fields_attributes: z
-            .array(
-                z.object({
-                    name: z
-                        .string()
-                        .trim()
-                        .max(config.validation.max_field_name_size),
-                    value: z
-                        .string()
-                        .trim()
-                        .max(config.validation.max_field_value_size),
-                }),
-            )
-            .max(config.validation.max_field_count)
-            .optional(),
-    }),
+    json: z
+        .object({
+            display_name: Account.shape.display_name,
+            username: Account.shape.username,
+            note: Account.shape.note,
+            avatar: z
+                .string()
+                .trim()
+                .min(1)
+                .max(2000)
+                .url()
+                .transform((a) => new URL(a))
+                .or(
+                    z
+                        .instanceof(File)
+                        .refine(
+                            (v) => v.size <= config.validation.max_avatar_size,
+                            `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+                        ),
+                ),
+            header: z
+                .string()
+                .trim()
+                .min(1)
+                .max(2000)
+                .url()
+                .transform((v) => new URL(v))
+                .or(
+                    z
+                        .instanceof(File)
+                        .refine(
+                            (v) => v.size <= config.validation.max_header_size,
+                            `Header must be less than ${config.validation.max_header_size} bytes`,
+                        ),
+                ),
+            locked: Account.shape.locked,
+            bot: Account.shape.bot,
+            discoverable: Account.shape.discoverable,
+            source: z
+                .object({
+                    privacy: Account.shape.source.unwrap().shape.privacy,
+                    sensitive: Account.shape.source.unwrap().shape.sensitive,
+                    language: Account.shape.source.unwrap().shape.language,
+                })
+                .partial(),
+            fields_attributes: z
+                .array(
+                    z.object({
+                        name: Account.shape.fields.element.shape.name,
+                        value: Account.shape.fields.element.shape.value,
+                    }),
+                )
+                .max(config.validation.max_field_count),
+        })
+        .partial(),
 };
 
 const route = createRoute({
@@ -158,7 +96,7 @@ const route = createRoute({
             description: "Updated user",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },

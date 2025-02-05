@@ -1,9 +1,9 @@
 import { apiRoute, auth, qsQuery } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
-import { z } from "zod";
+import { Account } from "~/classes/schemas/account";
 
 const schemas = {
     query: z.object({
@@ -41,7 +41,7 @@ const route = createRoute({
                     schema: z.array(
                         z.object({
                             id: z.string().uuid(),
-                            accounts: z.array(User.schema),
+                            accounts: z.array(Account),
                         }),
                     ),
                 },

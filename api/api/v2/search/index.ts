@@ -1,10 +1,10 @@
 import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account } from "~/classes/schemas/account";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -47,7 +47,7 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: z.object({
-                        accounts: z.array(User.schema),
+                        accounts: z.array(Account),
                         statuses: z.array(Note.schema),
                         hashtags: z.array(z.string()),
                     }),

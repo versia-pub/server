@@ -1,9 +1,8 @@
 import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
-import { z } from "zod";
 
 const schemas = {
     param: z.object({

@@ -1,10 +1,9 @@
 import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import type { Marker as ApiMarker } from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
-import { z } from "zod";
 
 const schemas = {
     markers: z.object({

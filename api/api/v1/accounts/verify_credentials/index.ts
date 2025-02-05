@@ -1,6 +1,6 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
+import { Account } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "get",
@@ -18,7 +18,7 @@ const route = createRoute({
             description: "Account",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },

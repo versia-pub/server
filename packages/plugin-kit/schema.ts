@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@hono/zod-openapi";
 
 export const manifestSchema = z.object({
     // biome-ignore lint/style/useNamingConvention: <explanation>

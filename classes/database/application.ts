@@ -1,3 +1,4 @@
+import { z } from "@hono/zod-openapi";
 import type { Application as APIApplication } from "@versia/client/types";
 import { Token, db } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
@@ -9,7 +10,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
 type ApplicationType = InferSelectModel<typeof Applications>;

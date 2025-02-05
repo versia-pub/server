@@ -1,5 +1,5 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
     Collection as CollectionSchema,
     Note as NoteSchema,
@@ -7,7 +7,6 @@ import {
 import { Note, User, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";

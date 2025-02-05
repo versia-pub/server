@@ -1,10 +1,10 @@
 import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account } from "~/classes/schemas/account";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {
@@ -32,7 +32,7 @@ const route = createRoute({
             description: "Account",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },

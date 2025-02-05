@@ -1,7 +1,6 @@
 import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
-import { z } from "zod";
 
 const route = createRoute({
     method: "get",

@@ -1,9 +1,8 @@
 import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Note, Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { z } from "zod";
 
 const schemas = {
     param: z.object({

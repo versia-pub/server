@@ -4,14 +4,13 @@ import {
     parseUserAddress,
     webfingerMention,
 } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
 import { WebFinger } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";

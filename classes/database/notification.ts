@@ -1,3 +1,4 @@
+import { z } from "@hono/zod-openapi";
 import type { Notification as APINotification } from "@versia/client/types";
 import { Note, User, db } from "@versia/kit/db";
 import { Notifications } from "@versia/kit/tables";
@@ -9,12 +10,12 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
     userRelations,
 } from "../functions/user.ts";
+import { Account } from "../schemas/account.ts";
 import { BaseInterface } from "./base.ts";
 
 export type NotificationType = InferSelectModel<typeof Notifications> & {
@@ -27,7 +28,7 @@ export class Notification extends BaseInterface<
     NotificationType
 > {
     public static schema: z.ZodType<APINotification> = z.object({
-        account: z.lazy(() => User.schema).nullable(),
+        account: Account.nullable(),
         created_at: z.string(),
         id: z.string().uuid(),
         status: z.lazy(() => Note.schema).optional(),
@@ -54,7 +55,7 @@ export class Notification extends BaseInterface<
             "group_favourite",
             "user_approved",
         ]),
-        target: z.lazy(() => User.schema).optional(),
+        target: Account.optional(),
     });
 
     public async reload(): Promise<void> {

@@ -1,8 +1,7 @@
 import { apiRoute, auth, qsQuery } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 
 const schemas = {
     query: z.object({

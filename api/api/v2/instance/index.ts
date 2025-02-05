@@ -4,6 +4,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
+import { Account } from "~/classes/schemas/account";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
 
@@ -83,7 +84,7 @@ const route = createRoute({
                         }),
                         contact: z.object({
                             email: z.string().nullable(),
-                            account: User.schema.nullable(),
+                            account: Account.nullable(),
                         }),
                         rules: z.array(
                             z.object({

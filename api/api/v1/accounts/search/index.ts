@@ -1,11 +1,11 @@
 import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account } from "~/classes/schemas/account";
 
 const schemas = {
     query: z.object({
@@ -43,7 +43,7 @@ export const route = createRoute({
             description: "Accounts",
             content: {
                 "application/json": {
-                    schema: z.array(User.schema),
+                    schema: z.array(Account),
                 },
             },
         },

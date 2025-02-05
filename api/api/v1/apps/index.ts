@@ -1,8 +1,7 @@
 import { apiRoute, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
-import { z } from "zod";
 
 const schemas = {
     json: z.object({

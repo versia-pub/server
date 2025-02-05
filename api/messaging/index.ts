@@ -1,8 +1,7 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
-import { z } from "zod";
 
 const route = createRoute({
     method: "post",

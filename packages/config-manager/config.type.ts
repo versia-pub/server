@@ -1,10 +1,10 @@
+import { z } from "@hono/zod-openapi";
 import {
     ADMIN_ROLES,
     DEFAULT_ROLES,
     RolePermissions,
 } from "@versia/kit/tables";
 import { types as mimeTypes } from "mime-types";
-import { z } from "zod";
 
 export enum MediaBackendType {
     Local = "local",
@@ -25,6 +25,11 @@ const zUrl = z
     .refine((arg) => URL.canParse(arg), "Invalid url")
     .transform((arg) => arg.replace(/\/$/, ""))
     .transform((arg) => new URL(arg));
+
+export const zBoolean = z
+    .string()
+    .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
+    .or(z.boolean());
 
 export const configValidator = z
     .object({

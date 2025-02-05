@@ -1,3 +1,4 @@
+import { z } from "@hono/zod-openapi";
 import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { ReactionExtension } from "@versia/federation/types";
 import { Emoji, Instance, Note, User, db } from "@versia/kit/db";
@@ -10,7 +11,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 

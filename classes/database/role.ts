@@ -1,4 +1,5 @@
 import { proxyUrl } from "@/response";
+import { z } from "@hono/zod-openapi";
 import {
     type VersiaRole as APIRole,
     RolePermission,
@@ -14,7 +15,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 

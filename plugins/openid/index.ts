@@ -1,10 +1,10 @@
+import { z } from "@hono/zod-openapi";
 import { Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
 import chalk from "chalk";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import { RolePermissions } from "~/drizzle/schema.ts";
 import authorizeRoute from "./routes/authorize.ts";
