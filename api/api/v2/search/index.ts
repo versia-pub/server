@@ -5,6 +5,7 @@ import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { Account } from "~/classes/schemas/account";
+import { Status } from "~/classes/schemas/status";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -48,7 +49,7 @@ const route = createRoute({
                 "application/json": {
                     schema: z.object({
                         accounts: z.array(Account),
-                        statuses: z.array(Note.schema),
+                        statuses: z.array(Status),
                         hashtags: z.array(z.string()),
                     }),
                 },

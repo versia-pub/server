@@ -3,6 +3,7 @@ import { getBestContentType, urlToContentFormat } from "@/content_types";
 import { randomString } from "@/math";
 import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
+import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { Mention as ApiMention } from "@versia/client/types";
 import {
@@ -45,7 +46,6 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import type { z } from "zod";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";

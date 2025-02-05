@@ -1,8 +1,8 @@
 import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Status } from "~/classes/schemas/status";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -29,7 +29,7 @@ const route = createRoute({
             description: "Unpinned status",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: Status,
                 },
             },
         },

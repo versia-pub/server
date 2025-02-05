@@ -4,6 +4,7 @@ import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
+import { Status } from "~/classes/schemas/status";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {
@@ -51,7 +52,7 @@ const route = createRoute({
             description: "Reblogged status",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: Status,
                 },
             },
         },

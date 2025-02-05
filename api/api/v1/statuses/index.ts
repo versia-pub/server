@@ -4,6 +4,7 @@ import { Media, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
+import { Status } from "~/classes/schemas/status";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -116,7 +117,7 @@ const route = createRoute({
             description: "The new status",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: Status,
                 },
             },
         },

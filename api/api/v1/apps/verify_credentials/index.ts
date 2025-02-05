@@ -3,6 +3,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Application as ApplicationSchema } from "~/classes/schemas/application";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -21,7 +22,7 @@ const route = createRoute({
             description: "Application",
             content: {
                 "application/json": {
-                    schema: Application.schema,
+                    schema: ApplicationSchema,
                 },
             },
         },
@@ -52,13 +53,6 @@ export default apiRoute((app) =>
             throw new ApiError(401, "Application not found");
         }
 
-        return context.json(
-            {
-                ...application.toApi(),
-                redirect_uris: application.data.redirectUri,
-                scopes: application.data.scopes,
-            },
-            200,
-        );
+        return context.json(application.toApi(), 200);
     }),
 );

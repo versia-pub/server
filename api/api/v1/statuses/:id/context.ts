@@ -1,7 +1,7 @@
 import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Status } from "~/classes/schemas/status";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -26,8 +26,8 @@ const route = createRoute({
             content: {
                 "application/json": {
                     schema: z.object({
-                        ancestors: z.array(Note.schema),
-                        descendants: z.array(Note.schema),
+                        ancestors: z.array(Status),
+                        descendants: z.array(Status),
                     }),
                 },
             },

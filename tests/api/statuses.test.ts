@@ -156,7 +156,7 @@ describe("API Tests", () => {
             expect(statusJson.created_at).toBeDefined();
             expect(statusJson.account).toBeDefined();
             expect(statusJson.reblog).toBeDefined();
-            expect(statusJson.application).toBeDefined();
+            expect(statusJson.application).toBeUndefined();
             expect(statusJson.emojis).toBeDefined();
             expect(statusJson.media_attachments).toBeDefined();
             expect(statusJson.poll).toBeDefined();

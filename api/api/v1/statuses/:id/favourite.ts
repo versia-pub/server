@@ -1,7 +1,7 @@
 import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Status } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",
@@ -27,7 +27,7 @@ const route = createRoute({
             description: "Favourited status",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: Status,
                 },
             },
         },

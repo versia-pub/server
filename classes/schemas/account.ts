@@ -75,6 +75,7 @@ export const Source = z
         follow_requests_count: z
             .number()
             .int()
+            .nonnegative()
             .optional()
             .openapi({
                 description: "The number of pending follow requests.",
@@ -352,8 +353,8 @@ export const Account = z.object({
         .nullable(),
     statuses_count: z
         .number()
-        .min(0)
         .int()
+        .nonnegative()
         .openapi({
             description: "How many statuses are attached to this account.",
             example: 42,
@@ -363,8 +364,8 @@ export const Account = z.object({
         }),
     followers_count: z
         .number()
-        .min(0)
         .int()
+        .nonnegative()
         .openapi({
             description: "The reported followers of this profile.",
             example: 6,
@@ -374,8 +375,8 @@ export const Account = z.object({
         }),
     following_count: z
         .number()
-        .min(0)
         .int()
+        .nonnegative()
         .openapi({
             description: "The reported follows of this profile.",
             example: 23,

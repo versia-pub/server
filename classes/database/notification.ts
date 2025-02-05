@@ -16,6 +16,7 @@ import {
     userRelations,
 } from "../functions/user.ts";
 import { Account } from "../schemas/account.ts";
+import { Status } from "../schemas/status.ts";
 import { BaseInterface } from "./base.ts";
 
 export type NotificationType = InferSelectModel<typeof Notifications> & {
@@ -31,7 +32,7 @@ export class Notification extends BaseInterface<
         account: Account.nullable(),
         created_at: z.string(),
         id: z.string().uuid(),
-        status: z.lazy(() => Note.schema).optional(),
+        status: Status.optional(),
         // TODO: Add reactions
         type: z.enum([
             "mention",

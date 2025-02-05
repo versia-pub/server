@@ -1,8 +1,9 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Note, Timeline } from "@versia/kit/db";
+import { Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
+import { Status } from "~/classes/schemas/status";
 
 const schemas = {
     query: z.object({
@@ -36,7 +37,7 @@ const route = createRoute({
             description: "Home timeline",
             content: {
                 "application/json": {
-                    schema: z.array(Note.schema),
+                    schema: z.array(Status),
                 },
             },
         },
