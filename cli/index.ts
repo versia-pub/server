@@ -27,6 +27,8 @@ export const commands = {
     ).default,
     "generate-keys": (await import("./commands/generate-keys.ts")).default,
     start: Start,
+    "notes:recalculate": (await import("./commands/notes/recalculate.ts"))
+        .default,
 };
 
 if (import.meta.path === Bun.main) {
