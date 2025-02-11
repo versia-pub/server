@@ -12,6 +12,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
+import { CustomEmoji } from "../schemas/emoji.ts";
 import { BaseInterface } from "./base.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {
@@ -30,7 +31,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
     public static schema: z.ZodType<APIReaction> = z.object({
         id: z.string().uuid(),
         author_id: z.string().uuid(),
-        emoji: z.lazy(() => Emoji.schema),
+        emoji: CustomEmoji,
     });
 
     public static $type: ReactionType;
@@ -167,16 +168,6 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
     public get id(): string {
         return this.data.id;
-    }
-
-    public toApi(): APIReaction {
-        return {
-            id: this.data.id,
-            author_id: this.data.authorId,
-            emoji: this.hasCustomEmoji()
-                ? new Emoji(this.data.emoji as typeof Emoji.$type).toApi()
-                : this.data.emojiText || "",
-        };
     }
 
     public getUri(baseUrl: URL): URL {

@@ -1,4 +1,4 @@
-import type { Source as ApiSource } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import type { ContentFormat, InstanceMetadata } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
@@ -14,6 +14,7 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
+import type { Source } from "~/classes/schemas/account";
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>
@@ -553,16 +554,7 @@ export const Users = pgTable(
             inbox: string;
             outbox: string;
         }> | null>(),
-        source: jsonb("source").notNull().$type<
-            ApiSource & {
-                avatar?: {
-                    content_type: string;
-                };
-                header?: {
-                    content_type: string;
-                };
-            }
-        >(),
+        source: jsonb("source").notNull().$type<z.infer<typeof Source>>(),
         avatarId: uuid("avatarId").references(() => Medias.id, {
             onDelete: "set null",
             onUpdate: "cascade",

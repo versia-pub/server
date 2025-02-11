@@ -1,12 +1,14 @@
 import { z } from "@hono/zod-openapi";
 import type { Status as ApiNote } from "@versia/client/types";
-import { Emoji, Media } from "@versia/kit/db";
+import { Media } from "@versia/kit/db";
 import ISO6391 from "iso-639-1";
 import { zBoolean } from "~/packages/config-manager/config.type.ts";
 import { Account } from "./account.ts";
 import { PreviewCard } from "./card.ts";
 import { Id } from "./common.ts";
+import { CustomEmoji } from "./emoji.ts";
 import { FilterResult } from "./filters.ts";
+import { NoteReaction } from "./versia.ts";
 
 export const Mention = z
     .object({
@@ -168,7 +170,7 @@ export const Poll = z.object({
             url: "https://docs.joinmastodon.org/entities/Poll/#options",
         },
     }),
-    emojis: z.array(Emoji.schema).openapi({
+    emojis: z.array(CustomEmoji).openapi({
         description: "Custom emoji to be used for rendering poll options.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Poll/#emojis",
@@ -284,7 +286,7 @@ export const Status = z.object({
                 url: "https://docs.joinmastodon.org/entities/Status/#edited_at",
             },
         }),
-    emojis: z.array(Emoji.schema).openapi({
+    emojis: z.array(CustomEmoji).openapi({
         description: "Custom emoji to be used when rendering status content.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#emojis",
@@ -455,17 +457,7 @@ export const Status = z.object({
             url: "https://docs.joinmastodon.org/entities/Status/#pinned",
         },
     }),
-    emoji_reactions: z.array(
-        z.object({
-            count: z.number().int().nonnegative(),
-            me: zBoolean,
-            name: z.string(),
-            url: z.string().url().optional(),
-            static_url: z.string().url().optional(),
-            accounts: z.array(Account).optional(),
-            account_ids: z.array(z.string().uuid()).optional(),
-        }),
-    ),
+    reactions: z.array(NoteReaction).openapi({}),
     quote: z
         .lazy((): z.ZodType<ApiNote> => Status as z.ZodType<ApiNote>)
         .nullable(),

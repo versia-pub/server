@@ -3,8 +3,8 @@ import type { Account as ApiAccount } from "@versia/client/types";
 import ISO6391 from "iso-639-1";
 import { config } from "~/packages/config-manager";
 import { zBoolean } from "~/packages/config-manager/config.type";
-import { Emoji } from "../database/emoji.ts";
-import { Role } from "../database/role.ts";
+import { CustomEmoji } from "./emoji.ts";
+import { Role } from "./versia.ts";
 
 export const Field = z.object({
     name: z
@@ -117,7 +117,7 @@ export const Account = z.object({
         .string()
         .uuid()
         .openapi({
-            description: "The account id.",
+            description: "The account ID in the database.",
             example: "9e84842b-4db6-4a9b-969d-46ab408278da",
             externalDocs: {
                 url: "https://docs.joinmastodon.org/entities/Account/#id",
@@ -260,7 +260,7 @@ export const Account = z.object({
                 url: "https://docs.joinmastodon.org/entities/Account/#fields",
             },
         }),
-    emojis: z.array(Emoji.schema).openapi({
+    emojis: z.array(CustomEmoji).openapi({
         description:
             "Custom emoji entities to be used when rendering the profile.",
         externalDocs: {
@@ -384,6 +384,7 @@ export const Account = z.object({
                 url: "https://docs.joinmastodon.org/entities/Account/#following_count",
             },
         }),
+    /* Versia Server API extension */
     uri: z.string().url().openapi({
         description:
             "The location of the user's Versia profile page, as opposed to the local representation.",
@@ -396,7 +397,10 @@ export const Account = z.object({
             name: z.string(),
         })
         .optional(),
-    roles: z.array(Role.schema),
+    /* Versia Server API extension */
+    roles: z.array(Role).openapi({
+        description: "Roles assigned to the account.",
+    }),
     mute_expires_at: z.string().datetime().nullable().openapi({
         description: "When a timed mute will expire, if applicable.",
         example: "2025-03-01T14:00:00.000Z",

@@ -2,6 +2,7 @@ import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
+import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
@@ -19,7 +20,7 @@ const routeGet = createRoute({
             description: "List of all roles",
             content: {
                 "application/json": {
-                    schema: z.array(Role.schema),
+                    schema: z.array(RoleSchema),
                 },
             },
         },
@@ -40,7 +41,7 @@ const routePost = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: Role.schema.omit({ id: true }),
+                    schema: RoleSchema.omit({ id: true }),
                 },
             },
         },
@@ -50,7 +51,7 @@ const routePost = createRoute({
             description: "Role created",
             content: {
                 "application/json": {
-                    schema: Role.schema,
+                    schema: RoleSchema,
                 },
             },
         },

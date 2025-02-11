@@ -5,6 +5,7 @@ import { Emoji, Media } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
+import { CustomEmoji } from "~/classes/schemas/emoji";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -82,7 +83,7 @@ const route = createRoute({
             description: "Uploaded emoji",
             content: {
                 "application/json": {
-                    schema: Emoji.schema,
+                    schema: CustomEmoji,
                 },
             },
         },

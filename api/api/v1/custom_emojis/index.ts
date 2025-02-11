@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Emoji } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
+import { CustomEmoji } from "~/classes/schemas/emoji";
 
 const route = createRoute({
     method: "get",
@@ -20,7 +21,7 @@ const route = createRoute({
             description: "Emojis",
             content: {
                 "application/json": {
-                    schema: z.array(Emoji.schema),
+                    schema: z.array(CustomEmoji),
                 },
             },
         },

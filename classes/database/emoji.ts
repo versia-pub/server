@@ -1,7 +1,6 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
-import { z } from "@hono/zod-openapi";
-import type { Emoji as APIEmoji } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, Media, db } from "@versia/kit/db";
 import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
@@ -15,6 +14,7 @@ import {
     inArray,
     isNull,
 } from "drizzle-orm";
+import type { CustomEmoji } from "../schemas/emoji.ts";
 import { BaseInterface } from "./base.ts";
 
 type EmojiType = InferSelectModel<typeof Emojis> & {
@@ -23,16 +23,6 @@ type EmojiType = InferSelectModel<typeof Emojis> & {
 };
 
 export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
-    public static schema = z.object({
-        id: z.string(),
-        shortcode: z.string(),
-        url: z.string(),
-        visible_in_picker: z.boolean(),
-        category: z.string().optional(),
-        static_url: z.string(),
-        global: z.boolean(),
-    });
-
     public static $type: EmojiType;
     public media: Media;
 
@@ -184,18 +174,18 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
         );
     }
 
-    public toApi(): APIEmoji {
+    public toApi(): z.infer<typeof CustomEmoji> {
         return {
             id: this.id,
             shortcode: this.data.shortcode,
             static_url: proxyUrl(this.media.getUrl()).toString(),
             url: proxyUrl(this.media.getUrl()).toString(),
             visible_in_picker: this.data.visibleInPicker,
-            category: this.data.category ?? undefined,
+            category: this.data.category,
             global: this.data.ownerId === null,
             description:
                 this.media.data.content[this.media.getPreferredMimeType()]
-                    .description ?? undefined,
+                    .description ?? null,
         };
     }
 

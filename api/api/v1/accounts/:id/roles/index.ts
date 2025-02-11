@@ -1,6 +1,7 @@
 import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
+import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 
 const route = createRoute({
     method: "get",
@@ -22,7 +23,7 @@ const route = createRoute({
             description: "List of roles",
             content: {
                 "application/json": {
-                    schema: z.array(Role.schema),
+                    schema: z.array(RoleSchema),
                 },
             },
         },

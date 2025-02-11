@@ -1,5 +1,5 @@
 import { idValidator } from "@/api";
-import { getBestContentType, urlToContentFormat } from "@/content_types";
+import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
 import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
@@ -52,7 +52,7 @@ import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
-import type { Account } from "../schemas/account.ts";
+import type { Account, Source } from "../schemas/account.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -686,12 +686,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             note: getBestContentType(user.bio).content,
             publicKey: user.public_key.key,
             source: {
-                language: null,
+                language: "en",
                 note: "",
                 privacy: "public",
                 sensitive: false,
                 fields: [],
-            },
+            } as z.infer<typeof Source>,
         };
 
         const userEmojis =
@@ -888,12 +888,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     privateKey: keys.private_key,
                     updatedAt: new Date().toISOString(),
                     source: {
-                        language: null,
+                        language: "en",
                         note: "",
                         privacy: "public",
                         sensitive: false,
                         fields: [],
-                    },
+                    } as z.infer<typeof Source>,
                 })
                 .returning()
         )[0];
@@ -1107,6 +1107,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public toApi(isOwnAccount = false): z.infer<typeof Account> {
         const user = this.data;
+
         return {
             id: user.id,
             username: user.username,
@@ -1177,6 +1178,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 )
                 .map((r) => r.toApi()),
             group: false,
+            // TODO
+            last_status_at: null,
         };
     }
 
@@ -1235,17 +1238,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             indexable: false,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
-            avatar:
-                urlToContentFormat(
-                    this.getAvatarUrl(config),
-                    this.data.source.avatar?.content_type,
-                ) ?? undefined,
-            header: this.getHeaderUrl(config)
-                ? (urlToContentFormat(
-                      this.getHeaderUrl(config) as URL,
-                      this.data.source.header?.content_type,
-                  ) ?? undefined)
-                : undefined,
+            avatar: this.avatar?.toVersia(),
+            header: this.header?.toVersia(),
             display_name: user.displayName,
             fields: user.fields,
             public_key: {

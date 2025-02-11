@@ -4,6 +4,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Emoji } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { CustomEmoji } from "~/classes/schemas/emoji";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
@@ -69,7 +70,7 @@ const routeGet = createRoute({
             description: "Emoji",
             content: {
                 "application/json": {
-                    schema: Emoji.schema,
+                    schema: CustomEmoji,
                 },
             },
         },
@@ -120,7 +121,7 @@ const routePatch = createRoute({
             description: "Emoji modified",
             content: {
                 "application/json": {
-                    schema: Emoji.schema,
+                    schema: CustomEmoji,
                 },
             },
         },
