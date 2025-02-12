@@ -829,6 +829,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             pinned: data.pinned,
             // TODO: Add polls
             poll: null,
+            // @ts-expect-error broken recursive types
             reblog: data.reblog
                 ? await new Note(data.reblog as NoteTypeWithRelations).toApi(
                       userFetching,
@@ -844,6 +845,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             visibility: data.visibility,
             url: data.uri || this.getMastoUri().toString(),
             bookmarked: false,
+            // @ts-expect-error broken recursive types
             quote: data.quotingId
                 ? ((await Note.fromId(data.quotingId, userFetching?.id).then(
                       (n) => n?.toApi(userFetching),

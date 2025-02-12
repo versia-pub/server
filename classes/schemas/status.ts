@@ -102,6 +102,7 @@ export const Status = z.object({
         },
     }),
     reblog: z
+        // @ts-expect-error broken recursive types
         .lazy((): z.ZodType<ApiNote> => Status as z.ZodType<ApiNote>)
         .nullable()
         .openapi({
@@ -308,6 +309,7 @@ export const Status = z.object({
     }),
     reactions: z.array(NoteReaction).openapi({}),
     quote: z
+        // @ts-expect-error broken recursive types
         .lazy((): z.ZodType<ApiNote> => Status as z.ZodType<ApiNote>)
         .nullable(),
     bookmarked: zBoolean.optional().openapi({

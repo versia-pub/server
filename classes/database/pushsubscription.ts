@@ -1,7 +1,4 @@
-import type {
-    Alerts,
-    PushSubscription as ApiPushSubscription,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import { type Token, type User, db } from "@versia/kit/db";
 import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {
@@ -12,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { WebPushSubscription as WebPushSubscriptionSchema } from "../schemas/pushsubscription.ts";
 import { BaseInterface } from "./base.ts";
 
 type PushSubscriptionType = InferSelectModel<typeof PushSubscriptions>;
@@ -165,7 +163,7 @@ export class PushSubscription extends BaseInterface<
         return this.data.id;
     }
 
-    public getAlerts(): Alerts {
+    public getAlerts(): z.infer<typeof WebPushSubscriptionSchema.shape.alerts> {
         return {
             mention: this.data.alerts.mention ?? false,
             favourite: this.data.alerts.favourite ?? false,
@@ -180,7 +178,7 @@ export class PushSubscription extends BaseInterface<
         };
     }
 
-    public toApi(): ApiPushSubscription {
+    public toApi(): z.infer<typeof WebPushSubscriptionSchema> {
         return {
             id: this.data.id,
             alerts: this.getAlerts(),

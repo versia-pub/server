@@ -1,5 +1,4 @@
-import { z } from "@hono/zod-openapi";
-import type { Token as ApiToken } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import { type Application, User, db } from "@versia/kit/db";
 import { Tokens } from "@versia/kit/tables";
 import {
@@ -10,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { Token as TokenSchema } from "../schemas/token.ts";
 import { BaseInterface } from "./base.ts";
 
 type TokenType = InferSelectModel<typeof Tokens> & {
@@ -17,13 +17,6 @@ type TokenType = InferSelectModel<typeof Tokens> & {
 };
 
 export class Token extends BaseInterface<typeof Tokens, TokenType> {
-    public static schema: z.ZodType<ApiToken> = z.object({
-        access_token: z.string(),
-        token_type: z.enum(["bearer"]),
-        scope: z.string(),
-        created_at: z.number(),
-    });
-
     public static $type: TokenType;
 
     public async reload(): Promise<void> {
@@ -160,7 +153,7 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
         return await User.fromId(this.data.userId);
     }
 
-    public toApi(): ApiToken {
+    public toApi(): z.infer<typeof TokenSchema> {
         return {
             access_token: this.data.accessToken,
             token_type: "Bearer",

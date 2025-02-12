@@ -1,30 +1,16 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import type { Marker as ApiMarker } from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
+import { Marker as MarkerSchema } from "~/classes/schemas/marker";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification";
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
-const schemas = {
-    markers: z.object({
-        home: z
-            .object({
-                last_read_id: z.string().uuid(),
-                version: z.number(),
-                updated_at: z.string(),
-            })
-            .nullable()
-            .optional(),
-        notifications: z
-            .object({
-                last_read_id: z.string().uuid(),
-                version: z.number(),
-                updated_at: z.string(),
-            })
-            .nullable()
-            .optional(),
-    }),
-};
+const MarkerResponseSchema = z.object({
+    notifications: MarkerSchema.optional(),
+    home: MarkerSchema.optional(),
+});
 
 const routeGet = createRoute({
     method: "get",
@@ -50,7 +36,7 @@ const routeGet = createRoute({
             description: "Markers",
             content: {
                 "application/json": {
-                    schema: schemas.markers,
+                    schema: MarkerResponseSchema,
                 },
             },
         },
@@ -69,8 +55,9 @@ const routePost = createRoute({
     ] as const,
     request: {
         query: z.object({
-            "home[last_read_id]": z.string().uuid().optional(),
-            "notifications[last_read_id]": z.string().uuid().optional(),
+            "home[last_read_id]": StatusSchema.shape.id.optional(),
+            "notifications[last_read_id]":
+                NotificationSchema.shape.id.optional(),
         }),
     },
     responses: {
@@ -78,7 +65,7 @@ const routePost = createRoute({
             description: "Markers",
             content: {
                 "application/json": {
-                    schema: schemas.markers,
+                    schema: MarkerResponseSchema,
                 },
             },
         },
@@ -96,7 +83,7 @@ export default apiRoute((app) => {
             return context.json({}, 200);
         }
 
-        const markers: ApiMarker = {
+        const markers: z.infer<typeof MarkerResponseSchema> = {
             home: undefined,
             notifications: undefined,
         };
@@ -160,7 +147,7 @@ export default apiRoute((app) => {
         } = context.req.valid("query");
         const { user } = context.get("auth");
 
-        const markers: ApiMarker = {
+        const markers: z.infer<typeof MarkerResponseSchema> = {
             home: undefined,
             notifications: undefined,
         };

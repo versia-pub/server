@@ -5,7 +5,6 @@ import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
 import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
-import type { Mention as ApiMention } from "@versia/client/types";
 import {
     EntityValidator,
     FederationRequester,
@@ -53,6 +52,7 @@ import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
 import type { Account, Source } from "../schemas/account.ts";
+import type { Mention as MentionSchema } from "../schemas/status.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -1260,7 +1260,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    public toMention(): ApiMention {
+    public toMention(): z.infer<typeof MentionSchema> {
         return {
             url: this.getUri().toString(),
             username: this.data.username,
