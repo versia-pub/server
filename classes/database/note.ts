@@ -5,10 +5,6 @@ import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
 import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
-import type {
-    Attachment as ApiAttachment,
-    Status as ApiStatus,
-} from "@versia/client/types";
 import { EntityValidator } from "@versia/federation";
 import type {
     ContentFormat,
@@ -41,6 +37,7 @@ import {
     findManyNotes,
     parseTextMentions,
 } from "~/classes/functions/status";
+import type { Status as StatusSchema } from "~/classes/schemas/status.ts";
 import { config } from "~/packages/config-manager";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import type { Status } from "../schemas/status.ts";
@@ -346,7 +343,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public static async fromData(data: {
         author: User;
         content: ContentFormat;
-        visibility: ApiStatus["visibility"];
+        visibility: z.infer<typeof StatusSchema.shape.visibility>;
         isSensitive: boolean;
         spoilerText: string;
         emojis?: Emoji[];
@@ -420,7 +417,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public async updateFromData(data: {
         author: User;
         content?: ContentFormat;
-        visibility?: ApiStatus["visibility"];
+        visibility?: z.infer<typeof StatusSchema.shape.visibility>;
         isSensitive?: boolean;
         spoilerText?: string;
         emojis?: Emoji[];
@@ -677,7 +674,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     remote: false,
                 },
             },
-            visibility: visibility as ApiStatus["visibility"],
+            visibility,
             isSensitive: note.is_sensitive ?? false,
             spoilerText: note.subject ?? "",
             emojis,
@@ -811,8 +808,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             emojis: data.emojis.map((emoji) => new Emoji(emoji).toApi()),
             favourited: data.liked,
             favourites_count: data.likeCount,
-            media_attachments: (data.attachments ?? []).map(
-                (a) => new Media(a).toApi() as ApiAttachment,
+            media_attachments: (data.attachments ?? []).map((a) =>
+                new Media(a).toApi(),
             ),
             mentions: data.mentions.map((mention) => ({
                 id: mention.id,
@@ -844,7 +841,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             spoiler_text: data.spoilerText,
             tags: [],
             uri: data.uri || this.getUri().toString(),
-            visibility: data.visibility as ApiStatus["visibility"],
+            visibility: data.visibility,
             url: data.uri || this.getMastoUri().toString(),
             bookmarked: false,
             quote: data.quotingId

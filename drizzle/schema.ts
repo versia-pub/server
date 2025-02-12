@@ -15,6 +15,8 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import type { Source } from "~/classes/schemas/account";
+import type { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
+import type { Status as StatusSchema } from "~/classes/schemas/status.ts";
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>
@@ -376,7 +378,9 @@ export const MediasRelations = relations(Medias, ({ many }) => ({
 
 export const Notifications = pgTable("Notifications", {
     id: id(),
-    type: text("type").notNull(),
+    type: text("type")
+        .$type<z.infer<typeof NotificationSchema.shape.type>>()
+        .notNull(),
     createdAt: createdAt(),
     notifiedId: uuid("notifiedId")
         .notNull()
@@ -431,7 +435,9 @@ export const Notes = pgTable("Notes", {
     }),
     content: text("content").default("").notNull(),
     contentType: text("content_type").default("text/plain").notNull(),
-    visibility: text("visibility").notNull(),
+    visibility: text("visibility")
+        .$type<z.infer<typeof StatusSchema.shape.visibility>>()
+        .notNull(),
     replyId: uuid("replyId").references((): AnyPgColumn => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",

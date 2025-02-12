@@ -2,6 +2,7 @@ import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const schemas = {
     param: z.object({
@@ -43,7 +44,7 @@ const route = createRoute({
             description: "Updated relationship",
             content: {
                 "application/json": {
-                    schema: Relationship.schema,
+                    schema: RelationshipSchema,
                 },
             },
         },

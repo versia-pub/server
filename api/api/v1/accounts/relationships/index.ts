@@ -2,6 +2,7 @@ import { apiRoute, auth, qsQuery } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const schemas = {
     query: z.object({
@@ -30,7 +31,7 @@ const route = createRoute({
             description: "Relationships",
             content: {
                 "application/json": {
-                    schema: z.array(Relationship.schema),
+                    schema: z.array(RelationshipSchema),
                 },
             },
         },

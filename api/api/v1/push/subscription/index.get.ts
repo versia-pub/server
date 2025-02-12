@@ -2,6 +2,7 @@ import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { PushSubscription } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
+import { WebPushSubscription as WebPushSubscriptionSchema } from "~/classes/schemas/pushsubscription";
 import { RolePermissions } from "~/drizzle/schema";
 
 export default apiRoute((app) =>
@@ -27,7 +28,7 @@ export default apiRoute((app) =>
                     description: "WebPushSubscription",
                     content: {
                         "application/json": {
-                            schema: PushSubscription.schema,
+                            schema: WebPushSubscriptionSchema,
                         },
                     },
                 },

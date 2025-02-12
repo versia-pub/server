@@ -1,72 +1,26 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Notification, Timeline } from "@versia/kit/db";
+import { Timeline } from "@versia/kit/db";
 import { Notifications, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
 
 const schemas = {
     query: z
         .object({
-            max_id: z.string().uuid().optional(),
-            since_id: z.string().uuid().optional(),
-            min_id: z.string().uuid().optional(),
+            max_id: NotificationSchema.shape.id.optional(),
+            since_id: NotificationSchema.shape.id.optional(),
+            min_id: NotificationSchema.shape.id.optional(),
             limit: z.coerce.number().int().min(1).max(80).default(15),
-            exclude_types: z
-                .enum([
-                    "mention",
-                    "status",
-                    "follow",
-                    "follow_request",
-                    "reblog",
-                    "poll",
-                    "favourite",
-                    "update",
-                    "admin.sign_up",
-                    "admin.report",
-                    "chat",
-                    "pleroma:chat_mention",
-                    "pleroma:emoji_reaction",
-                    "pleroma:event_reminder",
-                    "pleroma:participation_request",
-                    "pleroma:participation_accepted",
-                    "move",
-                    "group_reblog",
-                    "group_favourite",
-                    "user_approved",
-                ])
-                .array()
-                .optional(),
-            types: z
-                .enum([
-                    "mention",
-                    "status",
-                    "follow",
-                    "follow_request",
-                    "reblog",
-                    "poll",
-                    "favourite",
-                    "update",
-                    "admin.sign_up",
-                    "admin.report",
-                    "chat",
-                    "pleroma:chat_mention",
-                    "pleroma:emoji_reaction",
-                    "pleroma:event_reminder",
-                    "pleroma:participation_request",
-                    "pleroma:participation_accepted",
-                    "move",
-                    "group_reblog",
-                    "group_favourite",
-                    "user_approved",
-                ])
-                .array()
-                .optional(),
-            account_id: z.string().uuid().optional(),
+            exclude_types: z.array(NotificationSchema.shape.type).optional(),
+            types: z.array(NotificationSchema.shape.type).optional(),
+            account_id: AccountSchema.shape.id.optional(),
         })
         .refine((val) => {
             // Can't use both exclude_types and types
             return !(val.exclude_types && val.types);
-        }),
+        }, "Can't use both exclude_types and types"),
 };
 
 const route = createRoute({
@@ -90,7 +44,7 @@ const route = createRoute({
             description: "Notifications",
             content: {
                 "application/json": {
-                    schema: z.array(Notification.schema),
+                    schema: z.array(NotificationSchema),
                 },
             },
         },

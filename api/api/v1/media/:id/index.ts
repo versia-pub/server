@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -46,7 +47,7 @@ const routePut = createRoute({
             description: "Media updated",
             content: {
                 "application/json": {
-                    schema: Media.schema,
+                    schema: AttachmentSchema,
                 },
             },
         },
@@ -80,7 +81,7 @@ const routeGet = createRoute({
             description: "Media",
             content: {
                 "application/json": {
-                    schema: Media.schema,
+                    schema: AttachmentSchema,
                 },
             },
         },

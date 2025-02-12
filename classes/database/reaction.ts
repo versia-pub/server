@@ -1,5 +1,3 @@
-import { z } from "@hono/zod-openapi";
-import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { ReactionExtension } from "@versia/federation/types";
 import { Emoji, Instance, Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
@@ -12,7 +10,6 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/packages/config-manager/index.ts";
-import { CustomEmoji } from "../schemas/emoji.ts";
 import { BaseInterface } from "./base.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {
@@ -21,19 +18,7 @@ type ReactionType = InferSelectModel<typeof Reactions> & {
     note: InferSelectModel<typeof Notes>;
 };
 
-export interface APIReaction {
-    id: string;
-    author_id: string;
-    emoji: APIEmoji | string;
-}
-
 export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
-    public static schema: z.ZodType<APIReaction> = z.object({
-        id: z.string().uuid(),
-        author_id: z.string().uuid(),
-        emoji: CustomEmoji,
-    });
-
     public static $type: ReactionType;
 
     public async reload(): Promise<void> {

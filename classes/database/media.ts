@@ -1,8 +1,7 @@
 import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
-import { z } from "@hono/zod-openapi";
-import type { Attachment as ApiAttachment } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
@@ -16,6 +15,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import sharp from "sharp";
+import type { Attachment as AttachmentSchema } from "~/classes/schemas/attachment.ts";
 import { MediaBackendType } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
 import { ApiError } from "../errors/api-error.ts";
@@ -26,34 +26,6 @@ import { BaseInterface } from "./base.ts";
 type MediaType = InferSelectModel<typeof Medias>;
 
 export class Media extends BaseInterface<typeof Medias> {
-    public static schema: z.ZodType<ApiAttachment> = z.object({
-        id: z.string().uuid(),
-        type: z.enum(["unknown", "image", "gifv", "video", "audio"]),
-        url: z.string().url(),
-        remote_url: z.string().url().nullable(),
-        preview_url: z.string().url().nullable(),
-        text_url: z.string().url().nullable(),
-        meta: z
-            .object({
-                width: z.number().optional(),
-                height: z.number().optional(),
-                fps: z.number().optional(),
-                size: z.string().optional(),
-                duration: z.number().optional(),
-                length: z.string().optional(),
-                aspect: z.number().optional(),
-                original: z.object({
-                    width: z.number().optional(),
-                    height: z.number().optional(),
-                    size: z.string().optional(),
-                    aspect: z.number().optional(),
-                }),
-            })
-            .nullable(),
-        description: z.string().nullable(),
-        blurhash: z.string().nullable(),
-    });
-
     public static $type: MediaType;
 
     public async reload(): Promise<void> {
@@ -446,7 +418,7 @@ export class Media extends BaseInterface<typeof Medias> {
      *
      * @returns
      */
-    public getMastodonType(): ApiAttachment["type"] {
+    public getMastodonType(): z.infer<typeof AttachmentSchema.shape.type> {
         const type = this.getPreferredMimeType();
 
         if (type.startsWith("image/")) {
@@ -500,7 +472,7 @@ export class Media extends BaseInterface<typeof Medias> {
         };
     }
 
-    public toApiMeta(): ApiAttachment["meta"] {
+    public toApiMeta(): z.infer<typeof AttachmentSchema.shape.meta> {
         const type = this.getPreferredMimeType();
         const data = this.data.content[type];
         const size =
@@ -529,7 +501,7 @@ export class Media extends BaseInterface<typeof Medias> {
         };
     }
 
-    public toApi(): ApiAttachment {
+    public toApi(): z.infer<typeof AttachmentSchema> {
         const type = this.getPreferredMimeType();
         const data = this.data.content[type];
 
@@ -545,7 +517,6 @@ export class Media extends BaseInterface<typeof Medias> {
             preview_url: thumbnailData?.content
                 ? proxyUrl(new URL(thumbnailData.content)).toString()
                 : null,
-            text_url: null,
             meta: this.toApiMeta(),
             description: data.description || null,
             blurhash: this.data.blurhash,

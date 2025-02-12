@@ -2,6 +2,7 @@ import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
 import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
 
@@ -42,7 +43,7 @@ const route = createRoute({
             description: "Attachment",
             content: {
                 "application/json": {
-                    schema: Media.schema,
+                    schema: AttachmentSchema,
                 },
             },
         },

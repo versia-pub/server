@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Notification } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -26,7 +27,7 @@ const route = createRoute({
             description: "Notification",
             content: {
                 "application/json": {
-                    schema: Notification.schema,
+                    schema: NotificationSchema,
                 },
             },
         },

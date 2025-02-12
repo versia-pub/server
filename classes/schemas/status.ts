@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 import type { Status as ApiNote } from "@versia/client/types";
-import { Media } from "@versia/kit/db";
 import { zBoolean } from "~/packages/config-manager/config.type.ts";
 import { Account } from "./account.ts";
+import { Attachment } from "./attachment.ts";
 import { PreviewCard } from "./card.ts";
 import { Id, iso631 } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
@@ -223,7 +223,7 @@ export const Status = z.object({
             url: "https://docs.joinmastodon.org/entities/Status/#visibility",
         },
     }),
-    media_attachments: z.array(Media.schema).openapi({
+    media_attachments: z.array(Attachment).openapi({
         description: "Media that is attached to this status.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#media_attachments",

@@ -3,6 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {
@@ -29,7 +30,7 @@ const route = createRoute({
             description: "Relationship",
             content: {
                 "application/json": {
-                    schema: Relationship.schema,
+                    schema: RelationshipSchema,
                 },
             },
         },

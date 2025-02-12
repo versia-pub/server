@@ -263,6 +263,7 @@ export default apiRoute((app) =>
                 self.source.fields.push({
                     name: field.name,
                     value: field.value,
+                    verified_at: null,
                 });
             }
         }

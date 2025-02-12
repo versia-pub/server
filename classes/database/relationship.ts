@@ -1,5 +1,4 @@
 import { z } from "@hono/zod-openapi";
-import type { Relationship as APIRelationship } from "@versia/client/types";
 import { db } from "@versia/kit/db";
 import { Relationships } from "@versia/kit/tables";
 import {
@@ -11,6 +10,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 import { BaseInterface } from "./base.ts";
 import type { User } from "./user.ts";
 
@@ -292,7 +292,7 @@ export class Relationship extends BaseInterface<
         return this.data.id;
     }
 
-    public toApi(): APIRelationship {
+    public toApi(): z.infer<typeof RelationshipSchema> {
         return {
             id: this.data.subjectId,
             blocked_by: this.data.blockedBy,
@@ -308,6 +308,7 @@ export class Relationship extends BaseInterface<
             requested_by: this.data.requestedBy,
             requested: this.data.requested,
             showing_reblogs: this.data.showingReblogs,
+            languages: this.data.languages ?? [],
         };
     }
 }

@@ -132,9 +132,10 @@ export default apiRoute((app) =>
                     },
                     {
                         rel: "avatar",
+                        // Default avatars are SVGs
                         type:
-                            user.data.source.avatar?.content_type ||
-                            "application/octet-stream",
+                            user.avatar?.getPreferredMimeType() ??
+                            "image/svg+xml",
                         href: user.getAvatarUrl(config),
                     },
                 ].filter(Boolean) as {
