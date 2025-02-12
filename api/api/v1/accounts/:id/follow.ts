@@ -2,7 +2,7 @@ import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import ISO6391 from "iso-639-1";
+import { iso631 } from "~/classes/schemas/common";
 
 const schemas = {
     param: z.object({
@@ -12,9 +12,7 @@ const schemas = {
         .object({
             reblogs: z.coerce.boolean().optional(),
             notify: z.coerce.boolean().optional(),
-            languages: z
-                .array(z.enum(ISO6391.getAllCodes() as [string, ...string[]]))
-                .optional(),
+            languages: z.array(iso631).optional(),
         })
         .optional()
         .default({ reblogs: true, notify: false, languages: [] }),

@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/types";
-import { Id } from "./common.ts";
 import { config } from "~/packages/config-manager/index.ts";
+import { Id } from "./common.ts";
 
 /* Versia Server API extension */
 export const Role = z
@@ -75,3 +75,33 @@ export const NoteReaction = z
     .openapi({
         description: "Information about a reaction to a note.",
     });
+
+/* Versia Server API extension */
+export const SSOConfig = z.object({
+    forced: z.boolean().openapi({
+        description:
+            "If this is enabled, normal identifier/password login is disabled and login must be done through SSO.",
+        example: false,
+    }),
+    providers: z
+        .array(
+            z.object({
+                id: z.string().min(1).openapi({
+                    description: "The ID of the provider.",
+                    example: "google",
+                }),
+                name: z.string().min(1).openapi({
+                    description: "Human-readable provider name.",
+                    example: "Google",
+                }),
+                icon: z.string().url().optional().openapi({
+                    description: "URL to the provider icon.",
+                    example: "https://cdn.versia.social/google-icon.png",
+                }),
+            }),
+        )
+        .openapi({
+            description:
+                "An array of external OpenID Connect providers that users can link their accounts to.",
+        }),
+});

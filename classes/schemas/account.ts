@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi";
 import type { Account as ApiAccount } from "@versia/client/types";
-import ISO6391 from "iso-639-1";
 import { config } from "~/packages/config-manager";
 import { zBoolean } from "~/packages/config-manager/config.type";
+import { iso631 } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 import { Role } from "./versia.ts";
 
@@ -63,15 +63,13 @@ export const Source = z
                 url: "https://docs.joinmastodon.org/entities/Account/#source-sensitive",
             },
         }),
-        language: z
-            .enum(ISO6391.getAllCodes() as [string, ...string[]])
-            .openapi({
-                description: "The default posting language for new statuses.",
-                example: "en",
-                externalDocs: {
-                    url: "https://docs.joinmastodon.org/entities/Account/#source-language",
-                },
-            }),
+        language: iso631.openapi({
+            description: "The default posting language for new statuses.",
+            example: "en",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Account/#source-language",
+            },
+        }),
         follow_requests_count: z
             .number()
             .int()
