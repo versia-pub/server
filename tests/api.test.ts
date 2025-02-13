@@ -30,7 +30,7 @@ describe("API Tests", () => {
 
     // Now automatically mitigated by the server
     /* test("try sending a request with a different origin", async () => {
-        if (new URL(config.http.base_url).protocol === "http:") {
+        if (config.http.base_url.protocol === "http:") {
             return;
         }
 

@@ -7,26 +7,48 @@ import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
-const schemas = {
-    json: z.object({
-        username: z.string(),
-        email: z.string().toLowerCase(),
-        password: z.string().optional(),
-        agreement: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean()),
-        locale: z.string(),
-        reason: z.string(),
+const schema = z.object({
+    username: z.string().openapi({
+        description: "The desired username for the account",
+        example: "alice",
     }),
-};
+    email: z.string().toLowerCase().openapi({
+        description:
+            "The email address to be used for login. Transformed to lowercase.",
+        example: "alice@gmail.com",
+    }),
+    password: z.string().openapi({
+        description: "The password to be used for login",
+        example: "hunter2",
+    }),
+    agreement: zBoolean.openapi({
+        description:
+            "Whether the user agrees to the local rules, terms, and policies. These should be presented to the user in order to allow them to consent before setting this parameter to TRUE.",
+        example: true,
+    }),
+    locale: z.string().openapi({
+        description:
+            "The language of the confirmation email that will be sent. ISO 639-1 code.",
+        example: "en",
+    }),
+    reason: z.string().optional().openapi({
+        description:
+            "If registrations require manual approval, this text will be reviewed by moderators.",
+    }),
+});
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts",
-    summary: "Create account",
-    description: "Register a new account",
+    summary: "Register an account",
+    description:
+        "Creates a user and account records. Returns an account access token for the app that initiated the request. The app should save this token for later, and should wait for the user to confirm their account by clicking a link in their email inbox.\n\nA relationship between the OAuth Application and created user account is stored.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#create",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -34,18 +56,18 @@ const route = createRoute({
             challenge: true,
         }),
         jsonOrForm(),
-    ],
+    ] as const,
     request: {
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
             },
         },
@@ -113,7 +135,10 @@ const route = createRoute({
                             ),
                             reason: z.array(
                                 z.object({
-                                    error: z.enum(["ERR_BLANK"]),
+                                    error: z.enum([
+                                        "ERR_BLANK",
+                                        "ERR_TOO_LONG",
+                                    ]),
                                     description: z.string(),
                                 }),
                             ),
@@ -285,6 +310,14 @@ export default apiRoute((app) =>
             errors.details.locale.push({
                 error: "ERR_INVALID",
                 description: "must be a valid ISO 639-1 code",
+            });
+        }
+
+        // Check if reason is too long
+        if ((form.reason?.length ?? 0) > 10_000) {
+            errors.details.reason.push({
+                error: "ERR_TOO_LONG",
+                description: `is too long (maximum is ${10_000} characters)`,
             });
         }
 

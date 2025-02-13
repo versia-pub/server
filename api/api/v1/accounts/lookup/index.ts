@@ -1,24 +1,25 @@
-import { apiRoute, auth, parseUserAddress } from "@/api";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    parseUserAddress,
+    reusedResponses,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Instance, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { Account } from "~/classes/schemas/account";
+import { Account as AccountSchema } from "~/classes/schemas/account";
 import { config } from "~/packages/config-manager";
-import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    query: z.object({
-        acct: z.string().min(1).max(512).toLowerCase(),
-    }),
-};
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/lookup",
-    summary: "Lookup account",
-    description: "Lookup an account by acct",
+    summary: "Lookup account ID from Webfinger address",
+    description:
+        "Quickly lookup a username to see if it is available, skipping WebFinger resolution.",
     middleware: [
         auth({
             auth: false,
@@ -26,7 +27,12 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            acct: AccountSchema.shape.acct.openapi({
+                description: "The username or Webfinger address to lookup.",
+                example: "lexi@beta.versia.social",
+            }),
+        }),
     },
     responses: {
         200: {
@@ -37,22 +43,8 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "Not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        422: {
-            description: "Invalid parameter",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: accountNotFound,
+        422: reusedResponses[422],
     },
 });
 
@@ -64,12 +56,8 @@ export default apiRoute((app) =>
         // Check if acct is matching format username@domain.com or @username@domain.com
         const { username, domain } = parseUserAddress(acct);
 
-        if (!username) {
-            throw new Error("Invalid username");
-        }
-
         // User is local
-        if (!domain || domain === new URL(config.http.base_url).host) {
+        if (!domain || domain === config.http.base_url.host) {
             const account = await User.fromSql(
                 and(eq(Users.username, username), isNull(Users.instanceId)),
             );

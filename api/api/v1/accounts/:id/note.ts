@@ -1,23 +1,25 @@
-import { apiRoute, auth, withUserParam } from "@/api";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Account as AccountSchema } from "~/classes/schemas/account";
 import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    json: z.object({
-        comment: z.string().min(0).max(5000).trim().optional(),
-    }),
-};
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/note",
-    summary: "Set note",
-    description: "Set a note on a user's profile, visible only to you",
+    summary: "Set private note on profile",
+    description: "Sets a private note on a user.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#note",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -30,24 +32,35 @@ const route = createRoute({
         withUserParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: AccountSchema.shape.id,
+        }),
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        comment: RelationshipSchema.shape.note
+                            .optional()
+                            .openapi({
+                                description:
+                                    "The comment to be set on that user. Provide an empty string or leave out this parameter to clear the currently set note.",
+                            }),
+                    }),
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Updated relationship",
+            description: "Successfully updated profile note",
             content: {
                 "application/json": {
                     schema: RelationshipSchema,
                 },
             },
         },
+        404: accountNotFound,
+        ...reusedResponses,
     },
 });
 
@@ -63,7 +76,7 @@ export default apiRoute((app) =>
         );
 
         await foundRelationship.update({
-            note: comment,
+            note: comment ?? "",
         });
 
         return context.json(foundRelationship.toApi(), 200);

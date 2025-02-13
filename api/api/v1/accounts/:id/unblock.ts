@@ -1,14 +1,25 @@
-import { apiRoute, auth, withUserParam } from "@/api";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Account as AccountSchema } from "~/classes/schemas/account";
 import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/unblock",
-    summary: "Unblock user",
-    description: "Unblock a user",
+    summary: "Unblock account",
+    description: "Unblock the given account.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#unblock",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -22,18 +33,21 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: AccountSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Updated relationship",
+            description:
+                "Successfully unblocked, or account was already not blocked",
             content: {
                 "application/json": {
                     schema: RelationshipSchema,
                 },
             },
         },
+        404: accountNotFound,
+        ...reusedResponses,
     },
 });
 

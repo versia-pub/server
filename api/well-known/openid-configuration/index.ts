@@ -36,7 +36,7 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, (context) => {
-        const baseUrl = new URL(config.http.base_url);
+        const baseUrl = config.http.base_url;
         return context.json(
             {
                 issuer: baseUrl.origin.toString(),

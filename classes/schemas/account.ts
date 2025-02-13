@@ -1,3 +1,4 @@
+import { userAddressValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
 import type { Account as ApiAccount } from "@versia/client/types";
 import { config } from "~/packages/config-manager";
@@ -126,7 +127,6 @@ export const Account = z.object({
         .min(3)
         .trim()
         .max(config.validation.max_username_size)
-        .toLowerCase()
         .regex(
             /^[a-z0-9_-]+$/,
             "Username can only contain letters, numbers, underscores and hyphens",
@@ -142,14 +142,19 @@ export const Account = z.object({
                 url: "https://docs.joinmastodon.org/entities/Account/#username",
             },
         }),
-    acct: z.string().openapi({
-        description:
-            "The Webfinger account URI. Equal to username for local users, or username@domain for remote users.",
-        example: "lexi@beta.versia.social",
-        externalDocs: {
-            url: "https://docs.joinmastodon.org/entities/Account/#acct",
-        },
-    }),
+    acct: z
+        .string()
+        .min(1)
+        .trim()
+        .regex(userAddressValidator, "Invalid user address")
+        .openapi({
+            description:
+                "The Webfinger account URI. Equal to username for local users, or username@domain for remote users.",
+            example: "lexi@beta.versia.social",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Account/#acct",
+            },
+        }),
     url: z
         .string()
         .url()

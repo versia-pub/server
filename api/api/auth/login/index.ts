@@ -180,7 +180,7 @@ export default apiRoute((app) =>
         // Generate JWT
         const jwt = await new SignJWT({
             sub: user.id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: client_id,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),

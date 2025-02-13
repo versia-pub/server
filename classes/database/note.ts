@@ -784,9 +784,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             replacedContent = replacedContent.replace(
                 createRegExp(
                     exactly(
-                        `@${mention.username}@${
-                            new URL(config.http.base_url).host
-                        }`,
+                        `@${mention.username}@${config.http.base_url.host}`,
                     ),
                     [global],
                 ),

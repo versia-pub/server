@@ -336,7 +336,7 @@ describe("/api/v1/statuses", () => {
                 },
                 body: new URLSearchParams({
                     status: `Hello, @${users[1].data.username}@${
-                        new URL(config.http.base_url).host
+                        config.http.base_url.host
                     }!`,
                     local_only: "true",
                 }),

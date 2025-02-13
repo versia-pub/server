@@ -63,7 +63,7 @@ export default apiRoute((app) =>
 
         const requestedUser = resource.split("acct:")[1];
 
-        const host = new URL(config.http.base_url).host;
+        const host = config.http.base_url.host;
 
         const { username, domain } = parseUserAddress(requestedUser);
 
@@ -96,7 +96,7 @@ export default apiRoute((app) =>
             try {
                 activityPubUrl = await manager.webFinger(
                     user.data.username,
-                    new URL(config.http.base_url).host,
+                    config.http.base_url.host,
                     "application/activity+json",
                     config.federation.bridge.url?.toString(),
                 );

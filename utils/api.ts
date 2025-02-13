@@ -29,7 +29,35 @@ import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
-import type { HonoEnv } from "~/types/api";
+import { ErrorSchema, type HonoEnv } from "~/types/api";
+
+export const reusedResponses = {
+    401: {
+        description: "Invalid or missing Authorization header.",
+        content: {
+            "application/json": {
+                schema: ErrorSchema,
+            },
+        },
+    },
+    422: {
+        description: "Invalid values in request",
+        content: {
+            "application/json": {
+                schema: ErrorSchema,
+            },
+        },
+    },
+};
+
+export const accountNotFound = {
+    description: "Account does not exist",
+    content: {
+        "application/json": {
+            schema: ErrorSchema,
+        },
+    },
+};
 
 export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
     fn;

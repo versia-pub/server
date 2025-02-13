@@ -136,7 +136,7 @@ export default apiRoute((app) =>
 
         // TODO: fill in more values
         return context.json({
-            domain: new URL(config.http.base_url).hostname,
+            domain: config.http.base_url.hostname,
             title: config.instance.name,
             version: "4.3.0-alpha.3+glitch",
             versia_version: version,

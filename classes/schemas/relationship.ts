@@ -60,7 +60,7 @@ export const Relationship = z
             description: "Are you featuring this user on your profile?",
             example: false,
         }),
-        note: z.string().openapi({
+        note: z.string().min(0).max(5000).trim().openapi({
             description: "This user’s profile bio",
             example: "they also like Kerbal Space Program",
         }),

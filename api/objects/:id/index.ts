@@ -97,7 +97,7 @@ export default apiRoute((app) =>
         // This fixes reverse proxy errors
         const reqUrl = new URL(context.req.url);
         if (
-            new URL(config.http.base_url).protocol === "https:" &&
+            config.http.base_url.protocol === "https:" &&
             reqUrl.protocol === "http:"
         ) {
             reqUrl.protocol = "https:";

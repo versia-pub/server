@@ -1,28 +1,27 @@
-import { apiRoute, auth, withUserParam } from "@/api";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Timeline } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { Account } from "~/classes/schemas/account";
-
-const schemas = {
-    query: z.object({
-        max_id: z.string().uuid().optional(),
-        since_id: z.string().uuid().optional(),
-        min_id: z.string().uuid().optional(),
-        limit: z.coerce.number().int().min(1).max(40).optional().default(20),
-    }),
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/{id}/following",
-    summary: "Get account following",
+    summary: "Get account’s following",
     description:
-        "Gets an paginated list of accounts that the specified account follows",
+        "Accounts which the given account is following, if network is not hidden by the account owner.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#following",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -35,24 +34,53 @@ const route = createRoute({
         withUserParam,
     ] as const,
     request: {
-        params: schemas.param,
-        query: schemas.query,
+        params: z.object({
+            id: AccountSchema.shape.id,
+        }),
+        query: z.object({
+            max_id: AccountSchema.shape.id.optional().openapi({
+                description:
+                    "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
+                example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
+            }),
+            since_id: AccountSchema.shape.id.optional().openapi({
+                description:
+                    "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
+                example: undefined,
+            }),
+            min_id: AccountSchema.shape.id.optional().openapi({
+                description:
+                    "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
+                example: undefined,
+            }),
+            limit: z.number().int().min(1).max(40).default(20).openapi({
+                description: "Maximum number of results to return.",
+            }),
+        }),
     },
     responses: {
         200: {
-            description:
-                "A list of accounts that the specified account follows",
+            description: "Accounts which the given account is following.",
             content: {
                 "application/json": {
                     schema: z.array(Account),
                 },
             },
-            headers: {
-                Link: {
-                    description: "Link to the next page of results",
-                },
-            },
+            headers: z.object({
+                link: z
+                    .string()
+                    .optional()
+                    .openapi({
+                        description: "Links to the next and previous pages",
+                        example: `<https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/following?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/following?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"`,
+                        externalDocs: {
+                            url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
+                        },
+                    }),
+            }),
         },
+        404: accountNotFound,
+        422: reusedResponses[422],
     },
 });
 

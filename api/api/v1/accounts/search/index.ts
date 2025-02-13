@@ -1,33 +1,22 @@
-import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
+import { apiRoute, auth, parseUserAddress } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account } from "~/classes/schemas/account";
-
-const schemas = {
-    query: z.object({
-        q: z.string().min(1).max(512).regex(userAddressValidator),
-        limit: z.coerce.number().int().min(1).max(80).default(40),
-        offset: z.coerce.number().int().optional(),
-        resolve: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        following: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
 export const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/search",
-    summary: "Search accounts",
-    description: "Search for accounts",
+    summary: "Search for matching accounts",
+    description: "Search for matching accounts by username or display name.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#search",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -36,14 +25,38 @@ export const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            q: AccountSchema.shape.username
+                .or(AccountSchema.shape.acct)
+                .openapi({
+                    description: "Search query for accounts.",
+                    example: "username",
+                }),
+            limit: z.coerce.number().int().min(1).max(80).default(40).openapi({
+                description: "Maximum number of results.",
+                example: 40,
+            }),
+            offset: z.coerce.number().int().default(0).openapi({
+                description: "Skip the first n results.",
+                example: 0,
+            }),
+            resolve: zBoolean.default(false).openapi({
+                description:
+                    "Attempt WebFinger lookup. Use this when q is an exact address.",
+                example: false,
+            }),
+            following: zBoolean.default(false).openapi({
+                description: "Limit the search to users you are following.",
+                example: false,
+            }),
+        }),
     },
     responses: {
         200: {
             description: "Accounts",
             content: {
                 "application/json": {
-                    schema: z.array(Account),
+                    schema: z.array(AccountSchema),
                 },
             },
         },

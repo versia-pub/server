@@ -1,47 +1,27 @@
-import { apiRoute, auth, withUserParam } from "@/api";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { Status } from "~/classes/schemas/status";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    query: z.object({
-        max_id: z.string().uuid().optional(),
-        since_id: z.string().uuid().optional(),
-        min_id: z.string().uuid().optional(),
-        limit: z.coerce.number().int().min(1).max(40).optional().default(20),
-        only_media: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        exclude_replies: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        exclude_reblogs: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        pinned: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        tagged: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Status as StatusSchema } from "~/classes/schemas/status";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/{id}/statuses",
-    summary: "Get account statuses",
-    description: "Gets an paginated list of statuses by the specified account",
+    summary: "Get account’s statuses",
+    description: "Statuses posted to the given account.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#statuses",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -54,23 +34,58 @@ const route = createRoute({
         withUserParam,
     ] as const,
     request: {
-        params: schemas.param,
-        query: schemas.query,
+        params: z.object({
+            id: AccountSchema.shape.id,
+        }),
+        query: z.object({
+            max_id: StatusSchema.shape.id.optional().openapi({
+                description:
+                    "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
+                example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
+            }),
+            since_id: StatusSchema.shape.id.optional().openapi({
+                description:
+                    "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
+                example: undefined,
+            }),
+            min_id: StatusSchema.shape.id.optional().openapi({
+                description:
+                    "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
+                example: undefined,
+            }),
+            limit: z.coerce.number().int().min(1).max(40).default(20).openapi({
+                description: "Maximum number of results to return.",
+            }),
+            only_media: zBoolean.default(false).openapi({
+                description: "Filter out statuses without attachments.",
+            }),
+            exclude_replies: zBoolean.default(false).openapi({
+                description:
+                    "Filter out statuses in reply to a different account.",
+            }),
+            exclude_reblogs: zBoolean.default(false).openapi({
+                description: "Filter out boosts from the response.",
+            }),
+            pinned: zBoolean.default(false).openapi({
+                description:
+                    "Filter for pinned statuses only. Pinned statuses do not receive special priority in the order of the returned results.",
+            }),
+            tagged: z.string().optional().openapi({
+                description: "Filter for statuses using a specific hashtag.",
+            }),
+        }),
     },
     responses: {
         200: {
-            description: "A list of statuses by the specified account",
+            description: "Statuses posted to the given account.",
             content: {
                 "application/json": {
-                    schema: z.array(Status),
-                },
-            },
-            headers: {
-                Link: {
-                    description: "Links to the next and previous pages",
+                    schema: z.array(StatusSchema),
                 },
             },
         },
+        404: accountNotFound,
+        422: reusedResponses[422],
     },
 });
 
@@ -90,7 +105,7 @@ export default apiRoute((app) =>
             pinned,
         } = context.req.valid("query");
 
-        const { objects, link } = await Timeline.getNoteTimeline(
+        const { objects } = await Timeline.getNoteTimeline(
             and(
                 max_id ? lt(Notes.id, max_id) : undefined,
                 since_id ? gte(Notes.id, since_id) : undefined,
@@ -122,9 +137,6 @@ export default apiRoute((app) =>
         return context.json(
             await Promise.all(objects.map((note) => note.toApi(otherUser))),
             200,
-            {
-                link,
-            },
         );
     }),
 );

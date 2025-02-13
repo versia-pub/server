@@ -1,23 +1,18 @@
-import { apiRoute, auth } from "@/api";
+import { accountNotFound, apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { Account } from "~/classes/schemas/account";
-import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    query: z.object({
-        username: z.string().min(1).max(512).toLowerCase(),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/id",
     summary: "Get account by username",
     description: "Get an account by username",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -25,7 +20,11 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            username: AccountSchema.shape.username.transform((v) =>
+                v.toLowerCase(),
+            ),
+        }),
     },
     responses: {
         200: {
@@ -36,14 +35,8 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "Not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: accountNotFound,
+        422: reusedResponses[422],
     },
 });
 

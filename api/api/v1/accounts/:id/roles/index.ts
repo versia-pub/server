@@ -1,12 +1,14 @@
 import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
+import { Account as AccountSchema } from "~/classes/schemas/account";
 import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/{id}/roles",
-    summary: "List user roles",
+    summary: "List account roles",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,
@@ -15,7 +17,7 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: AccountSchema.shape.id,
         }),
     },
     responses: {

@@ -1,12 +1,16 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Account } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/verify_credentials",
-    summary: "Verify credentials",
-    description: "Get your own account information",
+    summary: "Verify account credentials",
+    description: "Test to make sure that the user token works.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#verify_credentials",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -15,13 +19,16 @@ const route = createRoute({
     ] as const,
     responses: {
         200: {
-            description: "Account",
+            // TODO: Implement CredentialAccount
+            description:
+                "Note the extra source property, which is not visible on accounts other than your own. Also note that plain-text is used within source and HTML is used for their corresponding properties such as note and fields.",
             content: {
                 "application/json": {
                     schema: Account,
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 

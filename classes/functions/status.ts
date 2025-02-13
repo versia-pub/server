@@ -231,7 +231,7 @@ export const parseTextMentions = async (
         return [];
     }
 
-    const baseUrlHost = new URL(config.http.base_url).host;
+    const baseUrlHost = config.http.base_url.host;
     const isLocal = (host?: string): boolean => host === baseUrlHost || !host;
 
     // Find local and matching users
@@ -301,7 +301,7 @@ export const replaceTextMentions = (text: string, mentions: User[]): string => {
     return mentions.reduce((finalText, mention) => {
         const { username, instance } = mention.data;
         const uri = mention.getUri();
-        const baseHost = new URL(config.http.base_url).host;
+        const baseHost = config.http.base_url.host;
         const linkTemplate = (displayText: string): string =>
             `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${uri}">${displayText}</a>`;
 
