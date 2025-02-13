@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
@@ -74,8 +74,9 @@ const route = createRoute({
     },
     responses: {
         200: {
-            description: "Account created",
+            description: "Token for the created account",
         },
+        401: reusedResponses[401],
         422: {
             description: "Validation failed",
             content: {
@@ -346,9 +347,9 @@ export default apiRoute((app) =>
         }
 
         await User.fromDataLocal({
-            username: username ?? "",
-            password: password ?? "",
-            email: email ?? "",
+            username: username,
+            password: password,
+            email: email,
         });
 
         return context.text("", 200);

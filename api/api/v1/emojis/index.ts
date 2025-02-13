@@ -1,58 +1,44 @@
-import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { CustomEmoji } from "~/classes/schemas/emoji";
+import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
 import { config } from "~/packages/config-manager";
-import { ErrorSchema } from "~/types/api";
 
-const schemas = {
-    json: z.object({
-        shortcode: z
-            .string()
-            .trim()
-            .min(1)
-            .max(config.validation.max_emoji_shortcode_size)
-            .regex(
-                emojiValidator,
-                "Shortcode must only contain letters (any case), numbers, dashes or underscores.",
-            ),
-        element: z
-            .string()
-            .trim()
-            .min(1)
-            .max(2000)
-            .url()
-            .transform((a) => new URL(a))
-            .or(
-                z
-                    .instanceof(File)
-                    .refine(
-                        (v) => v.size <= config.validation.max_emoji_size,
-                        `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
-                    ),
-            ),
-        category: z.string().max(64).optional(),
-        alt: z
-            .string()
-            .max(config.validation.max_emoji_description_size)
-            .optional(),
-        global: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .or(z.boolean())
-            .optional(),
-    }),
-};
+const schema = z.object({
+    shortcode: CustomEmojiSchema.shape.shortcode,
+    element: z
+        .string()
+        .url()
+        .transform((a) => new URL(a))
+        .openapi({
+            description: "Emoji image URL",
+        })
+        .or(
+            z
+                .instanceof(File)
+                .openapi({
+                    description:
+                        "Emoji image encoded using multipart/form-data",
+                })
+                .refine(
+                    (v) => v.size <= config.validation.max_emoji_size,
+                    `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
+                ),
+        ),
+    category: CustomEmojiSchema.shape.category.optional(),
+    alt: CustomEmojiSchema.shape.description.optional(),
+    global: CustomEmojiSchema.shape.global.default(false),
+});
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/emojis",
     summary: "Upload emoji",
-    description: "Upload an emoji",
+    description: "Upload a new emoji to the server.",
     middleware: [
         auth({
             auth: true,
@@ -67,13 +53,13 @@ const route = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
             },
         },
@@ -83,19 +69,11 @@ const route = createRoute({
             description: "Uploaded emoji",
             content: {
                 "application/json": {
-                    schema: CustomEmoji,
+                    schema: CustomEmojiSchema,
                 },
             },
         },
-
-        422: {
-            description: "Invalid data",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        ...reusedResponses,
     },
 });
 
@@ -145,10 +123,10 @@ export default apiRoute((app) =>
         const media =
             element instanceof File
                 ? await Media.fromFile(element, {
-                      description: alt,
+                      description: alt ?? undefined,
                   })
                 : await Media.fromUrl(element, {
-                      description: alt,
+                      description: alt ?? undefined,
                   });
 
         const emoji = await Emoji.insert({

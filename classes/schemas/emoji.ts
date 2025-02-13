@@ -1,5 +1,7 @@
+import { emojiValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
 import { zBoolean } from "~/packages/config-manager/config.type";
+import { config } from "~/packages/config-manager/index.ts";
 import { Id } from "./common.ts";
 
 export const CustomEmoji = z
@@ -9,13 +11,22 @@ export const CustomEmoji = z
             description: "ID of the custom emoji in the database.",
             example: "af9ccd29-c689-477f-aa27-d7d95fd8fb05",
         }),
-        shortcode: z.string().openapi({
-            description: "The name of the custom emoji.",
-            example: "blobaww",
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/CustomEmoji/#shortcode",
-            },
-        }),
+        shortcode: z
+            .string()
+            .trim()
+            .min(1)
+            .max(config.validation.max_emoji_shortcode_size)
+            .regex(
+                emojiValidator,
+                "Shortcode must only contain letters (any case), numbers, dashes or underscores.",
+            )
+            .openapi({
+                description: "The name of the custom emoji.",
+                example: "blobaww",
+                externalDocs: {
+                    url: "https://docs.joinmastodon.org/entities/CustomEmoji/#shortcode",
+                },
+            }),
         url: z
             .string()
             .url()
@@ -48,6 +59,8 @@ export const CustomEmoji = z
         }),
         category: z
             .string()
+            .trim()
+            .max(64)
             .nullable()
             .openapi({
                 description: "Used for sorting custom emoji in the picker.",
@@ -64,6 +77,7 @@ export const CustomEmoji = z
         /* Versia Server API extension */
         description: z
             .string()
+            .max(config.validation.max_emoji_description_size)
             .nullable()
             .openapi({
                 description:

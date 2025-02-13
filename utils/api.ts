@@ -2,7 +2,7 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
-import { Application, Note, Token, User, db } from "@versia/kit/db";
+import { Application, Emoji, Note, Token, User, db } from "@versia/kit/db";
 import { Challenges, type RolePermissions } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
@@ -400,6 +400,43 @@ export const withUserParam = every(
     HonoEnv & {
         Variables: {
             user: User;
+        };
+    }
+>;
+
+/**
+ * Middleware to check if an emoji exists and is viewable by the user
+ *
+ * Useful in /api/v1/emojis/:id/* routes
+ * @returns
+ */
+export const withEmojiParam = every(
+    zValidator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    createMiddleware<
+        HonoEnv & {
+            Variables: {
+                emoji: Emoji;
+            };
+        },
+        string,
+        WithIdParam
+    >(async (context, next) => {
+        const { id } = context.req.valid("param");
+
+        const emoji = await Emoji.fromId(id);
+
+        if (!emoji) {
+            throw new ApiError(404, "Emoji not found");
+        }
+
+        context.set("emoji", emoji);
+
+        await next();
+    }),
+) as MiddlewareHandler<
+    HonoEnv & {
+        Variables: {
+            emoji: Emoji;
         };
     }
 >;

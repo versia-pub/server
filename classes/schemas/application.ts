@@ -1,13 +1,18 @@
 import { z } from "@hono/zod-openapi";
 
 export const Application = z.object({
-    name: z.string().openapi({
-        description: "The name of your application.",
-        example: "Test Application",
-        externalDocs: {
-            url: "https://docs.joinmastodon.org/entities/Application/#name",
-        },
-    }),
+    name: z
+        .string()
+        .trim()
+        .min(1)
+        .max(200)
+        .openapi({
+            description: "The name of your application.",
+            example: "Test Application",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Application/#name",
+            },
+        }),
     website: z
         .string()
         .nullable()
@@ -18,19 +23,26 @@ export const Application = z.object({
                 url: "https://docs.joinmastodon.org/entities/Application/#website",
             },
         }),
-    scopes: z.array(z.string()).openapi({
-        description:
-            "The scopes for your application. This is the registered scopes string split on whitespace.",
-        example: ["read", "write", "push"],
-        externalDocs: {
-            url: "https://docs.joinmastodon.org/entities/Application/#scopes",
-        },
-    }),
+    scopes: z
+        .array(z.string())
+        .default(["read"])
+        .openapi({
+            description:
+                "The scopes for your application. This is the registered scopes string split on whitespace.",
+            example: ["read", "write", "push"],
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Application/#scopes",
+            },
+        }),
     redirect_uris: z
         .array(
-            z.string().url().openapi({
-                description: "URL or 'urn:ietf:wg:oauth:2.0:oob'",
-            }),
+            z
+                .string()
+                .url()
+                .or(z.literal("urn:ietf:wg:oauth:2.0:oob"))
+                .openapi({
+                    description: "URL or 'urn:ietf:wg:oauth:2.0:oob'",
+                }),
         )
         .openapi({
             description:
@@ -40,6 +52,7 @@ export const Application = z.object({
             },
         }),
     redirect_uri: z.string().openapi({
+        deprecated: true,
         description:
             "The registered redirection URI(s) for your application. May contain \\n characters when multiple redirect URIs are registered.",
         externalDocs: {
