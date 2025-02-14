@@ -53,13 +53,13 @@ const route = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: schema,
+                    schema,
                 },
                 "multipart/form-data": {
-                    schema: schema,
+                    schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schema,
+                    schema,
                 },
             },
         },

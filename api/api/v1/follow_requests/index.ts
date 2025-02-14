@@ -57,7 +57,8 @@ const route = createRoute({
                     .optional()
                     .openapi({
                         description: "Links to the next and previous pages",
-                        example: `<https://versia.social/api/v1/follow_requests?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/follow_requests?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"`,
+                        example:
+                            '<https://versia.social/api/v1/follow_requests?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/follow_requests?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"',
                         externalDocs: {
                             url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
                         },

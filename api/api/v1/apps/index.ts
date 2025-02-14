@@ -68,7 +68,7 @@ export default apiRoute((app) =>
             name: client_name,
             redirectUri: redirect_uris.join("\n"),
             scopes: scopes.join(" "),
-            website: website,
+            website,
             clientId: randomString(32, "base64url"),
             secret: randomString(64, "base64url"),
         });

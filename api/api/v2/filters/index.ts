@@ -143,7 +143,7 @@ export default apiRoute((app) => {
             await db
                 .insert(Filters)
                 .values({
-                    title: title,
+                    title,
                     context: ctx,
                     filterAction: filter_action,
                     expireAt: new Date(
