@@ -1,66 +1,22 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
-
-const schemas = {
-    json: z.object({
-        title: z.string().trim().min(1).max(100),
-        context: z
-            .array(
-                z.enum([
-                    "home",
-                    "notifications",
-                    "public",
-                    "thread",
-                    "account",
-                ]),
-            )
-            .min(1),
-        filter_action: z.enum(["warn", "hide"]).optional().default("warn"),
-        expires_in: z.coerce
-            .number()
-            .int()
-            .min(60)
-            .max(60 * 60 * 24 * 365 * 5)
-            .optional(),
-        keywords_attributes: z
-            .array(
-                z.object({
-                    keyword: z.string().trim().min(1).max(100),
-                    whole_word: z
-                        .string()
-                        .transform((v) =>
-                            ["true", "1", "on"].includes(v.toLowerCase()),
-                        )
-                        .optional(),
-                }),
-            )
-            .optional(),
-    }),
-};
-
-const filterSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    context: z.array(z.string()),
-    expires_at: z.string().nullable(),
-    filter_action: z.enum(["warn", "hide"]),
-    keywords: z.array(
-        z.object({
-            id: z.string(),
-            keyword: z.string(),
-            whole_word: z.boolean(),
-        }),
-    ),
-    statuses: z.array(z.string()),
-});
+import {
+    FilterKeyword as FilterKeywordSchema,
+    Filter as FilterSchema,
+} from "~/classes/schemas/filters";
 
 const routeGet = createRoute({
     method: "get",
     path: "/api/v2/filters",
-    summary: "Get filters",
+    summary: "View all filters",
+    description: "Obtain a list of all filter groups for the current user.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/filters/#get",
+    },
+    tags: ["Filters"],
     middleware: [
         auth({
             auth: true,
@@ -73,17 +29,23 @@ const routeGet = createRoute({
             description: "Filters",
             content: {
                 "application/json": {
-                    schema: z.array(filterSchema),
+                    schema: z.array(FilterSchema),
                 },
             },
         },
+        401: reusedResponses[401],
     },
 });
 
 const routePost = createRoute({
     method: "post",
     path: "/api/v2/filters",
-    summary: "Create filter",
+    summary: "Create a filter",
+    description: "Create a filter group with the given parameters.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/filters/#create",
+    },
+    tags: ["Filters"],
     middleware: [
         auth({
             auth: true,
@@ -95,20 +57,43 @@ const routePost = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        context: FilterSchema.shape.context,
+                        title: FilterSchema.shape.title,
+                        filter_action: FilterSchema.shape.filter_action,
+                        expires_in: z.coerce
+                            .number()
+                            .int()
+                            .min(60)
+                            .max(60 * 60 * 24 * 365 * 5)
+                            .optional()
+                            .openapi({
+                                description:
+                                    "How many seconds from now should the filter expire?",
+                            }),
+                        keywords_attributes: z
+                            .array(
+                                FilterKeywordSchema.pick({
+                                    keyword: true,
+                                    whole_word: true,
+                                }),
+                            )
+                            .optional(),
+                    }),
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Filter created",
+            description: "Created filter",
             content: {
                 "application/json": {
-                    schema: filterSchema,
+                    schema: FilterSchema,
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
@@ -158,8 +143,8 @@ export default apiRoute((app) => {
             await db
                 .insert(Filters)
                 .values({
-                    title: title ?? "",
-                    context: ctx ?? [],
+                    title: title,
+                    context: ctx,
                     filterAction: filter_action,
                     expireAt: new Date(
                         Date.now() + (expires_in ?? 0),
@@ -202,18 +187,6 @@ export default apiRoute((app) => {
                     whole_word: keyword.wholeWord,
                 })),
                 statuses: [],
-            } as {
-                id: string;
-                title: string;
-                context: string[];
-                expires_at: string;
-                filter_action: "warn" | "hide";
-                keywords: {
-                    id: string;
-                    keyword: string;
-                    whole_word: boolean;
-                }[];
-                statuses: [];
             },
             200,
         );

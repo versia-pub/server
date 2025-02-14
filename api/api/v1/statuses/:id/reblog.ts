@@ -97,10 +97,17 @@ export default apiRoute((app) =>
             applicationId: null,
         });
 
+        // Refetch the note *again* to get the proper value of .reblogged
+        const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
+
+        if (!finalNewReblog) {
+            throw new Error("Failed to reblog");
+        }
+
         if (note.author.isLocal() && user.isLocal()) {
             await note.author.notify("reblog", user, newReblog);
         }
 
-        return context.json(await newReblog.toApi(user), 200);
+        return context.json(await finalNewReblog.toApi(user), 200);
     }),
 );

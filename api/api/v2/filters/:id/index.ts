@@ -1,79 +1,24 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
+import {
+    FilterKeyword as FilterKeywordSchema,
+    Filter as FilterSchema,
+} from "~/classes/schemas/filters";
+import { zBoolean } from "~/packages/config-manager/config.type";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    json: z.object({
-        title: z.string().trim().min(1).max(100).optional(),
-        context: z
-            .array(
-                z.enum([
-                    "home",
-                    "notifications",
-                    "public",
-                    "thread",
-                    "account",
-                ]),
-            )
-            .optional(),
-        filter_action: z.enum(["warn", "hide"]).optional().default("warn"),
-        expires_in: z.coerce
-            .number()
-            .int()
-            .min(60)
-            .max(60 * 60 * 24 * 365 * 5)
-            .optional(),
-        keywords_attributes: z
-            .array(
-                z.object({
-                    keyword: z.string().trim().min(1).max(100).optional(),
-                    id: z.string().uuid().optional(),
-                    whole_word: z
-                        .string()
-                        .transform((v) =>
-                            ["true", "1", "on"].includes(v.toLowerCase()),
-                        )
-                        .optional(),
-                    // biome-ignore lint/style/useNamingConvention: _destroy is a Mastodon API imposed variable name
-                    _destroy: z
-                        .string()
-                        .transform((v) =>
-                            ["true", "1", "on"].includes(v.toLowerCase()),
-                        )
-                        .optional(),
-                }),
-            )
-            .optional(),
-    }),
-};
-
-const filterSchema = z.object({
-    id: z.string(),
-    title: z.string(),
-    context: z.array(z.string()),
-    expires_at: z.string().nullable(),
-    filter_action: z.enum(["warn", "hide"]),
-    keywords: z.array(
-        z.object({
-            id: z.string(),
-            keyword: z.string(),
-            whole_word: z.boolean(),
-        }),
-    ),
-    statuses: z.array(z.string()),
-});
 
 const routeGet = createRoute({
     method: "get",
     path: "/api/v2/filters/{id}",
-    summary: "Get filter",
+    summary: "View a specific filter",
+    externalDocs: {
+        url: "Obtain a single filter group owned by the current user.",
+    },
+    tags: ["Filters"],
     middleware: [
         auth({
             auth: true,
@@ -81,18 +26,19 @@ const routeGet = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: FilterSchema.shape.id,
+        }),
     },
     responses: {
         200: {
             description: "Filter",
             content: {
                 "application/json": {
-                    schema: filterSchema,
+                    schema: FilterSchema,
                 },
             },
         },
-
         404: {
             description: "Filter not found",
             content: {
@@ -101,13 +47,19 @@ const routeGet = createRoute({
                 },
             },
         },
+        401: reusedResponses[401],
     },
 });
 
 const routePut = createRoute({
     method: "put",
     path: "/api/v2/filters/{id}",
-    summary: "Update filter",
+    summary: "Update a filter",
+    description: "Update a filter group with the given parameters.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/filters/#update",
+    },
+    tags: ["Filters"],
     middleware: [
         auth({
             auth: true,
@@ -116,11 +68,45 @@ const routePut = createRoute({
         jsonOrForm(),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: FilterSchema.shape.id,
+        }),
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z
+                        .object({
+                            context: FilterSchema.shape.context,
+                            title: FilterSchema.shape.title,
+                            filter_action: FilterSchema.shape.filter_action,
+                            expires_in: z.coerce
+                                .number()
+                                .int()
+                                .min(60)
+                                .max(60 * 60 * 24 * 365 * 5)
+                                .openapi({
+                                    description:
+                                        "How many seconds from now should the filter expire?",
+                                }),
+                            keywords_attributes: z.array(
+                                FilterKeywordSchema.pick({
+                                    keyword: true,
+                                    whole_word: true,
+                                    id: true,
+                                })
+                                    .extend({
+                                        // biome-ignore lint/style/useNamingConvention: _destroy is a Mastodon API imposed variable name
+                                        _destroy: zBoolean
+                                            .default(false)
+                                            .openapi({
+                                                description:
+                                                    "If true, will remove the keyword with the given ID.",
+                                            }),
+                                    })
+                                    .partial(),
+                            ),
+                        })
+                        .partial(),
                 },
             },
         },
@@ -130,11 +116,10 @@ const routePut = createRoute({
             description: "Filter updated",
             content: {
                 "application/json": {
-                    schema: filterSchema,
+                    schema: FilterSchema,
                 },
             },
         },
-
         404: {
             description: "Filter not found",
             content: {
@@ -143,13 +128,19 @@ const routePut = createRoute({
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
 const routeDelete = createRoute({
     method: "delete",
     path: "/api/v2/filters/{id}",
-    summary: "Delete filter",
+    summary: "Delete a filter",
+    description: "Delete a filter group with the given id.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/filters/#delete",
+    },
+    tags: ["Filters"],
     middleware: [
         auth({
             auth: true,
@@ -157,13 +148,14 @@ const routeDelete = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: FilterSchema.shape.id,
+        }),
     },
     responses: {
-        204: {
-            description: "Filter deleted",
+        200: {
+            description: "Filter successfully deleted",
         },
-
         404: {
             description: "Filter not found",
             content: {
@@ -172,6 +164,7 @@ const routeDelete = createRoute({
                 },
             },
         },
+        401: reusedResponses[401],
     },
 });
 

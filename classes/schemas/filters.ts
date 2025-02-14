@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { zBoolean } from "~/packages/config-manager/config.type.ts";
 import { Id } from "./common.ts";
 
 export const FilterStatus = z
@@ -42,7 +43,7 @@ export const FilterKeyword = z
                 url: "https://docs.joinmastodon.org/entities/FilterKeyword/#keyword",
             },
         }),
-        whole_word: z.boolean().openapi({
+        whole_word: zBoolean.openapi({
             description:
                 "Should the filter consider word boundaries? See implementation guidelines for filters.",
             example: false,
@@ -68,13 +69,18 @@ export const Filter = z
                 url: "https://docs.joinmastodon.org/entities/Filter/#id",
             },
         }),
-        title: z.string().openapi({
-            description: "A title given by the user to name the filter.",
-            example: "Test filter",
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/Filter/#title",
-            },
-        }),
+        title: z
+            .string()
+            .trim()
+            .min(1)
+            .max(255)
+            .openapi({
+                description: "A title given by the user to name the filter.",
+                example: "Test filter",
+                externalDocs: {
+                    url: "https://docs.joinmastodon.org/entities/Filter/#title",
+                },
+            }),
         context: z
             .array(
                 z.enum([
@@ -85,6 +91,7 @@ export const Filter = z
                     "account",
                 ]),
             )
+            .default([])
             .openapi({
                 description:
                     "The contexts in which the filter should be applied.",
@@ -103,14 +110,17 @@ export const Filter = z
                     url: "https://docs.joinmastodon.org/entities/Filter/#expires_at",
                 },
             }),
-        filter_action: z.enum(["warn", "hide"]).openapi({
-            description:
-                "The action to be taken when a status matches this filter.",
-            example: "warn",
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/Filter/#filter_action",
-            },
-        }),
+        filter_action: z
+            .enum(["warn", "hide"])
+            .default("warn")
+            .openapi({
+                description:
+                    "The action to be taken when a status matches this filter.",
+                example: "warn",
+                externalDocs: {
+                    url: "https://docs.joinmastodon.org/entities/Filter/#filter_action",
+                },
+            }),
         keywords: z.array(FilterKeyword).openapi({
             description: "The keywords grouped under this filter.",
             externalDocs: {

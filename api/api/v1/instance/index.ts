@@ -46,6 +46,7 @@ export default apiRoute((app) =>
 
         const userCount = await User.getCount();
 
+        // Get first admin, or first user if no admin exists
         const contactAccount =
             (await User.fromSql(
                 and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
@@ -138,7 +139,7 @@ export default apiRoute((app) =>
                         id: p.id,
                     })) ?? [],
             },
-            contact_account: (contactAccount as User).toApi(),
+            contact_account: (contactAccount as User)?.toApi(),
         } satisfies z.infer<typeof InstanceV1Schema>);
     }),
 );

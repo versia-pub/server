@@ -1,35 +1,20 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
-import { Status } from "~/classes/schemas/status";
-
-const schemas = {
-    query: z.object({
-        max_id: z.string().uuid().optional(),
-        since_id: z.string().uuid().optional(),
-        min_id: z.string().uuid().optional(),
-        limit: z.coerce.number().int().min(1).max(80).default(20),
-        local: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        remote: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        only_media: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-    }),
-};
+import { Status as StatusSchema } from "~/classes/schemas/status";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/timelines/public",
-    summary: "Get public timeline",
+    summary: "View public timeline",
+    description: "View public statuses.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/timelines/#public",
+    },
+    tags: ["Timelines"],
     middleware: [
         auth({
             auth: false,
@@ -41,17 +26,69 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z
+            .object({
+                max_id: StatusSchema.shape.id.optional().openapi({
+                    description:
+                        "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
+                    example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
+                }),
+                since_id: StatusSchema.shape.id.optional().openapi({
+                    description:
+                        "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
+                    example: undefined,
+                }),
+                min_id: StatusSchema.shape.id.optional().openapi({
+                    description:
+                        "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
+                    example: undefined,
+                }),
+                local: zBoolean.default(false).openapi({
+                    description: "Show only local statuses?",
+                }),
+                remote: zBoolean.default(false).openapi({
+                    description: "Show only remote statuses?",
+                }),
+                only_media: zBoolean.default(false).openapi({
+                    description: "Show only statuses with media attached?",
+                }),
+                limit: z.coerce
+                    .number()
+                    .int()
+                    .min(1)
+                    .max(40)
+                    .default(20)
+                    .openapi({
+                        description: "Maximum number of results to return.",
+                    }),
+            })
+            .refine(
+                (o) => !(o.local && o.remote),
+                "'local' and 'remote' cannot be both true",
+            ),
     },
     responses: {
         200: {
             description: "Public timeline",
             content: {
                 "application/json": {
-                    schema: z.array(Status),
+                    schema: z.array(StatusSchema),
                 },
             },
+            headers: z.object({
+                link: z
+                    .string()
+                    .optional()
+                    .openapi({
+                        description: "Links to the next and previous pages",
+                        example: `<https://versia.social/api/v1/timelines/public?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/timelines/public?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"`,
+                        externalDocs: {
+                            url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
+                        },
+                    }),
+            }),
         },
+        422: reusedResponses[422],
     },
 });
 
