@@ -11,6 +11,7 @@ export const commands = {
     "user:create": (await import("./commands/user/create.ts")).default,
     "user:reset": (await import("./commands/user/reset.ts")).default,
     "user:refetch": (await import("./commands/user/refetch.ts")).default,
+    "user:token": (await import("./commands/user/token.ts")).default,
     "emoji:add": (await import("./commands/emoji/add.ts")).default,
     "emoji:delete": (await import("./commands/emoji/delete.ts")).default,
     "emoji:list": (await import("./commands/emoji/list.ts")).default,
@@ -27,6 +28,8 @@ export const commands = {
     ).default,
     "generate-keys": (await import("./commands/generate-keys.ts")).default,
     start: Start,
+    "notes:recalculate": (await import("./commands/notes/recalculate.ts"))
+        .default,
 };
 
 if (import.meta.path === Bun.main) {
