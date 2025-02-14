@@ -1,4 +1,4 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 
@@ -26,6 +26,7 @@ const route = createRoute({
         200: {
             description: "Notifications dismissed",
         },
+        401: reusedResponses[401],
     },
 });
 

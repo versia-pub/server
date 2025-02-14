@@ -1,6 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import type { Status as ApiNote } from "@versia/client/types";
 import { zBoolean } from "~/packages/config-manager/config.type.ts";
+import { config } from "~/packages/config-manager/index.ts";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
 import { PreviewCard } from "./card.ts";
@@ -46,6 +47,39 @@ export const Mention = z
     .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#Mention",
+        },
+    });
+
+export const StatusSource = z
+    .object({
+        id: Id.openapi({
+            description: "ID of the status in the database.",
+            example: "c7db92a4-e472-4e94-a115-7411ee934ba1",
+        }),
+        text: z
+            .string()
+            .max(config.validation.max_note_size)
+            .trim()
+            .refine(
+                (s) =>
+                    !config.filters.note_content.some((filter) =>
+                        s.match(filter),
+                    ),
+                "Status contains blocked words",
+            )
+            .openapi({
+                description: "The plain text used to compose the status.",
+                example: "this is a status that will be edited",
+            }),
+        spoiler_text: z.string().trim().min(1).max(1024).openapi({
+            description:
+                "The plain text used to compose the status’s subject or content warning.",
+            example: "",
+        }),
+    })
+    .openapi({
+        externalDocs: {
+            url: "https://docs.joinmastodon.org/entities/StatusSource",
         },
     });
 

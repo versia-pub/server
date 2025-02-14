@@ -58,6 +58,14 @@ export const accountNotFound = {
         },
     },
 };
+export const noteNotFound = {
+    description: "Status does not exist",
+    content: {
+        "application/json": {
+            schema: ErrorSchema,
+        },
+    },
+};
 
 export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
     fn;

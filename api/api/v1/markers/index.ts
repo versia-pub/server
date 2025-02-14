@@ -1,4 +1,4 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
@@ -15,7 +15,12 @@ const MarkerResponseSchema = z.object({
 const routeGet = createRoute({
     method: "get",
     path: "/api/v1/markers",
-    summary: "Get markers",
+    summary: "Get saved timeline positions",
+    description: "Get current positions in timelines.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/markers/#get",
+    },
+    tags: ["Timelines"],
     middleware: [
         auth({
             auth: true,
@@ -27,8 +32,12 @@ const routeGet = createRoute({
             "timeline[]": z
                 .array(z.enum(["home", "notifications"]))
                 .max(2)
-                .or(z.enum(["home", "notifications"]))
-                .optional(),
+                .or(z.enum(["home", "notifications"]).transform((t) => [t]))
+                .optional()
+                .openapi({
+                    description:
+                        "Specify the timeline(s) for which markers should be fetched. Possible values: home, notifications. If not provided, an empty object will be returned.",
+                }),
         }),
     },
     responses: {
@@ -40,13 +49,19 @@ const routeGet = createRoute({
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
 const routePost = createRoute({
     method: "post",
     path: "/api/v1/markers",
-    summary: "Update markers",
+    summary: "Save your position in a timeline",
+    description: "Save current position in timeline.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/markers/#create",
+    },
+    tags: ["Timelines"],
     middleware: [
         auth({
             auth: true,
@@ -54,11 +69,19 @@ const routePost = createRoute({
         }),
     ] as const,
     request: {
-        query: z.object({
-            "home[last_read_id]": StatusSchema.shape.id.optional(),
-            "notifications[last_read_id]":
-                NotificationSchema.shape.id.optional(),
-        }),
+        query: z
+            .object({
+                "home[last_read_id]": StatusSchema.shape.id.openapi({
+                    description:
+                        "ID of the last status read in the home timeline.",
+                    example: "c62aa212-8198-4ce5-a388-2cc8344a84ef",
+                }),
+                "notifications[last_read_id]":
+                    NotificationSchema.shape.id.openapi({
+                        description: "ID of the last notification read.",
+                    }),
+            })
+            .partial(),
     },
     responses: {
         200: {
@@ -69,15 +92,14 @@ const routePost = createRoute({
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
 export default apiRoute((app) => {
     app.openapi(routeGet, async (context) => {
-        const { "timeline[]": timelines } = context.req.valid("query");
+        const { "timeline[]": timeline } = context.req.valid("query");
         const { user } = context.get("auth");
-
-        const timeline = Array.isArray(timelines) ? timelines : [];
 
         if (!timeline) {
             return context.json({}, 200);

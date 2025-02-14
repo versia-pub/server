@@ -1,30 +1,21 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
-import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    form: z.object({
-        thumbnail: z.instanceof(File).optional(),
-        description: z
-            .string()
-            .max(config.validation.max_media_description_size)
-            .optional(),
-        focus: z.string().optional(),
-    }),
-};
 
 const routePut = createRoute({
     method: "put",
     path: "/api/v1/media/{id}",
-    summary: "Update media",
+    summary: "Update media attachment",
+    description:
+        "Update a MediaAttachment’s parameters, before it is attached to a status and posted.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/media/#update",
+    },
+    tags: ["Media"],
     middleware: [
         auth({
             auth: true,
@@ -33,40 +24,63 @@ const routePut = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: AttachmentSchema.shape.id,
+        }),
         body: {
             content: {
                 "multipart/form-data": {
-                    schema: schemas.form,
+                    schema: z
+                        .object({
+                            thumbnail: z.instanceof(File).openapi({
+                                description:
+                                    "The custom thumbnail of the media to be attached, encoded using multipart form data.",
+                            }),
+                            description: AttachmentSchema.shape.description,
+                            focus: z.string().openapi({
+                                description:
+                                    "Two floating points (x,y), comma-delimited, ranging from -1.0 to 1.0. Used for media cropping on clients.",
+                                externalDocs: {
+                                    url: "https://docs.joinmastodon.org/api/guidelines/#focal-points",
+                                },
+                            }),
+                        })
+                        .partial(),
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Media updated",
+            description: "Updated attachment",
             content: {
                 "application/json": {
                     schema: AttachmentSchema,
                 },
             },
         },
-
         404: {
-            description: "Media not found",
+            description: "Attachment not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
 const routeGet = createRoute({
     method: "get",
     path: "/api/v1/media/{id}",
-    summary: "Get media",
+    summary: "Get media attachment",
+    description:
+        "Get a media attachment, before it is attached to a status and posted, but after it is accepted for processing. Use this method to check that the full-sized media has finished processing.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/media/#get",
+    },
+    tags: ["Media"],
     middleware: [
         auth({
             auth: true,
@@ -74,11 +88,13 @@ const routeGet = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: AttachmentSchema.shape.id,
+        }),
     },
     responses: {
         200: {
-            description: "Media",
+            description: "Attachment",
             content: {
                 "application/json": {
                     schema: AttachmentSchema,
@@ -86,13 +102,14 @@ const routeGet = createRoute({
             },
         },
         404: {
-            description: "Media not found",
+            description: "Attachment not found",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 

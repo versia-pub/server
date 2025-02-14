@@ -1,25 +1,26 @@
-import { apiRoute, auth, jsonOrForm, withNoteParam } from "@/api";
+import {
+    apiRoute,
+    auth,
+    jsonOrForm,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { ApiError } from "~/classes/errors/api-error";
-import { Status } from "~/classes/schemas/status";
-import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    json: z.object({
-        visibility: z.enum(["public", "unlisted", "private"]).default("public"),
-    }),
-};
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/reblog",
-    summary: "Reblog a status",
+    summary: "Boost a status",
+    description: "Reshare a status on your own profile.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#boost",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -32,46 +33,44 @@ const route = createRoute({
         withNoteParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: StatusSchema.shape.id,
+        }),
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        visibility:
+                            StatusSchema.shape.visibility.default("public"),
+                    }),
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        visibility:
+                            StatusSchema.shape.visibility.default("public"),
+                    }),
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        visibility:
+                            StatusSchema.shape.visibility.default("public"),
+                    }),
                 },
             },
         },
     },
     responses: {
-        201: {
-            description: "Reblogged status",
+        200: {
+            description:
+                "Status has been reblogged. Note that the top-level ID has changed. The ID of the boosted status is now inside the reblog property. The top-level ID is the ID of the reblog itself. Also note that reblogs cannot be pinned.",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
-        422: {
-            description: "Already reblogged",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        500: {
-            description: "Failed to reblog",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        ...reusedResponses,
     },
 });
 
@@ -86,7 +85,7 @@ export default apiRoute((app) =>
         );
 
         if (existingReblog) {
-            throw new ApiError(422, "Already reblogged");
+            return context.json(await existingReblog.toApi(user), 200);
         }
 
         const newReblog = await Note.insert({
@@ -98,16 +97,10 @@ export default apiRoute((app) =>
             applicationId: null,
         });
 
-        const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
-
-        if (!finalNewReblog) {
-            throw new ApiError(500, "Failed to reblog");
-        }
-
         if (note.author.isLocal() && user.isLocal()) {
             await note.author.notify("reblog", user, newReblog);
         }
 
-        return context.json(await finalNewReblog.toApi(user), 201);
+        return context.json(await newReblog.toApi(user), 200);
     }),
 );

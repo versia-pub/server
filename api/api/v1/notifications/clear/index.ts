@@ -1,11 +1,16 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/notifications/clear",
-    summary: "Clear notifications",
+    summary: "Dismiss all notifications",
+    description: "Clear all notifications from the server.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/notifications/#clear",
+    },
+    tags: ["Notifications"],
     middleware: [
         auth({
             auth: true,
@@ -15,8 +20,9 @@ const route = createRoute({
     ] as const,
     responses: {
         200: {
-            description: "Notifications cleared",
+            description: "Notifications successfully cleared.",
         },
+        401: reusedResponses[401],
     },
 });
 

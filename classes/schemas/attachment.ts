@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { config } from "~/packages/config-manager/index.ts";
 import { Id } from "./common.ts";
 
 export const Attachment = z
@@ -50,11 +51,16 @@ export const Attachment = z
                 },
             },
         }),
-        description: z.string().nullable().openapi({
-            description:
-                "Alternate text that describes what is in the media attachment, to be used for the visually impaired or when media attachments do not load.",
-            example: "test media description",
-        }),
+        description: z
+            .string()
+            .trim()
+            .max(config.validation.max_media_description_size)
+            .nullable()
+            .openapi({
+                description:
+                    "Alternate text that describes what is in the media attachment, to be used for the visually impaired or when media attachments do not load.",
+                example: "test media description",
+            }),
         blurhash: z.string().nullable().openapi({
             description:
                 "A hash computed by the BlurHash algorithm, for generating colorful preview thumbnails when media has not been downloaded yet.",

@@ -1,12 +1,24 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
+import {
+    apiRoute,
+    auth,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { Status } from "~/classes/schemas/status";
-import { ErrorSchema } from "~/types/api";
+import { Context as ContextSchema } from "~/classes/schemas/context";
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}/context",
+    summary: "Get parent and child statuses in context",
+    description: "View statuses above and below this status in the thread.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#context",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: false,
@@ -14,32 +26,22 @@ const route = createRoute({
         }),
         withNoteParam,
     ] as const,
-    summary: "Get status context",
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: StatusSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Status context",
+            description: "Status parent and children",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        ancestors: z.array(Status),
-                        descendants: z.array(Status),
-                    }),
+                    schema: ContextSchema,
                 },
             },
         },
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 

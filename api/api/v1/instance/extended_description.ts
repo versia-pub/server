@@ -1,21 +1,24 @@
 import { apiRoute } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { ExtendedDescription as ExtendedDescriptionSchema } from "~/classes/schemas/extended-description";
 import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/instance/extended_description",
-    summary: "Get extended description",
+    summary: "View extended description",
+    description: "Obtain an extended description of this server",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/instance/#extended_description",
+    },
+    tags: ["Instance"],
     responses: {
         200: {
-            description: "Extended description",
+            description: "Server extended description",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        updated_at: z.string(),
-                        content: z.string(),
-                    }),
+                    schema: ExtendedDescriptionSchema,
                 },
             },
         },

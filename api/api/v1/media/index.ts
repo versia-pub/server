@@ -1,27 +1,21 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
-import { config } from "~/packages/config-manager/index.ts";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    form: z.object({
-        file: z.instanceof(File),
-        thumbnail: z.instanceof(File).optional(),
-        description: z
-            .string()
-            .max(config.validation.max_media_description_size)
-            .optional(),
-        focus: z.string().optional(),
-    }),
-};
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/media",
-    summary: "Upload media",
+    summary: "Upload media as an attachment (v1)",
+    description:
+        "Creates an attachment to be used with a new status. This method will return after the full sized media is done processing.",
+    deprecated: true,
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/media/#v1",
+    },
+    tags: ["Media"],
     middleware: [
         auth({
             auth: true,
@@ -33,21 +27,42 @@ const route = createRoute({
         body: {
             content: {
                 "multipart/form-data": {
-                    schema: schemas.form,
+                    schema: z.object({
+                        file: z.instanceof(File).openapi({
+                            description:
+                                "The file to be attached, encoded using multipart form data. The file must have a MIME type.",
+                        }),
+                        thumbnail: z.instanceof(File).optional().openapi({
+                            description:
+                                "The custom thumbnail of the media to be attached, encoded using multipart form data.",
+                        }),
+                        description:
+                            AttachmentSchema.shape.description.optional(),
+                        focus: z
+                            .string()
+                            .optional()
+                            .openapi({
+                                description:
+                                    "Two floating points (x,y), comma-delimited, ranging from -1.0 to 1.0. Used for media cropping on clients.",
+                                externalDocs: {
+                                    url: "https://docs.joinmastodon.org/api/guidelines/#focal-points",
+                                },
+                            }),
+                    }),
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Attachment",
+            description:
+                "Attachment created successfully. Note that the MediaAttachment will be created even if the file is not understood correctly due to failed processing.",
             content: {
                 "application/json": {
                     schema: AttachmentSchema,
                 },
             },
         },
-
         413: {
             description: "File too large",
             content: {
@@ -64,6 +79,7 @@ const route = createRoute({
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
@@ -73,7 +89,7 @@ export default apiRoute((app) =>
 
         const attachment = await Media.fromFile(file, {
             thumbnail,
-            description,
+            description: description ?? undefined,
         });
 
         return context.json(attachment.toApi(), 200);

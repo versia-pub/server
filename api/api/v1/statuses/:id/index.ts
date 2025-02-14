@@ -1,75 +1,93 @@
-import { apiRoute, auth, jsonOrForm, withNoteParam } from "@/api";
+import {
+    apiRoute,
+    auth,
+    jsonOrForm,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
-import { Status } from "~/classes/schemas/status";
+import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
+import { PollOption } from "~/classes/schemas/poll";
+import {
+    Status as StatusSchema,
+    StatusSource as StatusSourceSchema,
+} from "~/classes/schemas/status";
+import { zBoolean } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
-import { ErrorSchema } from "~/types/api";
 
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    json: z
-        .object({
-            status: z
-                .string()
-                .max(config.validation.max_note_size)
-                .refine(
-                    (s) =>
-                        !config.filters.note_content.some((filter) =>
-                            s.match(filter),
-                        ),
-                    "Status contains blocked words",
-                )
-                .optional(),
-            content_type: z.string().optional().default("text/plain"),
-            media_ids: z
-                .array(z.string().uuid())
-                .max(config.validation.max_media_attachments)
-                .default([]),
-            spoiler_text: z.string().max(255).optional(),
-            sensitive: z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-            language: z
-                .enum(ISO6391.getAllCodes() as [string, ...string[]])
-                .optional(),
-            "poll[options]": z
-                .array(z.string().max(config.validation.max_poll_option_size))
-                .max(config.validation.max_poll_options)
-                .optional(),
-            "poll[expires_in]": z.coerce
-                .number()
-                .int()
-                .min(config.validation.min_poll_duration)
-                .max(config.validation.max_poll_duration)
-                .optional(),
-            "poll[multiple]": z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-            "poll[hide_totals]": z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-        })
-        .refine(
-            (obj) => !(obj.media_ids.length > 0 && obj["poll[options]"]),
-            "Cannot attach poll to media",
-        ),
-};
+const schema = z
+    .object({
+        status: StatusSourceSchema.shape.text.optional().openapi({
+            description:
+                "The text content of the status. If media_ids is provided, this becomes optional. Attaching a poll is optional while status is provided.",
+        }),
+        /* Versia Server API Extension */
+        content_type: z
+            .enum(["text/plain", "text/html", "text/markdown"])
+            .default("text/plain")
+            .openapi({
+                description: "Content-Type of the status text.",
+                example: "text/markdown",
+            }),
+        media_ids: z
+            .array(AttachmentSchema.shape.id)
+            .max(config.validation.max_media_attachments)
+            .default([])
+            .openapi({
+                description:
+                    "Include Attachment IDs to be attached as media. If provided, status becomes optional, and poll cannot be used.",
+            }),
+        spoiler_text: StatusSourceSchema.shape.spoiler_text.optional().openapi({
+            description:
+                "Text to be shown as a warning or subject before the actual content. Statuses are generally collapsed behind this field.",
+        }),
+        sensitive: zBoolean.default(false).openapi({
+            description: "Mark status and attached media as sensitive?",
+        }),
+        language: StatusSchema.shape.language.optional(),
+        "poll[options]": z
+            .array(PollOption.shape.title)
+            .max(config.validation.max_poll_options)
+            .optional()
+            .openapi({
+                description:
+                    "Possible answers to the poll. If provided, media_ids cannot be used, and poll[expires_in] must be provided.",
+            }),
+        "poll[expires_in]": z.coerce
+            .number()
+            .int()
+            .min(config.validation.min_poll_duration)
+            .max(config.validation.max_poll_duration)
+            .optional()
+            .openapi({
+                description:
+                    "Duration that the poll should be open, in seconds. If provided, media_ids cannot be used, and poll[options] must be provided.",
+            }),
+        "poll[multiple]": zBoolean.optional().openapi({
+            description: "Allow multiple choices?",
+        }),
+        "poll[hide_totals]": zBoolean.optional().openapi({
+            description: "Hide vote counts until the poll ends?",
+        }),
+    })
+    .refine(
+        (obj) => !(obj.media_ids.length > 0 && obj["poll[options]"]),
+        "Cannot attach poll to media",
+    );
 
 const routeGet = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}",
-    summary: "Get status",
+    summary: "View a single status",
+    description: "Obtain information about a status.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#get",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: false,
@@ -78,25 +96,20 @@ const routeGet = createRoute({
         withNoteParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: StatusSchema.shape.id,
+        }),
     },
     responses: {
         200: {
             description: "Status",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
     },
 });
 
@@ -104,6 +117,11 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/statuses/{id}",
     summary: "Delete a status",
+    description: "Delete one of your own statuses.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#delete",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -115,40 +133,35 @@ const routeDelete = createRoute({
         withNoteParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: StatusSchema.shape.id,
+        }),
     },
     responses: {
         200: {
-            description: "Deleted status",
+            description:
+                "Note the special properties text and poll or media_attachments which may be used to repost the status, e.g. in case of delete-and-redraft functionality.",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        404: {
-            description: "Record not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 
 const routePut = createRoute({
     method: "put",
     path: "/api/v1/statuses/{id}",
-    summary: "Update a status",
+    summary: "Edit a status",
+    description:
+        "Edit a given status to change its text, sensitivity, media attachments, or poll. Note that editing a poll’s options will reset the votes.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#edit",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -161,46 +174,34 @@ const routePut = createRoute({
         withNoteParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: StatusSchema.shape.id,
+        }),
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "Updated status",
+            description: "Status has been successfully edited.",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        422: {
-            description: "Invalid media IDs",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        ...reusedResponses,
     },
 });
 

@@ -1,94 +1,115 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Media, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
-import { Status } from "~/classes/schemas/status";
+import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
+import { PollOption } from "~/classes/schemas/poll";
+import {
+    Status as StatusSchema,
+    StatusSource as StatusSourceSchema,
+} from "~/classes/schemas/status";
+import { zBoolean } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
-import { ErrorSchema } from "~/types/api";
 
-const schemas = {
-    json: z
-        .object({
-            status: z
-                .string()
-                .max(config.validation.max_note_size)
-                .trim()
-                .refine(
-                    (s) =>
-                        !config.filters.note_content.some((filter) =>
-                            s.match(filter),
-                        ),
-                    "Status contains blocked words",
-                )
-                .optional(),
-            // TODO: Add regex to validate
-            content_type: z.string().optional().default("text/plain"),
-            media_ids: z
-                .array(z.string().uuid())
-                .max(config.validation.max_media_attachments)
-                .default([]),
-            spoiler_text: z.string().max(255).trim().optional(),
-            sensitive: z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-            language: z
-                .enum(ISO6391.getAllCodes() as [string, ...string[]])
-                .optional(),
-            "poll[options]": z
-                .array(z.string().max(config.validation.max_poll_option_size))
-                .max(config.validation.max_poll_options)
-                .optional(),
-            "poll[expires_in]": z.coerce
-                .number()
-                .int()
-                .min(config.validation.min_poll_duration)
-                .max(config.validation.max_poll_duration)
-                .optional(),
-            "poll[multiple]": z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-            "poll[hide_totals]": z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-            in_reply_to_id: z.string().uuid().optional().nullable(),
-            quote_id: z.string().uuid().optional().nullable(),
-            visibility: z
-                .enum(["public", "unlisted", "private", "direct"])
-                .optional()
-                .default("public"),
-            scheduled_at: z.coerce
-                .date()
-                .min(new Date(), "Scheduled time must be in the future")
-                .optional()
-                .nullable(),
-            local_only: z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional()
-                .default(false),
-        })
-        .refine(
-            (obj) => obj.status || obj.media_ids.length > 0,
-            "Status is required unless media is attached",
-        )
-        .refine(
-            (obj) => !(obj.media_ids.length > 0 && obj["poll[options]"]),
-            "Cannot attach poll to media",
-        ),
-};
+const schema = z
+    .object({
+        status: StatusSourceSchema.shape.text.optional().openapi({
+            description:
+                "The text content of the status. If media_ids is provided, this becomes optional. Attaching a poll is optional while status is provided.",
+        }),
+        /* Versia Server API Extension */
+        content_type: z
+            .enum(["text/plain", "text/html", "text/markdown"])
+            .default("text/plain")
+            .openapi({
+                description: "Content-Type of the status text.",
+                example: "text/markdown",
+            }),
+        media_ids: z
+            .array(AttachmentSchema.shape.id)
+            .max(config.validation.max_media_attachments)
+            .default([])
+            .openapi({
+                description:
+                    "Include Attachment IDs to be attached as media. If provided, status becomes optional, and poll cannot be used.",
+            }),
+        spoiler_text: StatusSourceSchema.shape.spoiler_text.optional().openapi({
+            description:
+                "Text to be shown as a warning or subject before the actual content. Statuses are generally collapsed behind this field.",
+        }),
+        sensitive: zBoolean.default(false).openapi({
+            description: "Mark status and attached media as sensitive?",
+        }),
+        language: StatusSchema.shape.language.optional(),
+        "poll[options]": z
+            .array(PollOption.shape.title)
+            .max(config.validation.max_poll_options)
+            .optional()
+            .openapi({
+                description:
+                    "Possible answers to the poll. If provided, media_ids cannot be used, and poll[expires_in] must be provided.",
+            }),
+        "poll[expires_in]": z.coerce
+            .number()
+            .int()
+            .min(config.validation.min_poll_duration)
+            .max(config.validation.max_poll_duration)
+            .optional()
+            .openapi({
+                description:
+                    "Duration that the poll should be open, in seconds. If provided, media_ids cannot be used, and poll[options] must be provided.",
+            }),
+        "poll[multiple]": zBoolean.optional().openapi({
+            description: "Allow multiple choices?",
+        }),
+        "poll[hide_totals]": zBoolean.optional().openapi({
+            description: "Hide vote counts until the poll ends?",
+        }),
+        in_reply_to_id: StatusSchema.shape.id.optional().nullable().openapi({
+            description:
+                "ID of the status being replied to, if status is a reply.",
+        }),
+        /* Versia Server API Extension */
+        quote_id: StatusSchema.shape.id.optional().nullable().openapi({
+            description: "ID of the status being quoted, if status is a quote.",
+        }),
+        visibility: StatusSchema.shape.visibility.default("public"),
+        scheduled_at: z.coerce
+            .date()
+            .min(
+                new Date(Date.now() + 5 * 60 * 1000),
+                "must be at least 5 minutes in the future.",
+            )
+            .optional()
+            .nullable()
+            .openapi({
+                description:
+                    "Datetime at which to schedule a status. Providing this parameter will cause ScheduledStatus to be returned instead of Status. Must be at least 5 minutes in the future.",
+            }),
+        /* Versia Server API Extension */
+        local_only: zBoolean.default(false).openapi({
+            description: "If true, this status will not be federated.",
+        }),
+    })
+    .refine(
+        (obj) => obj.status || obj.media_ids.length > 0 || obj["poll[options]"],
+        "Status is required unless media or poll is attached",
+    )
+    .refine(
+        (obj) => !(obj.media_ids.length > 0 && obj["poll[options]"]),
+        "Cannot attach poll to media",
+    );
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses",
+    summary: "Post a new status",
+    description: "Publish a status with the given parameters.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#create",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -96,40 +117,31 @@ const route = createRoute({
         }),
         jsonOrForm(),
     ] as const,
-    summary: "Post a new status",
     request: {
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema: schema,
                 },
             },
         },
     },
     responses: {
-        201: {
-            description: "The new status",
+        200: {
+            description: "Status will be posted with chosen parameters.",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
-
-        422: {
-            description: "Invalid data",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        ...reusedResponses,
     },
 });
 
@@ -193,6 +205,6 @@ export default apiRoute((app) =>
             await newNote.federateToUsers();
         }
 
-        return context.json(await newNote.toApi(user), 201);
+        return context.json(await newNote.toApi(user), 200);
     }),
 );

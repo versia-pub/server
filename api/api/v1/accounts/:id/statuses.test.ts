@@ -21,7 +21,7 @@ beforeAll(async () => {
         },
     );
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(200);
 });
 
 // /api/v1/accounts/:id/statuses
@@ -78,7 +78,7 @@ describe("/api/v1/accounts/:id/statuses", () => {
             }),
         });
 
-        expect(replyResponse.status).toBe(201);
+        expect(replyResponse.status).toBe(200);
 
         const response = await fakeRequest(
             `/api/v1/accounts/${users[1].id}/statuses?exclude_replies=true`,

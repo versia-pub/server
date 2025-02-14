@@ -1,16 +1,22 @@
 import { z } from "@hono/zod-openapi";
+import { config } from "~/packages/config-manager/index.ts";
 import { Id } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 
 export const PollOption = z
     .object({
-        title: z.string().openapi({
-            description: "The text value of the poll option.",
-            example: "yes",
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/Poll/#Option-title",
-            },
-        }),
+        title: z
+            .string()
+            .trim()
+            .min(1)
+            .max(config.validation.max_poll_option_size)
+            .openapi({
+                description: "The text value of the poll option.",
+                example: "yes",
+                externalDocs: {
+                    url: "https://docs.joinmastodon.org/entities/Poll/#Option-title",
+                },
+            }),
         votes_count: z
             .number()
             .int()

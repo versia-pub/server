@@ -1,11 +1,17 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Rule as RuleSchema } from "~/classes/schemas/rule";
 import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/instance/rules",
-    summary: "Get instance rules",
+    summary: "List of rules",
+    description: "Rules that the users of this service should follow.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/instance/#rules",
+    },
+    tags: ["Instance"],
     middleware: [
         auth({
             auth: false,
@@ -16,13 +22,7 @@ const route = createRoute({
             description: "Instance rules",
             content: {
                 "application/json": {
-                    schema: z.array(
-                        z.object({
-                            id: z.string(),
-                            text: z.string(),
-                            hint: z.string(),
-                        }),
-                    ),
+                    schema: z.array(RuleSchema),
                 },
             },
         },

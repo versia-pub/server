@@ -1,13 +1,19 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Notification } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/notifications/{id}/dismiss",
-    summary: "Dismiss notification",
+    summary: "Dismiss a single notification",
+    description: "Dismiss a single notification from the server.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/notifications/#dismiss",
+    },
+    tags: ["Notifications"],
     middleware: [
         auth({
             auth: true,
@@ -17,13 +23,14 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: NotificationSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Notification dismissed",
+            description: "Notification with given ID successfully dismissed",
         },
+        401: reusedResponses[401],
     },
 });
 

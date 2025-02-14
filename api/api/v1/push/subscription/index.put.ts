@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { PushSubscription } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
@@ -19,6 +19,7 @@ export default apiRoute((app) =>
             externalDocs: {
                 url: "https://docs.joinmastodon.org/methods/push/#update",
             },
+            tags: ["Push Notifications"],
             middleware: [
                 auth({
                     auth: true,
@@ -48,6 +49,7 @@ export default apiRoute((app) =>
                         },
                     },
                 },
+                ...reusedResponses,
             },
         }),
         async (context) => {

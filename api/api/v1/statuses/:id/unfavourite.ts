@@ -1,12 +1,23 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
+import {
+    apiRoute,
+    auth,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { Status } from "~/classes/schemas/status";
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/unfavourite",
-    summary: "Unfavourite a status",
+    summary: "Undo favourite of a status",
+    description: "Remove a status from your favourites list.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#unfavourite",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -19,18 +30,20 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: StatusSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Unfavourited status",
+            description: "Status unfavourited or was already not favourited",
             content: {
                 "application/json": {
-                    schema: Status,
+                    schema: StatusSchema,
                 },
             },
         },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 
