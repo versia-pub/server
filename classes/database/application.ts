@@ -1,4 +1,4 @@
-import type { Application as APIApplication } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import { Token, db } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
 import {
@@ -9,20 +9,15 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
+import type {
+    Application as ApplicationSchema,
+    CredentialApplication,
+} from "../schemas/application.ts";
 import { BaseInterface } from "./base.ts";
 
 type ApplicationType = InferSelectModel<typeof Applications>;
 
 export class Application extends BaseInterface<typeof Applications> {
-    public static schema: z.ZodType<APIApplication> = z.object({
-        name: z.string(),
-        website: z.string().url().optional().nullable(),
-        vapid_key: z.string().optional().nullable(),
-        redirect_uris: z.string().optional(),
-        scopes: z.string().optional(),
-    });
-
     public static $type: ApplicationType;
 
     public async reload(): Promise<void> {
@@ -144,11 +139,26 @@ export class Application extends BaseInterface<typeof Applications> {
         return this.data.id;
     }
 
-    public toApi(): APIApplication {
+    public toApi(): z.infer<typeof ApplicationSchema> {
         return {
             name: this.data.name,
             website: this.data.website,
-            vapid_key: this.data.vapidKey,
+            scopes: this.data.scopes.split(" "),
+            redirect_uri: this.data.redirectUri,
+            redirect_uris: this.data.redirectUri.split("\n"),
+        };
+    }
+
+    public toApiCredential(): z.infer<typeof CredentialApplication> {
+        return {
+            name: this.data.name,
+            website: this.data.website,
+            client_id: this.data.clientId,
+            client_secret: this.data.secret,
+            client_secret_expires_at: "0",
+            scopes: this.data.scopes.split(" "),
+            redirect_uri: this.data.redirectUri,
+            redirect_uris: this.data.redirectUri.split("\n"),
         };
     }
 }

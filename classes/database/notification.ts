@@ -1,4 +1,4 @@
-import type { Notification as APINotification } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import { Note, User, db } from "@versia/kit/db";
 import { Notifications } from "@versia/kit/tables";
 import {
@@ -9,7 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
+import type { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
@@ -26,37 +26,6 @@ export class Notification extends BaseInterface<
     typeof Notifications,
     NotificationType
 > {
-    public static schema: z.ZodType<APINotification> = z.object({
-        account: z.lazy(() => User.schema).nullable(),
-        created_at: z.string(),
-        id: z.string().uuid(),
-        status: z.lazy(() => Note.schema).optional(),
-        // TODO: Add reactions
-        type: z.enum([
-            "mention",
-            "status",
-            "follow",
-            "follow_request",
-            "reblog",
-            "poll",
-            "favourite",
-            "update",
-            "admin.sign_up",
-            "admin.report",
-            "chat",
-            "pleroma:chat_mention",
-            "pleroma:emoji_reaction",
-            "pleroma:event_reminder",
-            "pleroma:participation_request",
-            "pleroma:participation_accepted",
-            "move",
-            "group_reblog",
-            "group_favourite",
-            "user_approved",
-        ]),
-        target: z.lazy(() => User.schema).optional(),
-    });
-
     public async reload(): Promise<void> {
         const reloaded = await Notification.fromId(this.data.id);
 
@@ -213,7 +182,7 @@ export class Notification extends BaseInterface<
         return this.data.id;
     }
 
-    public async toApi(): Promise<APINotification> {
+    public async toApi(): Promise<z.infer<typeof NotificationSchema>> {
         const account = new User(this.data.account);
 
         return {
@@ -224,6 +193,7 @@ export class Notification extends BaseInterface<
             status: this.data.status
                 ? await new Note(this.data.status).toApi(account)
                 : undefined,
+            group_key: `ungrouped-${this.data.id}`,
         };
     }
 }

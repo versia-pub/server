@@ -1,7 +1,6 @@
-import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { apiRoute, auth, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 
 const schemas = {
     query: z.object({
@@ -27,6 +26,7 @@ const route = createRoute({
         200: {
             description: "Notifications dismissed",
         },
+        401: reusedResponses[401],
     },
 });
 

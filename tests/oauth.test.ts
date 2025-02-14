@@ -49,13 +49,14 @@ describe("POST /api/v1/apps/", () => {
         const json = await response.json();
 
         expect(json).toEqual({
-            id: expect.any(String),
             name: "Test Application",
             website: "https://example.com",
             client_id: expect.any(String),
             client_secret: expect.any(String),
+            client_secret_expires_at: "0",
             redirect_uri: "https://example.com",
-            vapid_link: null,
+            redirect_uris: ["https://example.com"],
+            scopes: ["read", "write"],
         });
 
         clientId = json.client_id;

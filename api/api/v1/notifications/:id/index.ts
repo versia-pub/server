@@ -1,15 +1,20 @@
-import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { apiRoute, auth, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Notification } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/notifications/{id}",
-    summary: "Get notification",
+    summary: "Get a single notification",
+    description: "View information about a notification with a given ID.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/notifications/#get",
+    },
+    tags: ["Notifications"],
     middleware: [
         auth({
             auth: true,
@@ -19,19 +24,18 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: NotificationSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Notification",
+            description: "A single Notification",
             content: {
                 "application/json": {
-                    schema: Notification.schema,
+                    schema: NotificationSchema,
                 },
             },
         },
-
         404: {
             description: "Notification not found",
             content: {
@@ -40,6 +44,7 @@ const route = createRoute({
                 },
             },
         },
+        401: reusedResponses[401],
     },
 });
 

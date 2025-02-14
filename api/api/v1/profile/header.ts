@@ -1,12 +1,17 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
+import { Account } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "delete",
     path: "/api/v1/profile/header",
-    summary: "Delete header",
+    summary: "Delete profile header",
+    description: "Deletes the header image associated with the user’s profile.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/profile/#delete-profile-header",
+    },
+    tags: ["Profiles"],
     middleware: [
         auth({
             auth: true,
@@ -16,13 +21,15 @@ const route = createRoute({
     ] as const,
     responses: {
         200: {
-            description: "User",
+            description:
+                "The header was successfully deleted from the user’s profile. If there were no header associated with the profile, the response will still indicate a successful deletion.",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 

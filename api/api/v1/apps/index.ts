@@ -1,63 +1,61 @@
-import { apiRoute, jsonOrForm } from "@/api";
+import { apiRoute, jsonOrForm, reusedResponses } from "@/api";
 import { randomString } from "@/math";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
-import { z } from "zod";
-
-const schemas = {
-    json: z.object({
-        client_name: z.string().trim().min(1).max(100),
-        redirect_uris: z
-            .string()
-            .min(0)
-            .max(2000)
-            .url()
-            .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
-        scopes: z.string().min(1).max(200),
-        website: z
-            .string()
-            .min(0)
-            .max(2000)
-            .url()
-            .optional()
-            // Allow empty websites because Traewelling decides to give an empty
-            // value instead of not providing anything at all
-            .or(z.literal("").transform(() => undefined)),
-    }),
-};
+import {
+    Application as ApplicationSchema,
+    CredentialApplication as CredentialApplicationSchema,
+} from "~/classes/schemas/application";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/apps",
-    summary: "Create app",
-    description: "Create an OAuth2 app",
+    summary: "Create an application",
+    description: "Create a new application to obtain OAuth2 credentials.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/apps/#create",
+    },
+    tags: ["Apps"],
     middleware: [jsonOrForm()],
     request: {
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z.object({
+                        client_name: ApplicationSchema.shape.name,
+                        redirect_uris: ApplicationSchema.shape.redirect_uris.or(
+                            ApplicationSchema.shape.redirect_uri.transform(
+                                (u) => u.split("\n"),
+                            ),
+                        ),
+                        scopes: z
+                            .string()
+                            .default("read")
+                            .transform((s) => s.split(" "))
+                            .openapi({
+                                description: "Space separated list of scopes.",
+                            }),
+                        // Allow empty websites because Traewelling decides to give an empty
+                        // value instead of not providing anything at all
+                        website: ApplicationSchema.shape.website
+                            .optional()
+                            .or(z.literal("").transform(() => undefined)),
+                    }),
                 },
             },
         },
     },
     responses: {
         200: {
-            description: "App",
+            description:
+                "Store the client_id and client_secret in your cache, as these will be used to obtain OAuth tokens.",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        id: z.string().uuid(),
-                        name: z.string(),
-                        website: z.string().nullable(),
-                        client_id: z.string(),
-                        client_secret: z.string(),
-                        redirect_uri: z.string(),
-                        vapid_link: z.string().nullable(),
-                    }),
+                    schema: CredentialApplicationSchema,
                 },
             },
         },
+        422: reusedResponses[422],
     },
 });
 
@@ -67,25 +65,14 @@ export default apiRoute((app) =>
             context.req.valid("json");
 
         const app = await Application.insert({
-            name: client_name || "",
-            redirectUri: decodeURI(redirect_uris) || "",
-            scopes: scopes || "read",
-            website: website || null,
+            name: client_name,
+            redirectUri: redirect_uris.join("\n"),
+            scopes: scopes.join(" "),
+            website,
             clientId: randomString(32, "base64url"),
             secret: randomString(64, "base64url"),
         });
 
-        return context.json(
-            {
-                id: app.id,
-                name: app.data.name,
-                website: app.data.website,
-                client_id: app.data.clientId,
-                client_secret: app.data.secret,
-                redirect_uri: app.data.redirectUri,
-                vapid_link: app.data.vapidKey,
-            },
-            200,
-        );
+        return context.json(app.toApiCredential(), 200);
     }),
 );

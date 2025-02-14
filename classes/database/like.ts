@@ -1,3 +1,4 @@
+import { z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
@@ -16,7 +17,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 import { Note } from "./note.ts";

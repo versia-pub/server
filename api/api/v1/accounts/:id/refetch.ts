@@ -1,16 +1,23 @@
-import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
-import { User } from "@versia/kit/db";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account } from "~/classes/schemas/account";
+import { Account as AccountSchema } from "~/classes/schemas/account";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/refetch",
-    summary: "Refetch user",
-    description: "Refetch a user's profile from the remote server",
+    summary: "Refetch account",
+    description: "Refetch the given account's profile from the remote server",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -21,15 +28,15 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: AccountSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Updated user data",
+            description: "Refetched account data",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: Account,
                 },
             },
         },
@@ -41,6 +48,8 @@ const route = createRoute({
                 },
             },
         },
+        404: accountNotFound,
+        ...reusedResponses,
     },
 });
 

@@ -1,11 +1,11 @@
 import { auth } from "@/api";
+import { z } from "@hono/zod-openapi";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows, RolePermissions } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
 } from "oauth4webapi";
-import { z } from "zod";
 import { ErrorSchema } from "~/types/api";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";

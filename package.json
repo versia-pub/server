@@ -12,7 +12,7 @@
     "bugs": {
         "url": "https://github.com/versia-pub/server/issues"
     },
-    "icon": "https://github.com/versia-pub/server",
+    "icon": "https://cdn.versia.pub/branding/icon.svg",
     "license": "AGPL-3.0-or-later",
     "keywords": ["federated", "activitypub", "bun"],
     "workspaces": ["packages/plugin-kit"],

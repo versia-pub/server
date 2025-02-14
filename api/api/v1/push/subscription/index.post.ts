@@ -1,8 +1,9 @@
-import { apiRoute } from "@/api";
+import { apiRoute, reusedResponses } from "@/api";
 import { auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { PushSubscription } from "@versia/kit/db";
 import { WebPushSubscriptionInput } from "~/classes/schemas/pushsubscription";
+import { WebPushSubscription as WebPushSubscriptionSchema } from "~/classes/schemas/pushsubscription";
 import { RolePermissions } from "~/drizzle/schema";
 
 export default apiRoute((app) =>
@@ -16,6 +17,7 @@ export default apiRoute((app) =>
             externalDocs: {
                 url: "https://docs.joinmastodon.org/methods/push/#create",
             },
+            tags: ["Push Notifications"],
             middleware: [
                 auth({
                     auth: true,
@@ -39,10 +41,11 @@ export default apiRoute((app) =>
                         "A new PushSubscription has been generated, which will send the requested alerts to your endpoint.",
                     content: {
                         "application/json": {
-                            schema: PushSubscription.schema,
+                            schema: WebPushSubscriptionSchema,
                         },
                     },
                 },
+                ...reusedResponses,
             },
         }),
         async (context) => {

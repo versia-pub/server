@@ -1,6 +1,5 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
-import { z } from "zod";
+import { createRoute, z } from "@hono/zod-openapi";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 

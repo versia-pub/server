@@ -39,7 +39,7 @@ export default apiRoute((app) =>
                     ],
                     versions: ["0.4.0"],
                 },
-                host: new URL(config.http.base_url).host,
+                host: config.http.base_url.host,
                 name: config.instance.name,
                 description: config.instance.description,
                 public_key: {

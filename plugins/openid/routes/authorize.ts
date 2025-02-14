@@ -1,10 +1,10 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
+import { z } from "@hono/zod-openapi";
 import { Application, Token, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
-import { z } from "zod";
 import { errorRedirect, errors } from "../errors.ts";
 import type { PluginType } from "../index.ts";
 

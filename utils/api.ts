@@ -1,7 +1,8 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { z } from "@hono/zod-openapi";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
-import { Application, Note, Token, User, db } from "@versia/kit/db";
+import { Application, Emoji, Note, Token, User, db } from "@versia/kit/db";
 import { Challenges, type RolePermissions } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
@@ -24,12 +25,47 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
-import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/packages/config-manager/index.ts";
-import type { HonoEnv } from "~/types/api";
+import { ErrorSchema, type HonoEnv } from "~/types/api";
+
+export const reusedResponses = {
+    401: {
+        description: "Invalid or missing Authorization header.",
+        content: {
+            "application/json": {
+                schema: ErrorSchema,
+            },
+        },
+    },
+    422: {
+        description: "Invalid values in request",
+        content: {
+            "application/json": {
+                schema: ErrorSchema,
+            },
+        },
+    },
+};
+
+export const accountNotFound = {
+    description: "Account does not exist",
+    content: {
+        "application/json": {
+            schema: ErrorSchema,
+        },
+    },
+};
+export const noteNotFound = {
+    description: "Status does not exist",
+    content: {
+        "application/json": {
+            schema: ErrorSchema,
+        },
+    },
+};
 
 export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
     fn;
@@ -372,6 +408,43 @@ export const withUserParam = every(
     HonoEnv & {
         Variables: {
             user: User;
+        };
+    }
+>;
+
+/**
+ * Middleware to check if an emoji exists and is viewable by the user
+ *
+ * Useful in /api/v1/emojis/:id/* routes
+ * @returns
+ */
+export const withEmojiParam = every(
+    zValidator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    createMiddleware<
+        HonoEnv & {
+            Variables: {
+                emoji: Emoji;
+            };
+        },
+        string,
+        WithIdParam
+    >(async (context, next) => {
+        const { id } = context.req.valid("param");
+
+        const emoji = await Emoji.fromId(id);
+
+        if (!emoji) {
+            throw new ApiError(404, "Emoji not found");
+        }
+
+        context.set("emoji", emoji);
+
+        await next();
+    }),
+) as MiddlewareHandler<
+    HonoEnv & {
+        Variables: {
+            emoji: Emoji;
         };
     }
 >;

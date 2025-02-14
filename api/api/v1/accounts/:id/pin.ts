@@ -1,14 +1,20 @@
 import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/pin",
-    summary: "Pin user",
-    description: "Pin a user to your profile",
+    summary: "Feature account on your profile",
+    description:
+        "Add the given account to the user’s featured profiles. (Featured profiles are currently shown on the user’s own public profile.)",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#pin",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -22,7 +28,7 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: AccountSchema.shape.id,
         }),
     },
     responses: {
@@ -30,7 +36,7 @@ const route = createRoute({
             description: "Updated relationship",
             content: {
                 "application/json": {
-                    schema: Relationship.schema,
+                    schema: RelationshipSchema,
                 },
             },
         },

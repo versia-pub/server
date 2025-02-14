@@ -1,14 +1,25 @@
-import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import {
+    accountNotFound,
+    apiRoute,
+    auth,
+    reusedResponses,
+    withUserParam,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/remove_from_followers",
-    summary: "Remove user from followers",
-    description: "Remove a user from your followers",
+    summary: "Remove account from followers",
+    description: "Remove the given account from your followers.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#remove_from_followers",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -22,18 +33,21 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: AccountSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Updated relationship",
+            description:
+                "Successfully removed from followers, or account was already not following you",
             content: {
                 "application/json": {
-                    schema: Relationship.schema,
+                    schema: RelationshipSchema,
                 },
             },
         },
+        404: accountNotFound,
+        ...reusedResponses,
     },
 });
 

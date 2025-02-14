@@ -1,20 +1,21 @@
-import { apiRoute, auth, qsQuery } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { apiRoute, auth, qsQuery, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
-
-const schemas = {
-    query: z.object({
-        id: z.array(z.string().uuid()).min(1).max(10).or(z.string().uuid()),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/relationships",
-    summary: "Get relationships",
-    description: "Get relationships by account ID",
+    summary: "Check relationships to other accounts",
+    description:
+        "Find out whether a given account is followed, blocked, muted, etc.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#relationships",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -24,23 +25,45 @@ const route = createRoute({
         qsQuery(),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            id: z
+                .array(AccountSchema.shape.id)
+                .min(1)
+                .max(10)
+                .or(AccountSchema.shape.id.transform((v) => [v]))
+                .openapi({
+                    description:
+                        "Check relationships for the provided account IDs.",
+                    example: [
+                        "f137ce6f-ff5e-4998-b20f-0361ba9be007",
+                        "8424c654-5d03-4a1b-bec8-4e87db811b5d",
+                    ],
+                }),
+            with_suspended: zBoolean.default(false).openapi({
+                description:
+                    "Whether relationships should be returned for suspended users",
+                example: false,
+            }),
+        }),
     },
     responses: {
         200: {
             description: "Relationships",
             content: {
                 "application/json": {
-                    schema: z.array(Relationship.schema),
+                    schema: z.array(RelationshipSchema),
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user } = context.get("auth");
+
+        // TODO: Implement with_suspended
         const { id } = context.req.valid("query");
 
         const ids = Array.isArray(id) ? id : [id];

@@ -1,12 +1,18 @@
 import { apiRoute, auth } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { PrivacyPolicy as PrivacyPolicySchema } from "~/classes/schemas/privacy-policy";
 import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/instance/privacy_policy",
-    summary: "Get instance privacy policy",
+    summary: "View privacy policy",
+    description: "Obtain the contents of this server’s privacy policy.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/instance/#privacy_policy",
+    },
+    tags: ["Instance"],
     middleware: [
         auth({
             auth: false,
@@ -14,13 +20,10 @@ const route = createRoute({
     ],
     responses: {
         200: {
-            description: "Instance privacy policy",
+            description: "Server privacy policy",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        updated_at: z.string(),
-                        content: z.string(),
-                    }),
+                    schema: PrivacyPolicySchema,
                 },
             },
         },

@@ -1,16 +1,26 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import {
+    apiRoute,
+    auth,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/unreblog",
-    summary: "Unreblog a status",
+    summary: "Undo boost of a status",
+    description: "Undo a reshare of a status.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#unreblog",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -23,26 +33,20 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: StatusSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Unreblogged status",
+            description: "Status unboosted or was already not boosted",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: StatusSchema,
                 },
             },
         },
-        422: {
-            description: "Not already reblogged",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 
@@ -59,7 +63,7 @@ export default apiRoute((app) =>
         );
 
         if (!existingReblog) {
-            throw new ApiError(422, "Note already reblogged");
+            return context.json(await note.toApi(user), 200);
         }
 
         await existingReblog.delete();

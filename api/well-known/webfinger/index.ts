@@ -4,14 +4,13 @@ import {
     parseUserAddress,
     webfingerMention,
 } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
 import type { ResponseError } from "@versia/federation";
 import { WebFinger } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
@@ -64,7 +63,7 @@ export default apiRoute((app) =>
 
         const requestedUser = resource.split("acct:")[1];
 
-        const host = new URL(config.http.base_url).host;
+        const host = config.http.base_url.host;
 
         const { username, domain } = parseUserAddress(requestedUser);
 
@@ -97,7 +96,7 @@ export default apiRoute((app) =>
             try {
                 activityPubUrl = await manager.webFinger(
                     user.data.username,
-                    new URL(config.http.base_url).host,
+                    config.http.base_url.host,
                     "application/activity+json",
                     config.federation.bridge.url?.toString(),
                 );
@@ -133,9 +132,10 @@ export default apiRoute((app) =>
                     },
                     {
                         rel: "avatar",
+                        // Default avatars are SVGs
                         type:
-                            user.data.source.avatar?.content_type ||
-                            "application/octet-stream",
+                            user.avatar?.getPreferredMimeType() ??
+                            "image/svg+xml",
                         href: user.getAvatarUrl(config),
                     },
                 ].filter(Boolean) as {

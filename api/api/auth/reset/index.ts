@@ -1,10 +1,9 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { z } from "zod";
 import { config } from "~/packages/config-manager";
 
 const schemas = {

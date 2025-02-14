@@ -1,13 +1,10 @@
 import { idValidator } from "@/api";
-import { getBestContentType, urlToContentFormat } from "@/content_types";
+import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
 import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
+import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
-import type {
-    Account as ApiAccount,
-    Mention as ApiMention,
-} from "@versia/client/types";
 import {
     EntityValidator,
     FederationRequester,
@@ -48,13 +45,14 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import { z } from "zod";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { type Config, config } from "~/packages/config-manager";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
+import type { Account, Source } from "../schemas/account.ts";
+import type { Mention as MentionSchema } from "../schemas/status.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -81,74 +79,6 @@ type UserWithRelations = UserWithInstance & {
  * Gives helpers to fetch users from database in a nice format
  */
 export class User extends BaseInterface<typeof Users, UserWithRelations> {
-    // @ts-expect-error Roles are weird
-    public static schema: z.ZodType<ApiAccount> = z.object({
-        id: z.string(),
-        username: z.string(),
-        acct: z.string(),
-        display_name: z.string(),
-        locked: z.boolean(),
-        discoverable: z.boolean().optional(),
-        group: z.boolean().nullable(),
-        noindex: z.boolean().nullable(),
-        suspended: z.boolean().nullable(),
-        limited: z.boolean().nullable(),
-        created_at: z.string(),
-        followers_count: z.number(),
-        following_count: z.number(),
-        statuses_count: z.number(),
-        note: z.string(),
-        uri: z.string(),
-        url: z.string(),
-        avatar: z.string(),
-        avatar_static: z.string(),
-        header: z.string(),
-        header_static: z.string(),
-        emojis: z.array(Emoji.schema),
-        fields: z.array(
-            z.object({
-                name: z.string(),
-                value: z.string(),
-                verified: z.boolean().optional(),
-                verified_at: z.string().nullable().optional(),
-            }),
-        ),
-        // FIXME: Use a proper type
-        moved: z.lazy(() => User.schema).nullable(),
-        bot: z.boolean().nullable(),
-        source: z
-            .object({
-                privacy: z.string().nullable(),
-                sensitive: z.boolean().nullable(),
-                language: z.string().nullable(),
-                note: z.string(),
-                fields: z.array(
-                    z.object({
-                        name: z.string(),
-                        value: z.string(),
-                    }),
-                ),
-                avatar: z
-                    .object({
-                        content_type: z.string(),
-                    })
-                    .optional(),
-                header: z
-                    .object({
-                        content_type: z.string(),
-                    })
-                    .optional(),
-            })
-            .optional(),
-        role: z
-            .object({
-                name: z.string(),
-            })
-            .optional(),
-        roles: z.array(Role.schema),
-        mute_expires_at: z.string().optional(),
-    });
-
     public static $type: UserWithRelations;
 
     public avatar: Media | null;
@@ -756,12 +686,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             note: getBestContentType(user.bio).content,
             publicKey: user.public_key.key,
             source: {
-                language: null,
+                language: "en",
                 note: "",
                 privacy: "public",
                 sensitive: false,
                 fields: [],
-            },
+            } as z.infer<typeof Source>,
         };
 
         const userEmojis =
@@ -958,12 +888,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     privateKey: keys.private_key,
                     updatedAt: new Date().toISOString(),
                     source: {
-                        language: null,
+                        language: "en",
                         note: "",
                         privacy: "public",
                         sensitive: false,
                         fields: [],
-                    },
+                    } as z.infer<typeof Source>,
                 })
                 .returning()
         )[0];
@@ -1175,8 +1105,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return { ok: true };
     }
 
-    public toApi(isOwnAccount = false): ApiAccount {
+    public toApi(isOwnAccount = false): z.infer<typeof Account> {
         const user = this.data;
+
         return {
             id: user.id,
             username: user.username,
@@ -1199,6 +1130,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             fields: user.fields.map((field) => ({
                 name: htmlToText(getBestContentType(field.key).content),
                 value: getBestContentType(field.value).content,
+                verified_at: null,
             })),
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
@@ -1213,8 +1145,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             moved: null,
             noindex: false,
             suspended: false,
-            discoverable: undefined,
-            mute_expires_at: undefined,
+            discoverable: null,
+            mute_expires_at: null,
             roles: user.roles
                 .map((role) => new Role(role))
                 .concat(
@@ -1246,6 +1178,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 )
                 .map((r) => r.toApi()),
             group: false,
+            // TODO
+            last_status_at: null,
         };
     }
 
@@ -1304,17 +1238,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             indexable: false,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
-            avatar:
-                urlToContentFormat(
-                    this.getAvatarUrl(config),
-                    this.data.source.avatar?.content_type,
-                ) ?? undefined,
-            header: this.getHeaderUrl(config)
-                ? (urlToContentFormat(
-                      this.getHeaderUrl(config) as URL,
-                      this.data.source.header?.content_type,
-                  ) ?? undefined)
-                : undefined,
+            avatar: this.avatar?.toVersia(),
+            header: this.header?.toVersia(),
             display_name: user.displayName,
             fields: user.fields,
             public_key: {
@@ -1335,7 +1260,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    public toMention(): ApiMention {
+    public toMention(): z.infer<typeof MentionSchema> {
         return {
             url: this.getUri().toString(),
             username: this.data.username,

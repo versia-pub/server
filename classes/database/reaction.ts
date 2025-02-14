@@ -1,4 +1,3 @@
-import type { Emoji as APIEmoji } from "@versia/client/types";
 import type { ReactionExtension } from "@versia/federation/types";
 import { Emoji, Instance, Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
@@ -10,7 +9,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 
@@ -20,19 +18,7 @@ type ReactionType = InferSelectModel<typeof Reactions> & {
     note: InferSelectModel<typeof Notes>;
 };
 
-export interface APIReaction {
-    id: string;
-    author_id: string;
-    emoji: APIEmoji | string;
-}
-
 export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
-    public static schema: z.ZodType<APIReaction> = z.object({
-        id: z.string().uuid(),
-        author_id: z.string().uuid(),
-        emoji: z.lazy(() => Emoji.schema),
-    });
-
     public static $type: ReactionType;
 
     public async reload(): Promise<void> {
@@ -167,16 +153,6 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
     public get id(): string {
         return this.data.id;
-    }
-
-    public toApi(): APIReaction {
-        return {
-            id: this.data.id,
-            author_id: this.data.authorId,
-            emoji: this.hasCustomEmoji()
-                ? new Emoji(this.data.emoji as typeof Emoji.$type).toApi()
-                : this.data.emojiText || "",
-        };
     }
 
     public getUri(baseUrl: URL): URL {

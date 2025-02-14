@@ -1,80 +1,73 @@
-import { apiRoute, auth, emojiValidator, jsonOrForm } from "@/api";
+import {
+    apiRoute,
+    auth,
+    jsonOrForm,
+    reusedResponses,
+    withEmojiParam,
+} from "@/api";
 import { mimeLookup } from "@/content_types";
-import { createRoute } from "@hono/zod-openapi";
-import { Emoji } from "@versia/kit/db";
+import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema } from "~/types/api";
 
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-    }),
-    json: z
-        .object({
-            shortcode: z
-                .string()
-                .trim()
-                .min(1)
-                .max(config.validation.max_emoji_shortcode_size)
-                .regex(
-                    emojiValidator,
-                    "Shortcode must only contain letters (any case), numbers, dashes or underscores.",
-                ),
-            element: z
-                .string()
-                .trim()
-                .min(1)
-                .max(2000)
-                .url()
-                .transform((a) => new URL(a))
-                .or(
-                    z
-                        .instanceof(File)
-                        .refine(
-                            (v) => v.size <= config.validation.max_emoji_size,
-                            `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
-                        ),
-                ),
-            category: z.string().max(64).optional(),
-            alt: z
-                .string()
-                .max(config.validation.max_emoji_description_size)
-                .optional(),
-            global: z
-                .string()
-                .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-                .or(z.boolean())
-                .optional(),
-        })
-        .partial(),
-};
+const schema = z
+    .object({
+        shortcode: CustomEmojiSchema.shape.shortcode,
+        element: z
+            .string()
+            .url()
+            .transform((a) => new URL(a))
+            .openapi({
+                description: "Emoji image URL",
+            })
+            .or(
+                z
+                    .instanceof(File)
+                    .openapi({
+                        description:
+                            "Emoji image encoded using multipart/form-data",
+                    })
+                    .refine(
+                        (v) => v.size <= config.validation.max_emoji_size,
+                        `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
+                    ),
+            ),
+        category: CustomEmojiSchema.shape.category.optional(),
+        alt: CustomEmojiSchema.shape.description.optional(),
+        global: CustomEmojiSchema.shape.global.default(false),
+    })
+    .partial();
 
 const routeGet = createRoute({
     method: "get",
     path: "/api/v1/emojis/{id}",
-    summary: "Get emoji data",
+    summary: "Get emoji",
+    description: "Retrieves a custom emoji from database by ID.",
+    tags: ["Emojis"],
     middleware: [
         auth({
             auth: true,
             permissions: [RolePermissions.ViewEmojis],
         }),
+        withEmojiParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: CustomEmojiSchema.shape.id,
+        }),
     },
     responses: {
         200: {
             description: "Emoji",
             content: {
                 "application/json": {
-                    schema: Emoji.schema,
+                    schema: CustomEmojiSchema,
                 },
             },
         },
-
         404: {
             description: "Emoji not found",
             content: {
@@ -83,6 +76,7 @@ const routeGet = createRoute({
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 
@@ -90,6 +84,8 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/emojis/{id}",
     summary: "Modify emoji",
+    description: "Edit image or metadata of an emoji.",
+    tags: ["Emojis"],
     middleware: [
         auth({
             auth: true,
@@ -99,19 +95,22 @@ const routePatch = createRoute({
             ],
         }),
         jsonOrForm(),
+        withEmojiParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: CustomEmojiSchema.shape.id,
+        }),
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema,
                 },
                 "application/x-www-form-urlencoded": {
-                    schema: schemas.json,
+                    schema,
                 },
                 "multipart/form-data": {
-                    schema: schemas.json,
+                    schema,
                 },
             },
         },
@@ -121,13 +120,12 @@ const routePatch = createRoute({
             description: "Emoji modified",
             content: {
                 "application/json": {
-                    schema: Emoji.schema,
+                    schema: CustomEmojiSchema,
                 },
             },
         },
-
         403: {
-            description: "Insufficient credentials",
+            description: "Insufficient permissions",
             content: {
                 "application/json": {
                     schema: ErrorSchema,
@@ -142,14 +140,7 @@ const routePatch = createRoute({
                 },
             },
         },
-        422: {
-            description: "Invalid form data",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        ...reusedResponses,
     },
 });
 
@@ -157,6 +148,8 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/emojis/{id}",
     summary: "Delete emoji",
+    description: "Delete a custom emoji from the database.",
+    tags: ["Emojis"],
     middleware: [
         auth({
             auth: true,
@@ -165,15 +158,17 @@ const routeDelete = createRoute({
                 RolePermissions.ViewEmojis,
             ],
         }),
+        withEmojiParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: CustomEmojiSchema.shape.id,
+        }),
     },
     responses: {
         204: {
             description: "Emoji deleted",
         },
-
         404: {
             description: "Emoji not found",
             content: {
@@ -186,15 +181,9 @@ const routeDelete = createRoute({
 });
 
 export default apiRoute((app) => {
-    app.openapi(routeGet, async (context) => {
-        const { id } = context.req.valid("param");
+    app.openapi(routeGet, (context) => {
         const { user } = context.get("auth");
-
-        const emoji = await Emoji.fromId(id);
-
-        if (!emoji) {
-            throw new ApiError(404, "Emoji not found");
-        }
+        const emoji = context.get("emoji");
 
         // Don't leak non-global emojis to non-admins
         if (
@@ -208,14 +197,8 @@ export default apiRoute((app) => {
     });
 
     app.openapi(routePatch, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const emoji = await Emoji.fromId(id);
-
-        if (!emoji) {
-            throw new ApiError(404, "Emoji not found");
-        }
+        const emoji = context.get("emoji");
 
         // Check if user is admin
         if (
@@ -246,7 +229,7 @@ export default apiRoute((app) => {
         }
 
         if (element) {
-            // Check of emoji is an image
+            // Check if emoji is an image
             const contentType =
                 element instanceof File
                     ? element.type
@@ -283,14 +266,8 @@ export default apiRoute((app) => {
     });
 
     app.openapi(routeDelete, async (context) => {
-        const { id } = context.req.valid("param");
         const { user } = context.get("auth");
-
-        const emoji = await Emoji.fromId(id);
-
-        if (!emoji) {
-            throw new ApiError(404, "Emoji not found");
-        }
+        const emoji = context.get("emoji");
 
         // Check if user is admin
         if (

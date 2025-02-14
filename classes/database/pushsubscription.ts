@@ -1,8 +1,4 @@
-import { z } from "@hono/zod-openapi";
-import type {
-    Alerts,
-    PushSubscription as ApiPushSubscription,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
 import { type Token, type User, db } from "@versia/kit/db";
 import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {
@@ -13,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { WebPushSubscription as WebPushSubscriptionSchema } from "../schemas/pushsubscription.ts";
 import { BaseInterface } from "./base.ts";
 
 type PushSubscriptionType = InferSelectModel<typeof PushSubscriptions>;
@@ -21,85 +18,6 @@ export class PushSubscription extends BaseInterface<
     typeof PushSubscriptions,
     PushSubscriptionType
 > {
-    public static schema = z.object({
-        id: z.string().uuid().openapi({
-            example: "24eb1891-accc-43b4-b213-478e37d525b4",
-            description: "The ID of the Web Push subscription in the database.",
-        }),
-        endpoint: z.string().url().openapi({
-            example: "https://yourdomain.example/listener",
-            description: "Where push alerts will be sent to.",
-        }),
-        alerts: z
-            .object({
-                mention: z.boolean().optional().openapi({
-                    example: true,
-                    description: "Receive mention notifications?",
-                }),
-                favourite: z.boolean().optional().openapi({
-                    example: true,
-                    description: "Receive favourite notifications?",
-                }),
-                reblog: z.boolean().optional().openapi({
-                    example: true,
-                    description: "Receive reblog notifications?",
-                }),
-                follow: z.boolean().optional().openapi({
-                    example: true,
-                    description: "Receive follow notifications?",
-                }),
-                poll: z.boolean().optional().openapi({
-                    example: false,
-                    description: "Receive poll notifications?",
-                }),
-                follow_request: z.boolean().optional().openapi({
-                    example: false,
-                    description: "Receive follow request notifications?",
-                }),
-                status: z.boolean().optional().openapi({
-                    example: false,
-                    description:
-                        "Receive new subscribed account notifications?",
-                }),
-                update: z.boolean().optional().openapi({
-                    example: false,
-                    description: "Receive status edited notifications?",
-                }),
-                "admin.sign_up": z.boolean().optional().openapi({
-                    example: false,
-                    description:
-                        "Receive new user signup notifications? Must have a role with the appropriate permissions.",
-                }),
-                "admin.report": z.boolean().optional().openapi({
-                    example: false,
-                    description:
-                        "Receive new report notifications? Must have a role with the appropriate permissions.",
-                }),
-            })
-            .default({})
-            .openapi({
-                example: {
-                    mention: true,
-                    favourite: true,
-                    reblog: true,
-                    follow: true,
-                    poll: false,
-                    follow_request: false,
-                    status: false,
-                    update: false,
-                    "admin.sign_up": false,
-                    "admin.report": false,
-                },
-                description:
-                    "Which alerts should be delivered to the endpoint.",
-            }),
-        server_key: z.string().openapi({
-            example:
-                "BCk-QqERU0q-CfYZjcuB6lnyyOYfJ2AifKqfeGIm7Z-HiTU5T9eTG5GxVA0_OH5mMlI4UkkDTpaZwozy0TzdZ2M=",
-            description: "The streaming server’s VAPID key.",
-        }),
-    });
-
     public static $type: PushSubscriptionType;
 
     public async reload(): Promise<void> {
@@ -245,7 +163,7 @@ export class PushSubscription extends BaseInterface<
         return this.data.id;
     }
 
-    public getAlerts(): Alerts {
+    public getAlerts(): z.infer<typeof WebPushSubscriptionSchema.shape.alerts> {
         return {
             mention: this.data.alerts.mention ?? false,
             favourite: this.data.alerts.favourite ?? false,
@@ -260,7 +178,7 @@ export class PushSubscription extends BaseInterface<
         };
     }
 
-    public toApi(): ApiPushSubscription {
+    public toApi(): z.infer<typeof WebPushSubscriptionSchema> {
         return {
             id: this.data.id,
             alerts: this.getAlerts(),

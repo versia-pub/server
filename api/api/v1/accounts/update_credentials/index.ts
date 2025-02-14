@@ -1,141 +1,25 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
+import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Emoji, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import ISO6391 from "iso-639-1";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { zBoolean } from "~/packages/config-manager/config.type";
 import { config } from "~/packages/config-manager/index.ts";
-import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    json: z.object({
-        display_name: z
-            .string()
-            .min(3)
-            .trim()
-            .max(config.validation.max_displayname_size)
-            .refine(
-                (s) =>
-                    !config.filters.displayname.some((filter) =>
-                        s.match(filter),
-                    ),
-                "Display name contains blocked words",
-            )
-            .optional(),
-        username: z
-            .string()
-            .min(3)
-            .trim()
-            .max(config.validation.max_username_size)
-            .toLowerCase()
-            .regex(
-                /^[a-z0-9_-]+$/,
-                "Username can only contain letters, numbers, underscores and hyphens",
-            )
-            .refine(
-                (s) =>
-                    !config.filters.username.some((filter) => s.match(filter)),
-                "Username contains blocked words",
-            )
-            .optional(),
-        note: z
-            .string()
-            .min(0)
-            .max(config.validation.max_bio_size)
-            .trim()
-            .refine(
-                (s) => !config.filters.bio.some((filter) => s.match(filter)),
-                "Bio contains blocked words",
-            )
-            .optional(),
-        avatar: z
-            .string()
-            .trim()
-            .min(1)
-            .max(2000)
-            .url()
-            .transform((a) => new URL(a))
-            .or(
-                z
-                    .instanceof(File)
-                    .refine(
-                        (v) => v.size <= config.validation.max_avatar_size,
-                        `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
-                    ),
-            )
-            .optional(),
-        header: z
-            .string()
-            .trim()
-            .min(1)
-            .max(2000)
-            .url()
-            .transform((v) => new URL(v))
-            .or(
-                z
-                    .instanceof(File)
-                    .refine(
-                        (v) => v.size <= config.validation.max_header_size,
-                        `Header must be less than ${config.validation.max_header_size} bytes`,
-                    ),
-            )
-            .optional(),
-        locked: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        bot: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        discoverable: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        source: z
-            .object({
-                privacy: z
-                    .enum(["public", "unlisted", "private", "direct"])
-                    .optional(),
-                sensitive: z
-                    .string()
-                    .transform((v) =>
-                        ["true", "1", "on"].includes(v.toLowerCase()),
-                    )
-                    .optional(),
-                language: z
-                    .enum(ISO6391.getAllCodes() as [string, ...string[]])
-                    .optional(),
-            })
-            .optional(),
-        fields_attributes: z
-            .array(
-                z.object({
-                    name: z
-                        .string()
-                        .trim()
-                        .max(config.validation.max_field_name_size),
-                    value: z
-                        .string()
-                        .trim()
-                        .max(config.validation.max_field_value_size),
-                }),
-            )
-            .max(config.validation.max_field_count)
-            .optional(),
-    }),
-};
 
 const route = createRoute({
     method: "patch",
     path: "/api/v1/accounts/update_credentials",
-    summary: "Update credentials",
-    description: "Update user credentials",
+    summary: "Update account credentials",
+    description: "Update the user’s display and preferences.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#update_credentials",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -148,7 +32,121 @@ const route = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: schemas.json,
+                    schema: z
+                        .object({
+                            display_name:
+                                AccountSchema.shape.display_name.openapi({
+                                    description:
+                                        "The display name to use for the profile.",
+                                    example: "Lexi",
+                                }),
+                            username: AccountSchema.shape.username.openapi({
+                                description:
+                                    "The username to use for the profile.",
+                                example: "lexi",
+                            }),
+                            note: AccountSchema.shape.note.openapi({
+                                description:
+                                    "The account bio. Markdown is supported.",
+                            }),
+                            avatar: z
+                                .string()
+                                .url()
+                                .transform((a) => new URL(a))
+                                .openapi({
+                                    description: "Avatar image URL",
+                                })
+                                .or(
+                                    z
+                                        .instanceof(File)
+                                        .refine(
+                                            (v) =>
+                                                v.size <=
+                                                config.validation
+                                                    .max_avatar_size,
+                                            `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+                                        )
+                                        .openapi({
+                                            description:
+                                                "Avatar image encoded using multipart/form-data",
+                                        }),
+                                ),
+                            header: z
+                                .string()
+                                .url()
+                                .transform((v) => new URL(v))
+                                .openapi({
+                                    description: "Header image URL",
+                                })
+                                .or(
+                                    z
+                                        .instanceof(File)
+                                        .refine(
+                                            (v) =>
+                                                v.size <=
+                                                config.validation
+                                                    .max_header_size,
+                                            `Header must be less than ${config.validation.max_header_size} bytes`,
+                                        )
+                                        .openapi({
+                                            description:
+                                                "Header image encoded using multipart/form-data",
+                                        }),
+                                ),
+                            locked: AccountSchema.shape.locked.openapi({
+                                description:
+                                    "Whether manual approval of follow requests is required.",
+                            }),
+                            bot: AccountSchema.shape.bot.openapi({
+                                description:
+                                    "Whether the account has a bot flag.",
+                            }),
+                            discoverable:
+                                AccountSchema.shape.discoverable.openapi({
+                                    description:
+                                        "Whether the account should be shown in the profile directory.",
+                                }),
+                            // TODO: Implement :(
+                            hide_collections: zBoolean.openapi({
+                                description:
+                                    "Whether to hide followers and followed accounts.",
+                            }),
+                            // TODO: Implement :(
+                            indexable: zBoolean.openapi({
+                                description:
+                                    "Whether public posts should be searchable to anyone.",
+                            }),
+                            // TODO: Implement :(
+                            attribution_domains: z.array(z.string()).openapi({
+                                description:
+                                    "Domains of websites allowed to credit the account.",
+                                example: ["cnn.com", "myblog.com"],
+                            }),
+                            source: z
+                                .object({
+                                    privacy:
+                                        AccountSchema.shape.source.unwrap()
+                                            .shape.privacy,
+                                    sensitive:
+                                        AccountSchema.shape.source.unwrap()
+                                            .shape.sensitive,
+                                    language:
+                                        AccountSchema.shape.source.unwrap()
+                                            .shape.language,
+                                })
+                                .partial(),
+                            fields_attributes: z
+                                .array(
+                                    z.object({
+                                        name: AccountSchema.shape.fields.element
+                                            .shape.name,
+                                        value: AccountSchema.shape.fields
+                                            .element.shape.value,
+                                    }),
+                                )
+                                .max(config.validation.max_field_count),
+                        })
+                        .partial(),
                 },
             },
         },
@@ -158,27 +156,11 @@ const route = createRoute({
             description: "Updated user",
             content: {
                 "application/json": {
-                    schema: User.schema,
+                    schema: AccountSchema,
                 },
             },
         },
-
-        422: {
-            description: "Validation error",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        500: {
-            description: "Couldn't edit user",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        ...reusedResponses,
     },
 });
 
@@ -325,6 +307,7 @@ export default apiRoute((app) =>
                 self.source.fields.push({
                     name: field.name,
                     value: field.value,
+                    verified_at: null,
                 });
             }
         }

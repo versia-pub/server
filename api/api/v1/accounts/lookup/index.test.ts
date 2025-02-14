@@ -34,7 +34,7 @@ describe("/api/v1/accounts/lookup", () => {
         );
     });
 
-    test("should automatically lowercase the acct", async () => {
+    test("should require exact case", async () => {
         const response = await fakeRequest(
             `/api/v1/accounts/lookup?acct=${users[0].data.username.toUpperCase()}`,
             {
@@ -44,17 +44,6 @@ describe("/api/v1/accounts/lookup", () => {
             },
         );
 
-        expect(response.status).toBe(200);
-
-        const data = (await response.json()) as ApiAccount[];
-        expect(data).toEqual(
-            expect.objectContaining({
-                id: users[0].id,
-                username: users[0].data.username,
-                display_name: users[0].data.displayName,
-                avatar: expect.any(String),
-                header: expect.any(String),
-            }),
-        );
+        expect(response.status).toBe(404);
     });
 });

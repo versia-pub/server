@@ -1,12 +1,11 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Application, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 
@@ -181,7 +180,7 @@ export default apiRoute((app) =>
         // Generate JWT
         const jwt = await new SignJWT({
             sub: user.id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: client_id,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),

@@ -1,21 +1,19 @@
-import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { accountNotFound, apiRoute, auth, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        account_id: z.string().uuid(),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/follow_requests/{account_id}/authorize",
-    summary: "Authorize follow request",
+    summary: "Accept follow request",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/follow_requests/#accept",
+    },
+    tags: ["Follows"],
     middleware: [
         auth({
             auth: true,
@@ -23,26 +21,22 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            account_id: AccountSchema.shape.id,
+        }),
     },
     responses: {
         200: {
-            description: "Relationship",
+            description:
+                "Your Relationship with this account should be updated so that you are followed_by this account.",
             content: {
                 "application/json": {
-                    schema: Relationship.schema,
+                    schema: RelationshipSchema,
                 },
             },
         },
-
-        404: {
-            description: "Account not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: accountNotFound,
+        ...reusedResponses,
     },
 });
 

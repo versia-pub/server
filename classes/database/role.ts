@@ -1,6 +1,6 @@
 import { proxyUrl } from "@/response";
-import {
-    type VersiaRole as APIRole,
+import type {
+    VersiaRole as APIRole,
     RolePermission,
 } from "@versia/client/types";
 import { db } from "@versia/kit/db";
@@ -14,23 +14,12 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { z } from "zod";
 import { config } from "~/packages/config-manager/index.ts";
 import { BaseInterface } from "./base.ts";
 
 type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
-    public static schema = z.object({
-        id: z.string().uuid(),
-        name: z.string().min(1).max(128),
-        permissions: z.array(z.nativeEnum(RolePermission)).default([]),
-        priority: z.number().int().default(0),
-        description: z.string().min(0).max(1024).optional(),
-        visible: z.boolean().default(true),
-        icon: z.string().url().optional(),
-    });
-
     public static $type: RoleType;
 
     public async reload(): Promise<void> {

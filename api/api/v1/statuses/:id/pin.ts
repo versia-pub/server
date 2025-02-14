@@ -1,16 +1,27 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
-import { Note, db } from "@versia/kit/db";
+import {
+    apiRoute,
+    auth,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
+import { db } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
+import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",
     path: "/api/v1/statuses/{id}/pin",
-    summary: "Pin a status",
+    summary: "Pin status to profile",
+    description:
+        "Feature one of your own public statuses at the top of your profile.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#pin",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -23,34 +34,21 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: StatusSchema.shape.id,
         }),
     },
     responses: {
         200: {
-            description: "Pinned status",
+            description:
+                "Status pinned. Note the status is not a reblog and its authoring account is your own.",
             content: {
                 "application/json": {
-                    schema: Note.schema,
+                    schema: StatusSchema,
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        422: {
-            description: "Already pinned",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 

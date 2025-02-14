@@ -1,22 +1,17 @@
 import { apiRoute, auth, withUserParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Role as RoleSchema } from "~/classes/schemas/versia";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    param: z.object({
-        id: z.string().uuid(),
-        role_id: z.string().uuid(),
-    }),
-};
 
 const routePost = createRoute({
     method: "post",
     path: "/api/v1/accounts/{id}/roles/{role_id}",
-    summary: "Assign role to user",
+    summary: "Assign role to account",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -25,7 +20,10 @@ const routePost = createRoute({
         withUserParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: AccountSchema.shape.id,
+            role_id: RoleSchema.shape.id,
+        }),
     },
     responses: {
         204: {
@@ -62,7 +60,10 @@ const routeDelete = createRoute({
         withUserParam,
     ] as const,
     request: {
-        params: schemas.param,
+        params: z.object({
+            id: AccountSchema.shape.id,
+            role_id: RoleSchema.shape.id,
+        }),
     },
     responses: {
         204: {

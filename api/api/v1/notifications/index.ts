@@ -1,79 +1,20 @@
-import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
-import { Notification, Timeline } from "@versia/kit/db";
+import { apiRoute, auth, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
+import { Timeline } from "@versia/kit/db";
 import { Notifications, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
-import { z } from "zod";
-
-const schemas = {
-    query: z
-        .object({
-            max_id: z.string().uuid().optional(),
-            since_id: z.string().uuid().optional(),
-            min_id: z.string().uuid().optional(),
-            limit: z.coerce.number().int().min(1).max(80).default(15),
-            exclude_types: z
-                .enum([
-                    "mention",
-                    "status",
-                    "follow",
-                    "follow_request",
-                    "reblog",
-                    "poll",
-                    "favourite",
-                    "update",
-                    "admin.sign_up",
-                    "admin.report",
-                    "chat",
-                    "pleroma:chat_mention",
-                    "pleroma:emoji_reaction",
-                    "pleroma:event_reminder",
-                    "pleroma:participation_request",
-                    "pleroma:participation_accepted",
-                    "move",
-                    "group_reblog",
-                    "group_favourite",
-                    "user_approved",
-                ])
-                .array()
-                .optional(),
-            types: z
-                .enum([
-                    "mention",
-                    "status",
-                    "follow",
-                    "follow_request",
-                    "reblog",
-                    "poll",
-                    "favourite",
-                    "update",
-                    "admin.sign_up",
-                    "admin.report",
-                    "chat",
-                    "pleroma:chat_mention",
-                    "pleroma:emoji_reaction",
-                    "pleroma:event_reminder",
-                    "pleroma:participation_request",
-                    "pleroma:participation_accepted",
-                    "move",
-                    "group_reblog",
-                    "group_favourite",
-                    "user_approved",
-                ])
-                .array()
-                .optional(),
-            account_id: z.string().uuid().optional(),
-        })
-        .refine((val) => {
-            // Can't use both exclude_types and types
-            return !(val.exclude_types && val.types);
-        }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
+import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/notifications",
-    summary: "Get notifications",
+    summary: "Get all notifications",
+    description: "Notifications concerning the user.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/notifications/#get",
+    },
     middleware: [
         auth({
             auth: true,
@@ -84,17 +25,69 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z
+            .object({
+                max_id: NotificationSchema.shape.id.optional().openapi({
+                    description:
+                        "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
+                    example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
+                }),
+                since_id: NotificationSchema.shape.id.optional().openapi({
+                    description:
+                        "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
+                    example: undefined,
+                }),
+                min_id: NotificationSchema.shape.id.optional().openapi({
+                    description:
+                        "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
+                    example: undefined,
+                }),
+                limit: z.coerce
+                    .number()
+                    .int()
+                    .min(1)
+                    .max(80)
+                    .default(40)
+                    .openapi({
+                        description: "Maximum number of results to return.",
+                    }),
+                types: z
+                    .array(NotificationSchema.shape.type)
+                    .optional()
+                    .openapi({
+                        description: "Types to include in the result.",
+                    }),
+                exclude_types: z
+                    .array(NotificationSchema.shape.type)
+                    .optional()
+                    .openapi({
+                        description: "Types to exclude from the results.",
+                    }),
+                account_id: AccountSchema.shape.id.optional().openapi({
+                    description:
+                        "Return only notifications received from the specified account.",
+                }),
+                // TODO: Implement
+                include_filtered: zBoolean.default(false).openapi({
+                    description:
+                        "Whether to include notifications filtered by the user’s NotificationPolicy.",
+                }),
+            })
+            .refine((val) => {
+                // Can't use both exclude_types and types
+                return !(val.exclude_types && val.types);
+            }, "Can't use both exclude_types and types"),
     },
     responses: {
         200: {
             description: "Notifications",
             content: {
                 "application/json": {
-                    schema: z.array(Notification.schema),
+                    schema: z.array(NotificationSchema),
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 

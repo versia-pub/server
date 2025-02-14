@@ -93,7 +93,7 @@ describe("API Tests", () => {
             expect(account.fields).toEqual([]);
             expect(account.source?.fields).toEqual([]);
             expect(account.source?.privacy).toBe("public");
-            expect(account.source?.language).toBeNull();
+            expect(account.source?.language).toBe("en");
             expect(account.source?.note).toBe("");
             expect(account.source?.sensitive).toBe(false);
         });

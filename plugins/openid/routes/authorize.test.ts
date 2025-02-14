@@ -35,7 +35,7 @@ describe("/oauth/authorize", () => {
     test("should authorize and redirect with valid inputs", async () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
@@ -109,7 +109,7 @@ describe("/oauth/authorize", () => {
     test("should return error for missing required fields in JWT", async () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: application.data.clientId,
         })
             .setProtectedHeader({ alg: "EdDSA" })
@@ -150,7 +150,7 @@ describe("/oauth/authorize", () => {
             sub: "non-existent-user",
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
         })
@@ -190,7 +190,7 @@ describe("/oauth/authorize", () => {
             sub: "23e42862-d5df-49a8-95b5-52d8c6a11aea",
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
         })
@@ -233,7 +233,7 @@ describe("/oauth/authorize", () => {
 
         const jwt = await new SignJWT({
             sub: users[0].id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
@@ -278,7 +278,7 @@ describe("/oauth/authorize", () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
             aud: "invalid-client-id",
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
             nbf: Math.floor(Date.now() / 1000),
@@ -319,7 +319,7 @@ describe("/oauth/authorize", () => {
     test("should return error for invalid redirect_uri", async () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),
@@ -361,7 +361,7 @@ describe("/oauth/authorize", () => {
     test("should return error for invalid scope", async () => {
         const jwt = await new SignJWT({
             sub: users[0].id,
-            iss: new URL(config.http.base_url).origin,
+            iss: config.http.base_url.origin,
             aud: application.data.clientId,
             exp: Math.floor(Date.now() / 1000) + 60 * 60,
             iat: Math.floor(Date.now() / 1000),

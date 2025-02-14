@@ -24,7 +24,7 @@ describe("/api/v1/accounts/id", () => {
 
     test("should return 404 for non-existent user", async () => {
         const response = await fakeRequest(
-            `/api/v1/accounts/id?username=${users[0].data.username}-nonexistent`,
+            "/api/v1/accounts/id?username=nonexistent",
         );
 
         expect(response.status).toBe(404);

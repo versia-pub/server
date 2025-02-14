@@ -161,7 +161,7 @@ describe("/api/v1/statuses", () => {
             }),
         });
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
             "application/json",
         );
@@ -186,7 +186,7 @@ describe("/api/v1/statuses", () => {
             }),
         });
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
             "application/json",
         );
@@ -223,7 +223,7 @@ describe("/api/v1/statuses", () => {
             }),
         });
 
-        expect(response2.status).toBe(201);
+        expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toContain(
             "application/json",
         );
@@ -260,7 +260,7 @@ describe("/api/v1/statuses", () => {
             }),
         });
 
-        expect(response2.status).toBe(201);
+        expect(response2.status).toBe(200);
         expect(response2.headers.get("content-type")).toContain(
             "application/json",
         );
@@ -283,7 +283,7 @@ describe("/api/v1/statuses", () => {
             }),
         });
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(200);
         expect(response.headers.get("content-type")).toContain(
             "application/json",
         );
@@ -310,7 +310,7 @@ describe("/api/v1/statuses", () => {
                 }),
             });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -336,13 +336,13 @@ describe("/api/v1/statuses", () => {
                 },
                 body: new URLSearchParams({
                     status: `Hello, @${users[1].data.username}@${
-                        new URL(config.http.base_url).host
+                        config.http.base_url.host
                     }!`,
                     local_only: "true",
                 }),
             });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -371,7 +371,7 @@ describe("/api/v1/statuses", () => {
                 }),
             });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -397,7 +397,7 @@ describe("/api/v1/statuses", () => {
                 }),
             });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
@@ -421,7 +421,7 @@ describe("/api/v1/statuses", () => {
                 }),
             });
 
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(200);
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );

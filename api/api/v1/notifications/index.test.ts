@@ -50,7 +50,7 @@ beforeAll(async () => {
         },
     );
 
-    expect(res3.status).toBe(201);
+    expect(res3.status).toBe(200);
 
     const res4 = await fakeRequest("/api/v1/statuses", {
         method: "POST",
@@ -64,7 +64,7 @@ beforeAll(async () => {
         }),
     });
 
-    expect(res4.status).toBe(201);
+    expect(res4.status).toBe(200);
 });
 
 afterAll(async () => {

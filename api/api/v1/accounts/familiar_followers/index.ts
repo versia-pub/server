@@ -1,20 +1,10 @@
-import { apiRoute, auth, qsQuery } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { apiRoute, auth, qsQuery, reusedResponses } from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
-import { z } from "zod";
-
-const schemas = {
-    query: z.object({
-        id: z
-            .array(z.string().uuid())
-            .min(1)
-            .max(10)
-            .or(z.string().uuid())
-            .transform((v) => (Array.isArray(v) ? v : [v])),
-    }),
-};
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { FamiliarFollowers as FamiliarFollowersSchema } from "~/classes/schemas/familiar-followers";
 
 const route = createRoute({
     method: "get",
@@ -22,6 +12,10 @@ const route = createRoute({
     summary: "Get familiar followers",
     description:
         "Obtain a list of all accounts that follow a given account, filtered for accounts you follow.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/accounts/#familiar_followers",
+    },
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,
@@ -31,22 +25,32 @@ const route = createRoute({
         qsQuery(),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            id: z
+                .array(AccountSchema.shape.id)
+                .min(1)
+                .max(10)
+                .or(AccountSchema.shape.id.transform((v) => [v]))
+                .openapi({
+                    description:
+                        "Find familiar followers for the provided account IDs.",
+                    example: [
+                        "f137ce6f-ff5e-4998-b20f-0361ba9be007",
+                        "8424c654-5d03-4a1b-bec8-4e87db811b5d",
+                    ],
+                }),
+        }),
     },
     responses: {
         200: {
             description: "Familiar followers",
             content: {
                 "application/json": {
-                    schema: z.array(
-                        z.object({
-                            id: z.string().uuid(),
-                            accounts: z.array(User.schema),
-                        }),
-                    ),
+                    schema: z.array(FamiliarFollowersSchema),
                 },
             },
         },
+        ...reusedResponses,
     },
 });
 

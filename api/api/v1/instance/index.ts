@@ -1,16 +1,25 @@
 import { apiRoute, auth } from "@/api";
+import { renderMarkdownInPath } from "@/markdown";
 import { proxyUrl } from "@/response";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute, type z } from "@hono/zod-openapi";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
+import { InstanceV1 as InstanceV1Schema } from "~/classes/schemas/instance-v1";
 import manifest from "~/package.json";
 import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/instance",
-    summary: "Get instance information",
+    summary: "View server information (v1)",
+    description:
+        "Obtain general information about the server. See api/v2/instance instead.",
+    deprecated: true,
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/instance/#v1",
+    },
+    tags: ["Instance"],
     middleware: [
         auth({
             auth: false,
@@ -20,9 +29,8 @@ const route = createRoute({
         200: {
             description: "Instance information",
             content: {
-                // TODO: Add schemas for this response
                 "application/json": {
-                    schema: z.any(),
+                    schema: InstanceV1Schema,
                 },
             },
         },
@@ -38,9 +46,11 @@ export default apiRoute((app) =>
 
         const userCount = await User.getCount();
 
-        const contactAccount = await User.fromSql(
-            and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
-        );
+        // Get first admin, or first user if no admin exists
+        const contactAccount =
+            (await User.fromSql(
+                and(isNull(Users.instanceId), eq(Users.isAdmin, true)),
+            )) ?? (await User.fromSql(isNull(Users.instanceId)));
 
         const knownDomainsCount = await Instance.getCount();
 
@@ -54,6 +64,11 @@ export default apiRoute((app) =>
                   }[];
               }
             | undefined;
+
+        const { content } = await renderMarkdownInPath(
+            config.instance.extended_description_path ?? "",
+            "This is a [Versia](https://versia.pub) server with the default extended description.",
+        );
 
         // TODO: fill in more values
         return context.json({
@@ -84,10 +99,13 @@ export default apiRoute((app) =>
                     max_featured_tags: 100,
                 },
             },
-            description: config.instance.description,
+            short_description: config.instance.description,
+            description: content,
+            // TODO: Add contact email
             email: "",
             invites_enabled: false,
             registrations: config.signups.registration,
+            // TODO: Implement
             languages: ["en"],
             rules: config.signups.rules.map((r, index) => ({
                 id: String(index),
@@ -101,12 +119,10 @@ export default apiRoute((app) =>
             thumbnail: config.instance.logo
                 ? proxyUrl(config.instance.logo).toString()
                 : null,
-            banner: config.instance.banner
-                ? proxyUrl(config.instance.banner).toString()
-                : null,
             title: config.instance.name,
-            uri: config.http.base_url,
+            uri: config.http.base_url.host,
             urls: {
+                // TODO: Implement Streaming API
                 streaming_api: "",
             },
             version: "4.3.0-alpha.3+glitch",
@@ -123,18 +139,7 @@ export default apiRoute((app) =>
                         id: p.id,
                     })) ?? [],
             },
-            contact_account: contactAccount?.toApi() || undefined,
-        } satisfies Record<string, unknown> & {
-            banner: string | null;
-            versia_version: string;
-            sso: {
-                forced: boolean;
-                providers: {
-                    id: string;
-                    name: string;
-                    icon?: string;
-                }[];
-            };
-        });
+            contact_account: (contactAccount as User)?.toApi(),
+        } satisfies z.infer<typeof InstanceV1Schema>);
     }),
 );

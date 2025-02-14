@@ -1,13 +1,27 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
-import type { StatusSource as ApiStatusSource } from "@versia/client/types";
+import {
+    apiRoute,
+    auth,
+    noteNotFound,
+    reusedResponses,
+    withNoteParam,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
+import {
+    Status as StatusSchema,
+    StatusSource as StatusSourceSchema,
+} from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/statuses/{id}/source",
-    summary: "Get status source",
+    summary: "View status source",
+    description:
+        "Obtain the source properties for a status so that it can be edited.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/statuses/#source",
+    },
+    tags: ["Statuses"],
     middleware: [
         auth({
             auth: true,
@@ -20,7 +34,7 @@ const route = createRoute({
     ] as const,
     request: {
         params: z.object({
-            id: z.string().uuid(),
+            id: StatusSchema.shape.id,
         }),
     },
     responses: {
@@ -28,14 +42,12 @@ const route = createRoute({
             description: "Status source",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        id: z.string().uuid(),
-                        spoiler_text: z.string(),
-                        text: z.string(),
-                    }),
+                    schema: StatusSourceSchema,
                 },
             },
         },
+        404: noteNotFound,
+        401: reusedResponses[401],
     },
 });
 
@@ -49,7 +61,7 @@ export default apiRoute((app) =>
                 // TODO: Give real source for spoilerText
                 spoiler_text: note.data.spoilerText,
                 text: note.data.contentSource,
-            } satisfies ApiStatusSource,
+            },
             200,
         );
     }),

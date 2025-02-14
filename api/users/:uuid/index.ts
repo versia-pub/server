@@ -1,8 +1,7 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { User as UserSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 

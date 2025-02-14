@@ -1,32 +1,31 @@
-import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import {
+    apiRoute,
+    auth,
+    parseUserAddress,
+    reusedResponses,
+    userAddressValidator,
+} from "@/api";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Account as AccountSchema } from "~/classes/schemas/account";
+import { Id } from "~/classes/schemas/common";
+import { Search as SearchSchema } from "~/classes/schemas/search";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/packages/config-manager";
+import { zBoolean } from "~/packages/config-manager/config.type";
 import { ErrorSchema } from "~/types/api";
-
-const schemas = {
-    query: z.object({
-        q: z.string().trim(),
-        type: z.string().optional(),
-        resolve: z.coerce.boolean().optional(),
-        following: z.coerce.boolean().optional(),
-        account_id: z.string().optional(),
-        max_id: z.string().optional(),
-        min_id: z.string().optional(),
-        limit: z.coerce.number().int().min(1).max(40).optional(),
-        offset: z.coerce.number().int().optional(),
-    }),
-};
 
 const route = createRoute({
     method: "get",
     path: "/api/v2/search",
-    summary: "Instance database search",
+    summary: "Perform a search",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/search/#v2",
+    },
+    tags: ["Search"],
     middleware: [
         auth({
             auth: false,
@@ -39,18 +38,64 @@ const route = createRoute({
         }),
     ] as const,
     request: {
-        query: schemas.query,
+        query: z.object({
+            q: z.string().trim().openapi({
+                description: "The search query.",
+                example: "versia",
+            }),
+            type: z
+                .enum(["accounts", "hashtags", "statuses"])
+                .optional()
+                .openapi({
+                    description:
+                        "Specify whether to search for only accounts, hashtags, statuses",
+                    example: "accounts",
+                }),
+            resolve: zBoolean.default(false).openapi({
+                description:
+                    "Only relevant if type includes accounts. If true and (a) the search query is for a remote account (e.g., someaccount@someother.server) and (b) the local server does not know about the account, WebFinger is used to try and resolve the account at someother.server. This provides the best recall at higher latency. If false only accounts the server knows about are returned.",
+            }),
+            following: zBoolean.default(false).openapi({
+                description:
+                    "Only include accounts that the user is following?",
+            }),
+            account_id: AccountSchema.shape.id.optional().openapi({
+                description:
+                    " If provided, will only return statuses authored by this account.",
+            }),
+            exclude_unreviewed: zBoolean.default(false).openapi({
+                description:
+                    "Filter out unreviewed tags? Use true when trying to find trending tags.",
+            }),
+            max_id: Id.optional().openapi({
+                description:
+                    "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
+                example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
+            }),
+            since_id: Id.optional().openapi({
+                description:
+                    "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
+                example: undefined,
+            }),
+            min_id: Id.optional().openapi({
+                description:
+                    "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
+                example: undefined,
+            }),
+            limit: z.coerce.number().int().min(1).max(40).default(20).openapi({
+                description: "Maximum number of results to return.",
+            }),
+            offset: z.coerce.number().int().min(0).default(0).openapi({
+                description: "Skip the first n results.",
+            }),
+        }),
     },
     responses: {
         200: {
             description: "Search results",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        accounts: z.array(User.schema),
-                        statuses: z.array(Note.schema),
-                        hashtags: z.array(z.string()),
-                    }),
+                    schema: SearchSchema,
                 },
             },
         },
@@ -71,6 +116,7 @@ const route = createRoute({
                 },
             },
         },
+        422: reusedResponses[422],
     },
 });
 
@@ -163,16 +209,16 @@ export default apiRoute((app) =>
 
             accountResults = await searchManager.searchAccounts(
                 q,
-                Number(limit) || 10,
-                Number(offset) || 0,
+                limit,
+                offset,
             );
         }
 
         if (!type || type === "statuses") {
             statusResults = await searchManager.searchStatuses(
                 q,
-                Number(limit) || 10,
-                Number(offset) || 0,
+                limit,
+                offset,
             );
         }
 

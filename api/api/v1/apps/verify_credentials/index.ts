@@ -1,15 +1,19 @@
-import { apiRoute, auth } from "@/api";
+import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
+import { Application as ApplicationSchema } from "~/classes/schemas/application";
 
 const route = createRoute({
     method: "get",
     path: "/api/v1/apps/verify_credentials",
-    summary: "Verify credentials",
-    description: "Get your own application information",
+    summary: "Verify your app works",
+    description: "Confirm that the app’s OAuth2 credentials work.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/apps/#verify_credentials",
+    },
+    tags: ["Apps"],
     middleware: [
         auth({
             auth: true,
@@ -18,21 +22,15 @@ const route = createRoute({
     ] as const,
     responses: {
         200: {
-            description: "Application",
+            description:
+                "If the Authorization header was provided with a valid token, you should see your app returned as an Application entity.",
             content: {
                 "application/json": {
-                    schema: Application.schema,
+                    schema: ApplicationSchema,
                 },
             },
         },
-        401: {
-            description: "Unauthorized",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        ...reusedResponses,
     },
 });
 
@@ -52,13 +50,6 @@ export default apiRoute((app) =>
             throw new ApiError(401, "Application not found");
         }
 
-        return context.json(
-            {
-                ...application.toApi(),
-                redirect_uris: application.data.redirectUri,
-                scopes: application.data.scopes,
-            },
-            200,
-        );
+        return context.json(application.toApi(), 200);
     }),
 );

@@ -1,5 +1,5 @@
 import { apiRoute } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import {
     LikeExtension as LikeSchema,
     Note as NoteSchema,
@@ -7,7 +7,6 @@ import {
 import { Like, Note, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/packages/config-manager";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
@@ -98,7 +97,7 @@ export default apiRoute((app) =>
         // This fixes reverse proxy errors
         const reqUrl = new URL(context.req.url);
         if (
-            new URL(config.http.base_url).protocol === "https:" &&
+            config.http.base_url.protocol === "https:" &&
             reqUrl.protocol === "http:"
         ) {
             reqUrl.protocol = "https:";

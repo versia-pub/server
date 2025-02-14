@@ -1,9 +1,9 @@
 import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 import { ErrorSchema } from "~/types/api";
 
 const routeGet = createRoute({
@@ -25,7 +25,7 @@ const routeGet = createRoute({
             description: "Role",
             content: {
                 "application/json": {
-                    schema: Role.schema,
+                    schema: RoleSchema,
                 },
             },
         },
@@ -58,7 +58,7 @@ const routePatch = createRoute({
         body: {
             content: {
                 "application/json": {
-                    schema: Role.schema.partial(),
+                    schema: RoleSchema.omit({ id: true }).partial(),
                 },
             },
         },

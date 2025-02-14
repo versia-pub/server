@@ -45,8 +45,8 @@ export const getTestUsers = async (
         const password = randomString(32, "hex");
 
         const user = await User.fromDataLocal({
-            username: `test-${randomString(32, "hex")}`,
-            email: `${randomString(32, "hex")}@test.com`,
+            username: `test-${randomString(8, "hex")}`,
+            email: `${randomString(16, "hex")}@test.com`,
             password,
         });
 

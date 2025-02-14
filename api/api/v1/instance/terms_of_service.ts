@@ -1,12 +1,19 @@
 import { apiRoute, auth } from "@/api";
 import { renderMarkdownInPath } from "@/markdown";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { TermsOfService as TermsOfServiceSchema } from "~/classes/schemas/tos";
 import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
-    path: "/api/v1/instance/tos",
-    summary: "Get instance terms of service",
+    path: "/api/v1/instance/terms_of_service",
+    summary: "View terms of service",
+    description:
+        "Obtain the contents of this server’s terms of service, if configured.",
+    externalDocs: {
+        url: "https://docs.joinmastodon.org/methods/instance/#terms_of_service",
+    },
+    tags: ["Instance"],
     middleware: [
         auth({
             auth: false,
@@ -14,13 +21,10 @@ const route = createRoute({
     ],
     responses: {
         200: {
-            description: "Instance terms of service",
+            description: "Server terms of service",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        updated_at: z.string(),
-                        content: z.string(),
-                    }),
+                    schema: TermsOfServiceSchema,
                 },
             },
         },

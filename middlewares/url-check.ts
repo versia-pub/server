@@ -3,7 +3,7 @@ import { config } from "~/packages/config-manager";
 
 export const urlCheck = createMiddleware(async (context, next) => {
     // Check that request URL matches base_url
-    const baseUrl = new URL(config.http.base_url);
+    const baseUrl = config.http.base_url;
 
     if (new URL(context.req.url).origin !== baseUrl.origin) {
         return context.json(

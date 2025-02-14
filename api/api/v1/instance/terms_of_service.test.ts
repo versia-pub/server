@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { fakeRequest } from "~/tests/utils";
 
-// /api/v1/instance/tos
-describe("/api/v1/instance/tos", () => {
+// /api/v1/instance/terms_of_service
+describe("/api/v1/instance/terms_of_service", () => {
     test("should return terms of service", async () => {
-        const response = await fakeRequest("/api/v1/instance/tos");
+        const response = await fakeRequest("/api/v1/instance/terms_of_service");
 
         expect(response.status).toBe(200);
 
