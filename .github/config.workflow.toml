@@ -240,18 +240,18 @@ disallow_tempmail = false
 # Regex is allowed here
 disallowed_domains = []
 
-# [validation.challenges]
+[validation.challenges]
 # "Challenges" (aka captchas) are a way to verify that a user is human
 # Versia Server's challenges use no external services, and are proof-of-work based
 # This means that they do not require any user interaction, instead
 # they require the user's computer to do a small amount of work
 # The difficulty of the challenge, higher is will take more time to solve
-# difficulty = 50000
+difficulty = 50000
 # Challenge expiration time in seconds
-# expiration = 300 # 5 minutes
+expiration = 300 # 5 minutes
 # Leave this empty to generate a new key
 # Sensitive value
-# key = ""
+key = "YBpAV0KZOeM/MZ4kOb2E9moH9gCUr00Co9V7ncGRJ3wbd/a9tLDKKFdI0BtOcnlpfx0ZBh0+w3WSvsl0TsesTg=="
 
 # Block content that matches these regular expressions
 [validation.filters]
