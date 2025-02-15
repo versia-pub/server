@@ -238,3 +238,19 @@ For Versia Server's own custom API, please see the [API documentation](https://s
 This project is licensed under the [AGPL-3.0-or-later](LICENSE).
 
 All Versia assets (icon, logo, banners, etc) are licensed under [CC-BY-NC-SA-4.0](https://creativecommons.org/licenses/by-nc-sa/4.0)
+
+## Thanks!
+
+Thanks to [**Fastly**](https://fastly.com) for providing us with support and resources to build Versia!
+
+<br />
+
+<p align="center">
+    <a href="https://fastly.com">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="assets/fastly-red.svg">
+            <source media="(prefers-color-scheme: light)" srcset="assets/fastly-red.svg">
+            <img src="assets/fastly-red.svg" alt="Fastly Logo" height="110" />
+        </picture>
+    </a>
+</p>
