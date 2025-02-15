@@ -130,19 +130,9 @@
                         "database": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "enabled": {
-                            "type": "boolean",
-                            "default": false
                         }
                     },
-                    "required": [
-                        "host",
-                        "port",
-                        "password",
-                        "database",
-                        "enabled"
-                    ],
+                    "required": ["host", "port", "password", "database"],
                     "additionalProperties": false,
                     "description": "A Redis database used for caching SQL queries. Optional."
                 }
@@ -189,7 +179,8 @@
             "properties": {
                 "allow": {
                     "type": "boolean",
-                    "default": true
+                    "default": true,
+                    "description": "Can users sign up freely?"
                 },
                 "require_approval": {
                     "type": "boolean",
@@ -340,7 +331,8 @@
                     "type": "object",
                     "properties": {
                         "server": {
-                            "$ref": "#/properties/http/properties/proxy_address"
+                            "type": "string",
+                            "minLength": 1
                         },
                         "port": {
                             "$ref": "#/properties/postgres/properties/port",
@@ -1863,7 +1855,7 @@
                         "disallowed_domains": {
                             "type": "array",
                             "items": {
-                                "type": "string"
+                                "$ref": "#/properties/http/properties/banned_user_agents/items"
                             },
                             "default": []
                         }
@@ -1976,7 +1968,7 @@
                         },
                         "subject": {
                             "type": "string",
-                            "description": "Subject for push. Example: 'mailto:contact@example.com'"
+                            "description": "Subject field embedded in the push notification. Example: 'mailto:contact@example.com'"
                         }
                     },
                     "required": ["vapid_keys", "subject"],
@@ -2026,14 +2018,14 @@
                 "blocked": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/properties/http/properties/proxy_address"
+                        "type": "string"
                     },
                     "default": []
                 },
                 "followers_only": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/properties/http/properties/proxy_address"
+                        "type": "string"
                     },
                     "default": []
                 },
@@ -2043,63 +2035,63 @@
                         "reports": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "deletes": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "updates": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "media": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "follows": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "likes": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "reactions": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "banners": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         },
                         "avatars": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/properties/http/properties/proxy_address"
+                                "type": "string"
                             },
                             "default": []
                         }
