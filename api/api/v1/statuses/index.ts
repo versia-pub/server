@@ -4,13 +4,13 @@ import { Media, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
+import { zBoolean } from "~/classes/schemas/common.ts";
 import { PollOption } from "~/classes/schemas/poll";
 import {
     Status as StatusSchema,
     StatusSource as StatusSourceSchema,
 } from "~/classes/schemas/status";
-import { zBoolean } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 const schema = z
     .object({
@@ -28,7 +28,7 @@ const schema = z
             }),
         media_ids: z
             .array(AttachmentSchema.shape.id)
-            .max(config.validation.max_media_attachments)
+            .max(config.validation.notes.max_attachments)
             .default([])
             .openapi({
                 description:
@@ -44,7 +44,7 @@ const schema = z
         language: StatusSchema.shape.language.optional(),
         "poll[options]": z
             .array(PollOption.shape.title)
-            .max(config.validation.max_poll_options)
+            .max(config.validation.polls.max_options)
             .optional()
             .openapi({
                 description:
@@ -53,8 +53,8 @@ const schema = z
         "poll[expires_in]": z.coerce
             .number()
             .int()
-            .min(config.validation.min_poll_duration)
-            .max(config.validation.max_poll_duration)
+            .min(config.validation.polls.min_duration_seconds)
+            .max(config.validation.polls.max_duration_seconds)
             .optional()
             .openapi({
                 description:

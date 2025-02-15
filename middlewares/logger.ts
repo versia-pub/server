@@ -1,10 +1,10 @@
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { createMiddleware } from "hono/factory";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export const logger = createMiddleware(async (context, next) => {
-    if (config.logging.log_requests) {
+    if (config.logging.types.requests) {
         const serverLogger = getLogger("server");
         const body = await context.req.raw.clone().text();
 
@@ -25,7 +25,7 @@ export const logger = createMiddleware(async (context, next) => {
 
         const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
-        if (config.logging.log_requests_verbose) {
+        if (config.logging.types.requests_content) {
             serverLogger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
         } else {
             serverLogger.debug`${urlAndMethod}`;

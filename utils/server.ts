@@ -1,31 +1,29 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Server } from "bun";
-import type { Config } from "~/packages/config-manager/config.type";
+import type { ConfigSchema } from "~/classes/config/schema.ts";
 import type { HonoEnv } from "~/types/api";
 import { debugResponse } from "./api.ts";
 
 export const createServer = (
-    config: Config,
+    config: z.infer<typeof ConfigSchema>,
     app: OpenAPIHono<HonoEnv>,
 ): Server =>
     Bun.serve({
         port: config.http.bind_port,
         reusePort: true,
-        tls: config.http.tls.enabled
+        tls: config.http.tls
             ? {
-                  key: Bun.file(config.http.tls.key),
-                  cert: Bun.file(config.http.tls.cert),
+                  key: config.http.tls.key.file,
+                  cert: config.http.tls.cert.file,
                   passphrase: config.http.tls.passphrase,
-                  ca: config.http.tls.ca
-                      ? Bun.file(config.http.tls.ca)
-                      : undefined,
+                  ca: config.http.tls.ca?.file,
               }
             : undefined,
-        hostname: config.http.bind || "0.0.0.0", // defaults to "0.0.0.0"
+        hostname: config.http.bind,
         async fetch(req, server): Promise<Response> {
             const output = await app.fetch(req, { ip: server.requestIP(req) });
 
-            if (config.logging.log_responses) {
+            if (config.logging.types.responses) {
                 await debugResponse(output.clone());
             }
 

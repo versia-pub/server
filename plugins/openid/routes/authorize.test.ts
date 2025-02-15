@@ -3,7 +3,7 @@ import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, tokens, users } = await getTestUsers(1);

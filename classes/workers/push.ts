@@ -2,7 +2,7 @@ import { htmlToText } from "@/content_types.ts";
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import { sendNotification } from "web-push";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 import {
     type PushJobData,
@@ -17,6 +17,11 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
             const {
                 data: { psId, relatedUserId, type, noteId, notificationId },
             } = job;
+
+            if (!config.notifications.push) {
+                await job.log("Push notifications are disabled");
+                return;
+            }
 
             await job.log(
                 `Sending push notification for note [${notificationId}]`,
@@ -105,17 +110,18 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                     preferred_locale: "en-US",
                     notification_id: notificationId,
                     notification_type: type,
-                    icon: relatedUser.getAvatarUrl(config),
+                    icon: relatedUser.getAvatarUrl(),
                     title,
                     body: truncate(body, 140),
                 }),
                 {
                     vapidDetails: {
                         subject:
-                            config.notifications.push.vapid.subject ||
+                            config.notifications.push.subject ||
                             config.http.base_url.origin,
-                        privateKey: config.notifications.push.vapid.private,
-                        publicKey: config.notifications.push.vapid.public,
+                        privateKey:
+                            config.notifications.push.vapid_keys.private,
+                        publicKey: config.notifications.push.vapid_keys.public,
                     },
                     contentEncoding: "aesgcm",
                 },
@@ -128,10 +134,10 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
         {
             connection,
             removeOnComplete: {
-                age: config.queues.push.remove_on_complete,
+                age: config.queues.push?.remove_after_complete_seconds,
             },
             removeOnFail: {
-                age: config.queues.push.remove_on_failure,
+                age: config.queues.push?.remove_after_failure_seconds,
             },
         },
     );

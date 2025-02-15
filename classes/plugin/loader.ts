@@ -5,7 +5,7 @@ import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { ZodTypeAny } from "zod";
 import { type ValidationError, fromZodError } from "zod-validation-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { Plugin } from "~/packages/plugin-kit/plugin";
 import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";
 import type { HonoEnv } from "~/types/api";
@@ -230,10 +230,13 @@ export class PluginLoader {
                     config.plugins?.config?.[data.manifest.name],
                 );
             } catch (e) {
-                logger.fatal`Plugin configuration is invalid: ${chalk.redBright(e as ValidationError)}`;
+                logger.fatal`Error encountered while loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} configuration.`;
+                logger.fatal`This is due to invalid, missing or incomplete configuration.`;
                 logger.fatal`Put your configuration at ${chalk.blueBright(
                     "plugins.config.<plugin-name>",
                 )}`;
+                logger.fatal`Here is the error message, please fix the configuration file accordingly:`;
+                logger.fatal`${(e as ValidationError).message}`;
 
                 await Bun.sleep(Number.POSITIVE_INFINITY);
             }

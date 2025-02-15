@@ -8,7 +8,8 @@ import { fetchQueue } from "~/classes/queues/fetch";
 import { inboxQueue } from "~/classes/queues/inbox";
 import { mediaQueue } from "~/classes/queues/media";
 import { pushQueue } from "~/classes/queues/push";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
+import pkg from "~/package.json";
 import type { HonoEnv } from "~/types/api";
 
 export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
@@ -31,9 +32,7 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
                     alternative: "/favicon.ico",
                 },
                 boardLogo: {
-                    path:
-                        config.instance.logo?.toString() ??
-                        "https://cdn.versia.pub/branding/icon.svg",
+                    path: config.instance.branding.logo?.origin ?? pkg.icon,
                     height: 40,
                 },
             },

@@ -3,16 +3,20 @@ import { Challenges } from "@versia/kit/tables";
 import { createChallenge } from "altcha-lib";
 import type { Challenge } from "altcha-lib/types";
 import { sql } from "drizzle-orm";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export const generateChallenge = async (
-    maxNumber = config.validation.challenges.difficulty,
+    maxNumber?: number,
 ): Promise<{
     id: string;
     challenge: Challenge;
     expiresAt: string;
     createdAt: string;
 }> => {
+    if (!config.validation.challenges) {
+        throw new Error("Challenges are not enabled");
+    }
+
     const expirationDate = new Date(
         Date.now() + config.validation.challenges.expiration * 1000,
     );
@@ -23,7 +27,7 @@ export const generateChallenge = async (
     const challenge = await createChallenge({
         hmacKey: config.validation.challenges.key,
         expires: expirationDate,
-        maxNumber,
+        maxNumber: maxNumber ?? config.validation.challenges.difficulty,
         algorithm: "SHA-256",
         params: {
             challenge_id: uuid,

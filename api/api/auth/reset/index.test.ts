@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);

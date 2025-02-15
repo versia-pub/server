@@ -15,9 +15,9 @@ import {
     inArray,
 } from "drizzle-orm";
 import sharp from "sharp";
+import { MediaBackendType } from "~/classes/config/schema.ts";
 import type { Attachment as AttachmentSchema } from "~/classes/schemas/attachment.ts";
-import { MediaBackendType } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { getMediaHash } from "../media/media-hasher.ts";
 import { MediaJobType, mediaQueue } from "../queues/media.ts";
@@ -135,11 +135,7 @@ export class Media extends BaseInterface<typeof Medias> {
 
         switch (config.media.backend) {
             case MediaBackendType.Local: {
-                const path = join(
-                    config.media.local_uploads_folder,
-                    hash,
-                    fileName,
-                );
+                const path = join(config.media.uploads_path, hash, fileName);
 
                 await write(path, file);
 
@@ -154,7 +150,7 @@ export class Media extends BaseInterface<typeof Medias> {
                 }
 
                 const client = new S3Client({
-                    endpoint: config.s3.endpoint,
+                    endpoint: config.s3.endpoint.origin,
                     region: config.s3.region,
                     bucket: config.s3.bucket_name,
                     accessKeyId: config.s3.access_key,
@@ -260,21 +256,21 @@ export class Media extends BaseInterface<typeof Medias> {
     }
 
     private static checkFile(file: File): void {
-        if (file.size > config.validation.max_media_size) {
+        if (file.size > config.validation.media.max_bytes) {
             throw new ApiError(
                 413,
-                `File too large, max size is ${config.validation.max_media_size} bytes`,
+                `File too large, max size is ${config.validation.media.max_bytes} bytes`,
             );
         }
 
         if (
-            config.validation.enforce_mime_types &&
-            !config.validation.allowed_mime_types.includes(file.type)
+            config.validation.media.allowed_mime_types.length > 0 &&
+            !config.validation.media.allowed_mime_types.includes(file.type)
         ) {
             throw new ApiError(
                 415,
                 `File type ${file.type} is not allowed`,
-                `Allowed types: ${config.validation.allowed_mime_types.join(", ")}`,
+                `Allowed types: ${config.validation.media.allowed_mime_types.join(", ")}`,
             );
         }
     }

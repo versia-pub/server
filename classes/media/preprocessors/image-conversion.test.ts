@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 import sharp from "sharp";
-import type { Config } from "~/packages/config-manager/config.type";
+import type { config } from "~/config.ts";
 import { convertImage } from "./image-conversion.ts";
 
 describe("ImageConversionPreprocessor", () => {
-    let mockConfig: Config;
+    let mockConfig: typeof config;
 
     beforeEach(() => {
         mockConfig = {
@@ -15,9 +15,9 @@ describe("ImageConversionPreprocessor", () => {
                     convert_vector: false,
                 },
             },
-        } as Config;
+        } as unknown as typeof config;
 
-        mock.module("~/packages/config-manager/index.ts", () => ({
+        mock.module("~/config.ts", () => ({
             config: mockConfig,
         }));
     });
@@ -59,7 +59,7 @@ describe("ImageConversionPreprocessor", () => {
     });
 
     it("should convert SVG when convert_vector is true", async () => {
-        mockConfig.media.conversion.convert_vector = true;
+        mockConfig.media.conversion.convert_vectors = true;
 
         const svgContent =
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="red"/></svg>';

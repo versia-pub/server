@@ -1,8 +1,8 @@
 import { apiRoute } from "@/api";
-import { renderMarkdownInPath } from "@/markdown";
 import { createRoute } from "@hono/zod-openapi";
+import { markdownParse } from "~/classes/functions/status";
 import { ExtendedDescription as ExtendedDescriptionSchema } from "~/classes/schemas/extended-description";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "get",
@@ -27,14 +27,17 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { content, lastModified } = await renderMarkdownInPath(
-            config.instance.extended_description_path ?? "",
-            "This is a [Versia](https://versia.pub) server with the default extended description.",
+        const content = await markdownParse(
+            config.instance.extended_description_path?.content ??
+                "This is a [Versia](https://versia.pub) server with the default extended description.",
         );
 
         return context.json(
             {
-                updated_at: lastModified.toISOString(),
+                updated_at: new Date(
+                    config.instance.extended_description_path?.file
+                        .lastModified ?? 0,
+                ).toISOString(),
                 content,
             },
             200,

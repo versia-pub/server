@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { fakeRequest } from "~/tests/utils";
 
 // /api/v1/instance/rules
@@ -11,10 +11,10 @@ describe("/api/v1/instance/rules", () => {
 
         const json = await response.json();
         expect(json).toEqual(
-            config.signups.rules.map((rule, index) => ({
+            config.instance.rules.map((r, index) => ({
                 id: String(index),
-                text: rule,
-                hint: "",
+                text: r.text,
+                hint: r.hint,
             })),
         );
     });

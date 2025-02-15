@@ -1,6 +1,6 @@
 import { Media } from "@versia/kit/db";
 import { Worker } from "bullmq";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 import { calculateBlurhash } from "../media/preprocessors/blurhash.ts";
 import { convertImage } from "../media/preprocessors/image-conversion.ts";
@@ -100,10 +100,10 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
         {
             connection,
             removeOnComplete: {
-                age: config.queues.media.remove_on_complete,
+                age: config.queues.media?.remove_after_complete_seconds,
             },
             removeOnFail: {
-                age: config.queues.media.remove_on_failure,
+                age: config.queues.media?.remove_after_failure_seconds,
             },
         },
     );

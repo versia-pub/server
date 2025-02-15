@@ -1,8 +1,8 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Note, User } from "@versia/kit/db";
+import { config } from "~/config.ts";
 import manifest from "~/package.json";
-import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
@@ -65,7 +65,7 @@ export default apiRoute((app) =>
                 },
                 localPosts: noteCount,
             },
-            openRegistrations: config.signups.registration,
+            openRegistrations: config.registration.allow,
             metadata: {
                 nodeName: config.instance.name,
                 nodeDescription: config.instance.description,

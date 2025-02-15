@@ -1,10 +1,9 @@
-import { checkConfig } from "@/init";
 import { configureLoggers } from "@/loggers";
 import { getLogger } from "@logtape/logtape";
 import { Note } from "@versia/kit/db";
 import IORedis from "ioredis";
+import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
-import { config } from "~/packages/config-manager/index.ts";
 import { searchManager } from "../../classes/search/search-manager.ts";
 
 const timeAtStart = performance.now();
@@ -26,14 +25,12 @@ serverLogger.info`Starting Versia Server...`;
 
 await setupDatabase();
 
-if (config.sonic.enabled) {
+if (config.search.enabled) {
     await searchManager.connect();
 }
 
 // Check if database is reachable
 const postCount = await Note.getCount();
-
-await checkConfig(config);
 
 serverLogger.info`Versia Server started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`;
 

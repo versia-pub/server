@@ -4,7 +4,7 @@
  */
 
 import sharp from "sharp";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 /**
  * Supported input media formats.
@@ -39,7 +39,7 @@ const supportedOutputFormats = [
 const isConvertible = (file: File): boolean => {
     if (
         file.type === "image/svg+xml" &&
-        !config.media.conversion.convert_vector
+        !config.media.conversion.convert_vectors
     ) {
         return false;
     }

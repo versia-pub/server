@@ -5,8 +5,8 @@ import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/s
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { asc } from "drizzle-orm";
+import { config } from "~/config.ts";
 import pkg from "~/package.json";
-import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
@@ -29,6 +29,10 @@ export default apiRoute((app) =>
         // Get date of first user creation
         const firstUser = await User.fromSql(undefined, asc(Users.createdAt));
 
+        const publicKey = Buffer.from(
+            await crypto.subtle.exportKey("spki", config.instance.keys.public),
+        ).toString("base64");
+
         return context.json(
             {
                 type: "InstanceMetadata" as const,
@@ -43,18 +47,18 @@ export default apiRoute((app) =>
                 name: config.instance.name,
                 description: config.instance.description,
                 public_key: {
-                    key: config.instance.keys.public,
+                    key: publicKey,
                     algorithm: "ed25519" as const,
                 },
                 software: {
                     name: "Versia Server",
                     version: pkg.version,
                 },
-                banner: config.instance.banner
-                    ? urlToContentFormat(config.instance.banner)
+                banner: config.instance.branding.banner
+                    ? urlToContentFormat(config.instance.branding.banner)
                     : undefined,
-                logo: config.instance.logo
-                    ? urlToContentFormat(config.instance.logo)
+                logo: config.instance.branding.logo
+                    ? urlToContentFormat(config.instance.branding.logo)
                     : undefined,
                 shared_inbox: new URL(
                     "/inbox",

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers, tokens } = await getTestUsers(1);

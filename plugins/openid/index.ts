@@ -1,10 +1,10 @@
 import { z } from "@hono/zod-openapi";
 import { Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
-import chalk from "chalk";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
+import { keyPair, sensitiveString } from "~/classes/config/schema.ts";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import { RolePermissions } from "~/drizzle/schema.ts";
 import authorizeRoute from "./routes/authorize.ts";
@@ -26,64 +26,12 @@ const configSchema = z.object({
                 id: z.string().min(1),
                 url: z.string().min(1),
                 client_id: z.string().min(1),
-                client_secret: z.string().min(1),
+                client_secret: sensitiveString,
                 icon: z.string().min(1).optional(),
             }),
         )
         .default([]),
-    keys: z
-        .object({
-            public: z
-                .string()
-                .min(1)
-                .transform(async (v) => {
-                    try {
-                        return await crypto.subtle.importKey(
-                            "spki",
-                            Buffer.from(v, "base64"),
-                            "Ed25519",
-                            true,
-                            ["verify"],
-                        );
-                    } catch {
-                        throw new Error(
-                            "Public key at oidc.keys.public is invalid",
-                        );
-                    }
-                }),
-            private: z
-                .string()
-                .min(1)
-                .transform(async (v) => {
-                    try {
-                        return await crypto.subtle.importKey(
-                            "pkcs8",
-                            Buffer.from(v, "base64"),
-                            "Ed25519",
-                            true,
-                            ["sign"],
-                        );
-                    } catch {
-                        throw new Error(
-                            "Private key at oidc.keys.private is invalid",
-                        );
-                    }
-                }),
-        })
-        .optional()
-        .transform(async (v, ctx) => {
-            if (!(v?.private && v?.public)) {
-                const { public_key, private_key } = await User.generateKeys();
-
-                ctx.addIssue({
-                    code: z.ZodIssueCode.custom,
-                    message: `Keys are missing, please add the following to your config:\n\nkeys.public: ${chalk.gray(public_key)}\nkeys.private: ${chalk.gray(private_key)}
-                    `,
-                });
-            }
-
-            return v as Exclude<typeof v, undefined>;
-        }),
+    keys: keyPair,
 });
 
 const plugin = new Plugin(configSchema);

@@ -37,7 +37,7 @@
                         "format": "uri"
                     }
                 },
-                "required": ["name"],
+                "required": ["name", "email", "url"],
                 "additionalProperties": false
             }
         },
@@ -75,10 +75,18 @@
                     "format": "uri"
                 }
             },
+            "required": ["type", "url"],
             "additionalProperties": false
         }
     },
-    "required": ["name", "version", "description"],
+    "required": [
+        "$schema",
+        "name",
+        "version",
+        "description",
+        "authors",
+        "repository"
+    ],
     "additionalProperties": false,
     "$schema": "http://json-schema.org/draft-07/schema#"
 }

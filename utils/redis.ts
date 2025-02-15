@@ -1,5 +1,5 @@
 import IORedis from "ioredis";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 export const connection = new IORedis({
     host: config.redis.queue.host,

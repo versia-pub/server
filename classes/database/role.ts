@@ -14,7 +14,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { BaseInterface } from "./base.ts";
 
 type RoleType = InferSelectModel<typeof Roles>;

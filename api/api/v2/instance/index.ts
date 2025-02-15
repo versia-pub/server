@@ -5,8 +5,8 @@ import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { Instance as InstanceSchema } from "~/classes/schemas/instance";
+import { config } from "~/config.ts";
 import pkg from "~/package.json";
-import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
@@ -69,92 +69,99 @@ export default apiRoute((app) =>
                 mastodon: 1,
             },
             thumbnail: {
-                url: config.instance.logo
-                    ? proxyUrl(config.instance.logo).toString()
+                url: config.instance.branding.logo
+                    ? proxyUrl(config.instance.branding.logo).toString()
                     : pkg.icon,
             },
             banner: {
-                url: config.instance.banner
-                    ? proxyUrl(config.instance.banner).toString()
+                url: config.instance.branding.banner
+                    ? proxyUrl(config.instance.branding.banner).toString()
                     : null,
             },
             icon: [],
-            languages: ["en"],
+            languages: config.instance.languages,
             configuration: {
                 urls: {
                     // TODO: Implement Streaming API
                     streaming: "",
                 },
                 vapid: {
-                    // TODO: Fill in vapid values
-                    public_key: "",
+                    public_key:
+                        config.notifications.push?.vapid_keys.public ?? "",
                 },
                 accounts: {
                     max_featured_tags: 100,
                     max_displayname_characters:
-                        config.validation.max_displayname_size,
-                    avatar_limit: config.validation.max_avatar_size,
-                    header_limit: config.validation.max_header_size,
+                        config.validation.accounts.max_displayname_characters,
+                    avatar_limit: config.validation.accounts.max_avatar_bytes,
+                    header_limit: config.validation.accounts.max_header_bytes,
                     max_username_characters:
-                        config.validation.max_username_size,
-                    max_note_characters: config.validation.max_bio_size,
-                    max_pinned_statuses: 100,
+                        config.validation.accounts.max_username_characters,
+                    max_note_characters:
+                        config.validation.accounts.max_bio_characters,
+                    max_pinned_statuses:
+                        config.validation.accounts.max_pinned_notes,
                     fields: {
-                        max_fields: config.validation.max_field_count,
+                        max_fields: config.validation.accounts.max_field_count,
                         max_name_characters:
-                            config.validation.max_field_name_size,
+                            config.validation.accounts
+                                .max_field_name_characters,
                         max_value_characters:
-                            config.validation.max_field_value_size,
+                            config.validation.accounts
+                                .max_field_value_characters,
                     },
                 },
                 statuses: {
-                    max_characters: config.validation.max_note_size,
+                    max_characters: config.validation.notes.max_characters,
                     max_media_attachments:
-                        config.validation.max_media_attachments,
-                    characters_reserved_per_url: 0,
+                        config.validation.notes.max_attachments,
+                    // TODO: Implement
+                    characters_reserved_per_url: 13,
                 },
                 media_attachments: {
-                    supported_mime_types: config.validation.allowed_mime_types,
-                    image_size_limit: config.validation.max_media_size,
-                    image_matrix_limit: config.validation.max_media_size,
-                    video_size_limit: config.validation.max_media_size,
-                    video_frame_rate_limit: config.validation.max_media_size,
-                    video_matrix_limit: config.validation.max_media_size,
+                    supported_mime_types:
+                        config.validation.media.allowed_mime_types,
+                    image_size_limit: config.validation.media.max_bytes,
+                    image_matrix_limit: 1 ** 10,
+                    video_size_limit: 1 ** 10,
+                    video_frame_rate_limit: 60,
+                    video_matrix_limit: 1 ** 10,
                     description_limit:
-                        config.validation.max_media_description_size,
+                        config.validation.media.max_description_characters,
                 },
                 emojis: {
-                    emoji_size_limit: config.validation.max_emoji_size,
+                    emoji_size_limit: config.validation.emojis.max_bytes,
                     max_shortcode_characters:
-                        config.validation.max_emoji_shortcode_size,
+                        config.validation.emojis.max_shortcode_characters,
                     max_description_characters:
-                        config.validation.max_emoji_description_size,
+                        config.validation.emojis.max_description_characters,
                 },
                 polls: {
                     max_characters_per_option:
-                        config.validation.max_poll_option_size,
-                    max_expiration: config.validation.max_poll_duration,
-                    max_options: config.validation.max_poll_options,
-                    min_expiration: config.validation.min_poll_duration,
+                        config.validation.polls.max_option_characters,
+                    max_expiration:
+                        config.validation.polls.max_duration_seconds,
+                    max_options: config.validation.polls.max_options,
+                    min_expiration:
+                        config.validation.polls.min_duration_seconds,
                 },
                 translation: {
                     enabled: false,
                 },
             },
             registrations: {
-                enabled: config.signups.registration,
-                approval_required: false,
-                message: null,
+                enabled: config.registration.allow,
+                approval_required: config.registration.require_approval,
+                message: config.registration.message ?? null,
             },
             contact: {
-                // TODO: Add contact email
-                email: "",
+                email: config.instance.contact.email,
                 account: (contactAccount as User)?.toApi(),
             },
-            rules: config.signups.rules.map((rule, index) => ({
+            rules: config.instance.rules.map((r, index) => ({
                 id: String(index),
-                text: rule,
-                hint: "",
+                text: r.text,
+                hint: r.hint,
             })),
             sso: {
                 forced: oidcConfig?.forced ?? false,

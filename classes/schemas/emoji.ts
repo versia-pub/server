@@ -1,7 +1,7 @@
 import { emojiValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
-import { zBoolean } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index.ts";
+import { zBoolean } from "~/classes/schemas/common.ts";
+import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 
 export const CustomEmoji = z
@@ -15,7 +15,7 @@ export const CustomEmoji = z
             .string()
             .trim()
             .min(1)
-            .max(config.validation.max_emoji_shortcode_size)
+            .max(config.validation.emojis.max_shortcode_characters)
             .regex(
                 emojiValidator,
                 "Shortcode must only contain letters (any case), numbers, dashes or underscores.",
@@ -77,7 +77,7 @@ export const CustomEmoji = z
         /* Versia Server API extension */
         description: z
             .string()
-            .max(config.validation.max_emoji_description_size)
+            .max(config.validation.emojis.max_description_characters)
             .nullable()
             .openapi({
                 description:

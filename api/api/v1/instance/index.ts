@@ -1,13 +1,13 @@
 import { apiRoute, auth } from "@/api";
-import { renderMarkdownInPath } from "@/markdown";
 import { proxyUrl } from "@/response";
 import { createRoute, type z } from "@hono/zod-openapi";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
+import { markdownParse } from "~/classes/functions/status";
 import { InstanceV1 as InstanceV1Schema } from "~/classes/schemas/instance-v1";
+import { config } from "~/config.ts";
 import manifest from "~/package.json";
-import { config } from "~/packages/config-manager";
 
 const route = createRoute({
     method: "get",
@@ -65,35 +65,38 @@ export default apiRoute((app) =>
               }
             | undefined;
 
-        const { content } = await renderMarkdownInPath(
-            config.instance.extended_description_path ?? "",
-            "This is a [Versia](https://versia.pub) server with the default extended description.",
+        const content = await markdownParse(
+            config.instance.extended_description_path?.content ??
+                "This is a [Versia](https://versia.pub) server with the default extended description.",
         );
 
-        // TODO: fill in more values
         return context.json({
-            approval_required: false,
+            approval_required: config.registration.require_approval,
             configuration: {
                 polls: {
                     max_characters_per_option:
-                        config.validation.max_poll_option_size,
-                    max_expiration: config.validation.max_poll_duration,
-                    max_options: config.validation.max_poll_options,
-                    min_expiration: config.validation.min_poll_duration,
+                        config.validation.polls.max_option_characters,
+                    max_expiration:
+                        config.validation.polls.max_duration_seconds,
+                    max_options: config.validation.polls.max_options,
+                    min_expiration:
+                        config.validation.polls.min_duration_seconds,
                 },
                 statuses: {
                     characters_reserved_per_url: 0,
-                    max_characters: config.validation.max_note_size,
+                    max_characters: config.validation.notes.max_characters,
                     max_media_attachments:
-                        config.validation.max_media_attachments,
+                        config.validation.notes.max_attachments,
                 },
                 media_attachments: {
-                    supported_mime_types: config.validation.allowed_mime_types,
-                    image_size_limit: config.validation.max_media_size,
-                    image_matrix_limit: config.validation.max_media_size,
-                    video_size_limit: config.validation.max_media_size,
-                    video_frame_rate_limit: config.validation.max_media_size,
-                    video_matrix_limit: config.validation.max_media_size,
+                    supported_mime_types:
+                        config.validation.media.allowed_mime_types,
+                    image_size_limit: config.validation.media.max_bytes,
+                    // TODO: Implement
+                    image_matrix_limit: 1 ** 10,
+                    video_size_limit: 1 ** 10,
+                    video_frame_rate_limit: 60,
+                    video_matrix_limit: 1 ** 10,
                 },
                 accounts: {
                     max_featured_tags: 100,
@@ -101,23 +104,22 @@ export default apiRoute((app) =>
             },
             short_description: config.instance.description,
             description: content,
-            // TODO: Add contact email
-            email: "",
+            email: config.instance.contact.email,
             invites_enabled: false,
-            registrations: config.signups.registration,
-            // TODO: Implement
-            languages: ["en"],
-            rules: config.signups.rules.map((r, index) => ({
+            registrations: config.registration.allow,
+            languages: config.instance.languages,
+            rules: config.instance.rules.map((r, index) => ({
                 id: String(index),
-                text: r,
+                text: r.text,
+                hint: r.hint,
             })),
             stats: {
                 domain_count: knownDomainsCount,
                 status_count: statusCount,
                 user_count: userCount,
             },
-            thumbnail: config.instance.logo
-                ? proxyUrl(config.instance.logo).toString()
+            thumbnail: config.instance.branding.logo
+                ? proxyUrl(config.instance.branding.logo).toString()
                 : null,
             title: config.instance.name,
             uri: config.http.base_url.host,

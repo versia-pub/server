@@ -12,7 +12,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { Account } from "~/classes/schemas/account";
 import { Account as AccountSchema } from "~/classes/schemas/account";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "get",

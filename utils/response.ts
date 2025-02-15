@@ -1,4 +1,4 @@
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export type Json =
     | string

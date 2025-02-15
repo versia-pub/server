@@ -2,7 +2,7 @@ import { Instance } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
 import { Worker } from "bullmq";
 import { eq } from "drizzle-orm";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 import {
     type FetchJobData,
@@ -52,10 +52,10 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
         {
             connection,
             removeOnComplete: {
-                age: config.queues.fetch.remove_on_complete,
+                age: config.queues.fetch?.remove_after_complete_seconds,
             },
             removeOnFail: {
-                age: config.queues.fetch.remove_on_failure,
+                age: config.queues.fetch?.remove_after_failure_seconds,
             },
         },
     );

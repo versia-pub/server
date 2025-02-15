@@ -6,6 +6,7 @@ import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import { ApiError } from "~/classes/errors/api-error.ts";
+import { Account as AccountSchema } from "~/classes/schemas/account.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
@@ -199,30 +200,8 @@ export default (plugin: PluginType): void => {
                             email?.split("@")[0] ??
                             randomString(8, "hex");
 
-                        const usernameValidator = z
-                            .string()
-                            .regex(/^[a-z0-9_]+$/)
-                            .min(3)
-                            .max(
-                                context.get("config").validation
-                                    .max_username_size,
-                            )
-                            .refine(
-                                (value) =>
-                                    !context
-                                        .get("config")
-                                        .validation.username_blacklist.includes(
-                                            value,
-                                        ),
-                            )
-                            .refine((value) =>
-                                context
-                                    .get("config")
-                                    .filters.username.some((filter) =>
-                                        value.match(filter),
-                                    ),
-                            )
-                            .refine(
+                        const usernameValidator =
+                            AccountSchema.shape.username.refine(
                                 async (value) =>
                                     !(await User.fromSql(
                                         and(

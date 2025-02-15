@@ -1,6 +1,5 @@
 import { z } from "@hono/zod-openapi";
-import { zBoolean } from "~/packages/config-manager/config.type.ts";
-import { Id } from "./common.ts";
+import { Id, zBoolean } from "./common.ts";
 
 export const FilterStatus = z
     .object({

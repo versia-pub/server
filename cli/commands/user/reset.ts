@@ -4,7 +4,7 @@ import chalk from "chalk";
 import { renderUnicodeCompact } from "uqr";
 import { UserFinderCommand } from "~/cli/classes";
 import { formatArray } from "~/cli/utils/format";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export default class UserReset extends UserFinderCommand<typeof UserReset> {
     public static override description = "Resets users' passwords";

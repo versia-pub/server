@@ -4,7 +4,7 @@ import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export const ipBans = createMiddleware(async (context, next) => {
     // Check for banned IPs

@@ -6,7 +6,7 @@ import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const schema = z.object({
     shortcode: CustomEmojiSchema.shape.shortcode,
@@ -25,8 +25,8 @@ const schema = z.object({
                         "Emoji image encoded using multipart/form-data",
                 })
                 .refine(
-                    (v) => v.size <= config.validation.max_emoji_size,
-                    `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
+                    (v) => v.size <= config.validation.emojis.max_bytes,
+                    `Emoji must be less than ${config.validation.emojis.max_bytes} bytes`,
                 ),
         ),
     category: CustomEmojiSchema.shape.category.optional(),

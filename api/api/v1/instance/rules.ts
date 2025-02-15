@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Rule as RuleSchema } from "~/classes/schemas/rule";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "get",
@@ -32,10 +32,10 @@ const route = createRoute({
 export default apiRoute((app) =>
     app.openapi(route, (context) => {
         return context.json(
-            config.signups.rules.map((rule, index) => ({
+            config.instance.rules.map((r, index) => ({
                 id: String(index),
-                text: rule,
-                hint: "",
+                text: r.text,
+                hint: r.hint,
             })),
         );
     }),

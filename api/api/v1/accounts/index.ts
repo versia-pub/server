@@ -6,8 +6,8 @@ import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
-import { zBoolean } from "~/packages/config-manager/config.type";
+import { zBoolean } from "~/classes/schemas/common";
+import { config } from "~/config.ts";
 
 const schema = z.object({
     username: z.string().openapi({
@@ -157,7 +157,7 @@ export default apiRoute((app) =>
         const { username, email, password, agreement, locale } =
             context.req.valid("json");
 
-        if (!config.signups.registration) {
+        if (!config.registration.allow) {
             throw new ApiError(422, "Registration is disabled");
         }
 
@@ -217,7 +217,11 @@ export default apiRoute((app) =>
         }
 
         // Check if username doesnt match filters
-        if (config.filters.username.some((filter) => username?.match(filter))) {
+        if (
+            config.validation.filters.username.some((filter) =>
+                filter.test(username),
+            )
+        ) {
             errors.details.username.push({
                 error: "ERR_INVALID",
                 description: "contains blocked words",
@@ -225,10 +229,13 @@ export default apiRoute((app) =>
         }
 
         // Check if username is too long
-        if ((username?.length ?? 0) > config.validation.max_username_size) {
+        if (
+            (username?.length ?? 0) >
+            config.validation.accounts.max_username_characters
+        ) {
             errors.details.username.push({
                 error: "ERR_TOO_LONG",
-                description: `is too long (maximum is ${config.validation.max_username_size} characters)`,
+                description: `is too long (maximum is ${config.validation.accounts.max_username_characters} characters)`,
             });
         }
 
@@ -241,7 +248,11 @@ export default apiRoute((app) =>
         }
 
         // Check if username is reserved
-        if (config.validation.username_blacklist.includes(username ?? "")) {
+        if (
+            config.validation.accounts.disallowed_usernames.some((filter) =>
+                filter.test(username),
+            )
+        ) {
             errors.details.username.push({
                 error: "ERR_RESERVED",
                 description: "is reserved",
@@ -274,9 +285,11 @@ export default apiRoute((app) =>
 
         // Check if email is blocked
         if (
-            config.validation.email_blacklist.includes(email) ||
-            (config.validation.blacklist_tempmail &&
-                tempmailDomains.domains.includes((email ?? "").split("@")[1]))
+            config.validation.emails.disallowed_domains.some((f) =>
+                f.test(email.split("@")[1]),
+            ) ||
+            (config.validation.emails.disallow_tempmail &&
+                tempmailDomains.domains.includes(email.split("@")[1]))
         ) {
             errors.details.email.push({
                 error: "ERR_BLOCKED",

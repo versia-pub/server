@@ -1,11 +1,11 @@
 import * as Sentry from "@sentry/bun";
+import { config } from "~/config.ts";
 import pkg from "~/package.json";
-import { config } from "~/packages/config-manager/index.ts";
 
 const sentryInstance =
-    config.logging.sentry.enabled &&
+    config.logging.sentry &&
     Sentry.init({
-        dsn: config.logging.sentry.dsn,
+        dsn: config.logging.sentry.dsn.origin,
         debug: config.logging.sentry.debug,
         sampleRate: config.logging.sentry.sample_rate,
         maxBreadcrumbs: config.logging.sentry.max_breadcrumbs,

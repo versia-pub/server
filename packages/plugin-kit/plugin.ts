@@ -51,7 +51,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         try {
             this.store = await this.configSchema.parseAsync(config);
         } catch (error) {
-            throw fromZodError(error as ZodError).message;
+            throw fromZodError(error as ZodError);
         }
     }
 

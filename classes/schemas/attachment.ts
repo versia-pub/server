@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 
 export const Attachment = z
@@ -54,7 +54,7 @@ export const Attachment = z
         description: z
             .string()
             .trim()
-            .max(config.validation.max_media_description_size)
+            .max(config.validation.media.max_description_characters)
             .nullable()
             .openapi({
                 description:

@@ -10,7 +10,7 @@ describe("/api/v1/instance/privacy_policy", () => {
 
         const json = await response.json();
         expect(json).toEqual({
-            updated_at: new Date(1970, 0, 0).toISOString(),
+            updated_at: new Date(0).toISOString(),
             // This instance has not provided any privacy policy.
             content:
                 "<p>This instance has not provided any privacy policy.</p>\n",

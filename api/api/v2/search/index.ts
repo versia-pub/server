@@ -12,10 +12,10 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { Account as AccountSchema } from "~/classes/schemas/account";
 import { Id } from "~/classes/schemas/common";
+import { zBoolean } from "~/classes/schemas/common.ts";
 import { Search as SearchSchema } from "~/classes/schemas/search";
 import { searchManager } from "~/classes/search/search-manager";
-import { config } from "~/packages/config-manager";
-import { zBoolean } from "~/packages/config-manager/config.type";
+import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -133,7 +133,7 @@ export default apiRoute((app) =>
             );
         }
 
-        if (!config.sonic.enabled) {
+        if (!config.search.enabled) {
             throw new ApiError(501, "Search is not enabled on this server");
         }
 

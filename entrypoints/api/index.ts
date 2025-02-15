@@ -2,7 +2,7 @@ import cluster from "node:cluster";
 import { sentry } from "@/sentry";
 import { createServer } from "@/server";
 import { appFactory } from "~/app";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 process.on("SIGINT", () => {
     process.exit();

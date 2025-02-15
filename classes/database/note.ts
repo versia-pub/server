@@ -38,7 +38,7 @@ import {
     parseTextMentions,
 } from "~/classes/functions/status";
 import type { Status as StatusSchema } from "~/classes/schemas/status.ts";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import type { Status } from "../schemas/status.ts";
 import { Application } from "./application.ts";
@@ -594,7 +594,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const { data } = await requester.get(uri, {
             // @ts-expect-error Bun extension
-            proxy: config.http.proxy.address,
+            proxy: config.http.proxy_address,
         });
 
         const note = await new EntityValidator().Note(data);

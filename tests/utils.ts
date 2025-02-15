@@ -6,11 +6,12 @@ import { solveChallenge } from "altcha-lib";
 import { type InferSelectModel, asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import { searchManager } from "~/classes/search/search-manager";
+import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
-import { config } from "~/packages/config-manager";
 
 await setupDatabase();
-if (config.sonic.enabled) {
+
+if (config.search.enabled) {
     await searchManager.connect();
 }
 
