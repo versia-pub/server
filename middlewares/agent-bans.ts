@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export const agentBans = createMiddleware(async (context, next) => {
     // Check for banned user agents (regex)

@@ -1,6 +1,6 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { configValidator } from "./config.type";
+import { ConfigSchema } from "./schema.ts";
 
-const jsonSchema = zodToJsonSchema(configValidator);
+const jsonSchema = zodToJsonSchema(ConfigSchema, {});
 
 console.write(`${JSON.stringify(jsonSchema, null, 4)}\n`);

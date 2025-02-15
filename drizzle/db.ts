@@ -4,28 +4,27 @@ import { type NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Pool } from "pg";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import * as schema from "./schema.ts";
 
 const primaryDb = new Pool({
-    host: config.database.host,
-    port: Number(config.database.port),
-    user: config.database.username,
-    password: config.database.password,
-    database: config.database.database,
+    host: config.postgres.host,
+    port: config.postgres.port,
+    user: config.postgres.username,
+    password: config.postgres.password,
+    database: config.postgres.database,
 });
 
-const replicas =
-    config.database.replicas?.map(
-        (replica) =>
-            new Pool({
-                host: replica.host,
-                port: Number(replica.port),
-                user: replica.username,
-                password: replica.password,
-                database: replica.database,
-            }),
-    ) ?? [];
+const replicas = config.postgres.replicas.map(
+    (replica) =>
+        new Pool({
+            host: replica.host,
+            port: replica.port,
+            user: replica.username,
+            password: replica.password,
+            database: replica.database,
+        }),
+);
 
 export const db =
     (replicas.length ?? 0) > 0

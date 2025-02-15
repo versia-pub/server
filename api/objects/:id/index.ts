@@ -8,7 +8,7 @@ import { Like, Note, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { ErrorSchema, type KnownEntity } from "~/types/api";
 
 const route = createRoute({

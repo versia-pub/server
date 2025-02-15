@@ -1,16 +1,20 @@
 # You can change the URL to the commit/tag you are using
 #:schema https://raw.githubusercontent.com/versia-pub/server/main/config/config.schema.json
 
-[database]
-# Main PostgreSQL database connection
+# All values marked as "sensitive" can be set to "PATH:/path/to/file" to read the value from a file (e.g. a secret manager)
+
+
+[postgres]
+# PostgreSQL database configuration
 host = "localhost"
 port = 5432
 username = "versia"
+# Sensitive value
 password = "mycoolpassword"
 database = "versia"
 
-# Add any eventual read-only database replicas here
-# [[database.replicas]]
+# Additional read-only replicas
+# [[postgres.replicas]]
 # host = "other-host"
 # port = 5432
 # username = "versia"
@@ -18,45 +22,48 @@ database = "versia"
 # database = "replica1"
 
 [redis.queue]
-# Redis instance for storing the federation queue
+# A Redis database used for managing queues.
 # Required for federation
 host = "localhost"
 port = 6379
-password = ""
+# Sensitive value
+# password = "test"
 database = 0
 
-[redis.cache]
-# Redis instance to be used as a timeline cache
+# A Redis database used for caching SQL queries.
 # Optional, can be the same as the queue instance
-host = "localhost"
-port = 6380
-password = ""
-database = 1
+# [redis.cache]
+# host = "localhost"
+# port = 6380
+# database = 1
+# password = ""
+
+# Search and indexing configuration
+[search]
+# Enable indexing and searching?
 enabled = false
 
-[sonic]
-# If Sonic is not configured, search will not be enabled
-host = "localhost"
-port = 7700
-password = ""
-enabled = true
+# Optional if search is disabled
+# [search.sonic]
+# host = "localhost"
+# port = 7700
+# Sensitive value
+# password = "test"
 
-[signups]
-# Whether to enable registrations or not
-registration = true
-rules = [
-    "Do not harass others",
-    "Be nice to people",
-    "Don't spam",
-    "Don't post illegal content",
-]
+[registration]
+# Can users sign up freely?
+allow = true
+# NOT IMPLEMENTED
+require_approval = false
+# Message to show to users when registration is disabled
+# message = "ran out of spoons to moderate registrations, sorry"
 
 [http]
-# The full URL Versia Server will be reachable by (paths are not supported)
-base_url = "https://versia.localhost:9900"
+# URL that the instance will be accessible at
+base_url = "https://example.com"
 # Address to bind to (0.0.0.0 is suggested for proxies)
-bind = "versia.localhost"
-bind_port = 9900
+bind = "0.0.0.0"
+bind_port = 8080
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
@@ -66,29 +73,17 @@ banned_user_agents = [
     # "wget\/1.20.3",
 ]
 
-[http.proxy]
-# For HTTP proxies (e.g. Tor proxies)
+# URL to an eventual HTTP proxy
 # Will be used for all outgoing requests
-enabled = false
-address = "http://localhost:8118"
+# proxy_address = "http://localhost:8118" 
 
-[http.tls]
-# If these values are set, Versia Server will use these files for TLS
-enabled = false
-key = ""
-cert = ""
-passphrase = ""
-ca = ""
-
-[http.bait]
-# Enable the bait feature (sends fake data to those who are flagged)
-enabled = false
-# Path to file of bait data (if not provided, Versia Server will send the entire Bee Movie script)
-send_file = ""
-# IPs to send bait data to (wildcards, networks and ranges are supported)
-bait_ips = ["127.0.0.1", "::1"]
-# User agents to send bait data to (regex format)
-bait_user_agents = ["curl", "wget"]
+# TLS configuration. You should probably be using a reverse proxy instead of this
+# [http.tls]
+# key = "/path/to/key.pem"
+# cert = "/path/to/cert.pem"
+# Sensitive value
+# passphrase = "awawa"
+# ca = "/path/to/ca.pem"
 
 [frontend]
 # Enable custom frontends (warning: not enabling this will make Versia Server only accessible via the Mastodon API)
@@ -112,27 +107,29 @@ url = "http://localhost:3000"
 # This can be used to set up custom themes, etc on supported frontends.
 # theme = "dark"
 
-[smtp]
+# NOT IMPLEMENTED
+[email]
+# Enable email sending
+send_emails = false
+
+# If send_emails is true, the following settings are required
+# [email.smtp]
 # SMTP server to use for sending emails
-server = "smtp.example.com"
-port = 465
-username = "test@example.com"
-password = "password123"
-tls = true
-# Disable all email functions (this will allow people to sign up without verifying
-# their email)
-enabled = false
+# server = "smtp.example.com"
+# port = 465
+# username = "test@example.com"
+# Sensitive value
+# password = "password123"
+# tls = true
 
 [media]
 # Can be "s3" or "local", where "local" uploads the file to the local filesystem
 # Changing this value will not retroactively apply to existing data
 # Don't forget to fill in the s3 config :3
 backend = "s3"
-# Whether to check the hash of media when uploading to avoid duplication
-deduplicate_media = true
 # If media backend is "local", this is the folder where the files will be stored
 # Can be any path
-local_uploads_folder = "uploads"
+uploads_path = "uploads"
 
 [media.conversion]
 # Whether to automatically convert images to another format on upload
@@ -141,41 +138,30 @@ convert_images = true
 # JXL support will likely not work
 convert_to = "image/webp"
 # Also convert SVG images?
-convert_vector = false
+convert_vectors = false
 
 # [s3]
 # Can be left commented if you don't use the S3 media backend
-# endpoint = ""
+# endpoint = "https://s3.example.com"
+# Sensitive value
 # access_key = "XXXXX"
+# Sensitive value
 # secret_access_key = "XXX"
-# region = ""
+# region = "us-east-1"
 # bucket_name = "versia"
 # public_url = "https://cdn.example.com"
 
 [validation]
 # Checks user data
 # Does not retroactively apply to previously entered data
-max_displayname_size = 50         # Character length
-max_bio_size = 5000
-max_note_size = 5000
-max_avatar_size = 5_000_000       # Bytes
-max_header_size = 5_000_000
-max_media_size = 40_000_000
-max_media_attachments = 10
-max_media_description_size = 1000
-max_emoji_size = 1000000
-max_emoji_shortcode_size = 100
-max_emoji_description_size = 1000
-max_poll_options = 20
-max_poll_option_size = 500
-min_poll_duration = 60            # Seconds
-max_poll_duration = 1893456000
-max_username_size = 30
-max_field_count = 10
-max_field_name_size = 1000
-max_field_value_size = 1000
-# Forbidden usernames, defaults are from Akkoma
-username_blacklist = [
+[validation.accounts]
+max_displayname_characters = 50
+max_username_characters = 30
+max_bio_characters = 5000
+max_avatar_bytes = 5_000_000
+max_header_bytes = 5_000_000
+# Regex is allowed here
+disallowed_usernames = [
     "well-known",
     "about",
     "activities",
@@ -202,12 +188,14 @@ username_blacklist = [
     "search",
     "mfa",
 ]
-# Whether to blacklist known temporary email providers
-blacklist_tempmail = false
-# Additional email providers to blacklist (list of domains)
-email_blacklist = []
-# Valid URL schemes, otherwise the URL is parsed as text
-url_scheme_whitelist = [
+max_field_count = 10
+max_field_name_characters = 1000
+max_field_value_characters = 1000
+max_pinned_notes = 20
+
+[validation.notes]
+max_characters = 5000
+allowed_url_schemes = [
     "http",
     "https",
     "ftp",
@@ -226,39 +214,71 @@ url_scheme_whitelist = [
     "ssb",
     "gemini",
 ]
-# Only allow those MIME types of data to be uploaded
-# This can easily be spoofed, but if it is spoofed it will appear broken
-# to normal clients until despoofed
-enforce_mime_types = false
-# Defaults to all valid MIME types
-# allowed_mime_types = []
+max_attachments = 16
 
-[validation.challenges]
+[validation.media]
+max_bytes = 40_000_000
+max_description_characters = 1000
+# An empty array allows all MIME types
+allowed_mime_types = []
+
+[validation.emojis]
+max_bytes = 1_000_000
+max_shortcode_characters = 100
+max_description_characters = 1000
+
+[validation.polls]
+max_options = 20
+max_option_characters = 500
+min_duration_seconds = 60
+# 100 days
+max_duration_seconds = 8_640_000
+
+[validation.emails]
+# Blocks over 10,000 common tempmail domains
+disallow_tempmail = false
+# Regex is allowed here
+disallowed_domains = []
+
+# [validation.challenges]
 # "Challenges" (aka captchas) are a way to verify that a user is human
-# Versia Server's challenges use no external services, and are Proof of Work based
+# Versia Server's challenges use no external services, and are proof-of-work based
 # This means that they do not require any user interaction, instead
 # they require the user's computer to do a small amount of work
-enabled = false
 # The difficulty of the challenge, higher is will take more time to solve
-difficulty = 50000
+# difficulty = 50000
 # Challenge expiration time in seconds
-expiration = 300 # 5 minutes
+# expiration = 300 # 5 minutes
 # Leave this empty to generate a new key
-key = ""
+# Sensitive value
+# key = ""
+
+# Block content that matches these regular expressions
+[validation.filters]
+note_content = [
+    # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
+    # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
+]
+emoji_shortcode = []
+username = []
+displayname = []
+bio = []
 
 [notifications]
 
-[notifications.push]
-# Whether to enable push notifications
-enabled = true
-
-[notifications.push.vapid]
+# Web Push Notifications configuration.
+# Leave out to disable.
+# [notifications.push]
+# Subject field embedded in the push notification
+# subject = "mailto:joe@example.com"
+#
+# [notifications.push.vapid_keys]
 # VAPID keys for push notifications
 # Run Versia Server with those values missing to generate new keys
-public = ""
-private = ""
-# Optional
-# subject = "mailto:joe@example.com"
+# Sensitive value
+# public = ""
+# Sensitive value
+# private = ""
 
 [defaults]
 # Default visibility for new notes
@@ -278,37 +298,37 @@ placeholder_style = "thumbs"
 # Controls the delivery queue (for outbound federation)
 [queues.delivery]
 # Time in seconds to remove completed jobs
-remove_on_complete = 31536000
+remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+remove_after_failure_seconds = 31536000
 
 # Controls the inbox processing queue (for inbound federation)
 [queues.inbox]
 # Time in seconds to remove completed jobs
-remove_on_complete = 31536000
+remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+remove_after_failure_seconds = 31536000
 
 # Controls the fetch queue (for remote data refreshes)
 [queues.fetch]
 # Time in seconds to remove completed jobs
-remove_on_complete = 31536000
+remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+remove_after_failure_seconds = 31536000
 
 # Controls the push queue (for push notification delivery)
 [queues.push]
 # Time in seconds to remove completed jobs
-remove_on_complete = 31536000
+remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+remove_after_failure_seconds = 31536000
 
 # Controls the media queue (for media processing)
 [queues.media]
 # Time in seconds to remove completed jobs
-remove_on_complete = 31536000
+remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+remove_after_failure_seconds = 31536000 
 
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
@@ -335,39 +355,58 @@ avatars = []
 
 # For bridge software, such as versia-pub/activitypub
 # Bridges must be hosted separately from the main Versia Server process
-[federation.bridge]
-enabled = false
+# [federation.bridge]
 # Only versia-ap exists for now
-software = "versia-ap"
+# software = "versia-ap"
 # If this is empty, any bridge with the correct token
 # will be able to send data to your instance
-allowed_ips = ["192.168.1.0/24"]
+# v4, v6, ranges and wildcards are supported
+# allowed_ips = ["192.168.1.0/24"]
 # Token for the bridge software
 # Bridge must have the same token!
-token = "mycooltoken"
-url = "https://ap.versia.social"
+# Sensitive value
+# token = "mycooltoken"
+# url = "https://ap.versia.social"
 
 [instance]
 name = "Versia"
 description = "A Versia Server instance"
-# Path to a file containing a longer description of your instance
-# This will be parsed as Markdown
+
+# Paths to instance long description, terms of service, and privacy policy
+# These will be parsed as Markdown
+#
 # extended_description_path = "config/extended_description.md"
-# Path to a file containing the terms of service of your instance
-# This will be parsed as Markdown
 # tos_path = "config/tos.md"
-# Path to a file containing the privacy policy of your instance
-# This will be parsed as Markdown
 # privacy_policy_path = "config/privacy_policy.md"
-# URL to your instance logo
-# logo = ""
-# URL to your instance banner
-# banner = ""
+
+# Primary instance languages. ISO 639-1 codes.
+languages = ["en"]
+
+[instance.contact]
+# email = "staff@yourinstance.com"
+
+[instance.branding]
+# logo = "https://cdn.example.com/logo.png"
+# banner = "https://cdn.example.com/banner.png"
 
 # Used for federation. If left empty or missing, the server will generate one for you.
-[instance.keys]
-public = ""
-private = ""
+# [instance.keys]
+# Sensitive value
+# public = ""
+# Sensitive value
+# private = ""
+
+[[instance.rules]]
+# Short description of the rule
+text = "No hate speech"
+# Longer version of the rule with additional information
+hint = "Hate speech includes slurs, threats, and harassment."
+
+[[instance.rules]]
+text = "No spam"
+
+# [[instance.rules]]
+# ...etc
 
 [permissions]
 # Control default permissions for users
@@ -385,66 +424,33 @@ private = ""
 # Defaults to being able to manage all instance data, content, and users
 # admin = []
 
-
-[filters]
-# Regex filters for federated and local data
-# Drops data matching the filters
-# Does not apply retroactively to existing data
-
-# Note contents
-note_content = [
-    # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
-    # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
-]
-emoji = []
-# These will drop users matching the filters
-username = []
-displayname = []
-bio = []
-
 [logging]
-# Log all requests (warning: this is a lot of data)
-log_requests = false
-# Log request and their contents (warning: this is a lot of data)
-log_requests_verbose = false
+
 # Available levels: debug, info, warning, error, fatal
 log_level = "debug"
-# For GDPR compliance, you can disable logging of IPs
-log_ip = false
 
-# Log all filtered objects
-log_filters = true
+log_file_path = "logs/versia.log"
 
-[logging.sentry]
-# Whether to enable https://sentry.io error logging
-enabled = false
+[logging.types]
+# Either pass a boolean
+# requests = true
+# Or a table with the following keys:
+# requests_content = { level = "debug", log_file_path = "logs/requests.log" }
+# Available types are: requests, responses, requests_content, filters
+
+# https://sentry.io support
+# Uncomment to enable
+# [logging.sentry]
 # Sentry DSN for error logging
-dsn = ""
-debug = false
+# dsn = "https://example.com"
+# debug = false
 
-sample_rate = 1.0
-traces_sample_rate = 1.0
+# sample_rate = 1.0
+# traces_sample_rate = 1.0
 # Can also be regex
-trace_propagation_targets = []
-max_breadcrumbs = 100
+# trace_propagation_targets = []
+# max_breadcrumbs = 100
 # environment = "production"
-
-[logging.storage]
-# Path to logfile for requests
-requests = "logs/requests.log"
-
-[ratelimits]
-# These settings apply to every route at once
-# Amount to multiply every route's duration by
-duration_coeff = 1.0
-# Amount to multiply every route's max requests per [duration] by
-max_coeff = 1.0
-
-[ratelimits.custom]
-# Add in any API route in this style here
-# Applies before the global ratelimit changes
-# "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
-# "/api/v1/timelines/public" = { duration = 60, max = 200 }
 
 [plugins]
 # Whether to automatically load all plugins in the plugins directory
@@ -481,5 +487,6 @@ allow_registration = true
 # This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)
 # url = "https://id.cpluspatch.com/application/o/versia-testing/"
 # client_id = "XXXX"
+# Sensitive value
 # client_secret = "XXXXX"
 # icon = "https://cpluspatch.com/images/icons/logo.svg"

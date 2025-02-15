@@ -12,7 +12,7 @@ import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {
@@ -90,7 +90,7 @@ export default apiRoute((app) =>
 
         let activityPubUrl = "";
 
-        if (config.federation.bridge.enabled) {
+        if (config.federation.bridge) {
             const manager = await User.getFederationRequester();
 
             try {
@@ -98,7 +98,7 @@ export default apiRoute((app) =>
                     user.data.username,
                     config.http.base_url.host,
                     "application/activity+json",
-                    config.federation.bridge.url?.toString(),
+                    config.federation.bridge.url.origin,
                 );
             } catch (e) {
                 const error = e as ResponseError;
@@ -136,7 +136,7 @@ export default apiRoute((app) =>
                         type:
                             user.avatar?.getPreferredMimeType() ??
                             "image/svg+xml",
-                        href: user.getAvatarUrl(config),
+                        href: user.getAvatarUrl(),
                     },
                 ].filter(Boolean) as {
                     rel: string;

@@ -19,7 +19,7 @@ import {
     getLevelFilter,
 } from "@logtape/logtape";
 import chalk from "chalk";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 // HACK: This is a workaround for the lack of type exports in the Logtape package.
 // biome-ignore format: Biome formatter bug
@@ -156,7 +156,7 @@ export const configureLoggers = (silent = false): Promise<void> =>
             console: getConsoleSink({
                 formatter: defaultConsoleFormatter,
             }),
-            file: getBaseRotatingFileSink(config.logging.storage.requests, {
+            file: getBaseRotatingFileSink(config.logging.log_file_path, {
                 maxFiles: 10,
                 maxSize: 10 * 1024 * 1024,
                 formatter: defaultTextFormatter,

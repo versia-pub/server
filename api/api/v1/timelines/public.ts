@@ -3,8 +3,8 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Timeline } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
+import { zBoolean } from "~/classes/schemas/common.ts";
 import { Status as StatusSchema } from "~/classes/schemas/status";
-import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",

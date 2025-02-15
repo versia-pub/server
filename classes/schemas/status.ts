@@ -1,11 +1,10 @@
 import { z } from "@hono/zod-openapi";
 import type { Status as ApiNote } from "@versia/client/types";
-import { zBoolean } from "~/packages/config-manager/config.type.ts";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
 import { PreviewCard } from "./card.ts";
-import { Id, iso631 } from "./common.ts";
+import { Id, iso631, zBoolean } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 import { FilterResult } from "./filters.ts";
 import { Poll } from "./poll.ts";
@@ -58,12 +57,12 @@ export const StatusSource = z
         }),
         text: z
             .string()
-            .max(config.validation.max_note_size)
+            .max(config.validation.notes.max_characters)
             .trim()
             .refine(
                 (s) =>
-                    !config.filters.note_content.some((filter) =>
-                        s.match(filter),
+                    !config.validation.filters.note_content.some((filter) =>
+                        filter.test(s),
                     ),
                 "Status contains blocked words",
             )

@@ -1,8 +1,8 @@
 import { apiRoute, auth } from "@/api";
-import { renderMarkdownInPath } from "@/markdown";
 import { createRoute } from "@hono/zod-openapi";
+import { markdownParse } from "~/classes/functions/status";
 import { TermsOfService as TermsOfServiceSchema } from "~/classes/schemas/tos";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "get",
@@ -33,13 +33,15 @@ const route = createRoute({
 
 export default apiRoute((app) =>
     app.openapi(route, async (context) => {
-        const { content, lastModified } = await renderMarkdownInPath(
-            config.instance.tos_path ?? "",
-            "This instance has not provided any terms of service.",
+        const content = await markdownParse(
+            config.instance.tos_path?.content ??
+                "This instance has not provided any terms of service.",
         );
 
         return context.json({
-            updated_at: lastModified.toISOString(),
+            updated_at: new Date(
+                config.instance.tos_path?.file.lastModified ?? 0,
+            ).toISOString(),
             content,
         });
     }),

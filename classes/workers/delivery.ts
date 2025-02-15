@@ -1,7 +1,7 @@
 import { User } from "@versia/kit/db";
 import { Worker } from "bullmq";
 import chalk from "chalk";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 import {
     type DeliveryJobData,
@@ -52,10 +52,10 @@ export const getDeliveryWorker = (): Worker<
         {
             connection,
             removeOnComplete: {
-                age: config.queues.delivery.remove_on_complete,
+                age: config.queues.delivery?.remove_after_complete_seconds,
             },
             removeOnFail: {
-                age: config.queues.delivery.remove_on_failure,
+                age: config.queues.delivery?.remove_after_failure_seconds,
             },
         },
     );

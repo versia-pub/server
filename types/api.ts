@@ -13,8 +13,8 @@ import type {
 } from "@versia/federation/types";
 import type { SocketAddress } from "bun";
 import type { RouterRoute } from "hono/types";
+import type { ConfigSchema } from "~/classes/config/schema";
 import type { AuthData } from "~/classes/functions/user";
-import type { Config } from "~/packages/config-manager";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 
@@ -24,7 +24,7 @@ export const ErrorSchema = z.object({
 
 export type HonoEnv = {
     Variables: {
-        config: Config;
+        config: z.infer<typeof ConfigSchema>;
         auth: AuthData;
     };
     Bindings: {

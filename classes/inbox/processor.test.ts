@@ -9,8 +9,10 @@ import {
     User,
 } from "@versia/kit/db";
 import type { SocketAddress } from "bun";
+import type { z } from "zod";
 import { ValidationError } from "zod-validation-error";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
+import type { ConfigSchema } from "../config/schema.ts";
 import { InboxProcessor } from "./processor.ts";
 
 // Mock dependencies
@@ -58,7 +60,7 @@ mock.module("@versia/federation", () => ({
     RequestParserHandler: jest.fn(),
 }));
 
-mock.module("~/packages/config-manager/index.ts", () => ({
+mock.module("~/config.ts", () => ({
     config: {
         debug: {
             federation: false,
@@ -172,9 +174,13 @@ describe("InboxProcessor", () => {
         });
 
         test("returns false for valid bridge request", () => {
-            config.federation.bridge.enabled = true;
-            config.federation.bridge.token = "valid-token";
-            config.federation.bridge.allowed_ips = ["127.0.0.1"];
+            config.federation.bridge = {
+                token: "valid-token",
+                allowed_ips: ["127.0.0.1"],
+                url: new URL("https://test.com"),
+                software: "versia-ap",
+            };
+
             mockHeaders.authorization = "Bearer valid-token";
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method
@@ -183,7 +189,9 @@ describe("InboxProcessor", () => {
         });
 
         test("returns error response for invalid token", () => {
-            config.federation.bridge.enabled = true;
+            config.federation.bridge = {} as z.infer<
+                typeof ConfigSchema
+            >["federation"]["bridge"];
             mockHeaders.authorization = "Bearer invalid-token";
 
             // biome-ignore lint/complexity/useLiteralKeys: Private method

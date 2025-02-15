@@ -17,7 +17,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { BaseInterface } from "./base.ts";
 import { Note } from "./note.ts";
 import { User } from "./user.ts";

@@ -12,7 +12,7 @@ describe("/api/v1/instance/extended_description", () => {
 
         const json = await response.json();
         expect(json).toEqual({
-            updated_at: new Date(1970, 0, 0).toISOString(),
+            updated_at: new Date(0).toISOString(),
             content:
                 '<p>This is a <a href="https://versia.pub">Versia</a> server with the default extended description.</p>\n',
         });

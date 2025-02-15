@@ -4,8 +4,8 @@ import { Timeline } from "@versia/kit/db";
 import { Notifications, RolePermissions } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 import { Account as AccountSchema } from "~/classes/schemas/account";
+import { zBoolean } from "~/classes/schemas/common.ts";
 import { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
-import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",

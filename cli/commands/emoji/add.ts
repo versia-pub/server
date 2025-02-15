@@ -5,7 +5,7 @@ import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import ora from "ora";
 import { BaseCommand } from "~/cli/base";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
     public static override args = {
@@ -62,7 +62,7 @@ export default class EmojiAdd extends BaseCommand<typeof EmojiAdd> {
                     "Accept-Encoding": "identity",
                 },
                 // @ts-expect-error Proxy is a Bun-specific feature
-                proxy: config.http.proxy.address,
+                proxy: config.http.proxy_address,
             });
 
             if (!response.ok) {

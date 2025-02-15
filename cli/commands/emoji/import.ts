@@ -7,7 +7,7 @@ import { lookup } from "mime-types";
 import ora from "ora";
 import { unzip } from "unzipit";
 import { BaseCommand } from "~/cli/base";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 type MetaType = {
     emojis: {
@@ -69,7 +69,7 @@ export default class EmojiImport extends BaseCommand<typeof EmojiImport> {
                     "Accept-Encoding": "identity",
                 },
                 // @ts-expect-error Proxy is a Bun-specific feature
-                proxy: config.http.proxy.address,
+                proxy: config.http.proxy_address,
             });
 
             if (!response.ok) {

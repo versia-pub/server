@@ -23,7 +23,7 @@ import { eq } from "drizzle-orm";
 import type { StatusCode } from "hono/utils/http-status";
 import { matches } from "ip-matching";
 import { type ValidationError, isValidationError } from "zod-validation-error";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 type ResponseBody = {
     message?: string;
@@ -98,7 +98,7 @@ export class InboxProcessor {
             throw new Error("Sender is not defined");
         }
 
-        if (config.debug.federation) {
+        if (config.debug?.federation) {
             this.logger.debug`Sender public key: ${chalk.gray(
                 this.sender.key,
             )}`;
@@ -134,7 +134,7 @@ export class InboxProcessor {
      * @returns {boolean | ResponseBody} - Whether to skip signature checks. May include a response body if there are errors.
      */
     private shouldCheckSignature(): boolean | ResponseBody {
-        if (config.federation.bridge.enabled) {
+        if (config.federation.bridge) {
             const token = this.headers.authorization?.split("Bearer ")[1];
 
             if (token) {
@@ -158,6 +158,14 @@ export class InboxProcessor {
      * @returns
      */
     private isRequestFromBridge(token: string): boolean | ResponseBody {
+        if (!config.federation.bridge) {
+            return {
+                message:
+                    "Bridge is not configured. Please remove the Authorization header.",
+                code: 500,
+            };
+        }
+
         if (token !== config.federation.bridge.token) {
             return {
                 message:

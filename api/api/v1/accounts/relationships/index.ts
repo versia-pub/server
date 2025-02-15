@@ -3,8 +3,8 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { Account as AccountSchema } from "~/classes/schemas/account";
+import { zBoolean } from "~/classes/schemas/common.ts";
 import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
-import { zBoolean } from "~/packages/config-manager/config.type";
 
 const route = createRoute({
     method: "get",

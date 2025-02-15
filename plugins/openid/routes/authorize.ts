@@ -223,7 +223,7 @@ export default (plugin: PluginType): void =>
                             ...payload,
                             name: user.data.displayName,
                             preferred_username: user.data.username,
-                            picture: user.getAvatarUrl(context.get("config")),
+                            picture: user.getAvatarUrl(),
                             updated_at: new Date(
                                 user.data.updatedAt,
                             ).toISOString(),

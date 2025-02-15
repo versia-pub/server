@@ -1,8 +1,8 @@
 import { userAddressValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
 import type { Account as ApiAccount } from "@versia/client/types";
-import { config } from "~/packages/config-manager";
-import { zBoolean } from "~/packages/config-manager/config.type";
+import { zBoolean } from "~/classes/schemas/common.ts";
+import { config } from "~/config.ts";
 import { iso631 } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 import { Role } from "./versia.ts";
@@ -12,7 +12,7 @@ export const Field = z.object({
         .string()
         .trim()
         .min(1)
-        .max(config.validation.max_field_name_size)
+        .max(config.validation.accounts.max_field_name_characters)
         .openapi({
             description: "The key of a given field’s key-value pair.",
             example: "Freak level",
@@ -24,7 +24,7 @@ export const Field = z.object({
         .string()
         .trim()
         .min(1)
-        .max(config.validation.max_field_value_size)
+        .max(config.validation.accounts.max_field_value_characters)
         .openapi({
             description: "The value associated with the name key.",
             example: "<p>High</p>",
@@ -87,9 +87,12 @@ export const Source = z
             .string()
             .trim()
             .min(0)
-            .max(config.validation.max_bio_size)
+            .max(config.validation.accounts.max_bio_characters)
             .refine(
-                (s) => !config.filters.bio.some((filter) => s.match(filter)),
+                (s) =>
+                    !config.validation.filters.bio.some((filter) =>
+                        filter.test(s),
+                    ),
                 "Bio contains blocked words",
             )
             .openapi({
@@ -99,9 +102,12 @@ export const Source = z
                     url: "https://docs.joinmastodon.org/entities/Account/#source-note",
                 },
             }),
-        fields: z.array(Field).max(config.validation.max_field_count).openapi({
-            description: "Metadata about the account.",
-        }),
+        fields: z
+            .array(Field)
+            .max(config.validation.accounts.max_field_count)
+            .openapi({
+                description: "Metadata about the account.",
+            }),
     })
     .openapi({
         description:
@@ -126,14 +132,24 @@ export const Account = z.object({
         .string()
         .min(3)
         .trim()
-        .max(config.validation.max_username_size)
+        .max(config.validation.accounts.max_username_characters)
         .regex(
             /^[a-z0-9_-]+$/,
             "Username can only contain letters, numbers, underscores and hyphens",
         )
         .refine(
-            (s) => !config.filters.username.some((filter) => s.match(filter)),
+            (s) =>
+                !config.validation.filters.username.some((filter) =>
+                    filter.test(s),
+                ),
             "Username contains blocked words",
+        )
+        .refine(
+            (s) =>
+                !config.validation.accounts.disallowed_usernames.some((u) =>
+                    u.test(s),
+                ),
+            "Username is disallowed",
         )
         .openapi({
             description: "The username of the account, not including domain.",
@@ -169,10 +185,12 @@ export const Account = z.object({
         .string()
         .min(3)
         .trim()
-        .max(config.validation.max_displayname_size)
+        .max(config.validation.accounts.max_displayname_characters)
         .refine(
             (s) =>
-                !config.filters.displayname.some((filter) => s.match(filter)),
+                !config.validation.filters.displayname.some((filter) =>
+                    filter.test(s),
+                ),
             "Display name contains blocked words",
         )
         .openapi({
@@ -185,10 +203,11 @@ export const Account = z.object({
     note: z
         .string()
         .min(0)
-        .max(config.validation.max_bio_size)
+        .max(config.validation.accounts.max_bio_characters)
         .trim()
         .refine(
-            (s) => !config.filters.bio.some((filter) => s.match(filter)),
+            (s) =>
+                !config.validation.filters.bio.some((filter) => filter.test(s)),
             "Bio contains blocked words",
         )
         .openapi({
@@ -255,7 +274,7 @@ export const Account = z.object({
     }),
     fields: z
         .array(Field)
-        .max(config.validation.max_field_count)
+        .max(config.validation.accounts.max_field_count)
         .openapi({
             description:
                 "Additional metadata attached to a profile as name-value pairs.",

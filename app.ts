@@ -12,12 +12,11 @@ import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
+import { config } from "~/config.ts";
 import pkg from "~/package.json" with { type: "application/json" };
-import { config } from "~/packages/config-manager/index.ts";
 import { ApiError } from "./classes/errors/api-error.ts";
 import { PluginLoader } from "./classes/plugin/loader.ts";
 import { agentBans } from "./middlewares/agent-bans.ts";
-import { bait } from "./middlewares/bait.ts";
 import { boundaryCheck } from "./middlewares/boundary-check.ts";
 import { ipBans } from "./middlewares/ip-bans.ts";
 import { logger } from "./middlewares/logger.ts";
@@ -33,21 +32,8 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         defaultHook: handleZodError,
     });
 
-    /* const { printMetrics, registerMetrics } = prometheus({
-        collectDefaultMetrics: true,
-        metricOptions: {
-            requestsTotal: {
-                customLabels: {
-                    content_type: (c) =>
-                        c.res.headers.get("content-type") ?? "unknown",
-                },
-            },
-        },
-    }); */
-
     app.use(ipBans);
     app.use(agentBans);
-    app.use(bait);
     app.use(logger);
     app.use(boundaryCheck);
     app.use(

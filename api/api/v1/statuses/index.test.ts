@@ -3,7 +3,7 @@ import type { Status as ApiStatus } from "@versia/client/types";
 import { Media, db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
@@ -61,7 +61,7 @@ describe("/api/v1/statuses", () => {
                 Authorization: `Bearer ${tokens[0].data.accessToken}`,
             },
             body: new URLSearchParams({
-                status: "a".repeat(config.validation.max_note_size + 1),
+                status: "a".repeat(config.validation.notes.max_characters + 1),
                 local_only: "true",
             }),
         });

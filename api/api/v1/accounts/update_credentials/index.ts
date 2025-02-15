@@ -8,8 +8,8 @@ import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { Account as AccountSchema } from "~/classes/schemas/account";
-import { zBoolean } from "~/packages/config-manager/config.type";
-import { config } from "~/packages/config-manager/index.ts";
+import { zBoolean } from "~/classes/schemas/common.ts";
+import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "patch",
@@ -62,9 +62,9 @@ const route = createRoute({
                                         .refine(
                                             (v) =>
                                                 v.size <=
-                                                config.validation
-                                                    .max_avatar_size,
-                                            `Avatar must be less than ${config.validation.max_avatar_size} bytes`,
+                                                config.validation.accounts
+                                                    .max_avatar_bytes,
+                                            `Avatar must be less than ${config.validation.accounts.max_avatar_bytes} bytes`,
                                         )
                                         .openapi({
                                             description:
@@ -84,9 +84,9 @@ const route = createRoute({
                                         .refine(
                                             (v) =>
                                                 v.size <=
-                                                config.validation
-                                                    .max_header_size,
-                                            `Header must be less than ${config.validation.max_header_size} bytes`,
+                                                config.validation.accounts
+                                                    .max_header_bytes,
+                                            `Header must be less than ${config.validation.accounts.max_header_bytes} bytes`,
                                         )
                                         .openapi({
                                             description:
@@ -144,7 +144,9 @@ const route = createRoute({
                                             .element.shape.value,
                                     }),
                                 )
-                                .max(config.validation.max_field_count),
+                                .max(
+                                    config.validation.accounts.max_field_count,
+                                ),
                         })
                         .partial(),
                 },

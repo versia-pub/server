@@ -28,7 +28,7 @@ import { type ParsedQs, parse } from "qs";
 import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { ErrorSchema, type HonoEnv } from "~/types/api";
 
 export const reusedResponses = {
@@ -229,7 +229,7 @@ export const checkRouteNeedsChallenge = async (
     required: boolean,
     context: Context,
 ): Promise<void> => {
-    if (!required) {
+    if (!(required && config.validation.challenges)) {
         return;
     }
 
@@ -325,7 +325,7 @@ export const auth = <AuthRequired extends boolean>(options: {
         }
 
         // Challenge check
-        if (options.challenge && config.validation.challenges.enabled) {
+        if (options.challenge && config.validation.challenges) {
             await checkRouteNeedsChallenge(options.challenge, context);
         }
 
@@ -573,7 +573,7 @@ export const debugRequest = async (req: Request): Promise<void> => {
 
     const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
-    if (config.logging.log_requests_verbose) {
+    if (config.logging.types.requests_content) {
         logger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
     } else {
         logger.debug`${urlAndMethod}`;
@@ -594,7 +594,7 @@ export const debugResponse = async (res: Response): Promise<void> => {
 
     const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
-    if (config.logging.log_requests_verbose) {
+    if (config.logging.types.requests_content) {
         logger.debug`${status}\n${headers}\n${bodyLog}`;
     } else {
         logger.debug`${status}`;

@@ -18,7 +18,7 @@ import {
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,

@@ -12,7 +12,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
@@ -147,7 +147,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         const { ok, raw, data } = await requester
             .get(wellKnownUrl, {
                 // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
+                proxy: config.http.proxy_address,
             })
             .catch((e) => ({
                 ...(e as ResponseError).response,
@@ -204,7 +204,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                     links: { rel: string; href: string }[];
                 }>(wellKnownUrl, {
                     // @ts-expect-error Bun extension
-                    proxy: config.http.proxy.address,
+                    proxy: config.http.proxy_address,
                 })
                 .catch((e) => ({
                     ...(
@@ -256,7 +256,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                     software: { version: string };
                 }>(metadataUrl.href, {
                     // @ts-expect-error Bun extension
-                    proxy: config.http.proxy.address,
+                    proxy: config.http.proxy_address,
                 })
                 .catch((e) => ({
                     ...(

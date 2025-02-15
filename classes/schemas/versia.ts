@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 
 /* Versia Server API extension */
@@ -56,7 +56,7 @@ export const NoteReaction = z
         name: z
             .string()
             .min(1)
-            .max(config.validation.max_emoji_shortcode_size)
+            .max(config.validation.emojis.max_shortcode_characters)
             .trim()
             .openapi({
                 description: "Custom Emoji shortcode or Unicode emoji.",

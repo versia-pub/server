@@ -10,7 +10,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 
 const schema = z
@@ -31,8 +31,8 @@ const schema = z
                             "Emoji image encoded using multipart/form-data",
                     })
                     .refine(
-                        (v) => v.size <= config.validation.max_emoji_size,
-                        `Emoji must be less than ${config.validation.max_emoji_size} bytes`,
+                        (v) => v.size <= config.validation.emojis.max_bytes,
+                        `Emoji must be less than ${config.validation.emojis.max_bytes} bytes`,
                     ),
             ),
         category: CustomEmojiSchema.shape.category.optional(),

@@ -47,7 +47,7 @@ import {
 import { htmlToText } from "html-to-text";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
-import { type Config, config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
@@ -522,7 +522,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         });
 
         // Also do push notifications
-        if (config.notifications.push.enabled) {
+        if (config.notifications.push) {
             await this.notifyPush(notification.id, type, relatedUser, note);
         }
     }
@@ -603,7 +603,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         if (instance.data.protocol === "activitypub") {
-            if (!config.federation.bridge.enabled) {
+            if (!config.federation.bridge) {
                 throw new Error("ActivityPub bridge is not enabled");
             }
 
@@ -627,7 +627,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const requester = await User.getFederationRequester();
         const output = await requester.get<Partial<VersiaUser>>(uri, {
             // @ts-expect-error Bun extension
-            proxy: config.http.proxy.address,
+            proxy: config.http.proxy_address,
         });
 
         const { data: json } = output;
@@ -815,10 +815,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     /**
      * Get the user's avatar in raw URL format
-     * @param config The config to use
      * @returns The raw URL for the user's avatar
      */
-    public getAvatarUrl(config: Config): URL {
+    public getAvatarUrl(): URL {
         if (!this.avatar) {
             return (
                 config.defaults.avatar ||
@@ -912,10 +911,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     /**
      * Get the user's header in raw URL format
-     * @param config The config to use
      * @returns The raw URL for the user's header
      */
-    public getHeaderUrl(config: Config): URL | null {
+    public getHeaderUrl(): URL | null {
         if (!this.header) {
             return config.defaults.header ?? null;
         }
@@ -996,7 +994,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             JSON.stringify(entity),
         );
 
-        if (config.debug.federation) {
+        if (config.debug?.federation) {
             const logger = getLogger("federation");
 
             // Log public key
@@ -1014,8 +1012,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      *
      * @returns The requester
      */
-    public static async getFederationRequester(): Promise<FederationRequester> {
-        const signatureConstructor = await SignatureConstructor.fromStringKey(
+    public static getFederationRequester(): FederationRequester {
+        const signatureConstructor = new SignatureConstructor(
             config.instance.keys.private,
             config.http.base_url,
         );
@@ -1087,7 +1085,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         try {
             await new FederationRequester().post(inbox, entity, {
                 // @ts-expect-error Bun extension
-                proxy: config.http.proxy.address,
+                proxy: config.http.proxy_address,
                 headers: {
                     ...headers.toJSON(),
                     "Content-Type": "application/json; charset=utf-8",
@@ -1117,9 +1115,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             url:
                 user.uri ||
                 new URL(`/@${user.username}`, config.http.base_url).toString(),
-            avatar: proxyUrl(this.getAvatarUrl(config)).toString(),
-            header: this.getHeaderUrl(config)
-                ? proxyUrl(this.getHeaderUrl(config) as URL).toString()
+            avatar: proxyUrl(this.getAvatarUrl()).toString(),
+            header: this.getHeaderUrl()
+                ? proxyUrl(this.getHeaderUrl() as URL).toString()
                 : "",
             locked: user.isLocked,
             created_at: new Date(user.createdAt).toISOString(),
@@ -1135,9 +1133,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
             // TODO: Add static avatar and header
-            avatar_static: proxyUrl(this.getAvatarUrl(config)).toString(),
-            header_static: this.getHeaderUrl(config)
-                ? proxyUrl(this.getHeaderUrl(config) as URL).toString()
+            avatar_static: proxyUrl(this.getAvatarUrl()).toString(),
+            header_static: this.getHeaderUrl()
+                ? proxyUrl(this.getHeaderUrl() as URL).toString()
                 : "",
             acct: this.getAcct(),
             // TODO: Add these fields

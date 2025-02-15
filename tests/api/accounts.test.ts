@@ -6,7 +6,7 @@ import type {
     Account as ApiAccount,
     Relationship as ApiRelationship,
 } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);

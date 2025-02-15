@@ -2,7 +2,7 @@ import { Args, Flags } from "@oclif/core";
 import ora from "ora";
 import { SonicIndexType, searchManager } from "~/classes/search/search-manager";
 import { BaseCommand } from "~/cli/base";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export default class IndexRebuild extends BaseCommand<typeof IndexRebuild> {
     public static override args = {
@@ -28,8 +28,8 @@ export default class IndexRebuild extends BaseCommand<typeof IndexRebuild> {
     public async run(): Promise<void> {
         const { flags, args } = await this.parse(IndexRebuild);
 
-        if (!config.sonic.enabled) {
-            this.error("Sonic search is disabled");
+        if (!config.search.enabled) {
+            this.error("Search is disabled");
             this.exit(1);
         }
 

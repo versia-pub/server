@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import type { Account as APIAccount } from "@versia/client/types";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { tokens, deleteUsers } = await getTestUsers(1);

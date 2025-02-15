@@ -10,7 +10,7 @@ import {
     Ingest as SonicChannelIngest,
     Search as SonicChannelSearch,
 } from "sonic-channel";
-import { type Config, config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 /**
  * Enum for Sonic index types
@@ -32,17 +32,21 @@ export class SonicSearchManager {
     /**
      * @param config Configuration for Sonic
      */
-    public constructor(private config: Config) {
+    public constructor() {
+        if (!config.search.sonic) {
+            throw new Error("Sonic configuration is missing");
+        }
+
         this.searchChannel = new SonicChannelSearch({
-            host: config.sonic.host,
-            port: config.sonic.port,
-            auth: config.sonic.password,
+            host: config.search.sonic.host,
+            port: config.search.sonic.port,
+            auth: config.search.sonic.password,
         });
 
         this.ingestChannel = new SonicChannelIngest({
-            host: config.sonic.host,
-            port: config.sonic.port,
-            auth: config.sonic.password,
+            host: config.search.sonic.host,
+            port: config.search.sonic.port,
+            auth: config.search.sonic.password,
         });
     }
 
@@ -50,7 +54,7 @@ export class SonicSearchManager {
      * Connect to Sonic
      */
     public async connect(silent = false): Promise<void> {
-        if (!this.config.sonic.enabled) {
+        if (!config.search.enabled) {
             !silent && this.logger.info`Sonic search is disabled`;
             return;
         }
@@ -127,7 +131,7 @@ export class SonicSearchManager {
      * @param user User to add
      */
     public async addUser(user: User): Promise<void> {
-        if (!this.config.sonic.enabled) {
+        if (!config.search.enabled) {
             return;
         }
 
@@ -310,4 +314,4 @@ export class SonicSearchManager {
     }
 }
 
-export const searchManager = new SonicSearchManager(config);
+export const searchManager = new SonicSearchManager();

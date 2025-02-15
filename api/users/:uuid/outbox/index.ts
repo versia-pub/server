@@ -8,7 +8,7 @@ import { Note, User, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 
 const schemas = {

@@ -3,7 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { db } from "@versia/kit/db";
 import { Applications, Tokens } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 const schemas = {
     query: z.object({

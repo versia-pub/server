@@ -1,99 +1,168 @@
-[database]
+# You can change the URL to the commit/tag you are using
+#:schema https://raw.githubusercontent.com/versia-pub/server/main/config/config.schema.json
+
+# All values marked as "sensitive" can be set to "PATH:/path/to/file" to read the value from a file (e.g. a secret manager)
+
+
+[postgres]
+# PostgreSQL database configuration
 host = "localhost"
 port = 5432
 username = "versia"
+# Sensitive value
 password = "versia"
 database = "versia"
 
+# Additional read-only replicas
+# [[postgres.replicas]]
+# host = "other-host"
+# port = 5432
+# username = "versia"
+# password = "mycoolpassword2"
+# database = "replica1"
+
 [redis.queue]
+# A Redis database used for managing queues.
+# Required for federation
 host = "localhost"
 port = 6379
-password = ""
+# Sensitive value
+# password = "test"
 database = 0
 
-[redis.cache]
-host = "localhost"
-port = 6379
-password = ""
-database = 1
+# A Redis database used for caching SQL queries.
+# Optional, can be the same as the queue instance
+# [redis.cache]
+# host = "localhost"
+# port = 6380
+# database = 1
+# password = ""
+
+# Search and indexing configuration
+[search]
+# Enable indexing and searching?
 enabled = false
 
-[sonic]
-host = "localhost"
-port = 40007
-password = ""
-enabled = false
+# Optional if search is disabled
+# [search.sonic]
+# host = "localhost"
+# port = 7700
+# Sensitive value
+# password = "test"
 
-[signups]
-# Whether to enable registrations or not
-registration = true
-rules = [
-    "Do not harass others",
-    "Be nice to people",
-    "Don't spam",
-    "Don't post illegal content",
-]
+[registration]
+# Can users sign up freely?
+allow = true
+# NOT IMPLEMENTED
+require_approval = false
+# Message to show to users when registration is disabled
+# message = "ran out of spoons to moderate registrations, sorry"
 
 [http]
+# URL that the instance will be accessible at
 base_url = "http://0.0.0.0:8080"
+# Address to bind to (0.0.0.0 is suggested for proxies)
 bind = "0.0.0.0"
 bind_port = 8080
 
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
+# Banned user agents, regex format
+banned_user_agents = [
+    # "curl\/7.68.0",
+    # "wget\/1.20.3",
+]
 
-[smtp]
+# URL to an eventual HTTP proxy
+# Will be used for all outgoing requests
+# proxy_address = "http://localhost:8118" 
+
+# TLS configuration. You should probably be using a reverse proxy instead of this
+# [http.tls]
+# key = "/path/to/key.pem"
+# cert = "/path/to/cert.pem"
+# Sensitive value
+# passphrase = "awawa"
+# ca = "/path/to/ca.pem"
+
+[frontend]
+# Enable custom frontends (warning: not enabling this will make Versia Server only accessible via the Mastodon API)
+# Frontends also control the OpenID flow, so if you disable this, you will need to use the Mastodon frontend
+enabled = true
+# The URL to reach the frontend at (should be on a local network)
+url = "http://localhost:3000"
+
+[frontend.routes]
+# Special routes for your frontend, below are the defaults for Versia-FE
+# Can be set to a route already used by Versia Server, as long as it is on a different HTTP method
+# e.g. /oauth/authorize is a POST-only route, so you can serve a GET route at /oauth/authorize
+# home = "/"
+# login = "/oauth/authorize"
+# consent = "/oauth/consent"
+# register = "/register"
+# password_reset = "/oauth/reset"
+
+[frontend.settings]
+# Arbitrary key/value pairs to be passed to the frontend
+# This can be used to set up custom themes, etc on supported frontends.
+# theme = "dark"
+
+# NOT IMPLEMENTED
+[email]
+# Enable email sending
+send_emails = false
+
+# If send_emails is true, the following settings are required
+# [email.smtp]
 # SMTP server to use for sending emails
-server = "smtp.example.com"
-port = 465
-username = "test@example.com"
-password = "password123"
-tls = true
+# server = "smtp.example.com"
+# port = 465
+# username = "test@example.com"
+# Sensitive value
+# password = "password123"
+# tls = true
 
 [media]
 # Can be "s3" or "local", where "local" uploads the file to the local filesystem
-# If you need to change this value after setting up your instance, you must move all the files
-# from one backend to the other manually
+# Changing this value will not retroactively apply to existing data
+# Don't forget to fill in the s3 config :3
 backend = "local"
-# Whether to check the hash of media when uploading to avoid duplication
-deduplicate_media = true
 # If media backend is "local", this is the folder where the files will be stored
-local_uploads_folder = "uploads"
+# Can be any path
+uploads_path = "uploads"
 
 [media.conversion]
+# Whether to automatically convert images to another format on upload
 convert_images = false
-# Can be: "jxl", "webp", "avif", "png", "jpg", "heif"
+# Can be: "image/jxl", "image/webp", "image/avif", "image/png", "image/jpeg", "image/heif", "image/gif"
 # JXL support will likely not work
-convert_to = "webp"
+convert_to = "image/webp"
+# Also convert SVG images?
+convert_vectors = false
 
 # [s3]
-# Can be left blank if you don't use the S3 media backend
-# endpoint = "https://s3-us-west-2.amazonaws.com"
-# access_key = ""
-# secret_access_key = ""
-# region = "us-west-2"
+# Can be left commented if you don't use the S3 media backend
+# endpoint = "https://s3.example.com"
+# Sensitive value
+# access_key = "XXXXX"
+# Sensitive value
+# secret_access_key = "XXX"
+# region = "us-east-1"
 # bucket_name = "versia"
 # public_url = "https://cdn.example.com"
 
 [validation]
-# Self explanatory
-max_displayname_size = 50
-max_bio_size = 160
-max_note_size = 5000
-max_avatar_size = 5_000_000
-max_header_size = 5_000_000
-max_media_size = 40_000_000
-max_media_attachments = 10
-max_media_description_size = 1000
-max_poll_options = 20
-max_poll_option_size = 500
-min_poll_duration = 60
-max_poll_duration = 1893456000
-max_username_size = 30
-# An array of strings, defaults are from Akkoma
-username_blacklist = [
-    ".well-known",
-    "~",
+# Checks user data
+# Does not retroactively apply to previously entered data
+[validation.accounts]
+max_displayname_characters = 50
+max_username_characters = 30
+max_bio_characters = 5000
+max_avatar_bytes = 5_000_000
+max_header_bytes = 5_000_000
+# Regex is allowed here
+disallowed_usernames = [
+    "well-known",
     "about",
     "activities",
     "api",
@@ -119,12 +188,14 @@ username_blacklist = [
     "search",
     "mfa",
 ]
-# Whether to blacklist known temporary email providers
-blacklist_tempmail = false
-# Additional email providers to blacklist
-email_blacklist = []
-# Valid URL schemes, otherwise the URL is parsed as text
-url_scheme_whitelist = [
+max_field_count = 10
+max_field_name_characters = 1000
+max_field_value_characters = 1000
+max_pinned_notes = 20
+
+[validation.notes]
+max_characters = 5000
+allowed_url_schemes = [
     "http",
     "https",
     "ftp",
@@ -142,76 +213,122 @@ url_scheme_whitelist = [
     "mumble",
     "ssb",
     "gemini",
-] # NOT IMPLEMENTED
-
-enforce_mime_types = false
-allowed_mime_types = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/heic",
-    "image/heif",
-    "image/webp",
-    "image/avif",
-    "video/webm",
-    "video/mp4",
-    "video/quicktime",
-    "video/ogg",
-    "audio/wave",
-    "audio/wav",
-    "audio/x-wav",
-    "audio/x-pn-wave",
-    "audio/vnd.wave",
-    "audio/ogg",
-    "audio/vorbis",
-    "audio/mpeg",
-    "audio/mp3",
-    "audio/webm",
-    "audio/flac",
-    "audio/aac",
-    "audio/m4a",
-    "audio/x-m4a",
-    "audio/mp4",
-    "audio/3gpp",
-    "video/x-ms-asf",
 ]
+max_attachments = 16
 
-[validation.challenges]
+[validation.media]
+max_bytes = 40_000_000
+max_description_characters = 1000
+# An empty array allows all MIME types
+allowed_mime_types = []
+
+[validation.emojis]
+max_bytes = 1_000_000
+max_shortcode_characters = 100
+max_description_characters = 1000
+
+[validation.polls]
+max_options = 20
+max_option_characters = 500
+min_duration_seconds = 60
+# 100 days
+max_duration_seconds = 8_640_000
+
+[validation.emails]
+# Blocks over 10,000 common tempmail domains
+disallow_tempmail = false
+# Regex is allowed here
+disallowed_domains = []
+
+# [validation.challenges]
 # "Challenges" (aka captchas) are a way to verify that a user is human
-# Versia Server's challenges use no external services, and are Proof of Work based
+# Versia Server's challenges use no external services, and are proof-of-work based
 # This means that they do not require any user interaction, instead
 # they require the user's computer to do a small amount of work
-enabled = true
-# The difficulty of the challenge, higher is harder
-difficulty = 50000
+# The difficulty of the challenge, higher is will take more time to solve
+# difficulty = 50000
 # Challenge expiration time in seconds
-expiration = 300 # 5 minutes
+# expiration = 300 # 5 minutes
 # Leave this empty to generate a new key
-key = "YBpAV0KZOeM/MZ4kOb2E9moH9gCUr00Co9V7ncGRJ3wbd/a9tLDKKFdI0BtOcnlpfx0ZBh0+w3WSvsl0TsesTg=="
+# Sensitive value
+# key = ""
+
+# Block content that matches these regular expressions
+[validation.filters]
+note_content = [
+    # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
+    # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
+]
+emoji_shortcode = []
+username = []
+displayname = []
+bio = []
 
 [notifications]
 
+# Web Push Notifications configuration.
+# Leave out to disable.
 [notifications.push]
-# Whether to enable push notifications
-enabled = true
-
-[notifications.push.vapid]
+# Subject field embedded in the push notification
+# subject = "mailto:joe@example.com"
+#
+[notifications.push.vapid_keys]
 # VAPID keys for push notifications
 # Run Versia Server with those values missing to generate new keys
+# Sensitive value
 public = "BBanhyj2_xWwbTsWld3T49VcAoKZHrVJTzF1f6Av2JwQY_wUi3CF9vZ0WeEcACRj6EEqQ7N35CkUh5epF7n4P_s"
+# Sensitive value
 private = "Eujaz7NsF0rKZOVrAFL7mMpFdl96f591ERsRn81unq0"
-# Optional
-# subject = "mailto:joe@example.com"
 
 [defaults]
 # Default visibility for new notes
+# Can be public, unlisted, private or direct
+# Private only sends to followers, unlisted doesn't show up in timelines
 visibility = "public"
-# Default language for new notes
+# Default language for new notes (ISO code)
 language = "en"
-# Default avatar, must be a valid URL or ""
+# Default avatar, must be a valid URL or left out for a placeholder avatar
 # avatar = ""
-# Default header, must be a valid URL or ""
+# Default header, must be a valid URL or left out for none
 # header = ""
+# A style name from https://www.dicebear.com/styles
+placeholder_style = "thumbs"
+
+[queues]
+# Controls the delivery queue (for outbound federation)
+[queues.delivery]
+# Time in seconds to remove completed jobs
+remove_after_complete_seconds = 31536000
+# Time in seconds to remove failed jobs
+remove_after_failure_seconds = 31536000
+
+# Controls the inbox processing queue (for inbound federation)
+[queues.inbox]
+# Time in seconds to remove completed jobs
+remove_after_complete_seconds = 31536000
+# Time in seconds to remove failed jobs
+remove_after_failure_seconds = 31536000
+
+# Controls the fetch queue (for remote data refreshes)
+[queues.fetch]
+# Time in seconds to remove completed jobs
+remove_after_complete_seconds = 31536000
+# Time in seconds to remove failed jobs
+remove_after_failure_seconds = 31536000
+
+# Controls the push queue (for push notification delivery)
+[queues.push]
+# Time in seconds to remove completed jobs
+remove_after_complete_seconds = 31536000
+# Time in seconds to remove failed jobs
+remove_after_failure_seconds = 31536000
+
+# Controls the media queue (for media processing)
+[queues.media]
+# Time in seconds to remove completed jobs
+remove_after_complete_seconds = 31536000
+# Time in seconds to remove failed jobs
+remove_after_failure_seconds = 31536000 
 
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
@@ -236,57 +353,140 @@ reactions = []
 banners = []
 avatars = []
 
+# For bridge software, such as versia-pub/activitypub
+# Bridges must be hosted separately from the main Versia Server process
+# [federation.bridge]
+# Only versia-ap exists for now
+# software = "versia-ap"
+# If this is empty, any bridge with the correct token
+# will be able to send data to your instance
+# v4, v6, ranges and wildcards are supported
+# allowed_ips = ["192.168.1.0/24"]
+# Token for the bridge software
+# Bridge must have the same token!
+# Sensitive value
+# token = "mycooltoken"
+# url = "https://ap.versia.social"
+
 [instance]
 name = "Versia"
-description = "A test instance of Versia Server"
-# URL to your instance logo (jpg files should be renamed to jpeg)
-# logo = ""
-# URL to your instance banner (jpg files should be renamed to jpeg)
-# banner = ""
+description = "A Versia Server instance"
 
+# Paths to instance long description, terms of service, and privacy policy
+# These will be parsed as Markdown
+#
+# extended_description_path = "config/extended_description.md"
+# tos_path = "config/tos.md"
+# privacy_policy_path = "config/privacy_policy.md"
 
-[filters]
-# Regex filters for federated and local data
-# Drops data matching the filters
-# Does not apply retroactively to existing data
+# Primary instance languages. ISO 639-1 codes.
+languages = ["en"]
 
-# Note contents
-note_content = [
-    # "(https?://)?(www\\.)?youtube\\.com/watch\\?v=[a-zA-Z0-9_-]+",
-    # "(https?://)?(www\\.)?youtu\\.be/[a-zA-Z0-9_-]+",
-]
-emoji = []
-# These will drop users matching the filters
-username = []
-displayname = []
-bio = []
+[instance.contact]
+email = "staff@yourinstance.com"
+
+[instance.branding]
+# logo = "https://cdn.example.com/logo.png"
+# banner = "https://cdn.example.com/banner.png"
+
+# Used for federation. If left empty or missing, the server will generate one for you.
+[instance.keys]
+# Sensitive value
+public = "MCowBQYDK2VwAyEASN0V5OWRbhRCnuhxfRLqpUOfszHozvrLLVhlIYLNTZM="
+# Sensitive value
+private = "MC4CAQAwBQYDK2VwBCIEIKaxDGMaW71OcCGMY+GKTZPtLPNlTvMFe3G5qXVHPhQM"
+
+[[instance.rules]]
+# Short description of the rule
+text = "No hate speech"
+# Longer version of the rule with additional information
+hint = "Hate speech includes slurs, threats, and harassment."
+
+[[instance.rules]]
+text = "No spam"
+
+# [[instance.rules]]
+# ...etc
+
+[permissions]
+# Control default permissions for users
+# Note that an anonymous user having a permission will not allow them
+# to do things that require authentication (e.g. 'owner:notes' -> posting a note will need
+# auth, but viewing a note will not)
+# See https://server.versia.pub/api/roles#list-of-permissions for a list of all permissions
+
+# Defaults to being able to login and manage their own content
+# anonymous = []
+
+# Defaults to identical to anonymous
+# default = []
+
+# Defaults to being able to manage all instance data, content, and users
+# admin = []
 
 [logging]
-# Log all requests (warning: this is a lot of data)
-log_requests = true
-# Log request and their contents (warning: this is a lot of data)
-log_requests_verbose = false
-# For GDPR compliance, you can disable logging of IPs
-log_ip = false
 
-# Log all filtered objects
-log_filters = true
+# Available levels: debug, info, warning, error, fatal
+log_level = "debug"
 
-[ratelimits]
-# These settings apply to every route at once
-# Amount to multiply every route's duration by
-duration_coeff = 1.0
-# Amount to multiply every route's max requests per [duration] by
-max_coeff = 1.0
+log_file_path = "logs/versia.log"
 
-[ratelimits.custom]
-# Add in any API route in this style here
-# Applies before the global ratelimit changes
-# "/api/v1/accounts/:id/block" = { duration = 30, max = 60 }
-# "/api/v1/timelines/public" = { duration = 60, max = 200 }
+[logging.types]
+# Either pass a boolean
+# requests = true
+# Or a table with the following keys:
+# requests_content = { level = "debug", log_file_path = "logs/requests.log" }
+# Available types are: requests, responses, requests_content, filters
+
+# https://sentry.io support
+# Uncomment to enable
+# [logging.sentry]
+# Sentry DSN for error logging
+# dsn = "https://example.com"
+# debug = false
+
+# sample_rate = 1.0
+# traces_sample_rate = 1.0
+# Can also be regex
+# trace_propagation_targets = []
+# max_breadcrumbs = 100
+# environment = "production"
 
 [plugins]
+# Whether to automatically load all plugins in the plugins directory
+autoload = true
+
+# Override for autoload
+[plugins.overrides]
+enabled = []
+disabled = []
+
+[plugins.config."@versia/openid"]
+# If enabled, Versia will require users to log in with an OpenID provider
+forced = false
+
+# Allow registration with OpenID providers
+# If signups.registration is false, it will only be possible to register with OpenID
+allow_registration = true
 
 [plugins.config."@versia/openid".keys]
-private = "MC4CAQAwBQYDK2VwBCIEID+H5n9PY3zVKZQcq4jrnE1IiRd2EWWr8ApuHUXmuOzl"
-public = "MCowBQYDK2VwAyEAzenliNkgpXYsh3gXTnAoUWzlCPjIOppmAVx2DBlLsC8="
+# Run Versia Server with those values missing to generate a new key
+public = "MCowBQYDK2VwAyEAfyZx8r98gVHtdH5EF1NYrBeChOXkt50mqiwKO2TX0f8="
+private = "MC4CAQAwBQYDK2VwBCIEILDi1g7+bwNjBBvL4CRWHZpCFBR2m2OPCot62Wr+TCbq"
+
+# The provider MUST support OpenID Connect with .well-known discovery
+# Most notably, GitHub does not support this
+# Redirect URLs in your OpenID provider can be set to this:
+# <base_url>/oauth/sso/<provider_id>/callback*
+# The asterisk is important, as it allows for any query parameters to be passed
+# Authentik for example uses regex so it can be set to (regex):
+# <base_url>/oauth/sso/<provider_id>/callback.*
+# [[plugins.config."@versia/openid".providers]]
+# name = "CPlusPatch ID"
+# id = "cpluspatch-id"
+# This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)
+# url = "https://id.cpluspatch.com/application/o/versia-testing/"
+# client_id = "XXXX"
+# Sensitive value
+# client_secret = "XXXXX"
+# icon = "https://cpluspatch.com/images/icons/logo.svg"

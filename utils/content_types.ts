@@ -1,7 +1,7 @@
 import type { ContentFormat } from "@versia/federation/types";
 import { htmlToText as htmlToTextLib } from "html-to-text";
 import { lookup } from "mime-types";
-import { config } from "~/packages/config-manager";
+import { config } from "~/config.ts";
 
 export const getBestContentType = (
     content?: ContentFormat | null,
@@ -67,7 +67,7 @@ export const mimeLookup = (url: URL): Promise<string> => {
     const fetchLookup = fetch(url, {
         method: "HEAD",
         // @ts-expect-error Proxy is a Bun-specific feature
-        proxy: config.http.proxy.address,
+        proxy: config.http.proxy_address,
     })
         .then(
             (response) =>

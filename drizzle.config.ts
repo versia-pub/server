@@ -1,5 +1,5 @@
 import type { Config } from "drizzle-kit";
-import { config } from "./packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 
 /**
  * Drizzle can't properly resolve imports with top-level await, so uncomment
@@ -15,11 +15,11 @@ export default {
         user: "lysand",
         password: "lysand",
         database: "lysand", */
-        host: config.database.host,
-        port: Number(config.database.port),
-        user: config.database.username,
-        password: config.database.password,
-        database: config.database.database,
+        host: config.postgres.host,
+        port: config.postgres.port,
+        user: config.postgres.username,
+        password: config.postgres.password,
+        database: config.postgres.database,
     },
     // Print all statements
     verbose: true,

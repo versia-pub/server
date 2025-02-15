@@ -1,7 +1,7 @@
 import { getLogger } from "@logtape/logtape";
 import { Instance, User } from "@versia/kit/db";
 import { Worker } from "bullmq";
-import { config } from "~/packages/config-manager/index.ts";
+import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
 import {
@@ -168,10 +168,10 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
         {
             connection,
             removeOnComplete: {
-                age: config.queues.inbox.remove_on_complete,
+                age: config.queues.inbox?.remove_after_complete_seconds,
             },
             removeOnFail: {
-                age: config.queues.inbox.remove_on_failure,
+                age: config.queues.inbox?.remove_after_failure_seconds,
             },
         },
     );
