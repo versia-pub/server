@@ -42,7 +42,7 @@ if (!parsed.success) {
 
     console.info(errorMessage);
 
-    process.exit(1);
+    throw new Error("Configuration file is invalid.");
 }
 
 const exportedConfig = parsed.data;
