@@ -44,11 +44,11 @@ database = 0
 enabled = false
 
 # Optional if search is disabled
-# [search.sonic]
-# host = "localhost"
-# port = 7700
+[search.sonic]
+host = "localhost"
+port = 40007
 # Sensitive value
-# password = "test"
+password = ""
 
 [registration]
 # Can users sign up freely?
