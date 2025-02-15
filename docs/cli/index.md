@@ -7,10 +7,6 @@ Versia Server includes a built-in, scripting-compatible CLI that can be used to 
 Versia Server includes a built-in CLI for managing the server. To use it, simply run the following command:
 
 ```bash
-# Development
-bun cli help
-# Source installs
-bun run dist/cli.js help
 # Docker
 # Replace `versia` with the name of your container
 docker compose exec -it versia /bin/sh /app/entrypoint.sh cli help
