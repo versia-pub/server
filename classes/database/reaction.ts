@@ -1,5 +1,5 @@
 import type { ReactionExtension } from "@versia/federation/types";
-import { Emoji, Instance, Note, User, db } from "@versia/kit/db";
+import { Emoji, Instance, type Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
 import {
     type InferInsertModel,
@@ -159,7 +159,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         return this.data.uri
             ? new URL(this.data.uri)
             : new URL(
-                  `/objects/${this.data.noteId}/reactions/${this.id}`,
+                  `/notes/${this.data.noteId}/reactions/${this.id}`,
                   baseUrl,
               );
     }
@@ -187,12 +187,9 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.id,
             object:
-                Note.getUri(
-                    this.data.note.id,
-                    this.data.note.uri
-                        ? new URL(this.data.note.uri)
-                        : undefined,
-                )?.toString() ?? "",
+                this.data.note.uri ??
+                new URL(`/notes/${this.data.noteId}`, config.http.base_url)
+                    .href,
             content: this.hasCustomEmoji()
                 ? `:${this.data.emoji?.shortcode}:`
                 : this.data.emojiText || "",

@@ -1,5 +1,4 @@
 import { idValidator } from "@/api";
-import { localObjectUri } from "@/constants";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
@@ -858,14 +857,9 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     public getUri(): URL {
-        return new URL(this.data.uri || localObjectUri(this.id));
-    }
-
-    public static getUri(id: string | null, uri?: URL | null): URL | null {
-        if (!id) {
-            return null;
-        }
-        return uri || localObjectUri(id);
+        return this.data.uri
+            ? new URL(this.data.uri)
+            : new URL(`/notes/${this.id}`, config.http.base_url);
     }
 
     /**
@@ -928,14 +922,16 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     mention.uri ? new URL(mention.uri) : null,
                 ).toString(),
             ),
-            quotes: Note.getUri(
-                status.quotingId,
-                status.quote?.uri ? new URL(status.quote.uri) : null,
-            )?.toString(),
-            replies_to: Note.getUri(
-                status.replyId,
-                status.reply?.uri ? new URL(status.reply.uri) : null,
-            )?.toString(),
+            quotes: status.quote
+                ? (status.quote.uri ??
+                  new URL(`/notes/${status.quote.id}`, config.http.base_url)
+                      .href)
+                : null,
+            replies_to: status.reply
+                ? (status.reply.uri ??
+                  new URL(`/notes/${status.reply.id}`, config.http.base_url)
+                      .href)
+                : null,
             subject: status.spoilerText,
             // TODO: Refactor as part of groups
             group: status.visibility === "public" ? "public" : "followers",

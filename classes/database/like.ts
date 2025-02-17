@@ -19,7 +19,6 @@ import {
 } from "drizzle-orm";
 import { config } from "~/config.ts";
 import { BaseInterface } from "./base.ts";
-import { Note } from "./note.ts";
 import { User } from "./user.ts";
 
 type LikeType = InferSelectModel<typeof Likes> & {
@@ -172,12 +171,9 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             type: "pub.versia:likes/Like",
             created_at: new Date(this.data.createdAt).toISOString(),
             liked:
-                Note.getUri(
-                    this.data.liked.id,
-                    this.data.liked.uri
-                        ? new URL(this.data.liked.uri)
-                        : undefined,
-                )?.toString() ?? "",
+                this.data.liked.uri ??
+                new URL(`/notes/${this.data.liked.id}`, config.http.base_url)
+                    .href,
             uri: this.getUri().toString(),
         };
     }
