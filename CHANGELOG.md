@@ -2,91 +2,60 @@
 
 ## Backwards Compatibility
 
-Versia Server `0.8.0` is fully backwards compatible with `0.7.0`.
+Versia Server `0.8.0` is **not** backwards-compatible with `0.7.0`. This release includes some breaking changes to the database schema and configuration file.
+
+Please see [Database Changes](#database-changes) and [New Configuration](#new-configuration) for more information.
 
 ## Features
 
-- Outbound federation, inbox processing and data fetching are now handled by a queue system (like most federated software).
-  - Added an administration UI for managing the queue.
-- Media processing is now also handled by a queue system.
-- Added [Push Notifications](https://docs.joinmastodon.org/methods/push) support.
-- Upgraded Bun to `1.2.2`.
-- Implemented support for the [**Instance Messaging Extension**](https://versia.pub/extensions/instance-messaging)
-- Implement [**Shared Inboxes**](https://versia.pub/federation#inboxes) support.
-- Allowed `<div>` and `<span>` tags in Markdown.
-- Added `--password` flag to the user creation CLI.
-- Overhaul [**Roles API**](https://server.versia.pub/api/roles) to allow for full role control (create, update, delete, assign).
+### Federation
 
-## New Configuration Options
+- [x] 🦄 Updated to [`Versia 0.5`](https://versia.pub/changelog).
+- [x] 📦 Added support for new Versia features:
+  - [x] [**Instance Messaging Extension**](https://versia.pub/extensions/instance-messaging)
+  - [x] [**Shared Inboxes**](https://versia.pub/federation#inboxes)
+- [x] 🔗 Changed entity URIs to be more readable (`example.org/objects/:id` → `example.org/{notes,likes,...}/:id`)
 
-```toml
-[notifications]
+### API
 
-[notifications.push]
-# Whether to enable push notifications
-enabled = true
+- [x] 📲 Added [Push Notifications](https://docs.joinmastodon.org/methods/push) support.
+- [x] 📖 Overhauled OpenAPI schemas to match [Mastodon API docs](https://docs.joinmastodon.org)
+- [x] 👷 Improved [**Roles API**](https://server.versia.pub/api/roles) to allow for full role control (create, update, delete, assign).
+- [x] ✏️ `<div>` and `<span>` tags are now allowed in Markdown.
 
-[notifications.push.vapid]
-# VAPID keys for push notifications
-# Run Versia Server with those values missing to generate new keys
-public = ""
-private = ""
-# Optional
-# subject = "mailto:joe@example.com"
+### CLI
 
-[queues]
-# Controls the delivery queue (for outbound federation)
-[queues.delivery]
-# Time in seconds to remove completed jobs
-remove_on_complete = 31536000
-# Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+- [x] ⌨️ New commands!
+  - [x] ✨️ `cli user token` to generate API tokens.
+  - [x] ✨️ `cli notes recalculate` to recalculate note attributes (such as emojis). Useful after deleting and reuploading emojis with the same name.
 
-# Controls the inbox processing queue (for inbound federation)
-[queues.inbox]
-# Time in seconds to remove completed jobs
-remove_on_complete = 31536000
-# Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+### Backend
 
-# Controls the fetch queue (for remote data refreshes)
-[queues.fetch]
-# Time in seconds to remove completed jobs
-remove_on_complete = 31536000
-# Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+- [x] 🚀 Upgraded Bun to `1.2.2`
+- [x] 🖼️ Simplified media pipeline: this will improve S3 performance
+  - [ ] 📈 It is now possible to disable media proxying for your CDN (offloading considerable bandwidth to your more optimized CDN).
+- [x] 👷 Outbound federation, inbox processing, data fetching and media processing are now handled by a queue system.
+  - [x] 🌐 An administration panel is available at `/admin/queues` to monitor and manage queues.
+- [x] 🔥 Removed support for **from-source** installations, as Versia Server is designed around containerization and maintaining support was a large burden.
 
-# Controls the push queue (for push notification delivery)
-[queues.push]
-# Time in seconds to remove completed jobs
-remove_on_complete = 31536000
-# Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+## New Configuration
 
-# Controls the media queue (for media processing)
-[queues.media]
-# Time in seconds to remove completed jobs
-remove_on_complete = 31536000
-# Time in seconds to remove failed jobs
-remove_on_failure = 31536000
+Configuration parsing and validation has been overhauled. Unfortunately, this means that since a bunch of options have been renamed, you'll need to redownload [the default configuration file](config/config.example.toml) and reapply your changes.
 
-[validation]
-max_emoji_size = 1000000
-max_emoji_shortcode_size = 100
-max_emoji_description_size = 1000
-```
+## Database Changes
 
-### Configuration Changes
+Various media-related attributes have been merged into a single `Medias` table. This will require a migration in order to preserve the old data.
 
-- The `enabled` field in `redis.queue` has been removed. This field was never functional in the first place, as Redis is required for federation.
+Since very few instances are running `0.7.0`, we have decided to "rawdog it" instead of making a proper migration script (as that would take a ton of *unpaid* time).
+
+In the case that you've been running secret instances in the shadows, let us know and we'll help you out.
 
 ## Bug Fixes
 
-- Correctly proxy all URIs in custom Markdown text.
-- Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
-- Fixed incorrect content-type on some media when using S3.
-- All media content-type is now correctly fetched, instead of guessed from the file extension.
-- Added missing attributes to `/api/v1/instance` (some clients were expecting them).
+- 🐛 All URIs in custom Markdown text are now correctly proxied.
+- 🐛 Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
+- 🐛 Fixed incorrect content-type on some media when using S3.
+- 🐛 All media content-type is now correctly fetched, instead of guessed from the file extension as before.
 
 # `0.7.0` • The Auth and APIs Update
 
