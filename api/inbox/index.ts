@@ -5,9 +5,9 @@ import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
 
 const schemas = {
     header: z.object({
-        "x-signature": z.string().optional(),
-        "x-nonce": z.string().optional(),
-        "x-signed-by": z
+        "versia-signature": z.string().optional(),
+        "versia-signed-at": z.coerce.number().optional(),
+        "versia-signed-by": z
             .string()
             .url()
             .or(z.string().startsWith("instance "))

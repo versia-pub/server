@@ -41,7 +41,7 @@ export default apiRoute((app) =>
                         "pub.versia:custom_emojis",
                         "pub.versia:instance_messaging",
                     ],
-                    versions: ["0.4.0"],
+                    versions: ["0.5.0"],
                 },
                 host: config.http.base_url.host,
                 name: config.instance.name,

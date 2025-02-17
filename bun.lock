@@ -17,7 +17,7 @@
         "@oclif/core": "^4.2.6",
         "@sentry/bun": "^9.1.0",
         "@versia/client": "^0.1.5",
-        "@versia/federation": "0.1.4",
+        "@versia/federation": "^0.2.0",
         "@versia/kit": "workspace:*",
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",
@@ -745,7 +745,7 @@
 
     "@versia/client": ["@versia/client@0.1.5", "", { "dependencies": { "@badgateway/oauth2-client": "^2.4.2", "zod": "^3.24.1" } }, "sha512-POD2/IT98EZZ32kWEPc3XUY2zApX94tuBftNWIMyoT04Sp7CPuvv1TT2fxM2kmgrC6kgbh4I6yirPpzVY+FpSA=="],
 
-    "@versia/federation": ["@versia/federation@0.1.4", "", { "dependencies": { "magic-regexp": "^0.8.0", "mime-types": "^2.1.35", "zod": "^3.23.8", "zod-validation-error": "^3.4.0" } }, "sha512-89us9ltMNXNqohRxIxf7A4yYY2m3eiifsVWFGuKIrflX2Hv3VyqyZOrXh8i2bou+1qll9zAiCHYWCkAmv7RqkQ=="],
+    "@versia/federation": ["@versia/federation@0.2.0", "", { "dependencies": { "magic-regexp": "^0.8.0", "mime-types": "^2.1.35", "zod": "^3.24.1", "zod-validation-error": "^3.4.0" } }, "sha512-Eb2l26aE+9218DT/YKhYJy6DsdCbM3VL2zuVXFvolMprF5sNLi/px5BF0/KgI3TN6FTo7ufXVPNqePvBt90aiQ=="],
 
     "@versia/kit": ["@versia/kit@workspace:packages/plugin-kit"],
 

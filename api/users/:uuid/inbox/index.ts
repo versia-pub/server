@@ -9,9 +9,9 @@ const schemas = {
         uuid: z.string().uuid(),
     }),
     header: z.object({
-        "x-signature": z.string().optional(),
-        "x-nonce": z.string().optional(),
-        "x-signed-by": z
+        "versia-signature": z.string().optional(),
+        "versia-signed-at": z.coerce.number().optional(),
+        "versia-signed-by": z
             .string()
             .url()
             .or(z.string().startsWith("instance "))

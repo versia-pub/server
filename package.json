@@ -113,7 +113,7 @@
         "@oclif/core": "^4.2.6",
         "@sentry/bun": "^9.1.0",
         "@versia/client": "^0.1.5",
-        "@versia/federation": "0.1.4",
+        "@versia/federation": "^0.2.0",
         "@versia/kit": "workspace:*",
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",

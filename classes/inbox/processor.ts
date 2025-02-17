@@ -63,7 +63,7 @@ export class InboxProcessor {
      *
      * @param request Request object.
      * @param body Entity JSON body.
-     * @param sender Sender of the request's instance and key (from X-Signed-By header). Null if request is from a bridge.
+     * @param sender Sender of the request's instance and key (from Versia-Signed-By header). Null if request is from a bridge.
      * @param headers Various request headers.
      * @param logger LogTape logger instance.
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
@@ -81,7 +81,7 @@ export class InboxProcessor {
         } | null,
         private headers: {
             signature?: string;
-            nonce?: string;
+            signedAt?: Date;
             authorization?: string;
         },
         private logger: Logger = getLogger(["federation", "inbox"]),
@@ -108,8 +108,8 @@ export class InboxProcessor {
             this.sender.key,
         );
 
-        if (!(this.headers.signature && this.headers.nonce)) {
-            throw new Error("Missing signature or nonce");
+        if (!(this.headers.signature && this.headers.signedAt)) {
+            throw new Error("Missing signature or signature timestamp");
         }
 
         // HACK: Making a fake Request object instead of passing the values directly is necessary because otherwise the validation breaks for some unknown reason
@@ -117,8 +117,10 @@ export class InboxProcessor {
             new Request(this.request.url, {
                 method: this.request.method,
                 headers: {
-                    "X-Signature": this.headers.signature,
-                    "X-Nonce": this.headers.nonce,
+                    "Versia-Signature": this.headers.signature,
+                    "Versia-Signed-At": (
+                        this.headers.signedAt.getTime() / 1000
+                    ).toString(),
                 },
                 body: this.request.body,
             }),

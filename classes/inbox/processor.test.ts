@@ -86,7 +86,7 @@ describe("InboxProcessor", () => {
     let mockSenderInstance: Instance;
     let mockHeaders: {
         signature: string;
-        nonce: string;
+        signedAt: Date;
         authorization?: string;
     };
     let processor: InboxProcessor;
@@ -115,7 +115,7 @@ describe("InboxProcessor", () => {
         // Setup basic mock headers
         mockHeaders = {
             signature: "test-signature",
-            nonce: "test-nonce",
+            signedAt: new Date(),
         };
 
         // Setup basic mock body

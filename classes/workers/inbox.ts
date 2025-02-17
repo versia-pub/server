@@ -61,13 +61,13 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                     }
 
                     const {
-                        "x-signature": signature,
-                        "x-nonce": nonce,
-                        "x-signed-by": signedBy,
+                        "versia-signature": signature,
+                        "versia-signed-at": signedAt,
+                        "versia-signed-by": signedBy,
                     } = headers as {
-                        "x-signature": string;
-                        "x-nonce": string;
-                        "x-signed-by": string;
+                        "versia-signature": string;
+                        "versia-signed-at": number;
+                        "versia-signed-by": string;
                     };
 
                     const sender = await User.resolve(new URL(signedBy));
@@ -122,7 +122,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         },
                         {
                             signature,
-                            nonce,
+                            signedAt: new Date(signedAt * 1000),
                             authorization: undefined,
                         },
                         getLogger(["federation", "inbox"]),

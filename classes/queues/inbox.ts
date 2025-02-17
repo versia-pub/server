@@ -10,9 +10,9 @@ export enum InboxJobType {
 export type InboxJobData = {
     data: Entity;
     headers: {
-        "x-signature"?: string;
-        "x-nonce"?: string;
-        "x-signed-by"?: string;
+        "versia-signature"?: string;
+        "versia-signed-at"?: number;
+        "versia-signed-by"?: string;
         authorization?: string;
     };
     request: {

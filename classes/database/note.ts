@@ -914,6 +914,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     remote: false,
                 },
             },
+            collections: {
+                replies: `/notes/${status.id}/replies`,
+                quotes: `/notes/${status.id}/quotes`,
+            },
             attachments: (status.attachments ?? []).map((attachment) =>
                 new Media(attachment).toVersia(),
             ),
