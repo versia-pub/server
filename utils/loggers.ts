@@ -1,17 +1,6 @@
-import {
-    type Stats,
-    appendFileSync,
-    closeSync,
-    existsSync,
-    mkdirSync,
-    openSync,
-    renameSync,
-    statSync,
-} from "node:fs";
-import {
-    type RotatingFileSinkDriver,
-    getRotatingFileSink,
-} from "@logtape/file";
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
+import { getRotatingFileSink } from "@logtape/file";
 import {
     type LogLevel,
     type LogRecord,
@@ -21,6 +10,9 @@ import {
 } from "@logtape/logtape";
 import chalk from "chalk";
 import { config } from "~/config.ts";
+
+// config.logging.log_file_path is a path to a file, create the directory if it doesn't exist
+await mkdir(dirname(config.logging.log_file_path), { recursive: true });
 
 const levelAbbreviations: Record<LogLevel, string> = {
     debug: "DBG",
@@ -73,35 +65,6 @@ export function defaultConsoleFormatter(record: LogRecord): string[] {
         `${formattedTime} ${formattedLevel} ${formattedCategory} ${formattedMsg}`,
     ];
 }
-
-export const nodeDriver: RotatingFileSinkDriver<number> = {
-    openSync(path: string): number {
-        return openSync(path, "a");
-    },
-    writeSync(fd, chunk): void {
-        appendFileSync(fd, chunk, {
-            flush: true,
-        });
-    },
-    flushSync(): void {
-        // ...
-    },
-    closeSync(fd): void {
-        closeSync(fd);
-    },
-    statSync(path): Stats {
-        // If file does not exist, create it
-        if (!existsSync(path)) {
-            // Mkdir all directories in path
-            const dirs = path.split("/");
-            dirs.pop();
-            mkdirSync(dirs.join("/"), { recursive: true });
-            appendFileSync(path, "");
-        }
-        return statSync(path);
-    },
-    renameSync,
-};
 
 export const configureLoggers = (silent = false): Promise<void> =>
     configure({
