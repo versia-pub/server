@@ -35,7 +35,7 @@ export const createUserCommand = defineCommand(
         const { admin, email, password } = context.flags;
         const { username } = context.parameters;
 
-        if (!username.match(/^[a-z0-9_-]+$/)) {
+        if (!/^[a-z0-9_-]+$/.test(username)) {
             throw new Error("Username must be alphanumeric and lowercase.");
         }
 
