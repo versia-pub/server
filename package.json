@@ -108,7 +108,6 @@
         "cli-table": "^0.3.11",
         "confbox": "^0.1.8",
         "drizzle-orm": "^0.40.0",
-        "extract-zip": "^2.0.1",
         "hono": "^4.7.2",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.5.0",
@@ -145,6 +144,6 @@
         "zod": "^3.24.1"
     },
     "patchedDependencies": {
-        "@bull-board/api@6.7.7": "patches/@bull-board%2Fapi@6.5.3.patch"
+        "@bull-board/api@6.7.9": "patches/@bull-board%2Fapi@6.5.3.patch"
     }
 }
