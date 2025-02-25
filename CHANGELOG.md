@@ -31,7 +31,7 @@ Please see [Database Changes](#database-changes) and [New Configuration](#new-co
 
 ### Backend
 
-- [x] 🚀 Upgraded Bun to `1.2.2`
+- [x] 🚀 Upgraded Bun to `1.2.3`
 - [x] 🖼️ Simplified media pipeline: this will improve S3 performance
   - [ ] 📈 It is now possible to disable media proxying for your CDN (offloading considerable bandwidth to your more optimized CDN).
 - [x] 👷 Outbound federation, inbox processing, data fetching and media processing are now handled by a queue system.
