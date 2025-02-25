@@ -9,64 +9,18 @@ import {
     statSync,
 } from "node:fs";
 import {
+    type RotatingFileSinkDriver,
+    getRotatingFileSink,
+} from "@logtape/file";
+import {
     type LogLevel,
     type LogRecord,
-    type RotatingFileSinkOptions,
-    type Sink,
     configure,
-    defaultTextFormatter,
     getConsoleSink,
     getLevelFilter,
 } from "@logtape/logtape";
 import chalk from "chalk";
 import { config } from "~/config.ts";
-
-// HACK: This is a workaround for the lack of type exports in the Logtape package.
-// biome-ignore format: Biome formatter bug
-type RotatingFileSinkDriver<T> =
-    import("../node_modules/@logtape/logtape/logtape/sink").RotatingFileSinkDriver<T>;
-
-// HACK: Stolen
-export function getBaseRotatingFileSink<TFile>(
-    path: string,
-    options: RotatingFileSinkOptions & RotatingFileSinkDriver<TFile>,
-): Sink & Disposable {
-    const formatter = options.formatter ?? defaultTextFormatter;
-    const encoder = options.encoder ?? new TextEncoder();
-    const maxSize = options.maxSize ?? 1024 * 1024;
-    const maxFiles = options.maxFiles ?? 5;
-    let { size: offset } = options.statSync(path);
-    let fd = options.openSync(path);
-    function shouldRollover(bytes: Uint8Array): boolean {
-        return offset + bytes.length > maxSize;
-    }
-    function performRollover(): void {
-        options.closeSync(fd);
-        for (let i = maxFiles - 1; i > 0; i--) {
-            const oldPath = `${path}.${i}`;
-            const newPath = `${path}.${i + 1}`;
-            try {
-                options.renameSync(oldPath, newPath);
-            } catch (_) {
-                // Continue if the file does not exist.
-            }
-        }
-        options.renameSync(path, `${path}.1`);
-        offset = 0;
-        fd = options.openSync(path);
-    }
-    const sink: Sink & Disposable = (record: LogRecord) => {
-        const bytes = encoder.encode(formatter(record));
-        if (shouldRollover(bytes)) {
-            performRollover();
-        }
-        options.writeSync(fd, bytes);
-        options.flushSync(fd);
-        offset += bytes.length;
-    };
-    sink[Symbol.dispose] = (): void => options.closeSync(fd);
-    return sink;
-}
 
 const levelAbbreviations: Record<LogLevel, string> = {
     debug: "DBG",
@@ -92,7 +46,7 @@ const logLevelStyles: Record<LogLevel, (text: string) => string> = {
  *
  * @param record The log record to format.
  * @returns The formatted log record, as an array of arguments for
- *          {@link console.log}.
+ * {@link console.log}.
  */
 export function defaultConsoleFormatter(record: LogRecord): string[] {
     const msg = record.message.join("");
@@ -156,11 +110,9 @@ export const configureLoggers = (silent = false): Promise<void> =>
             console: getConsoleSink({
                 formatter: defaultConsoleFormatter,
             }),
-            file: getBaseRotatingFileSink(config.logging.log_file_path, {
+            file: getRotatingFileSink(config.logging.log_file_path, {
                 maxFiles: 10,
                 maxSize: 10 * 1024 * 1024,
-                formatter: defaultTextFormatter,
-                ...nodeDriver,
             }),
         },
         filters: {

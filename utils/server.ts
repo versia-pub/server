@@ -11,6 +11,8 @@ export const createServer = (
     Bun.serve({
         port: config.http.bind_port,
         reusePort: true,
+        // @ts-expect-error @types/bun is missing the tls property for some reason
+        // see https://github.com/oven-sh/bun/issues/13167
         tls: config.http.tls
             ? {
                   key: config.http.tls.key.file,
