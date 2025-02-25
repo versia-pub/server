@@ -18,7 +18,7 @@ export default (plugin: PluginType): void => {
                                 schema: z.object({
                                     keys: z.array(
                                         z.object({
-                                            kty: z.string(),
+                                            kty: z.string().optional(),
                                             use: z.string(),
                                             alg: z.string(),
                                             kid: z.string(),
