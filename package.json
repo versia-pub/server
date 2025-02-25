@@ -52,27 +52,6 @@
         "msgpackr-extract",
         "sharp"
     ],
-    "oclif": {
-        "bin": "cli",
-        "dirname": "cli",
-        "commands": {
-            "strategy": "explicit",
-            "target": "./cli/index",
-            "identifier": "commands"
-        },
-        "additionalHelpFlags": ["-h"],
-        "additionalVersionFlags": ["-v"],
-        "plugins": [],
-        "description": "CLI to interface with the Versia project",
-        "topicSeparator": " ",
-        "topics": {
-            "user": {
-                "description": "Manage users"
-            }
-        },
-        "theme": "./cli/theme.json",
-        "flexibleTaxonomy": true
-    },
     "devDependencies": {
         "@biomejs/biome": "^1.9.4",
         "@types/bun": "^1.2.2",
@@ -87,7 +66,6 @@
         "drizzle-kit": "^0.30.4",
         "markdown-it-image-figures": "^2.1.1",
         "markdown-it-mathjax3": "^4.3.2",
-        "oclif": "^4.17.30",
         "ts-prune": "^0.10.3",
         "typescript": "^5.7.3",
         "vitepress": "^1.6.3",
@@ -102,6 +80,11 @@
     "dependencies": {
         "@bull-board/api": "^6.7.7",
         "@bull-board/hono": "^6.7.7",
+        "@clerc/plugin-completions": "^0.44.0",
+        "@clerc/plugin-friendly-error": "^0.44.0",
+        "@clerc/plugin-help": "^0.44.0",
+        "@clerc/plugin-not-found": "^0.44.0",
+        "@clerc/plugin-version": "^0.44.0",
         "@hackmd/markdown-it-task-lists": "^2.1.4",
         "@hono/prometheus": "^1.0.1",
         "@hono/swagger-ui": "^0.5.0",
@@ -110,7 +93,6 @@
         "@inquirer/confirm": "^5.1.6",
         "@inquirer/input": "^4.1.6",
         "@logtape/logtape": "npm:@jsr/logtape__logtape@0.9.0-dev.123+1d41fba8",
-        "@oclif/core": "^4.2.7",
         "@sentry/bun": "^9.1.0",
         "@versia/client": "^0.1.5",
         "@versia/federation": "^0.2.0",
@@ -120,11 +102,11 @@
         "bullmq": "^5.41.2",
         "c12": "^2.0.2",
         "chalk": "^5.4.1",
+        "clerc": "^0.44.0",
         "cli-progress": "^3.12.0",
         "cli-table": "^0.3.11",
         "confbox": "^0.1.8",
         "drizzle-orm": "^0.39.3",
-        "extract-zip": "^2.0.1",
         "hono": "^4.7.1",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.5.0",
@@ -151,7 +133,6 @@
         "stringify-entities": "^4.0.4",
         "strip-ansi": "^7.1.0",
         "table": "^6.9.0",
-        "unzipit": "^1.4.3",
         "uqr": "^0.1.2",
         "web-push": "^3.6.7",
         "xss": "^1.0.15",

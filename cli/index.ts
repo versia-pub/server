@@ -1,37 +1,36 @@
-import { configureLoggers } from "@/loggers";
-import { execute } from "@oclif/core";
-import Start from "./commands/start.ts";
+import { completionsPlugin } from "@clerc/plugin-completions";
+import { friendlyErrorPlugin } from "@clerc/plugin-friendly-error";
+import { helpPlugin } from "@clerc/plugin-help";
+import { notFoundPlugin } from "@clerc/plugin-not-found";
+import { versionPlugin } from "@clerc/plugin-version";
+import { Clerc } from "clerc";
+import { searchManager } from "~/classes/search/search-manager.ts";
+import { setupDatabase } from "~/drizzle/db.ts";
+import pkg from "~/package.json";
+import { rebuildIndexCommand } from "./index/rebuild.ts";
+import { refetchInstanceCommand } from "./instance/refetch.ts";
+import { createUserCommand } from "./user/create.ts";
+import { deleteUserCommand } from "./user/delete.ts";
+import { refetchUserCommand } from "./user/refetch.ts";
+import { generateTokenCommand } from "./user/token.ts";
 
-await configureLoggers();
+await setupDatabase(false);
+await searchManager.connect(true);
 
-// Use "explicit" oclif strategy to avoid issues with oclif's module resolver and bundling
-export const commands = {
-    "user:list": (await import("./commands/user/list.ts")).default,
-    "user:delete": (await import("./commands/user/delete.ts")).default,
-    "user:create": (await import("./commands/user/create.ts")).default,
-    "user:reset": (await import("./commands/user/reset.ts")).default,
-    "user:refetch": (await import("./commands/user/refetch.ts")).default,
-    "user:token": (await import("./commands/user/token.ts")).default,
-    "emoji:add": (await import("./commands/emoji/add.ts")).default,
-    "emoji:delete": (await import("./commands/emoji/delete.ts")).default,
-    "emoji:list": (await import("./commands/emoji/list.ts")).default,
-    "emoji:import": (await import("./commands/emoji/import.ts")).default,
-    "index:rebuild": (await import("./commands/index/rebuild.ts")).default,
-    "federation:instance:refetch": (
-        await import("./commands/federation/instance/refetch.ts")
-    ).default,
-    "federation:user:finger": (
-        await import("./commands/federation/user/finger.ts")
-    ).default,
-    "federation:user:fetch": (
-        await import("./commands/federation/user/fetch.ts")
-    ).default,
-    "generate-keys": (await import("./commands/generate-keys.ts")).default,
-    start: Start,
-    "notes:recalculate": (await import("./commands/notes/recalculate.ts"))
-        .default,
-};
-
-if (import.meta.path === Bun.main) {
-    await execute({ dir: import.meta.url });
-}
+Clerc.create()
+    .scriptName("cli")
+    .name("Versia Server CLI")
+    .description("CLI interface for Versia Server")
+    .version(pkg.version)
+    .use(helpPlugin())
+    .use(versionPlugin())
+    .use(completionsPlugin())
+    .use(notFoundPlugin())
+    .use(friendlyErrorPlugin())
+    .command(createUserCommand)
+    .command(deleteUserCommand)
+    .command(generateTokenCommand)
+    .command(refetchUserCommand)
+    .command(rebuildIndexCommand)
+    .command(refetchInstanceCommand)
+    .parse();

@@ -25,7 +25,7 @@ await Bun.build({
     target: "bun",
     splitting: true,
     minify: false,
-    external: ["unzipit", "acorn", "@bull-board/ui"],
+    external: ["acorn", "@bull-board/ui"],
 });
 
 buildSpinner.text = "Transforming";
@@ -47,10 +47,6 @@ await $`mkdir -p dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-libvips-linuxmusl-* dist/node_modules/@img`;
 await $`cp -r node_modules/@img/sharp-linuxmusl-* dist/node_modules/@img`;
 
-// Copy unzipit and uzip-module to dist
-await $`cp -r node_modules/unzipit dist/node_modules/unzipit`;
-await $`cp -r node_modules/uzip-module dist/node_modules/uzip-module`;
-
 // Copy acorn to dist
 await $`cp -r node_modules/acorn dist/node_modules/acorn`;
 
@@ -63,7 +59,5 @@ await $`cp beemovie.txt dist/beemovie.txt`;
 
 // Copy package.json
 await $`cp package.json dist/package.json`;
-// Copy cli/theme.json
-await $`cp cli/theme.json dist/cli/theme.json`;
 
 buildSpinner.stop();
