@@ -7,6 +7,7 @@ import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
+import { inspect } from "bun";
 import chalk from "chalk";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
@@ -210,6 +211,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         }
 
         serverLogger.error`${error}`;
+        serverLogger.error`${inspect(error)}`;
         sentry?.captureException(error);
         return c.json(
             {

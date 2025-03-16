@@ -54,7 +54,9 @@ export const sensitiveString = z
         (text) =>
             text.startsWith("PATH:") ? fileFromPathString(text).exists() : true,
         (text) => ({
-            message: `Path ${fileFromPathString(text).name} does not exist, is a directory or is not accessible`,
+            message: `Path ${
+                fileFromPathString(text).name
+            } does not exist, is a directory or is not accessible`,
         }),
     )
     .transform((text) =>
@@ -325,7 +327,6 @@ export const ConfigSchema = z
                     const response = await fetch(
                         "https://api.ipify.org?format=json",
                         {
-                            // @ts-expect-error Proxy is a Bun-specific feature
                             proxy: url.origin,
                         },
                     );
