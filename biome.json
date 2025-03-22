@@ -82,6 +82,18 @@
             }
         }
     },
+    "overrides": [
+        {
+            "include": ["packages/client/versia/client.ts"],
+            "linter": {
+                "rules": {
+                    "style": {
+                        "useNamingConvention": "off"
+                    }
+                }
+            }
+        }
+    ],
     "formatter": {
         "enabled": true,
         "indentStyle": "space",

@@ -6,11 +6,13 @@ import {
     withNoteParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Status as StatusSchema,
+} from "@versia/client-ng/schemas";
 import { Timeline } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "get",

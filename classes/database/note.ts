@@ -4,6 +4,7 @@ import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
 import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
+import type { Status, Status as StatusSchema } from "@versia/client-ng/schemas";
 import { EntityValidator } from "@versia/federation";
 import type {
     ContentFormat,
@@ -36,10 +37,8 @@ import {
     findManyNotes,
     parseTextMentions,
 } from "~/classes/functions/status";
-import type { Status as StatusSchema } from "~/classes/schemas/status.ts";
 import { config } from "~/config.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
-import type { Status } from "../schemas/status.ts";
 import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";

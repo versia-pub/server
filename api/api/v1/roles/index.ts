@@ -1,8 +1,8 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Role as RoleSchema } from "@versia/client-ng/schemas";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 

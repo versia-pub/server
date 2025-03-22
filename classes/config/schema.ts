@@ -5,16 +5,19 @@ import {
     RolePermissions,
 } from "@versia/kit/tables";
 import { type BunFile, file } from "bun";
+import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { iso631 } from "../schemas/common.ts";
 
 export enum MediaBackendType {
     Local = "local",
     S3 = "s3",
 }
+
+// Need to declare this here instead of importing it otherwise we get cyclical import errors
+export const iso631 = z.enum(ISO6391.getAllCodes() as [string, ...string[]]);
 
 const urlPath = z
     .string()

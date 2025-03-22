@@ -1,10 +1,12 @@
 import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Role as RoleSchema,
+} from "@versia/client-ng/schemas";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { Role as RoleSchema } from "~/classes/schemas/versia";
 import { ErrorSchema } from "~/types/api";
 
 const routePost = createRoute({

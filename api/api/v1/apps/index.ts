@@ -1,11 +1,11 @@
 import { apiRoute, jsonOrForm, reusedResponses } from "@/api";
 import { randomString } from "@/math";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Application } from "@versia/kit/db";
 import {
     Application as ApplicationSchema,
     CredentialApplication as CredentialApplicationSchema,
-} from "~/classes/schemas/application";
+} from "@versia/client-ng/schemas";
+import { Application } from "@versia/kit/db";
 
 const route = createRoute({
     method: "post",

@@ -1,10 +1,12 @@
 import { accountNotFound, apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Relationship as RelationshipSchema,
+} from "@versia/client-ng/schemas";
 import { Relationship, User } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 
 const route = createRoute({
     method: "post",

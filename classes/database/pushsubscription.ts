@@ -1,4 +1,5 @@
 import type { z } from "@hono/zod-openapi";
+import type { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client-ng/schemas";
 import { type Token, type User, db } from "@versia/kit/db";
 import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {
@@ -9,7 +10,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import type { WebPushSubscription as WebPushSubscriptionSchema } from "../schemas/pushsubscription.ts";
 import { BaseInterface } from "./base.ts";
 
 type PushSubscriptionType = InferSelectModel<typeof PushSubscriptions>;

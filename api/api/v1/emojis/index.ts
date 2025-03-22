@@ -1,11 +1,11 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
 import { config } from "~/config.ts";
 
 const schema = z.object({

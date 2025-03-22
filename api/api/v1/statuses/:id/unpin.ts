@@ -6,9 +6,9 @@ import {
     withNoteParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Status as StatusSchema } from "@versia/client-ng/schemas";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",

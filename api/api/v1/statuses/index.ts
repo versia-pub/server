@@ -1,15 +1,15 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Attachment as AttachmentSchema,
+    PollOption,
+    Status as StatusSchema,
+    StatusSource as StatusSourceSchema,
+    zBoolean,
+} from "@versia/client-ng/schemas";
 import { Media, Note } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
-import { zBoolean } from "~/classes/schemas/common.ts";
-import { PollOption } from "~/classes/schemas/poll";
-import {
-    Status as StatusSchema,
-    StatusSource as StatusSourceSchema,
-} from "~/classes/schemas/status";
 import { config } from "~/config.ts";
 
 const schema = z

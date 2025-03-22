@@ -6,12 +6,11 @@ import {
     reusedResponses,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Account as AccountSchema } from "@versia/client-ng/schemas";
 import { Instance, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account } from "~/classes/schemas/account";
-import { Account as AccountSchema } from "~/classes/schemas/account";
 import { config } from "~/config.ts";
 
 const route = createRoute({
@@ -39,7 +38,7 @@ const route = createRoute({
             description: "Account",
             content: {
                 "application/json": {
-                    schema: Account,
+                    schema: AccountSchema,
                 },
             },
         },

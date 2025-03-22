@@ -1,4 +1,5 @@
 import type { z } from "@hono/zod-openapi";
+import type { Notification as NotificationSchema } from "@versia/client-ng/schemas";
 import { Note, User, db } from "@versia/kit/db";
 import { Notifications } from "@versia/kit/tables";
 import {
@@ -9,7 +10,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import type { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,

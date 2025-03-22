@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { TermsOfService as TermsOfServiceSchema } from "@versia/client-ng/schemas";
 import { markdownParse } from "~/classes/functions/status";
-import { TermsOfService as TermsOfServiceSchema } from "~/classes/schemas/tos";
 import { config } from "~/config.ts";
 
 const route = createRoute({

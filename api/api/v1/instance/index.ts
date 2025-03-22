@@ -1,11 +1,11 @@
 import { apiRoute, auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, type z } from "@hono/zod-openapi";
+import { InstanceV1 as InstanceV1Schema } from "@versia/client-ng/schemas";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { markdownParse } from "~/classes/functions/status";
-import { InstanceV1 as InstanceV1Schema } from "~/classes/schemas/instance-v1";
 import { config } from "~/config.ts";
 import manifest from "~/package.json";
 

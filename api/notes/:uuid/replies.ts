@@ -1,12 +1,12 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Status as StatusSchema } from "@versia/client-ng/schemas";
 import { URICollection as URICollectionSchema } from "@versia/federation/schemas";
 import type { URICollection } from "@versia/federation/types";
 import { Note, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { Status as StatusSchema } from "~/classes/schemas/status";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 

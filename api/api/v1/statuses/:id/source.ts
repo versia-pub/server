@@ -6,11 +6,11 @@ import {
     withNoteParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { RolePermissions } from "@versia/kit/tables";
 import {
     Status as StatusSchema,
     StatusSource as StatusSourceSchema,
-} from "~/classes/schemas/status";
+} from "@versia/client-ng/schemas";
+import { RolePermissions } from "@versia/kit/tables";
 
 const route = createRoute({
     method: "get",

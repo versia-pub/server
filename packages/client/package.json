@@ -1,0 +1,61 @@
+{
+    "name": "@versia/client-ng",
+    "displayName": "Versia Client",
+    "version": "0.2.0-alpha.1",
+    "author": {
+        "email": "jesse.wierzbinski@lysand.org",
+        "name": "Jesse Wierzbinski (CPlusPatch)",
+        "url": "https://cpluspatch.com"
+    },
+    "readme": "README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/versia-pub/server.git",
+        "directory": "packages/client"
+    },
+    "bugs": {
+        "url": "https://github.com/versia-pub/server/issues"
+    },
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Jesse Wierzbinski",
+            "email": "jesse.wierzbinski@lysand.org",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "maintainers": [
+        {
+            "name": "Jesse Wierzbinski",
+            "email": "jesse.wierzbinski@lysand.org",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "description": "Client for Mastodon and Versia API",
+    "categories": ["Other"],
+    "type": "module",
+    "engines": {
+        "bun": ">=1.2.5"
+    },
+    "exports": {
+        ".": {
+            "import": "./index.ts",
+            "default": "./index.ts"
+        },
+        "./schemas": {
+            "import": "./schemas.ts",
+            "default": "./schemas.ts"
+        }
+    },
+    "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/lysand"
+    },
+    "homepage": "https://versia.pub",
+    "keywords": ["versia", "mastodon", "api", "typescript", "rest"],
+    "packageManager": "bun@1.2.5",
+    "dependencies": {
+        "@badgateway/oauth2-client": "^2.4.2",
+        "@hono/zod-openapi": "^0.19.2"
+    }
+}

@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
 import type { z } from "@hono/zod-openapi";
+import type { Attachment as AttachmentSchema } from "@versia/client-ng/schemas";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
@@ -16,7 +17,6 @@ import {
 } from "drizzle-orm";
 import sharp from "sharp";
 import { MediaBackendType } from "~/classes/config/schema.ts";
-import type { Attachment as AttachmentSchema } from "~/classes/schemas/attachment.ts";
 import { config } from "~/config.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { getMediaHash } from "../media/media-hasher.ts";

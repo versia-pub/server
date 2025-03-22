@@ -1,12 +1,12 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute, z } from "@hono/zod-openapi";
+import { zBoolean } from "@versia/client-ng/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
-import { zBoolean } from "~/classes/schemas/common";
 import { config } from "~/config.ts";
 
 const schema = z.object({

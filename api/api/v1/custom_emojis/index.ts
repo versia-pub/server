@@ -1,9 +1,9 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
 import { Emoji } from "@versia/kit/db";
 import { Emojis, RolePermissions } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
-import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
 
 const route = createRoute({
     method: "get",

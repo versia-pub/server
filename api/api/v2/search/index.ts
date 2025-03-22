@@ -6,14 +6,16 @@ import {
     userAddressValidator,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Id,
+    Search as SearchSchema,
+    zBoolean,
+} from "@versia/client-ng/schemas";
 import { Note, User, db } from "@versia/kit/db";
 import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { Id } from "~/classes/schemas/common";
-import { zBoolean } from "~/classes/schemas/common.ts";
-import { Search as SearchSchema } from "~/classes/schemas/search";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";

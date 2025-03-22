@@ -15,7 +15,7 @@
     "icon": "https://cdn.versia.pub/branding/icon.svg",
     "license": "AGPL-3.0-or-later",
     "keywords": ["federated", "activitypub", "bun"],
-    "workspaces": ["packages/plugin-kit"],
+    "workspaces": ["packages/*"],
     "maintainers": [
         {
             "email": "contact@cpluspatch.com",
@@ -95,6 +95,7 @@
         "@versia/client": "^0.1.5",
         "@versia/federation": "^0.2.1",
         "@versia/kit": "workspace:*",
+        "@versia/client-ng": "workspace:*",
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",
         "bullmq": "^5.43.1",

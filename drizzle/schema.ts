@@ -1,4 +1,9 @@
 import type { z } from "@hono/zod-openapi";
+import type {
+    Notification as NotificationSchema,
+    Source,
+    Status as StatusSchema,
+} from "@versia/client-ng/schemas";
 import type { ContentFormat, InstanceMetadata } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
@@ -14,9 +19,6 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type { Source } from "~/classes/schemas/account";
-import type { Notification as NotificationSchema } from "~/classes/schemas/notification.ts";
-import type { Status as StatusSchema } from "~/classes/schemas/status.ts";
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>

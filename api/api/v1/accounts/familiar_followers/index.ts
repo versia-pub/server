@@ -1,10 +1,12 @@
 import { apiRoute, auth, qsQuery, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    FamiliarFollowers as FamiliarFollowersSchema,
+} from "@versia/client-ng/schemas";
 import { User, db } from "@versia/kit/db";
 import { RolePermissions, type Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { FamiliarFollowers as FamiliarFollowersSchema } from "~/classes/schemas/familiar-followers";
 
 const route = createRoute({
     method: "get",

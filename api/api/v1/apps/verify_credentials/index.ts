@@ -1,9 +1,9 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Application as ApplicationSchema } from "@versia/client-ng/schemas";
 import { Application } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Application as ApplicationSchema } from "~/classes/schemas/application";
 
 const route = createRoute({
     method: "get",

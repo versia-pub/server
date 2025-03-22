@@ -7,9 +7,9 @@ import {
 } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { CustomEmoji as CustomEmojiSchema } from "~/classes/schemas/emoji";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
 

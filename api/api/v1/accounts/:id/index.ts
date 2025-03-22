@@ -6,9 +6,8 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Account as AccountSchema } from "@versia/client-ng/schemas";
 import { RolePermissions } from "@versia/kit/tables";
-import { Account } from "~/classes/schemas/account";
-import { Account as AccountSchema } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "get",
@@ -37,7 +36,7 @@ const route = createRoute({
                 "The Account record will be returned. Note that acct of local users does not include the domain name.",
             content: {
                 "application/json": {
-                    schema: Account,
+                    schema: AccountSchema,
                 },
             },
         },

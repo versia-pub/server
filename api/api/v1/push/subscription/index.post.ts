@@ -1,9 +1,11 @@
 import { apiRoute, reusedResponses } from "@/api";
 import { auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import {
+    WebPushSubscriptionInput,
+    WebPushSubscription as WebPushSubscriptionSchema,
+} from "@versia/client-ng/schemas";
 import { PushSubscription } from "@versia/kit/db";
-import { WebPushSubscriptionInput } from "~/classes/schemas/pushsubscription";
-import { WebPushSubscription as WebPushSubscriptionSchema } from "~/classes/schemas/pushsubscription";
 import { RolePermissions } from "~/drizzle/schema";
 
 export default apiRoute((app) =>

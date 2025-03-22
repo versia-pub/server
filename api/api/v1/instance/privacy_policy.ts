@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { PrivacyPolicy as PrivacyPolicySchema } from "@versia/client-ng/schemas";
 import { markdownParse } from "~/classes/functions/status";
-import { PrivacyPolicy as PrivacyPolicySchema } from "~/classes/schemas/privacy-policy";
 import { config } from "~/config.ts";
 
 const route = createRoute({

@@ -1,0 +1,9 @@
+{
+    "$schema": "https://jsr.io/schema/config-file.v1.json",
+    "name": "@versia/client",
+    "version": "0.2.0-alpha.1",
+    "exports": {
+        ".": "./index.ts",
+        "./schemas": "./schemas.ts"
+    }
+}

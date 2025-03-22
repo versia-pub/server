@@ -1,11 +1,13 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Marker as MarkerSchema,
+    Notification as NotificationSchema,
+    Status as StatusSchema,
+} from "@versia/client-ng/schemas";
 import { db } from "@versia/kit/db";
 import { Markers, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
-import { Marker as MarkerSchema } from "~/classes/schemas/marker";
-import { Notification as NotificationSchema } from "~/classes/schemas/notification";
-import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const MarkerResponseSchema = z.object({
     notifications: MarkerSchema.optional(),

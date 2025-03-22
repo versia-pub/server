@@ -6,11 +6,13 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Relationship as RelationshipSchema,
+    iso631,
+} from "@versia/client-ng/schemas";
 import { Relationship } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { iso631 } from "~/classes/schemas/common";
-import { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({

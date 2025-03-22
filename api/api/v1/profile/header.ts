@@ -1,7 +1,7 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
+import { Account } from "@versia/client-ng/schemas";
 import { RolePermissions } from "@versia/kit/tables";
-import { Account } from "~/classes/schemas/account";
 
 const route = createRoute({
     method: "delete",

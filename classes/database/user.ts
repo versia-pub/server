@@ -5,6 +5,11 @@ import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
 import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
+import type {
+    Account,
+    Mention as MentionSchema,
+    Source,
+} from "@versia/client-ng/schemas";
 import {
     EntityValidator,
     FederationRequester,
@@ -51,8 +56,6 @@ import { config } from "~/config.ts";
 import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
-import type { Account, Source } from "../schemas/account.ts";
-import type { Mention as MentionSchema } from "../schemas/status.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";

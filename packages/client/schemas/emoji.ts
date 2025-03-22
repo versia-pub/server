@@ -1,8 +1,7 @@
 import { emojiValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
-import { zBoolean } from "~/classes/schemas/common.ts";
 import { config } from "~/config.ts";
-import { Id } from "./common.ts";
+import { Id, zBoolean } from "./common.ts";
 
 export const CustomEmoji = z
     .object({

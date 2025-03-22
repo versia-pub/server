@@ -1,8 +1,10 @@
 import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    Account as AccountSchema,
+    Role as RoleSchema,
+} from "@versia/client-ng/schemas";
 import { Role } from "@versia/kit/db";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { Role as RoleSchema } from "~/classes/schemas/versia.ts";
 
 const route = createRoute({
     method: "get",

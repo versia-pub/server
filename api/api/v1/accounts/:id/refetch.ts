@@ -6,10 +6,9 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Account as AccountSchema } from "@versia/client-ng/schemas";
 import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
-import { Account } from "~/classes/schemas/account";
-import { Account as AccountSchema } from "~/classes/schemas/account";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -36,7 +35,7 @@ const route = createRoute({
             description: "Refetched account data",
             content: {
                 "application/json": {
-                    schema: Account,
+                    schema: AccountSchema,
                 },
             },
         },

@@ -1,9 +1,8 @@
 import { userAddressValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
 import type { Account as ApiAccount } from "@versia/client/types";
-import { zBoolean } from "~/classes/schemas/common.ts";
 import { config } from "~/config.ts";
-import { iso631 } from "./common.ts";
+import { iso631, zBoolean } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 import { Role } from "./versia.ts";
 

@@ -2,13 +2,12 @@ import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Account as AccountSchema, zBoolean } from "@versia/client-ng/schemas";
 import { Emoji, User } from "@versia/kit/db";
 import { RolePermissions, Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
-import { Account as AccountSchema } from "~/classes/schemas/account";
-import { zBoolean } from "~/classes/schemas/common.ts";
 import { config } from "~/config.ts";
 
 const route = createRoute({

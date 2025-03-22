@@ -1,4 +1,8 @@
 import type { z } from "@hono/zod-openapi";
+import type {
+    Application as ApplicationSchema,
+    CredentialApplication,
+} from "@versia/client-ng/schemas";
 import { Token, db } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
 import {
@@ -9,10 +13,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import type {
-    Application as ApplicationSchema,
-    CredentialApplication,
-} from "../schemas/application.ts";
 import { BaseInterface } from "./base.ts";
 
 type ApplicationType = InferSelectModel<typeof Applications>;

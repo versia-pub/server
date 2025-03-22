@@ -1,14 +1,14 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import {
+    FilterKeyword as FilterKeywordSchema,
+    Filter as FilterSchema,
+    zBoolean,
+} from "@versia/client-ng/schemas";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
 import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { zBoolean } from "~/classes/schemas/common.ts";
-import {
-    FilterKeyword as FilterKeywordSchema,
-    Filter as FilterSchema,
-} from "~/classes/schemas/filters";
 import { ErrorSchema } from "~/types/api";
 
 const routeGet = createRoute({

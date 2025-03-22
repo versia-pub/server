@@ -7,10 +7,10 @@ import {
     withNoteParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Status as StatusSchema } from "@versia/client-ng/schemas";
 import { Note } from "@versia/kit/db";
 import { Notes, RolePermissions } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { Status as StatusSchema } from "~/classes/schemas/status";
 
 const route = createRoute({
     method: "post",

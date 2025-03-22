@@ -1,8 +1,8 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Attachment as AttachmentSchema } from "@versia/client-ng/schemas";
 import { Media } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { Attachment as AttachmentSchema } from "~/classes/schemas/attachment";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({

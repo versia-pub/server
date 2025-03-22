@@ -1,10 +1,10 @@
 import { apiRoute } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute } from "@hono/zod-openapi";
+import { Instance as InstanceSchema } from "@versia/client-ng/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { Instance as InstanceSchema } from "~/classes/schemas/instance";
 import { config } from "~/config.ts";
 import pkg from "~/package.json";
 

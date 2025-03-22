@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import type { Relationship as RelationshipSchema } from "@versia/client-ng/schemas";
 import { db } from "@versia/kit/db";
 import { Relationships } from "@versia/kit/tables";
 import {
@@ -10,7 +11,6 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
-import type { Relationship as RelationshipSchema } from "~/classes/schemas/relationship";
 import { BaseInterface } from "./base.ts";
 import type { User } from "./user.ts";
 

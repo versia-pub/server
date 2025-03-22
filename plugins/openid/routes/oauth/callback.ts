@@ -1,12 +1,12 @@
 import { randomString } from "@/math.ts";
 import { createRoute, z } from "@hono/zod-openapi";
+import { Account as AccountSchema } from "@versia/client-ng/schemas";
 import { Media, Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import { ApiError } from "~/classes/errors/api-error.ts";
-import { Account as AccountSchema } from "~/classes/schemas/account.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
