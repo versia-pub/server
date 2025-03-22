@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 let role: Role;
 
 beforeAll(async () => {
@@ -29,37 +29,27 @@ afterAll(async () => {
 
 describe("/api/v1/accounts/:id/roles", () => {
     test("should return 404 if user does not exist", async () => {
-        const response = await fakeRequest(
-            "/api/v1/accounts/00000000-0000-0000-0000-000000000000/roles",
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.getAccountRoles(
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
+        expect(data).toMatchObject({
             error: "User not found",
         });
     });
 
     test("should return a list of roles for the user", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[0].id}/roles`,
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.ok).toBe(true);
-        const roles = await response.json();
-        expect(roles).toContainEqual({
+        const { data, ok } = await client.getAccountRoles(users[0].id);
+
+        expect(ok).toBe(true);
+        expect(data).toBeArray();
+        expect(data).toContainEqual({
             id: role.id,
             name: "test",
             permissions: [RolePermissions.ManageRoles],

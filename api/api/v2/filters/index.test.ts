@@ -1,72 +1,54 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 
 afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v2/filters
 describe("/api/v2/filters", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest("/api/v2/filters");
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getFilters();
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return user filters (none)", async () => {
-        const response = await fakeRequest("/api/v2/filters", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getFilters();
 
-        const json = await response.json();
-        expect(json).toBeArray();
-        expect(json).toBeEmpty();
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(0);
     });
 
     test("should create a new filter", async () => {
-        const formData = new FormData();
+        await using client = await generateClient(users[0]);
 
-        formData.append("title", "Test Filter");
-        formData.append("context[]", "home");
-        formData.append("filter_action", "warn");
-        formData.append("expires_in", "86400");
-        formData.append("keywords_attributes[0][keyword]", "test");
-        formData.append("keywords_attributes[0][whole_word]", "true");
-
-        const response = await fakeRequest("/api/v2/filters", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/x-www-form-urlencoded",
+        const { data, ok } = await client.createFilter(
+            ["home"],
+            "Test Filter",
+            "warn",
+            {
+                expires_in: 86400,
+                keywords_attributes: [{ keyword: "test", whole_word: true }],
             },
-            body: new URLSearchParams({
-                title: "Test Filter",
-                "context[]": "home",
-                filter_action: "warn",
-                expires_in: "86400",
-                "keywords_attributes[0][keyword]": "test",
-                "keywords_attributes[0][whole_word]": "true",
-            }),
-        });
+        );
 
-        expect(response.status).toBe(200);
-
-        const json = await response.json();
-        expect(json).toBeObject();
-        expect(json).toContainKeys(["id", "title"]);
-        expect(json.title).toBe("Test Filter");
-        expect(json.context).toEqual(["home"]);
-        expect(json.filter_action).toBe("warn");
-        expect(json.expires_at).toBeString();
-        expect(json.keywords).toBeArray();
-        expect(json.keywords).not.toBeEmpty();
-        expect(json.keywords[0]).toContainKeys(["keyword", "whole_word"]);
-        expect(json.keywords[0].keyword).toEqual("test");
+        expect(ok).toBe(true);
+        expect(data).toBeObject();
+        expect(data).toContainKeys(["id", "title"]);
+        expect(data.title).toBe("Test Filter");
+        expect(data.context).toEqual(["home"]);
+        expect(data.filter_action).toBe("warn");
+        expect(data.expires_at).toBeString();
+        expect(data.keywords).toBeArray();
+        expect(data.keywords).not.toBeEmpty();
+        expect(data.keywords[0]).toContainKeys(["keyword", "whole_word"]);
+        expect(data.keywords[0].keyword).toEqual("test");
     });
 });

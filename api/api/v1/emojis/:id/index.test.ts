@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 let id = "";
 
 // Make user 2 an admin
@@ -12,22 +12,14 @@ beforeAll(async () => {
     await users[1].update({ isAdmin: true });
 
     // Create an emoji
-    const response = await fakeRequest("/api/v1/emojis", {
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-            shortcode: "test",
-            element: "https://cdn.versia.social/logo.webp",
-            global: true,
-        }),
-    });
+    await using client = await generateClient(users[1]);
+    const { data, ok } = await client.uploadEmoji(
+        "test",
+        new URL("https://cdn.versia.social/logo.webp"),
+    );
 
-    expect(response.ok).toBe(true);
-    const emoji = await response.json();
-    id = emoji.id;
+    expect(ok).toBe(true);
+    id = data.id;
 });
 
 afterAll(async () => {
@@ -41,124 +33,95 @@ afterAll(async () => {
 // /api/v1/emojis/:id (PATCH, DELETE, GET)
 describe("/api/v1/emojis/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            method: "GET",
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getEmoji(id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if emoji does not exist", async () => {
-        const response = await fakeRequest(
-            "/api/v1/emojis/00000000-0000-0000-0000-000000000000",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-                method: "GET",
-            },
+        await using client = await generateClient(users[1]);
+
+        const { ok, raw } = await client.getEmoji(
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should not work if the user is trying to update an emoji they don't own", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "PATCH",
-            body: JSON.stringify({
-                shortcode: "test2",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.updateEmoji(id, {
+            shortcode: "test2",
         });
 
-        expect(response.status).toBe(403);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
     });
 
     test("should return the emoji", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            },
-            method: "GET",
-        });
+        await using client = await generateClient(users[1]);
 
-        expect(response.ok).toBe(true);
-        const emoji = await response.json();
-        expect(emoji.shortcode).toBe("test");
+        const { data, ok } = await client.getEmoji(id);
+
+        expect(ok).toBe(true);
+        expect(data.shortcode).toBe("test");
     });
 
     test("should update the emoji", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "PATCH",
-            body: JSON.stringify({
-                shortcode: "test2",
-            }),
+        await using client = await generateClient(users[1]);
+
+        const { data, ok } = await client.updateEmoji(id, {
+            shortcode: "test2",
         });
 
-        expect(response.ok).toBe(true);
-        const emoji = await response.json();
-        expect(emoji.shortcode).toBe("test2");
+        expect(ok).toBe(true);
+        expect(data.shortcode).toBe("test2");
     });
 
     test("should update the emoji with another url, but keep the shortcode", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "PATCH",
-            body: JSON.stringify({
-                element: "https://avatars.githubusercontent.com/u/30842467?v=4",
-            }),
+        await using client = await generateClient(users[1]);
+
+        const { data, ok } = await client.updateEmoji(id, {
+            image: new URL(
+                "https://avatars.githubusercontent.com/u/30842467?v=4",
+            ),
         });
 
-        expect(response.ok).toBe(true);
-        const emoji = await response.json();
-        expect(emoji.shortcode).toBe("test2");
+        expect(ok).toBe(true);
+        expect(data.shortcode).toBe("test2");
+        expect(data.url).toContain("/media/proxy/");
     });
 
     test("should update the emoji to be non-global", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            method: "PATCH",
-            body: JSON.stringify({
-                global: false,
-            }),
+        await using client = await generateClient(users[1]);
+
+        const { data, ok } = await client.updateEmoji(id, {
+            global: false,
         });
 
-        expect(response.ok).toBe(true);
+        expect(ok).toBe(true);
+        expect(data.global).toBe(false);
 
         // Check if the other user can see it
-        const response2 = await fakeRequest("/api/v1/custom_emojis", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-            method: "GET",
-        });
+        await using client2 = await generateClient(users[0]);
 
-        expect(response2.ok).toBe(true);
-        const emojis = await response2.json();
-        expect(emojis).not.toContainEqual(expect.objectContaining({ id }));
+        const { data: data2, ok: ok2 } =
+            await client2.getInstanceCustomEmojis();
+
+        expect(ok2).toBe(true);
+        expect(data2).not.toContainEqual(expect.objectContaining({ id }));
     });
 
     test("should delete the emoji", async () => {
-        const response = await fakeRequest(`/api/v1/emojis/${id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            },
-            method: "DELETE",
-        });
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(204);
+        const { ok } = await client.deleteEmoji(id);
+
+        expect(ok).toBe(true);
     });
 });

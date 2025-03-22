@@ -1,10 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Status as ApiStatus } from "@versia/client/types";
 import { config } from "~/config.ts";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
-const timeline = (await getTestStatuses(40, users[0])).toReversed();
+const { users, deleteUsers } = await getTestUsers(5);
+const timeline = (await getTestStatuses(10, users[0])).toReversed();
 
 afterAll(async () => {
     await deleteUsers();
@@ -12,38 +11,26 @@ afterAll(async () => {
 
 describe("/api/v1/timelines/public", () => {
     test("should correctly parse limit", async () => {
-        const response = await fakeRequest("/api/v1/timelines/public?limit=5", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.getPublicTimeline({
+            limit: 5,
         });
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
-
-        const objects = (await response.json()) as ApiStatus[];
-
-        expect(objects.length).toBe(5);
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(5);
     });
 
     test("should return 200 with statuses", async () => {
-        const response = await fakeRequest("/api/v1/timelines/public", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.getPublicTimeline({
+            limit: 5,
         });
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
-
-        const objects = (await response.json()) as ApiStatus[];
-
-        expect(objects.length).toBe(20);
-        for (const [index, status] of objects.entries()) {
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(5);
+        for (const [index, status] of data.entries()) {
             expect(status.account).toBeDefined();
             expect(status.account.id).toBe(users[0].id);
             expect(status.content).toBeDefined();
@@ -53,24 +40,16 @@ describe("/api/v1/timelines/public", () => {
     });
 
     test("should only fetch local statuses", async () => {
-        const response = await fakeRequest(
-            "/api/v1/timelines/public?limit=20&local=true",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getPublicTimeline({
+            limit: 5,
+            local: true,
+        });
 
-        const objects = (await response.json()) as ApiStatus[];
-
-        expect(objects.length).toBe(20);
-        for (const [index, status] of objects.entries()) {
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(5);
+        for (const [index, status] of data.entries()) {
             expect(status.account).toBeDefined();
             expect(status.account.id).toBe(users[0].id);
             expect(status.content).toBeDefined();
@@ -80,102 +59,77 @@ describe("/api/v1/timelines/public", () => {
     });
 
     test("should only fetch remote statuses", async () => {
-        const response = await fakeRequest(
-            "/api/v1/timelines/public?remote=true&allow_local_only=false&only_media=false",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getPublicTimeline({
+            limit: 5,
+            remote: true,
+        });
 
-        const objects = (await response.json()) as ApiStatus[];
-
-        expect(objects).toBeArray();
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(0);
     });
 
     describe("should paginate properly", () => {
         test("should send correct Link header", async () => {
-            const response = await fakeRequest(
-                "/api/v1/timelines/public?limit=20",
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    },
-                },
-            );
+            await using client = await generateClient(users[0]);
 
-            expect(response.headers.get("link")).toBe(
-                `<${config.http.base_url}api/v1/timelines/public?limit=20&max_id=${timeline[19].id}>; rel="next"`,
+            const { data, ok, raw } = await client.getPublicTimeline({
+                limit: 5,
+            });
+
+            expect(ok).toBe(true);
+            expect(data).toBeArrayOfSize(5);
+            expect(raw.headers.get("link")).toBe(
+                `<${config.http.base_url}api/v1/timelines/public?limit=5&max_id=${timeline[4].id}>; rel="next"`,
             );
         });
 
         test("should correct statuses with max", async () => {
-            const response = await fakeRequest(
-                `/api/v1/timelines/public?limit=20&max_id=${timeline[19].id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    },
-                },
-            );
+            await using client = await generateClient(users[0]);
 
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toContain(
-                "application/json",
-            );
+            const { data, ok } = await client.getPublicTimeline({
+                limit: 5,
+                max_id: timeline[4].id,
+            });
 
-            const objects = (await response.json()) as ApiStatus[];
-
-            expect(objects.length).toBe(20);
-            for (const [index, status] of objects.entries()) {
+            expect(ok).toBe(true);
+            expect(data).toBeArrayOfSize(5);
+            for (const [index, status] of data.entries()) {
                 expect(status.account).toBeDefined();
                 expect(status.account.id).toBe(users[0].id);
                 expect(status.content).toBeDefined();
                 expect(status.created_at).toBeDefined();
-                expect(status.id).toBe(timeline[index + 20].id);
+                expect(status.id).toBe(timeline[index + 5].id);
             }
         });
 
         test("should send correct Link prev header", async () => {
-            const response = await fakeRequest(
-                `/api/v1/timelines/public?limit=20&max_id=${timeline[19].id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    },
-                },
-            );
+            await using client = await generateClient(users[0]);
 
-            expect(response.headers.get("link")).toInclude(
-                `${config.http.base_url}api/v1/timelines/public?limit=20&min_id=${timeline[20].id}>; rel="prev"`,
+            const { data, ok, raw } = await client.getPublicTimeline({
+                limit: 5,
+                max_id: timeline[4].id,
+            });
+
+            expect(ok).toBe(true);
+            expect(data).toBeArrayOfSize(5);
+            expect(raw.headers.get("link")).toInclude(
+                `<${config.http.base_url}api/v1/timelines/public?limit=5&min_id=${timeline[5].id}>; rel="prev"`,
             );
         });
 
         test("should correct statuses with min_id", async () => {
-            const response = await fakeRequest(
-                `/api/v1/timelines/public?limit=20&min_id=${timeline[20].id}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    },
-                },
-            );
+            await using client = await generateClient(users[0]);
 
-            expect(response.status).toBe(200);
-            expect(response.headers.get("content-type")).toContain(
-                "application/json",
-            );
+            const { data, ok } = await client.getPublicTimeline({
+                limit: 5,
+                min_id: timeline[5].id,
+            });
 
-            const objects = (await response.json()) as ApiStatus[];
-
-            expect(objects.length).toBe(20);
-            for (const [index, status] of objects.entries()) {
+            expect(ok).toBe(true);
+            expect(data).toBeArrayOfSize(5);
+            for (const [index, status] of data.entries()) {
                 expect(status.account).toBeDefined();
                 expect(status.account.id).toBe(users[0].id);
                 expect(status.content).toBeDefined();
@@ -186,59 +140,38 @@ describe("/api/v1/timelines/public", () => {
     });
 
     test("should not return statuses with filtered keywords", async () => {
-        const filterResponse = await fakeRequest("/api/v2/filters", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/x-www-form-urlencoded",
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.createFilter(
+            ["public"],
+            "Test Filter",
+            "hide",
+            {
+                keywords_attributes: [
+                    {
+                        keyword: timeline[0].content.slice(4, 20),
+                        whole_word: false,
+                    },
+                ],
             },
-            body: new URLSearchParams({
-                title: "Test Filter",
-                "context[]": "public",
-                filter_action: "hide",
-                "keywords_attributes[0][keyword]": timeline[0].content.slice(
-                    4,
-                    20,
-                ),
-                "keywords_attributes[0][whole_word]": "false",
-            }),
+        );
+
+        expect(ok).toBe(true);
+
+        const { data: data2, ok: ok2 } = await client.getPublicTimeline({
+            limit: 5,
         });
 
-        expect(filterResponse.status).toBe(200);
-
-        const response = await fakeRequest(
-            "/api/v1/timelines/public?limit=20",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
-
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
-
-        const objects = (await response.json()) as ApiStatus[];
-
-        expect(objects.length).toBe(20);
+        expect(ok2).toBe(true);
+        expect(data2).toBeArrayOfSize(5);
         // There should be no element with id of timeline[0].id
-        expect(objects).not.toContainEqual(
+        expect(data2).not.toContainEqual(
             expect.objectContaining({ id: timeline[0].id }),
         );
 
         // Delete filter
-        const filterDeleteResponse = await fakeRequest(
-            `/api/v2/filters/${(await filterResponse.json()).id}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        const { ok: ok3 } = await client.deleteFilter(data.id);
 
-        expect(filterDeleteResponse.status).toBe(204);
+        expect(ok3).toBe(true);
     });
 });

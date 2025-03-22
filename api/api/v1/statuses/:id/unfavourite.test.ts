@@ -1,84 +1,58 @@
-import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Status as ApiStatus } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { afterAll, describe, expect, test } from "bun:test";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(2, users[0])).toReversed();
 
 afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v1/statuses/:id/unfavourite
 describe("/api/v1/statuses/:id/unfavourite", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/unfavourite`,
-            {
-                method: "POST",
-            },
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.unfavouriteStatus(timeline[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should be able to unfavourite post that is not favourited", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/unfavourite`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(200);
+        const { ok } = await client.unfavouriteStatus(timeline[0].id);
+
+        expect(ok).toBe(true);
     });
 
     test("should unfavourite post", async () => {
-        beforeAll(async () => {
-            await fakeRequest(`/api/v1/statuses/${timeline[1].id}/favourite`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            });
+        await using client = await generateClient(users[1]);
+
+        await client.favouriteStatus(timeline[1].id);
+
+        const { ok } = await client.unfavouriteStatus(timeline[1].id);
+
+        expect(ok).toBe(true);
+
+        const { ok: ok2, data } = await client.getStatus(timeline[1].id);
+
+        expect(ok2).toBe(true);
+        expect(data).toMatchObject({
+            favourited: false,
+            favourites_count: 0,
         });
-
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[1].id}/unfavourite`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
-
-        expect(response.status).toBe(200);
-
-        const json = (await response.json()) as ApiStatus;
-
-        expect(json.favourited).toBe(false);
-        expect(json.favourites_count).toBe(0);
     });
 
     test("post should not be favourited when fetched", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[1].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(200);
+        const { ok, data } = await client.getStatus(timeline[1].id);
 
-        const json = (await response.json()) as ApiStatus;
-
-        expect(json.favourited).toBe(false);
-        expect(json.favourites_count).toBe(0);
+        expect(ok).toBe(true);
+        expect(data).toMatchObject({
+            favourited: false,
+            favourites_count: 0,
+        });
     });
 });

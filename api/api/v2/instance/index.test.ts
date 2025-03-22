@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { fakeRequest } from "~/tests/utils";
+import { generateClient } from "~/tests/utils";
 
 // /api/v2/instance
 describe("/api/v2/instance", () => {
     test("should return instance information", async () => {
-        const response = await fakeRequest("/api/v2/instance");
+        await using client = await generateClient();
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getInstance();
 
-        const json = await response.json();
-        expect(json).toBeObject();
-        expect(json).toContainKeys([
+        expect(ok).toBe(true);
+        expect(data).toBeObject();
+        expect(data).toContainKeys([
             "domain",
             "title",
             "version",

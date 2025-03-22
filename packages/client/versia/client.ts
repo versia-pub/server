@@ -8,6 +8,7 @@ import type { Context } from "../schemas/context.ts";
 import type { CustomEmoji } from "../schemas/emoji.ts";
 import type { ExtendedDescription } from "../schemas/extended-description.ts";
 import type { FamiliarFollowers } from "../schemas/familiar-followers.ts";
+import type { Filter, FilterKeyword } from "../schemas/filters.ts";
 import type { Instance } from "../schemas/instance.ts";
 import type { Marker } from "../schemas/marker.ts";
 import type { Notification } from "../schemas/notification.ts";
@@ -17,8 +18,13 @@ import type { PrivacyPolicy } from "../schemas/privacy-policy.ts";
 import type { WebPushSubscription } from "../schemas/pushsubscription.ts";
 import type { Relationship } from "../schemas/relationship.ts";
 import type { Report } from "../schemas/report.ts";
+import type { Rule } from "../schemas/rule.ts";
 import type { Search } from "../schemas/search.ts";
-import type { Status, StatusSource } from "../schemas/status.ts";
+import type {
+    ScheduledStatus,
+    Status,
+    StatusSource,
+} from "../schemas/status.ts";
 import type { Tag } from "../schemas/tag.ts";
 import type { Token } from "../schemas/token.ts";
 import type { TermsOfService } from "../schemas/tos.ts";
@@ -233,6 +239,41 @@ export class Client extends BaseClient {
         return this.post<unknown>("/api/v1/featured_tags", { name }, extra);
     }
 
+    /**
+     * POST /api/v2/filters
+     *
+     * Create a filter.
+     * @param context Filter context.
+     * @param title Filter title.
+     * @param filter_action Filter action.
+     * @param options.expires_in How many seconds from now should the filter expire?
+     * @param options.keywords_attributes Keywords to filter.
+     */
+    public createFilter(
+        context: z.infer<typeof Filter.shape.context>,
+        title: z.infer<typeof Filter.shape.title>,
+        filter_action: z.infer<typeof Filter.shape.filter_action>,
+        options: Partial<{
+            expires_in: number;
+            keywords_attributes: {
+                keyword: z.infer<typeof FilterKeyword.shape.keyword>;
+                whole_word: z.infer<typeof FilterKeyword.shape.whole_word>;
+            }[];
+        }>,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Filter>>> {
+        return this.post<z.infer<typeof Filter>>(
+            "/api/v2/filters",
+            {
+                context,
+                title,
+                filter_action,
+                ...options,
+            },
+            extra,
+        );
+    }
+
     // FIXME: No List schema
     /**
      * POST /api/v1/lists
@@ -351,6 +392,18 @@ export class Client extends BaseClient {
     }
 
     /**
+     * DELETE /api/v2/filters/:id
+     *
+     * @param id Target filter ID.
+     */
+    public deleteFilter(
+        id: string,
+        extra?: RequestInit,
+    ): Promise<Output<void>> {
+        return this.delete(`/api/v2/filters/${id}`, undefined, extra);
+    }
+
+    /**
      * DELETE /api/v1/lists/:id
      *
      * @param id Target list ID.
@@ -407,6 +460,28 @@ export class Client extends BaseClient {
     ): Promise<Output<void>> {
         return this.post(
             `/api/v1/instance/announcements/${id}/dismiss`,
+            undefined,
+            extra,
+        );
+    }
+
+    /**
+     * DELETE /api/v1/notifications/destroy_multiple
+     *
+     * @param ids Target notification IDs.
+     */
+    public dismissMultipleNotifications(
+        ids: string[],
+        extra?: RequestInit,
+    ): Promise<Output<void>> {
+        const params = new URLSearchParams();
+
+        for (const id of ids) {
+            params.append("ids[]", id);
+        }
+
+        return this.delete(
+            `/api/v1/notifications/destroy_multiple?${params.toString()}`,
             undefined,
             extra,
         );
@@ -1122,8 +1197,29 @@ export class Client extends BaseClient {
         return this.get<unknown[]>("/api/v1/featured_tags", extra);
     }
 
-    // TODO: getFilter
-    // TODO: getFilters
+    /**
+     * GET /api/v2/filters/:id
+     *
+     * @param id The filter ID.
+     * @return Filter.
+     */
+    public getFilter(
+        id: string,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Filter>>> {
+        return this.get<z.infer<typeof Filter>>(`/api/v2/filters/${id}`, extra);
+    }
+
+    /**
+     * GET /api/v2/filters
+     *
+     * @return Array of filters.
+     */
+    public getFilters(
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Filter>[]>> {
+        return this.get<z.infer<typeof Filter>[]>("/api/v2/filters", extra);
+    }
 
     /**
      * GET /api/v1/follow_requests
@@ -1207,7 +1303,7 @@ export class Client extends BaseClient {
     }
 
     /**
-     * GET /api/v1/instance
+     * GET /api/v2/instance
      *
      * @return Instance.
      */
@@ -1492,7 +1588,7 @@ export class Client extends BaseClient {
         const params = new URLSearchParams();
 
         for (const timeline of timelines) {
-            params.append("timelines[]", timeline);
+            params.append("timeline[]", timeline);
         }
 
         return this.get<z.infer<typeof Marker> | Record<never, never>>(
@@ -1659,6 +1755,8 @@ export class Client extends BaseClient {
             since_id: string;
             limit: number;
             only_media: boolean;
+            local: boolean;
+            remote: boolean;
         }>,
         extra?: RequestInit,
     ): Promise<Output<z.infer<typeof Status>[]>> {
@@ -1679,6 +1777,12 @@ export class Client extends BaseClient {
             }
             if (options.only_media) {
                 params.set("only_media", "true");
+            }
+            if (options.local) {
+                params.set("local", "true");
+            }
+            if (options.remote) {
+                params.set("remote", "true");
             }
         }
 
@@ -1780,7 +1884,20 @@ export class Client extends BaseClient {
         return this.get<z.infer<typeof Role>[]>("/api/v1/roles", extra);
     }
 
-    // FIXME: No ScheduledStatus schema
+    /**
+     * GET /api/v1/instance/rules
+     *
+     * @return Array of rules.
+     */
+    public getRules(
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Rule>[]>> {
+        return this.get<z.infer<typeof Rule>[]>(
+            "/api/v1/instance/rules",
+            extra,
+        );
+    }
+
     /**
      * GET /api/v1/scheduled_statuses/:id
      *
@@ -1790,11 +1907,13 @@ export class Client extends BaseClient {
     public getScheduledStatus(
         id: string,
         extra?: RequestInit,
-    ): Promise<Output<unknown>> {
-        return this.get<unknown>(`/api/v1/scheduled_statuses/${id}`, extra);
+    ): Promise<Output<z.infer<typeof ScheduledStatus>>> {
+        return this.get<z.infer<typeof ScheduledStatus>>(
+            `/api/v1/scheduled_statuses/${id}`,
+            extra,
+        );
     }
 
-    // FIXME: No ScheduledStatus schema
     /**
      * GET /api/v1/scheduled_statuses
      *
@@ -1812,7 +1931,7 @@ export class Client extends BaseClient {
             limit: number;
         }>,
         extra?: RequestInit,
-    ): Promise<Output<unknown[]>> {
+    ): Promise<Output<z.infer<typeof ScheduledStatus>[]>> {
         const params = new URLSearchParams();
 
         if (options) {
@@ -1830,7 +1949,7 @@ export class Client extends BaseClient {
             }
         }
 
-        return this.get<unknown[]>(
+        return this.get<z.infer<typeof ScheduledStatus>[]>(
             `/api/v1/scheduled_statuses?${params}`,
             extra,
         );
@@ -2179,7 +2298,6 @@ export class Client extends BaseClient {
         );
     }
 
-    // FIXME: No ScheduledStatus schema
     /**
      * POST /api/v1/statuses
      *
@@ -2199,7 +2317,7 @@ export class Client extends BaseClient {
      */
     public postStatus(
         status: string,
-        options: {
+        options?: {
             in_reply_to_id?: string;
             quote_id?: string;
             media_ids?: string[];
@@ -2207,7 +2325,7 @@ export class Client extends BaseClient {
             spoiler_text?: string;
             visibility?: z.infer<typeof Status.shape.visibility>;
             content_type?: StatusContentType;
-            scheduled_at?: string;
+            scheduled_at?: Date;
             language?: string;
             local_only?: boolean;
             poll?: {
@@ -2218,10 +2336,18 @@ export class Client extends BaseClient {
             };
         },
         extra?: RequestInit,
-    ): Promise<Output<z.infer<typeof Status> | unknown>> {
-        return this.post<z.infer<typeof Status> | unknown>(
+    ): Promise<
+        Output<z.infer<typeof Status> | z.infer<typeof ScheduledStatus>>
+    > {
+        return this.post<
+            z.infer<typeof Status> | z.infer<typeof ScheduledStatus>
+        >(
             "/api/v1/statuses",
-            { status, ...options },
+            {
+                status,
+                ...options,
+                scheduled_at: options?.scheduled_at?.toISOString(),
+            },
             extra,
         );
     }
@@ -2455,15 +2581,31 @@ export class Client extends BaseClient {
             };
         }>,
         extra?: RequestInit,
-    ): Promise<Output<z.infer<typeof Marker>>> {
-        return this.post<z.infer<typeof Marker>>(
-            "/api/v1/markers",
-            options,
-            extra,
-        );
+    ): Promise<
+        Output<{
+            home?: z.infer<typeof Marker>;
+            notifications?: z.infer<typeof Marker>;
+        }>
+    > {
+        const params = new URLSearchParams();
+
+        if (options.home) {
+            params.set("home[last_read_id]", options.home.last_read_id);
+        }
+
+        if (options.notifications) {
+            params.set(
+                "notifications[last_read_id]",
+                options.notifications.last_read_id,
+            );
+        }
+
+        return this.post<{
+            home?: z.infer<typeof Marker>;
+            notifications?: z.infer<typeof Marker>;
+        }>(`/api/v1/markers?${params}`, undefined, extra);
     }
 
-    // FIXME: No ScheduledStatus schema
     /**
      * PUT /api/v1/scheduled_statuses/:id
      *
@@ -2475,8 +2617,8 @@ export class Client extends BaseClient {
         id: string,
         scheduled_at?: Date,
         extra?: RequestInit,
-    ): Promise<Output<unknown>> {
-        return this.put<unknown>(
+    ): Promise<Output<z.infer<typeof ScheduledStatus>>> {
+        return this.put<z.infer<typeof ScheduledStatus>>(
             `/api/v1/scheduled_statuses/${id}`,
             { scheduled_at: scheduled_at?.toISOString() },
             extra,
@@ -2648,7 +2790,13 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof WebPushSubscription>>> {
         return this.post<z.infer<typeof WebPushSubscription>>(
             "/api/v1/push/subscription",
-            { subscription, data },
+            {
+                subscription,
+                policy: data?.policy,
+                data: {
+                    alerts: data?.alerts,
+                },
+            },
             extra,
         );
     }
@@ -2902,7 +3050,40 @@ export class Client extends BaseClient {
         );
     }
 
-    // TODO: updateFilter
+    /**
+     * PUT /api/v2/filters/:id
+     *
+     * @param id Target filter ID.
+     * @param options.title New filter title.
+     * @param options.context New filter context.
+     * @param options.filter_action New filter action.
+     * @param options.expires_in New filter expiration.
+     * @param options.keywords_attributes New filter keywords.
+     * @return Filter.
+     */
+    public updateFilter(
+        id: string,
+        options: Partial<{
+            title: string;
+            context: string[];
+            filter_action: string;
+            expires_in: number;
+            keywords_attributes: Partial<{
+                id: string;
+                keyword: string;
+                whole_word: boolean;
+                _destroy: boolean;
+            }>[];
+        }>,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Filter>>> {
+        return this.put<z.infer<typeof Filter>>(
+            `/api/v2/filters/${id}`,
+            options,
+            extra,
+        );
+    }
+
     // FIXME: No List schema
     /**
      * PUT /api/v1/lists/:id
@@ -2988,7 +3169,7 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof WebPushSubscription>>> {
         return this.put<z.infer<typeof WebPushSubscription>>(
             "/api/v1/push/subscription",
-            { ...data, policy },
+            { data, policy },
             extra,
         );
     }

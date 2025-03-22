@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
 import { config } from "~/config.ts";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, deleteUsers, tokens } = await getTestUsers(1);
+const { users, deleteUsers } = await getTestUsers(1);
 let role: Role;
 
 beforeAll(async () => {
@@ -32,24 +32,21 @@ afterAll(async () => {
 // /api/v1/roles
 describe("/api/v1/roles", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest("/api/v1/roles", {
-            method: "GET",
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getRoles();
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return a list of roles", async () => {
-        const response = await fakeRequest("/api/v1/roles", {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.ok).toBe(true);
-        const roles = await response.json();
-        expect(roles).toContainEqual({
+        const { ok, data } = await client.getRoles();
+
+        expect(ok).toBe(true);
+        expect(data).toContainEqual({
             name: "test",
             permissions: [RolePermissions.ManageRoles],
             priority: 10,
@@ -59,7 +56,7 @@ describe("/api/v1/roles", () => {
             id: role.id,
         });
 
-        expect(roles).toContainEqual({
+        expect(data).toContainEqual({
             id: "default",
             name: "Default",
             permissions: config.permissions.default,
@@ -70,25 +67,18 @@ describe("/api/v1/roles", () => {
     });
 
     test("should create a new role", async () => {
-        const response = await fakeRequest("/api/v1/roles", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: "newRole",
-                permissions: [RolePermissions.ManageRoles],
-                priority: 1,
-                description: "newRole",
-                visible: true,
-                icon: "https://example.com/icon.png",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { ok, data } = await client.createRole("newRole", {
+            permissions: [RolePermissions.ManageRoles],
+            priority: 1,
+            description: "newRole",
+            visible: true,
+            icon: "https://example.com/icon.png",
         });
 
-        expect(response.ok).toBe(true);
-        const newRole = await response.json();
-        expect(newRole).toMatchObject({
+        expect(ok).toBe(true);
+        expect(data).toMatchObject({
             name: "newRole",
             permissions: [RolePermissions.ManageRoles],
             priority: 1,
@@ -98,7 +88,7 @@ describe("/api/v1/roles", () => {
         });
 
         // Cleanup
-        const createdRole = await Role.fromId(newRole.id);
+        const createdRole = await Role.fromId(data.id);
 
         expect(createdRole).toBeDefined();
 
@@ -106,49 +96,37 @@ describe("/api/v1/roles", () => {
     });
 
     test("should return 403 if user tries to create a role with higher priority", async () => {
-        const response = await fakeRequest("/api/v1/roles", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: "newRole",
-                permissions: [RolePermissions.ManageBlocks],
-                priority: 11,
-                description: "newRole",
-                visible: true,
-                icon: "https://example.com/icon.png",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.createRole("newRole", {
+            permissions: [RolePermissions.ManageBlocks],
+            priority: 11,
+            description: "newRole",
+            visible: true,
+            icon: "https://example.com/icon.png",
         });
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Cannot create role with higher priority than your own",
         });
     });
 
     test("should return 403 if user tries to create a role with permissions they do not have", async () => {
-        const response = await fakeRequest("/api/v1/roles", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: "newRole",
-                permissions: [RolePermissions.Impersonate],
-                priority: 1,
-                description: "newRole",
-                visible: true,
-                icon: "https://example.com/icon.png",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.createRole("newRole", {
+            permissions: [RolePermissions.Impersonate],
+            priority: 1,
+            description: "newRole",
+            visible: true,
+            icon: "https://example.com/icon.png",
         });
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Cannot create role with permissions you do not have",
             details: "Forbidden permissions: impersonate",
         });

@@ -38,6 +38,7 @@ export const generateClient = async (
 ): Promise<
     VersiaClient & {
         [Symbol.asyncDispose](): Promise<void>;
+        dbToken: Token;
     }
 > => {
     const token = user
@@ -69,8 +70,12 @@ export const generateClient = async (
         await token?.delete();
     };
 
+    // @ts-expect-error More monkeypatching
+    client.dbToken = token;
+
     return client as VersiaClient & {
         [Symbol.asyncDispose](): Promise<void>;
+        dbToken: Token;
     };
 };
 export const deleteOldTestUsers = async (): Promise<void> => {

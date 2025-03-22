@@ -1,149 +1,121 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 
-const response = await fakeRequest("/api/v2/filters", {
-    method: "POST",
-    headers: {
-        Authorization: `Bearer ${tokens[0].data.accessToken}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+await using client = await generateClient(users[0]);
+
+const { data: filter, ok } = await client.createFilter(
+    ["home"],
+    "Test Filter",
+    "warn",
+    {
+        expires_in: 86400,
+        keywords_attributes: [{ keyword: "test", whole_word: true }],
     },
-    body: new URLSearchParams({
-        title: "Test Filter",
-        "context[]": "home",
-        filter_action: "warn",
-        expires_in: "86400",
-        "keywords_attributes[0][keyword]": "test",
-        "keywords_attributes[0][whole_word]": "true",
-    }),
-});
+);
 
-expect(response.status).toBe(200);
-
-const filter = await response.json();
+expect(ok).toBe(true);
 expect(filter).toBeObject();
+expect(filter).toContainKeys(["id", "title"]);
+expect(filter.title).toBe("Test Filter");
 
 afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v2/filters/:id
 describe("/api/v2/filters/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getFilter(filter.id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should get that filter", async () => {
-        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getFilter(filter.id);
 
-        const json = await response.json();
-        expect(json).toBeObject();
-        expect(json).toContainKeys(["id", "title"]);
-        expect(json.title).toBe("Test Filter");
-        expect(json.context).toEqual(["home"]);
-        expect(json.filter_action).toBe("warn");
-        expect(json.expires_at).toBeString();
-        expect(json.keywords).toBeArray();
-        expect(json.keywords).not.toBeEmpty();
-        expect(json.keywords[0]).toContainKeys(["keyword", "whole_word"]);
-        expect(json.keywords[0].keyword).toEqual("test");
+        expect(ok).toBe(true);
+        expect(data).toBeObject();
+        expect(data).toContainKeys(["id", "title"]);
+        expect(data.title).toBe("Test Filter");
+        expect(data.context).toEqual(["home"]);
+        expect(data.filter_action).toBe("warn");
+        expect(data.expires_at).toBeString();
+        expect(data.keywords).toBeArray();
+        expect(data.keywords).not.toBeEmpty();
+        expect(data.keywords[0]).toContainKeys(["keyword", "whole_word"]);
+        expect(data.keywords[0].keyword).toEqual("test");
     });
 
     test("should edit that filter", async () => {
-        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            method: "PUT",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-                title: "New Filter",
-                "context[]": "notifications",
-                filter_action: "hide",
-                expires_in: "86400",
-                "keywords_attributes[0][keyword]": "new",
-                "keywords_attributes[0][id]": filter.keywords[0].id,
-                "keywords_attributes[0][whole_word]": "false",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.updateFilter(filter.id, {
+            title: "New Filter",
+            context: ["notifications"],
+            filter_action: "hide",
+            expires_in: 86400,
+            keywords_attributes: [
+                {
+                    id: filter.keywords[0].id,
+                    keyword: "new",
+                    whole_word: false,
+                },
+            ],
         });
 
-        expect(response.status).toBe(200);
-
-        const json = await response.json();
-        expect(json).toBeObject();
-        expect(json).toContainKeys(["id", "title"]);
-        expect(json.title).toBe("New Filter");
-        expect(json.context).toEqual(["notifications"]);
-        expect(json.filter_action).toBe("hide");
-        expect(json.expires_at).toBeString();
-        expect(json.keywords).toBeArray();
-        expect(json.keywords).not.toBeEmpty();
-        expect(json.keywords[0]).toContainKeys(["keyword", "whole_word"]);
-        expect(json.keywords[0].keyword).toEqual("new");
+        expect(ok).toBe(true);
+        expect(data).toBeObject();
+        expect(data).toContainKeys(["id", "title"]);
+        expect(data.title).toBe("New Filter");
+        expect(data.context).toEqual(["notifications"]);
+        expect(data.filter_action).toBe("hide");
+        expect(data.expires_at).toBeString();
+        expect(data.keywords).toBeArray();
+        expect(data.keywords).not.toBeEmpty();
+        expect(data.keywords[0]).toContainKeys(["keyword", "whole_word"]);
+        expect(data.keywords[0].keyword).toEqual("new");
     });
 
     test("should delete keyword", async () => {
-        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            method: "PUT",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-            body: new URLSearchParams({
-                "keywords_attributes[0][id]": filter.keywords[0].id,
-                "keywords_attributes[0][_destroy]": "true",
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.updateFilter(filter.id, {
+            keywords_attributes: [
+                // biome-ignore lint/style/useNamingConvention: _destroy is a Mastodon API imposed variable name
+                { id: filter.keywords[0].id, _destroy: true },
+            ],
         });
 
-        expect(response.status).toBe(200);
+        expect(ok).toBe(true);
+        expect(data).toBeObject();
+        expect(data).toContainKeys(["id", "title"]);
+        expect(data.title).toBe("New Filter");
 
-        const json = await response.json();
-        expect(json).toBeObject();
-        expect(json.keywords).toBeEmpty();
+        // Get the filter again and check that the keyword is deleted
+        const { data: data2, ok: ok2 } = await client.getFilter(filter.id);
 
-        // Get the filter again and check
-        const getResponse = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
-
-        expect(getResponse.status).toBe(200);
-        expect((await getResponse.json()).keywords).toBeEmpty();
+        expect(ok2).toBe(true);
+        expect(data2.keywords).toBeArray();
+        expect(data2.keywords).toBeEmpty();
     });
 
     test("should delete filter", async () => {
-        const formData = new FormData();
+        await using client = await generateClient(users[0]);
 
-        const response = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-            body: formData,
-        });
+        const { ok } = await client.deleteFilter(filter.id);
 
-        expect(response.status).toBe(204);
+        expect(ok).toBe(true);
 
         // Try to GET the filter again
-        const getResponse = await fakeRequest(`/api/v2/filters/${filter.id}`, {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        const { ok: ok2, raw } = await client.getFilter(filter.id);
 
-        expect(getResponse.status).toBe(404);
+        expect(ok2).toBe(false);
+        expect(raw.status).toBe(404);
     });
 });

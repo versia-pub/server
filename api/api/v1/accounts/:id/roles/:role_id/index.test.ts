@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 let role: Role;
 let higherPriorityRole: Role;
 
@@ -44,56 +44,44 @@ afterAll(async () => {
 // /api/v1/accounts/:id/roles/:role_id
 describe("/api/v1/accounts/:id/roles/:role_id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/${role.id}`,
-            {
-                method: "POST",
-            },
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.assignRole(users[1].id, role.id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if role does not exist", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/00000000-0000-0000-0000-000000000000`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.assignRole(
+            users[1].id,
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should return 404 if user does not exist", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/00000000-0000-0000-0000-000000000000/roles/${role.id}`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.assignRole(
+            "00000000-0000-0000-0000-000000000000",
+            role.id,
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should assign role to user", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/${role.id}`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(204);
+        const { ok } = await client.assignRole(users[1].id, role.id);
+
+        expect(ok).toBe(true);
 
         // Check if role was assigned
         const userRoles = await Role.getUserRoles(users[1].id, false);
@@ -103,19 +91,16 @@ describe("/api/v1/accounts/:id/roles/:role_id", () => {
     });
 
     test("should return 403 if user tries to assign role with higher priority", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/${higherPriorityRole.id}`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.assignRole(
+            users[1].id,
+            higherPriorityRole.id,
         );
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Forbidden",
             details:
                 "User with highest role priority 2 cannot assign role with priority 3",
@@ -123,17 +108,11 @@ describe("/api/v1/accounts/:id/roles/:role_id", () => {
     });
 
     test("should remove role from user", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/${role.id}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(204);
+        const { ok } = await client.unassignRole(users[1].id, role.id);
+
+        expect(ok).toBe(true);
 
         // Check if role was removed
         const userRoles = await Role.getUserRoles(users[1].id, false);
@@ -145,19 +124,16 @@ describe("/api/v1/accounts/:id/roles/:role_id", () => {
     test("should return 403 if user tries to remove role with higher priority", async () => {
         await higherPriorityRole.linkUser(users[1].id);
 
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/roles/${higherPriorityRole.id}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.unassignRole(
+            users[1].id,
+            higherPriorityRole.id,
         );
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Forbidden",
             details:
                 "User with highest role priority 2 cannot remove role with priority 3",

@@ -1,28 +1,23 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Notification as ApiNotification } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import type { z } from "@hono/zod-openapi";
+import type { Notification } from "@versia/client-ng/schemas";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
-let notifications: ApiNotification[] = [];
+const { users, deleteUsers } = await getTestUsers(2);
+let notifications: z.infer<typeof Notification>[] = [];
 
-// Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    await using client0 = await generateClient(users[0]);
+    await using client1 = await generateClient(users[1]);
 
-    notifications = await fakeRequest("/api/v1/notifications", {
-        headers: {
-            Authorization: `Bearer ${tokens[0].data.accessToken}`,
-        },
-    }).then((r) => r.json());
+    const { ok } = await client1.followAccount(users[0].id);
 
-    expect(notifications.length).toBe(1);
+    expect(ok).toBe(true);
+
+    const { data } = await client0.getNotifications();
+
+    expect(data).toBeArrayOfSize(1);
+    notifications = data;
 });
 
 afterAll(async () => {
@@ -32,66 +27,54 @@ afterAll(async () => {
 // /api/v1/notifications/:id
 describe("/api/v1/notifications/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            "/api/v1/notifications/00000000-0000-0000-0000-000000000000",
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getNotification(notifications[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 422 if ID is invalid", async () => {
-        const response = await fakeRequest("/api/v1/notifications/invalid", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
-        expect(response.status).toBe(422);
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.getNotification("invalid");
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(422);
     });
 
     test("should return 404 if notification not found", async () => {
-        const response = await fakeRequest(
-            "/api/v1/notifications/00000000-0000-0000-0000-000000000000",
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.getNotification(
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should return notification", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/${notifications[0].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { ok, data } = await client.getNotification(notifications[0].id);
 
-        const notification = (await response.json()) as ApiNotification;
+        expect(ok).toBe(true);
 
-        expect(notification).toBeDefined();
-        expect(notification.id).toBe(notifications[0].id);
-        expect(notification.type).toBe("follow");
-        expect(notification.account).toBeDefined();
-        expect(notification.account?.id).toBe(users[1].id);
+        expect(data).toBeDefined();
+        expect(data.id).toBe(notifications[0].id);
+        expect(data.type).toBe("follow");
+        expect(data.account).toBeDefined();
+        expect(data.account?.id).toBe(users[1].id);
     });
 
     test("should not be able to view other user's notifications", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/${notifications[0].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(404);
+        const { ok, raw } = await client.getNotification(notifications[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 });

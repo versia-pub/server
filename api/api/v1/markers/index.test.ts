@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(1);
+const { users, deleteUsers } = await getTestUsers(1);
 const timeline = await getTestStatuses(10, users[0]);
 
 afterAll(async () => {
@@ -11,46 +11,34 @@ afterAll(async () => {
 // /api/v1/markers
 describe("/api/v1/markers", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest("/api/v1/markers", {
-            method: "GET",
-        });
-        expect(response.status).toBe(401);
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.getMarkers(["home", "notifications"]);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return empty markers", async () => {
-        const response = await fakeRequest(
-            `/api/v1/markers?${new URLSearchParams([
-                ["timeline[]", "home"],
-                ["timeline[]", "notifications"],
-            ])}`,
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({});
+        const { data, ok } = await client.getMarkers(["home", "notifications"]);
+
+        expect(ok).toBe(true);
+        expect(data).toEqual({});
     });
 
     test("should create markers", async () => {
-        const response = await fakeRequest(
-            `/api/v1/markers?${new URLSearchParams({
-                "home[last_read_id]": timeline[0].id,
-            })}`,
+        await using client = await generateClient(users[0]);
 
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
+        const { data, ok } = await client.saveMarkers({
+            home: {
+                last_read_id: timeline[0].id,
             },
-        );
+        });
 
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({
+        expect(ok).toBe(true);
+        expect(data).toEqual({
             home: {
                 last_read_id: timeline[0].id,
                 updated_at: expect.any(String),
@@ -60,21 +48,12 @@ describe("/api/v1/markers", () => {
     });
 
     test("should return markers", async () => {
-        const response = await fakeRequest(
-            `/api/v1/markers?${new URLSearchParams([
-                ["timeline[]", "home"],
-                ["timeline[]", "notifications"],
-            ])}`,
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(await response.json()).toEqual({
+        const { data, ok } = await client.getMarkers(["home", "notifications"]);
+
+        expect(ok).toBe(true);
+        expect(data).toEqual({
             home: {
                 last_read_id: timeline[0].id,
                 updated_at: expect.any(String),

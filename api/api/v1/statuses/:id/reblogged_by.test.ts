@@ -1,56 +1,41 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Account as ApiAccount } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
-const timeline = (await getTestStatuses(40, users[0])).toReversed();
+const { users, deleteUsers } = await getTestUsers(5);
+const timeline = (await getTestStatuses(5, users[0])).toReversed();
 
 afterAll(async () => {
     await deleteUsers();
 });
 
 beforeAll(async () => {
+    await using client = await generateClient(users[1]);
+
     for (const status of timeline) {
-        await fakeRequest(`/api/v1/statuses/${status.id}/reblog`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            },
-        });
+        await client.reblogStatus(status.id);
     }
 });
 
-// /api/v1/statuses/:id/reblogged_by
 describe("/api/v1/statuses/:id/reblogged_by", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/reblogged_by`,
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getStatusRebloggedBy(timeline[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 200 with users", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/reblogged_by`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getStatusRebloggedBy(timeline[0].id);
 
-        const objects = (await response.json()) as ApiAccount[];
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(1);
 
-        expect(objects.length).toBe(1);
-        for (const [, status] of objects.entries()) {
-            expect(status.id).toBe(users[1].id);
-            expect(status.username).toBe(users[1].data.username);
-        }
+        expect(data.length).toBe(1);
+        expect(data[0].id).toBe(users[1].id);
+        expect(data[0].username).toBe(users[1].data.username);
     });
 });

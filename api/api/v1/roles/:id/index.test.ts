@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Role } from "@versia/kit/db";
 import { RolePermissions } from "@versia/kit/tables";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 let role: Role;
 let higherPriorityRole: Role;
 
@@ -44,38 +44,32 @@ afterAll(async () => {
 // /api/v1/roles/:id
 describe("/api/v1/roles/:id", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "GET",
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getRole(role.id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if role does not exist", async () => {
-        const response = await fakeRequest(
-            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
-            {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.getRole(
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should return role data", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        const responseData = await response.json();
-        expect(responseData).toMatchObject({
+        const { ok, data } = await client.getRole(role.id);
+
+        expect(ok).toBe(true);
+        expect(data).toMatchObject({
             id: role.id,
             name: role.data.name,
             permissions: role.data.permissions,
@@ -87,63 +81,56 @@ describe("/api/v1/roles/:id", () => {
     });
 
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: "updatedName" }),
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.updateRole(role.id, {
+            name: "updatedName",
         });
 
-        expect(response.status).toBe(401);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if role does not exist", async () => {
-        const response = await fakeRequest(
-            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.updateRole(
+            "00000000-0000-0000-0000-000000000000",
             {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name: "updatedName" }),
+                name: "updatedName",
             },
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should update role data", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "PATCH",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ name: "updatedName" }),
+        await using client = await generateClient(users[0]);
+
+        const { ok } = await client.updateRole(role.id, {
+            name: "updatedName",
         });
 
-        expect(response.status).toBe(204);
+        expect(ok).toBe(true);
 
         const updatedRole = await Role.fromId(role.id);
         expect(updatedRole?.data.name).toBe("updatedName");
     });
 
     test("should return 403 if user tries to update role with higher priority", async () => {
-        const response = await fakeRequest(
-            `/api/v1/roles/${higherPriorityRole.id}`,
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.updateRole(
+            higherPriorityRole.id,
             {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ name: "updatedName" }),
+                name: "updatedName",
             },
         );
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Forbidden",
             details:
                 "User with highest role priority 2 cannot edit role with priority 3",
@@ -151,45 +138,38 @@ describe("/api/v1/roles/:id", () => {
     });
 
     test("should return 403 if user tries to update role with permissions they do not have", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "PATCH",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                permissions: [RolePermissions.Impersonate],
-            }),
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.updateRole(role.id, {
+            permissions: [RolePermissions.Impersonate],
         });
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Forbidden",
             details: "User cannot add or remove permissions they do not have",
         });
     });
 
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(`/api/v1/roles/${role.id}`, {
-            method: "DELETE",
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.deleteRole(role.id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if role does not exist", async () => {
-        const response = await fakeRequest(
-            "/api/v1/roles/00000000-0000-0000-0000-000000000000",
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.deleteRole(
+            "00000000-0000-0000-0000-000000000000",
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should delete role", async () => {
@@ -202,33 +182,26 @@ describe("/api/v1/roles/:id", () => {
             icon: "test",
         });
 
-        const response = await fakeRequest(`/api/v1/roles/${newRole.id}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(204);
+        const { ok } = await client.deleteRole(newRole.id);
+
+        expect(ok).toBe(true);
 
         const deletedRole = await Role.fromId(newRole.id);
         expect(deletedRole).toBeNull();
     });
 
     test("should return 403 if user tries to delete role with higher priority", async () => {
-        const response = await fakeRequest(
-            `/api/v1/roles/${higherPriorityRole.id}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { data, ok, raw } = await client.deleteRole(
+            higherPriorityRole.id,
         );
 
-        expect(response.status).toBe(403);
-        const output = await response.json();
-        expect(output).toMatchObject({
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(403);
+        expect(data).toMatchObject({
             error: "Forbidden",
             details:
                 "User with highest role priority 2 cannot delete role with priority 3",

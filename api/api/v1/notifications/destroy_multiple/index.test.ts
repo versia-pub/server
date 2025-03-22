@@ -1,40 +1,29 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Notification as ApiNotification } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import type { z } from "@hono/zod-openapi";
+import type { Notification } from "@versia/client-ng/schemas";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
-const statuses = await getTestStatuses(40, users[0]);
-let notifications: ApiNotification[] = [];
+const { users, deleteUsers } = await getTestUsers(2);
+const statuses = await getTestStatuses(5, users[0]);
+let notifications: z.infer<typeof Notification>[] = [];
 
 // Create some test notifications
 beforeAll(async () => {
-    await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    await using client0 = await generateClient(users[0]);
+    await using client1 = await generateClient(users[1]);
+
+    const { ok } = await client1.followAccount(users[0].id);
+
+    expect(ok).toBe(true);
 
     for (const i of [0, 1, 2, 3]) {
-        await fakeRequest(`/api/v1/statuses/${statuses[i].id}/favourite`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
-        });
+        await client1.favouriteStatus(statuses[i].id);
     }
 
-    notifications = await fakeRequest("/api/v1/notifications", {
-        headers: {
-            Authorization: `Bearer ${tokens[0].data.accessToken}`,
-        },
-    }).then((r) => r.json());
+    const { data } = await client0.getNotifications();
 
-    expect(notifications.length).toBe(5);
+    expect(data).toBeArrayOfSize(5);
+    notifications = data;
 });
 
 afterAll(async () => {
@@ -44,45 +33,33 @@ afterAll(async () => {
 // /api/v1/notifications/destroy_multiple
 describe("/api/v1/notifications/destroy_multiple", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/destroy_multiple?${new URLSearchParams(
-                notifications.slice(1).map((n) => ["ids[]", n.id]),
-            ).toString()}`,
-            {
-                method: "DELETE",
-            },
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.dismissMultipleNotifications(
+            notifications.slice(1).map((n) => n.id),
         );
 
-        expect(response.status).toBe(401);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should dismiss notifications", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/destroy_multiple?${new URLSearchParams(
-                notifications.slice(1).map((n) => ["ids[]", n.id]),
-            ).toString()}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.dismissMultipleNotifications(
+            notifications.slice(1).map((n) => n.id),
         );
 
-        expect(response.status).toBe(200);
+        expect(ok).toBe(true);
+        expect(raw.status).toBe(200);
     });
 
-    test("should not display dismissed notification", async () => {
-        const response = await fakeRequest("/api/v1/notifications", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+    test("should not display dismissed notifications", async () => {
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data } = await client.getNotifications();
 
-        const output = await response.json();
-
-        expect(output.length).toBe(1);
+        expect(data).toBeArrayOfSize(1);
+        expect(data[0].id).toBe(notifications[0].id);
     });
 });

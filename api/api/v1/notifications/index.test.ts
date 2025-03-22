@@ -1,70 +1,33 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Notification as ApiNotification } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const getFormData = (
-    object: Record<string, string | number | boolean>,
-): FormData =>
-    Object.keys(object).reduce((formData, key) => {
-        formData.append(key, String(object[key]));
-        return formData;
-    }, new FormData());
-
-const { users, tokens, deleteUsers } = await getTestUsers(2);
-const timeline = (await getTestStatuses(40, users[0])).toReversed();
+const { users, deleteUsers } = await getTestUsers(2);
+const timeline = (await getTestStatuses(5, users[0])).toReversed();
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    await using client = await generateClient(users[1]);
 
-    expect(res1.status).toBe(200);
+    const { ok } = await client.followAccount(users[0].id);
 
-    const res2 = await fakeRequest(
-        `/api/v1/statuses/${timeline[0].id}/favourite`,
+    expect(ok).toBe(true);
+
+    const { ok: ok2 } = await client.favouriteStatus(timeline[0].id);
+
+    expect(ok2).toBe(true);
+
+    const { ok: ok3 } = await client.reblogStatus(timeline[0].id);
+
+    expect(ok3).toBe(true);
+
+    const { ok: ok4 } = await client.postStatus(
+        `@${users[0].data.username} test mention`,
         {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
-        },
-    );
-
-    expect(res2.status).toBe(200);
-
-    const res3 = await fakeRequest(
-        `/api/v1/statuses/${timeline[0].id}/reblog`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            },
-            body: getFormData({}),
-        },
-    );
-
-    expect(res3.status).toBe(200);
-
-    const res4 = await fakeRequest("/api/v1/statuses", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-        },
-        body: new URLSearchParams({
-            status: `@${users[0].data.username} test mention`,
             visibility: "direct",
-            local_only: "true",
-        }),
-    });
+            local_only: true,
+        },
+    );
 
-    expect(res4.status).toBe(200);
+    expect(ok4).toBe(true);
 });
 
 afterAll(async () => {
@@ -74,27 +37,22 @@ afterAll(async () => {
 // /api/v1/notifications
 describe("/api/v1/notifications", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest("/api/v1/notifications");
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getNotifications();
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 200 with notifications", async () => {
-        const response = await fakeRequest("/api/v1/notifications", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getNotifications();
 
-        const objects = (await response.json()) as ApiNotification[];
-
-        expect(objects.length).toBe(4);
-        for (const [index, notification] of objects.entries()) {
+        expect(ok).toBe(true);
+        expect(data.length).toBe(4);
+        for (const [index, notification] of data.entries()) {
             expect(notification.account).toBeDefined();
             expect(notification.account?.id).toBe(users[1].id);
             expect(notification.created_at).toBeDefined();
@@ -103,64 +61,43 @@ describe("/api/v1/notifications", () => {
             expect(notification.type).toBe(
                 ["follow", "favourite", "reblog", "mention"].toReversed()[
                     index
-                ],
+                ] as "follow" | "favourite" | "reblog" | "mention",
             );
         }
     });
 
     test("should not return notifications with filtered keywords", async () => {
-        const filterResponse = await fakeRequest("/api/v2/filters", {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/x-www-form-urlencoded",
+        await using client = await generateClient(users[0]);
+
+        const { data: filter, ok } = await client.createFilter(
+            ["notifications"],
+            "Test Filter",
+            "hide",
+            {
+                keywords_attributes: [
+                    {
+                        keyword: timeline[0].content.slice(4, 20),
+                        whole_word: false,
+                    },
+                ],
             },
-            body: new URLSearchParams({
-                title: "Test Filter",
-                "context[]": "notifications",
-                filter_action: "hide",
-                "keywords_attributes[0][keyword]": timeline[0].content.slice(
-                    4,
-                    20,
-                ),
-                "keywords_attributes[0][whole_word]": "false",
-            }),
-        });
-
-        expect(filterResponse.status).toBe(200);
-
-        const response = await fakeRequest("/api/v1/notifications?limit=20", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
-
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
         );
 
-        const objects = (await response.json()) as ApiNotification[];
+        expect(ok).toBe(true);
 
-        expect(objects.length).toBe(3);
+        const { data: notifications } = await client.getNotifications();
+
+        expect(notifications.length).toBe(3);
         // There should be no element with a status with id of timeline[0].id
-        expect(objects).not.toContainEqual(
+        expect(notifications).not.toContainEqual(
             expect.objectContaining({
                 status: expect.objectContaining({ id: timeline[0].id }),
             }),
         );
 
         // Delete filter
-        const filterDeleteResponse = await fakeRequest(
-            `/api/v2/filters/${(await filterResponse.json()).id}`,
-            {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        const { ok: ok2 } = await client.deleteFilter(filter.id);
 
-        expect(filterDeleteResponse.status).toBe(204);
+        expect(ok2).toBe(true);
     });
 });

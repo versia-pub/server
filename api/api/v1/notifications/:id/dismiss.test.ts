@@ -1,28 +1,24 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Notification as ApiNotification } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import type { z } from "@hono/zod-openapi";
+import type { Notification } from "@versia/client-ng/schemas";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
-let notifications: ApiNotification[] = [];
+const { users, deleteUsers } = await getTestUsers(2);
+let notifications: z.infer<typeof Notification>[] = [];
 
 // Create some test notifications: follow, favourite, reblog, mention
 beforeAll(async () => {
-    await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    await using client0 = await generateClient(users[0]);
+    await using client1 = await generateClient(users[1]);
 
-    notifications = await fakeRequest("/api/v1/notifications", {
-        headers: {
-            Authorization: `Bearer ${tokens[0].data.accessToken}`,
-        },
-    }).then((r) => r.json());
+    const { ok } = await client1.followAccount(users[0].id);
 
-    expect(notifications.length).toBe(1);
+    expect(ok).toBe(true);
+
+    const { data } = await client0.getNotifications();
+
+    expect(data).toBeArrayOfSize(1);
+    notifications = data;
 });
 
 afterAll(async () => {
@@ -31,55 +27,41 @@ afterAll(async () => {
 
 describe("/api/v1/notifications/:id/dismiss", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/${notifications[0].id}/dismiss`,
-            {
-                method: "POST",
-            },
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.dismissNotification(
+            notifications[0].id,
         );
 
-        expect(response.status).toBe(401);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should dismiss notification", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/${notifications[0].id}/dismiss`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { ok } = await client.dismissNotification(notifications[0].id);
+
+        expect(ok).toBe(true);
     });
 
     test("should not display dismissed notification", async () => {
-        const response = await fakeRequest("/api/v1/notifications", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getNotifications();
 
-        const output = await response.json();
-
-        expect(output.length).toBe(0);
+        expect(ok).toBe(true);
+        expect(data).toBeArrayOfSize(0);
     });
 
     test("should not be able to dismiss other user's notifications", async () => {
-        const response = await fakeRequest(
-            `/api/v1/notifications/${notifications[0].id}/dismiss`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[1]);
+
+        const { ok, raw } = await client.dismissNotification(
+            notifications[0].id,
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 });

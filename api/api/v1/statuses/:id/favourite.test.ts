@@ -1,60 +1,43 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Status as ApiStatus } from "@versia/client/types";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(2, users[0])).toReversed();
 
 afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v1/statuses/:id/favourite
 describe("/api/v1/statuses/:id/favourite", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/favourite`,
-            {
-                method: "POST",
-            },
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.favouriteStatus(timeline[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should favourite post", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}/favourite`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
-        expect(response.status).toBe(200);
+        await using client = await generateClient(users[1]);
 
-        const json = (await response.json()) as ApiStatus;
+        const { data, ok } = await client.favouriteStatus(timeline[0].id);
 
-        expect(json.favourited).toBe(true);
-        expect(json.favourites_count).toBe(1);
+        expect(ok).toBe(true);
+        expect(data).toMatchObject({
+            favourited: true,
+            favourites_count: 1,
+        });
     });
 
     test("post should be favourited when fetched", async () => {
-        const response = await fakeRequest(
-            `/api/v1/statuses/${timeline[0].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(200);
+        const { data } = await client.getStatus(timeline[0].id);
 
-        const json = (await response.json()) as ApiStatus;
-
-        expect(json.favourited).toBe(true);
-        expect(json.favourites_count).toBe(1);
+        expect(data).toMatchObject({
+            favourited: true,
+            favourites_count: 1,
+        });
     });
 });
