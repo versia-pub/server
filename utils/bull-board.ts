@@ -40,6 +40,6 @@ export const applyToHono = (app: OpenAPIHono<HonoEnv>): void => {
     });
 
     serverAdapter.setBasePath("/admin/queues");
-    // @ts-ignore Causes infinite instantiation for some reason
+    // @ts-expect-error Causes infinite instantiation for some reason
     app.route("/admin/queues", serverAdapter.registerPlugin());
 };
