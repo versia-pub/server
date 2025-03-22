@@ -26,7 +26,7 @@ RUN bun run build:worker
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.2.3-alpine
+FROM oven/bun:1.2.5-alpine
 
 # Install libstdc++ for Bun and create app directory
 RUN apk add --no-cache libstdc++ && \
