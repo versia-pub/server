@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, type z } from "@hono/zod-openapi";
-import { InstanceV1 as InstanceV1Schema } from "@versia/client-ng/schemas";
+import { InstanceV1 as InstanceV1Schema } from "@versia/client/schemas";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";

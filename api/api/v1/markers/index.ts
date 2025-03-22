@@ -4,9 +4,10 @@ import {
     Marker as MarkerSchema,
     Notification as NotificationSchema,
     Status as StatusSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { Markers, RolePermissions } from "@versia/kit/tables";
+import { Markers } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
 
 const MarkerResponseSchema = z.object({
@@ -26,7 +27,7 @@ const routeGet = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnAccount],
+            permissions: [RolePermission.ManageOwnAccount],
         }),
     ] as const,
     request: {
@@ -67,7 +68,7 @@ const routePost = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnAccount],
+            permissions: [RolePermission.ManageOwnAccount],
         }),
     ] as const,
     request: {

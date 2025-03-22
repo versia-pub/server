@@ -13,9 +13,9 @@ import {
     Status as StatusSchema,
     StatusSource as StatusSourceSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Media } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 
@@ -91,7 +91,7 @@ const routeGet = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.ViewNotes],
+            permissions: [RolePermission.ViewNotes],
         }),
         withNoteParam,
     ] as const,
@@ -126,8 +126,8 @@ const routeDelete = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnNotes,
-                RolePermissions.ViewNotes,
+                RolePermission.ManageOwnNotes,
+                RolePermission.ViewNotes,
             ],
         }),
         withNoteParam,
@@ -166,8 +166,8 @@ const routePut = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnNotes,
-                RolePermissions.ViewNotes,
+                RolePermission.ManageOwnNotes,
+                RolePermission.ViewNotes,
             ],
         }),
         jsonOrForm(),

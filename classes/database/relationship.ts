@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi";
-import type { Relationship as RelationshipSchema } from "@versia/client-ng/schemas";
+import type { Relationship as RelationshipSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Relationships } from "@versia/kit/tables";
 import {

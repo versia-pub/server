@@ -1,7 +1,7 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Account } from "@versia/client-ng/schemas";
-import { RolePermissions } from "@versia/kit/tables";
+import { Account } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 
 const route = createRoute({
     method: "delete",
@@ -15,7 +15,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnAccount],
+            permissions: [RolePermission.ManageOwnAccount],
             scopes: ["write:account"],
         }),
     ] as const,

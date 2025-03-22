@@ -4,9 +4,10 @@ import {
     FilterKeyword as FilterKeywordSchema,
     Filter as FilterSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
+import { FilterKeywords, Filters } from "@versia/kit/tables";
 import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
@@ -22,7 +23,7 @@ const routeGet = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFilters],
+            permissions: [RolePermission.ManageOwnFilters],
         }),
     ] as const,
     request: {
@@ -63,7 +64,7 @@ const routePut = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFilters],
+            permissions: [RolePermission.ManageOwnFilters],
         }),
         jsonOrForm(),
     ] as const,
@@ -144,7 +145,7 @@ const routeDelete = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFilters],
+            permissions: [RolePermission.ManageOwnFilters],
         }),
     ] as const,
     request: {

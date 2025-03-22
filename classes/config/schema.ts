@@ -1,15 +1,65 @@
 import { z } from "@hono/zod-openapi";
-import {
-    ADMIN_ROLES,
-    DEFAULT_ROLES,
-    RolePermissions,
-} from "@versia/kit/tables";
 import { type BunFile, file } from "bun";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { RolePermission } from "~/packages/client/schemas/permissions.ts";
+
+export const DEFAULT_ROLES = [
+    RolePermission.ManageOwnNotes,
+    RolePermission.ViewNotes,
+    RolePermission.ViewNoteLikes,
+    RolePermission.ViewNoteBoosts,
+    RolePermission.ManageOwnAccount,
+    RolePermission.ViewAccountFollows,
+    RolePermission.ManageOwnLikes,
+    RolePermission.ManageOwnBoosts,
+    RolePermission.ViewAccounts,
+    RolePermission.ManageOwnEmojis,
+    RolePermission.ViewReactions,
+    RolePermission.ManageOwnReactions,
+    RolePermission.ViewEmojis,
+    RolePermission.ManageOwnMedia,
+    RolePermission.ManageOwnBlocks,
+    RolePermission.ManageOwnFilters,
+    RolePermission.ManageOwnMutes,
+    RolePermission.ManageOwnReports,
+    RolePermission.ManageOwnSettings,
+    RolePermission.ManageOwnNotifications,
+    RolePermission.ManageOwnFollows,
+    RolePermission.ManageOwnApps,
+    RolePermission.Search,
+    RolePermission.UsePushNotifications,
+    RolePermission.ViewPublicTimelines,
+    RolePermission.ViewPrivateTimelines,
+    RolePermission.OAuth,
+];
+
+export const ADMIN_ROLES = [
+    ...DEFAULT_ROLES,
+    RolePermission.ManageNotes,
+    RolePermission.ManageAccounts,
+    RolePermission.ManageLikes,
+    RolePermission.ManageBoosts,
+    RolePermission.ManageEmojis,
+    RolePermission.ManageReactions,
+    RolePermission.ManageMedia,
+    RolePermission.ManageBlocks,
+    RolePermission.ManageFilters,
+    RolePermission.ManageMutes,
+    RolePermission.ManageReports,
+    RolePermission.ManageSettings,
+    RolePermission.ManageRoles,
+    RolePermission.ManageNotifications,
+    RolePermission.ManageFollows,
+    RolePermission.Impersonate,
+    RolePermission.IgnoreRateLimits,
+    RolePermission.ManageInstance,
+    RolePermission.ManageInstanceFederation,
+    RolePermission.ManageInstanceSettings,
+];
 
 export enum MediaBackendType {
     Local = "local",
@@ -667,12 +717,12 @@ export const ConfigSchema = z
         }),
         permissions: z.strictObject({
             anonymous: z
-                .array(z.nativeEnum(RolePermissions))
+                .array(z.nativeEnum(RolePermission))
                 .default(DEFAULT_ROLES),
             default: z
-                .array(z.nativeEnum(RolePermissions))
+                .array(z.nativeEnum(RolePermission))
                 .default(DEFAULT_ROLES),
-            admin: z.array(z.nativeEnum(RolePermissions)).default(ADMIN_ROLES),
+            admin: z.array(z.nativeEnum(RolePermission)).default(ADMIN_ROLES),
         }),
         logging: z.strictObject({
             types: z.record(

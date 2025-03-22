@@ -1,9 +1,10 @@
 import { randomString } from "@/math.ts";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema } from "@versia/client-ng/schemas";
+import { Account as AccountSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Media, Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
-import { OpenIdAccounts, RolePermissions, Users } from "@versia/kit/tables";
+import { OpenIdAccounts, Users } from "@versia/kit/tables";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import { ApiError } from "~/classes/errors/api-error.ts";
@@ -268,11 +269,11 @@ export default (plugin: PluginType): void => {
                     );
                 }
 
-                if (!user.hasPermission(RolePermissions.OAuth)) {
+                if (!user.hasPermission(RolePermission.OAuth)) {
                     errorSearchParams.append("error", "invalid_request");
                     errorSearchParams.append(
                         "error_description",
-                        `User does not have the '${RolePermissions.OAuth}' permission`,
+                        `User does not have the '${RolePermission.OAuth}' permission`,
                     );
 
                     return context.redirect(

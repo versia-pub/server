@@ -3,9 +3,9 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Relationship, User } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
@@ -19,7 +19,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFollows],
+            permissions: [RolePermission.ManageOwnFollows],
         }),
     ] as const,
     request: {

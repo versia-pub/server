@@ -1,8 +1,9 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Status as StatusSchema } from "@versia/client-ng/schemas";
+import { Status as StatusSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { Notes, RolePermissions } from "@versia/kit/tables";
+import { Notes } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -17,7 +18,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnLikes],
+            permissions: [RolePermission.ManageOwnLikes],
         }),
     ] as const,
     request: {

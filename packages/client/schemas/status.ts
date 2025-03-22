@@ -1,5 +1,4 @@
 import { z } from "@hono/zod-openapi";
-import type { Status as ApiNote } from "@versia/client/types";
 import { config } from "~/config.ts";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
@@ -82,7 +81,8 @@ export const StatusSource = z
         },
     });
 
-export const Status = z.object({
+// Because Status has some recursive references, we need to define it like this
+const BaseStatus = z.object({
     id: Id.openapi({
         description: "ID of the status in the database.",
         example: "2de861d3-a3dd-42ee-ba38-2c7d3f4af588",
@@ -134,16 +134,7 @@ export const Status = z.object({
             url: "https://docs.joinmastodon.org/entities/Status/#in_reply_to_account_id",
         },
     }),
-    reblog: z
-        // @ts-expect-error broken recursive types
-        .lazy((): z.ZodType<ApiNote> => Status as z.ZodType<ApiNote>)
-        .nullable()
-        .openapi({
-            description: "The status being reblogged.",
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/Status/#reblog",
-            },
-        }),
+
     content: z.string().openapi({
         description: "HTML-encoded status content.",
         example: "<p>hello world</p>",
@@ -341,10 +332,6 @@ export const Status = z.object({
         },
     }),
     reactions: z.array(NoteReaction).openapi({}),
-    quote: z
-        // @ts-expect-error broken recursive types
-        .lazy((): z.ZodType<ApiNote> => Status as z.ZodType<ApiNote>)
-        .nullable(),
     bookmarked: zBoolean.optional().openapi({
         description:
             "If the current token has an authorized user: Have you bookmarked this status?",
@@ -365,132 +352,15 @@ export const Status = z.object({
         }),
 });
 
-/*
-Attributes
-id
-
-Description: ID of the scheduled status in the database.
-Type: String (cast from an integer but not guaranteed to be a number)
-Version history:
-2.7.0 - added
-scheduled_at
-
-Description: The timestamp for when the status will be posted.
-Type: String (Datetime)
-Version history:
-2.7.0 - added
-params
-
-Description: The parameters that were used when scheduling the status, to be used when the status is posted.
-Type: Hash
-Version history:
-2.7.0 - added
-params[text]
-
-Description: Text to be used as status content.
-Type: String
-Version history:
-2.7.0 - added
-params[poll]
-
-Description: Poll to be attached to the status.
-Type: nullable Hash
-Version history:
-2.8.0 - added
-params[poll][options[]]
-
-Description: The poll options to be used.
-Type: Array of String
-Version history:
-2.8.0 - added
-params[poll][expires_in]
-
-Description: How many seconds the poll should last before closing.
-Type: String (cast from integer)
-Version history:
-2.8.0 - added
-params[poll][multiple]
-
-Description: Whether the poll allows multiple choices.
-Type: optional Boolean
-Version history:
-2.8.0 - added
-params[poll][hide_totals]
-
-Description: Whether the poll should hide total votes until after voting has ended.
-Type: optional Boolean
-Version history:
-2.8.0 - added
-params[media_ids]
-
-Description: IDs of the MediaAttachments that will be attached to the status.
-Type: nullable Array of String
-Version history:
-2.7.0 - added
-params[sensitive]
-
-Description: Whether the status will be marked as sensitive.
-Type: nullable Boolean
-Version history:
-2.7.0 - added
-params[spoiler_text]
-
-Description: The text of the content warning or summary for the status.
-Type: nullable String
-Version history:
-2.7.0 - added
-params[visibility]
-
-Description: The visibility that the status will have once it is posted.
-Type: String (Enumerable oneOf)
-public = Visible to everyone, shown in public timelines.
-unlisted = Visible to public, but not included in public timelines.
-private = Visible to followers only, and to any mentioned users.
-direct = Visible only to mentioned users.
-Version history:
-2.7.0 - added
-params[in_reply_to_id]
-
-Description: ID of the Status that will be replied to.
-Type: nullable Integer
-Version history:
-2.7.0 - added
-params[language]
-
-Description: The language that will be used for the status.
-Type: nullable String (ISO 639-1 two-letter language code)
-Version history:
-2.7.0 - added
-params[application_id] deprecated
-
-Description: Internal ID of the Application that posted the status. Provided for historical compatibility only and can be ignored.
-Type: Integer
-Version history:
-2.7.0 - added
-params[scheduled_at]
-
-Description: When the status will be scheduled. This will be null because the status is only scheduled once.
-Type: nullable Null
-Version history:
-2.7.0 - added
-params[idempotency]
-
-Description: Idempotency key to prevent duplicate statuses.
-Type: nullable String
-Version history:
-2.7.0 - added
-params[with_rate_limit] deprecated
-
-Description: Whether status creation is subject to rate limiting. Provided for historical compatibility only and can be ignored.
-Type: Boolean
-Version history:
-2.7.0 - added
-media_attachments
-Description: Media that will be attached when the status is posted.
-Type: Array of MediaAttachment
-Version history:
-2.7.0 - added
-*/
+export const Status = BaseStatus.extend({
+    reblog: BaseStatus.nullable().openapi({
+        description: "The status being reblogged.",
+        externalDocs: {
+            url: "https://docs.joinmastodon.org/entities/Status/#reblog",
+        },
+    }),
+    quote: BaseStatus.nullable(),
+});
 
 export const ScheduledStatus = z.object({
     id: Id.openapi({

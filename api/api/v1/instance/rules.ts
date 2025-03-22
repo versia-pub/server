@@ -1,6 +1,6 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Rule as RuleSchema } from "@versia/client-ng/schemas";
+import { Rule as RuleSchema } from "@versia/client/schemas";
 import { config } from "~/config.ts";
 
 const route = createRoute({

@@ -3,7 +3,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     Role as RoleSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 
 const route = createRoute({

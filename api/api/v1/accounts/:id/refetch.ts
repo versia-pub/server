@@ -6,8 +6,8 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema } from "@versia/client-ng/schemas";
-import { RolePermissions } from "@versia/kit/tables";
+import { Account as AccountSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
@@ -21,7 +21,7 @@ const route = createRoute({
         auth({
             auth: true,
             scopes: ["write:accounts"],
-            permissions: [RolePermissions.ViewAccounts],
+            permissions: [RolePermission.ViewAccounts],
         }),
         withUserParam,
     ] as const,

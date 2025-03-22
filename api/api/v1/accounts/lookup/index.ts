@@ -6,9 +6,10 @@ import {
     reusedResponses,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema } from "@versia/client-ng/schemas";
+import { Account as AccountSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Instance, User } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
+import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
@@ -22,7 +23,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.Search],
+            permissions: [RolePermission.Search],
         }),
     ] as const,
     request: {

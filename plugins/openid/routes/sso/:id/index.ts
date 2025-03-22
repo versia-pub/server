@@ -1,9 +1,10 @@
 import { auth } from "@/api";
 import { proxyUrl } from "@/response";
 import { createRoute, z } from "@hono/zod-openapi";
+import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { type SQL, eq } from "@versia/kit/drizzle";
-import { OpenIdAccounts, RolePermissions } from "@versia/kit/tables";
+import { OpenIdAccounts } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 import { ErrorSchema } from "~/types/api";
@@ -18,7 +19,7 @@ export default (plugin: PluginType): void => {
                 middleware: [
                     auth({
                         auth: true,
-                        permissions: [RolePermissions.OAuth],
+                        permissions: [RolePermission.OAuth],
                     }),
                     plugin.middleware,
                 ] as const,
@@ -103,7 +104,7 @@ export default (plugin: PluginType): void => {
                 middleware: [
                     auth({
                         auth: true,
-                        permissions: [RolePermissions.OAuth],
+                        permissions: [RolePermission.OAuth],
                     }),
                     plugin.middleware,
                 ] as const,

@@ -9,9 +9,9 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 
 const route = createRoute({
     method: "post",
@@ -28,8 +28,8 @@ const route = createRoute({
             auth: true,
             scopes: ["write:blocks"],
             permissions: [
-                RolePermissions.ManageOwnBlocks,
-                RolePermissions.ViewAccounts,
+                RolePermission.ManageOwnBlocks,
+                RolePermission.ViewAccounts,
             ],
         }),
         withUserParam,

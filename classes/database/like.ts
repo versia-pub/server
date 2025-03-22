@@ -1,5 +1,3 @@
-import { z } from "@hono/zod-openapi";
-import { RolePermission } from "@versia/client/types";
 import type { Delete, LikeExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import {
@@ -27,16 +25,6 @@ type LikeType = InferSelectModel<typeof Likes> & {
 };
 
 export class Like extends BaseInterface<typeof Likes, LikeType> {
-    public static schema = z.object({
-        id: z.string(),
-        name: z.string(),
-        permissions: z.array(z.nativeEnum(RolePermission)),
-        priority: z.number(),
-        description: z.string().nullable(),
-        visible: z.boolean(),
-        icon: z.string().nullable(),
-    });
-
     public static $type: LikeType;
 
     public async reload(): Promise<void> {

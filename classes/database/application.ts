@@ -2,7 +2,7 @@ import type { z } from "@hono/zod-openapi";
 import type {
     Application as ApplicationSchema,
     CredentialApplication,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
 import { Token, db } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
 import {

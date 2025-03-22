@@ -9,9 +9,10 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     Status as StatusSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
+import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -27,8 +28,8 @@ const route = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ViewNotes,
-                RolePermissions.ViewNoteLikes,
+                RolePermission.ViewNotes,
+                RolePermission.ViewNoteLikes,
             ],
         }),
         withNoteParam,

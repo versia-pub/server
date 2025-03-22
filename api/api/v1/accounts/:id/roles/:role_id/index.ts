@@ -3,9 +3,9 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     Role as RoleSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
@@ -17,7 +17,7 @@ const routePost = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
         }),
         withUserParam,
     ] as const,
@@ -57,7 +57,7 @@ const routeDelete = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
         }),
         withUserParam,
     ] as const,

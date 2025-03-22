@@ -2,9 +2,10 @@ import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema, zBoolean } from "@versia/client-ng/schemas";
+import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Emoji, User } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
+import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
@@ -22,7 +23,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnAccount],
+            permissions: [RolePermission.ManageOwnAccount],
             scopes: ["write:accounts"],
         }),
         jsonOrForm(),

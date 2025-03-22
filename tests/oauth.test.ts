@@ -2,17 +2,15 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
-import type {
-    Application as ApiApplication,
-    Token as ApiToken,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
+import type { Application, Token } from "@versia/client/schemas";
 import { fakeRequest, getTestUsers } from "./utils.ts";
 
 let clientId: string;
 let clientSecret: string;
 let code: string;
 let jwt: string;
-let token: ApiToken;
+let token: z.infer<typeof Token>;
 const { users, passwords, deleteUsers } = await getTestUsers(1);
 
 afterAll(async () => {
@@ -168,7 +166,9 @@ describe("GET /api/v1/apps/verify_credentials", () => {
             "application/json",
         );
 
-        const credentials = (await response.json()) as Partial<ApiApplication>;
+        const credentials = (await response.json()) as Partial<
+            z.infer<typeof Application>
+        >;
 
         expect(credentials.name).toBe("Test Application");
         expect(credentials.website).toBe("https://example.com");

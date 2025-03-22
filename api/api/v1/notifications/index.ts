@@ -4,9 +4,10 @@ import {
     Account as AccountSchema,
     Notification as NotificationSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { Notifications, RolePermissions } from "@versia/kit/tables";
+import { Notifications } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -21,8 +22,8 @@ const route = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnNotifications,
-                RolePermissions.ViewPrivateTimelines,
+                RolePermission.ManageOwnNotifications,
+                RolePermission.ViewPrivateTimelines,
             ],
         }),
     ] as const,

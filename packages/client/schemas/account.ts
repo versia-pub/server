@@ -1,6 +1,5 @@
 import { userAddressValidator } from "@/api.ts";
 import { z } from "@hono/zod-openapi";
-import type { Account as ApiAccount } from "@versia/client/types";
 import { config } from "~/config.ts";
 import { iso631, zBoolean } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
@@ -116,7 +115,8 @@ export const Source = z
         },
     });
 
-export const Account = z.object({
+// Because Account has some recursive references, we need to define it like this
+const BaseAccount = z.object({
     id: z
         .string()
         .uuid()
@@ -322,19 +322,6 @@ export const Account = z.object({
                 url: "https://docs.joinmastodon.org/entities/Account/#noindex",
             },
         }),
-    // FIXME: Use a proper type
-    moved: z
-        .lazy((): z.ZodType<ApiAccount> => Account as z.ZodType<ApiAccount>)
-        .nullable()
-        .optional()
-        .openapi({
-            description:
-                "Indicates that the profile is currently inactive and that its user has moved to a new account.",
-            example: null,
-            externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/Account/#moved",
-            },
-        }),
     suspended: zBoolean.optional().openapi({
         description:
             "An extra attribute returned only when an account is suspended.",
@@ -426,4 +413,17 @@ export const Account = z.object({
         description: "When a timed mute will expire, if applicable.",
         example: "2025-03-01T14:00:00.000Z",
     }),
+});
+
+export const Account = BaseAccount.extend({
+    moved: BaseAccount.nullable()
+        .optional()
+        .openapi({
+            description:
+                "Indicates that the profile is currently inactive and that its user has moved to a new account.",
+            example: null,
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Account/#moved",
+            },
+        }),
 });

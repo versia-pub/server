@@ -1,8 +1,8 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Notification as NotificationSchema } from "@versia/client-ng/schemas";
+import { Notification as NotificationSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Notification } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { ErrorSchema } from "~/types/api";
 
@@ -18,7 +18,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnNotifications],
+            permissions: [RolePermission.ManageOwnNotifications],
             scopes: ["read:notifications"],
         }),
     ] as const,

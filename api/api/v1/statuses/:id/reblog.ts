@@ -7,9 +7,10 @@ import {
     withNoteParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Status as StatusSchema } from "@versia/client-ng/schemas";
+import { Status as StatusSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
-import { Notes, RolePermissions } from "@versia/kit/tables";
+import { Notes } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 
 const route = createRoute({
@@ -25,8 +26,8 @@ const route = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnBoosts,
-                RolePermissions.ViewNotes,
+                RolePermission.ManageOwnBoosts,
+                RolePermission.ViewNotes,
             ],
         }),
         jsonOrForm(),

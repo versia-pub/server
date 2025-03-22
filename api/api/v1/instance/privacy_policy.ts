@@ -1,6 +1,6 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { PrivacyPolicy as PrivacyPolicySchema } from "@versia/client-ng/schemas";
+import { PrivacyPolicy as PrivacyPolicySchema } from "@versia/client/schemas";
 import { markdownParse } from "~/classes/functions/status";
 import { config } from "~/config.ts";
 

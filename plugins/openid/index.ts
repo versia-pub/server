@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi";
+import { RolePermission } from "@versia/client/schemas";
 import { Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
 import { getCookie } from "hono/cookie";
@@ -6,7 +7,6 @@ import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { keyPair, sensitiveString } from "~/classes/config/schema.ts";
 import { ApiError } from "~/classes/errors/api-error.ts";
-import { RolePermissions } from "~/drizzle/schema.ts";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
 import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";
@@ -91,10 +91,10 @@ plugin.registerRoute("/admin/*", (app) => {
 
         const user = await User.fromId(sub);
 
-        if (!user?.hasPermission(RolePermissions.ManageInstanceFederation)) {
+        if (!user?.hasPermission(RolePermission.ManageInstanceFederation)) {
             throw new ApiError(
                 403,
-                `Missing '${RolePermissions.ManageInstanceFederation}' permission`,
+                `Missing '${RolePermission.ManageInstanceFederation}' permission`,
             );
         }
 

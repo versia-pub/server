@@ -9,8 +9,8 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Context as ContextSchema,
     Status as StatusSchema,
-} from "@versia/client-ng/schemas";
-import { RolePermissions } from "@versia/kit/tables";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 
 const route = createRoute({
     method: "get",
@@ -24,7 +24,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.ViewNotes],
+            permissions: [RolePermission.ViewNotes],
         }),
         withNoteParam,
     ] as const,

@@ -3,9 +3,10 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
     FamiliarFollowers as FamiliarFollowersSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { User, db } from "@versia/kit/db";
-import { RolePermissions, type Users } from "@versia/kit/tables";
+import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -22,7 +23,7 @@ const route = createRoute({
         auth({
             auth: true,
             scopes: ["read:follows"],
-            permissions: [RolePermissions.ManageOwnFollows],
+            permissions: [RolePermission.ManageOwnFollows],
         }),
         qsQuery(),
     ] as const,

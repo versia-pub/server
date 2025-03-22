@@ -4,7 +4,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     Application as ApplicationSchema,
     CredentialApplication as CredentialApplicationSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
 
 const route = createRoute({

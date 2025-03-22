@@ -9,7 +9,8 @@ import type {
     Account,
     Mention as MentionSchema,
     Source,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import type { RolePermission } from "@versia/client/schemas";
 import {
     EntityValidator,
     FederationRequester,
@@ -30,7 +31,6 @@ import {
     NoteToMentions,
     Notes,
     Notifications,
-    type RolePermissions,
     UserToPinnedNotes,
     Users,
 } from "@versia/kit/tables";
@@ -171,11 +171,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return uri ? uri : new URL(`/users/${id}`, config.http.base_url);
     }
 
-    public hasPermission(permission: RolePermissions): boolean {
+    public hasPermission(permission: RolePermission): boolean {
         return this.getAllPermissions().includes(permission);
     }
 
-    public getAllPermissions(): RolePermissions[] {
+    public getAllPermissions(): RolePermission[] {
         return (
             this.data.roles
                 .flatMap((role) => role.permissions)
@@ -188,7 +188,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                         acc.push(permission);
                     }
                     return acc;
-                }, [] as RolePermissions[])
+                }, [] as RolePermission[])
         );
     }
 

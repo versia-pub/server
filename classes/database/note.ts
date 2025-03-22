@@ -4,7 +4,7 @@ import { sanitizedHtmlStrip } from "@/sanitization";
 import { sentry } from "@/sentry";
 import type { z } from "@hono/zod-openapi";
 import { getLogger } from "@logtape/logtape";
-import type { Status, Status as StatusSchema } from "@versia/client-ng/schemas";
+import type { Status, Status as StatusSchema } from "@versia/client/schemas";
 import { EntityValidator } from "@versia/federation";
 import type {
     ContentFormat,
@@ -825,7 +825,6 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             pinned: data.pinned,
             // TODO: Add polls
             poll: null,
-            // @ts-expect-error broken recursive types
             reblog: data.reblog
                 ? await new Note(data.reblog as NoteTypeWithRelations).toApi(
                       userFetching,
@@ -841,7 +840,6 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             visibility: data.visibility,
             url: data.uri || this.getMastoUri().toString(),
             bookmarked: false,
-            // @ts-expect-error broken recursive types
             quote: data.quotingId
                 ? ((await Note.fromId(data.quotingId, userFetching?.id).then(
                       (n) => n?.toApi(userFetching),
@@ -850,8 +848,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             edited_at: data.updatedAt
                 ? new Date(data.updatedAt).toISOString()
                 : null,
-            emoji_reactions: [],
-            plain_content: data.contentSource,
+            reactions: [],
+            text: data.contentSource,
         };
     }
 

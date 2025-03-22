@@ -1,5 +1,5 @@
 import type { z } from "@hono/zod-openapi";
-import type { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client-ng/schemas";
+import type { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client/schemas";
 import { type Token, type User, db } from "@versia/kit/db";
 import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {

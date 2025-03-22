@@ -1,6 +1,6 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { RolePermissions } from "@versia/kit/tables";
+import { RolePermission } from "@versia/client/schemas";
 
 const schemas = {
     query: z.object({
@@ -15,7 +15,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnNotifications],
+            permissions: [RolePermission.ManageOwnNotifications],
             scopes: ["write:notifications"],
         }),
     ] as const,

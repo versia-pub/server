@@ -1,8 +1,9 @@
 import { apiRoute, auth, parseUserAddress } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema, zBoolean } from "@versia/client-ng/schemas";
+import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
+import { Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { ApiError } from "~/classes/errors/api-error";
@@ -19,7 +20,7 @@ export const route = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.Search, RolePermissions.ViewAccounts],
+            permissions: [RolePermission.Search, RolePermission.ViewAccounts],
             scopes: ["read:accounts"],
         }),
     ] as const,

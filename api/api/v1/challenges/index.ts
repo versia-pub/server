@@ -1,7 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 import { createRoute } from "@hono/zod-openapi";
-import { Challenge } from "@versia/client-ng/schemas";
+import { Challenge } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";

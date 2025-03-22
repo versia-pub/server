@@ -1,7 +1,7 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute, z } from "@hono/zod-openapi";
-import { zBoolean } from "@versia/client-ng/schemas";
+import { zBoolean } from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";

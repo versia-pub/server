@@ -1,8 +1,8 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
+import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { RolePermissions } from "~/drizzle/schema";
 
 export default apiRoute((app) =>
     app.openapi(
@@ -18,7 +18,7 @@ export default apiRoute((app) =>
             middleware: [
                 auth({
                     auth: true,
-                    permissions: [RolePermissions.UsePushNotifications],
+                    permissions: [RolePermission.UsePushNotifications],
                     scopes: ["push"],
                 }),
             ] as const,

@@ -1,13 +1,13 @@
 import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media } from "@versia/kit/db";
-import { Emojis, RolePermissions } from "@versia/kit/tables";
+import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-
 const schema = z.object({
     shortcode: CustomEmojiSchema.shape.shortcode,
     element: z
@@ -43,8 +43,8 @@ const route = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnEmojis,
-                RolePermissions.ViewEmojis,
+                RolePermission.ManageOwnEmojis,
+                RolePermission.ViewEmojis,
             ],
         }),
         jsonOrForm(),
@@ -83,11 +83,11 @@ export default apiRoute((app) =>
             context.req.valid("json");
         const { user } = context.get("auth");
 
-        if (!user.hasPermission(RolePermissions.ManageEmojis) && global) {
+        if (!user.hasPermission(RolePermission.ManageEmojis) && global) {
             throw new ApiError(
                 401,
                 "Missing permissions",
-                `Only users with the '${RolePermissions.ManageEmojis}' permission can upload global emojis`,
+                `Only users with the '${RolePermission.ManageEmojis}' permission can upload global emojis`,
             );
         }
 

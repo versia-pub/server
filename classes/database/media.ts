@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
 import type { z } from "@hono/zod-openapi";
-import type { Attachment as AttachmentSchema } from "@versia/client-ng/schemas";
+import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";

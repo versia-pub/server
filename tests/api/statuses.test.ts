@@ -2,19 +2,16 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
-import type {
-    AsyncAttachment as ApiAsyncAttachment,
-    Context as ApiContext,
-    Status as ApiStatus,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
+import type { Attachment, Context, Status } from "@versia/client/schemas";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(1);
 const user = users[0];
 const token = tokens[0];
-let status: ApiStatus | null = null;
-let status2: ApiStatus | null = null;
-let media1: ApiAsyncAttachment | null = null;
+let status: z.infer<typeof Status> | null = null;
+let status2: z.infer<typeof Status> | null = null;
+let media1: z.infer<typeof Attachment> | null = null;
 
 describe("API Tests", () => {
     afterAll(async () => {
@@ -39,7 +36,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            media1 = (await response.json()) as ApiAsyncAttachment;
+            media1 = (await response.json()) as z.infer<typeof Attachment>;
 
             expect(media1.id).toBeDefined();
             expect(media1.type).toBe("unknown");
@@ -67,7 +64,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            status = (await response.json()) as ApiStatus;
+            status = (await response.json()) as z.infer<typeof Status>;
             expect(status.content).toContain("Hello, world!");
             expect(status.visibility).toBe("public");
             expect(status.account.id).toBe(user.id);
@@ -109,7 +106,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            status2 = (await response.json()) as ApiStatus;
+            status2 = (await response.json()) as z.infer<typeof Status>;
             expect(status2.content).toContain("This is a reply!");
             expect(status2.visibility).toBe("public");
             expect(status2.account.id).toBe(user.id);
@@ -149,7 +146,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const statusJson = (await response.json()) as ApiStatus;
+            const statusJson = (await response.json()) as z.infer<
+                typeof Status
+            >;
 
             expect(statusJson.id).toBe(status?.id || "");
             expect(statusJson.content).toBeDefined();
@@ -194,7 +193,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const rebloggedStatus = (await response.json()) as ApiStatus;
+            const rebloggedStatus = (await response.json()) as z.infer<
+                typeof Status
+            >;
 
             expect(rebloggedStatus.id).toBeDefined();
             expect(rebloggedStatus.reblog?.id).toEqual(status?.id ?? "");
@@ -219,7 +220,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const unrebloggedStatus = (await response.json()) as ApiStatus;
+            const unrebloggedStatus = (await response.json()) as z.infer<
+                typeof Status
+            >;
 
             expect(unrebloggedStatus.id).toBeDefined();
             expect(unrebloggedStatus.reblogged).toBe(false);
@@ -242,7 +245,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const context = (await response.json()) as ApiContext;
+            const context = (await response.json()) as z.infer<typeof Context>;
 
             expect(context.ancestors.length).toBe(0);
             expect(context.descendants.length).toBe(1);
@@ -269,7 +272,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const statuses = (await response.json()) as ApiStatus[];
+            const statuses = (await response.json()) as z.infer<
+                typeof Status
+            >[];
 
             expect(statuses.length).toBe(2);
 
@@ -316,7 +321,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const updatedStatus = (await response.json()) as ApiStatus;
+            const updatedStatus = (await response.json()) as z.infer<
+                typeof Status
+            >;
 
             expect(updatedStatus.favourited).toBe(false);
             expect(updatedStatus.favourites_count).toBe(0);

@@ -2,8 +2,9 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import { z } from "@hono/zod-openapi";
 import { zValidator } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
+import type { RolePermission } from "@versia/client/schemas";
 import { Application, Emoji, Note, Token, User, db } from "@versia/kit/db";
-import { Challenges, type RolePermissions } from "@versia/kit/tables";
+import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { type SQL, eq } from "drizzle-orm";
@@ -185,7 +186,7 @@ export const handleZodError = (
 
 const checkPermissions = (
     auth: AuthData | null,
-    required: RolePermissions[],
+    required: RolePermission[],
 ): void => {
     const userPerms = auth?.user
         ? auth.user.getAllPermissions()
@@ -291,7 +292,7 @@ type HonoEnvWithAuth = HonoEnv & {
 
 export const auth = <AuthRequired extends boolean>(options: {
     auth: AuthRequired;
-    permissions?: RolePermissions[];
+    permissions?: RolePermission[];
     challenge?: boolean;
     scopes?: string[];
     // If authRequired is true, HonoEnv.Variables.auth.user will never be null

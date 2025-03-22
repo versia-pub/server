@@ -3,7 +3,8 @@ import type {
     Notification as NotificationSchema,
     Source,
     Status as StatusSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import type { RolePermission } from "@versia/client/schemas";
 import type { ContentFormat, InstanceMetadata } from "@versia/federation/types";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
@@ -710,124 +711,13 @@ export const ModTags = pgTable("ModTags", {
     createdAt: createdAt(),
 });
 
-/**
- * Permissions not prefixed with `owner:` let the role manage all instances of the resource.
- * For example, a user with the `notes` permission can manage all notes of every user
- * - Manage: Delete, Update, Create
- * - Owner: Only manage their own resources
- */
-export enum RolePermissions {
-    ManageNotes = "notes",
-    ManageOwnNotes = "owner:note",
-    ViewNotes = "read:note",
-    ViewNoteLikes = "read:note_likes",
-    ViewNoteBoosts = "read:note_boosts",
-    ManageAccounts = "accounts",
-    ManageOwnAccount = "owner:account",
-    ViewAccountFollows = "read:account_follows",
-    ManageLikes = "likes",
-    ManageOwnLikes = "owner:like",
-    ManageBoosts = "boosts",
-    ManageOwnBoosts = "owner:boost",
-    ViewAccounts = "read:account",
-    ManageEmojis = "emojis",
-    ViewEmojis = "read:emoji",
-    ManageOwnEmojis = "owner:emoji",
-    ViewReactions = "read:reaction",
-    ManageReactions = "reactions",
-    ManageOwnReactions = "owner:reaction",
-    ManageMedia = "media",
-    ManageOwnMedia = "owner:media",
-    ManageBlocks = "blocks",
-    ManageOwnBlocks = "owner:block",
-    ManageFilters = "filters",
-    ManageOwnFilters = "owner:filter",
-    ManageMutes = "mutes",
-    ManageOwnMutes = "owner:mute",
-    ManageReports = "reports",
-    ManageOwnReports = "owner:report",
-    ManageSettings = "settings",
-    ManageOwnSettings = "owner:settings",
-    ManageRoles = "roles",
-    ManageNotifications = "notifications",
-    ManageOwnNotifications = "owner:notification",
-    ManageFollows = "follows",
-    ManageOwnFollows = "owner:follow",
-    ManageOwnApps = "owner:app",
-    Search = "search",
-    UsePushNotifications = "push_notifications",
-    ViewPublicTimelines = "public_timelines",
-    ViewPrivateTimelines = "private_timelines",
-    IgnoreRateLimits = "ignore_rate_limits",
-    Impersonate = "impersonate",
-    ManageInstance = "instance",
-    ManageInstanceFederation = "instance:federation",
-    ManageInstanceSettings = "instance:settings",
-    /** Users who do not have this permission will not be able to login! */
-    OAuth = "oauth",
-}
-
-export const DEFAULT_ROLES = [
-    RolePermissions.ManageOwnNotes,
-    RolePermissions.ViewNotes,
-    RolePermissions.ViewNoteLikes,
-    RolePermissions.ViewNoteBoosts,
-    RolePermissions.ManageOwnAccount,
-    RolePermissions.ViewAccountFollows,
-    RolePermissions.ManageOwnLikes,
-    RolePermissions.ManageOwnBoosts,
-    RolePermissions.ViewAccounts,
-    RolePermissions.ManageOwnEmojis,
-    RolePermissions.ViewReactions,
-    RolePermissions.ManageOwnReactions,
-    RolePermissions.ViewEmojis,
-    RolePermissions.ManageOwnMedia,
-    RolePermissions.ManageOwnBlocks,
-    RolePermissions.ManageOwnFilters,
-    RolePermissions.ManageOwnMutes,
-    RolePermissions.ManageOwnReports,
-    RolePermissions.ManageOwnSettings,
-    RolePermissions.ManageOwnNotifications,
-    RolePermissions.ManageOwnFollows,
-    RolePermissions.ManageOwnApps,
-    RolePermissions.Search,
-    RolePermissions.UsePushNotifications,
-    RolePermissions.ViewPublicTimelines,
-    RolePermissions.ViewPrivateTimelines,
-    RolePermissions.OAuth,
-];
-
-export const ADMIN_ROLES = [
-    ...DEFAULT_ROLES,
-    RolePermissions.ManageNotes,
-    RolePermissions.ManageAccounts,
-    RolePermissions.ManageLikes,
-    RolePermissions.ManageBoosts,
-    RolePermissions.ManageEmojis,
-    RolePermissions.ManageReactions,
-    RolePermissions.ManageMedia,
-    RolePermissions.ManageBlocks,
-    RolePermissions.ManageFilters,
-    RolePermissions.ManageMutes,
-    RolePermissions.ManageReports,
-    RolePermissions.ManageSettings,
-    RolePermissions.ManageRoles,
-    RolePermissions.ManageNotifications,
-    RolePermissions.ManageFollows,
-    RolePermissions.Impersonate,
-    RolePermissions.IgnoreRateLimits,
-    RolePermissions.ManageInstance,
-    RolePermissions.ManageInstanceFederation,
-    RolePermissions.ManageInstanceSettings,
-];
-
 export const Roles = pgTable("Roles", {
     id: id(),
     name: text("name").notNull(),
     permissions: text("permissions")
         .array()
         .notNull()
-        .$type<RolePermissions[]>(),
+        .$type<RolePermission[]>(),
     priority: integer("priority").notNull().default(0),
     description: text("description"),
     visible: boolean("visible").notNull().default(false),

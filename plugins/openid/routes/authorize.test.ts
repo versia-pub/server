@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
+import { RolePermission } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { SignJWT } from "jose";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
@@ -268,7 +268,7 @@ describe("/oauth/authorize", () => {
         const params = new URLSearchParams(location.search);
         expect(params.get("error")).toBe("unauthorized");
         expect(params.get("error_description")).toBe(
-            `User missing required '${RolePermissions.OAuth}' permission`,
+            `User missing required '${RolePermission.OAuth}' permission`,
         );
 
         config.permissions.default = oldPermissions;

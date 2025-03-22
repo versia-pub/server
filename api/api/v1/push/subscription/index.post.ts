@@ -4,9 +4,9 @@ import { createRoute } from "@hono/zod-openapi";
 import {
     WebPushSubscriptionInput,
     WebPushSubscription as WebPushSubscriptionSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
-import { RolePermissions } from "~/drizzle/schema";
 
 export default apiRoute((app) =>
     app.openapi(
@@ -23,7 +23,7 @@ export default apiRoute((app) =>
             middleware: [
                 auth({
                     auth: true,
-                    permissions: [RolePermissions.UsePushNotifications],
+                    permissions: [RolePermission.UsePushNotifications],
                     scopes: ["push"],
                 }),
                 jsonOrForm(),
@@ -56,7 +56,7 @@ export default apiRoute((app) =>
 
             if (
                 data.alerts["admin.report"] &&
-                !user.hasPermission(RolePermissions.ManageReports)
+                !user.hasPermission(RolePermission.ManageReports)
             ) {
                 // This shouldn't throw an error in mastodon either
                 data.alerts["admin.report"] = false;
@@ -64,7 +64,7 @@ export default apiRoute((app) =>
 
             if (
                 data.alerts["admin.sign_up"] &&
-                !user.hasPermission(RolePermissions.ManageAccounts)
+                !user.hasPermission(RolePermission.ManageAccounts)
             ) {
                 data.alerts["admin.sign_up"] = false;
             }

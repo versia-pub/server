@@ -1,5 +1,6 @@
 import { configureLoggers } from "@/loggers";
-import type { Status as ApiStatus } from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
+import type { Status } from "@versia/client/schemas";
 import { bench, run } from "mitata";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 
@@ -15,7 +16,7 @@ const testTimeline = async (): Promise<void> => {
         },
     });
 
-    const objects = (await response.json()) as ApiStatus[];
+    const objects = (await response.json()) as z.infer<typeof Status>[];
 
     if (objects.length !== 20) {
         throw new Error("Invalid response (not 20 objects)");

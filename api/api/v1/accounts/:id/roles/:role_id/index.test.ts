@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(2);
@@ -11,7 +11,7 @@ beforeAll(async () => {
     // Create new role
     role = await Role.insert({
         name: "test",
-        permissions: [RolePermissions.ManageRoles],
+        permissions: [RolePermission.ManageRoles],
         priority: 2,
         description: "test",
         visible: true,
@@ -25,7 +25,7 @@ beforeAll(async () => {
     // Create a role with higher priority than the user's role
     higherPriorityRole = await Role.insert({
         name: "higherPriorityRole",
-        permissions: [RolePermissions.ManageRoles],
+        permissions: [RolePermission.ManageRoles],
         priority: 3, // Higher priority than the user's role
         description: "Higher priority role",
         visible: true,

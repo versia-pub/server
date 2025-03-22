@@ -6,9 +6,9 @@ import {
     Status as StatusSchema,
     StatusSource as StatusSourceSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Media, Note } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 
@@ -113,7 +113,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnNotes],
+            permissions: [RolePermission.ManageOwnNotes],
         }),
         jsonOrForm(),
     ] as const,

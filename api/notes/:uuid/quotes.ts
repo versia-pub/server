@@ -1,6 +1,6 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Status as StatusSchema } from "@versia/client-ng/schemas";
+import { Status as StatusSchema } from "@versia/client/schemas";
 import { URICollection as URICollectionSchema } from "@versia/federation/schemas";
 import type { URICollection } from "@versia/federation/types";
 import { Note, db } from "@versia/kit/db";

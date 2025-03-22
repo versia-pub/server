@@ -1,7 +1,8 @@
 import { auth } from "@/api";
 import { z } from "@hono/zod-openapi";
+import { RolePermission } from "@versia/client/schemas";
 import { Application, db } from "@versia/kit/db";
-import { OpenIdLoginFlows, RolePermissions } from "@versia/kit/tables";
+import { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
@@ -20,7 +21,7 @@ export default (plugin: PluginType): void => {
                 middleware: [
                     auth({
                         auth: true,
-                        permissions: [RolePermissions.OAuth],
+                        permissions: [RolePermission.OAuth],
                     }),
                     plugin.middleware,
                 ] as const,
@@ -67,7 +68,7 @@ export default (plugin: PluginType): void => {
                 middleware: [
                     auth({
                         auth: true,
-                        permissions: [RolePermissions.OAuth],
+                        permissions: [RolePermission.OAuth],
                     }),
                     plugin.middleware,
                 ] as const,

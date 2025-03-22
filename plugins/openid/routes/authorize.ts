@@ -1,8 +1,8 @@
 import { auth, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { z } from "@hono/zod-openapi";
+import { RolePermission } from "@versia/client/schemas";
 import { Application, Token, User } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
 import { errorRedirect, errors } from "../errors.ts";
@@ -161,7 +161,7 @@ export default (plugin: PluginType): void =>
                     );
                 }
 
-                if (!user.hasPermission(RolePermissions.OAuth)) {
+                if (!user.hasPermission(RolePermission.OAuth)) {
                     return errorRedirect(
                         context,
                         errors.MissingOauthPermission,

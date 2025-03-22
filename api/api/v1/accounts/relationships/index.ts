@@ -4,9 +4,9 @@ import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 
 const route = createRoute({
     method: "get",
@@ -22,7 +22,7 @@ const route = createRoute({
         auth({
             auth: true,
             scopes: ["read:follows"],
-            permissions: [RolePermissions.ManageOwnFollows],
+            permissions: [RolePermission.ManageOwnFollows],
         }),
         qsQuery(),
     ] as const,

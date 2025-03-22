@@ -10,9 +10,10 @@ import {
     Account as AccountSchema,
     Status as StatusSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { Notes, RolePermissions } from "@versia/kit/tables";
+import { Notes } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -28,8 +29,8 @@ const route = createRoute({
         auth({
             auth: false,
             permissions: [
-                RolePermissions.ViewNotes,
-                RolePermissions.ViewAccounts,
+                RolePermission.ViewNotes,
+                RolePermission.ViewAccounts,
             ],
             scopes: ["read:statuses"],
         }),

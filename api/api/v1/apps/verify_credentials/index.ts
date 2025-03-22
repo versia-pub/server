@@ -1,8 +1,8 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { Application as ApplicationSchema } from "@versia/client-ng/schemas";
+import { Application as ApplicationSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
@@ -17,7 +17,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnApps],
+            permissions: [RolePermission.ManageOwnApps],
         }),
     ] as const,
     responses: {

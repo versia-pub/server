@@ -2,10 +2,8 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
-import type {
-    Account as ApiAccount,
-    Relationship as ApiRelationship,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
+import type { Account, Relationship } from "@versia/client/schemas";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
@@ -47,7 +45,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const user = (await response.json()) as ApiAccount;
+            const user = (await response.json()) as z.infer<typeof Account>;
 
             expect(user.display_name).toBe("New Display Name");
         });
@@ -69,7 +67,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiAccount;
+            const account = (await response.json()) as z.infer<typeof Account>;
 
             expect(account.username).toBe(user.data.username);
             expect(account.bot).toBe(false);
@@ -118,7 +116,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiRelationship;
+            const account = (await response.json()) as z.infer<
+                typeof Relationship
+            >;
 
             expect(account.id).toBe(user2.id);
             expect(account.followed_by).toBe(false);
@@ -144,7 +144,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiRelationship;
+            const account = (await response.json()) as z.infer<
+                typeof Relationship
+            >;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(true);
@@ -164,7 +166,7 @@ describe("API Tests", () => {
             expect(response.headers.get("content-type")).toContain(
                 "application/json",
             );
-            const body = (await response.json()) as ApiAccount[];
+            const body = (await response.json()) as z.infer<typeof Account>[];
 
             expect(Array.isArray(body)).toBe(true);
             expect(body.length).toBe(1);
@@ -191,7 +193,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiRelationship;
+            const account = (await response.json()) as z.infer<
+                typeof Relationship
+            >;
 
             expect(account.id).toBe(user2.id);
             expect(account.blocking).toBe(false);
@@ -217,7 +221,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiRelationship;
+            const account = (await response.json()) as z.infer<
+                typeof Relationship
+            >;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(true);
@@ -243,7 +249,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiRelationship;
+            const account = (await response.json()) as z.infer<
+                typeof Relationship
+            >;
 
             expect(account.id).toBe(user2.id);
             expect(account.endorsed).toBe(false);
@@ -269,7 +277,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiAccount;
+            const account = (await response.json()) as z.infer<typeof Account>;
 
             expect(account.id).toBe(user2.id);
             expect(account.note).toBe("This is a new note");
@@ -293,7 +301,9 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const relationships = (await response.json()) as ApiRelationship[];
+            const relationships = (await response.json()) as z.infer<
+                typeof Relationship
+            >[];
 
             expect(Array.isArray(relationships)).toBe(true);
             expect(relationships.length).toBeGreaterThan(0);
@@ -323,7 +333,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiAccount;
+            const account = (await response.json()) as z.infer<typeof Account>;
 
             expect(account.id).toBeDefined();
             expect(account.avatar).toBeDefined();
@@ -344,7 +354,7 @@ describe("API Tests", () => {
                 "application/json",
             );
 
-            const account = (await response.json()) as ApiAccount;
+            const account = (await response.json()) as z.infer<typeof Account>;
 
             expect(account.id).toBeDefined();
             expect(account.header).toBe("");
@@ -389,7 +399,7 @@ describe("API Tests", () => {
 
             const familiarFollowers = (await response.json()) as {
                 id: string;
-                accounts: ApiAccount[];
+                accounts: z.infer<typeof Account>[];
             }[];
 
             expect(Array.isArray(familiarFollowers)).toBe(true);

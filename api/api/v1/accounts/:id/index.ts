@@ -6,8 +6,8 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema } from "@versia/client-ng/schemas";
-import { RolePermissions } from "@versia/kit/tables";
+import { Account as AccountSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 
 const route = createRoute({
     method: "get",
@@ -21,7 +21,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.ViewAccounts],
+            permissions: [RolePermission.ViewAccounts],
         }),
         withUserParam,
     ] as const,

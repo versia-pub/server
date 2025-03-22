@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { config } from "~/config.ts";
 import { generateClient, getTestUsers } from "~/tests/utils";
 
@@ -11,7 +11,7 @@ beforeAll(async () => {
     // Create new role
     role = await Role.insert({
         name: "test",
-        permissions: [RolePermissions.ManageRoles],
+        permissions: [RolePermission.ManageRoles],
         priority: 10,
         description: "test",
         visible: true,
@@ -48,7 +48,7 @@ describe("/api/v1/roles", () => {
         expect(ok).toBe(true);
         expect(data).toContainEqual({
             name: "test",
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
             priority: 10,
             description: "test",
             visible: true,
@@ -70,7 +70,7 @@ describe("/api/v1/roles", () => {
         await using client = await generateClient(users[0]);
 
         const { ok, data } = await client.createRole("newRole", {
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
             priority: 1,
             description: "newRole",
             visible: true,
@@ -80,7 +80,7 @@ describe("/api/v1/roles", () => {
         expect(ok).toBe(true);
         expect(data).toMatchObject({
             name: "newRole",
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
             priority: 1,
             description: "newRole",
             visible: true,
@@ -99,7 +99,7 @@ describe("/api/v1/roles", () => {
         await using client = await generateClient(users[0]);
 
         const { data, ok, raw } = await client.createRole("newRole", {
-            permissions: [RolePermissions.ManageBlocks],
+            permissions: [RolePermission.ManageBlocks],
             priority: 11,
             description: "newRole",
             visible: true,
@@ -117,7 +117,7 @@ describe("/api/v1/roles", () => {
         await using client = await generateClient(users[0]);
 
         const { data, ok, raw } = await client.createRole("newRole", {
-            permissions: [RolePermissions.Impersonate],
+            permissions: [RolePermission.Impersonate],
             priority: 1,
             description: "newRole",
             visible: true,

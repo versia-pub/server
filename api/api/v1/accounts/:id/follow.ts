@@ -10,9 +10,9 @@ import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
     iso631,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
-import { RolePermissions } from "@versia/kit/tables";
 import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
@@ -30,8 +30,8 @@ const route = createRoute({
             auth: true,
             scopes: ["write:follows"],
             permissions: [
-                RolePermissions.ManageOwnFollows,
-                RolePermissions.ViewAccounts,
+                RolePermission.ManageOwnFollows,
+                RolePermission.ViewAccounts,
             ],
         }),
         withUserParam,

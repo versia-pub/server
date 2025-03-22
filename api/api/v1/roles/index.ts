@@ -1,9 +1,9 @@
 import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Role as RoleSchema } from "@versia/client-ng/schemas";
+import { Role as RoleSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { RolePermissions } from "~/drizzle/schema";
 import { ErrorSchema } from "~/types/api";
 
 const routeGet = createRoute({
@@ -34,7 +34,7 @@ const routePost = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageRoles],
+            permissions: [RolePermission.ManageRoles],
         }),
     ] as const,
     request: {
@@ -100,7 +100,7 @@ export default apiRoute((app) => {
         if (permissions) {
             const userPermissions = user.getAllPermissions();
             const hasPermissions = (
-                permissions as unknown as RolePermissions[]
+                permissions as unknown as RolePermission[]
             ).every((p) => userPermissions.includes(p));
 
             if (!hasPermissions) {
@@ -116,7 +116,7 @@ export default apiRoute((app) => {
             description,
             icon,
             name,
-            permissions: permissions as unknown as RolePermissions[],
+            permissions: permissions as unknown as RolePermission[],
             priority,
             visible,
         });

@@ -11,9 +11,10 @@ import {
     Id,
     Search as SearchSchema,
     zBoolean,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Note, User, db } from "@versia/kit/db";
-import { Instances, Notes, RolePermissions, Users } from "@versia/kit/tables";
+import { Instances, Notes, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
@@ -33,9 +34,9 @@ const route = createRoute({
             auth: false,
             scopes: ["read:search"],
             permissions: [
-                RolePermissions.Search,
-                RolePermissions.ViewAccounts,
-                RolePermissions.ViewNotes,
+                RolePermission.Search,
+                RolePermission.ViewAccounts,
+                RolePermission.ViewNotes,
             ],
         }),
     ] as const,

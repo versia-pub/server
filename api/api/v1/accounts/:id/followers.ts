@@ -6,9 +6,10 @@ import {
     withUserParam,
 } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Account as AccountSchema } from "@versia/client-ng/schemas";
+import { Account as AccountSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { RolePermissions, Users } from "@versia/kit/tables";
+import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -26,8 +27,8 @@ const route = createRoute({
             auth: false,
             scopes: ["read:accounts"],
             permissions: [
-                RolePermissions.ViewAccountFollows,
-                RolePermissions.ViewAccounts,
+                RolePermission.ViewAccountFollows,
+                RolePermission.ViewAccounts,
             ],
         }),
         withUserParam,

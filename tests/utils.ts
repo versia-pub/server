@@ -1,6 +1,6 @@
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
-import { Client as VersiaClient } from "@versia/client-ng";
+import { Client as VersiaClient } from "@versia/client";
 import { Note, Token, User, db } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";

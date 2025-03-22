@@ -1,8 +1,9 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Emoji } from "@versia/kit/db";
-import { Emojis, RolePermissions } from "@versia/kit/tables";
+import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 
 const route = createRoute({
@@ -17,7 +18,7 @@ const route = createRoute({
     middleware: [
         auth({
             auth: false,
-            permissions: [RolePermissions.ViewEmojis],
+            permissions: [RolePermission.ViewEmojis],
         }),
     ] as const,
     responses: {

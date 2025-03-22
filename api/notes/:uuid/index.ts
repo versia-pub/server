@@ -1,6 +1,6 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Status as StatusSchema } from "@versia/client-ng/schemas";
+import { Status as StatusSchema } from "@versia/client/schemas";
 import { Note as NoteSchema } from "@versia/federation/schemas";
 import { Note } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";

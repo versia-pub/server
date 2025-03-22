@@ -1,8 +1,9 @@
 import { apiRoute, auth, reusedResponses } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
-import { Status as StatusSchema, zBoolean } from "@versia/client-ng/schemas";
+import { Status as StatusSchema, zBoolean } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
-import { Notes, RolePermissions } from "@versia/kit/tables";
+import { Notes } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 
 const route = createRoute({
@@ -18,9 +19,9 @@ const route = createRoute({
         auth({
             auth: false,
             permissions: [
-                RolePermissions.ViewNotes,
-                RolePermissions.ViewAccounts,
-                RolePermissions.ViewPublicTimelines,
+                RolePermission.ViewNotes,
+                RolePermission.ViewAccounts,
+                RolePermission.ViewPublicTimelines,
             ],
         }),
     ] as const,

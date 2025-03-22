@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
-import { RolePermission } from "@versia/client/types";
 import { config } from "~/config.ts";
 import { Id } from "./common.ts";
+import { RolePermission } from "./permissions.ts";
 
 /* Versia Server API extension */
 export const Role = z

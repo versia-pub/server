@@ -1,5 +1,4 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Account as ApiAccount } from "@versia/client/types";
 import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(5);
@@ -68,6 +67,6 @@ describe("/api/v1/accounts/:id", () => {
                     visible: false,
                 }),
             ]),
-        } satisfies ApiAccount);
+        });
     });
 });

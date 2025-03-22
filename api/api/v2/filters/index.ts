@@ -3,9 +3,10 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
     FilterKeyword as FilterKeywordSchema,
     Filter as FilterSchema,
-} from "@versia/client-ng/schemas";
+} from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { FilterKeywords, Filters, RolePermissions } from "@versia/kit/tables";
+import { FilterKeywords, Filters } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
 
 const routeGet = createRoute({
@@ -20,7 +21,7 @@ const routeGet = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFilters],
+            permissions: [RolePermission.ManageOwnFilters],
         }),
         jsonOrForm(),
     ] as const,
@@ -49,7 +50,7 @@ const routePost = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ManageOwnFilters],
+            permissions: [RolePermission.ManageOwnFilters],
         }),
         jsonOrForm(),
     ] as const,

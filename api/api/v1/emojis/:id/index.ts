@@ -7,8 +7,8 @@ import {
 } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client-ng/schemas";
-import { RolePermissions } from "@versia/kit/tables";
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
@@ -50,7 +50,7 @@ const routeGet = createRoute({
     middleware: [
         auth({
             auth: true,
-            permissions: [RolePermissions.ViewEmojis],
+            permissions: [RolePermission.ViewEmojis],
         }),
         withEmojiParam,
     ] as const,
@@ -90,8 +90,8 @@ const routePatch = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnEmojis,
-                RolePermissions.ViewEmojis,
+                RolePermission.ManageOwnEmojis,
+                RolePermission.ViewEmojis,
             ],
         }),
         jsonOrForm(),
@@ -154,8 +154,8 @@ const routeDelete = createRoute({
         auth({
             auth: true,
             permissions: [
-                RolePermissions.ManageOwnEmojis,
-                RolePermissions.ViewEmojis,
+                RolePermission.ManageOwnEmojis,
+                RolePermission.ViewEmojis,
             ],
         }),
         withEmojiParam,
@@ -187,7 +187,7 @@ export default apiRoute((app) => {
 
         // Don't leak non-global emojis to non-admins
         if (
-            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            !user.hasPermission(RolePermission.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
             throw new ApiError(404, "Emoji not found");
@@ -202,13 +202,13 @@ export default apiRoute((app) => {
 
         // Check if user is admin
         if (
-            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            !user.hasPermission(RolePermission.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
             throw new ApiError(
                 403,
                 "Cannot modify emoji not owned by you",
-                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
+                `This emoji is either global (and you do not have the '${RolePermission.ManageEmojis}' permission) or not owned by you`,
             );
         }
 
@@ -220,11 +220,11 @@ export default apiRoute((app) => {
             shortcode,
         } = context.req.valid("json");
 
-        if (!user.hasPermission(RolePermissions.ManageEmojis) && emojiGlobal) {
+        if (!user.hasPermission(RolePermission.ManageEmojis) && emojiGlobal) {
             throw new ApiError(
                 401,
                 "Missing permissions",
-                `'${RolePermissions.ManageEmojis}' permission is needed to upload global emojis`,
+                `'${RolePermission.ManageEmojis}' permission is needed to upload global emojis`,
             );
         }
 
@@ -271,13 +271,13 @@ export default apiRoute((app) => {
 
         // Check if user is admin
         if (
-            !user.hasPermission(RolePermissions.ManageEmojis) &&
+            !user.hasPermission(RolePermission.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
             throw new ApiError(
                 403,
                 "Cannot delete emoji not owned by you",
-                `This emoji is either global (and you do not have the '${RolePermissions.ManageEmojis}' permission) or not owned by you`,
+                `This emoji is either global (and you do not have the '${RolePermission.ManageEmojis}' permission) or not owned by you`,
             );
         }
 

@@ -1,6 +1,6 @@
 import { apiRoute } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
-import { ExtendedDescription as ExtendedDescriptionSchema } from "@versia/client-ng/schemas";
+import { ExtendedDescription as ExtendedDescriptionSchema } from "@versia/client/schemas";
 import { markdownParse } from "~/classes/functions/status";
 import { config } from "~/config.ts";
 

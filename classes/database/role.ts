@@ -1,8 +1,7 @@
 import { proxyUrl } from "@/response";
-import type {
-    VersiaRole as APIRole,
-    RolePermission,
-} from "@versia/client/types";
+import type { z } from "@hono/zod-openapi";
+import type { Role as RoleSchema } from "@versia/client/schemas";
+import type { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { RoleToUsers, Roles } from "@versia/kit/tables";
 import {
@@ -16,7 +15,6 @@ import {
 } from "drizzle-orm";
 import { config } from "~/config.ts";
 import { BaseInterface } from "./base.ts";
-
 type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
@@ -208,7 +206,7 @@ export class Role extends BaseInterface<typeof Roles> {
         return this.data.id;
     }
 
-    public toApi(): APIRole {
+    public toApi(): z.infer<typeof RoleSchema> {
         return {
             id: this.id,
             name: this.data.name,
