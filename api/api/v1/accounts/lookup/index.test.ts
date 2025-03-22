@@ -1,8 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Account as ApiAccount } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 
 afterAll(async () => {
     await deleteUsers();
@@ -11,18 +10,11 @@ afterAll(async () => {
 // /api/v1/accounts/lookup
 describe("/api/v1/accounts/lookup", () => {
     test("should return 200 with users", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/lookup?acct=${users[0].data.username}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.lookupAccount(users[0].data.username);
 
-        const data = (await response.json()) as ApiAccount[];
+        expect(ok).toBe(true);
         expect(data).toEqual(
             expect.objectContaining({
                 id: users[0].id,
@@ -35,15 +27,13 @@ describe("/api/v1/accounts/lookup", () => {
     });
 
     test("should require exact case", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/lookup?acct=${users[0].data.username.toUpperCase()}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.lookupAccount(
+            users[0].data.username.toUpperCase(),
         );
 
-        expect(response.status).toBe(404);
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 });

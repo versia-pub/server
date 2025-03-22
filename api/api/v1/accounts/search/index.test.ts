@@ -1,8 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Account as ApiAccount } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 
 afterAll(async () => {
     await deleteUsers();
@@ -11,18 +10,11 @@ afterAll(async () => {
 // /api/v1/accounts/search
 describe("/api/v1/accounts/search", () => {
     test("should return 200 with users", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/search?q=${users[0].data.username}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.searchAccount(users[0].data.username);
 
-        const data = (await response.json()) as ApiAccount[];
+        expect(ok).toBe(true);
         expect(data).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({

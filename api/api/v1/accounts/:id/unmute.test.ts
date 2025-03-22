@@ -1,76 +1,57 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Relationship as ApiRelationship } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 
 afterAll(async () => {
     await deleteUsers();
 });
 
 beforeAll(async () => {
-    await fakeRequest(`/api/v1/accounts/${users[0].id}/mute`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-        },
-    });
+    await using client = await generateClient(users[0]);
+
+    const { ok } = await client.muteAccount(users[1].id);
+
+    expect(ok).toBe(true);
 });
 
 // /api/v1/accounts/:id/unmute
 describe("/api/v1/accounts/:id/unmute", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/unmute`,
-            {
-                method: "POST",
-            },
-        );
-        expect(response.status).toBe(401);
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.unmuteAccount(users[0].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if user not found", async () => {
-        const response = await fakeRequest(
-            "/api/v1/accounts/00000000-0000-0000-0000-000000000000/unmute",
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.unmuteAccount(
+            "00000000-0000-0000-0000-000000000000",
         );
-        expect(response.status).toBe(404);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should unmute user", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/unmute`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
-        expect(response.status).toBe(200);
+        await using client = await generateClient(users[0]);
 
-        const relationship = (await response.json()) as ApiRelationship;
-        expect(relationship.muting).toBe(false);
+        const { data, ok } = await client.unmuteAccount(users[1].id);
+
+        expect(ok).toBe(true);
+        expect(data.muting).toBe(false);
     });
 
     test("should return 200 if user already unmuted", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/unmute`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
-        expect(response.status).toBe(200);
+        await using client = await generateClient(users[0]);
 
-        const relationship = (await response.json()) as ApiRelationship;
-        expect(relationship.muting).toBe(false);
+        const { data, ok } = await client.unmuteAccount(users[1].id);
+
+        expect(ok).toBe(true);
+        expect(data.muting).toBe(false);
     });
 });

@@ -1,5 +1,6 @@
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
+import { Client as VersiaClient } from "@versia/client-ng";
 import { Note, Token, User, db } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
@@ -26,6 +27,52 @@ export function fakeRequest(
     );
 }
 
+/**
+ * Generate a client instance monkeypatched to use the test server
+ * instead of going through HTTP, and also doesn't throw on errors
+ * @param user User to automatically generate a token for
+ * @returns Client instance
+ */
+export const generateClient = async (
+    user?: User,
+): Promise<
+    VersiaClient & {
+        [Symbol.asyncDispose](): Promise<void>;
+    }
+> => {
+    const token = user
+        ? await Token.insert({
+              accessToken: randomString(32, "hex"),
+              tokenType: "bearer",
+              userId: user.id,
+              applicationId: null,
+              code: randomString(32, "hex"),
+              scope: "read write follow push",
+          })
+        : null;
+
+    const client = new VersiaClient(
+        new URL(config.http.base_url),
+        token?.data.accessToken,
+    );
+
+    // biome-ignore lint/complexity/useLiteralKeys: Overriding private properties
+    client["fetch"] = (
+        input: RequestInfo | string | URL | Request,
+        init?: RequestInit,
+    ): Promise<Response> => {
+        return Promise.resolve(app.fetch(new Request(input, init)));
+    };
+
+    // @ts-expect-error This is REAL monkeypatching done by REAL programmers, BITCH!
+    client[Symbol.asyncDispose] = async (): Promise<void> => {
+        await token?.delete();
+    };
+
+    return client as VersiaClient & {
+        [Symbol.asyncDispose](): Promise<void>;
+    };
+};
 export const deleteOldTestUsers = async (): Promise<void> => {
     // Deletes all users that match the test username (test-<32 random characters>)
     await db.delete(Users).where(like(Users.username, "test-%"));

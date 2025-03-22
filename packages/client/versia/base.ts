@@ -91,9 +91,10 @@ export class BaseClient {
     public constructor(
         protected baseUrl: URL,
         private accessToken?: string,
-        public globalCatch: (error: ResponseError) => void = () => {
-            // Do nothing by default
-        },
+        private options: {
+            globalCatch?: (error: ResponseError) => void;
+            throwOnError?: boolean;
+        } = {},
     ) {}
 
     public get url(): URL {
@@ -104,16 +105,21 @@ export class BaseClient {
         return this.accessToken;
     }
 
+    /** Overridable by testing */
+    private fetch = fetch;
+
     private async request<ReturnType>(
         request: Request,
     ): Promise<Output<ReturnType>> {
-        const result = await fetch(request);
+        const result = await this.fetch(request);
         const isJson = result.headers
             .get("Content-Type")
             ?.includes("application/json");
 
-        if (!result.ok) {
-            const error = isJson ? await result.json() : await result.text();
+        if (!result.ok && this.options.throwOnError) {
+            const error = isJson
+                ? await result.clone().json()
+                : await result.clone().text();
             throw new ResponseError(
                 {
                     data: error,
@@ -127,8 +133,10 @@ export class BaseClient {
         }
 
         return {
-            data: isJson ? await result.json() : (await result.text()) || null,
-            ok: true,
+            data: isJson
+                ? await result.clone().json()
+                : (await result.clone().text()) || null,
+            ok: result.ok,
             raw: result,
         };
     }
@@ -168,19 +176,19 @@ export class BaseClient {
         });
     }
 
-    public get<ReturnType>(
+    public get<ReturnType = void>(
         path: string,
         extra?: RequestInit,
     ): Promise<Output<ReturnType>> {
         return this.request<ReturnType>(
             this.constructRequest(path, "GET", undefined, extra),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public post<ReturnType>(
+    public post<ReturnType = void>(
         path: string,
         body?: object,
         extra?: RequestInit,
@@ -188,12 +196,12 @@ export class BaseClient {
         return this.request<ReturnType>(
             this.constructRequest(path, "POST", body, extra),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public postForm<ReturnType>(
+    public postForm<ReturnType = void>(
         path: string,
         body: FormData | ConvertibleObject,
         extra?: RequestInit,
@@ -206,12 +214,12 @@ export class BaseClient {
                 extra,
             ),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public put<ReturnType>(
+    public put<ReturnType = void>(
         path: string,
         body?: object,
         extra?: RequestInit,
@@ -219,12 +227,12 @@ export class BaseClient {
         return this.request<ReturnType>(
             this.constructRequest(path, "PUT", body, extra),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public putForm<ReturnType>(
+    public putForm<ReturnType = void>(
         path: string,
         body: FormData | ConvertibleObject,
         extra?: RequestInit,
@@ -237,12 +245,12 @@ export class BaseClient {
                 extra,
             ),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public patch<ReturnType>(
+    public patch<ReturnType = void>(
         path: string,
         body?: object,
         extra?: RequestInit,
@@ -250,12 +258,12 @@ export class BaseClient {
         return this.request<ReturnType>(
             this.constructRequest(path, "PATCH", body, extra),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public patchForm<ReturnType>(
+    public patchForm<ReturnType = void>(
         path: string,
         body: FormData | ConvertibleObject,
         extra?: RequestInit,
@@ -268,12 +276,12 @@ export class BaseClient {
                 extra,
             ),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public delete<ReturnType>(
+    public delete<ReturnType = void>(
         path: string,
         body?: object,
         extra?: RequestInit,
@@ -281,12 +289,12 @@ export class BaseClient {
         return this.request<ReturnType>(
             this.constructRequest(path, "DELETE", body, extra),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }
 
-    public deleteForm<ReturnType>(
+    public deleteForm<ReturnType = void>(
         path: string,
         body: FormData | ConvertibleObject,
         extra?: RequestInit,
@@ -299,7 +307,7 @@ export class BaseClient {
                 extra,
             ),
         ).catch((e) => {
-            this.globalCatch(e);
+            this.options.globalCatch?.(e);
             throw e;
         });
     }

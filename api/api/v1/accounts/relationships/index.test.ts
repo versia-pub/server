@@ -2,9 +2,9 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 
 beforeAll(async () => {
     // user0 should be `locked`
@@ -15,27 +15,17 @@ beforeAll(async () => {
         .set({ isLocked: true })
         .where(eq(Users.id, users[0].id));
 
-    const res1 = await fakeRequest(`/api/v1/accounts/${users[0].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    await using client1 = await generateClient(users[1]);
 
-    expect(res1.ok).toBe(true);
+    const { ok } = await client1.followAccount(users[0].id);
 
-    const res2 = await fakeRequest(`/api/v1/accounts/${users[2].id}/follow`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-    });
+    expect(ok).toBe(true);
 
-    expect(res2.ok).toBe(true);
+    await using client0 = await generateClient(users[0]);
+
+    const { ok: ok2 } = await client0.followAccount(users[2].id);
+
+    expect(ok2).toBe(true);
 });
 
 afterAll(async () => {
@@ -45,27 +35,21 @@ afterAll(async () => {
 // /api/v1/accounts/relationships
 describe("/api/v1/accounts/relationships", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/relationships?id[]=${users[2].id}`,
-        );
+        await using client = await generateClient();
 
-        expect(response.status).toBe(401);
+        const { ok, raw } = await client.getRelationships([users[2].id]);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return relationships", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/relationships?id[]=${users[2].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getRelationships([users[2].id]);
 
-        const body = await response.json();
-        expect(body).toEqual(
+        expect(ok).toBe(true);
+        expect(data).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({
                     id: users[2].id,
@@ -83,19 +67,12 @@ describe("/api/v1/accounts/relationships", () => {
     });
 
     test("should be requested_by user1", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/relationships?id[]=${users[1].id}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { data, ok } = await client.getRelationships([users[1].id]);
 
-        const body = await response.json();
-        expect(body).toEqual(
+        expect(ok).toBe(true);
+        expect(data).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({
                     following: false,

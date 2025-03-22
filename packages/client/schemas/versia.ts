@@ -105,3 +105,35 @@ export const SSOConfig = z.object({
                 "An array of external OpenID Connect providers that users can link their accounts to.",
         }),
 });
+
+/* Versia Server API extension */
+export const Challenge = z
+    .object({
+        id: Id.openapi({}).openapi({
+            description: "Challenge ID in the database.",
+            example: "b4a7e0f0-8f6a-479b-910b-9265c070d5bd",
+        }),
+        algorithm: z.enum(["SHA-1", "SHA-256", "SHA-512"]).openapi({
+            description: "Algorithm used to generate the challenge.",
+            example: "SHA-1",
+        }),
+        challenge: z.string().openapi({
+            description: "Challenge to solve.",
+            example: "1234567890",
+        }),
+        maxnumber: z.number().int().nonnegative().optional().openapi({
+            description: "Maximum number to solve the challenge.",
+            example: 100,
+        }),
+        salt: z.string().openapi({
+            description: "Salt used to generate the challenge.",
+            example: "1234567890",
+        }),
+        signature: z.string().openapi({
+            description: "Signature of the challenge.",
+            example: "1234567890",
+        }),
+    })
+    .openapi({
+        description: "A cryptographic challenge to solve. Used for Captchas.",
+    });

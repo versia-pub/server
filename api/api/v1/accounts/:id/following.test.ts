@@ -1,45 +1,29 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { Account as ApiAccount } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(5);
+const { users, deleteUsers } = await getTestUsers(5);
 
 afterAll(async () => {
     await deleteUsers();
 });
 
 beforeAll(async () => {
-    // Follow user
-    const response = await fakeRequest(
-        `/api/v1/accounts/${users[1].id}/follow`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({}),
-        },
-    );
+    await using client = await generateClient(users[0]);
 
-    expect(response.status).toBe(200);
+    // Follow user
+    const { ok } = await client.followAccount(users[1].id);
+
+    expect(ok).toBe(true);
 });
 
 // /api/v1/accounts/:id/following
 describe("/api/v1/accounts/:id/following", () => {
     test("should return 200 with following", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[0].id}/following`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(200);
+        const { ok, data } = await client.getAccountFollowing(users[0].id);
 
-        const data = (await response.json()) as ApiAccount[];
+        expect(ok).toBe(true);
 
         expect(data).toBeInstanceOf(Array);
         expect(data.length).toBe(1);
@@ -47,32 +31,15 @@ describe("/api/v1/accounts/:id/following", () => {
     });
 
     test("should return no following after unfollowing", async () => {
-        // Unfollow user
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/unfollow`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                },
-            },
-        );
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
+        const { ok } = await client.unfollowAccount(users[1].id);
 
-        const response2 = await fakeRequest(
-            `/api/v1/accounts/${users[0].id}/following`,
-            {
-                headers: {
-                    Authorization: `Bearer ${tokens[1].data.accessToken}`,
-                },
-            },
-        );
+        expect(ok).toBe(true);
 
-        expect(response2.status).toBe(200);
+        const { ok: ok2, data } = await client.getAccountFollowing(users[1].id);
 
-        const data = (await response2.json()) as ApiAccount[];
-
+        expect(ok2).toBe(true);
         expect(data).toBeInstanceOf(Array);
         expect(data.length).toBe(0);
     });

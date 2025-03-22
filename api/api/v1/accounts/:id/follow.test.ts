@@ -1,8 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Relationship as ApiRelationship } from "@versia/client/types";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 
 afterAll(async () => {
     await deleteUsers();
@@ -11,67 +10,38 @@ afterAll(async () => {
 // /api/v1/accounts/:id/follow
 describe("/api/v1/accounts/:id/follow", () => {
     test("should return 401 if not authenticated", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/follow`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        );
-        expect(response.status).toBe(401);
+        await using client = await generateClient();
+
+        const { ok, raw } = await client.followAccount(users[1].id);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(401);
     });
 
     test("should return 404 if user not found", async () => {
-        const response = await fakeRequest(
-            "/api/v1/accounts/00000000-0000-0000-0000-000000000000/follow",
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
+        await using client = await generateClient(users[0]);
+
+        const { ok, raw } = await client.followAccount(
+            "00000000-0000-0000-0000-000000000000",
         );
-        expect(response.status).toBe(404);
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(404);
     });
 
     test("should follow user", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/follow`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        );
-        expect(response.status).toBe(200);
+        await using client = await generateClient(users[0]);
 
-        const relationship = (await response.json()) as ApiRelationship;
-        expect(relationship.following).toBe(true);
+        const { ok } = await client.followAccount(users[1].id);
+
+        expect(ok).toBe(true);
     });
 
     test("should return 200 if user already followed", async () => {
-        const response = await fakeRequest(
-            `/api/v1/accounts/${users[1].id}/follow`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${tokens[0].data.accessToken}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({}),
-            },
-        );
-        expect(response.status).toBe(200);
+        await using client = await generateClient(users[0]);
 
-        const relationship = (await response.json()) as ApiRelationship;
-        expect(relationship.following).toBe(true);
+        const { ok } = await client.followAccount(users[1].id);
+
+        expect(ok).toBe(true);
     });
 });

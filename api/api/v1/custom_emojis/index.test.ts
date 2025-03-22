@@ -2,53 +2,42 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { inArray } from "drizzle-orm";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { generateClient, getTestUsers } from "~/tests/utils";
 
-const { users, tokens, deleteUsers } = await getTestUsers(2);
+const { users, deleteUsers } = await getTestUsers(2);
 
 // Make user 2 an admin
 beforeAll(async () => {
     await users[1].update({ isAdmin: true });
 
     // Upload one emoji as admin, then one as each user
-    const response = await fakeRequest("/api/v1/emojis", {
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-            shortcode: "test1",
-            element: "https://cdn.versia.social/logo.webp",
+    await using client1 = await generateClient(users[1]);
+
+    const { ok } = await client1.uploadEmoji(
+        "test1",
+        new URL("https://cdn.versia.social/logo.webp"),
+        {
             global: true,
-        }),
-    });
-
-    expect(response.status).toBe(201);
-
-    await fakeRequest("/api/v1/emojis", {
-        headers: {
-            Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            "Content-Type": "application/json",
         },
-        method: "POST",
-        body: JSON.stringify({
-            shortcode: "test2",
-            element: "https://cdn.versia.social/logo.webp",
-        }),
-    });
+    );
 
-    await fakeRequest("/api/v1/emojis", {
-        headers: {
-            Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-            shortcode: "test3",
-            element: "https://cdn.versia.social/logo.webp",
-        }),
-    });
+    expect(ok).toBe(true);
+
+    await using client0 = await generateClient(users[0]);
+
+    const { ok: ok2 } = await client0.uploadEmoji(
+        "test2",
+        new URL("https://cdn.versia.social/logo.webp"),
+    );
+
+    expect(ok2).toBe(true);
+
+    const { ok: ok3 } = await client1.uploadEmoji(
+        "test3",
+        new URL("https://cdn.versia.social/logo.webp"),
+    );
+
+    expect(ok3).toBe(true);
 });
 
 afterAll(async () => {
@@ -61,31 +50,23 @@ afterAll(async () => {
 
 describe("/api/v1/custom_emojis", () => {
     test("should return all global emojis", async () => {
-        const response = await fakeRequest("/api/v1/custom_emojis", {
-            headers: {
-                Authorization: `Bearer ${tokens[1].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[1]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getInstanceCustomEmojis();
 
-        const emojis = await response.json();
-
+        expect(ok).toBe(true);
         // Should contain test1 and test2, but not test2
-        expect(emojis).toContainEqual(
+        expect(data).toContainEqual(
             expect.objectContaining({
                 shortcode: "test1",
             }),
         );
-        expect(emojis).not.toContainEqual(
+        expect(data).not.toContainEqual(
             expect.objectContaining({
                 shortcode: "test2",
             }),
         );
-        expect(emojis).toContainEqual(
+        expect(data).toContainEqual(
             expect.objectContaining({
                 shortcode: "test3",
             }),
@@ -93,31 +74,23 @@ describe("/api/v1/custom_emojis", () => {
     });
 
     test("should return all user emojis", async () => {
-        const response = await fakeRequest("/api/v1/custom_emojis", {
-            headers: {
-                Authorization: `Bearer ${tokens[0].data.accessToken}`,
-            },
-        });
+        await using client = await generateClient(users[0]);
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getInstanceCustomEmojis();
 
-        const emojis = await response.json();
-
+        expect(ok).toBe(true);
         // Should contain test1 and test2, but not test3
-        expect(emojis).toContainEqual(
+        expect(data).toContainEqual(
             expect.objectContaining({
                 shortcode: "test1",
             }),
         );
-        expect(emojis).toContainEqual(
+        expect(data).toContainEqual(
             expect.objectContaining({
                 shortcode: "test2",
             }),
         );
-        expect(emojis).not.toContainEqual(
+        expect(data).not.toContainEqual(
             expect.objectContaining({
                 shortcode: "test3",
             }),
@@ -125,27 +98,24 @@ describe("/api/v1/custom_emojis", () => {
     });
 
     test("should return all global emojis when signed out", async () => {
-        const response = await fakeRequest("/api/v1/custom_emojis");
+        await using client = await generateClient();
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        const { data, ok } = await client.getInstanceCustomEmojis();
 
-        const emojis = await response.json();
+        expect(ok).toBe(true);
 
         // Should contain test1, but not test2 or test3
-        expect(emojis).toContainEqual(
+        expect(data).toContainEqual(
             expect.objectContaining({
                 shortcode: "test1",
             }),
         );
-        expect(emojis).not.toContainEqual(
+        expect(data).not.toContainEqual(
             expect.objectContaining({
                 shortcode: "test2",
             }),
         );
-        expect(emojis).not.toContainEqual(
+        expect(data).not.toContainEqual(
             expect.objectContaining({
                 shortcode: "test3",
             }),

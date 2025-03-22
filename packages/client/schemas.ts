@@ -34,6 +34,6 @@ export { Status, Mention, StatusSource } from "./schemas/status.ts";
 export { Tag } from "./schemas/tag.ts";
 export { Token } from "./schemas/token.ts";
 export { TermsOfService } from "./schemas/tos.ts";
-export { Role, NoteReaction, SSOConfig } from "./schemas/versia.ts";
+export { Role, NoteReaction, SSOConfig, Challenge } from "./schemas/versia.ts";
 
 export { Id, iso631, zBoolean } from "./schemas/common.ts";

@@ -3,7 +3,7 @@ import { randomString } from "@/math";
 import { db } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
-import { fakeRequest, getSolvedChallenge } from "~/tests/utils";
+import { generateClient, getSolvedChallenge } from "~/tests/utils";
 
 const username = randomString(10, "hex");
 const username2 = randomString(10, "hex");
@@ -16,208 +16,211 @@ afterEach(async () => {
 // /api/v1/statuses
 describe("/api/v1/accounts", () => {
     test("should create a new account", async () => {
-        const response = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
-            },
-            body: JSON.stringify({
-                username,
-                email: "bob@gamer.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        await using client = await generateClient();
 
-        expect(response.ok).toBe(true);
-        expect(response.headers.get("Content-Type")).not.toContain("json");
+        const { ok, raw } = await client.registerAccount(
+            username,
+            "bob@gamer.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
+            },
+        );
+
+        expect(ok).toBe(true);
+        expect(raw.headers.get("Content-Type")).not.toContain("json");
     });
 
     test("should refuse invalid emails", async () => {
-        const response = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
-            },
-            body: JSON.stringify({
-                username,
-                email: "bob",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(422);
+        const { ok, raw } = await client.registerAccount(
+            username,
+            "bob",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
+            },
+        );
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(422);
     });
 
     test("should require a password", async () => {
-        const response = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
-            },
-            body: JSON.stringify({
-                username,
-                email: "contatc@bob.com",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        await using client = await generateClient();
 
-        expect(response.status).toBe(422);
+        const { ok, raw } = await client.registerAccount(
+            username,
+            "bob@gamer.com",
+            "",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
+            },
+        );
+
+        expect(ok).toBe(false);
+        expect(raw.status).toBe(422);
     });
 
     test("should not allow a previously registered email", async () => {
-        await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
-            },
-            body: JSON.stringify({
-                username,
-                email: "contact@george.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        await using client = await generateClient();
 
-        const response = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        const { ok } = await client.registerAccount(
+            username,
+            "contact@george.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: username2,
-                email: "contact@george.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response.status).toBe(422);
+        expect(ok).toBe(true);
+
+        const { ok: ok2, raw } = await client.registerAccount(
+            username2,
+            "contact@george.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
+            },
+        );
+
+        expect(ok2).toBe(false);
+        expect(raw.status).toBe(422);
     });
 
     test("should not allow a previously registered email (case insensitive)", async () => {
-        await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
-            },
-            body: JSON.stringify({
-                username,
-                email: "contact@george.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        await using client = await generateClient();
 
-        const response = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        const { ok } = await client.registerAccount(
+            username,
+            "contact@george.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: username2,
-                email: "CONTACT@george.CoM",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response.status).toBe(422);
+        expect(ok).toBe(true);
+
+        const { ok: ok2, raw } = await client.registerAccount(
+            username2,
+            "CONTACT@george.CoM",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
+            },
+        );
+
+        expect(ok2).toBe(false);
+        expect(raw.status).toBe(422);
     });
 
     test("should not allow invalid usernames (not a-z_0-9)", async () => {
-        const response1 = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        await using client = await generateClient();
+
+        const { ok: ok1, raw: raw1 } = await client.registerAccount(
+            "bob$",
+            "contact@george.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: "bob$",
-                email: "contact@bob.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response1.status).toBe(422);
+        expect(ok1).toBe(false);
+        expect(raw1.status).toBe(422);
 
-        const response2 = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        const { ok: ok2, raw: raw2 } = await client.registerAccount(
+            "bob-markey",
+            "contact@bob.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: "bob-markey",
-                email: "contact@bob.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response2.status).toBe(422);
+        expect(ok2).toBe(false);
+        expect(raw2.status).toBe(422);
 
-        const response3 = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        const { ok: ok3, raw: raw3 } = await client.registerAccount(
+            "bob markey",
+            "contact@bob.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: "bob markey",
-                email: "contact@bob.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response3.status).toBe(422);
+        expect(ok3).toBe(false);
+        expect(raw3.status).toBe(422);
 
-        const response4 = await fakeRequest("/api/v1/accounts", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-Challenge-Solution": await getSolvedChallenge(),
+        const { ok: ok4, raw: raw4 } = await client.registerAccount(
+            "BOB",
+            "contact@bob.com",
+            "password",
+            true,
+            "en",
+            "testing",
+            {
+                headers: {
+                    "X-Challenge-Solution": await getSolvedChallenge(),
+                },
             },
-            body: JSON.stringify({
-                username: "BOB",
-                email: "contact@bob.com",
-                password: "password",
-                agreement: "true",
-                locale: "en",
-                reason: "testing",
-            }),
-        });
+        );
 
-        expect(response4.status).toBe(422);
+        expect(ok4).toBe(false);
+        expect(raw4.status).toBe(422);
     });
 });

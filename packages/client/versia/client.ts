@@ -7,6 +7,7 @@ import type { Attachment } from "../schemas/attachment.ts";
 import type { Context } from "../schemas/context.ts";
 import type { CustomEmoji } from "../schemas/emoji.ts";
 import type { ExtendedDescription } from "../schemas/extended-description.ts";
+import type { FamiliarFollowers } from "../schemas/familiar-followers.ts";
 import type { Instance } from "../schemas/instance.ts";
 import type { Marker } from "../schemas/marker.ts";
 import type { Notification } from "../schemas/notification.ts";
@@ -21,7 +22,7 @@ import type { Status, StatusSource } from "../schemas/status.ts";
 import type { Tag } from "../schemas/tag.ts";
 import type { Token } from "../schemas/token.ts";
 import type { TermsOfService } from "../schemas/tos.ts";
-import type { Role } from "../schemas/versia.ts";
+import type { Challenge, Role } from "../schemas/versia.ts";
 import { BaseClient, type Output } from "./base.ts";
 import { DEFAULT_SCOPE, NO_REDIRECT } from "./constants.ts";
 
@@ -71,7 +72,7 @@ export class Client extends BaseClient {
         account_ids: string[],
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>(
+        return this.post(
             `/api/v1/lists/${id}/accounts`,
             { account_ids },
             extra,
@@ -89,7 +90,7 @@ export class Client extends BaseClient {
         name: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.put<void>(
+        return this.put(
             `/api/v1/announcements/${id}/reactions/${name}`,
             undefined,
             extra,
@@ -108,7 +109,7 @@ export class Client extends BaseClient {
         role_id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>(
+        return this.post(
             `/api/v1/accounts/${account_id}/roles/${role_id}`,
             undefined,
             extra,
@@ -141,7 +142,7 @@ export class Client extends BaseClient {
         domain: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>("/api/v1/domain_blocks", { domain }, extra);
+        return this.post("/api/v1/domain_blocks", { domain }, extra);
     }
 
     public bookmarkStatus(
@@ -164,7 +165,7 @@ export class Client extends BaseClient {
         id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(
+        return this.delete(
             `/api/v1/scheduled_statuses/${id}/cancel`,
             undefined,
             extra,
@@ -287,7 +288,7 @@ export class Client extends BaseClient {
         account_ids: string[],
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(
+        return this.delete(
             `/api/v1/lists/${id}/accounts`,
             { account_ids },
             extra,
@@ -303,11 +304,7 @@ export class Client extends BaseClient {
         id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(
-            `/api/v1/conversations/${id}`,
-            undefined,
-            extra,
-        );
+        return this.delete(`/api/v1/conversations/${id}`, undefined, extra);
     }
 
     /**
@@ -318,7 +315,7 @@ export class Client extends BaseClient {
      * @return Empty.
      */
     public deleteEmoji(id: string, extra?: RequestInit): Promise<Output<void>> {
-        return this.delete<void>(`/api/v1/emojis/${id}`, undefined, extra);
+        return this.delete(`/api/v1/emojis/${id}`, undefined, extra);
     }
 
     /**
@@ -350,11 +347,7 @@ export class Client extends BaseClient {
         id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(
-            `/api/v1/featured_tags/${id}`,
-            undefined,
-            extra,
-        );
+        return this.delete(`/api/v1/featured_tags/${id}`, undefined, extra);
     }
 
     /**
@@ -363,14 +356,14 @@ export class Client extends BaseClient {
      * @param id Target list ID.
      */
     public deleteList(id: string, extra?: RequestInit): Promise<Output<void>> {
-        return this.delete<void>(`/api/v1/lists/${id}`, undefined, extra);
+        return this.delete(`/api/v1/lists/${id}`, undefined, extra);
     }
 
     /**
      * DELETE /api/v1/push/subscription
      */
     public deletePushSubscription(extra?: RequestInit): Promise<Output<void>> {
-        return this.delete<void>("/api/v1/push/subscription", undefined, extra);
+        return this.delete("/api/v1/push/subscription", undefined, extra);
     }
 
     /**
@@ -381,7 +374,7 @@ export class Client extends BaseClient {
      * @return Empty.
      */
     public deleteRole(id: string, extra?: RequestInit): Promise<Output<void>> {
-        return this.delete<void>(`/api/v1/roles/${id}`, undefined, extra);
+        return this.delete(`/api/v1/roles/${id}`, undefined, extra);
     }
 
     /**
@@ -412,7 +405,7 @@ export class Client extends BaseClient {
         id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>(
+        return this.post(
             `/api/v1/instance/announcements/${id}/dismiss`,
             undefined,
             extra,
@@ -428,7 +421,7 @@ export class Client extends BaseClient {
         id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>(
+        return this.post(
             `/api/v1/notifications/${id}/dismiss`,
             undefined,
             extra,
@@ -439,7 +432,7 @@ export class Client extends BaseClient {
      * POST /api/v1/notifications/clear
      */
     public dismissNotifications(extra?: RequestInit): Promise<Output<void>> {
-        return this.post<void>("/api/v1/notifications/clear", undefined, extra);
+        return this.post("/api/v1/notifications/clear", undefined, extra);
     }
 
     /**
@@ -598,6 +591,22 @@ export class Client extends BaseClient {
             redirectUri: options.redirect_uri || NO_REDIRECT,
             scope: options.scopes || DEFAULT_SCOPE,
         });
+    }
+
+    /**
+     * POST /api/v1/challenges
+     *
+     * Generates a new Captcha to solve.
+     * @returns A challenge.
+     */
+    public getChallenge(
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Challenge>>> {
+        return this.post<z.infer<typeof Challenge>>(
+            "/api/v1/challenges",
+            undefined,
+            extra,
+        );
     }
 
     /**
@@ -1044,6 +1053,28 @@ export class Client extends BaseClient {
         return this.get<z.infer<typeof Account>[]>(
             `/api/v1/endorsements?${params}`,
             extra,
+        );
+    }
+
+    /**
+     * GET /api/v1/accounts/familiar_followers
+     *
+     * @param ids Array of account IDs.
+     * @return Array of familiar followers.
+     */
+    public getFamiliarFollowers(
+        ids: string[],
+    ): Promise<Output<z.infer<typeof FamiliarFollowers>[]>> {
+        const params = new URLSearchParams();
+
+        if (ids) {
+            for (const id of ids) {
+                params.append("id[]", id);
+            }
+        }
+
+        return this.get<z.infer<typeof FamiliarFollowers>[]>(
+            `/api/v1/accounts/familiar_followers?${params}`,
         );
     }
 
@@ -2354,7 +2385,7 @@ export class Client extends BaseClient {
         role_id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(`/api/v1/roles/${role_id}`, undefined, extra);
+        return this.delete(`/api/v1/roles/${role_id}`, undefined, extra);
     }
 
     /**
@@ -2400,7 +2431,7 @@ export class Client extends BaseClient {
         token: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.post<void>(
+        return this.post(
             "/oauth/revoke",
             { client_id, client_secret, token },
             extra,
@@ -2534,7 +2565,7 @@ export class Client extends BaseClient {
      */
     public searchAccount(
         q: string,
-        options: Partial<{
+        options?: Partial<{
             following: boolean;
             limit: number;
             max_id: string;
@@ -2547,22 +2578,20 @@ export class Client extends BaseClient {
 
         params.set("q", q);
 
-        if (options) {
-            if (options.following) {
-                params.set("following", "true");
-            }
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
-            if (options.max_id) {
-                params.set("max_id", options.max_id);
-            }
-            if (options.resolve) {
-                params.set("resolve", "true");
-            }
-            if (options.since_id) {
-                params.set("since_id", options.since_id);
-            }
+        if (options?.following) {
+            params.set("following", "true");
+        }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
+        }
+        if (options?.max_id) {
+            params.set("max_id", options.max_id);
+        }
+        if (options?.resolve) {
+            params.set("resolve", "true");
+        }
+        if (options?.since_id) {
+            params.set("since_id", options.since_id);
         }
 
         return this.get<z.infer<typeof Account>[]>(
@@ -2639,7 +2668,7 @@ export class Client extends BaseClient {
         role_id: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>(
+        return this.delete(
             `/api/v1/accounts/${account_id}/roles/${role_id}`,
             undefined,
             extra,
@@ -2672,7 +2701,7 @@ export class Client extends BaseClient {
         domain: string,
         extra?: RequestInit,
     ): Promise<Output<void>> {
-        return this.delete<void>("/api/v1/domain_blocks", { domain }, extra);
+        return this.delete("/api/v1/domain_blocks", { domain }, extra);
     }
 
     /**

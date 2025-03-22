@@ -1,6 +1,7 @@
 import { apiRoute, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
+import { Challenge } from "@versia/client-ng/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 import { ErrorSchema } from "~/types/api";
@@ -21,14 +22,7 @@ const route = createRoute({
             description: "Challenge",
             content: {
                 "application/json": {
-                    schema: z.object({
-                        id: z.string(),
-                        algorithm: z.enum(["SHA-1", "SHA-256", "SHA-512"]),
-                        challenge: z.string(),
-                        maxnumber: z.number().optional(),
-                        salt: z.string(),
-                        signature: z.string(),
-                    }),
+                    schema: Challenge,
                 },
             },
         },
