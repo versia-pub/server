@@ -1,27 +1,8 @@
-import { beforeEach, describe, expect, it, mock } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import sharp from "sharp";
-import type { config } from "~/config.ts";
 import { convertImage } from "./image-conversion.ts";
 
 describe("ImageConversionPreprocessor", () => {
-    let mockConfig: typeof config;
-
-    beforeEach(() => {
-        mockConfig = {
-            media: {
-                conversion: {
-                    convert_images: true,
-                    convert_to: "image/webp",
-                    convert_vector: false,
-                },
-            },
-        } as unknown as typeof config;
-
-        mock.module("~/config.ts", () => ({
-            config: mockConfig,
-        }));
-    });
-
     it("should convert a JPEG image to WebP", async () => {
         const inputBuffer = await sharp({
             create: {
@@ -37,7 +18,7 @@ describe("ImageConversionPreprocessor", () => {
         const inputFile = new File([inputBuffer], "test.jpg", {
             type: "image/jpeg",
         });
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp");
 
         expect(result.type).toBe("image/webp");
         expect(result.name).toBe("test.webp");
@@ -53,20 +34,20 @@ describe("ImageConversionPreprocessor", () => {
         const inputFile = new File([svgContent], "test.svg", {
             type: "image/svg+xml",
         });
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp");
 
         expect(result).toBe(inputFile);
     });
 
     it("should convert SVG when convert_vector is true", async () => {
-        mockConfig.media.conversion.convert_vectors = true;
-
         const svgContent =
             '<svg xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="red"/></svg>';
         const inputFile = new File([svgContent], "test.svg", {
             type: "image/svg+xml",
         });
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp", {
+            convertVectors: true,
+        });
 
         expect(result.type).toBe("image/webp");
         expect(result.name).toBe("test.webp");
@@ -76,14 +57,12 @@ describe("ImageConversionPreprocessor", () => {
         const inputFile = new File(["test content"], "test.txt", {
             type: "text/plain",
         });
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp");
 
         expect(result).toBe(inputFile);
     });
 
     it("should throw an error for unsupported output format", async () => {
-        mockConfig.media.conversion.convert_to = "image/bmp";
-
         const inputBuffer = await sharp({
             create: {
                 width: 100,
@@ -99,7 +78,7 @@ describe("ImageConversionPreprocessor", () => {
             type: "image/png",
         });
 
-        await expect(convertImage(inputFile)).rejects.toThrow(
+        await expect(convertImage(inputFile, "image/bmp")).rejects.toThrow(
             "Unsupported output format: image/bmp",
         );
     });
@@ -120,7 +99,7 @@ describe("ImageConversionPreprocessor", () => {
         const inputFile = new File([inputBuffer], "animated.gif", {
             type: "image/gif",
         });
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp");
 
         expect(result.type).toBe("image/webp");
         expect(result.name).toBe("animated.webp");
@@ -147,7 +126,7 @@ describe("ImageConversionPreprocessor", () => {
             "test image with spaces.png",
             { type: "image/png" },
         );
-        const result = await convertImage(inputFile);
+        const result = await convertImage(inputFile, "image/webp");
 
         expect(result.type).toBe("image/webp");
         expect(result.name).toBe("test image with spaces.webp");

@@ -1,3 +1,4 @@
+import { mock } from "bun:test";
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
 import { Client as VersiaClient } from "@versia/client";
@@ -9,7 +10,6 @@ import { appFactory } from "~/app";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
-
 await setupDatabase();
 
 if (config.search.enabled) {
@@ -209,4 +209,34 @@ export const getSolvedChallenge = async (): Promise<string> => {
             signature: challenge.signature,
         }),
     ).toString("base64");
+};
+
+/**
+ * Mocks a module for the duration of a test
+ * Workaround for https://github.com/oven-sh/bun/issues/7823
+ *
+ * @param modulePath - The path starting from this files' path.
+ * @param renderMocks - Function to generate mocks (by their named or default exports)
+ * @returns An object with a dispose method
+ */
+export const mockModule = async (
+    modulePath: string,
+    renderMocks: () => Record<string, unknown>,
+): Promise<{
+    [Symbol.dispose](): void;
+}> => {
+    const original = {
+        ...(await import(modulePath)),
+    };
+    const mocks = renderMocks();
+    const result = {
+        ...original,
+        ...mocks,
+    };
+    mock.module(modulePath, () => result);
+    return {
+        [Symbol.dispose]: (): void => {
+            mock.module(modulePath, () => original);
+        },
+    };
 };

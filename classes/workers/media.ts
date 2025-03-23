@@ -42,7 +42,14 @@ export const getMediaWorker = (): Worker<MediaJobData, void, MediaJobType> =>
 
                     await job.log(`Converting attachment [${attachmentId}]`);
 
-                    const processedFile = await convertImage(file);
+                    const processedFile = await convertImage(
+                        file,
+                        config.media.conversion.convert_to,
+                        {
+                            convertVectors:
+                                config.media.conversion.convert_vectors,
+                        },
+                    );
 
                     await job.log(`Uploading attachment [${attachmentId}]`);
 

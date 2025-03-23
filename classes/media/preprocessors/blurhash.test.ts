@@ -1,5 +1,6 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import sharp from "sharp";
+import { mockModule } from "~/tests/utils.ts";
 import { calculateBlurhash } from "./blurhash.ts";
 
 describe("BlurhashPreprocessor", () => {
@@ -49,7 +50,7 @@ describe("BlurhashPreprocessor", () => {
             type: "image/png",
         });
 
-        mock.module("blurhash", () => ({
+        using __ = await mockModule("blurhash", () => ({
             encode: (): void => {
                 throw new Error("Test error");
             },

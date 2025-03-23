@@ -4,7 +4,6 @@
  */
 
 import sharp from "sharp";
-import { config } from "~/config.ts";
 
 /**
  * Supported input media formats.
@@ -36,11 +35,11 @@ const supportedOutputFormats = [
  * @param file - The file to check.
  * @returns True if the file is convertible, false otherwise.
  */
-const isConvertible = (file: File): boolean => {
-    if (
-        file.type === "image/svg+xml" &&
-        !config.media.conversion.convert_vectors
-    ) {
+const isConvertible = (
+    file: File,
+    options?: { convertVectors?: boolean },
+): boolean => {
+    if (file.type === "image/svg+xml" && !options?.convertVectors) {
         return false;
     }
     return supportedInputFormats.includes(file.type);
@@ -69,14 +68,20 @@ const getReplacedFileName = (fileName: string, newExtension: string): string =>
  * Converts an image file to the format specified in the configuration.
  *
  * @param file - The image file to convert.
+ * @param targetFormat - The target format to convert to.
  * @returns The converted image file.
  */
-export const convertImage = async (file: File): Promise<File> => {
-    if (!isConvertible(file)) {
+export const convertImage = async (
+    file: File,
+    targetFormat: string,
+    options?: {
+        convertVectors?: boolean;
+    },
+): Promise<File> => {
+    if (!isConvertible(file, options)) {
         return file;
     }
 
-    const targetFormat = config.media.conversion.convert_to;
     if (!supportedOutputFormats.includes(targetFormat)) {
         throw new Error(`Unsupported output format: ${targetFormat}`);
     }

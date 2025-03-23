@@ -29,7 +29,6 @@ beforeAll(async () => {
         priority: 3, // Higher priority than the user's role
         description: "Higher priority role",
         visible: true,
-        icon: "higherPriorityRole",
     });
 
     expect(higherPriorityRole).toBeDefined();
@@ -179,7 +178,7 @@ describe("/api/v1/roles/:id", () => {
             priority: 2,
             description: "test",
             visible: true,
-            icon: "test",
+            icon: "https://test.com",
         });
 
         await using client = await generateClient(users[0]);

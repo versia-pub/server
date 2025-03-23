@@ -15,7 +15,7 @@ beforeAll(async () => {
         priority: 2,
         description: "test",
         visible: true,
-        icon: "test",
+        icon: "https://test.com",
     });
 
     expect(role).toBeDefined();
@@ -29,7 +29,6 @@ beforeAll(async () => {
         priority: 3, // Higher priority than the user's role
         description: "Higher priority role",
         visible: true,
-        icon: "higherPriorityRole",
     });
 
     expect(higherPriorityRole).toBeDefined();
