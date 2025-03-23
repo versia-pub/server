@@ -38,7 +38,8 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { user } = context.get("auth");
 
-        await user.header?.delete();
+        await user.avatar?.delete();
+        await user.reload();
 
         return context.json(user.toApi(true), 200);
     }),

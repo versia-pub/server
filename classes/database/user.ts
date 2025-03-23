@@ -102,6 +102,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         this.data = reloaded.data;
+        this.avatar = reloaded.avatar;
+        this.header = reloaded.header;
     }
 
     public static async fromId(id: string | null): Promise<User | null> {
@@ -1146,7 +1148,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             moved: null,
             noindex: false,
             suspended: false,
-            discoverable: null,
+            discoverable: user.isDiscoverable,
             mute_expires_at: null,
             roles: user.roles
                 .map((role) => new Role(role))

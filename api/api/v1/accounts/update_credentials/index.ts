@@ -4,7 +4,7 @@ import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
-import { Emoji, User } from "@versia/kit/db";
+import { Emoji, Media, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
@@ -229,17 +229,29 @@ export default apiRoute((app) =>
 
         if (avatar) {
             if (avatar instanceof File) {
-                await user.avatar?.updateFromFile(avatar);
+                if (user.avatar) {
+                    await user.avatar.updateFromFile(avatar);
+                } else {
+                    user.avatar = await Media.fromFile(avatar);
+                }
+            } else if (user.avatar) {
+                await user.avatar.updateFromUrl(avatar);
             } else {
-                await user.avatar?.updateFromUrl(avatar);
+                user.avatar = await Media.fromUrl(avatar);
             }
         }
 
         if (header) {
             if (header instanceof File) {
-                await user.header?.updateFromFile(header);
+                if (user.header) {
+                    await user.header.updateFromFile(header);
+                } else {
+                    user.header = await Media.fromFile(header);
+                }
+            } else if (user.header) {
+                await user.header.updateFromUrl(header);
             } else {
-                await user.header?.updateFromUrl(header);
+                user.header = await Media.fromUrl(header);
             }
         }
 
@@ -333,7 +345,9 @@ export default apiRoute((app) =>
             username: self.username,
             note: self.note,
             avatar: self.avatar,
+            avatarId: user.avatar?.id,
             header: self.header,
+            headerId: user.header?.id,
             fields: self.fields,
             isLocked: self.isLocked,
             isBot: self.isBot,

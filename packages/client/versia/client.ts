@@ -2481,6 +2481,53 @@ export class Client extends BaseClient {
         );
     }
 
+    /**
+     * DELETE /api/v1/profile/avatar
+     *
+     * @return Account.
+     */
+    public deleteAvatar(
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Account>>> {
+        return this.delete<z.infer<typeof Account>>(
+            "/api/v1/profile/avatar",
+            undefined,
+            extra,
+        );
+    }
+
+    /**
+     * DELETE /api/v1/profile/header
+     *
+     * @return Account.
+     */
+    public deleteHeader(
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Account>>> {
+        return this.delete<z.infer<typeof Account>>(
+            "/api/v1/profile/header",
+            undefined,
+            extra,
+        );
+    }
+
+    /**
+     * POST /api/v1/accounts/:id/remove_from_followers
+     *
+     * @param id The account ID.
+     * @return Relationship.
+     */
+    public removeFromFollowers(
+        id: string,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Relationship>>> {
+        return this.post<z.infer<typeof Relationship>>(
+            `/api/v1/accounts/${id}/remove_from_followers`,
+            undefined,
+            extra,
+        );
+    }
+
     // FIXME: Announcement schema is not defined.
     /**
      * DELETE /api/v1/announcements/:id/reactions/:name
@@ -2972,6 +3019,25 @@ export class Client extends BaseClient {
     }
 
     /**
+     * POST /api/v1/accounts/:id/note
+     *
+     * @param id The account ID.
+     * @param note The note to set.
+     * @return Account.
+     */
+    public updateAccountNote(
+        id: string,
+        note: string | null,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Account>>> {
+        return this.post<z.infer<typeof Account>>(
+            `/api/v1/accounts/${id}/note`,
+            { comment: note ?? undefined },
+            extra,
+        );
+    }
+
+    /**
      * PATCH /api/v1/accounts/update_credentials
      *
      * @param options.avatar Avatar image, as a File
@@ -2987,7 +3053,7 @@ export class Client extends BaseClient {
      */
     public updateCredentials(
         options: Partial<{
-            avatar: File;
+            avatar: File | URL;
             bot: boolean;
             discoverable: boolean;
             display_name: string;
@@ -2995,7 +3061,7 @@ export class Client extends BaseClient {
                 name: string;
                 value: string;
             }[];
-            header: File;
+            header: File | URL;
             locked: boolean;
             note: string;
             source: Partial<{
@@ -3008,7 +3074,17 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Account>>> {
         return this.patchForm<z.infer<typeof Account>>(
             "/api/v1/accounts/update_credentials",
-            options,
+            {
+                ...options,
+                avatar:
+                    options.avatar instanceof File
+                        ? options.avatar
+                        : options.avatar?.toString(),
+                header:
+                    options.header instanceof File
+                        ? options.header
+                        : options.header?.toString(),
+            },
             extra,
         );
     }
