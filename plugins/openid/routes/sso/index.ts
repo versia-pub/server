@@ -7,7 +7,7 @@ import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
 } from "oauth4webapi";
-import { ErrorSchema } from "~/types/api";
+import { ApiError } from "~/classes/errors/api-error.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
 
@@ -91,7 +91,7 @@ export default (plugin: PluginType): void => {
                         description: "Issuer not found",
                         content: {
                             "application/json": {
-                                schema: ErrorSchema,
+                                schema: ApiError.zodSchema,
                             },
                         },
                     },

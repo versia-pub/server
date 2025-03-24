@@ -1,11 +1,4 @@
-import {
-    apiRoute,
-    auth,
-    jsonOrForm,
-    noteNotFound,
-    reusedResponses,
-    withNoteParam,
-} from "@/api";
+import { apiRoute, auth, jsonOrForm, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Attachment as AttachmentSchema,
@@ -109,7 +102,7 @@ const routeGet = createRoute({
                 },
             },
         },
-        404: noteNotFound,
+        404: ApiError.noteNotFound().schema,
     },
 });
 
@@ -147,8 +140,8 @@ const routeDelete = createRoute({
                 },
             },
         },
-        404: noteNotFound,
-        401: reusedResponses[401],
+        404: ApiError.noteNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
     },
 });
 
@@ -200,8 +193,10 @@ const routePut = createRoute({
                 },
             },
         },
-        404: noteNotFound,
-        ...reusedResponses,
+        404: ApiError.noteNotFound().schema,
+        403: ApiError.forbidden().schema,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -218,7 +213,7 @@ export default apiRoute((app) => {
         const note = context.get("note");
 
         if (note.author.id !== user.id) {
-            throw new ApiError(401, "Unauthorized");
+            throw ApiError.forbidden();
         }
 
         // TODO: Delete and redraft
@@ -234,7 +229,7 @@ export default apiRoute((app) => {
         const note = context.get("note");
 
         if (note.author.id !== user.id) {
-            throw new ApiError(401, "Unauthorized");
+            throw ApiError.forbidden();
         }
 
         // TODO: Polls

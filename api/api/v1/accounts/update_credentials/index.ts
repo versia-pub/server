@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { createRoute, z } from "@hono/zod-openapi";
@@ -162,7 +162,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

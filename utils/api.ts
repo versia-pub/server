@@ -30,43 +30,7 @@ import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
 import { config } from "~/config.ts";
-import { ErrorSchema, type HonoEnv } from "~/types/api";
-
-export const reusedResponses = {
-    401: {
-        description: "Invalid or missing Authorization header.",
-        content: {
-            "application/json": {
-                schema: ErrorSchema,
-            },
-        },
-    },
-    422: {
-        description: "Invalid values in request",
-        content: {
-            "application/json": {
-                schema: ErrorSchema,
-            },
-        },
-    },
-};
-
-export const accountNotFound = {
-    description: "Account does not exist",
-    content: {
-        "application/json": {
-            schema: ErrorSchema,
-        },
-    },
-};
-export const noteNotFound = {
-    description: "Status does not exist",
-    content: {
-        "application/json": {
-            schema: ErrorSchema,
-        },
-    },
-};
+import type { HonoEnv } from "~/types/api";
 
 export const apiRoute = (fn: (app: OpenAPIHono<HonoEnv>) => void): typeof fn =>
     fn;
@@ -362,7 +326,7 @@ export const withNoteParam = every(
         const note = await Note.fromId(id, user?.id);
 
         if (!(note && (await note.isViewableByUser(user)))) {
-            throw new ApiError(404, "Note not found");
+            throw ApiError.noteNotFound();
         }
 
         context.set("note", note);
@@ -435,7 +399,7 @@ export const withEmojiParam = every(
         const emoji = await Emoji.fromId(id);
 
         if (!emoji) {
-            throw new ApiError(404, "Emoji not found");
+            throw ApiError.emojiNotFound();
         }
 
         context.set("emoji", emoji);

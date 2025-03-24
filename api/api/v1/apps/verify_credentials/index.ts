@@ -1,4 +1,4 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Application as ApplicationSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
@@ -30,7 +30,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -38,16 +39,12 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { token } = context.get("auth");
 
-        if (!token) {
-            throw new ApiError(401, "Unauthorized");
-        }
-
         const application = await Application.getFromToken(
             token.data.accessToken,
         );
 
         if (!application) {
-            throw new ApiError(401, "Application not found");
+            throw ApiError.applicationNotFound();
         }
 
         return context.json(application.toApi(), 200);

@@ -1,4 +1,4 @@
-import { accountNotFound, apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
@@ -37,8 +37,9 @@ const route = createRoute({
                 },
             },
         },
-        404: accountNotFound,
-        ...reusedResponses,
+        404: ApiError.accountNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -51,7 +52,7 @@ export default apiRoute((app) =>
         const account = await User.fromId(account_id);
 
         if (!account) {
-            throw new ApiError(404, "Account not found");
+            throw ApiError.accountNotFound();
         }
 
         const oppositeRelationship = await Relationship.fromOwnerAndSubject(

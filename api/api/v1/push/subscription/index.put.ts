@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import {
     WebPushSubscriptionInput,
@@ -49,7 +49,8 @@ export default apiRoute((app) =>
                         },
                     },
                 },
-                ...reusedResponses,
+                401: ApiError.missingAuthentication().schema,
+                422: ApiError.validationFailed().schema,
             },
         }),
         async (context) => {
@@ -59,10 +60,7 @@ export default apiRoute((app) =>
             const ps = await PushSubscription.fromToken(token);
 
             if (!ps) {
-                throw new ApiError(
-                    404,
-                    "No push subscription associated with this access token",
-                );
+                throw ApiError.pushSubscriptionNotFound();
             }
 
             if (

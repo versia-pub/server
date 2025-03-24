@@ -4,7 +4,6 @@ import { Role as RoleSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const routeGet = createRoute({
     method: "get",
@@ -60,7 +59,7 @@ const routePost = createRoute({
             description: "Forbidden",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

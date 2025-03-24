@@ -7,7 +7,6 @@ import { type SQL, eq } from "@versia/kit/drizzle";
 import { OpenIdAccounts } from "@versia/kit/tables";
 import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
-import { ErrorSchema } from "~/types/api";
 
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/api/v1/sso", (app) => {
@@ -41,14 +40,7 @@ export default (plugin: PluginType): void => {
                             },
                         },
                     },
-                    404: {
-                        description: "Account not found",
-                        content: {
-                            "application/json": {
-                                schema: ErrorSchema,
-                            },
-                        },
-                    },
+                    404: ApiError.accountNotFound().schema,
                 },
             }),
             async (context) => {
@@ -121,7 +113,7 @@ export default (plugin: PluginType): void => {
                         description: "Account not found",
                         content: {
                             "application/json": {
-                                schema: ErrorSchema,
+                                schema: ApiError.zodSchema,
                             },
                         },
                     },

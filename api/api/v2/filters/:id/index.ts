@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     FilterKeyword as FilterKeywordSchema,
@@ -10,7 +10,6 @@ import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
 import { type SQL, and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const routeGet = createRoute({
     method: "get",
@@ -44,11 +43,11 @@ const routeGet = createRoute({
             description: "Filter not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
     },
 });
 
@@ -125,11 +124,12 @@ const routePut = createRoute({
             description: "Filter not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -161,11 +161,11 @@ const routeDelete = createRoute({
             description: "Filter not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
     },
 });
 

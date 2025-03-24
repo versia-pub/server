@@ -1,10 +1,4 @@
-import {
-    accountNotFound,
-    apiRoute,
-    auth,
-    parseUserAddress,
-    reusedResponses,
-} from "@/api";
+import { apiRoute, auth, parseUserAddress } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
@@ -43,8 +37,8 @@ const route = createRoute({
                 },
             },
         },
-        404: accountNotFound,
-        422: reusedResponses[422],
+        404: ApiError.accountNotFound().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -97,7 +91,7 @@ export default apiRoute((app) =>
         const uri = await User.webFinger(manager, username, domain);
 
         if (!uri) {
-            throw new ApiError(404, "Account not found");
+            throw ApiError.accountNotFound();
         }
 
         const foundAccount = await User.resolve(uri);
@@ -106,6 +100,6 @@ export default apiRoute((app) =>
             return context.json(foundAccount.toApi(), 200);
         }
 
-        throw new ApiError(404, "Account not found");
+        throw ApiError.accountNotFound();
     }),
 );

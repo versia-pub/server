@@ -1,10 +1,4 @@
-import {
-    apiRoute,
-    auth,
-    noteNotFound,
-    reusedResponses,
-    withNoteParam,
-} from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Status as StatusSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
@@ -46,8 +40,8 @@ const route = createRoute({
                 },
             },
         },
-        404: noteNotFound,
-        401: reusedResponses[401],
+        404: ApiError.noteNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
     },
 });
 
@@ -74,7 +68,7 @@ export default apiRoute((app) =>
         const newNote = await Note.fromId(id, user.id);
 
         if (!newNote) {
-            throw new ApiError(404, "Note not found");
+            throw ApiError.noteNotFound();
         }
 
         return context.json(await newNote.toApi(user), 200);

@@ -3,7 +3,6 @@ import { createRoute, z } from "@hono/zod-openapi";
 import { User as UserSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -31,19 +30,12 @@ const route = createRoute({
             description:
                 "Redirect to user profile (for web browsers). Uses user-agent for detection.",
         },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: ApiError.accountNotFound().schema,
         403: {
             description: "Cannot view users from remote instances",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -57,7 +49,7 @@ export default apiRoute((app) =>
         const user = await User.fromId(uuid);
 
         if (!user) {
-            throw new ApiError(404, "User not found");
+            throw ApiError.accountNotFound();
         }
 
         if (user.isRemote()) {

@@ -1,4 +1,4 @@
-import { apiRoute, auth, qsQuery, reusedResponses } from "@/api";
+import { apiRoute, auth, qsQuery } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
@@ -8,6 +8,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { User, db } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "get",
@@ -53,7 +54,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

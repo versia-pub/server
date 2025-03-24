@@ -1,4 +1,4 @@
-import { apiRoute, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
@@ -6,6 +6,7 @@ import {
     CredentialApplication as CredentialApplicationSchema,
 } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "post",
@@ -55,7 +56,7 @@ const route = createRoute({
                 },
             },
         },
-        422: reusedResponses[422],
+        422: ApiError.validationFailed().schema,
     },
 });
 

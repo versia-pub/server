@@ -1,10 +1,9 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Media } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const routePut = createRoute({
     method: "put",
@@ -63,11 +62,12 @@ const routePut = createRoute({
             description: "Attachment not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -105,11 +105,12 @@ const routeGet = createRoute({
             description: "Attachment not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -120,7 +121,7 @@ export default apiRoute((app) => {
         const media = await Media.fromId(id);
 
         if (!media) {
-            throw new ApiError(404, "Media not found");
+            throw ApiError.mediaNotFound();
         }
 
         const { description, thumbnail: thumbnailFile } =
@@ -145,7 +146,7 @@ export default apiRoute((app) => {
         const attachment = await Media.fromId(id);
 
         if (!attachment) {
-            throw new ApiError(404, "Media not found");
+            throw ApiError.mediaNotFound();
         }
 
         return context.json(attachment.toApi(), 200);

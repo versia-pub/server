@@ -1,9 +1,9 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Media } from "@versia/kit/db";
-import { ErrorSchema } from "~/types/api";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "post",
@@ -76,7 +76,7 @@ const route = createRoute({
             description: "Payload too large",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -84,11 +84,12 @@ const route = createRoute({
             description: "Unsupported media type",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

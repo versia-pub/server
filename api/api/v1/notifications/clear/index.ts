@@ -1,6 +1,7 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "post",
@@ -22,7 +23,7 @@ const route = createRoute({
         200: {
             description: "Notifications successfully cleared.",
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
     },
 });
 

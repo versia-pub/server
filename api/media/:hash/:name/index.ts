@@ -1,7 +1,6 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -34,7 +33,7 @@ const route = createRoute({
             description: "File not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

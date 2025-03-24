@@ -1,16 +1,12 @@
-import {
-    accountNotFound,
-    apiRoute,
-    auth,
-    reusedResponses,
-    withUserParam,
-} from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
+
 const route = createRoute({
     method: "get",
     path: "/api/v1/accounts/{id}/following",
@@ -79,8 +75,8 @@ const route = createRoute({
                     }),
             }),
         },
-        404: accountNotFound,
-        422: reusedResponses[422],
+        404: ApiError.accountNotFound().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

@@ -29,13 +29,13 @@ describe("GET /api/v1/statuses/:id", () => {
         expect(raw.status).toBe(404);
     });
 
-    test("should return 401 when trying to delete status that is not yours", async () => {
+    test("should forbid deleting status that is not yours", async () => {
         await using client = await generateClient(users[1]);
 
         const { ok, raw } = await client.deleteStatus(statuses[0].id);
 
         expect(ok).toBe(false);
-        expect(raw.status).toBe(401);
+        expect(raw.status).toBe(403);
     });
 
     test("should delete status", async () => {

@@ -1,4 +1,4 @@
-import { apiRoute, reusedResponses } from "@/api";
+import { apiRoute } from "@/api";
 import { auth, jsonOrForm } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import {
@@ -7,6 +7,7 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
+import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
     app.openapi(
@@ -47,7 +48,8 @@ export default apiRoute((app) =>
                         },
                     },
                 },
-                ...reusedResponses,
+                401: ApiError.missingAuthentication().schema,
+                422: ApiError.validationFailed().schema,
             },
         }),
         async (context) => {

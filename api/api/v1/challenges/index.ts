@@ -4,7 +4,6 @@ import { createRoute } from "@hono/zod-openapi";
 import { Challenge } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "post",
@@ -30,7 +29,7 @@ const route = createRoute({
             description: "Challenges are disabled",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

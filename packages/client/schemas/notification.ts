@@ -55,6 +55,7 @@ export const Notification = z
         event: z.undefined().openapi({
             description:
                 "Versia Server does not sever relationships, so this field is always empty.",
+            type: "null",
         }),
         moderation_warning: AccountWarning.optional().openapi({
             description:

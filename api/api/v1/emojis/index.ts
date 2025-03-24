@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
@@ -73,7 +73,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

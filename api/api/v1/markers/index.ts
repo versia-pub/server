@@ -1,4 +1,4 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Marker as MarkerSchema,
@@ -9,6 +9,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Markers } from "@versia/kit/tables";
 import { type SQL, and, eq } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
 
 const MarkerResponseSchema = z.object({
     notifications: MarkerSchema.optional(),
@@ -52,7 +53,8 @@ const routeGet = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -95,7 +97,8 @@ const routePost = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

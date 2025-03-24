@@ -7,7 +7,6 @@ import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "get",
@@ -32,7 +31,7 @@ const route = createRoute({
                 "Entity not found, is remote, or the requester is not allowed to view it.",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -51,7 +50,7 @@ export default apiRoute((app) =>
         );
 
         if (!(note && (await note.isViewableByUser(null))) || note.isRemote()) {
-            throw new ApiError(404, "Note not found");
+            throw ApiError.noteNotFound();
         }
 
         // If base_url uses https and request uses http, rewrite request to use https

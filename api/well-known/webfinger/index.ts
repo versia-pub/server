@@ -13,7 +13,6 @@ import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     query: z.object({
@@ -46,14 +45,7 @@ const route = createRoute({
                 },
             },
         },
-        404: {
-            description: "User not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: ApiError.accountNotFound().schema,
     },
 });
 
@@ -85,7 +77,7 @@ export default apiRoute((app) =>
         );
 
         if (!user) {
-            throw new ApiError(404, "User not found");
+            throw ApiError.accountNotFound();
         }
 
         let activityPubUrl = "";

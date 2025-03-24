@@ -7,7 +7,6 @@ import {
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const routePost = createRoute({
     method: "post",
@@ -31,22 +30,8 @@ const routePost = createRoute({
         204: {
             description: "Role assigned",
         },
-        404: {
-            description: "Role not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        403: {
-            description: "Forbidden",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: ApiError.roleNotFound().schema,
+        403: ApiError.forbidden().schema,
     },
 });
 
@@ -71,22 +56,8 @@ const routeDelete = createRoute({
         204: {
             description: "Role removed",
         },
-        404: {
-            description: "Role not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
-        403: {
-            description: "Forbidden",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: ApiError.roleNotFound().schema,
+        403: ApiError.forbidden().schema,
     },
 });
 
@@ -99,7 +70,7 @@ export default apiRoute((app) => {
         const role = await Role.fromId(role_id);
 
         if (!role) {
-            throw new ApiError(404, "Role not found");
+            throw ApiError.roleNotFound();
         }
         // Priority check
         const userRoles = await Role.getUserRoles(user.id, user.data.isAdmin);
@@ -129,7 +100,7 @@ export default apiRoute((app) => {
         const role = await Role.fromId(role_id);
 
         if (!role) {
-            throw new ApiError(404, "Role not found");
+            throw ApiError.roleNotFound();
         }
 
         // Priority check

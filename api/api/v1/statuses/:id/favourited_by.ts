@@ -1,10 +1,4 @@
-import {
-    apiRoute,
-    auth,
-    noteNotFound,
-    reusedResponses,
-    withNoteParam,
-} from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
@@ -14,6 +8,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "get",
@@ -81,8 +76,9 @@ const route = createRoute({
                     }),
             }),
         },
-        404: noteNotFound,
-        ...reusedResponses,
+        404: ApiError.noteNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

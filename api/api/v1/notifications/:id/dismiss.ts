@@ -1,4 +1,4 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Notification as NotificationSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
@@ -30,7 +30,8 @@ const route = createRoute({
         200: {
             description: "Notification with given ID successfully dismissed",
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
+        404: ApiError.notificationNotFound().schema,
     },
 });
 
@@ -43,7 +44,7 @@ export default apiRoute((app) =>
         const notification = await Notification.fromId(id);
 
         if (!notification || notification.data.notifiedId !== user.id) {
-            throw new ApiError(404, "Notification not found");
+            throw ApiError.notificationNotFound();
         }
 
         await notification.update({

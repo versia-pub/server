@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     FilterKeyword as FilterKeywordSchema,
@@ -8,6 +8,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
 import type { SQL } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
 
 const routeGet = createRoute({
     method: "get",
@@ -34,7 +35,7 @@ const routeGet = createRoute({
                 },
             },
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
     },
 });
 
@@ -94,7 +95,8 @@ const routePost = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

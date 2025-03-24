@@ -1,17 +1,10 @@
-import {
-    apiRoute,
-    auth,
-    jsonOrForm,
-    reusedResponses,
-    withEmojiParam,
-} from "@/api";
+import { apiRoute, auth, jsonOrForm, withEmojiParam } from "@/api";
 import { mimeLookup } from "@/content_types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const schema = z
     .object({
@@ -72,11 +65,12 @@ const routeGet = createRoute({
             description: "Emoji not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -128,7 +122,7 @@ const routePatch = createRoute({
             description: "Insufficient permissions",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -136,11 +130,12 @@ const routePatch = createRoute({
             description: "Emoji not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
@@ -169,14 +164,7 @@ const routeDelete = createRoute({
         204: {
             description: "Emoji deleted",
         },
-        404: {
-            description: "Emoji not found",
-            content: {
-                "application/json": {
-                    schema: ErrorSchema,
-                },
-            },
-        },
+        404: ApiError.emojiNotFound().schema,
     },
 });
 
@@ -190,7 +178,7 @@ export default apiRoute((app) => {
             !user.hasPermission(RolePermission.ManageEmojis) &&
             emoji.data.ownerId !== user.data.id
         ) {
-            throw new ApiError(404, "Emoji not found");
+            throw ApiError.emojiNotFound();
         }
 
         return context.json(emoji.toApi(), 200);

@@ -1,8 +1,8 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import type { Entity } from "@versia/federation/types";
+import { ApiError } from "~/classes/errors/api-error";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -47,7 +47,7 @@ const route = createRoute({
             description: "Bad request",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -55,7 +55,7 @@ const route = createRoute({
             description: "Signature could not be verified",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -63,7 +63,7 @@ const route = createRoute({
             description: "Cannot view users from remote instances",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -71,7 +71,7 @@ const route = createRoute({
             description: "Not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

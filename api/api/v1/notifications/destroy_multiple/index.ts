@@ -1,6 +1,7 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "~/classes/errors/api-error";
 
 const schemas = {
     query: z.object({
@@ -26,7 +27,7 @@ const route = createRoute({
         200: {
             description: "Notifications dismissed",
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
     },
 });
 

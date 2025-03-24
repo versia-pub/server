@@ -1,15 +1,8 @@
-import {
-    accountNotFound,
-    apiRoute,
-    auth,
-    reusedResponses,
-    withUserParam,
-} from "@/api";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "~/classes/errors/api-error";
-import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "post",
@@ -43,12 +36,13 @@ const route = createRoute({
             description: "User is local",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        404: accountNotFound,
-        ...reusedResponses,
+        404: ApiError.accountNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

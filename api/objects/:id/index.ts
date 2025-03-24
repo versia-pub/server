@@ -9,7 +9,7 @@ import { Likes, Notes } from "@versia/kit/tables";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema, type KnownEntity } from "~/types/api";
+import type { KnownEntity } from "~/types/api";
 
 const route = createRoute({
     method: "get",
@@ -33,7 +33,7 @@ const route = createRoute({
             description: "Object not found",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -41,7 +41,7 @@ const route = createRoute({
             description: "Cannot view objects from remote instances",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

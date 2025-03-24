@@ -4,7 +4,6 @@ import { proxy } from "hono/proxy";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const schemas = {
     param: z.object({
@@ -34,7 +33,7 @@ const route = createRoute({
             description: "Invalid URL to proxy",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },

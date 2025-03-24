@@ -1,10 +1,11 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "get",
@@ -30,7 +31,7 @@ const route = createRoute({
                 },
             },
         },
-        422: reusedResponses[422],
+        422: ApiError.validationFailed().schema,
     },
 });
 

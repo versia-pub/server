@@ -1,16 +1,11 @@
-import {
-    apiRoute,
-    auth,
-    noteNotFound,
-    reusedResponses,
-    withNoteParam,
-} from "@/api";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Context as ContextSchema,
     Status as StatusSchema,
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "get",
@@ -42,8 +37,8 @@ const route = createRoute({
                 },
             },
         },
-        404: noteNotFound,
-        401: reusedResponses[401],
+        404: ApiError.noteNotFound().schema,
+        401: ApiError.missingAuthentication().schema,
     },
 });
 

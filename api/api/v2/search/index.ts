@@ -1,10 +1,4 @@
-import {
-    apiRoute,
-    auth,
-    parseUserAddress,
-    reusedResponses,
-    userAddressValidator,
-} from "@/api";
+import { apiRoute, auth, parseUserAddress, userAddressValidator } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
@@ -19,7 +13,6 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
-import { ErrorSchema } from "~/types/api";
 
 const route = createRoute({
     method: "get",
@@ -107,7 +100,7 @@ const route = createRoute({
                 "Cannot use resolve or offset without being authenticated",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
@@ -115,11 +108,11 @@ const route = createRoute({
             description: "Search is not enabled on this server",
             content: {
                 "application/json": {
-                    schema: ErrorSchema,
+                    schema: ApiError.zodSchema,
                 },
             },
         },
-        422: reusedResponses[422],
+        422: ApiError.validationFailed().schema,
     },
 });
 

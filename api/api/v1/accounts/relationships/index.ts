@@ -1,4 +1,4 @@
-import { apiRoute, auth, qsQuery, reusedResponses } from "@/api";
+import { apiRoute, auth, qsQuery } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import {
     Account as AccountSchema,
@@ -7,6 +7,7 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "get",
@@ -57,7 +58,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 

@@ -1,4 +1,4 @@
-import { apiRoute, auth, jsonOrForm, reusedResponses } from "@/api";
+import { apiRoute, auth, jsonOrForm } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { createRoute, z } from "@hono/zod-openapi";
 import { zBoolean } from "@versia/client/schemas";
@@ -76,7 +76,7 @@ const route = createRoute({
         200: {
             description: "Token for the created account",
         },
-        401: reusedResponses[401],
+        401: ApiError.missingAuthentication().schema,
         422: {
             description: "Validation failed",
             content: {

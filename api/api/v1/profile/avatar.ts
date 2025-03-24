@@ -1,7 +1,8 @@
-import { apiRoute, auth, reusedResponses } from "@/api";
+import { apiRoute, auth } from "@/api";
 import { createRoute } from "@hono/zod-openapi";
 import { Account } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "~/classes/errors/api-error";
 
 const route = createRoute({
     method: "delete",
@@ -30,7 +31,8 @@ const route = createRoute({
                 },
             },
         },
-        ...reusedResponses,
+        401: ApiError.missingAuthentication().schema,
+        422: ApiError.validationFailed().schema,
     },
 });
 
