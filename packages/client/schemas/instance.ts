@@ -18,7 +18,7 @@ const InstanceIcon = z
             example: "36x36",
         }),
     })
-    .openapi({
+    .openapi("InstanceIcon", {
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/InstanceIcon",
         },
@@ -375,7 +375,7 @@ export const Instance = z
         /* Versia Server API extension */
         sso: SSOConfig,
     })
-    .openapi({
+    .openapi("Instance", {
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Instance",
         },

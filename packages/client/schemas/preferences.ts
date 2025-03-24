@@ -42,7 +42,7 @@ export const Preferences = z
             },
         }),
     })
-    .openapi({
+    .openapi("Preferences", {
         description: "Represents a user's preferences.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Preferences",

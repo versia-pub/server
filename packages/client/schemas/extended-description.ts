@@ -22,7 +22,7 @@ export const ExtendedDescription = z
             },
         }),
     })
-    .openapi({
+    .openapi("ExtendedDescription", {
         description:
             "Represents an extended description for the instance, to be shown on its about page.",
         externalDocs: {

@@ -15,7 +15,7 @@ export const Search = z
             description: "Hashtags which match the given query",
         }),
     })
-    .openapi({
+    .openapi("Search", {
         description: "Represents the results of a search.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Search",

@@ -17,7 +17,7 @@ export const FamiliarFollowers = z
             },
         }),
     })
-    .openapi({
+    .openapi("FamiliarFollowers", {
         description:
             "Represents a subset of your follows who also follow some other user.",
         externalDocs: {

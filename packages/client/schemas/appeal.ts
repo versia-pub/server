@@ -13,7 +13,7 @@ export const Appeal = z
             example: "pending",
         }),
     })
-    .openapi({
+    .openapi("Appeal", {
         description: "Appeal against a moderation action.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Appeal",

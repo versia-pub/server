@@ -21,7 +21,7 @@ export const PrivacyPolicy = z
             },
         }),
     })
-    .openapi({
+    .openapi("PrivacyPolicy", {
         description: "Represents the privacy policy of the instance.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/PrivacyPolicy",

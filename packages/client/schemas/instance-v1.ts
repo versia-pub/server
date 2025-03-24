@@ -132,7 +132,7 @@ export const InstanceV1 = z
         /* Versia Server API extension */
         sso: SSOConfig,
     })
-    .openapi({
+    .openapi("InstanceV1", {
         description:
             "Represents the software instance of Versia Server running on this domain.",
         externalDocs: {

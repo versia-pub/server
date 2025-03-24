@@ -11,6 +11,6 @@ export const TermsOfService = z
             example: "<p><h1>ToS</h1><p>None, have fun.</p></p>",
         }),
     })
-    .openapi({
+    .openapi("TermsOfService", {
         description: "Represents the ToS of the instance.",
     });

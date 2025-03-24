@@ -50,7 +50,7 @@ export const Report = z
             description: "The account that was reported.",
         }),
     })
-    .openapi({
+    .openapi("Report", {
         description:
             "Reports filed against users and/or statuses, to be taken action on by moderators.",
         externalDocs: {

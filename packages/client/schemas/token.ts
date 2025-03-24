@@ -20,7 +20,7 @@ export const Token = z
             example: 1573979017,
         }),
     })
-    .openapi({
+    .openapi("Token", {
         description:
             "Represents an OAuth token used for authenticating with the API and performing actions.",
         externalDocs: {

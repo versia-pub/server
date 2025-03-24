@@ -24,7 +24,7 @@ export const Tag = z
                 },
             }),
     })
-    .openapi({
+    .openapi("Tag", {
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#Tag",
         },

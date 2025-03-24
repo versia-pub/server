@@ -17,7 +17,7 @@ export const Marker = z
             example: "2025-01-12T13:11:00Z",
         }),
     })
-    .openapi({
+    .openapi("Marker", {
         description:
             "Represents the last read position within a user's timelines.",
         externalDocs: {

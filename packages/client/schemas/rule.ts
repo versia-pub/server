@@ -15,7 +15,7 @@ export const Rule = z
             example: "Please, we beg you.",
         }),
     })
-    .openapi({
+    .openapi("Rule", {
         description: "Represents a rule that server users should follow.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Rule",

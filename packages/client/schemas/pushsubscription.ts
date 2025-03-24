@@ -80,7 +80,7 @@ export const WebPushSubscription = z
             description: "The streaming server’s VAPID key.",
         }),
     })
-    .openapi({});
+    .openapi("WebPushSubscription");
 
 export const WebPushSubscriptionInput = z
     .object({

@@ -1,31 +1,33 @@
 import { z } from "@hono/zod-openapi";
 import { Account } from "./account.ts";
 
-export const PreviewCardAuthor = z.object({
-    name: z.string().openapi({
-        description: "The original resource author’s name.",
-        example: "The Doubleclicks",
-        externalDocs: {
-            url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#name",
-        },
-    }),
-    url: z
-        .string()
-        .url()
-        .openapi({
-            description: "A link to the author of the original resource.",
-            example: "https://www.youtube.com/user/thedoubleclicks",
+export const PreviewCardAuthor = z
+    .object({
+        name: z.string().openapi({
+            description: "The original resource author’s name.",
+            example: "The Doubleclicks",
             externalDocs: {
-                url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#url",
+                url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#name",
             },
         }),
-    account: Account.nullable().openapi({
-        description: "The fediverse account of the author.",
-        externalDocs: {
-            url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#account",
-        },
-    }),
-});
+        url: z
+            .string()
+            .url()
+            .openapi({
+                description: "A link to the author of the original resource.",
+                example: "https://www.youtube.com/user/thedoubleclicks",
+                externalDocs: {
+                    url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#url",
+                },
+            }),
+        account: Account.nullable().openapi({
+            description: "The fediverse account of the author.",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/PreviewCardAuthor/#account",
+            },
+        }),
+    })
+    .openapi("PreviewCardAuthor");
 
 export const PreviewCard = z
     .object({
@@ -150,7 +152,7 @@ export const PreviewCard = z
                 },
             }),
     })
-    .openapi({
+    .openapi("PreviewCard", {
         description:
             "Represents a rich preview card that is generated using OpenGraph tags from a URL.",
         externalDocs: {

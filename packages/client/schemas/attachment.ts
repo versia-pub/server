@@ -67,7 +67,7 @@ export const Attachment = z
             example: "UFBWY:8_0Jxv4mx]t8t64.%M-:IUWGWAt6M}",
         }),
     })
-    .openapi({
+    .openapi("Attachment", {
         description:
             "Represents a file or media attachment that can be added to a status.",
         externalDocs: {

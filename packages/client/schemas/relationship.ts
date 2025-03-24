@@ -65,7 +65,7 @@ export const Relationship = z
             example: "they also like Kerbal Space Program",
         }),
     })
-    .openapi({
+    .openapi("Relationship", {
         description:
             "Represents the relationship between accounts, such as following / blocking / muting / etc.",
         externalDocs: {

@@ -49,7 +49,7 @@ export const AccountWarning = z
             example: "2025-01-04T14:11:00Z",
         }),
     })
-    .openapi({
+    .openapi("AccountWarning", {
         description: "Moderation warning against a particular account.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/AccountWarning",

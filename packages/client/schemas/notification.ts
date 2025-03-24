@@ -62,7 +62,7 @@ export const Notification = z
                 "Moderation warning that caused the notification. Attached when type of the notification is moderation_warning.",
         }),
     })
-    .openapi({
+    .openapi("Notification", {
         description:
             "Represents a notification of an event relevant to the user.",
         externalDocs: {

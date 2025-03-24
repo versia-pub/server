@@ -18,7 +18,7 @@ export const FilterStatus = z
             },
         }),
     })
-    .openapi({
+    .openapi("FilterStatus", {
         description:
             "Represents a status ID that, if matched, should cause the filter action to be taken.",
         externalDocs: {
@@ -51,7 +51,7 @@ export const FilterKeyword = z
             },
         }),
     })
-    .openapi({
+    .openapi("FilterKeyword", {
         description:
             "Represents a keyword that, if matched, should cause the filter action to be taken.",
         externalDocs: {
@@ -133,7 +133,7 @@ export const Filter = z
             },
         }),
     })
-    .openapi({
+    .openapi("Filter", {
         description:
             "Represents a user-defined filter for determining which statuses should not be shown to the user.",
         externalDocs: {
@@ -171,7 +171,7 @@ export const FilterResult = z
                 },
             }),
     })
-    .openapi({
+    .openapi("FilterResult", {
         description:
             "Represents a filter whose keywords matched a given status.",
         externalDocs: {

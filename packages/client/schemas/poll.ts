@@ -31,7 +31,7 @@ export const PollOption = z
                 },
             }),
     })
-    .openapi({
+    .openapi("PollOption", {
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Poll/#Option",
         },
@@ -130,7 +130,7 @@ export const Poll = z
                 },
             }),
     })
-    .openapi({
+    .openapi("Poll", {
         description: "Represents a poll attached to a status.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Poll",

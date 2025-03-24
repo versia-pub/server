@@ -16,7 +16,7 @@ export const Context = z
             },
         }),
     })
-    .openapi({
+    .openapi("Context", {
         description:
             "Represents the tree around a given status. Used for reconstructing threads of statuses.",
         externalDocs: {

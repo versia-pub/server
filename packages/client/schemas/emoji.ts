@@ -87,7 +87,7 @@ export const CustomEmoji = z
                 },
             }),
     })
-    .openapi({
+    .openapi("CustomEmoji", {
         description: "Represents a custom emoji.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/CustomEmoji",

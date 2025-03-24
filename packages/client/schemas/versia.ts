@@ -45,7 +45,7 @@ export const Role = z
             example: "https://example.com/role-icon.png",
         }),
     })
-    .openapi({
+    .openapi("Role", {
         description:
             "Information about a role in the system, as well as its permissions.",
     });
@@ -72,7 +72,7 @@ export const NoteReaction = z
             example: true,
         }),
     })
-    .openapi({
+    .openapi("NoteReaction", {
         description: "Information about a reaction to a note.",
     });
 
@@ -134,6 +134,6 @@ export const Challenge = z
             example: "1234567890",
         }),
     })
-    .openapi({
+    .openapi("Challenge", {
         description: "A cryptographic challenge to solve. Used for Captchas.",
     });

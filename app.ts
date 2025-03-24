@@ -3,10 +3,10 @@ import { handleZodError } from "@/api";
 import { applyToHono } from "@/bull-board.ts";
 import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
-import { swaggerUI } from "@hono/swagger-ui";
 import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
+import { apiReference } from "@scalar/hono-api-reference";
 import { inspect } from "bun";
 import chalk from "chalk";
 import { cors } from "hono/cors";
@@ -148,7 +148,15 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
             contact: pkg.author,
         },
     });
-    app.get("/docs", swaggerUI({ url: "/openapi.json" }));
+    app.get(
+        "/docs",
+        apiReference({
+            theme: "deepSpace",
+            hideClientButton: true,
+            pageTitle: "Versia Server API",
+            url: "/openapi.json",
+        }),
+    );
     applyToHono(app);
 
     app.options("*", (context) => {
