@@ -22,6 +22,7 @@ import { agentBans } from "./middlewares/agent-bans.ts";
 import { boundaryCheck } from "./middlewares/boundary-check.ts";
 import { ipBans } from "./middlewares/ip-bans.ts";
 import { logger } from "./middlewares/logger.ts";
+import { rateLimit } from "./middlewares/rate-limit.ts";
 import { routes } from "./routes.ts";
 import type { ApiRouteExports, HonoEnv } from "./types/api.ts";
 
@@ -86,6 +87,14 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
             await next();
         }),
     );
+
+    // Set default ratelimits to 100 requests per minute
+    app.use("/api/*", rateLimit(100));
+    app.use("/api/v1/media", rateLimit(40));
+    app.use("/api/v1/media/*", rateLimit(40));
+    app.use("/api/v2/media", rateLimit(40));
+    app.use("/api/v1/timelines/*", rateLimit(40));
+    app.use("/api/v1/push/*", rateLimit(10));
 
     /* app.use("*", registerMetrics);
     app.get("/metrics", printMetrics); */

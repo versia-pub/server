@@ -8,6 +8,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import ISO6391 from "iso-639-1";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const schema = z.object({
     username: z.string().openapi({
@@ -55,6 +56,7 @@ const route = createRoute({
             scopes: ["write:accounts"],
             challenge: true,
         }),
+        rateLimit(5),
         jsonOrForm(),
     ] as const,
     request: {

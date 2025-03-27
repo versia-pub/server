@@ -9,6 +9,7 @@ import { User, db } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const route = createRoute({
     method: "get",
@@ -26,6 +27,7 @@ const route = createRoute({
             scopes: ["read:follows"],
             permissions: [RolePermission.ManageOwnFollows],
         }),
+        rateLimit(5),
         qsQuery(),
     ] as const,
     request: {

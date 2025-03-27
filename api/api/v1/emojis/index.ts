@@ -8,6 +8,7 @@ import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+
 const schema = z.object({
     shortcode: CustomEmojiSchema.shape.shortcode,
     element: z

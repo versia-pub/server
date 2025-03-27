@@ -8,6 +8,7 @@ import {
 import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const route = createRoute({
     method: "get",
@@ -20,6 +21,7 @@ const route = createRoute({
     },
     tags: ["Accounts"],
     middleware: [
+        rateLimit(10),
         auth({
             auth: true,
             scopes: ["read:follows"],

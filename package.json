@@ -104,6 +104,7 @@
         "confbox": "^0.2.1",
         "drizzle-orm": "^0.41.0",
         "hono": "^4.7.5",
+        "hono-rate-limiter": "^0.4.2",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.6.0",
         "ip-matching": "^2.1.2",

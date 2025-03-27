@@ -245,7 +245,7 @@ export const checkRouteNeedsChallenge = async (
         .where(eq(Challenges.id, challenge_id));
 };
 
-type HonoEnvWithAuth = HonoEnv & {
+export type HonoEnvWithAuth = HonoEnv & {
     Variables: {
         auth: AuthData & {
             user: NonNullable<AuthData["user"]>;

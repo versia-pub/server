@@ -27,7 +27,10 @@ export class ApiError extends Error {
 
     public static zodSchema = z.object({
         error: z.string(),
-        details: z.string().or(z.record(z.string(), z.string())).optional(),
+        details: z
+            .string()
+            .or(z.record(z.string(), z.string().or(z.number())))
+            .optional(),
     });
 
     public get schema(): ResponseConfig {

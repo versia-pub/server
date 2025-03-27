@@ -7,6 +7,7 @@ import {
 } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
 import { ApiError } from "~/classes/errors/api-error";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const route = createRoute({
     method: "post",
@@ -17,7 +18,7 @@ const route = createRoute({
         url: "https://docs.joinmastodon.org/methods/apps/#create",
     },
     tags: ["Apps"],
-    middleware: [jsonOrForm()],
+    middleware: [jsonOrForm(), rateLimit(4)],
     request: {
         body: {
             content: {

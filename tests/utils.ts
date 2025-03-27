@@ -5,11 +5,14 @@ import { Client as VersiaClient } from "@versia/client";
 import { Note, Token, User, db } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
+import { env } from "bun";
 import { type InferSelectModel, asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
+
+env.DISABLE_RATE_LIMIT = "true";
 await setupDatabase();
 
 if (config.search.enabled) {

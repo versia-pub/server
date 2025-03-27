@@ -7,6 +7,7 @@ import { Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import stringComparison from "string-comparison";
 import { ApiError } from "~/classes/errors/api-error";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 export const route = createRoute({
     method: "get",
@@ -18,6 +19,7 @@ export const route = createRoute({
     },
     tags: ["Accounts"],
     middleware: [
+        rateLimit(5),
         auth({
             auth: false,
             permissions: [RolePermission.Search, RolePermission.ViewAccounts],

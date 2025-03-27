@@ -7,6 +7,7 @@ import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const route = createRoute({
     method: "get",
@@ -19,6 +20,7 @@ const route = createRoute({
             auth: false,
             permissions: [RolePermission.Search],
         }),
+        rateLimit(5),
     ] as const,
     request: {
         query: z.object({

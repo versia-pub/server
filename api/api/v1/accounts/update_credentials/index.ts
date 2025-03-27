@@ -10,6 +10,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { config } from "~/config.ts";
+import { rateLimit } from "~/middlewares/rate-limit";
 
 const route = createRoute({
     method: "patch",
@@ -21,6 +22,7 @@ const route = createRoute({
     },
     tags: ["Accounts"],
     middleware: [
+        rateLimit(5),
         auth({
             auth: true,
             permissions: [RolePermission.ManageOwnAccount],
