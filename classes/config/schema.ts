@@ -1,5 +1,6 @@
+import { cwd } from "node:process";
 import { z } from "@hono/zod-openapi";
-import { type BunFile, file } from "bun";
+import { type BunFile, env, file } from "bun";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
@@ -400,7 +401,7 @@ export const ConfigSchema = z
         }),
         frontend: z.strictObject({
             enabled: z.boolean().default(true),
-            url: url.default("http://localhost:3000"),
+            path: z.string().default(env.VERSIA_FRONTEND_PATH || cwd()),
             routes: z.strictObject({
                 home: urlPath.default("/"),
                 login: urlPath.default("/oauth/authorize"),

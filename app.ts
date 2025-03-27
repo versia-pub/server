@@ -9,6 +9,7 @@ import { getLogger } from "@logtape/logtape";
 import { apiReference } from "@scalar/hono-api-reference";
 import { inspect } from "bun";
 import chalk from "chalk";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { prettyJSON } from "hono/pretty-json";
@@ -163,49 +164,20 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         return context.body(null, 204);
     });
 
-    app.all("*", async (context) => {
-        const replacedUrl = new URL(
-            new URL(context.req.url).pathname,
-            config.frontend.url,
-        ).toString();
-
-        serverLogger.debug`Proxying ${replacedUrl}`;
-
-        const proxy = await fetch(replacedUrl, {
-            headers: {
-                // Include for SSR
-                "X-Forwarded-Host": `${config.http.bind}:${config.http.bind_port}`,
-                "Accept-Encoding": "identity",
-            },
-            redirect: "manual",
-        }).catch((e) => {
-            serverLogger.error`${e}`;
-            sentry?.captureException(e);
-            serverLogger.error`The Frontend is not running or the route is not found: ${replacedUrl}`;
-            return null;
-        });
-
-        proxy?.headers.set("Cache-Control", "max-age=31536000");
-
-        if (!proxy || proxy.status === 404) {
-            throw new ApiError(
-                404,
-                "Route not found on proxy or API route. Are you using the correct HTTP method?",
-            );
-        }
-
-        // Disable CSP upgrade-insecure-requests if an .onion domain is used
-        if (new URL(context.req.url).hostname.endsWith(".onion")) {
-            proxy.headers.set(
-                "Content-Security-Policy",
-                proxy.headers
-                    .get("Content-Security-Policy")
-                    ?.replace("upgrade-insecure-requests;", "") ?? "",
-            );
-        }
-
-        return proxy;
-    });
+    app.all(
+        "*",
+        serveStatic({
+            root: config.frontend.path,
+        }),
+    );
+    // Fallback for SPAs, in case we've hit a route that is client-side
+    app.all(
+        "*",
+        serveStatic({
+            root: config.frontend.path,
+            path: "index.html",
+        }),
+    );
 
     app.onError((error, c) => {
         if (error instanceof ApiError) {

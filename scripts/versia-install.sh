@@ -37,7 +37,7 @@ error() {
 # Check for required commands
 check_requirements() {
     local required_commands=("docker" "docker-compose" "curl" "mkcert")
-    
+
     for cmd in "${required_commands[@]}"; do
         if ! command -v "$cmd" >/dev/null 2>&1; then
             error "$cmd is required but not installed. Please install it first."
@@ -54,14 +54,14 @@ setup_directories() {
 # Generate SSL certificates using mkcert
 setup_ssl() {
     log "Setting up SSL certificates..."
-    
+
     # Initialize mkcert if not already done
     mkcert -install
-    
+
     # Generate certificates for the domain
     cd "${INSTALL_DIR}"
     mkcert "${DOMAIN}"
-    
+
     # Create nginx config directory if it doesn't exist
     mkdir -p "${INSTALL_DIR}/nginx"
 }
@@ -69,10 +69,10 @@ setup_ssl() {
 # Download necessary files
 download_files() {
     log "Downloading configuration files..."
-    
+
     # Download docker-compose.yml
     curl -sSL "https://raw.githubusercontent.com/versia-pub/server/${VERSION}/docker-compose.yml" -o "${COMPOSE_FILE}"
-    
+
     # Download config.example.toml
     curl -sSL "https://raw.githubusercontent.com/versia-pub/server/${VERSION}/config/config.example.toml" -o "${INSTALL_DIR}/config/config.example.toml"
 }
@@ -86,7 +86,7 @@ generate_passwords() {
 # Configure Versia config.toml
 configure_config_file() {
     log "Configuring config.toml..."
-    
+
     cat > "${CONFIG_FILE}" << EOF
 [database]
 host = "db"
@@ -176,7 +176,7 @@ cert = "/app/dist/config/${DOMAIN}.pem"
 
 [frontend]
 enabled = true
-url = "http://fe:3000"
+path = "/app/dist/frontend"
 
 [media]
 backend = "local"
@@ -293,7 +293,7 @@ services:
     restart: unless-stopped
     networks:
       - ${CONTAINER_PREFIX}-net
-      
+
 networks:
   ${CONTAINER_PREFIX}-net:
 EOF
@@ -303,7 +303,7 @@ EOF
 create_user() {
     local username="$1"
     local password="$2"
-    
+
     log "Creating user: ${username}"
     # Set the password using a heredoc to provide input
     docker exec -i "${CONTAINER_NAMES[0]}" /bin/sh /app/entrypoint.sh cli user create "${username}" --password "${password}"
@@ -312,13 +312,13 @@ create_user() {
 # Configure the services
 configure_services() {
     log "Configuring services..."
-    
+
     # Configure config.toml
     configure_config_file
-    
+
     # Create new docker-compose.yml with our modifications
     create_docker_compose
-    
+
     # Copy SSL certificates to config directory
     cp "${INSTALL_DIR}/${DOMAIN}.pem" "${INSTALL_DIR}/config/"
     cp "${INSTALL_DIR}/${DOMAIN}-key.pem" "${INSTALL_DIR}/config/"
@@ -343,27 +343,27 @@ handle_interrupt() {
 # Main installation function
 install_versia() {
     log "Starting Versia installation..."
-    
+
     check_requirements
     setup_directories
     generate_passwords
     download_files
     setup_ssl
     configure_services
-    
+
     # Start the services
     log "Starting Versia services..."
     cd "${INSTALL_DIR}"
     docker-compose up -d
-    
+
     # Wait for services to be ready
     sleep 5
-    
+
     # Create a default test user
     TEST_USER="testuser_${RANDOM_SUFFIX}"
     TEST_PASSWORD=$(openssl rand -base64 12)
     create_user "${TEST_USER}" "${TEST_PASSWORD}"
-    
+
     log "Installation complete! Versia is now available at https://${DOMAIN}:${PORT}"
     log "Installation Details:"
     log "---------------------"
@@ -383,10 +383,10 @@ install_versia() {
     log "docker-compose exec -it ${CONTAINER_NAMES[0]} /bin/sh /app/entrypoint.sh cli user create <username> --set-password"
     log "---------------------"
     log "Press Ctrl+C to stop and cleanup the installation"
-    
+
     # Set up interrupt handler
     trap handle_interrupt SIGINT
-    
+
     # Wait indefinitely
     while true; do
         sleep 1

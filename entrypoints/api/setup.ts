@@ -13,7 +13,7 @@ await configureLoggers();
 const serverLogger = getLogger("server");
 
 console.info(`
-██╗   ██╗███████╗██████╗ ███████╗██╗ █████╗ 
+██╗   ██╗███████╗██████╗ ███████╗██╗ █████╗
 ██║   ██║██╔════╝██╔══██╗██╔════╝██║██╔══██╗
 ██║   ██║█████╗  ██████╔╝███████╗██║███████║
 ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██║██╔══██║
@@ -35,20 +35,6 @@ const postCount = await Note.getCount();
 serverLogger.info`Versia Server started at ${config.http.bind}:${config.http.bind_port} in ${(performance.now() - timeAtStart).toFixed(0)}ms`;
 
 serverLogger.info`Database is online, now serving ${postCount} posts`;
-
-if (config.frontend.enabled) {
-    // Check if frontend is reachable
-    const response = await fetch(new URL("/", config.frontend.url))
-        .then((res) => res.ok)
-        .catch(() => false);
-
-    if (!response) {
-        serverLogger.error`Frontend is unreachable at ${config.frontend.url}`;
-        serverLogger.error`Please ensure the frontend is online and reachable`;
-    }
-} else {
-    serverLogger.warn`Frontend is disabled, skipping check`;
-}
 
 // Check if Redis is reachable
 const connection = new IORedis({

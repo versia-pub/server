@@ -75,7 +75,7 @@ banned_user_agents = [
 
 # URL to an eventual HTTP proxy
 # Will be used for all outgoing requests
-# proxy_address = "http://localhost:8118" 
+# proxy_address = "http://localhost:8118"
 
 # TLS configuration. You should probably be using a reverse proxy instead of this
 # [http.tls]
@@ -89,8 +89,11 @@ banned_user_agents = [
 # Enable custom frontends (warning: not enabling this will make Versia Server only accessible via the Mastodon API)
 # Frontends also control the OpenID flow, so if you disable this, you will need to use the Mastodon frontend
 enabled = true
-# The URL to reach the frontend at (should be on a local network)
-url = "http://localhost:3000"
+# Path that frontend files are served from
+# Edit this property to serve custom frontends
+# If this is not set, Versia Server will also check
+# the VERSIA_FRONTEND_PATH environment variable
+# path = ""
 
 [frontend.routes]
 # Special routes for your frontend, below are the defaults for Versia-FE
@@ -328,7 +331,7 @@ remove_after_failure_seconds = 31536000
 # Time in seconds to remove completed jobs
 remove_after_complete_seconds = 31536000
 # Time in seconds to remove failed jobs
-remove_after_failure_seconds = 31536000 
+remove_after_failure_seconds = 31536000
 
 [federation]
 # This is a list of domain names, such as "mastodon.social" or "pleroma.site"
