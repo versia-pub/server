@@ -1,11 +1,18 @@
 import cluster from "node:cluster";
 import { sentry } from "@/sentry";
 import { createServer } from "@/server";
+import { Youch } from "youch";
 import { appFactory } from "~/app";
 import { config } from "~/config.ts";
 
 process.on("SIGINT", () => {
     process.exit();
+});
+
+process.on("uncaughtException", async (error) => {
+    const youch = new Youch();
+
+    console.error(await youch.toANSI(error));
 });
 
 if (cluster.isPrimary) {

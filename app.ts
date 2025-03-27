@@ -7,13 +7,13 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
 import { apiReference } from "@scalar/hono-api-reference";
-import { inspect } from "bun";
 import chalk from "chalk";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
+import { Youch } from "youch";
 import { config } from "~/config.ts";
 import pkg from "~/package.json" with { type: "application/json" };
 import { ApiError } from "./classes/errors/api-error.ts";
@@ -179,7 +179,7 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         }),
     );
 
-    app.onError((error, c) => {
+    app.onError(async (error, c) => {
         if (error instanceof ApiError) {
             return c.json(
                 {
@@ -190,8 +190,9 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
             );
         }
 
-        serverLogger.error`${error}`;
-        serverLogger.error`${inspect(error)}`;
+        const youch = new Youch();
+        console.error(await youch.toANSI(error));
+
         sentry?.captureException(error);
         return c.json(
             {
