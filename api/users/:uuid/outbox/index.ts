@@ -27,6 +27,7 @@ const route = createRoute({
         params: schemas.param,
         query: schemas.query,
     },
+    tags: ["Federation"],
     responses: {
         200: {
             description: "User outbox",

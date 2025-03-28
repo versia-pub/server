@@ -21,6 +21,7 @@ const route = createRoute({
     method: "post",
     path: "/inbox",
     summary: "Instance federation inbox",
+    tags: ["Federation"],
     request: {
         headers: schemas.header,
         body: {

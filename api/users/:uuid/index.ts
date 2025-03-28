@@ -17,6 +17,7 @@ const route = createRoute({
     request: {
         params: schemas.param,
     },
+    tags: ["Federation"],
     responses: {
         200: {
             description: "User data",

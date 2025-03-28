@@ -1,29 +1,29 @@
 import { apiRoute } from "@/api";
 import { createRoute, z } from "@hono/zod-openapi";
 import { Status as StatusSchema } from "@versia/client/schemas";
-import { Note as NoteSchema } from "@versia/federation/schemas";
-import { Note } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
-import { and, eq, inArray } from "drizzle-orm";
+import { LikeExtension as LikeSchema } from "@versia/federation/schemas";
+import { Like, User } from "@versia/kit/db";
+import { Likes } from "@versia/kit/tables";
+import { and, eq, sql } from "drizzle-orm";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 
 const route = createRoute({
     method: "get",
-    path: "/notes/{id}",
-    summary: "Retrieve the Versia representation of a note.",
-    tags: ["Federation"],
+    path: "/likes/{id}",
+    summary: "Retrieve the Versia representation of a like.",
     request: {
         params: z.object({
             id: StatusSchema.shape.id,
         }),
     },
+    tags: ["Federation"],
     responses: {
         200: {
-            description: "Note",
+            description: "Like",
             content: {
                 "application/json": {
-                    schema: NoteSchema,
+                    schema: LikeSchema,
                 },
             },
         },
@@ -43,15 +43,23 @@ export default apiRoute((app) =>
     app.openapi(route, async (context) => {
         const { id } = context.req.valid("param");
 
-        const note = await Note.fromSql(
+        // Don't fetch a like of a note that is not public or unlisted
+        // prevents leaking the existence of a private note
+        const like = await Like.fromSql(
             and(
-                eq(Notes.id, id),
-                inArray(Notes.visibility, ["public", "unlisted"]),
+                eq(Likes.id, id),
+                sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."id" = ${Likes.likedId} AND "Notes"."visibility" IN ('public', 'unlisted'))`,
             ),
         );
 
-        if (!(note && (await note.isViewableByUser(null))) || note.isRemote()) {
-            throw ApiError.noteNotFound();
+        if (!like) {
+            throw ApiError.likeNotFound();
+        }
+
+        const liker = await User.fromId(like.data.likerId);
+
+        if (!liker || liker.isRemote()) {
+            throw ApiError.accountNotFound();
         }
 
         // If base_url uses https and request uses http, rewrite request to use https
@@ -64,12 +72,8 @@ export default apiRoute((app) =>
             reqUrl.protocol = "https:";
         }
 
-        const { headers } = await note.author.sign(
-            note.toVersia(),
-            reqUrl,
-            "GET",
-        );
+        const { headers } = await liker.sign(like.toVersia(), reqUrl, "GET");
 
-        return context.json(note.toVersia(), 200, headers.toJSON());
+        return context.json(like.toVersia(), 200, headers.toJSON());
     }),
 );

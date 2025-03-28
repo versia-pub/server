@@ -8,6 +8,7 @@ const route = createRoute({
     path: "/messaging",
     summary: "Endpoint for the Instance Messaging Versia Extension.",
     description: "https://versia.pub/extensions/instance-messaging.",
+    tags: ["Federation"],
     request: {
         body: {
             content: {

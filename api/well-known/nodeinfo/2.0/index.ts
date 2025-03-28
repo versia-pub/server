@@ -8,6 +8,7 @@ const route = createRoute({
     method: "get",
     path: "/.well-known/nodeinfo/2.0",
     summary: "Well-known nodeinfo 2.0",
+    tags: ["Federation"],
     responses: {
         200: {
             description: "Nodeinfo 2.0",

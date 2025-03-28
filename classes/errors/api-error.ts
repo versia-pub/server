@@ -100,6 +100,14 @@ export class ApiError extends Error {
         );
     }
 
+    public static likeNotFound(): ApiError {
+        return new ApiError(
+            404,
+            "Like not found",
+            "The requested like could not be found.",
+        );
+    }
+
     public static pushSubscriptionNotFound(): ApiError {
         return new ApiError(
             404,

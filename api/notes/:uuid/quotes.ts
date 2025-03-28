@@ -13,6 +13,7 @@ const route = createRoute({
     method: "get",
     path: "/notes/{id}/quotes",
     summary: "Retrieve all quotes of a Versia Note.",
+    tags: ["Federation"],
     request: {
         params: z.object({
             id: StatusSchema.shape.id,

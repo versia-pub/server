@@ -146,7 +146,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
     }
 
     public getUri(): URL {
-        return new URL(`/objects/${this.data.id}`, config.http.base_url);
+        return new URL(`/likes/${this.data.id}`, config.http.base_url);
     }
 
     public toVersia(): LikeExtension {

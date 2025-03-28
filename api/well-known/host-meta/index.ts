@@ -6,6 +6,7 @@ const route = createRoute({
     method: "get",
     path: "/.well-known/host-meta",
     summary: "Well-known host-meta",
+    tags: ["Federation"],
     responses: {
         200: {
             description: "Host-meta",

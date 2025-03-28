@@ -12,6 +12,7 @@ const route = createRoute({
     method: "get",
     path: "/.well-known/versia",
     summary: "Get instance metadata",
+    tags: ["Federation"],
     responses: {
         200: {
             description: "Instance metadata",
