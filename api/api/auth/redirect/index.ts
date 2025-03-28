@@ -19,6 +19,7 @@ const route = createRoute({
     summary: "OAuth Code flow",
     description:
         "Redirects to the application, or back to login if the code is invalid",
+    tags: ["OpenID"],
     responses: {
         302: {
             description:

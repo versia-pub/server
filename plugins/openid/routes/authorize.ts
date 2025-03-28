@@ -69,6 +69,7 @@ export default (plugin: PluginType): void =>
             {
                 method: "post",
                 path: "/oauth/authorize",
+                tags: ["OpenID"],
                 middleware: [
                     auth({
                         auth: false,

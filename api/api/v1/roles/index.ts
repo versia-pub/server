@@ -9,6 +9,7 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/roles",
     summary: "Get all roles",
+    tags: ["Roles"],
     middleware: [
         auth({
             auth: true,
@@ -30,6 +31,7 @@ const routePost = createRoute({
     method: "post",
     path: "/api/v1/roles",
     summary: "Create a new role",
+    tags: ["Roles"],
     middleware: [
         auth({
             auth: true,

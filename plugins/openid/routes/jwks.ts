@@ -10,6 +10,7 @@ export default (plugin: PluginType): void => {
                 method: "get",
                 path: "/.well-known/jwks",
                 summary: "JWK Set",
+                tags: ["OpenID"],
                 responses: {
                     200: {
                         description: "JWK Set",

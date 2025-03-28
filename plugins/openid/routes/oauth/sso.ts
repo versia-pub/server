@@ -27,6 +27,7 @@ export default (plugin: PluginType): void => {
                 method: "get",
                 path: "/oauth/sso",
                 summary: "Initiate SSO login flow",
+                tags: ["OpenID"],
                 request: {
                     query: schemas.query,
                 },

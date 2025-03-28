@@ -9,6 +9,7 @@ const routeGet = createRoute({
     method: "get",
     path: "/api/v1/roles/{id}",
     summary: "Get role data",
+    tags: ["Roles"],
     middleware: [
         auth({
             auth: true,
@@ -37,6 +38,7 @@ const routePatch = createRoute({
     method: "patch",
     path: "/api/v1/roles/{id}",
     summary: "Update role data",
+    tags: ["Roles"],
     middleware: [
         auth({
             auth: true,
@@ -68,6 +70,7 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/roles/{id}",
     summary: "Delete role",
+    tags: ["Roles"],
     middleware: [
         auth({
             auth: true,

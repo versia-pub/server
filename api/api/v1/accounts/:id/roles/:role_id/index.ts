@@ -39,6 +39,7 @@ const routeDelete = createRoute({
     method: "delete",
     path: "/api/v1/accounts/{id}/roles/{role_id}",
     summary: "Remove role from user",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: true,

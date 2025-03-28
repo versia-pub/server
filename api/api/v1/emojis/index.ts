@@ -40,6 +40,7 @@ const route = createRoute({
     path: "/api/v1/emojis",
     summary: "Upload emoji",
     description: "Upload a new emoji to the server.",
+    tags: ["Emojis"],
     middleware: [
         auth({
             auth: true,

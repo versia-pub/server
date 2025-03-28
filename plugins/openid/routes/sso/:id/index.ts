@@ -15,6 +15,7 @@ export default (plugin: PluginType): void => {
                 method: "get",
                 path: "/api/v1/sso/{id}",
                 summary: "Get linked account",
+                tags: ["SSO"],
                 middleware: [
                     auth({
                         auth: true,
@@ -93,6 +94,7 @@ export default (plugin: PluginType): void => {
                 method: "delete",
                 path: "/api/v1/sso/{id}",
                 summary: "Unlink account",
+                tags: ["SSO"],
                 middleware: [
                     auth({
                         auth: true,

@@ -19,6 +19,7 @@ const route = createRoute({
     externalDocs: {
         url: "https://docs.joinmastodon.org/methods/notifications/#get",
     },
+    tags: ["Notifications"],
     middleware: [
         auth({
             auth: true,

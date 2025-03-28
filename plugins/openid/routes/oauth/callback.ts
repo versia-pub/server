@@ -33,6 +33,7 @@ export default (plugin: PluginType): void => {
                 method: "get",
                 path: "/oauth/sso/{issuer}/callback",
                 summary: "SSO callback",
+                tags: ["OpenID"],
                 description:
                     "After the user has authenticated to an external OpenID provider, they are redirected here to complete the OAuth flow and get a code",
                 middleware: [plugin.middleware] as const,

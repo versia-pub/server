@@ -6,6 +6,7 @@ const route = createRoute({
     method: "get",
     path: "/.well-known/openid-configuration",
     summary: "OpenID Configuration",
+    tags: ["OpenID"],
     responses: {
         200: {
             description: "OpenID Configuration",

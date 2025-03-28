@@ -15,6 +15,7 @@ const route = createRoute({
     summary: "Lookup account ID from Webfinger address",
     description:
         "Quickly lookup a username to see if it is available, skipping WebFinger resolution.",
+    tags: ["Accounts"],
     middleware: [
         auth({
             auth: false,

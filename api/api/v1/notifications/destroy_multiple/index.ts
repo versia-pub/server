@@ -13,6 +13,7 @@ const route = createRoute({
     method: "delete",
     path: "/api/v1/notifications/destroy_multiple",
     summary: "Dismiss multiple notifications",
+    tags: ["Notifications"],
     middleware: [
         auth({
             auth: true,

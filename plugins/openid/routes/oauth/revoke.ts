@@ -20,6 +20,7 @@ export default (plugin: PluginType): void => {
                 method: "post",
                 path: "/oauth/revoke",
                 summary: "Revoke token",
+                tags: ["OpenID"],
                 middleware: [jsonOrForm(), plugin.middleware],
                 request: {
                     body: {

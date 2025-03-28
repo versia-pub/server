@@ -45,6 +45,7 @@ export default (plugin: PluginType): void => {
                 method: "post",
                 path: "/oauth/token",
                 summary: "Get token",
+                tags: ["OpenID"],
                 middleware: [jsonOrForm(), plugin.middleware],
                 request: {
                     body: {
