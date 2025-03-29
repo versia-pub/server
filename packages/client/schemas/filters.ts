@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Id, zBoolean } from "./common.ts";
 
 export const FilterStatus = z
@@ -18,12 +18,13 @@ export const FilterStatus = z
             },
         }),
     })
-    .openapi("FilterStatus", {
+    .openapi({
         description:
             "Represents a status ID that, if matched, should cause the filter action to be taken.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/FilterStatus",
         },
+        ref: "FilterStatus",
     });
 
 export const FilterKeyword = z
@@ -51,12 +52,13 @@ export const FilterKeyword = z
             },
         }),
     })
-    .openapi("FilterKeyword", {
+    .openapi({
         description:
             "Represents a keyword that, if matched, should cause the filter action to be taken.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/FilterKeyword",
         },
+        ref: "FilterKeyword",
     });
 
 export const Filter = z
@@ -133,12 +135,13 @@ export const Filter = z
             },
         }),
     })
-    .openapi("Filter", {
+    .openapi({
         description:
             "Represents a user-defined filter for determining which statuses should not be shown to the user.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Filter",
         },
+        ref: "Filter",
     });
 
 export const FilterResult = z
@@ -171,10 +174,11 @@ export const FilterResult = z
                 },
             }),
     })
-    .openapi("FilterResult", {
+    .openapi({
         description:
             "Represents a filter whose keywords matched a given status.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/FilterResult",
         },
+        ref: "FilterResult",
     });

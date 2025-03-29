@@ -1,9 +1,9 @@
 import { cwd } from "node:process";
-import { z } from "@hono/zod-openapi";
 import { type BunFile, env, file } from "bun";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
+import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { RolePermission } from "~/packages/client/schemas/permissions.ts";

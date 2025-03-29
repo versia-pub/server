@@ -1,48 +1,25 @@
-import { jsonOrForm } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { handleZodError, jsonOrForm } from "@/api";
 import { Token, db } from "@versia/kit/db";
 import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import type { PluginType } from "../../index.ts";
-
-const schemas = {
-    json: z.object({
-        client_id: z.string(),
-        client_secret: z.string(),
-        token: z.string().optional(),
-    }),
-};
 
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/revoke", (app) => {
-        app.openapi(
-            createRoute({
-                method: "post",
-                path: "/oauth/revoke",
+        app.post(
+            "/oauth/revoke",
+            describeRoute({
                 summary: "Revoke token",
                 tags: ["OpenID"],
-                middleware: [jsonOrForm(), plugin.middleware],
-                request: {
-                    body: {
-                        content: {
-                            "application/json": {
-                                schema: schemas.json,
-                            },
-                            "application/x-www-form-urlencoded": {
-                                schema: schemas.json,
-                            },
-                            "multipart/form-data": {
-                                schema: schemas.json,
-                            },
-                        },
-                    },
-                },
                 responses: {
                     200: {
                         description: "Token deleted",
                         content: {
                             "application/json": {
-                                schema: z.object({}),
+                                schema: resolver(z.object({})),
                             },
                         },
                     },
@@ -50,15 +27,28 @@ export default (plugin: PluginType): void => {
                         description: "Authorization error",
                         content: {
                             "application/json": {
-                                schema: z.object({
-                                    error: z.string(),
-                                    error_description: z.string(),
-                                }),
+                                schema: resolver(
+                                    z.object({
+                                        error: z.string(),
+                                        error_description: z.string(),
+                                    }),
+                                ),
                             },
                         },
                     },
                 },
             }),
+            jsonOrForm(),
+            plugin.middleware,
+            validator(
+                "json",
+                z.object({
+                    client_id: z.string(),
+                    client_secret: z.string(),
+                    token: z.string().optional(),
+                }),
+                handleZodError,
+            ),
             async (context) => {
                 const { client_id, client_secret, token } =
                     context.req.valid("json");

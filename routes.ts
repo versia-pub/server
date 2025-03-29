@@ -9,6 +9,8 @@ export const routeMatcher = new Bun.FileSystemRouter({
 export const routes = Object.fromEntries(
     Object.entries(routeMatcher.routes)
         .filter(([route]) => !route.endsWith(".test"))
-        .map(([route, path]) => [route, path.replace(join(process.cwd()), ".")])
-        .reverse(),
+        .map(([route, path]) => [
+            route,
+            path.replace(join(process.cwd()), "."),
+        ]),
 ) as Record<string, string>;

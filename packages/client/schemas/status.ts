@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
@@ -42,10 +42,11 @@ export const Mention = z
             },
         }),
     })
-    .openapi("Mention", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#Mention",
         },
+        ref: "Mention",
     });
 
 export const StatusSource = z
@@ -75,10 +76,11 @@ export const StatusSource = z
             example: "",
         }),
     })
-    .openapi("StatusSource", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/StatusSource",
         },
+        ref: "StatusSource",
     });
 
 // Because Status has some recursive references, we need to define it like this
@@ -356,7 +358,9 @@ const BaseStatus = z
                 },
             }),
     })
-    .openapi("BaseStatus");
+    .openapi({
+        ref: "BaseStatus",
+    });
 
 export const Status = BaseStatus.extend({
     reblog: BaseStatus.nullable().openapi({
@@ -366,7 +370,9 @@ export const Status = BaseStatus.extend({
         },
     }),
     quote: BaseStatus.nullable(),
-}).openapi("Status");
+}).openapi({
+    ref: "Status",
+});
 
 export const ScheduledStatus = z
     .object({
@@ -414,4 +420,6 @@ export const ScheduledStatus = z
             }),
         }),
     })
-    .openapi("ScheduledStatus");
+    .openapi({
+        ref: "ScheduledStatus",
+    });

@@ -1,25 +1,29 @@
 import { apiRoute } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
 import { config } from "~/config.ts";
 
-const route = createRoute({
-    method: "get",
-    path: "/api/v1/frontend/config",
-    summary: "Get frontend config",
-    responses: {
-        200: {
-            description: "Frontend config",
-            content: {
-                "application/json": {
-                    schema: z.record(z.string(), z.any()).default({}),
+export default apiRoute((app) =>
+    app.get(
+        "/api/v1/frontend/config",
+        describeRoute({
+            summary: "Get frontend config",
+            responses: {
+                200: {
+                    description: "Frontend config",
+                    content: {
+                        "application/json": {
+                            schema: resolver(
+                                z.record(z.string(), z.any()).default({}),
+                            ),
+                        },
+                    },
                 },
             },
+        }),
+        (context) => {
+            return context.json(config.frontend.settings, 200);
         },
-    },
-});
-
-export default apiRoute((app) =>
-    app.openapi(route, (context) => {
-        return context.json(config.frontend.settings, 200);
-    }),
+    ),
 );

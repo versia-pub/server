@@ -1,5 +1,4 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { MiddlewareHandler } from "hono";
+import type { Hono, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { z } from "zod";
 import { type ZodError, fromZodError } from "zod-validation-error";
@@ -17,7 +16,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
     private store: z.infer<ConfigSchema> | null = null;
     private routes: {
         path: string;
-        fn: (app: OpenAPIHono<HonoPluginEnv<ConfigSchema>>) => void;
+        fn: (app: Hono<HonoPluginEnv<ConfigSchema>>) => void;
     }[] = [];
 
     public constructor(private configSchema: ConfigSchema) {}
@@ -34,7 +33,7 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
 
     public registerRoute(
         path: string,
-        fn: (app: OpenAPIHono<HonoPluginEnv<ConfigSchema>>) => void,
+        fn: (app: Hono<HonoPluginEnv<ConfigSchema>>) => void,
     ): void {
         this.routes.push({
             path,
@@ -55,12 +54,10 @@ export class Plugin<ConfigSchema extends z.ZodTypeAny> {
         }
     }
 
-    protected _addToApp(app: OpenAPIHono<HonoEnv>): void {
+    protected _addToApp(app: Hono<HonoEnv>): void {
         for (const route of this.routes) {
             app.use(route.path, this.middleware);
-            route.fn(
-                app as unknown as OpenAPIHono<HonoPluginEnv<ConfigSchema>>,
-            );
+            route.fn(app as unknown as Hono<HonoPluginEnv<ConfigSchema>>);
         }
     }
 

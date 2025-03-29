@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Id } from "./common.ts";
 
 export const Marker = z
@@ -17,10 +17,11 @@ export const Marker = z
             example: "2025-01-12T13:11:00Z",
         }),
     })
-    .openapi("Marker", {
+    .openapi({
         description:
             "Represents the last read position within a user's timelines.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Marker",
         },
+        ref: "Marker",
     });

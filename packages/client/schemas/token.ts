@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const Token = z
     .object({
@@ -20,10 +20,11 @@ export const Token = z
             example: 1573979017,
         }),
     })
-    .openapi("Token", {
+    .openapi({
         description:
             "Represents an OAuth token used for authenticating with the API and performing actions.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Token",
         },
+        ref: "Token",
     });

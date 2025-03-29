@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const TermsOfService = z
     .object({
@@ -11,6 +11,7 @@ export const TermsOfService = z
             example: "<p><h1>ToS</h1><p>None, have fun.</p></p>",
         }),
     })
-    .openapi("TermsOfService", {
+    .openapi({
         description: "Represents the ToS of the instance.",
+        ref: "TermsOfService",
     });

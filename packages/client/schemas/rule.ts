@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const Rule = z
     .object({
@@ -15,9 +15,10 @@ export const Rule = z
             example: "Please, we beg you.",
         }),
     })
-    .openapi("Rule", {
+    .openapi({
         description: "Represents a rule that server users should follow.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Rule",
         },
+        ref: "Rule",
     });

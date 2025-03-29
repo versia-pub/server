@@ -1,7 +1,7 @@
-import type { z } from "@hono/zod-openapi";
 import { env } from "bun";
 import type { MiddlewareHandler } from "hono";
 import { rateLimiter } from "hono-rate-limiter";
+import type { z } from "zod";
 import type { ApiError } from "~/classes/errors/api-error";
 import type { HonoEnv } from "~/types/api";
 

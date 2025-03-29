@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { AccountWarning } from "./account-warning.ts";
 import { Account } from "./account.ts";
 import { Id } from "./common.ts";
@@ -62,10 +62,11 @@ export const Notification = z
                 "Moderation warning that caused the notification. Attached when type of the notification is moderation_warning.",
         }),
     })
-    .openapi("Notification", {
+    .openapi({
         description:
             "Represents a notification of an event relevant to the user.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Notification",
         },
+        ref: "Notification",
     });

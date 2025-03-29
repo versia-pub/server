@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Id } from "./common.ts";
 
 export const WebPushSubscription = z
@@ -80,7 +80,7 @@ export const WebPushSubscription = z
             description: "The streaming server’s VAPID key.",
         }),
     })
-    .openapi("WebPushSubscription");
+    .openapi({ ref: "WebPushSubscription" });
 
 export const WebPushSubscriptionInput = z
     .object({

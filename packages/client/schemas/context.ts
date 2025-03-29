@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Status } from "./status.ts";
 
 export const Context = z
@@ -16,10 +16,11 @@ export const Context = z
             },
         }),
     })
-    .openapi("Context", {
+    .openapi({
         description:
             "Represents the tree around a given status. Used for reconstructing threads of statuses.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Context/#context",
         },
+        ref: "Context",
     });

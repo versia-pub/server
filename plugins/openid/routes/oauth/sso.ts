@@ -1,37 +1,25 @@
-import { createRoute, z } from "@hono/zod-openapi";
+import { handleZodError } from "@/api.ts";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
+import { describeRoute } from "hono-openapi";
+import { validator } from "hono-openapi/zod";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
+import { z } from "zod";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 
-const schemas = {
-    query: z.object({
-        issuer: z.string(),
-        client_id: z.string().optional(),
-        redirect_uri: z.string().url().optional(),
-        scope: z.string().optional(),
-        response_type: z.enum(["code"]).optional(),
-    }),
-};
-
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/sso", (app) => {
-        app.openapi(
-            createRoute({
-                method: "get",
-                path: "/oauth/sso",
+        app.get(
+            "/oauth/sso",
+            describeRoute({
                 summary: "Initiate SSO login flow",
                 tags: ["OpenID"],
-                request: {
-                    query: schemas.query,
-                },
-                middleware: [plugin.middleware] as const,
                 responses: {
                     302: {
                         description:
@@ -39,6 +27,18 @@ export default (plugin: PluginType): void => {
                     },
                 },
             }),
+            plugin.middleware,
+            validator(
+                "query",
+                z.object({
+                    issuer: z.string(),
+                    client_id: z.string().optional(),
+                    redirect_uri: z.string().url().optional(),
+                    scope: z.string().optional(),
+                    response_type: z.enum(["code"]).optional(),
+                }),
+                handleZodError,
+            ),
             async (context) => {
                 // This is the Versia client's client_id, not the external OAuth provider's client_id
                 const { issuer: issuerId, client_id } =

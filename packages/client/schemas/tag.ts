@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const Tag = z
     .object({
@@ -24,8 +24,9 @@ export const Tag = z
                 },
             }),
     })
-    .openapi("Tag", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#Tag",
         },
+        ref: "Tag",
     });

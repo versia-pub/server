@@ -1,43 +1,47 @@
 import { apiRoute } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
 import { config } from "~/config.ts";
 
-const route = createRoute({
-    method: "get",
-    path: "/.well-known/nodeinfo",
-    summary: "Well-known nodeinfo",
-    tags: ["Federation"],
-    responses: {
-        200: {
-            description: "Nodeinfo links",
-            content: {
-                "application/json": {
-                    schema: z.object({
-                        links: z.array(
-                            z.object({
-                                rel: z.string(),
-                                href: z.string(),
-                            }),
-                        ),
-                    }),
+export default apiRoute((app) =>
+    app.get(
+        "/.well-known/nodeinfo",
+        describeRoute({
+            summary: "Well-known nodeinfo",
+            tags: ["Federation"],
+            responses: {
+                200: {
+                    description: "Nodeinfo links",
+                    content: {
+                        "application/json": {
+                            schema: resolver(
+                                z.object({
+                                    links: z.array(
+                                        z.object({
+                                            rel: z.string(),
+                                            href: z.string(),
+                                        }),
+                                    ),
+                                }),
+                            ),
+                        },
+                    },
                 },
             },
+        }),
+        (context) => {
+            return context.json({
+                links: [
+                    {
+                        rel: "http://nodeinfo.diaspora.software/ns/schema/2.0",
+                        href: new URL(
+                            "/.well-known/nodeinfo/2.0",
+                            config.http.base_url,
+                        ).toString(),
+                    },
+                ],
+            });
         },
-    },
-});
-
-export default apiRoute((app) =>
-    app.openapi(route, (context) => {
-        return context.json({
-            links: [
-                {
-                    rel: "http://nodeinfo.diaspora.software/ns/schema/2.0",
-                    href: new URL(
-                        "/.well-known/nodeinfo/2.0",
-                        config.http.base_url,
-                    ).toString(),
-                },
-            ],
-        });
-    }),
+    ),
 );

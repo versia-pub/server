@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const PrivacyPolicy = z
     .object({
@@ -21,9 +21,10 @@ export const PrivacyPolicy = z
             },
         }),
     })
-    .openapi("PrivacyPolicy", {
+    .openapi({
         description: "Represents the privacy policy of the instance.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/PrivacyPolicy",
         },
+        ref: "PrivacyPolicy",
     });

@@ -1,5 +1,3 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { z } from "@hono/zod-openapi";
 import type {
     Delete,
     Follow,
@@ -12,7 +10,9 @@ import type {
     User,
 } from "@versia/federation/types";
 import type { SocketAddress } from "bun";
+import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
+import type { z } from "zod";
 import type { ConfigSchema } from "~/classes/config/schema";
 import type { AuthData } from "~/classes/functions/user";
 
@@ -29,7 +29,7 @@ export type HonoEnv = {
 };
 
 export interface ApiRouteExports {
-    default: (app: OpenAPIHono<HonoEnv>) => RouterRoute;
+    default: (app: Hono<HonoEnv>) => RouterRoute;
 }
 
 export type KnownEntity =

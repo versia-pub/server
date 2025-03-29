@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Instance } from "./instance.ts";
 import { SSOConfig } from "./versia.ts";
 
@@ -132,10 +132,11 @@ export const InstanceV1 = z
         /* Versia Server API extension */
         sso: SSOConfig,
     })
-    .openapi("InstanceV1", {
+    .openapi({
         description:
             "Represents the software instance of Versia Server running on this domain.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/V1_Instance",
         },
+        ref: "InstanceV1",
     });

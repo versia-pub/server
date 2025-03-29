@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { z } from "@hono/zod-openapi";
 import type { Status } from "@versia/client/schemas";
 import { Media, db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
+import type { z } from "zod";
 import { config } from "~/config.ts";
 import { generateClient, getTestUsers } from "~/tests/utils";
 

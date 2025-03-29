@@ -1,13 +1,13 @@
 import { join } from "node:path";
-import { handleZodError } from "@/api";
 import { applyToHono } from "@/bull-board.ts";
 import { configureLoggers } from "@/loggers";
 import { sentry } from "@/sentry";
-import { OpenAPIHono } from "@hono/zod-openapi";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
 import { apiReference } from "@scalar/hono-api-reference";
 import chalk from "chalk";
+import { Hono } from "hono";
+import { openAPISpecs } from "hono-openapi";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
@@ -25,14 +25,15 @@ import { logger } from "./middlewares/logger.ts";
 import { rateLimit } from "./middlewares/rate-limit.ts";
 import { routes } from "./routes.ts";
 import type { ApiRouteExports, HonoEnv } from "./types/api.ts";
+// Extends Zod with OpenAPI schema generation
+import "zod-openapi/extend";
 
-export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
+export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     await configureLoggers();
     const serverLogger = getLogger("server");
 
-    const app = new OpenAPIHono<HonoEnv>({
+    const app = new Hono<HonoEnv>({
         strict: false,
-        defaultHook: handleZodError,
     });
 
     app.use(ipBans);
@@ -134,30 +135,23 @@ export const appFactory = async (): Promise<OpenAPIHono<HonoEnv>> => {
         (time2 - time1).toFixed(2),
     )}ms`}`;
 
-    app.doc31("/openapi.json", {
-        openapi: "3.1.0",
-        info: {
-            title: "Versia Server API",
-            version: pkg.version,
-            license: {
-                name: "AGPL-3.0",
-                url: "https://www.gnu.org/licenses/agpl-3.0.html",
+    app.get(
+        "/openapi.json",
+        openAPISpecs(app, {
+            documentation: {
+                info: {
+                    title: "Versia Server API",
+                    version: pkg.version,
+                    license: {
+                        name: "AGPL-3.0",
+                        url: "https://www.gnu.org/licenses/agpl-3.0.html",
+                    },
+                    contact: pkg.author,
+                },
             },
-            contact: pkg.author,
-        },
-    });
-    app.doc("/openapi.3.0.0.json", {
-        openapi: "3.0.0",
-        info: {
-            title: "Versia Server API",
-            version: pkg.version,
-            license: {
-                name: "AGPL-3.0",
-                url: "https://www.gnu.org/licenses/agpl-3.0.html",
-            },
-            contact: pkg.author,
-        },
-    });
+        }),
+    );
+
     app.get(
         "/docs",
         apiReference({

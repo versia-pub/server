@@ -1,15 +1,15 @@
 import { apiRoute, auth } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
 import { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
-    app.openapi(
-        createRoute({
-            method: "get",
-            path: "/api/v1/push/subscription",
+    app.get(
+        "/api/v1/push/subscription",
+        describeRoute({
             summary: "Get current subscription",
             description:
                 "View the PushSubscription currently associated with this access token.",
@@ -17,25 +17,23 @@ export default apiRoute((app) =>
                 url: "https://docs.joinmastodon.org/methods/push/#get",
             },
             tags: ["Push Notifications"],
-            middleware: [
-                auth({
-                    auth: true,
-                    permissions: [RolePermission.UsePushNotifications],
-                    scopes: ["push"],
-                }),
-            ] as const,
             responses: {
                 200: {
                     description: "WebPushSubscription",
                     content: {
                         "application/json": {
-                            schema: WebPushSubscriptionSchema,
+                            schema: resolver(WebPushSubscriptionSchema),
                         },
                     },
                 },
                 401: ApiError.missingAuthentication().schema,
                 422: ApiError.validationFailed().schema,
             },
+        }),
+        auth({
+            auth: true,
+            permissions: [RolePermission.UsePushNotifications],
+            scopes: ["push"],
         }),
         async (context) => {
             const { token } = context.get("auth");

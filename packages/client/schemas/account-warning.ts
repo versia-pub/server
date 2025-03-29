@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Appeal } from "./appeal.ts";
 import { Id } from "./common.ts";
@@ -49,9 +49,10 @@ export const AccountWarning = z
             example: "2025-01-04T14:11:00Z",
         }),
     })
-    .openapi("AccountWarning", {
+    .openapi({
         description: "Moderation warning against a particular account.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/AccountWarning",
         },
+        ref: "AccountWarning",
     });

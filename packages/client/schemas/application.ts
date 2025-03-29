@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const Application = z
     .object({
@@ -61,7 +61,9 @@ export const Application = z
             },
         }),
     })
-    .openapi("Application");
+    .openapi({
+        ref: "Application",
+    });
 
 export const CredentialApplication = Application.extend({
     client_id: z.string().openapi({
@@ -83,4 +85,6 @@ export const CredentialApplication = Application.extend({
             url: "https://docs.joinmastodon.org/entities/CredentialApplication/#client_secret_expires_at",
         },
     }),
-}).openapi("CredentialApplication");
+}).openapi({
+    ref: "CredentialApplication",
+});

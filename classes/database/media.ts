@@ -1,7 +1,6 @@
 import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import { proxyUrl } from "@/response";
-import type { z } from "@hono/zod-openapi";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
@@ -16,6 +15,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import sharp from "sharp";
+import type { z } from "zod";
 import { MediaBackendType } from "~/classes/config/schema.ts";
 import { config } from "~/config.ts";
 import { ApiError } from "../errors/api-error.ts";

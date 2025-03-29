@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const ExtendedDescription = z
     .object({
@@ -22,10 +22,11 @@ export const ExtendedDescription = z
             },
         }),
     })
-    .openapi("ExtendedDescription", {
+    .openapi({
         description:
             "Represents an extended description for the instance, to be shown on its about page.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/ExtendedDescription",
         },
+        ref: "ExtendedDescription",
     });

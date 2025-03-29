@@ -1,105 +1,101 @@
-import { auth, jsonOrForm } from "@/api";
+import { auth, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
-import { z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
 import { Application, Token, User } from "@versia/kit/db";
+import { describeRoute } from "hono-openapi";
+import { validator } from "hono-openapi/zod";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
 import { JOSEError } from "jose/errors";
+import { z } from "zod";
 import { errorRedirect, errors } from "../errors.ts";
 import type { PluginType } from "../index.ts";
 
-const schemas = {
-    query: z.object({
-        prompt: z
-            .enum(["none", "login", "consent", "select_account"])
-            .optional()
-            .default("none"),
-        max_age: z.coerce
-            .number()
-            .int()
-            .optional()
-            .default(60 * 60 * 24 * 7),
-    }),
-    json: z
-        .object({
-            scope: z.string().optional(),
-            redirect_uri: z
-                .string()
-                .url()
-                .optional()
-                .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
-            response_type: z.enum([
-                "code",
-                "token",
-                "none",
-                "id_token",
-                "code id_token",
-                "code token",
-                "token id_token",
-                "code token id_token",
-            ]),
-            client_id: z.string(),
-            state: z.string().optional(),
-            code_challenge: z.string().optional(),
-            code_challenge_method: z.enum(["plain", "S256"]).optional(),
-        })
-        .refine(
-            // Check if redirect_uri is valid for code flow
-            (data) =>
-                data.response_type.includes("code") ? data.redirect_uri : true,
-            "redirect_uri is required for code flow",
-        ),
-    // Disable for Mastodon API compatibility
-    /* .refine(
-            // Check if code_challenge is valid for code flow
-            (data) =>
-                data.response_type.includes("code")
-                    ? data.code_challenge
-                    : true,
-            "code_challenge is required for code flow",
-        ), */
-    cookies: z.object({
-        jwt: z.string(),
-    }),
-};
-
 export default (plugin: PluginType): void =>
     plugin.registerRoute("/oauth/authorize", (app) =>
-        app.openapi(
-            {
-                method: "post",
-                path: "/oauth/authorize",
+        app.post(
+            "/oauth/authorize",
+            describeRoute({
+                summary: "Main OpenID authorization endpoint",
                 tags: ["OpenID"],
-                middleware: [
-                    auth({
-                        auth: false,
-                    }),
-                    jsonOrForm(),
-                    plugin.middleware,
-                ] as const,
                 responses: {
                     302: {
                         description: "Redirect to the application",
                     },
                 },
-                request: {
-                    query: schemas.query,
-                    body: {
-                        content: {
-                            "application/json": {
-                                schema: schemas.json,
-                            },
-                            "application/x-www-form-urlencoded": {
-                                schema: schemas.json,
-                            },
-                            "multipart/form-data": {
-                                schema: schemas.json,
-                            },
-                        },
-                    },
-                    cookies: schemas.cookies,
-                },
-            },
+            }),
+            plugin.middleware,
+            auth({
+                auth: false,
+            }),
+            jsonOrForm(),
+            validator(
+                "query",
+                z.object({
+                    prompt: z
+                        .enum(["none", "login", "consent", "select_account"])
+                        .optional()
+                        .default("none"),
+                    max_age: z.coerce
+                        .number()
+                        .int()
+                        .optional()
+                        .default(60 * 60 * 24 * 7),
+                }),
+                handleZodError,
+            ),
+            validator(
+                "json",
+                z
+                    .object({
+                        scope: z.string().optional(),
+                        redirect_uri: z
+                            .string()
+                            .url()
+                            .optional()
+                            .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
+                        response_type: z.enum([
+                            "code",
+                            "token",
+                            "none",
+                            "id_token",
+                            "code id_token",
+                            "code token",
+                            "token id_token",
+                            "code token id_token",
+                        ]),
+                        client_id: z.string(),
+                        state: z.string().optional(),
+                        code_challenge: z.string().optional(),
+                        code_challenge_method: z
+                            .enum(["plain", "S256"])
+                            .optional(),
+                    })
+                    .refine(
+                        // Check if redirect_uri is valid for code flow
+                        (data) =>
+                            data.response_type.includes("code")
+                                ? data.redirect_uri
+                                : true,
+                        "redirect_uri is required for code flow",
+                    ),
+                // Disable for Mastodon API compatibility
+                /* .refine(
+                    // Check if code_challenge is valid for code flow
+                    (data) =>
+                        data.response_type.includes("code")
+                            ? data.code_challenge
+                            : true,
+                    "code_challenge is required for code flow",
+                ), */
+                handleZodError,
+            ),
+            validator(
+                "cookie",
+                z.object({
+                    jwt: z.string(),
+                }),
+                handleZodError,
+            ),
             async (context) => {
                 const { scope, redirect_uri, client_id, state } =
                     context.req.valid("json");

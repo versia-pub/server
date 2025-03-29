@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Status } from "./status.ts";
 import { Tag } from "./tag.ts";
@@ -15,9 +15,10 @@ export const Search = z
             description: "Hashtags which match the given query",
         }),
     })
-    .openapi("Search", {
+    .openapi({
         description: "Represents the results of a search.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Search",
         },
+        ref: "Search",
     });

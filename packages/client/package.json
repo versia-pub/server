@@ -55,7 +55,6 @@
     "keywords": ["versia", "mastodon", "api", "typescript", "rest"],
     "packageManager": "bun@1.2.5",
     "dependencies": {
-        "@badgateway/oauth2-client": "^2.4.2",
-        "@hono/zod-openapi": "^0.19.2"
+        "@badgateway/oauth2-client": "^2.4.2"
     }
 }

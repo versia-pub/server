@@ -1,19 +1,19 @@
-import { apiRoute } from "@/api";
+import { apiRoute, handleZodError } from "@/api";
 import { auth, jsonOrForm } from "@/api";
-import { createRoute } from "@hono/zod-openapi";
 import {
     WebPushSubscriptionInput,
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
-    app.openapi(
-        createRoute({
-            method: "post",
-            path: "/api/v1/push/subscription",
+    app.post(
+        "/api/v1/push/subscription",
+        describeRoute({
             summary: "Subscribe to push notifications",
             description:
                 "Add a Web Push API subscription to receive notifications. Each access token can have one push subscription. If you create a new subscription, the old subscription is deleted.",
@@ -21,30 +21,13 @@ export default apiRoute((app) =>
                 url: "https://docs.joinmastodon.org/methods/push/#create",
             },
             tags: ["Push Notifications"],
-            middleware: [
-                auth({
-                    auth: true,
-                    permissions: [RolePermission.UsePushNotifications],
-                    scopes: ["push"],
-                }),
-                jsonOrForm(),
-            ] as const,
-            request: {
-                body: {
-                    content: {
-                        "application/json": {
-                            schema: WebPushSubscriptionInput,
-                        },
-                    },
-                },
-            },
             responses: {
                 200: {
                     description:
                         "A new PushSubscription has been generated, which will send the requested alerts to your endpoint.",
                     content: {
                         "application/json": {
-                            schema: WebPushSubscriptionSchema,
+                            schema: resolver(WebPushSubscriptionSchema),
                         },
                     },
                 },
@@ -52,6 +35,13 @@ export default apiRoute((app) =>
                 422: ApiError.validationFailed().schema,
             },
         }),
+        auth({
+            auth: true,
+            permissions: [RolePermission.UsePushNotifications],
+            scopes: ["push"],
+        }),
+        jsonOrForm(),
+        validator("json", WebPushSubscriptionInput, handleZodError),
         async (context) => {
             const { user, token } = context.get("auth");
             const { subscription, data, policy } = context.req.valid("json");

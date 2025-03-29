@@ -1,5 +1,5 @@
 import { emojiValidator } from "@/api.ts";
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { Id, zBoolean } from "./common.ts";
 
@@ -87,9 +87,10 @@ export const CustomEmoji = z
                 },
             }),
     })
-    .openapi("CustomEmoji", {
+    .openapi({
         description: "Represents a custom emoji.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/CustomEmoji",
         },
+        ref: "CustomEmoji",
     });

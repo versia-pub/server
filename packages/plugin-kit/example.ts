@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Hooks } from "./hooks.ts";
 import { Plugin } from "./plugin.ts";
 

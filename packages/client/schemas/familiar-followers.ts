@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Account } from "./account.ts";
 
 export const FamiliarFollowers = z
@@ -17,10 +17,11 @@ export const FamiliarFollowers = z
             },
         }),
     })
-    .openapi("FamiliarFollowers", {
+    .openapi({
         description:
             "Represents a subset of your follows who also follow some other user.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/FamiliarFollowers",
         },
+        ref: "FamiliarFollowers",
     });

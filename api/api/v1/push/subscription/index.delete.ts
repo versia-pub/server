@@ -1,40 +1,39 @@
 import { apiRoute, auth } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
+import { describeRoute } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
+import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
-    app.openapi(
-        createRoute({
-            method: "delete",
-            path: "/api/v1/push/subscription",
+    app.delete(
+        "/api/v1/push/subscription",
+        describeRoute({
             summary: "Remove current subscription",
             description: "Removes the current Web Push API subscription.",
             externalDocs: {
                 url: "https://docs.joinmastodon.org/methods/push/#delete",
             },
             tags: ["Push Notifications"],
-            middleware: [
-                auth({
-                    auth: true,
-                    permissions: [RolePermission.UsePushNotifications],
-                    scopes: ["push"],
-                }),
-            ] as const,
             responses: {
                 200: {
                     description:
                         "PushSubscription successfully deleted or did not exist previously.",
                     content: {
                         "application/json": {
-                            schema: z.object({}),
+                            schema: resolver(z.object({})),
                         },
                     },
                 },
                 401: ApiError.missingAuthentication().schema,
                 422: ApiError.validationFailed().schema,
             },
+        }),
+        auth({
+            auth: true,
+            permissions: [RolePermission.UsePushNotifications],
+            scopes: ["push"],
         }),
         async (context) => {
             const { token } = context.get("auth");

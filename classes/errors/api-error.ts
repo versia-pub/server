@@ -1,8 +1,8 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: Dependency of @hono/zod-openapi
-import type { ResponseConfig } from "@asteasolutions/zod-to-openapi";
-import { z } from "@hono/zod-openapi";
+import type { DescribeRouteOptions } from "hono-openapi";
+import { resolver } from "hono-openapi/zod";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { JSONObject } from "hono/utils/types";
+import { z } from "zod";
 
 /**
  * API Error
@@ -33,12 +33,12 @@ export class ApiError extends Error {
             .optional(),
     });
 
-    public get schema(): ResponseConfig {
+    public get schema(): DescribeRouteOptions["responses"] {
         return {
             description: this.message,
             content: {
                 "application/json": {
-                    schema: ApiError.zodSchema,
+                    schema: resolver(ApiError.zodSchema),
                 },
             },
         };

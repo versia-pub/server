@@ -1,5 +1,4 @@
 import { proxyUrl } from "@/response";
-import type { z } from "@hono/zod-openapi";
 import type { Role as RoleSchema } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
@@ -13,6 +12,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { z } from "zod";
 import { config } from "~/config.ts";
 import { BaseInterface } from "./base.ts";
 type RoleType = InferSelectModel<typeof Roles>;

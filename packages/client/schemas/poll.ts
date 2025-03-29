@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
@@ -31,10 +31,11 @@ export const PollOption = z
                 },
             }),
     })
-    .openapi("PollOption", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Poll/#Option",
         },
+        ref: "PollOption",
     });
 
 export const Poll = z
@@ -130,9 +131,10 @@ export const Poll = z
                 },
             }),
     })
-    .openapi("Poll", {
+    .openapi({
         description: "Represents a poll attached to a status.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Poll",
         },
+        ref: "Poll",
     });

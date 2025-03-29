@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Id } from "./common.ts";
 
@@ -50,10 +50,11 @@ export const Report = z
             description: "The account that was reported.",
         }),
     })
-    .openapi("Report", {
+    .openapi({
         description:
             "Reports filed against users and/or statuses, to be taken action on by moderators.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Report",
         },
+        ref: "Report",
     });

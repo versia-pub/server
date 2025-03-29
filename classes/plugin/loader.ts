@@ -1,8 +1,8 @@
 import { readdir } from "node:fs/promises";
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import { type Logger, getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
+import type { Hono } from "hono";
 import type { ZodTypeAny } from "zod";
 import { type ValidationError, fromZodError } from "zod-validation-error";
 import { config } from "~/config.ts";
@@ -216,7 +216,7 @@ export class PluginLoader {
             manifest: Manifest;
             plugin: Plugin<ZodTypeAny>;
         }[],
-        app: OpenAPIHono<HonoEnv>,
+        app: Hono<HonoEnv>,
         logger: Logger,
     ): Promise<void> {
         for (const data of plugins) {

@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Account } from "./account.ts";
 
 export const PreviewCardAuthor = z
@@ -27,7 +27,9 @@ export const PreviewCardAuthor = z
             },
         }),
     })
-    .openapi("PreviewCardAuthor");
+    .openapi({
+        ref: "PreviewCardAuthor",
+    });
 
 export const PreviewCard = z
     .object({
@@ -152,10 +154,11 @@ export const PreviewCard = z
                 },
             }),
     })
-    .openapi("PreviewCard", {
+    .openapi({
         description:
             "Represents a rich preview card that is generated using OpenGraph tags from a URL.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/PreviewCard",
         },
+        ref: "PreviewCard",
     });

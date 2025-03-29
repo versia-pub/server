@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import type { z } from "@hono/zod-openapi";
 import type { Notification } from "@versia/client/schemas";
+import type { z } from "zod";
 import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(2);

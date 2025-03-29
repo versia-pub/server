@@ -1,6 +1,5 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import { proxyUrl } from "@/response";
-import type { z } from "@hono/zod-openapi";
 import type { CustomEmoji } from "@versia/client/schemas";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, Media, db } from "@versia/kit/db";
@@ -15,6 +14,7 @@ import {
     inArray,
     isNull,
 } from "drizzle-orm";
+import type { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
 type EmojiType = InferSelectModel<typeof Emojis> & {

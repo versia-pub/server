@@ -1142,10 +1142,8 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof FamiliarFollowers>[]>> {
         const params = new URLSearchParams();
 
-        if (ids) {
-            for (const id of ids) {
-                params.append("id[]", id);
-            }
+        for (const id of ids) {
+            params.append("id[]", id);
         }
 
         return this.get<z.infer<typeof FamiliarFollowers>[]>(

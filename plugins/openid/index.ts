@@ -1,10 +1,10 @@
-import { z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
 import { Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
+import { z } from "zod";
 import { keyPair, sensitiveString } from "~/classes/config/schema.ts";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import authorizeRoute from "./routes/authorize.ts";

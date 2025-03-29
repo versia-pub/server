@@ -1,49 +1,46 @@
-import { auth } from "@/api";
+import { auth, handleZodError } from "@/api";
 import { proxyUrl } from "@/response";
-import { createRoute, z } from "@hono/zod-openapi";
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { type SQL, eq } from "@versia/kit/drizzle";
 import { OpenIdAccounts } from "@versia/kit/tables";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 
 export default (plugin: PluginType): void => {
-    plugin.registerRoute("/api/v1/sso", (app) => {
-        app.openapi(
-            createRoute({
-                method: "get",
-                path: "/api/v1/sso/{id}",
+    plugin.registerRoute("/api/v1/sso/{id}", (app) => {
+        app.get(
+            "/api/v1/sso/:id",
+            describeRoute({
                 summary: "Get linked account",
                 tags: ["SSO"],
-                middleware: [
-                    auth({
-                        auth: true,
-                        permissions: [RolePermission.OAuth],
-                    }),
-                    plugin.middleware,
-                ] as const,
-                request: {
-                    params: z.object({
-                        id: z.string(),
-                    }),
-                },
                 responses: {
                     200: {
                         description: "Linked account",
                         content: {
                             "application/json": {
-                                schema: z.object({
-                                    id: z.string(),
-                                    name: z.string(),
-                                    icon: z.string().optional(),
-                                }),
+                                schema: resolver(
+                                    z.object({
+                                        id: z.string(),
+                                        name: z.string(),
+                                        icon: z.string().optional(),
+                                    }),
+                                ),
                             },
                         },
                     },
                     404: ApiError.accountNotFound().schema,
                 },
             }),
+            auth({
+                auth: true,
+                permissions: [RolePermission.OAuth],
+            }),
+            plugin.middleware,
+            validator("param", z.object({ id: z.string() }), handleZodError),
             async (context) => {
                 const { id: issuerId } = context.req.valid("param");
                 const { user } = context.get("auth");
@@ -89,24 +86,11 @@ export default (plugin: PluginType): void => {
             },
         );
 
-        app.openapi(
-            createRoute({
-                method: "delete",
-                path: "/api/v1/sso/{id}",
+        app.delete(
+            "/api/v1/sso/:id",
+            describeRoute({
                 summary: "Unlink account",
                 tags: ["SSO"],
-                middleware: [
-                    auth({
-                        auth: true,
-                        permissions: [RolePermission.OAuth],
-                    }),
-                    plugin.middleware,
-                ] as const,
-                request: {
-                    params: z.object({
-                        id: z.string(),
-                    }),
-                },
                 responses: {
                     204: {
                         description: "Account unlinked",
@@ -115,12 +99,18 @@ export default (plugin: PluginType): void => {
                         description: "Account not found",
                         content: {
                             "application/json": {
-                                schema: ApiError.zodSchema,
+                                schema: resolver(ApiError.zodSchema),
                             },
                         },
                     },
                 },
             }),
+            auth({
+                auth: true,
+                permissions: [RolePermission.OAuth],
+            }),
+            plugin.middleware,
+            validator("param", z.object({ id: z.string() }), handleZodError),
             async (context) => {
                 const { id: issuerId } = context.req.valid("param");
                 const { user } = context.get("auth");

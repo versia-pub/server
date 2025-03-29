@@ -1,5 +1,4 @@
-import { apiRoute, auth, jsonOrForm } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import {
     Attachment as AttachmentSchema,
     PollOption,
@@ -9,6 +8,9 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Media, Note } from "@versia/kit/db";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 
@@ -101,111 +103,99 @@ const schema = z
         "Cannot attach poll to media",
     );
 
-const route = createRoute({
-    method: "post",
-    path: "/api/v1/statuses",
-    summary: "Post a new status",
-    description: "Publish a status with the given parameters.",
-    externalDocs: {
-        url: "https://docs.joinmastodon.org/methods/statuses/#create",
-    },
-    tags: ["Statuses"],
-    middleware: [
+export default apiRoute((app) =>
+    app.post(
+        "/api/v1/statuses",
+        describeRoute({
+            summary: "Post a new status",
+            description: "Publish a status with the given parameters.",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/methods/statuses/#create",
+            },
+            tags: ["Statuses"],
+            responses: {
+                200: {
+                    description:
+                        "Status will be posted with chosen parameters.",
+                    content: {
+                        "application/json": {
+                            schema: resolver(StatusSchema),
+                        },
+                    },
+                },
+                401: ApiError.missingAuthentication().schema,
+                422: ApiError.validationFailed().schema,
+            },
+        }),
         auth({
             auth: true,
             permissions: [RolePermission.ManageOwnNotes],
         }),
         jsonOrForm(),
-    ] as const,
-    request: {
-        body: {
-            content: {
-                "application/json": {
-                    schema,
+        validator("json", schema, handleZodError),
+        async (context) => {
+            const { user, application } = context.get("auth");
+
+            const {
+                status,
+                media_ids,
+                in_reply_to_id,
+                quote_id,
+                sensitive,
+                spoiler_text,
+                visibility,
+                content_type,
+                local_only,
+            } = context.req.valid("json");
+
+            // Check if media attachments are all valid
+            const foundAttachments =
+                media_ids.length > 0 ? await Media.fromIds(media_ids) : [];
+
+            if (foundAttachments.length !== media_ids.length) {
+                throw new ApiError(
+                    422,
+                    "Some attachments referenced by media_ids not found",
+                );
+            }
+
+            // Check that in_reply_to_id and quote_id are real posts if provided
+            if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
+                throw new ApiError(
+                    422,
+                    "Note referenced by in_reply_to_id not found",
+                );
+            }
+
+            if (quote_id && !(await Note.fromId(quote_id))) {
+                throw new ApiError(
+                    422,
+                    "Note referenced by quote_id not found",
+                );
+            }
+
+            const newNote = await Note.fromData({
+                author: user,
+                content: {
+                    [content_type]: {
+                        content: status ?? "",
+                        remote: false,
+                    },
                 },
-                "application/x-www-form-urlencoded": {
-                    schema,
-                },
-                "multipart/form-data": {
-                    schema,
-                },
-            },
+                visibility,
+                isSensitive: sensitive ?? false,
+                spoilerText: spoiler_text ?? "",
+                mediaAttachments: foundAttachments,
+                replyId: in_reply_to_id ?? undefined,
+                quoteId: quote_id ?? undefined,
+                application: application ?? undefined,
+            });
+
+            if (!local_only) {
+                await newNote.federateToUsers();
+            }
+
+            return context.json(await newNote.toApi(user), 200);
         },
-    },
-    responses: {
-        200: {
-            description: "Status will be posted with chosen parameters.",
-            content: {
-                "application/json": {
-                    schema: StatusSchema,
-                },
-            },
-        },
-        401: ApiError.missingAuthentication().schema,
-        422: ApiError.validationFailed().schema,
-    },
-});
-
-export default apiRoute((app) =>
-    app.openapi(route, async (context) => {
-        const { user, application } = context.get("auth");
-
-        const {
-            status,
-            media_ids,
-            in_reply_to_id,
-            quote_id,
-            sensitive,
-            spoiler_text,
-            visibility,
-            content_type,
-            local_only,
-        } = context.req.valid("json");
-
-        // Check if media attachments are all valid
-        const foundAttachments =
-            media_ids.length > 0 ? await Media.fromIds(media_ids) : [];
-
-        if (foundAttachments.length !== media_ids.length) {
-            throw new ApiError(
-                422,
-                "Some attachments referenced by media_ids not found",
-            );
-        }
-
-        // Check that in_reply_to_id and quote_id are real posts if provided
-        if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
-            throw new ApiError(
-                422,
-                "Note referenced by in_reply_to_id not found",
-            );
-        }
-
-        if (quote_id && !(await Note.fromId(quote_id))) {
-            throw new ApiError(422, "Note referenced by quote_id not found");
-        }
-
-        const newNote = await Note.fromData({
-            author: user,
-            content: {
-                [content_type]: {
-                    content: status ?? "",
-                    remote: false,
-                },
-            },
-            visibility,
-            isSensitive: sensitive ?? false,
-            spoilerText: spoiler_text ?? "",
-            mediaAttachments: foundAttachments,
-            replyId: in_reply_to_id ?? undefined,
-            quoteId: quote_id ?? undefined,
-            application: application ?? undefined,
-        });
-
-        if (!local_only) {
-            await newNote.federateToUsers();
-        }
-
-        return context.json(await newNote.toApi(user), 200);
-    }),
+    ),
 );

@@ -1,4 +1,3 @@
-import type { z } from "@hono/zod-openapi";
 import type {
     Notification as NotificationSchema,
     Source,
@@ -20,6 +19,7 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
+import type { z } from "zod";
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>

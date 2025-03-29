@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 
@@ -67,10 +67,11 @@ export const Attachment = z
             example: "UFBWY:8_0Jxv4mx]t8t64.%M-:IUWGWAt6M}",
         }),
     })
-    .openapi("Attachment", {
+    .openapi({
         description:
             "Represents a file or media attachment that can be added to a status.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Attachment",
         },
+        ref: "Attachment",
     });

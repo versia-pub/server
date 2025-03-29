@@ -1,7 +1,7 @@
 import { configureLoggers } from "@/loggers";
-import type { z } from "@hono/zod-openapi";
 import type { Status } from "@versia/client/schemas";
 import { bench, run } from "mitata";
+import type { z } from "zod";
 import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 await configureLoggers(true);

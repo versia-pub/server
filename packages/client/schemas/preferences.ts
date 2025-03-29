@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Source } from "./account.ts";
 
 export const Preferences = z
@@ -42,9 +42,10 @@ export const Preferences = z
             },
         }),
     })
-    .openapi("Preferences", {
+    .openapi({
         description: "Represents a user's preferences.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Preferences",
         },
+        ref: "Preferences",
     });

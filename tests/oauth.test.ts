@@ -2,8 +2,8 @@
  * @deprecated
  */
 import { afterAll, describe, expect, test } from "bun:test";
-import type { z } from "@hono/zod-openapi";
 import type { Application, Token } from "@versia/client/schemas";
+import type { z } from "zod";
 import { fakeRequest, getTestUsers } from "./utils.ts";
 
 let clientId: string;

@@ -1,12 +1,13 @@
-import type { OpenAPIHono, z } from "@hono/zod-openapi";
 import type { Server } from "bun";
+import type { Hono } from "hono";
+import type { z } from "zod";
 import type { ConfigSchema } from "~/classes/config/schema.ts";
 import type { HonoEnv } from "~/types/api";
 import { debugResponse } from "./api.ts";
 
 export const createServer = (
     config: z.infer<typeof ConfigSchema>,
-    app: OpenAPIHono<HonoEnv>,
+    app: Hono<HonoEnv>,
 ): Server =>
     Bun.serve({
         port: config.http.bind_port,

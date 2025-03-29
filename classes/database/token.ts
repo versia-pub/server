@@ -1,4 +1,3 @@
-import type { z } from "@hono/zod-openapi";
 import type { Token as TokenSchema } from "@versia/client/schemas";
 import { type Application, User, db } from "@versia/kit/db";
 import { Tokens } from "@versia/kit/tables";
@@ -10,6 +9,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
 type TokenType = InferSelectModel<typeof Tokens> & {

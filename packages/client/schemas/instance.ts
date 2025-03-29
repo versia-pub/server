@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import pkg from "~/package.json";
 import { Account } from "./account.ts";
 import { iso631 } from "./common.ts";
@@ -18,10 +18,11 @@ const InstanceIcon = z
             example: "36x36",
         }),
     })
-    .openapi("InstanceIcon", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/InstanceIcon",
         },
+        ref: "InstanceIcon",
     });
 
 export const Instance = z
@@ -375,8 +376,9 @@ export const Instance = z
         /* Versia Server API extension */
         sso: SSOConfig,
     })
-    .openapi("Instance", {
+    .openapi({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Instance",
         },
+        ref: "Instance",
     });

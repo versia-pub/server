@@ -1,5 +1,5 @@
 import { userAddressValidator } from "@/api.ts";
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { iso631, zBoolean } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
@@ -44,7 +44,7 @@ export const Field = z
                 },
             }),
     })
-    .openapi("AccountField");
+    .openapi({ ref: "AccountField" });
 
 export const Source = z
     .object({
@@ -109,12 +109,13 @@ export const Source = z
                 description: "Metadata about the account.",
             }),
     })
-    .openapi("AccountSource", {
+    .openapi({
         description:
             "An extra attribute that contains source values to be used with API methods that verify credentials and update credentials.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Account/#source",
         },
+        ref: "AccountSource",
     });
 
 // Because Account has some recursive references, we need to define it like this
@@ -421,7 +422,7 @@ const BaseAccount = z
             example: "2025-03-01T14:00:00.000Z",
         }),
     })
-    .openapi("BaseAccount");
+    .openapi({ ref: "BaseAccount" });
 
 export const Account = BaseAccount.extend({
     moved: BaseAccount.nullable()
@@ -434,4 +435,4 @@ export const Account = BaseAccount.extend({
                 url: "https://docs.joinmastodon.org/entities/Account/#moved",
             },
         }),
-}).openapi("Account");
+}).openapi({ ref: "Account" });

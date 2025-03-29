@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { Id, iso631 } from "./common.ts";
 
 export const Relationship = z
@@ -65,10 +65,11 @@ export const Relationship = z
             example: "they also like Kerbal Space Program",
         }),
     })
-    .openapi("Relationship", {
+    .openapi({
         description:
             "Represents the relationship between accounts, such as following / blocking / muting / etc.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Relationship",
         },
+        ref: "Relationship",
     });

@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 
 export const Appeal = z
     .object({
@@ -13,9 +13,10 @@ export const Appeal = z
             example: "pending",
         }),
     })
-    .openapi("Appeal", {
+    .openapi({
         description: "Appeal against a moderation action.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Appeal",
         },
+        ref: "Appeal",
     });

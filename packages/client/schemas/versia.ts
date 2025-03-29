@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi";
+import { z } from "zod";
 import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 import { RolePermission } from "./permissions.ts";
@@ -6,7 +6,7 @@ import { RolePermission } from "./permissions.ts";
 /* Versia Server API extension */
 export const Role = z
     .object({
-        id: Id.openapi({}).openapi({
+        id: Id.openapi({
             description: "The role ID in the database.",
             example: "b4a7e0f0-8f6a-479b-910b-9265c070d5bd",
         }),
@@ -27,6 +27,7 @@ export const Role = z
                     RolePermission.ManageEmojis,
                     RolePermission.ManageAccounts,
                 ],
+                type: "array",
             }),
         priority: z.number().int().default(0).openapi({
             description:
@@ -45,9 +46,10 @@ export const Role = z
             example: "https://example.com/role-icon.png",
         }),
     })
-    .openapi("Role", {
+    .openapi({
         description:
             "Information about a role in the system, as well as its permissions.",
+        ref: "Role",
     });
 
 /* Versia Server API extension */
@@ -72,8 +74,9 @@ export const NoteReaction = z
             example: true,
         }),
     })
-    .openapi("NoteReaction", {
+    .openapi({
         description: "Information about a reaction to a note.",
+        ref: "NoteReaction",
     });
 
 /* Versia Server API extension */
@@ -134,6 +137,7 @@ export const Challenge = z
             example: "1234567890",
         }),
     })
-    .openapi("Challenge", {
+    .openapi({
         description: "A cryptographic challenge to solve. Used for Captchas.",
+        ref: "Challenge",
     });

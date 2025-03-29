@@ -1,87 +1,44 @@
-import { jsonOrForm } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { handleZodError, jsonOrForm } from "@/api";
 import { Application, Token } from "@versia/kit/db";
 import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import type { PluginType } from "../../index.ts";
-
-const schemas = {
-    json: z.object({
-        code: z.string().optional(),
-        code_verifier: z.string().optional(),
-        grant_type: z
-            .enum([
-                "authorization_code",
-                "refresh_token",
-                "client_credentials",
-                "password",
-                "urn:ietf:params:oauth:grant-type:device_code",
-                "urn:ietf:params:oauth:grant-type:token-exchange",
-                "urn:ietf:params:oauth:grant-type:saml2-bearer",
-                "urn:openid:params:grant-type:ciba",
-            ])
-            .default("authorization_code"),
-        client_id: z.string().optional(),
-        client_secret: z.string().optional(),
-        username: z.string().trim().optional(),
-        password: z.string().trim().optional(),
-        redirect_uri: z.string().url().optional(),
-        refresh_token: z.string().optional(),
-        scope: z.string().optional(),
-        assertion: z.string().optional(),
-        audience: z.string().optional(),
-        subject_token_type: z.string().optional(),
-        subject_token: z.string().optional(),
-        actor_token_type: z.string().optional(),
-        actor_token: z.string().optional(),
-        auth_req_id: z.string().optional(),
-    }),
-};
 
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/token", (app) => {
-        app.openapi(
-            createRoute({
-                method: "post",
-                path: "/oauth/token",
+        app.post(
+            "/oauth/token",
+            describeRoute({
                 summary: "Get token",
                 tags: ["OpenID"],
-                middleware: [jsonOrForm(), plugin.middleware],
-                request: {
-                    body: {
-                        content: {
-                            "application/json": {
-                                schema: schemas.json,
-                            },
-                            "application/x-www-form-urlencoded": {
-                                schema: schemas.json,
-                            },
-                            "multipart/form-data": {
-                                schema: schemas.json,
-                            },
-                        },
-                    },
-                },
                 responses: {
                     200: {
                         description: "Token",
                         content: {
                             "application/json": {
-                                schema: z.object({
-                                    access_token: z.string(),
-                                    token_type: z.string(),
-                                    expires_in: z
-                                        .number()
-                                        .optional()
-                                        .nullable(),
-                                    id_token: z.string().optional().nullable(),
-                                    refresh_token: z
-                                        .string()
-                                        .optional()
-                                        .nullable(),
-                                    scope: z.string().optional(),
-                                    created_at: z.number(),
-                                }),
+                                schema: resolver(
+                                    z.object({
+                                        access_token: z.string(),
+                                        token_type: z.string(),
+                                        expires_in: z
+                                            .number()
+                                            .optional()
+                                            .nullable(),
+                                        id_token: z
+                                            .string()
+                                            .optional()
+                                            .nullable(),
+                                        refresh_token: z
+                                            .string()
+                                            .optional()
+                                            .nullable(),
+                                        scope: z.string().optional(),
+                                        created_at: z.number(),
+                                    }),
+                                ),
                             },
                         },
                     },
@@ -89,15 +46,53 @@ export default (plugin: PluginType): void => {
                         description: "Authorization error",
                         content: {
                             "application/json": {
-                                schema: z.object({
-                                    error: z.string(),
-                                    error_description: z.string(),
-                                }),
+                                schema: resolver(
+                                    z.object({
+                                        error: z.string(),
+                                        error_description: z.string(),
+                                    }),
+                                ),
                             },
                         },
                     },
                 },
             }),
+            jsonOrForm(),
+            plugin.middleware,
+            validator(
+                "json",
+                z.object({
+                    code: z.string().optional(),
+                    code_verifier: z.string().optional(),
+                    grant_type: z
+                        .enum([
+                            "authorization_code",
+                            "refresh_token",
+                            "client_credentials",
+                            "password",
+                            "urn:ietf:params:oauth:grant-type:device_code",
+                            "urn:ietf:params:oauth:grant-type:token-exchange",
+                            "urn:ietf:params:oauth:grant-type:saml2-bearer",
+                            "urn:openid:params:grant-type:ciba",
+                        ])
+                        .default("authorization_code"),
+                    client_id: z.string().optional(),
+                    client_secret: z.string().optional(),
+                    username: z.string().trim().optional(),
+                    password: z.string().trim().optional(),
+                    redirect_uri: z.string().url().optional(),
+                    refresh_token: z.string().optional(),
+                    scope: z.string().optional(),
+                    assertion: z.string().optional(),
+                    audience: z.string().optional(),
+                    subject_token_type: z.string().optional(),
+                    subject_token: z.string().optional(),
+                    actor_token_type: z.string().optional(),
+                    actor_token: z.string().optional(),
+                    auth_req_id: z.string().optional(),
+                }),
+                handleZodError,
+            ),
             async (context) => {
                 const {
                     grant_type,

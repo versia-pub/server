@@ -1,45 +1,44 @@
-import { apiRoute, auth } from "@/api";
-import { createRoute, z } from "@hono/zod-openapi";
+import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import { RolePermission } from "@versia/client/schemas";
+import { describeRoute } from "hono-openapi";
+import { validator } from "hono-openapi/zod";
+import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 
-const schemas = {
-    query: z.object({
-        "ids[]": z.array(z.string().uuid()),
-    }),
-};
-
-const route = createRoute({
-    method: "delete",
-    path: "/api/v1/notifications/destroy_multiple",
-    summary: "Dismiss multiple notifications",
-    tags: ["Notifications"],
-    middleware: [
+export default apiRoute((app) =>
+    app.delete(
+        "/api/v1/notifications/destroy_multiple",
+        describeRoute({
+            summary: "Dismiss multiple notifications",
+            tags: ["Notifications"],
+            responses: {
+                200: {
+                    description: "Notifications dismissed",
+                },
+                401: ApiError.missingAuthentication().schema,
+            },
+        }),
         auth({
             auth: true,
             permissions: [RolePermission.ManageOwnNotifications],
             scopes: ["write:notifications"],
         }),
-    ] as const,
-    request: {
-        query: schemas.query,
-    },
-    responses: {
-        200: {
-            description: "Notifications dismissed",
+        qsQuery(),
+        validator(
+            "query",
+            z.object({
+                ids: z.array(z.string().uuid()),
+            }),
+            handleZodError,
+        ),
+        async (context) => {
+            const { user } = context.get("auth");
+
+            const { ids } = context.req.valid("query");
+
+            await user.clearSomeNotifications(ids);
+
+            return context.text("", 200);
         },
-        401: ApiError.missingAuthentication().schema,
-    },
-});
-
-export default apiRoute((app) =>
-    app.openapi(route, async (context) => {
-        const { user } = context.get("auth");
-
-        const { "ids[]": ids } = context.req.valid("query");
-
-        await user.clearSomeNotifications(ids);
-
-        return context.text("", 200);
-    }),
+    ),
 );

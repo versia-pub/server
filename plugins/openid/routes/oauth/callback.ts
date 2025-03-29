@@ -1,46 +1,28 @@
+import { handleZodError } from "@/api";
 import { randomString } from "@/math.ts";
-import { createRoute, z } from "@hono/zod-openapi";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Media, Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, Users } from "@versia/kit/tables";
+import { describeRoute } from "hono-openapi";
+import { validator } from "hono-openapi/zod";
 import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
+import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
 
-const schemas = {
-    query: z.object({
-        client_id: z.string().optional(),
-        flow: z.string(),
-        link: z
-            .string()
-            .transform((v) => ["true", "1", "on"].includes(v.toLowerCase()))
-            .optional(),
-        user_id: z.string().uuid().optional(),
-    }),
-    param: z.object({
-        issuer: z.string(),
-    }),
-};
-
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/oauth/sso/{issuer}/callback", (app) => {
-        app.openapi(
-            createRoute({
-                method: "get",
-                path: "/oauth/sso/{issuer}/callback",
+        app.get(
+            "/oauth/sso/:issuer/callback",
+            describeRoute({
                 summary: "SSO callback",
                 tags: ["OpenID"],
                 description:
                     "After the user has authenticated to an external OpenID provider, they are redirected here to complete the OAuth flow and get a code",
-                middleware: [plugin.middleware] as const,
-                request: {
-                    query: schemas.query,
-                    params: schemas.param,
-                },
                 responses: {
                     302: {
                         description:
@@ -48,6 +30,29 @@ export default (plugin: PluginType): void => {
                     },
                 },
             }),
+            plugin.middleware,
+            validator(
+                "param",
+                z.object({
+                    issuer: z.string(),
+                }),
+                handleZodError,
+            ),
+            validator(
+                "query",
+                z.object({
+                    client_id: z.string().optional(),
+                    flow: z.string(),
+                    link: z
+                        .string()
+                        .transform((v) =>
+                            ["true", "1", "on"].includes(v.toLowerCase()),
+                        )
+                        .optional(),
+                    user_id: z.string().uuid().optional(),
+                }),
+                handleZodError,
+            ),
             async (context) => {
                 const currentUrl = new URL(context.req.url);
                 const redirectUrl = new URL(context.req.url);

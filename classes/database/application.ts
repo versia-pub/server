@@ -1,4 +1,3 @@
-import type { z } from "@hono/zod-openapi";
 import type {
     Application as ApplicationSchema,
     CredentialApplication,
@@ -13,6 +12,7 @@ import {
     eq,
     inArray,
 } from "drizzle-orm";
+import type { z } from "zod";
 import { BaseInterface } from "./base.ts";
 
 type ApplicationType = InferSelectModel<typeof Applications>;
