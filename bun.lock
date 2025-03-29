@@ -17,7 +17,7 @@
         "@inquirer/confirm": "^5.1.8",
         "@logtape/file": "^0.9.0",
         "@logtape/logtape": "^0.9.0",
-        "@scalar/hono-api-reference": "^0.7.3",
+        "@scalar/hono-api-reference": "^0.7.4",
         "@sentry/bun": "^9.10.1",
         "@versia/client": "workspace:*",
         "@versia/federation": "^0.2.1",
@@ -61,7 +61,7 @@
         "xss": "^1.0.15",
         "youch": "^4.1.0-beta.6",
         "zod": "^3.24.2",
-        "zod-openapi": "^4.2.3",
+        "zod-openapi": "^4.2.4",
         "zod-validation-error": "^3.4.0",
       },
       "devDependencies": {
@@ -113,6 +113,7 @@
     "msgpackr-extract",
   ],
   "patchedDependencies": {
+    "giget@2.0.0": "patches/giget@2.0.0.patch",
     "@bull-board/api@6.7.10": "patches/@bull-board%2Fapi@6.5.3.patch",
   },
   "packages": {
@@ -1380,7 +1381,7 @@
 
     "zod": ["zod@3.24.2", "", {}, "sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ=="],
 
-    "zod-openapi": ["zod-openapi@4.2.3", "", { "peerDependencies": { "zod": "^3.21.4" } }, "sha512-i0SqpcdXfsvVWTIY1Jl3Tk421s9fBIkpXvaA86zDas+8FjfZjm+GX6ot6SPB2SyuHwUNTN02gE5uIVlYXlyrDQ=="],
+    "zod-openapi": ["zod-openapi@4.2.4", "", { "peerDependencies": { "zod": "^3.21.4" } }, "sha512-tsrQpbpqFCXqVXUzi3TPwFhuMtLN3oNZobOtYnK6/5VkXsNdnIgyNr4r8no4wmYluaxzN3F7iS+8xCW8BmMQ8g=="],
 
     "zod-to-json-schema": ["zod-to-json-schema@3.24.5", "", { "peerDependencies": { "zod": "^3.24.1" } }, "sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g=="],
 

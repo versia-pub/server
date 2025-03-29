@@ -89,7 +89,7 @@
         "@inquirer/confirm": "^5.1.8",
         "@logtape/file": "^0.9.0",
         "@logtape/logtape": "^0.9.0",
-        "@scalar/hono-api-reference": "^0.7.3",
+        "@scalar/hono-api-reference": "^0.7.4",
         "@sentry/bun": "^9.10.1",
         "@versia/client": "workspace:*",
         "@versia/federation": "^0.2.1",
@@ -133,10 +133,11 @@
         "xss": "^1.0.15",
         "youch": "^4.1.0-beta.6",
         "zod": "^3.24.2",
-        "zod-openapi": "^4.2.3",
+        "zod-openapi": "^4.2.4",
         "zod-validation-error": "^3.4.0"
     },
     "patchedDependencies": {
-        "@bull-board/api@6.7.10": "patches/@bull-board%2Fapi@6.5.3.patch"
+        "@bull-board/api@6.7.10": "patches/@bull-board%2Fapi@6.5.3.patch",
+        "giget@2.0.0": "patches/giget@2.0.0.patch"
     }
 }
