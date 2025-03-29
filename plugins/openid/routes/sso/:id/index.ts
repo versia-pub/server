@@ -11,7 +11,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 
 export default (plugin: PluginType): void => {
-    plugin.registerRoute("/api/v1/sso/{id}", (app) => {
+    plugin.registerRoute("/api/v1/sso/:id", (app) => {
         app.get(
             "/api/v1/sso/:id",
             describeRoute({

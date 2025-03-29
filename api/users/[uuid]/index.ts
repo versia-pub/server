@@ -8,7 +8,7 @@ import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
     app.get(
-        "/users/{uuid}",
+        "/users/:uuid",
         describeRoute({
             summary: "Get user data",
             tags: ["Federation"],

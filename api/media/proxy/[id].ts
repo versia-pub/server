@@ -9,7 +9,7 @@ import { config } from "~/config.ts";
 
 export default apiRoute((app) =>
     app.get(
-        "/media/proxy/{id}",
+        "/media/proxy/:id",
         describeRoute({
             summary: "Proxy media through the server",
             responses: {

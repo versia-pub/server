@@ -214,7 +214,7 @@ export default apiRoute((app) => {
     );
 
     app.delete(
-        "/api/v1/emojis/{id}",
+        "/api/v1/emojis/:id",
         describeRoute({
             summary: "Delete emoji",
             description: "Delete a custom emoji from the database.",
