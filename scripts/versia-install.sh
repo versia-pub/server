@@ -272,7 +272,7 @@ services:
       NUXT_PUBLIC_API_HOST: https://${DOMAIN}:${PORT}
 
   db:
-    image: ghcr.io/versia-pub/postgres:main
+    image: postgres:17-alpine
     container_name: ${CONTAINER_NAMES[2]}
     restart: unless-stopped
     environment:

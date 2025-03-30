@@ -8,7 +8,7 @@ jobs:
         runs-on: ubuntu-latest
         services:
             postgres:
-                image: ghcr.io/versia-pub/postgres:main
+                image: postgres:17-alpine
                 ports:
                     - 5432:5432
                 env:
