@@ -555,15 +555,16 @@ export class InboxProcessor {
      */
     private async processUserRequest(): Promise<Response | null> {
         const user = this.body as unknown as VersiaUser;
-        // FIXME: Instead of refetching the remote user, we should read the incoming json and update from that
-        const updatedAccount = await User.fetchFromRemote(new URL(user.uri));
+        const instance = await Instance.resolve(new URL(user.uri));
 
-        if (!updatedAccount) {
+        if (!instance) {
             return Response.json(
-                { error: "Failed to update user" },
-                { status: 500 },
+                { error: "Instance not found" },
+                { status: 404 },
             );
         }
+
+        await User.fromVersia(user, instance);
 
         return null;
     }
