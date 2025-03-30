@@ -22,12 +22,20 @@ Please see [Database Changes](#database-changes) and [New Configuration](#new-co
 -   [x] 📖 Overhauled OpenAPI schemas to match [Mastodon API docs](https://docs.joinmastodon.org)
 -   [x] 👷 Improved [**Roles API**](https://server.versia.pub/api/roles) to allow for full role control (create, update, delete, assign).
 -   [x] ✏️ `<div>` and `<span>` tags are now allowed in Markdown.
+-   [x] 🔥 Removed nonstandard `/api/v1/accounts/id` endpoint (the same functionality was already possible with other endpoints).
+-   [x] ✨️ Implemented rate limiting support for API endpoints.
 
 ### CLI
 
 -   [x] ⌨️ New commands!
     -   [x] ✨️ `cli user token` to generate API tokens.
-    -   [x] ✨️ `cli notes recalculate` to recalculate note attributes (such as emojis). Useful after deleting and reuploading emojis with the same name.
+-   [x] 👷 Error messages are now prettier!
+
+### Frontend
+
+The way frontend is built and served has been changed. In the past, it was required to have a second process serving a frontend, which `versia-server` would proxy requests to. This is no longer the case.
+
+Versia Server now serves static files directly from a configurable path, and `versia-fe` has been updated to support this.
 
 ### Backend
 
@@ -46,7 +54,7 @@ Configuration parsing and validation has been overhauled. Unfortunately, this me
 
 Various media-related attributes have been merged into a single `Medias` table. This will require a migration in order to preserve the old data.
 
-Since very few instances are running `0.7.0`, we have decided to "rawdog it" instead of making a proper migration script (as that would take a ton of _unpaid_ time).
+Since very few instances are running `0.7.0`, we have decided to "rawdog it" instead of making a proper migration script (as that would take a ton of time that we don't have).
 
 In the case that you've been running secret instances in the shadows, let us know and we'll help you out.
 
@@ -56,6 +64,8 @@ In the case that you've been running secret instances in the shadows, let us kno
 -   🐛 Fixed several issues with the [ActivityPub Federation Bridge](https://github.com/versia-pub/activitypub) preventing it from operating properly.
 -   🐛 Fixed incorrect content-type on some media when using S3.
 -   🐛 All media content-type is now correctly fetched, instead of guessed from the file extension as before.
+-   🐛 Fixed OpenAPI schema generation and `/docs` endpoint.
+-   🐛 Logs folder is now automatically created if it doesn't exist.
 
 # `0.7.0` • The Auth and APIs Update
 
