@@ -1,5 +1,4 @@
 import { apiRoute } from "@/api";
-import { proxyUrl } from "@/response";
 import { InstanceV1 as InstanceV1Schema } from "@versia/client/schemas";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -8,6 +7,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import type { z } from "zod";
 import { markdownParse } from "~/classes/functions/status";
+import type { ProxiableUrl } from "~/classes/media/url";
 import { config } from "~/config.ts";
 import manifest from "~/package.json";
 
@@ -56,7 +56,7 @@ export default apiRoute((app) =>
                       providers?: {
                           id: string;
                           name: string;
-                          icon: string;
+                          icon?: ProxiableUrl;
                       }[];
                   }
                 | undefined;
@@ -114,9 +114,7 @@ export default apiRoute((app) =>
                     status_count: statusCount,
                     user_count: userCount,
                 },
-                thumbnail: config.instance.branding.logo
-                    ? proxyUrl(config.instance.branding.logo).toString()
-                    : null,
+                thumbnail: config.instance.branding.logo?.proxied ?? null,
                 title: config.instance.name,
                 uri: config.http.base_url.host,
                 urls: {
@@ -131,9 +129,7 @@ export default apiRoute((app) =>
                     providers:
                         oidcConfig?.providers?.map((p) => ({
                             name: p.name,
-                            icon: p.icon
-                                ? proxyUrl(new URL(p.icon)).toString()
-                                : undefined,
+                            icon: p.icon?.proxied,
                             id: p.id,
                         })) ?? [],
                 },

@@ -1,5 +1,4 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
-import { proxyUrl } from "@/response";
 import type { CustomEmoji } from "@versia/client/schemas";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, Media, db } from "@versia/kit/db";
@@ -179,8 +178,8 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
         return {
             id: this.id,
             shortcode: this.data.shortcode,
-            static_url: proxyUrl(this.media.getUrl()).toString(),
-            url: proxyUrl(this.media.getUrl()).toString(),
+            static_url: this.media.getUrl().proxied,
+            url: this.media.getUrl().proxied,
             visible_in_picker: this.data.visibleInPicker,
             category: this.data.category,
             global: this.data.ownerId === null,

@@ -6,6 +6,7 @@ import { generateVAPIDKeys } from "web-push";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { ProxiableUrl } from "~/classes/media/url.ts";
 import { RolePermission } from "~/packages/client/schemas/permissions.ts";
 
 export const DEFAULT_ROLES = [
@@ -70,21 +71,21 @@ export enum MediaBackendType {
 // Need to declare this here instead of importing it otherwise we get cyclical import errors
 export const iso631 = z.enum(ISO6391.getAllCodes() as [string, ...string[]]);
 
-const urlPath = z
+export const urlPath = z
     .string()
     .trim()
     .min(1)
     // Remove trailing slashes, but keep the root slash
     .transform((arg) => (arg === "/" ? arg : arg.replace(/\/$/, "")));
 
-const url = z
+export const url = z
     .string()
     .trim()
     .min(1)
     .refine((arg) => URL.canParse(arg), "Invalid url")
-    .transform((arg) => new URL(arg));
+    .transform((arg) => new ProxiableUrl(arg));
 
-const unixPort = z
+export const unixPort = z
     .number()
     .int()
     .min(1)

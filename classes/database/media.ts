@@ -1,6 +1,5 @@
 import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
-import { proxyUrl } from "@/response";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
@@ -20,6 +19,7 @@ import { MediaBackendType } from "~/classes/config/schema.ts";
 import { config } from "~/config.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { getMediaHash } from "../media/media-hasher.ts";
+import { ProxiableUrl } from "../media/url.ts";
 import { MediaJobType, mediaQueue } from "../queues/media.ts";
 import { BaseInterface } from "./base.ts";
 
@@ -369,10 +369,10 @@ export class Media extends BaseInterface<typeof Medias> {
         throw new Error("Unknown media backend");
     }
 
-    public getUrl(): URL {
+    public getUrl(): ProxiableUrl {
         const type = this.getPreferredMimeType();
 
-        return new URL(this.data.content[type]?.content ?? "");
+        return new ProxiableUrl(this.data.content[type]?.content ?? "");
     }
 
     /**
@@ -510,10 +510,10 @@ export class Media extends BaseInterface<typeof Medias> {
         return {
             id: this.data.id,
             type: this.getMastodonType(),
-            url: proxyUrl(new URL(data.content)).toString(),
+            url: this.getUrl().proxied,
             remote_url: null,
             preview_url: thumbnailData?.content
-                ? proxyUrl(new URL(thumbnailData.content)).toString()
+                ? new ProxiableUrl(thumbnailData.content).proxied
                 : null,
             meta: this.toApiMeta(),
             description: data.description || null,

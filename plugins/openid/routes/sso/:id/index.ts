@@ -1,5 +1,4 @@
 import { auth, handleZodError } from "@/api";
-import { proxyUrl } from "@/response";
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { type SQL, eq } from "@versia/kit/drizzle";
@@ -77,9 +76,7 @@ export default (plugin: PluginType): void => {
                     {
                         id: issuer.id,
                         name: issuer.name,
-                        icon: issuer.icon
-                            ? proxyUrl(new URL(issuer.icon))
-                            : undefined,
+                        icon: issuer.icon?.proxied,
                     },
                     200,
                 );

@@ -1,4 +1,3 @@
-import { proxyUrl } from "@/response";
 import type { Role as RoleSchema } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
@@ -14,11 +13,30 @@ import {
 } from "drizzle-orm";
 import type { z } from "zod";
 import { config } from "~/config.ts";
+import { ProxiableUrl } from "../media/url.ts";
 import { BaseInterface } from "./base.ts";
 type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {
     public static $type: RoleType;
+    public static defaultRole = new Role({
+        id: "default",
+        name: "Default",
+        permissions: config.permissions.default,
+        priority: 0,
+        description: "Default role for all users",
+        visible: false,
+        icon: null,
+    });
+    public static adminRole = new Role({
+        id: "admin",
+        name: "Admin",
+        permissions: config.permissions.admin,
+        priority: 2 ** 31 - 1,
+        description: "Default role for all administrators",
+        visible: false,
+        icon: null,
+    });
 
     public async reload(): Promise<void> {
         const reloaded = await Role.fromId(this.data.id);
@@ -59,24 +77,8 @@ export class Role extends BaseInterface<typeof Roles> {
 
     public static async getAll(): Promise<Role[]> {
         return (await Role.manyFromSql(undefined)).concat(
-            new Role({
-                id: "default",
-                name: "Default",
-                permissions: config.permissions.default,
-                priority: 0,
-                description: "Default role for all users",
-                visible: false,
-                icon: null,
-            }),
-            new Role({
-                id: "admin",
-                name: "Admin",
-                permissions: config.permissions.admin,
-                priority: 2 ** 31 - 1,
-                description: "Default role for all administrators",
-                visible: false,
-                icon: null,
-            }),
+            Role.defaultRole,
+            Role.adminRole,
         );
     }
 
@@ -215,7 +217,7 @@ export class Role extends BaseInterface<typeof Roles> {
             description: this.data.description ?? undefined,
             visible: this.data.visible,
             icon: this.data.icon
-                ? proxyUrl(new URL(this.data.icon)).toString()
+                ? new ProxiableUrl(this.data.icon).proxied
                 : undefined,
         };
     }

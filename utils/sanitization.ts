@@ -1,6 +1,6 @@
 import { stringifyEntitiesLight } from "stringify-entities";
 import xss, { type IFilterXSSOptions } from "xss";
-import { proxyUrl } from "./response.ts";
+import { ProxiableUrl } from "~/classes/media/url.ts";
 
 export const sanitizedHtmlStrip = (html: string): Promise<string> => {
     return sanitizeHtml(html, {
@@ -137,9 +137,9 @@ export const sanitizeHtml = async (
                 element.setAttribute(
                     "src",
                     element.getAttribute("src")
-                        ? proxyUrl(
-                              new URL(element.getAttribute("src") as string),
-                          ).toString()
+                        ? new ProxiableUrl(
+                              element.getAttribute("src") as string,
+                          ).proxied
                         : "",
                 );
             },

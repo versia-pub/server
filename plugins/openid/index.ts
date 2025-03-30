@@ -5,7 +5,7 @@ import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { z } from "zod";
-import { keyPair, sensitiveString } from "~/classes/config/schema.ts";
+import { url, keyPair, sensitiveString } from "~/classes/config/schema.ts";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
@@ -27,7 +27,7 @@ const configSchema = z.object({
                 url: z.string().min(1),
                 client_id: z.string().min(1),
                 client_secret: sensitiveString,
-                icon: z.string().min(1).optional(),
+                icon: url.optional(),
             }),
         )
         .default([]),

@@ -64,7 +64,7 @@ describe("/api/v1/emojis", () => {
 
             expect(ok).toBe(true);
             expect(data.shortcode).toBe("test1");
-            expect(data.url).toContain("/media/proxy");
+            expect(data.url).toContain("/media/");
         });
 
         test("should try to upload a non-image", async () => {
@@ -116,7 +116,7 @@ describe("/api/v1/emojis", () => {
 
             expect(ok).toBe(true);
             expect(data.shortcode).toBe("test4");
-            expect(data.url).toContain("/media/proxy");
+            expect(data.url).toContain("/media/");
         });
 
         test("should fail when uploading an already existing global emoji", async () => {
@@ -141,7 +141,7 @@ describe("/api/v1/emojis", () => {
 
             expect(ok).toBe(true);
             expect(data.shortcode).toBe("test4");
-            expect(data.url).toContain("/media/proxy/");
+            expect(data.url).toContain("/media/");
         });
     });
 });

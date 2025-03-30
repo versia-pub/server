@@ -69,6 +69,7 @@ In the case that you've been running secret instances in the shadows, let us kno
 -   🐛 All media content-type is now correctly fetched, instead of guessed from the file extension as before.
 -   🐛 Fixed OpenAPI schema generation and `/docs` endpoint.
 -   🐛 Logs folder is now automatically created if it doesn't exist.
+-   🐛 Media hosted on the configured S3 bucket and on the local filesystem is no longer unnecessarily proxied.
 
 # `0.7.0` • The Auth and APIs Update
 

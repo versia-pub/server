@@ -1,7 +1,6 @@
 import { idValidator } from "@/api";
 import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
-import { proxyUrl } from "@/response";
 import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
 import type {
@@ -56,6 +55,7 @@ import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
 import type { KnownEntity } from "~/types/api.ts";
+import { ProxiableUrl } from "../media/url.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
 import { BaseInterface } from "./base.ts";
@@ -180,19 +180,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public getAllPermissions(): RolePermission[] {
-        return (
-            this.data.roles
-                .flatMap((role) => role.permissions)
+        return Array.from(
+            new Set([
+                ...this.data.roles.flatMap((role) => role.permissions),
                 // Add default permissions
-                .concat(config.permissions.default)
+                ...config.permissions.default,
                 // If admin, add admin permissions
-                .concat(this.data.isAdmin ? config.permissions.admin : [])
-                .reduce((acc, permission) => {
-                    if (!acc.includes(permission)) {
-                        acc.push(permission);
-                    }
-                    return acc;
-                }, [] as RolePermission[])
+                ...(this.data.isAdmin ? config.permissions.admin : []),
+            ]),
         );
     }
 
@@ -415,7 +410,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             id: string;
             name: string;
             url: string;
-            icon?: string;
+            icon?: ProxiableUrl;
         }[],
     ): Promise<
         {
@@ -445,9 +440,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     id: issuer.id,
                     name: issuer.name,
                     url: issuer.url,
-                    icon: issuer.icon
-                        ? proxyUrl(new URL(issuer.icon)).toString()
-                        : undefined,
+                    icon: issuer.icon?.proxied,
                     server_id: account.serverId,
                 };
             })
@@ -831,11 +824,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * Get the user's avatar in raw URL format
      * @returns The raw URL for the user's avatar
      */
-    public getAvatarUrl(): URL {
+    public getAvatarUrl(): ProxiableUrl {
         if (!this.avatar) {
             return (
                 config.defaults.avatar ||
-                new URL(
+                new ProxiableUrl(
                     `https://api.dicebear.com/8.x/${config.defaults.placeholder_style}/svg?seed=${this.data.username}`,
                 )
             );
@@ -928,10 +921,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * Get the user's header in raw URL format
      * @returns The raw URL for the user's header
      */
-    public getHeaderUrl(): URL | null {
+    public getHeaderUrl(): ProxiableUrl | null {
         if (!this.header) {
             return config.defaults.header ?? null;
         }
+
         return this.header.getUrl();
     }
 
@@ -974,7 +968,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 newUser.isBot ||
                 newUser.isLocked ||
                 newUser.endpoints ||
-                newUser.isDiscoverable)
+                newUser.isDiscoverable ||
+                newUser.isIndexable)
         ) {
             await this.federateToFollowers(this.toVersia());
         }
@@ -1051,18 +1046,26 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
+     * Get all remote followers of the user
+     * @returns The remote followers
+     */
+    private getRemoteFollowers(): Promise<User[]> {
+        return User.manyFromSql(
+            and(
+                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
+                isNotNull(Users.instanceId),
+            ),
+        );
+    }
+
+    /**
      * Federates an entity to all followers of the user
      *
      * @param entity Entity to federate
      */
     public async federateToFollowers(entity: KnownEntity): Promise<void> {
         // Get followers
-        const followers = await User.manyFromSql(
-            and(
-                sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."subjectId" = ${this.id} AND "Relationships"."ownerId" = ${Users.id} AND "Relationships"."following" = true)`,
-                isNotNull(Users.instanceId),
-            ),
-        );
+        const followers = await this.getRemoteFollowers();
 
         await deliveryQueue.addBulk(
             followers.map((follower) => ({
@@ -1130,10 +1133,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             url:
                 user.uri ||
                 new URL(`/@${user.username}`, config.http.base_url).toString(),
-            avatar: proxyUrl(this.getAvatarUrl()).toString(),
-            header: this.getHeaderUrl()
-                ? proxyUrl(this.getHeaderUrl() as URL).toString()
-                : "",
+            avatar: this.getAvatarUrl().proxied,
+            header: this.getHeaderUrl()?.proxied ?? "",
             locked: user.isLocked,
             created_at: new Date(user.createdAt).toISOString(),
             followers_count:
@@ -1154,10 +1155,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             bot: user.isBot,
             source: isOwnAccount ? user.source : undefined,
             // TODO: Add static avatar and header
-            avatar_static: proxyUrl(this.getAvatarUrl()).toString(),
-            header_static: this.getHeaderUrl()
-                ? proxyUrl(this.getHeaderUrl() as URL).toString()
-                : "",
+            avatar_static: this.getAvatarUrl().proxied,
+            header_static: this.getHeaderUrl()?.proxied ?? "",
             acct: this.getAcct(),
             // TODO: Add these fields
             limited: false,
@@ -1168,33 +1167,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             mute_expires_at: null,
             roles: user.roles
                 .map((role) => new Role(role))
-                .concat(
-                    new Role({
-                        id: "default",
-                        name: "Default",
-                        permissions: config.permissions.default,
-                        priority: 0,
-                        description: "Default role for all users",
-                        visible: false,
-                        icon: null,
-                    }),
-                )
-                .concat(
-                    user.isAdmin
-                        ? [
-                              new Role({
-                                  id: "admin",
-                                  name: "Admin",
-                                  permissions: config.permissions.admin,
-                                  priority: 2 ** 31 - 1,
-                                  description:
-                                      "Default role for all administrators",
-                                  visible: false,
-                                  icon: null,
-                              }),
-                          ]
-                        : [],
-                )
+                .concat(Role.defaultRole)
+                .concat(user.isAdmin ? Role.adminRole : [])
                 .map((r) => r.toApi()),
             group: false,
             // TODO
