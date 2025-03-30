@@ -5,7 +5,7 @@ import { Client as VersiaClient } from "@versia/client";
 import { Note, Token, User, db } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
 import { solveChallenge } from "altcha-lib";
-import { env } from "bun";
+import { env, randomUUIDv7 } from "bun";
 import { type InferSelectModel, asc, inArray, like } from "drizzle-orm";
 import { appFactory } from "~/app";
 import { searchManager } from "~/classes/search/search-manager";
@@ -46,6 +46,7 @@ export const generateClient = async (
 > => {
     const token = user
         ? await Token.insert({
+              id: randomUUIDv7(),
               accessToken: randomString(32, "hex"),
               tokenType: "bearer",
               userId: user.id,
@@ -118,6 +119,7 @@ export const getTestUsers = async (
 
     const tokens = await Token.insertMany(
         users.map((u) => ({
+            id: randomUUIDv7(),
             accessToken: randomString(32, "hex"),
             tokenType: "bearer",
             userId: u.id,
@@ -155,6 +157,7 @@ export const getTestStatuses = async (
 
     for (let i = 0; i < count; i++) {
         const newStatus = await Note.insert({
+            id: randomUUIDv7(),
             content: `${i} ${randomString(32, "hex")}`,
             authorId: user.id,
             sensitive: false,

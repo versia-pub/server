@@ -2,6 +2,7 @@ import { auth, handleZodError } from "@/api";
 import { RolePermission } from "@versia/client/schemas";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import {
@@ -117,6 +118,7 @@ export default (plugin: PluginType): void => {
                 );
 
                 const application = await Application.insert({
+                    id: randomUUIDv7(),
                     clientId:
                         user.id +
                         Buffer.from(
@@ -133,6 +135,7 @@ export default (plugin: PluginType): void => {
                     await db
                         .insert(OpenIdLoginFlows)
                         .values({
+                            id: randomUUIDv7(),
                             codeVerifier,
                             issuerId,
                             applicationId: application.id,

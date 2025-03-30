@@ -3,6 +3,7 @@ import { Status as StatusSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -66,6 +67,7 @@ export default apiRoute((app) =>
             }
 
             const newReblog = await Note.insert({
+                id: randomUUIDv7(),
                 authorId: user.id,
                 reblogId: note.data.id,
                 visibility,

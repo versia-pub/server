@@ -33,6 +33,7 @@ import {
     UserToPinnedNotes,
     Users,
 } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -471,6 +472,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         const newLike = await Like.insert({
+            id: randomUUIDv7(),
             likerId: this.id,
             likedId: note.id,
             uri,
@@ -520,6 +522,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         note?: Note,
     ): Promise<void> {
         const notification = await Notification.insert({
+            id: randomUUIDv7(),
             accountId: relatedUser.id,
             type,
             notifiedId: this.id,
@@ -723,6 +726,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     );
                 } else {
                     avatar = await Media.insert({
+                        id: randomUUIDv7(),
                         content: user.avatar,
                     });
                 }
@@ -737,6 +741,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     );
                 } else {
                     header = await Media.insert({
+                        id: randomUUIDv7(),
                         content: user.header,
                     });
                 }
@@ -755,17 +760,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         // Else, create a new user
         const avatar = user.avatar
             ? await Media.insert({
+                  id: randomUUIDv7(),
                   content: user.avatar,
               })
             : null;
 
         const header = user.header
             ? await Media.insert({
+                  id: randomUUIDv7(),
                   content: user.header,
               })
             : null;
 
         const newUser = await User.insert({
+            id: randomUUIDv7(),
             ...data,
             avatarId: avatar?.id,
             headerId: header?.id,
@@ -876,6 +884,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             await db
                 .insert(Users)
                 .values({
+                    id: randomUUIDv7(),
                     username: data.username,
                     displayName: data.display_name ?? data.username,
                     password:

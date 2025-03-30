@@ -6,6 +6,7 @@ import {
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import type { SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -139,6 +140,7 @@ export default apiRoute((app) => {
                 await db
                     .insert(Filters)
                     .values({
+                        id: randomUUIDv7(),
                         title,
                         context: ctx,
                         filterAction: filter_action,
@@ -160,6 +162,7 @@ export default apiRoute((app) => {
                           .insert(FilterKeywords)
                           .values(
                               keywords_attributes?.map((keyword) => ({
+                                  id: randomUUIDv7(),
                                   filterId: newFilter.id,
                                   keyword: keyword.keyword,
                                   wholeWord: keyword.whole_word ?? false,

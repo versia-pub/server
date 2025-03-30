@@ -1,6 +1,7 @@
 import type { Relationship as RelationshipSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Relationships } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -83,6 +84,7 @@ export class Relationship extends BaseInterface<
         if (!found) {
             // Create a new relationship if one doesn't exist
             return await Relationship.insert({
+                id: randomUUIDv7(),
                 ownerId: owner.id,
                 subjectId: subject.id,
                 languages: [],
@@ -119,6 +121,7 @@ export class Relationship extends BaseInterface<
 
         for (const subjectId of missingSubjectsIds) {
             await Relationship.insert({
+                id: randomUUIDv7(),
                 ownerId: owner.id,
                 subjectId,
                 languages: [],
@@ -213,6 +216,7 @@ export class Relationship extends BaseInterface<
                 await db
                     .insert(Relationships)
                     .values({
+                        id: randomUUIDv7(),
                         ownerId: oppositeTo.subjectId,
                         subjectId: oppositeTo.ownerId,
                         languages: [],

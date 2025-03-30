@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(2);
@@ -10,6 +11,7 @@ let higherPriorityRole: Role;
 beforeAll(async () => {
     // Create new role
     role = await Role.insert({
+        id: randomUUIDv7(),
         name: "test",
         permissions: [RolePermission.ManageRoles],
         priority: 2,
@@ -24,6 +26,7 @@ beforeAll(async () => {
 
     // Create a role with higher priority than the user's role
     higherPriorityRole = await Role.insert({
+        id: randomUUIDv7(),
         name: "higherPriorityRole",
         permissions: [RolePermission.ManageRoles],
         priority: 3, // Higher priority than the user's role
@@ -173,6 +176,7 @@ describe("/api/v1/roles/:id", () => {
 
     test("should delete role", async () => {
         const newRole = await Role.insert({
+            id: randomUUIDv7(),
             name: "test2",
             permissions: [RolePermission.ManageRoles],
             priority: 2,

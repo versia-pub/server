@@ -2,6 +2,7 @@ import { apiRoute, auth, handleZodError } from "@/api";
 import { Role as RoleSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -105,6 +106,7 @@ export default apiRoute((app) => {
             }
 
             const newRole = await Role.insert({
+                id: randomUUIDv7(),
                 description,
                 icon,
                 name,

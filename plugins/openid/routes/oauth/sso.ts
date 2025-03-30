@@ -1,6 +1,7 @@
 import { handleZodError } from "@/api.ts";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import {
@@ -103,6 +104,7 @@ export default (plugin: PluginType): void => {
                     await db
                         .insert(OpenIdLoginFlows)
                         .values({
+                            id: randomUUIDv7(),
                             codeVerifier,
                             applicationId: application.id,
                             issuerId,

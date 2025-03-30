@@ -7,6 +7,7 @@ import {
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Markers } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { type SQL, and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -189,6 +190,7 @@ export default apiRoute((app) => {
                     await db
                         .insert(Markers)
                         .values({
+                            id: randomUUIDv7(),
                             userId: user.id,
                             timeline: "home",
                             noteId: homeId,
@@ -218,6 +220,7 @@ export default apiRoute((app) => {
                     await db
                         .insert(Markers)
                         .values({
+                            id: randomUUIDv7(),
                             userId: user.id,
                             timeline: "notifications",
                             notificationId: notificationsId,

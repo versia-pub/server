@@ -5,6 +5,7 @@ import {
     CredentialApplication as CredentialApplicationSchema,
 } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -66,6 +67,7 @@ export default apiRoute((app) =>
                 context.req.valid("json");
 
             const app = await Application.insert({
+                id: randomUUIDv7(),
                 name: client_name,
                 redirectUri: redirect_uris.join("\n"),
                 scopes: scopes.join(" "),

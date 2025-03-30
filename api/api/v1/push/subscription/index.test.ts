@@ -1,5 +1,6 @@
 import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 import { PushSubscription } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
@@ -44,6 +45,7 @@ describe("/api/v1/push/subscriptions", () => {
         await using client = await generateClient(users[1]);
 
         await PushSubscription.insert({
+            id: randomUUIDv7(),
             endpoint: "https://example.com",
             alerts: {
                 update: true,
@@ -76,6 +78,7 @@ describe("/api/v1/push/subscriptions", () => {
         await using client = await generateClient(users[0]);
 
         await PushSubscription.insert({
+            id: randomUUIDv7(),
             endpoint: "https://example.com",
             alerts: {
                 update: true,
@@ -175,6 +178,7 @@ describe("/api/v1/push/subscriptions", () => {
             await using client = await generateClient(users[0]);
 
             await PushSubscription.insert({
+                id: randomUUIDv7(),
                 endpoint: "https://example.com",
                 alerts: {
                     update: true,
@@ -217,6 +221,7 @@ describe("/api/v1/push/subscriptions", () => {
             await using client = await generateClient(users[0]);
 
             await PushSubscription.insert({
+                id: randomUUIDv7(),
                 endpoint: "https://example.com",
                 alerts: {
                     update: true,

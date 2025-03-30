@@ -5,6 +5,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { Media, Token, User, db } from "@versia/kit/db";
 import { type SQL, and, eq, isNull } from "@versia/kit/drizzle";
 import { OpenIdAccounts, Users } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { setCookie } from "hono/cookie";
@@ -175,6 +176,7 @@ export default (plugin: PluginType): void => {
 
                     // Link the account
                     await db.insert(OpenIdAccounts).values({
+                        id: randomUUIDv7(),
                         serverId: sub,
                         issuerId: issuer.id,
                         userId: user_id,
@@ -242,6 +244,7 @@ export default (plugin: PluginType): void => {
 
                         // Link account
                         await db.insert(OpenIdAccounts).values({
+                            id: randomUUIDv7(),
                             serverId: sub,
                             issuerId: issuer.id,
                             userId: user.id,
@@ -294,6 +297,7 @@ export default (plugin: PluginType): void => {
                 const code = randomString(32, "hex");
 
                 await Token.insert({
+                    id: randomUUIDv7(),
                     accessToken: randomString(64, "base64url"),
                     code,
                     scope: flow.application.scopes,

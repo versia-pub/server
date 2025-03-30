@@ -337,6 +337,13 @@
             "when": 1743359397906,
             "tag": "0047_black_vermin",
             "breakpoints": true
+        },
+        {
+            "idx": 48,
+            "version": "7",
+            "when": 1743365238468,
+            "tag": "0048_chilly_vector",
+            "breakpoints": true
         }
     ]
 }

@@ -1,6 +1,7 @@
 import type { ReactionExtension } from "@versia/federation/types";
 import { Emoji, Instance, type Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -231,6 +232,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
             : null;
 
         return Reaction.insert({
+            id: randomUUIDv7(),
             uri: reactionToConvert.uri,
             authorId: author.id,
             noteId: note.id,

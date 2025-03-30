@@ -1,8 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { Application } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { fakeRequest } from "~/tests/utils";
 
 const application = await Application.insert({
+    id: randomUUIDv7(),
     clientId: "test-client-id",
     redirectUri: "https://example.com/callback",
     scopes: "openid profile email",

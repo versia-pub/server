@@ -2,6 +2,7 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
 import { RolePermission } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { SignJWT } from "jose";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
@@ -19,6 +20,7 @@ const privateKey = await crypto.subtle.importKey(
 );
 
 const application = await Application.insert({
+    id: randomUUIDv7(),
     clientId: "test-client-id",
     redirectUri: "https://example.com/callback",
     scopes: "openid profile email",

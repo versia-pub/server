@@ -4,6 +4,7 @@ import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -124,6 +125,7 @@ export default apiRoute((app) =>
                       });
 
             const emoji = await Emoji.insert({
+                id: randomUUIDv7(),
                 shortcode,
                 mediaId: media.id,
                 visibleInPicker: true,

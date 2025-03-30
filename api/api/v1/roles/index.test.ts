@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { config } from "~/config.ts";
 import { generateClient, getTestUsers } from "~/tests/utils";
 
@@ -10,6 +11,7 @@ let role: Role;
 beforeAll(async () => {
     // Create new role
     role = await Role.insert({
+        id: randomUUIDv7(),
         name: "test",
         permissions: [RolePermission.ManageRoles],
         priority: 10,

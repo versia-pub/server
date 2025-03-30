@@ -1,6 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
@@ -8,6 +9,7 @@ const { users, deleteUsers, passwords } = await getTestUsers(1);
 
 // Create application
 const application = await Application.insert({
+    id: randomUUIDv7(),
     name: "Test Application",
     clientId: randomString(32, "hex"),
     secret: "test",

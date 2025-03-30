@@ -18,6 +18,7 @@ import {
     Notes,
     Users,
 } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -369,6 +370,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         const htmlContent = await contentToHtml(data.content, parsedMentions);
 
         const newNote = await Note.insert({
+            id: randomUUIDv7(),
             authorId: data.author.id,
             content: htmlContent,
             contentSource:

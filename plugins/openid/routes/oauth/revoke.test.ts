@@ -1,17 +1,21 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { Application, Token } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);
 
 const application = await Application.insert({
+    id: randomUUIDv7(),
     clientId: "test-client-id",
     redirectUri: "https://example.com/callback",
     scopes: "openid profile email",
     secret: "test-secret",
     name: "Test Application",
 });
+
 const token = await Token.insert({
+    id: randomUUIDv7(),
     code: "test-code",
     redirectUri: application.data.redirectUri,
     clientId: application.data.clientId,

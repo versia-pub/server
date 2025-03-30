@@ -4,6 +4,7 @@ import type { CustomEmoji } from "@versia/client/schemas";
 import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, Media, db } from "@versia/kit/db";
 import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -212,6 +213,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
         const media = await Media.fromVersia(emoji.url);
 
         return Emoji.insert({
+            id: randomUUIDv7(),
             shortcode,
             mediaId: media.id,
             visibleInPicker: true,

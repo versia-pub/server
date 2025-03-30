@@ -200,6 +200,7 @@ export class Media extends BaseInterface<typeof Medias> {
                 : undefined;
 
         const newAttachment = await Media.insert({
+            id: randomUUIDv7(),
             content,
             thumbnail: thumbnailContent,
         });
@@ -242,6 +243,7 @@ export class Media extends BaseInterface<typeof Medias> {
         };
 
         const newAttachment = await Media.insert({
+            id: randomUUIDv7(),
             content,
         });
 
@@ -525,6 +527,7 @@ export class Media extends BaseInterface<typeof Medias> {
 
     public static fromVersia(contentFormat: ContentFormat): Promise<Media> {
         return Media.insert({
+            id: randomUUIDv7(),
             content: contentFormat,
             originalContent: contentFormat,
         });

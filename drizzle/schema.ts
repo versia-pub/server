@@ -37,8 +37,7 @@ const updatedAt = () =>
 const uri = () => text("uri").unique();
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
-const id = () =>
-    uuid("id").default(sql`uuid_generate_v7()`).primaryKey().notNull();
+const id = () => uuid("id").primaryKey().notNull();
 
 export const Challenges = pgTable("Challenges", {
     id: id(),

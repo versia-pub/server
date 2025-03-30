@@ -6,6 +6,7 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { ApiError } from "~/classes/errors/api-error";
@@ -64,6 +65,7 @@ export default apiRoute((app) =>
             await PushSubscription.clearAllOfToken(token);
 
             const ps = await PushSubscription.insert({
+                id: randomUUIDv7(),
                 alerts: data.alerts,
                 policy,
                 endpoint: subscription.endpoint,

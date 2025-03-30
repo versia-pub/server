@@ -2,6 +2,7 @@ import { auth, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { RolePermission } from "@versia/client/schemas";
 import { Application, Token, User } from "@versia/kit/db";
+import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { type JWTPayload, SignJWT, jwtVerify } from "jose";
@@ -241,6 +242,7 @@ export default (plugin: PluginType): void =>
                     .sign(keys.private);
 
                 await Token.insert({
+                    id: randomUUIDv7(),
                     accessToken: randomString(64, "base64url"),
                     code,
                     scope: scope ?? application.data.scopes,

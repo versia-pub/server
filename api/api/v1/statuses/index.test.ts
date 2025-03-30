@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status } from "@versia/client/schemas";
 import { Media, db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { config } from "~/config.ts";
@@ -17,6 +18,7 @@ afterAll(async () => {
 
 beforeAll(async () => {
     media = await Media.insert({
+        id: randomUUIDv7(),
         content: {
             "image/png": {
                 content: "https://example.com/test.png",
@@ -24,7 +26,9 @@ beforeAll(async () => {
             },
         },
     });
+
     await db.insert(Emojis).values({
+        id: randomUUIDv7(),
         shortcode: "test",
         mediaId: media.id,
         visibleInPicker: true,

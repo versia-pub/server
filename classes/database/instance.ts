@@ -3,6 +3,7 @@ import { EntityValidator, type ResponseError } from "@versia/federation";
 import type { InstanceMetadata } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
+import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -337,6 +338,7 @@ export class Instance extends BaseInterface<typeof Instances> {
         const { metadata, protocol } = output;
 
         return Instance.insert({
+            id: randomUUIDv7(),
             baseUrl: host,
             name: metadata.name,
             version: metadata.software.version,

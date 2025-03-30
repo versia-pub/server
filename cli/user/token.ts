@@ -1,4 +1,5 @@
 import { randomString } from "@/math.ts";
+import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
@@ -22,6 +23,7 @@ export const generateTokenCommand = defineCommand(
         }
 
         const token = await Token.insert({
+            id: randomUUIDv7(),
             accessToken: randomString(64, "base64url"),
             code: null,
             scope: "read write follow",

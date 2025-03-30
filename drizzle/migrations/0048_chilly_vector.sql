@@ -1,0 +1,22 @@
+ALTER TABLE "Applications" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Challenges" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Emojis" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "FilterKeywords" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Filters" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Flags" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Instances" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Likes" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Markers" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Medias" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "ModNotes" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "ModTags" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Notes" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Notifications" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "OpenIdAccounts" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "OpenIdLoginFlows" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "PushSubscriptions" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Reaction" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Relationships" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Roles" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Tokens" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "Users" ALTER COLUMN "id" DROP DEFAULT;
