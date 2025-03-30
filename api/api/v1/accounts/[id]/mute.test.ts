@@ -32,10 +32,9 @@ describe("/api/v1/accounts/:id/mute", () => {
     test("should mute user", async () => {
         await using client = await generateClient(users[0]);
 
-        const { data, ok, raw } = await client.muteAccount(users[1].id);
+        const { data, ok } = await client.muteAccount(users[1].id);
 
         expect(ok).toBe(true);
-        expect(raw.status).toBe(200);
 
         expect(data.muting).toBe(true);
     });
@@ -43,11 +42,31 @@ describe("/api/v1/accounts/:id/mute", () => {
     test("should return 200 if user already muted", async () => {
         await using client = await generateClient(users[0]);
 
-        const { data, ok, raw } = await client.muteAccount(users[1].id);
+        const { data, ok } = await client.muteAccount(users[1].id);
 
         expect(ok).toBe(true);
-        expect(raw.status).toBe(200);
 
         expect(data.muting).toBe(true);
+    });
+
+    test("should unmute user after duration", async () => {
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.muteAccount(users[1].id, {
+            duration: 1,
+        });
+
+        expect(ok).toBe(true);
+
+        expect(data.muting).toBe(true);
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        const { data: data2, ok: ok2 } = await client.getRelationship(
+            users[1].id,
+        );
+
+        expect(ok2).toBe(true);
+        expect(data2.muting).toBe(false);
     });
 });

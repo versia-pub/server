@@ -25,6 +25,7 @@ Please see [Database Changes](#database-changes) and [New Configuration](#new-co
 -   [x] 🔥 Removed nonstandard `/api/v1/accounts/id` endpoint (the same functionality was already possible with other endpoints).
 -   [x] ✨️ Implemented rate limiting support for API endpoints.
 -   [x] 🔒 Implemented `is_indexable` and `is_hiding_collections` fields to the [**Accounts API**](https://docs.joinmastodon.org/methods/accounts/#update_credentials).
+-   [x] ✨️ Muting other users now lets you specify a duration, after which the mute will be automatically removed.
 
 ### CLI
 

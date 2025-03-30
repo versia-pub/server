@@ -6,6 +6,8 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { RelationshipJobType } from "~/classes/queues/relationships";
+import { relationshipQueue } from "~/classes/queues/relationships";
 
 export default apiRoute((app) =>
     app.post(
@@ -56,15 +58,14 @@ export default apiRoute((app) =>
                     .default(0)
                     .openapi({
                         description:
-                            "How long the mute should last, in seconds.",
+                            "How long the mute should last, in seconds. 0 means indefinite.",
                     }),
             }),
             handleZodError,
         ),
         async (context) => {
             const { user } = context.get("auth");
-            // TODO: Add duration support
-            const { notifications } = context.req.valid("json");
+            const { notifications, duration } = context.req.valid("json");
             const otherUser = context.get("user");
 
             const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -72,11 +73,23 @@ export default apiRoute((app) =>
                 otherUser,
             );
 
-            // TODO: Implement duration
             await foundRelationship.update({
                 muting: true,
                 mutingNotifications: notifications,
             });
+
+            if (duration > 0) {
+                await relationshipQueue.add(
+                    RelationshipJobType.Unmute,
+                    {
+                        ownerId: user.id,
+                        subjectId: otherUser.id,
+                    },
+                    {
+                        delay: duration * 1000,
+                    },
+                );
+            }
 
             return context.json(foundRelationship.toApi(), 200);
         },
