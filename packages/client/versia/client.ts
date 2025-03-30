@@ -856,31 +856,29 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Status>[]>> {
         const params = new URLSearchParams();
 
-        if (options) {
-            if (options.max_id) {
-                params.set("max_id", options.max_id);
-            }
-            if (options.min_id) {
-                params.set("min_id", options.min_id);
-            }
-            if (options.since_id) {
-                params.set("since_id", options.since_id);
-            }
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
-            if (options.only_media) {
-                params.set("only_media", "true");
-            }
-            if (options.pinned) {
-                params.set("pinned", "true");
-            }
-            if (options.exclude_replies) {
-                params.set("exclude_replies", "true");
-            }
-            if (options.exclude_reblogs) {
-                params.set("exclude_reblogs", "true");
-            }
+        if (options?.max_id) {
+            params.set("max_id", options.max_id);
+        }
+        if (options?.min_id) {
+            params.set("min_id", options.min_id);
+        }
+        if (options?.since_id) {
+            params.set("since_id", options.since_id);
+        }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
+        }
+        if (options?.only_media) {
+            params.set("only_media", "true");
+        }
+        if (options?.pinned) {
+            params.set("pinned", "true");
+        }
+        if (options?.exclude_replies) {
+            params.set("exclude_replies", "true");
+        }
+        if (options?.exclude_reblogs) {
+            params.set("exclude_reblogs", "true");
         }
 
         return this.get<z.infer<typeof Status>[]>(
@@ -1681,27 +1679,25 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Notification>[]>> {
         const params = new URLSearchParams();
 
-        if (options) {
-            if (options.max_id) {
-                params.set("max_id", options.max_id);
+        if (options?.max_id) {
+            params.set("max_id", options.max_id);
+        }
+        if (options?.min_id) {
+            params.set("min_id", options.min_id);
+        }
+        if (options?.since_id) {
+            params.set("since_id", options.since_id);
+        }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
+        }
+        if (options?.exclude_types) {
+            for (const type of options.exclude_types) {
+                params.append("exclude_types[]", type);
             }
-            if (options.min_id) {
-                params.set("min_id", options.min_id);
-            }
-            if (options.since_id) {
-                params.set("since_id", options.since_id);
-            }
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
-            if (options.exclude_types) {
-                for (const type of options.exclude_types) {
-                    params.append("exclude_types[]", type);
-                }
-            }
-            if (options.account_id) {
-                params.set("account_id", options.account_id);
-            }
+        }
+        if (options?.account_id) {
+            params.set("account_id", options.account_id);
         }
 
         return this.get<z.infer<typeof Notification>[]>(
@@ -2686,7 +2682,7 @@ export class Client extends BaseClient {
      */
     public search(
         q: string,
-        options: Partial<{
+        options?: Partial<{
             account_id: string;
             exclude_unreviewed: boolean;
             following: boolean;
@@ -2703,34 +2699,32 @@ export class Client extends BaseClient {
 
         params.set("q", q);
 
-        if (options) {
-            if (options.account_id) {
-                params.set("account_id", options.account_id);
-            }
-            if (options.exclude_unreviewed) {
-                params.set("exclude_unreviewed", "true");
-            }
-            if (options.following) {
-                params.set("following", "true");
-            }
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
-            if (options.max_id) {
-                params.set("max_id", options.max_id);
-            }
-            if (options.min_id) {
-                params.set("min_id", options.min_id);
-            }
-            if (options.offset) {
-                params.set("offset", options.offset.toString());
-            }
-            if (options.resolve) {
-                params.set("resolve", "true");
-            }
-            if (options.type) {
-                params.set("type", options.type);
-            }
+        if (options?.account_id) {
+            params.set("account_id", options.account_id);
+        }
+        if (options?.exclude_unreviewed) {
+            params.set("exclude_unreviewed", "true");
+        }
+        if (options?.following) {
+            params.set("following", "true");
+        }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
+        }
+        if (options?.max_id) {
+            params.set("max_id", options.max_id);
+        }
+        if (options?.min_id) {
+            params.set("min_id", options.min_id);
+        }
+        if (options?.offset) {
+            params.set("offset", options.offset.toString());
+        }
+        if (options?.resolve) {
+            params.set("resolve", "true");
+        }
+        if (options?.type) {
+            params.set("type", options.type);
         }
 
         return this.get<z.infer<typeof Search>>(

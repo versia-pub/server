@@ -45,20 +45,17 @@ const objectToFormData = (
         } else if (Array.isArray(value)) {
             for (const [index, item] of value.entries()) {
                 const arrayKey = `${fullKey}[${index}]`;
+
                 if (item instanceof File) {
-                    formData.append(arrayKey, item as Blob);
+                    formData.append(arrayKey, item);
                 } else if (typeof item === "object") {
-                    objectToFormData(
-                        item as ConvertibleObject,
-                        formData,
-                        arrayKey,
-                    );
+                    objectToFormData(item, formData, arrayKey);
                 } else {
                     formData.append(arrayKey, String(item));
                 }
             }
         } else if (typeof value === "object") {
-            objectToFormData(value as ConvertibleObject, formData, fullKey);
+            objectToFormData(value, formData, fullKey);
         } else {
             formData.append(fullKey, String(value));
         }
