@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "Reaction" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"emojiId" uuid NOT NULL,
 	"noteId" uuid NOT NULL,
 	"authorId" uuid NOT NULL

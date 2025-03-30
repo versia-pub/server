@@ -13,7 +13,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "name": {
                     "name": "name",
@@ -89,7 +89,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "url": {
                     "name": "url",
@@ -195,7 +195,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "challenge": {
                     "name": "challenge",
@@ -391,7 +391,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "shortcode": {
                     "name": "shortcode",
@@ -476,7 +476,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "filterId": {
                     "name": "filterId",
@@ -522,7 +522,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "userId": {
                     "name": "userId",
@@ -587,7 +587,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "flag_type": {
                     "name": "flag_type",
@@ -650,7 +650,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "base_url": {
                     "name": "base_url",
@@ -706,7 +706,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "uri": {
                     "name": "uri",
@@ -774,7 +774,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "noteId": {
                     "name": "noteId",
@@ -851,7 +851,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "noteId": {
                     "name": "noteId",
@@ -928,7 +928,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "noteId": {
                     "name": "noteId",
@@ -1084,7 +1084,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "uri": {
                     "name": "uri",
@@ -1244,7 +1244,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "type": {
                     "name": "type",
@@ -1328,7 +1328,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "userId": {
                     "name": "userId",
@@ -1374,7 +1374,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "code_verifier": {
                     "name": "code_verifier",
@@ -1420,7 +1420,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "ownerId": {
                     "name": "ownerId",
@@ -1591,7 +1591,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "name": {
                     "name": "name",
@@ -1647,7 +1647,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "token_type": {
                     "name": "token_type",
@@ -1832,7 +1832,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "uri": {
                     "name": "uri",
@@ -2059,7 +2059,7 @@
                     "type": "uuid",
                     "primaryKey": true,
                     "notNull": true,
-                    "default": "uuid_generate_v7()"
+                    "default": "gen_random_uuid()"
                 },
                 "remote_id": {
                     "name": "remote_id",

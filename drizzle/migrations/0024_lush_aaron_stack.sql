@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "RoleToUsers" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Roles" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"permissions" text[] NOT NULL,
 	"priority" integer DEFAULT 0 NOT NULL,

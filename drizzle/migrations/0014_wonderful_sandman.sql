@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS "FilterKeywords" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"filterId" uuid NOT NULL,
 	"keyword" text NOT NULL,
 	"whole_word" boolean NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Filters" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
 	"context" text[],
 	"title" text NOT NULL,

@@ -1,5 +1,5 @@
 CREATE TABLE "PushSubscriptions" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"endpoint" text NOT NULL,
 	"public_key" text NOT NULL,
 	"auth_secret" text NOT NULL,

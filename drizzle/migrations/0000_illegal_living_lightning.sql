@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Emoji" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"shortcode" text NOT NULL,
 	"url" text NOT NULL,
 	"visible_in_picker" boolean NOT NULL,
@@ -22,14 +22,14 @@ CREATE TABLE IF NOT EXISTS "Emoji" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Like" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"likerId" uuid NOT NULL,
 	"likedId" uuid NOT NULL,
 	"createdAt" timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "LysandObject" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"remote_id" text NOT NULL,
 	"type" text NOT NULL,
 	"uri" text NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS "LysandObject" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Relationship" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"ownerId" uuid NOT NULL,
 	"subjectId" uuid NOT NULL,
 	"following" boolean NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS "Relationship" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Application" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"website" text,
 	"vapid_key" text,
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS "Application" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Token" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"token_type" text NOT NULL,
 	"scope" text NOT NULL,
 	"access_token" text NOT NULL,
@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS "_UserPinnedNotes" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Attachment" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"url" text NOT NULL,
 	"remote_url" text,
 	"thumbnail_url" text,
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS "Attachment" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Notification" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"type" text NOT NULL,
 	"createdAt" timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"notifiedId" uuid NOT NULL,
@@ -129,7 +129,7 @@ CREATE TABLE IF NOT EXISTS "Notification" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Status" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"uri" text,
 	"authorId" uuid NOT NULL,
 	"createdAt" timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE IF NOT EXISTS "Status" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Instance" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"base_url" text NOT NULL,
 	"name" text NOT NULL,
 	"version" text NOT NULL,
@@ -157,14 +157,14 @@ CREATE TABLE IF NOT EXISTS "Instance" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "OpenIdAccount" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid,
 	"serverId" text NOT NULL,
 	"issuerId" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "User" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"uri" text,
 	"username" text NOT NULL,
 	"displayName" text NOT NULL,
@@ -189,14 +189,14 @@ CREATE TABLE IF NOT EXISTS "User" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "OpenIdLoginFlow" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"codeVerifier" text NOT NULL,
 	"applicationId" uuid,
 	"issuerId" text NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "Flag" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"flagType" text DEFAULT 'other' NOT NULL,
 	"createdAt" timestamp(3) DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"flaggeStatusId" uuid,
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS "Flag" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ModNote" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"notedStatusId" uuid,
 	"notedUserId" uuid,
 	"modId" uuid NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS "ModNote" (
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "ModTag" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"taggedStatusId" uuid,
 	"taggedUserId" uuid,
 	"modId" uuid NOT NULL,
