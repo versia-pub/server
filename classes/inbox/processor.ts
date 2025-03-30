@@ -20,15 +20,10 @@ import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
-import type { StatusCode } from "hono/utils/http-status";
 import { matches } from "ip-matching";
-import { type ValidationError, isValidationError } from "zod-validation-error";
+import { isValidationError } from "zod-validation-error";
 import { config } from "~/config.ts";
-
-type ResponseBody = {
-    message?: string;
-    code: StatusCode;
-};
+import { ApiError } from "../errors/api-error.ts";
 
 /**
  * Checks if the hostname is defederated using glob matching.
@@ -52,9 +47,7 @@ function isDefederated(hostname: string): boolean {
  * ```typescript
  * const processor = new InboxProcessor(context, body, sender, headers);
  *
- * const response = await processor.process();
- *
- * return response;
+ * await processor.process();
  * ```
  */
 export class InboxProcessor {
@@ -133,20 +126,14 @@ export class InboxProcessor {
      * Determines if signature checks can be skipped.
      * Useful for requests from federation bridges.
      *
-     * @returns {boolean | ResponseBody} - Whether to skip signature checks. May include a response body if there are errors.
+     * @returns {boolean} - Whether to skip signature checks.
      */
-    private shouldCheckSignature(): boolean | ResponseBody {
+    private shouldCheckSignature(): boolean {
         if (config.federation.bridge) {
             const token = this.headers.authorization?.split("Bearer ")[1];
 
             if (token) {
-                const isBridge = this.isRequestFromBridge(token);
-
-                if (isBridge === true) {
-                    return false;
-                }
-
-                return isBridge;
+                return this.isRequestFromBridge(token);
             }
         }
 
@@ -157,23 +144,23 @@ export class InboxProcessor {
      * Checks if a request is from a federation bridge.
      *
      * @param token - Authorization token to check.
-     * @returns
+     * @returns {boolean} - Whether the request is from a federation bridge.
      */
-    private isRequestFromBridge(token: string): boolean | ResponseBody {
+    private isRequestFromBridge(token: string): boolean {
         if (!config.federation.bridge) {
-            return {
-                message:
-                    "Bridge is not configured. Please remove the Authorization header.",
-                code: 500,
-            };
+            throw new ApiError(
+                500,
+                "Bridge is not configured.",
+                "Please remove the Authorization header.",
+            );
         }
 
         if (token !== config.federation.bridge.token) {
-            return {
-                message:
-                    "An invalid token was passed in the Authorization header. Please use the correct token, or remove the Authorization header.",
-                code: 401,
-            };
+            throw new ApiError(
+                401,
+                "Invalid token.",
+                "Please use the correct token, or remove the Authorization header.",
+            );
         }
 
         if (config.federation.bridge.allowed_ips.length === 0) {
@@ -181,10 +168,11 @@ export class InboxProcessor {
         }
 
         if (!this.requestIp) {
-            return {
-                message: "The request IP address could not be determined.",
-                code: 500,
-            };
+            throw new ApiError(
+                500,
+                "The request IP address could not be determined.",
+                "This may be due to an incorrectly configured reverse proxy.",
+            );
         }
 
         for (const ip of config.federation.bridge.allowed_ips) {
@@ -193,18 +181,20 @@ export class InboxProcessor {
             }
         }
 
-        return {
-            message: "The request is not from a trusted bridge IP address.",
-            code: 403,
-        };
+        throw new ApiError(
+            403,
+            "The request is not from a trusted bridge IP address.",
+            "Remove the Authorization header if you are not trying to access this API as a bridge.",
+        );
     }
 
     /**
      * Performs request processing.
      *
-     * @returns {Promise<Response | null>} - HTTP response to send back. Null if no response is needed (no errors).
+     * @returns {Promise<void>}
+     * @throws {ApiError} - If there is an error processing the request.
      */
-    public async process(): Promise<Response | null> {
+    public async process(): Promise<void> {
         !this.sender &&
             this.logger.debug`Processing request from potential bridge`;
 
@@ -212,7 +202,7 @@ export class InboxProcessor {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
-            return null;
+            return;
         }
 
         this.logger.debug`Instance ${chalk.gray(
@@ -220,13 +210,6 @@ export class InboxProcessor {
         )} is not defederated`;
 
         const shouldCheckSignature = this.shouldCheckSignature();
-
-        if (shouldCheckSignature !== true && shouldCheckSignature !== false) {
-            return Response.json(
-                { error: shouldCheckSignature.message },
-                { status: shouldCheckSignature.code },
-            );
-        }
 
         shouldCheckSignature
             ? this.logger.debug`Checking signature`
@@ -236,10 +219,7 @@ export class InboxProcessor {
             const isValid = await this.isSignatureValid();
 
             if (!isValid) {
-                return Response.json(
-                    { error: "Signature is not valid" },
-                    { status: 401 },
-                );
+                throw new ApiError(401, "Signature is not valid");
             }
         }
 
@@ -249,23 +229,18 @@ export class InboxProcessor {
         const handler = new RequestParserHandler(this.body, validator);
 
         try {
-            return await handler.parseBody<Response | null>({
-                note: (): Promise<Response | null> => this.processNote(),
-                follow: (): Promise<Response | null> =>
-                    this.processFollowRequest(),
-                followAccept: (): Promise<Response | null> =>
-                    this.processFollowAccept(),
-                followReject: (): Promise<Response | null> =>
-                    this.processFollowReject(),
-                "pub.versia:likes/Like": (): Promise<Response | null> =>
+            return await handler.parseBody<void>({
+                note: (): Promise<void> => this.processNote(),
+                follow: (): Promise<void> => this.processFollowRequest(),
+                followAccept: (): Promise<void> => this.processFollowAccept(),
+                followReject: (): Promise<void> => this.processFollowReject(),
+                "pub.versia:likes/Like": (): Promise<void> =>
                     this.processLikeRequest(),
-                delete: (): Promise<Response | null> => this.processDelete(),
-                user: (): Promise<Response | null> => this.processUserRequest(),
-                unknown: (): Response =>
-                    Response.json(
-                        { error: "Unknown entity type" },
-                        { status: 400 },
-                    ),
+                delete: (): Promise<void> => this.processDelete(),
+                user: (): Promise<void> => this.processUserRequest(),
+                unknown: (): void => {
+                    throw new ApiError(400, "Unknown entity type");
+                },
             });
         } catch (e) {
             return this.handleError(e as Error);
@@ -275,54 +250,40 @@ export class InboxProcessor {
     /**
      * Handles Note entity processing.
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processNote(): Promise<Response | null> {
+    private async processNote(): Promise<void> {
         const note = this.body as VersiaNote;
         const author = await User.resolve(new URL(note.author));
         const instance = await Instance.resolve(new URL(note.uri));
 
         if (!instance) {
-            return Response.json(
-                { error: "Instance not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Instance not found");
         }
 
         if (!author) {
-            return Response.json(
-                { error: "Author not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Author not found");
         }
 
         await Note.fromVersia(note, author, instance);
-
-        return null;
     }
 
     /**
      * Handles Follow entity processing.
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processFollowRequest(): Promise<Response | null> {
+    private async processFollowRequest(): Promise<void> {
         const follow = this.body as unknown as VersiaFollow;
         const author = await User.resolve(new URL(follow.author));
         const followee = await User.resolve(new URL(follow.followee));
 
         if (!author) {
-            return Response.json(
-                { error: "Author not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Author not found");
         }
 
         if (!followee) {
-            return Response.json(
-                { error: "Followee not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Followee not found");
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -331,7 +292,7 @@ export class InboxProcessor {
         );
 
         if (foundRelationship.data.following) {
-            return null;
+            return;
         }
 
         await foundRelationship.update({
@@ -351,32 +312,24 @@ export class InboxProcessor {
         if (!followee.data.isLocked) {
             await followee.sendFollowAccept(author);
         }
-
-        return null;
     }
 
     /**
      * Handles FollowAccept entity processing
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processFollowAccept(): Promise<Response | null> {
+    private async processFollowAccept(): Promise<void> {
         const followAccept = this.body as unknown as VersiaFollowAccept;
         const author = await User.resolve(new URL(followAccept.author));
         const follower = await User.resolve(new URL(followAccept.follower));
 
         if (!author) {
-            return Response.json(
-                { error: "Author not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Author not found");
         }
 
         if (!follower) {
-            return Response.json(
-                { error: "Follower not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Follower not found");
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -385,39 +338,31 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return null;
+            return;
         }
 
         await foundRelationship.update({
             requested: false,
             following: true,
         });
-
-        return null;
     }
 
     /**
      * Handles FollowReject entity processing
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processFollowReject(): Promise<Response | null> {
+    private async processFollowReject(): Promise<void> {
         const followReject = this.body as unknown as VersiaFollowReject;
         const author = await User.resolve(new URL(followReject.author));
         const follower = await User.resolve(new URL(followReject.follower));
 
         if (!author) {
-            return Response.json(
-                { error: "Author not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Author not found");
         }
 
         if (!follower) {
-            return Response.json(
-                { error: "Follower not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Follower not found");
         }
 
         const foundRelationship = await Relationship.fromOwnerAndSubject(
@@ -426,23 +371,21 @@ export class InboxProcessor {
         );
 
         if (!foundRelationship.data.requested) {
-            return null;
+            return;
         }
 
         await foundRelationship.update({
             requested: false,
             following: false,
         });
-
-        return null;
     }
 
     /**
      * Handles Delete entity processing.
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    public async processDelete(): Promise<Response | null> {
+    public async processDelete(): Promise<void> {
         // JS doesn't allow the use of `delete` as a variable name
         const delete_ = this.body as unknown as VersiaDelete;
         const toDelete = delete_.deleted;
@@ -459,38 +402,28 @@ export class InboxProcessor {
                 );
 
                 if (!note) {
-                    return Response.json(
-                        {
-                            error: "Note to delete not found or not owned by sender",
-                        },
-                        { status: 404 },
+                    throw new ApiError(
+                        404,
+                        "Note to delete not found or not owned by sender",
                     );
                 }
 
                 await note.delete();
-                return null;
+                return;
             }
             case "User": {
                 const userToDelete = await User.resolve(new URL(toDelete));
 
                 if (!userToDelete) {
-                    return Response.json(
-                        { error: "User to delete not found" },
-                        { status: 404 },
-                    );
+                    throw new ApiError(404, "User to delete not found");
                 }
 
                 if (!author || userToDelete.id === author.id) {
                     await userToDelete.delete();
-                    return null;
+                    return;
                 }
 
-                return Response.json(
-                    {
-                        error: "Cannot delete other users than self",
-                    },
-                    { status: 400 },
-                );
+                throw new ApiError(400, "Cannot delete other users than self");
             }
             case "pub.versia:likes/Like": {
                 const like = await Like.fromSql(
@@ -499,21 +432,19 @@ export class InboxProcessor {
                 );
 
                 if (!like) {
-                    return Response.json(
-                        { error: "Like not found or not owned by sender" },
-                        { status: 404 },
+                    throw new ApiError(
+                        404,
+                        "Like not found or not owned by sender",
                     );
                 }
 
                 await like.delete();
-                return null;
+                return;
             }
             default: {
-                return Response.json(
-                    {
-                        error: `Deletion of object ${toDelete} not implemented`,
-                    },
-                    { status: 400 },
+                throw new ApiError(
+                    400,
+                    `Deletion of object ${toDelete} not implemented`,
                 );
             }
         }
@@ -522,79 +453,55 @@ export class InboxProcessor {
     /**
      * Handles Like entity processing.
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processLikeRequest(): Promise<Response | null> {
+    private async processLikeRequest(): Promise<void> {
         const like = this.body as unknown as VersiaLikeExtension;
         const author = await User.resolve(new URL(like.author));
         const likedNote = await Note.resolve(new URL(like.liked));
 
         if (!author) {
-            return Response.json(
-                { error: "Author not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Author not found");
         }
 
         if (!likedNote) {
-            return Response.json(
-                { error: "Liked Note not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Liked Note not found");
         }
 
         await author.like(likedNote, like.uri);
-
-        return null;
     }
 
     /**
      * Handles User entity processing (profile edits).
      *
-     * @returns {Promise<Response | null>} - The response.
+     * @returns {Promise<void>}
      */
-    private async processUserRequest(): Promise<Response | null> {
+    private async processUserRequest(): Promise<void> {
         const user = this.body as unknown as VersiaUser;
         const instance = await Instance.resolve(new URL(user.uri));
 
         if (!instance) {
-            return Response.json(
-                { error: "Instance not found" },
-                { status: 404 },
-            );
+            throw new ApiError(404, "Instance not found");
         }
 
         await User.fromVersia(user, instance);
-
-        return null;
     }
 
     /**
      * Processes Errors into the appropriate HTTP response.
      *
      * @param {Error} e - The error object.
-     * @returns {Response} - The error response.
+     * @returns {void}
+     * @throws {ApiError} - The error response.
      */
-    private handleError(e: Error): Response {
+    private handleError(e: Error): void {
         if (isValidationError(e)) {
-            return Response.json(
-                {
-                    error: "Failed to process request",
-                    error_description: (e as ValidationError).message,
-                },
-                { status: 400 },
-            );
+            throw new ApiError(400, "Failed to process request", e.message);
         }
 
         this.logger.error`${e}`;
         sentry?.captureException(e);
 
-        return Response.json(
-            {
-                error: "Failed to process request",
-                message: (e as Error).message,
-            },
-            { status: 500 },
-        );
+        throw new ApiError(500, "Failed to process request", e.message);
     }
 }

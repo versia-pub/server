@@ -6,6 +6,7 @@ import { Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
+import { ApiError } from "../errors/api-error.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
 
 export enum InboxJobType {
@@ -46,36 +47,41 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                     await job.log(`Processing entity [${data.id}]`);
 
                     if (headers.authorization) {
-                        const processor = new InboxProcessor(
-                            {
-                                ...request,
-                                url: new URL(request.url),
-                            },
-                            data,
-                            null,
-                            {
-                                authorization: headers.authorization,
-                            },
-                            getLogger(["federation", "inbox"]),
-                            ip,
-                        );
-
-                        await job.log(
-                            `Entity [${data.id}] is potentially from a bridge`,
-                        );
-
-                        const output = await processor.process();
-
-                        if (output instanceof Response) {
-                            // Error occurred
-                            const error = await output.json();
-                            await job.log(`Error during processing: ${error}`);
-
-                            await job.log(
-                                `Failed processing entity [${data.id}]`,
+                        try {
+                            const processor = new InboxProcessor(
+                                {
+                                    ...request,
+                                    url: new URL(request.url),
+                                },
+                                data,
+                                null,
+                                {
+                                    authorization: headers.authorization,
+                                },
+                                getLogger(["federation", "inbox"]),
+                                ip,
                             );
 
-                            return;
+                            await job.log(
+                                `Entity [${data.id}] is potentially from a bridge`,
+                            );
+
+                            await processor.process();
+                        } catch (e) {
+                            if (e instanceof ApiError) {
+                                // Error occurred
+                                await job.log(
+                                    `Error during processing: ${e.message}`,
+                                );
+
+                                await job.log(
+                                    `Failed processing entity [${data.id}]`,
+                                );
+
+                                return;
+                            }
+
+                            throw e;
                         }
 
                         await job.log(
@@ -133,51 +139,58 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         );
                     }
 
-                    const processor = new InboxProcessor(
-                        {
-                            ...request,
-                            url: new URL(request.url),
-                        },
-                        data,
-                        {
-                            instance: remoteInstance,
-                            key:
-                                sender?.data.publicKey ??
-                                remoteInstance.data.publicKey.key,
-                        },
-                        {
-                            signature,
-                            signedAt: new Date(signedAt * 1000),
-                            authorization: undefined,
-                        },
-                        getLogger(["federation", "inbox"]),
-                        ip,
-                    );
-
-                    const output = await processor.process();
-
-                    if (output instanceof Response) {
-                        // Error occurred
-                        const error = await output.json();
-                        await job.log(`Error during processing: ${error}`);
-
-                        await job.log(`Failed processing entity [${data.id}]`);
-
-                        await job.log(
-                            `Sending error message to instance [${remoteInstance.data.baseUrl}]`,
+                    try {
+                        const processor = new InboxProcessor(
+                            {
+                                ...request,
+                                url: new URL(request.url),
+                            },
+                            data,
+                            {
+                                instance: remoteInstance,
+                                key:
+                                    sender?.data.publicKey ??
+                                    remoteInstance.data.publicKey.key,
+                            },
+                            {
+                                signature,
+                                signedAt: new Date(signedAt * 1000),
+                                authorization: undefined,
+                            },
+                            getLogger(["federation", "inbox"]),
+                            ip,
                         );
 
-                        await remoteInstance.sendMessage(
-                            `Failed processing entity [${data.uri}] delivered to inbox. Returned error:\n\n${JSON.stringify(
-                                error,
-                                null,
-                                4,
-                            )}`,
-                        );
+                        await processor.process();
+                    } catch (e) {
+                        if (e instanceof ApiError) {
+                            // Error occurred
+                            await job.log(
+                                `Error during processing: ${e.message}`,
+                            );
 
-                        await job.log("Message sent");
+                            await job.log(
+                                `Failed processing entity [${data.id}]`,
+                            );
 
-                        return;
+                            await job.log(
+                                `Sending error message to instance [${remoteInstance.data.baseUrl}]`,
+                            );
+
+                            await remoteInstance.sendMessage(
+                                `Failed processing entity [${data.uri}] delivered to inbox. Returned error:\n\n${JSON.stringify(
+                                    e.message,
+                                    null,
+                                    4,
+                                )}`,
+                            );
+
+                            await job.log("Message sent");
+
+                            return;
+                        }
+
+                        throw e;
                     }
 
                     await job.log(`Finished processing entity [${data.id}]`);
