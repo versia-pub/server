@@ -1,3 +1,4 @@
+import { build } from "bun";
 import { $ } from "bun";
 import ora from "ora";
 
@@ -5,7 +6,7 @@ const buildSpinner = ora("Building").start();
 
 await $`rm -rf dist && mkdir dist`;
 
-await Bun.build({
+await build({
     entrypoints: ["entrypoints/worker/index.ts"],
     outdir: "dist",
     target: "bun",

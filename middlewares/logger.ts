@@ -1,4 +1,5 @@
 import { getLogger } from "@logtape/logtape";
+import { SHA256 } from "bun";
 import chalk from "chalk";
 import { createMiddleware } from "hono/factory";
 import { config } from "~/config.ts";
@@ -11,7 +12,7 @@ export const logger = createMiddleware(async (context, next) => {
         const urlAndMethod = `${chalk.green(context.req.method)} ${chalk.blue(context.req.url)}`;
 
         const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
-            new Bun.SHA256().update(body).digest("hex"),
+            new SHA256().update(body).digest("hex"),
         )}`;
 
         const headers = `${chalk.bold("Headers")}:\n${Array.from(

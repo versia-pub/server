@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { $ } from "bun";
+import { build } from "bun";
 import ora from "ora";
 import { routes } from "~/routes";
 
@@ -10,7 +11,7 @@ await $`rm -rf dist && mkdir dist`;
 // Get all directories under the plugins/ directory
 const pluginDirs = await readdir("plugins", { withFileTypes: true });
 
-await Bun.build({
+await build({
     entrypoints: [
         "index.ts",
         "cli/index.ts",

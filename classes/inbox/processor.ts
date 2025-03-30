@@ -18,6 +18,7 @@ import type {
 import { Instance, Like, Note, Relationship, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
+import { Glob } from "bun";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
@@ -31,7 +32,7 @@ import { ApiError } from "../errors/api-error.ts";
  * @returns {boolean} - True if defederated, false otherwise.
  */
 function isDefederated(hostname: string): boolean {
-    const pattern = new Bun.Glob(hostname);
+    const pattern = new Glob(hostname);
 
     return (
         config.federation.blocked.find(

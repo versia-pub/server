@@ -1,13 +1,13 @@
 import { apiRoute, handleZodError } from "@/api";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { password as bunPassword } from "bun";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { config } from "~/config.ts";
-
 const returnError = (
     context: Context,
     token: string,
@@ -68,7 +68,7 @@ export default apiRoute((app) =>
             }
 
             await user.update({
-                password: await Bun.password.hash(password),
+                password: await bunPassword.hash(password),
                 passwordResetToken: null,
             });
 

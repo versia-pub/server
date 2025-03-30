@@ -1,5 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { type Logger, getLogger } from "@logtape/logtape";
+import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { Hono } from "hono";
@@ -59,7 +60,7 @@ export class PluginLoader {
         manifestPath: string,
         manifestFile: string,
     ): Promise<unknown> {
-        const manifestText = await Bun.file(manifestPath).text();
+        const manifestText = await file(manifestPath).text();
 
         try {
             if (manifestFile.endsWith(".json")) {
@@ -238,7 +239,7 @@ export class PluginLoader {
                 logger.fatal`Here is the error message, please fix the configuration file accordingly:`;
                 logger.fatal`${(e as ValidationError).message}`;
 
-                await Bun.sleep(Number.POSITIVE_INFINITY);
+                await sleep(Number.POSITIVE_INFINITY);
             }
 
             const time2 = performance.now();

@@ -3,6 +3,7 @@ import type { RolePermission } from "@versia/client/schemas";
 import { Application, Emoji, Note, Token, User, db } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
+import { SHA256 } from "bun";
 import chalk from "chalk";
 import { type SQL, eq } from "drizzle-orm";
 import type { Context, Hono, MiddlewareHandler } from "hono";
@@ -525,7 +526,7 @@ export const debugRequest = async (req: Request): Promise<void> => {
     const urlAndMethod = `${chalk.green(req.method)} ${chalk.blue(req.url)}`;
 
     const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
-        new Bun.SHA256().update(body).digest("hex"),
+        new SHA256().update(body).digest("hex"),
     )}`;
 
     const headers = `${chalk.bold("Headers")}:\n${Array.from(

@@ -1,4 +1,5 @@
 import { apiRoute, handleZodError } from "@/api";
+import { file as bunFile } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -57,7 +58,7 @@ export default apiRoute((app) =>
                 .map(Number); // [0, 100]
 
             // Serve file from filesystem
-            const file = Bun.file(`./uploads/${hash}/${name}`);
+            const file = bunFile(`./uploads/${hash}/${name}`);
 
             const buffer = await file.arrayBuffer();
 

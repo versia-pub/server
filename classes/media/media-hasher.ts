@@ -3,6 +3,8 @@
  * @module MediaManager/Utils
  */
 
+import { SHA256 } from "bun";
+
 /**
  * Generates a SHA-256 hash for a given file.
  * @param file - The file to hash.
@@ -10,6 +12,6 @@
  */
 export const getMediaHash = async (file: File): Promise<string> => {
     const arrayBuffer = await file.arrayBuffer();
-    const hash = new Bun.SHA256().update(arrayBuffer).digest("hex");
+    const hash = new SHA256().update(arrayBuffer).digest("hex");
     return hash;
 };

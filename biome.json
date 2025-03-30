@@ -100,7 +100,7 @@
         "indentWidth": 4
     },
     "javascript": {
-        "globals": ["Bun", "HTMLRewriter", "BufferEncoding"]
+        "globals": ["HTMLRewriter", "BufferEncoding"]
     },
     "files": {
         "ignore": ["node_modules", "dist", "cache", "build"]

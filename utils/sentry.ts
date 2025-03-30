@@ -1,4 +1,5 @@
 import * as Sentry from "@sentry/bun";
+import { env } from "bun";
 import { config } from "~/config.ts";
 import pkg from "~/package.json";
 
@@ -13,8 +14,8 @@ const sentryInstance =
         environment: config.logging.sentry.environment,
         tracePropagationTargets:
             config.logging.sentry.trace_propagation_targets,
-        release: Bun.env.GIT_COMMIT
-            ? `${pkg.version}-${Bun.env.GIT_COMMIT}`
+        release: env.GIT_COMMIT
+            ? `${pkg.version}-${env.GIT_COMMIT}`
             : pkg.version,
         integrations: [Sentry.extraErrorDataIntegration()],
     });

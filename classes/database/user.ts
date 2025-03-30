@@ -34,6 +34,7 @@ import {
     Users,
 } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
+import { password as bunPassword } from "bun";
 import chalk from "chalk";
 import {
     type InferInsertModel,
@@ -890,7 +891,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     password:
                         data.skipPasswordHash || !data.password
                             ? data.password
-                            : await Bun.password.hash(data.password),
+                            : await bunPassword.hash(data.password),
                     email: data.email,
                     note: data.bio ?? "",
                     avatarId: data.avatar?.id,

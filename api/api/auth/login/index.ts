@@ -1,6 +1,7 @@
 import { apiRoute, handleZodError } from "@/api";
 import { Application, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";
 import { describeRoute } from "hono-openapi";
@@ -143,7 +144,7 @@ export default apiRoute((app) =>
             if (
                 !(
                     user &&
-                    (await Bun.password.verify(
+                    (await bunPassword.verify(
                         password,
                         user.data.password || "",
                     ))

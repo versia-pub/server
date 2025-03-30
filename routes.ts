@@ -1,6 +1,7 @@
 import { join } from "node:path";
+import { FileSystemRouter } from "bun";
 // Returns the route filesystem path when given a URL
-export const routeMatcher = new Bun.FileSystemRouter({
+export const routeMatcher = new FileSystemRouter({
     style: "nextjs",
     dir: `${process.cwd()}/api`,
     fileExtensions: [".ts", ".js"],

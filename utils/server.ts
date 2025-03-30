@@ -1,4 +1,4 @@
-import type { Server } from "bun";
+import { type Server, serve } from "bun";
 import type { Hono } from "hono";
 import type { z } from "zod";
 import type { ConfigSchema } from "~/classes/config/schema.ts";
@@ -9,7 +9,7 @@ export const createServer = (
     config: z.infer<typeof ConfigSchema>,
     app: Hono<HonoEnv>,
 ): Server =>
-    Bun.serve({
+    serve({
         port: config.http.bind_port,
         reusePort: true,
         tls: config.http.tls
