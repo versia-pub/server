@@ -2,7 +2,7 @@ import { db } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { createChallenge } from "altcha-lib";
 import type { Challenge } from "altcha-lib/types";
-import { sql } from "drizzle-orm";
+import { randomUUIDv7 } from "bun";
 import { config } from "~/config.ts";
 
 export const generateChallenge = async (
@@ -21,8 +21,7 @@ export const generateChallenge = async (
         Date.now() + config.validation.challenges.expiration * 1000,
     );
 
-    const uuid = (await db.execute(sql<string>`SELECT uuid_generate_v7()`))
-        .rows[0].uuid_generate_v7 as string;
+    const uuid = randomUUIDv7();
 
     const challenge = await createChallenge({
         hmacKey: config.validation.challenges.key,
