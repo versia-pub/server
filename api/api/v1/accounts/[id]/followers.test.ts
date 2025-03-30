@@ -44,4 +44,33 @@ describe("/api/v1/accounts/:id/followers", () => {
         expect(data).toBeInstanceOf(Array);
         expect(data.length).toBe(0);
     });
+
+    test("should return no followers if account is hiding collections", async () => {
+        await using client0 = await generateClient(users[0]);
+        await using client1 = await generateClient(users[1]);
+
+        const { ok: ok0 } = await client0.followAccount(users[1].id);
+
+        expect(ok0).toBe(true);
+
+        const { ok: ok1, data: data1 } = await client0.getAccountFollowers(
+            users[1].id,
+        );
+
+        expect(ok1).toBe(true);
+        expect(data1).toBeArrayOfSize(1);
+
+        const { ok: ok2 } = await client1.updateCredentials({
+            hide_collections: true,
+        });
+
+        expect(ok2).toBe(true);
+
+        const { ok: ok3, data: data3 } = await client0.getAccountFollowers(
+            users[1].id,
+        );
+
+        expect(ok3).toBe(true);
+        expect(data3).toBeArrayOfSize(0);
+    });
 });

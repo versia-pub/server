@@ -3061,6 +3061,8 @@ export class Client extends BaseClient {
             }[];
             header: File | URL;
             locked: boolean;
+            hide_collections: boolean;
+            indexable: boolean;
             note: string;
             source: Partial<{
                 language: string;

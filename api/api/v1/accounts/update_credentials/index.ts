@@ -110,16 +110,16 @@ export default apiRoute((app) =>
                     bot: AccountSchema.shape.bot.openapi({
                         description: "Whether the account has a bot flag.",
                     }),
-                    discoverable: AccountSchema.shape.discoverable.openapi({
-                        description:
-                            "Whether the account should be shown in the profile directory.",
-                    }),
-                    // TODO: Implement :(
+                    discoverable: AccountSchema.shape.discoverable
+                        .unwrap()
+                        .openapi({
+                            description:
+                                "Whether the account should be shown in the profile directory.",
+                        }),
                     hide_collections: zBoolean.openapi({
                         description:
                             "Whether to hide followers and followed accounts.",
                     }),
-                    // TODO: Implement :(
                     indexable: zBoolean.openapi({
                         description:
                             "Whether public posts should be searchable to anyone.",
@@ -168,6 +168,8 @@ export default apiRoute((app) =>
                 locked,
                 bot,
                 discoverable,
+                hide_collections,
+                indexable,
                 source,
                 fields_attributes,
             } = context.req.valid("json");
@@ -249,12 +251,20 @@ export default apiRoute((app) =>
                 self.isLocked = locked;
             }
 
-            if (bot) {
+            if (bot !== undefined) {
                 self.isBot = bot;
             }
 
-            if (discoverable) {
+            if (discoverable !== undefined) {
                 self.isDiscoverable = discoverable;
+            }
+
+            if (hide_collections !== undefined) {
+                self.isHidingCollections = hide_collections;
+            }
+
+            if (indexable !== undefined) {
+                self.isIndexable = indexable;
             }
 
             const fieldEmojis: Emoji[] = [];
@@ -342,6 +352,8 @@ export default apiRoute((app) =>
                 isLocked: self.isLocked,
                 isBot: self.isBot,
                 isDiscoverable: self.isDiscoverable,
+                isHidingCollections: self.isHidingCollections,
+                isIndexable: self.isIndexable,
                 source: self.source || undefined,
             });
 

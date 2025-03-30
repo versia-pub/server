@@ -577,6 +577,10 @@ export const Users = pgTable(
         isBot: boolean("is_bot").default(false).notNull(),
         isLocked: boolean("is_locked").default(false).notNull(),
         isDiscoverable: boolean("is_discoverable").default(false).notNull(),
+        isHidingCollections: boolean("is_hiding_collections")
+            .default(false)
+            .notNull(),
+        isIndexable: boolean("is_indexable").default(true).notNull(),
         sanctions: text("sanctions").array(),
         publicKey: text("public_key").notNull(),
         privateKey: text("private_key"),

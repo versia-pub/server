@@ -44,7 +44,7 @@ describe("/api/v1/accounts/verify_credentials", () => {
             expect(data.bot).toBe(users[0].data.isBot);
             expect(data.group).toBe(false);
             expect(data.discoverable).toBe(users[0].data.isDiscoverable);
-            expect(data.noindex).toBe(false);
+            expect(data.noindex).toBe(!users[0].data.isIndexable);
             expect(data.moved).toBeNull();
             expect(data.suspended).toBe(false);
             expect(data.limited).toBe(false);

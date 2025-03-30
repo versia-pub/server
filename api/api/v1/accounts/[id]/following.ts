@@ -84,10 +84,16 @@ export default apiRoute((app) =>
             handleZodError,
         ),
         async (context) => {
+            const { user: self } = context.get("auth");
             const { max_id, since_id, min_id } = context.req.valid("query");
             const otherUser = context.get("user");
 
-            // TODO: Add follower/following privacy settings
+            if (
+                self?.id !== otherUser.id &&
+                otherUser.data.isHidingCollections
+            ) {
+                return context.json([], 200, { Link: "" });
+            }
 
             const { objects, link } = await Timeline.getUserTimeline(
                 and(

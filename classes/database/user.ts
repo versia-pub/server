@@ -1126,8 +1126,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 : "",
             locked: user.isLocked,
             created_at: new Date(user.createdAt).toISOString(),
-            followers_count: user.followerCount,
-            following_count: user.followingCount,
+            followers_count:
+                user.isHidingCollections && !isOwnAccount
+                    ? 0
+                    : user.followerCount,
+            following_count:
+                user.isHidingCollections && !isOwnAccount
+                    ? 0
+                    : user.followingCount,
             statuses_count: user.statusCount,
             emojis: user.emojis.map((emoji) => new Emoji(emoji).toApi()),
             fields: user.fields.map((field) => ({
@@ -1146,7 +1152,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             // TODO: Add these fields
             limited: false,
             moved: null,
-            noindex: false,
+            noindex: !user.isIndexable,
             suspended: false,
             discoverable: user.isDiscoverable,
             mute_expires_at: null,
@@ -1238,7 +1244,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 `/users/${user.id}/inbox`,
                 config.http.base_url,
             ).toString(),
-            indexable: false,
+            indexable: this.data.isIndexable,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
             avatar: this.avatar?.toVersia(),

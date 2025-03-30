@@ -1,0 +1,1 @@
+ALTER TABLE "Users" ALTER COLUMN "is_indexable" SET DEFAULT true;
