@@ -9,7 +9,7 @@ Versia Server includes a built-in CLI for managing the server. To use it, simply
 ```bash
 # Docker
 # Replace `versia` with the name of your container
-docker compose exec -it versia /bin/sh /app/entrypoint.sh cli help
+docker compose exec -it versia sh /app/entrypoint.sh cli help
 ```
 
 You can use the `help` command to see a list of available commands. These include creating users, deleting users and more. Each command also has a `--help,-h` flag that you can use to see more information about the command.

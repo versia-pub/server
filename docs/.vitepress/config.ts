@@ -35,17 +35,8 @@ export default defineConfig({
 
         sidebar: [
             {
-                text: "Setup",
-                items: [
-                    {
-                        text: "Installation",
-                        link: "/setup/installation",
-                    },
-                    {
-                        text: "Database",
-                        link: "/setup/database",
-                    },
-                ],
+                text: "Installation",
+                link: "/setup/installation",
             },
             {
                 text: "CLI",
