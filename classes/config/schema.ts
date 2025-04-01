@@ -136,12 +136,12 @@ export const filePathString = z
 
 export const keyPair = z
     .strictObject({
-        public: sensitiveString,
-        private: sensitiveString,
+        public: sensitiveString.optional(),
+        private: sensitiveString.optional(),
     })
     .optional()
     .transform(async (k, ctx) => {
-        if (!k) {
+        if (!(k?.public && k?.private)) {
             const keys = await crypto.subtle.generateKey("Ed25519", true, [
                 "sign",
                 "verify",
