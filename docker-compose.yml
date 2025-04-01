@@ -1,6 +1,6 @@
 services:
     versia:
-        image: ghcr.io/versia-pub/server:latest
+        image: ghcr.io/versia-pub/server:main
         volumes:
             - ./logs:/app/dist/logs
             - ./config:/app/dist/config:ro
@@ -14,7 +14,6 @@ services:
             - db
             - redis
             - sonic
-            - fe
 
     worker:
         image: ghcr.io/versia-pub/worker:main
@@ -30,23 +29,14 @@ services:
             - db
             - redis
 
-    fe:
-        image: ghcr.io/versia-pub/frontend:main
-        container_name: versia-fe
-        restart: unless-stopped
-        networks:
-            - versia-net
-        environment:
-            NUXT_PUBLIC_API_HOST: https://yourserver.com
-
     db:
-        image: ghcr.io/versia-pub/postgres:main
+        image: postgres:17-alpine
         container_name: versia-db
         restart: unless-stopped
         environment:
             POSTGRES_DB: versia
             POSTGRES_USER: versia
-            POSTGRES_PASSWORD: _______________
+            POSTGRES_PASSWORD: versia
         networks:
             - versia-net
         volumes:
@@ -64,7 +54,7 @@ services:
     sonic:
         volumes:
             - ./config.cfg:/etc/sonic.cfg
-            - ./store/:/var/lib/sonic/store/
+            - ./store:/var/lib/sonic/store/
         image: valeriansaliou/sonic:v1.4.9
         container_name: versia-sonic
         restart: unless-stopped
