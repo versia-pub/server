@@ -5,19 +5,23 @@
  * Fuses both and provides a way to retrieve individual values
  */
 
-import { file } from "bun";
+import { env, file } from "bun";
 import { loadConfig, watchConfig } from "c12";
 import chalk from "chalk";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ConfigSchema } from "./classes/config/schema.ts";
 
-if (!(await file("config/config.toml").exists())) {
-    throw new Error("config.toml does not or is not accessible.");
+const CONFIG_LOCATION = env.CONFIG_LOCATION ?? "./config/config.toml";
+
+if (!(await file(CONFIG_LOCATION).exists())) {
+    throw new Error(
+        `config file at "${CONFIG_LOCATION}" does not exist or is not accessible.`,
+    );
 }
 
 const { config } = await watchConfig<z.infer<typeof ConfigSchema>>({
-    configFile: "./config/config.toml",
+    configFile: CONFIG_LOCATION,
     overrides:
         (
             await loadConfig<z.infer<typeof ConfigSchema>>({
@@ -30,7 +34,7 @@ const parsed = await ConfigSchema.safeParseAsync(config);
 
 if (!parsed.success) {
     console.error(
-        `⚠ Error encountered while loading ${chalk.gray("config.toml")}.`,
+        `⚠ Error encountered while loading ${chalk.gray(CONFIG_LOCATION)}.`,
     );
     console.error(
         "⚠ This is due to invalid, missing or incorrect values in the configuration file.",
