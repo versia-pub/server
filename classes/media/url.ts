@@ -1,4 +1,6 @@
-import { config } from "~/config.ts";
+// HACK: Import like this to avoid circular dependency
+// since ProxiableUrl is used in config.ts
+const { config } = await import("~/config.ts");
 
 export class ProxiableUrl extends URL {
     private isAllowedOrigin(): boolean {
