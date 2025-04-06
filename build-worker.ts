@@ -7,7 +7,11 @@ const buildSpinner = ora("Building").start();
 await $`rm -rf dist && mkdir dist`;
 
 await build({
-    entrypoints: ["entrypoints/worker/index.ts"],
+    entrypoints: [
+        "entrypoints/worker/index.ts",
+        // HACK: Include to avoid cyclical import errors
+        "config.ts",
+    ],
     outdir: "dist",
     target: "bun",
     splitting: true,

@@ -14,6 +14,8 @@ const pluginDirs = await readdir("plugins", { withFileTypes: true });
 await build({
     entrypoints: [
         "index.ts",
+        // HACK: Include to avoid cyclical import errors
+        "config.ts",
         "cli/index.ts",
         // Force Bun to include endpoints
         ...Object.values(routes),
