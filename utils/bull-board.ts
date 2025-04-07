@@ -38,6 +38,7 @@ export const applyToHono = (app: Hono<HonoEnv>): void => {
                     height: 40,
                 },
             },
+            uiBasePath: "node_modules/@bull-board/ui",
         },
     });
 

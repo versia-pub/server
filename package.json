@@ -137,7 +137,6 @@
         "zod-validation-error": "^3.4.0"
     },
     "patchedDependencies": {
-        "@bull-board/api@6.8.2": "patches/@bull-board%2Fapi@6.5.3.patch",
         "giget@2.0.0": "patches/giget@2.0.0.patch"
     }
 }
