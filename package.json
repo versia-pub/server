@@ -67,7 +67,7 @@
         "ts-prune": "^0.10.3",
         "typescript": "^5.8.3",
         "vitepress": "^1.6.3",
-        "vitepress-plugin-tabs": "^0.6.0",
+        "vitepress-plugin-tabs": "^0.7.0",
         "vitepress-sidebar": "^1.31.1",
         "vue": "^3.5.13",
         "zod-to-json-schema": "^3.24.5"
@@ -76,8 +76,8 @@
         "typescript": "^5.7.2"
     },
     "dependencies": {
-        "@bull-board/api": "^6.8.2",
-        "@bull-board/hono": "^6.8.2",
+        "@bull-board/api": "^6.8.3",
+        "@bull-board/hono": "^6.8.3",
         "@clerc/plugin-completions": "^0.44.0",
         "@clerc/plugin-friendly-error": "^0.44.0",
         "@clerc/plugin-help": "^0.44.0",
