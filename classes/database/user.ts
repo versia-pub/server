@@ -9,19 +9,6 @@ import type {
     Source,
 } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
-import {
-    EntityValidator,
-    FederationRequester,
-    type HttpVerb,
-    SignatureConstructor,
-} from "@versia/federation";
-import type {
-    Collection,
-    Unfollow,
-    FollowAccept as VersiaFollowAccept,
-    FollowReject as VersiaFollowReject,
-    User as VersiaUser,
-} from "@versia/federation/types";
 import { Media, Notification, PushSubscription, db } from "@versia/kit/db";
 import {
     EmojiToUser,
@@ -32,6 +19,10 @@ import {
     UserToPinnedNotes,
     Users,
 } from "@versia/kit/tables";
+import { sign } from "@versia/sdk/crypto";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { FederationRequester } from "@versia/sdk/http";
+import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
 import { randomUUIDv7 } from "bun";
 import { password as bunPassword } from "bun";
 import chalk from "chalk";
@@ -54,7 +45,7 @@ import type { z } from "zod";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
-import type { KnownEntity } from "~/types/api.ts";
+import type { HttpVerb, KnownEntity } from "~/types/api.ts";
 import { ProxiableUrl } from "../media/url.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { PushJobType, pushQueue } from "../queues/push.ts";
@@ -240,7 +231,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     ): Promise<void> {
         if (followee.isRemote()) {
             await deliveryQueue.add(DeliveryJobType.FederateEntity, {
-                entity: this.unfollowToVersia(followee),
+                entity: this.unfollowToVersia(followee).toJSON(),
                 recipientId: followee.id,
                 senderId: this.id,
             });
@@ -251,15 +242,15 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         });
     }
 
-    private unfollowToVersia(followee: User): Unfollow {
+    private unfollowToVersia(followee: User): VersiaEntities.Unfollow {
         const id = crypto.randomUUID();
-        return {
+        return new VersiaEntities.Unfollow({
             type: "Unfollow",
             id,
-            author: this.getUri().toString(),
+            author: this.getUri(),
             created_at: new Date().toISOString(),
-            followee: followee.getUri().toString(),
-        };
+            followee: followee.getUri(),
+        });
     }
 
     public async sendFollowAccept(follower: User): Promise<void> {
@@ -271,16 +262,16 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             throw new Error("Followee must be a local user");
         }
 
-        const entity: VersiaFollowAccept = {
+        const entity = new VersiaEntities.FollowAccept({
             type: "FollowAccept",
             id: crypto.randomUUID(),
-            author: this.getUri().toString(),
+            author: this.getUri(),
             created_at: new Date().toISOString(),
-            follower: follower.getUri().toString(),
-        };
+            follower: follower.getUri(),
+        });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
-            entity,
+            entity: entity.toJSON(),
             recipientId: follower.id,
             senderId: this.id,
         });
@@ -295,43 +286,77 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             throw new Error("Followee must be a local user");
         }
 
-        const entity: VersiaFollowReject = {
+        const entity = new VersiaEntities.FollowReject({
             type: "FollowReject",
             id: crypto.randomUUID(),
-            author: this.getUri().toString(),
+            author: this.getUri(),
             created_at: new Date().toISOString(),
-            follower: follower.getUri().toString(),
-        };
+            follower: follower.getUri(),
+        });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
-            entity,
+            entity: entity.toJSON(),
             recipientId: follower.id,
             senderId: this.id,
         });
     }
 
     /**
+     * Signs a Versia entity with that user's private key
+     *
+     * @param entity Entity to sign
+     * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
+     * @param signatureMethod HTTP method to embed in signature (default: POST)
+     * @returns The signed string and headers to send with the request
+     */
+    public async sign(
+        entity: KnownEntity | VersiaEntities.Collection,
+        signatureUrl: URL,
+        signatureMethod: HttpVerb = "POST",
+    ): Promise<{
+        headers: Headers;
+    }> {
+        const privateKey = await crypto.subtle.importKey(
+            "pkcs8",
+            Buffer.from(this.data.privateKey ?? "", "base64"),
+            "Ed25519",
+            false,
+            ["sign"],
+        );
+
+        const { headers } = await sign(
+            privateKey,
+            this.getUri(),
+            new Request(signatureUrl, {
+                method: signatureMethod,
+                body: JSON.stringify(entity),
+            }),
+        );
+
+        return { headers };
+    }
+
+    /**
      * Perform a WebFinger lookup to find a user's URI
-     * @param manager
      * @param username
      * @param hostname
      * @returns URI, or null if not found
      */
-    public static async webFinger(
-        manager: FederationRequester,
+    public static webFinger(
         username: string,
         hostname: string,
     ): Promise<URL | null> {
         try {
-            return new URL(await manager.webFinger(username, hostname));
+            return User.federationRequester.resolveWebFinger(
+                username,
+                hostname,
+            );
         } catch {
             try {
-                return new URL(
-                    await manager.webFinger(
-                        username,
-                        hostname,
-                        "application/activity+json",
-                    ),
+                return User.federationRequester.resolveWebFinger(
+                    username,
+                    hostname,
+                    "application/activity+json",
                 );
             } catch {
                 return Promise.resolve(null);
@@ -455,7 +480,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param uri The URI of the like, if it is remote
      * @returns The like object created or the existing like
      */
-    public async like(note: Note, uri?: string): Promise<Like> {
+    public async like(note: Note, uri?: URL): Promise<Like> {
         // Check if the user has already liked the note
         const existingLike = await Like.fromSql(
             and(eq(Likes.likerId, this.id), eq(Likes.likedId, note.id)),
@@ -469,7 +494,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             id: randomUUIDv7(),
             likerId: this.id,
             likedId: note.id,
-            uri,
+            uri: uri?.href,
         });
 
         if (this.isLocal() && note.author.isLocal()) {
@@ -601,7 +626,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         if (instance.data.protocol === "versia") {
-            return await User.saveFromVersia(uri, instance);
+            return await User.saveFromVersia(uri);
         }
 
         if (instance.data.protocol === "activitypub") {
@@ -616,28 +641,19 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 config.federation.bridge.url,
             );
 
-            return await User.saveFromVersia(bridgeUri, instance);
+            return await User.saveFromVersia(bridgeUri);
         }
 
         throw new Error(`Unsupported protocol: ${instance.data.protocol}`);
     }
 
-    private static async saveFromVersia(
-        uri: URL,
-        instance: Instance,
-    ): Promise<User> {
-        const requester = await User.getFederationRequester();
-        const output = await requester.get<Partial<VersiaUser>>(uri, {
-            // @ts-expect-error Bun extension
-            proxy: config.http.proxy_address,
-        });
+    private static async saveFromVersia(uri: URL): Promise<User> {
+        const userData = await User.federationRequester.fetchEntity(
+            uri,
+            VersiaEntities.User,
+        );
 
-        const { data: json } = output;
-
-        const validator = new EntityValidator();
-        const data = await validator.User(json);
-
-        const user = await User.fromVersia(data, instance);
+        const user = await User.fromVersia(userData);
 
         await searchManager.addUser(user);
 
@@ -663,30 +679,32 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    public static async fromVersia(
-        user: VersiaUser,
-        instance: Instance,
-    ): Promise<User> {
+    public static async fromVersia(user: VersiaEntities.User): Promise<User> {
+        const instance = await Instance.resolve(user.data.uri);
+
         const data = {
-            username: user.username,
-            uri: user.uri,
-            createdAt: new Date(user.created_at).toISOString(),
+            username: user.data.username,
+            uri: user.data.uri.href,
+            createdAt: new Date(user.data.created_at).toISOString(),
             endpoints: {
                 dislikes:
-                    user.collections["pub.versia:likes/Dislikes"] ?? undefined,
-                featured: user.collections.featured,
-                likes: user.collections["pub.versia:likes/Likes"] ?? undefined,
-                followers: user.collections.followers,
-                following: user.collections.following,
-                inbox: user.inbox,
-                outbox: user.collections.outbox,
+                    user.data.collections["pub.versia:likes/Dislikes"]?.href ??
+                    undefined,
+                featured: user.data.collections.featured.href,
+                likes:
+                    user.data.collections["pub.versia:likes/Likes"]?.href ??
+                    undefined,
+                followers: user.data.collections.followers.href,
+                following: user.data.collections.following.href,
+                inbox: user.data.inbox.href,
+                outbox: user.data.collections.outbox.href,
             },
-            fields: user.fields ?? [],
-            updatedAt: new Date(user.created_at).toISOString(),
+            fields: user.data.fields ?? [],
+            updatedAt: new Date(user.data.created_at).toISOString(),
             instanceId: instance.id,
-            displayName: user.display_name ?? "",
-            note: getBestContentType(user.bio).content,
-            publicKey: user.public_key.key,
+            displayName: user.data.display_name ?? "",
+            note: getBestContentType(user.data.bio).content,
+            publicKey: user.data.public_key.key,
             source: {
                 language: "en",
                 note: "",
@@ -697,46 +715,46 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
 
         const userEmojis =
-            user.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
+            user.data.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
 
         const emojis = await Promise.all(
             userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance)),
         );
 
         // Check if new user already exists
-        const foundUser = await User.fromSql(eq(Users.uri, user.uri));
+        const foundUser = await User.fromSql(eq(Users.uri, user.data.uri.href));
 
         // If it exists, simply update it
         if (foundUser) {
             let avatar: Media | null = null;
             let header: Media | null = null;
 
-            if (user.avatar) {
+            if (user.data.avatar) {
                 if (foundUser.avatar) {
                     avatar = new Media(
                         await foundUser.avatar.update({
-                            content: user.avatar,
+                            content: user.data.avatar,
                         }),
                     );
                 } else {
                     avatar = await Media.insert({
                         id: randomUUIDv7(),
-                        content: user.avatar,
+                        content: user.data.avatar,
                     });
                 }
             }
 
-            if (user.header) {
+            if (user.data.header) {
                 if (foundUser.header) {
                     header = new Media(
                         await foundUser.header.update({
-                            content: user.header,
+                            content: user.data.header,
                         }),
                     );
                 } else {
                     header = await Media.insert({
                         id: randomUUIDv7(),
-                        content: user.header,
+                        content: user.data.header,
                     });
                 }
             }
@@ -752,17 +770,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         // Else, create a new user
-        const avatar = user.avatar
+        const avatar = user.data.avatar
             ? await Media.insert({
                   id: randomUUIDv7(),
-                  content: user.avatar,
+                  content: user.data.avatar,
               })
             : null;
 
-        const header = user.header
+        const header = user.data.header
             ? await Media.insert({
                   id: randomUUIDv7(),
-                  content: user.header,
+                  content: user.data.header,
               })
             : null;
 
@@ -977,72 +995,25 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return updated.data;
     }
 
-    /**
-     * Signs a Versia entity with that user's private key
-     *
-     * @param entity Entity to sign
-     * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
-     * @param signatureMethod HTTP method to embed in signature (default: POST)
-     * @returns The signed string and headers to send with the request
-     */
-    public async sign(
-        entity: KnownEntity | Collection,
-        signatureUrl: URL,
-        signatureMethod: HttpVerb = "POST",
-    ): Promise<{
-        headers: Headers;
-        signedString: string;
-    }> {
-        const signatureConstructor = await SignatureConstructor.fromStringKey(
-            this.data.privateKey ?? "",
-            this.getUri(),
-        );
-
-        const output = await signatureConstructor.sign(
-            signatureMethod,
-            signatureUrl,
-            JSON.stringify(entity),
-        );
-
-        if (config.debug?.federation) {
-            const logger = getLogger("federation");
-
-            // Log public key
-            logger.debug`Sender public key: ${this.data.publicKey}`;
-
-            // Log signed string
-            logger.debug`Signed string:\n${output.signedString}`;
-        }
-
-        return output;
-    }
-
-    /**
-     * Helper to get the appropriate Versia SDK requester with the instance's private key
-     *
-     * @returns The requester
-     */
-    public static getFederationRequester(): FederationRequester {
-        const signatureConstructor = new SignatureConstructor(
+    public static get federationRequester(): FederationRequester {
+        return new FederationRequester(
             config.instance.keys.private,
             config.http.base_url,
         );
-
-        return new FederationRequester(signatureConstructor);
     }
 
-    /**
-     * Helper to get the appropriate Versia SDK requester with this user's private key
-     *
-     * @returns The requester
-     */
-    public async getFederationRequester(): Promise<FederationRequester> {
-        const signatureConstructor = await SignatureConstructor.fromStringKey(
-            this.data.privateKey ?? "",
-            this.getUri(),
-        );
-
-        return new FederationRequester(signatureConstructor);
+    public get federationRequester(): Promise<FederationRequester> {
+        return crypto.subtle
+            .importKey(
+                "pkcs8",
+                Buffer.from(this.data.privateKey ?? "", "base64"),
+                "Ed25519",
+                false,
+                ["sign"],
+            )
+            .then((k) => {
+                return new FederationRequester(k, this.getUri());
+            });
     }
 
     /**
@@ -1071,7 +1042,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             followers.map((follower) => ({
                 name: DeliveryJobType.FederateEntity,
                 data: {
-                    entity,
+                    entity: entity.toJSON(),
+                    type: entity.data.type,
                     recipientId: follower.id,
                     senderId: this.id,
                 },
@@ -1098,20 +1070,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
         }
 
-        const { headers } = await this.sign(entity, new URL(inbox));
-
         try {
-            await new FederationRequester().post(inbox, entity, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy_address,
-                headers: {
-                    ...headers.toJSON(),
-                    "Content-Type": "application/json; charset=utf-8",
-                },
-            });
+            await (await this.federationRequester).postEntity(
+                new URL(inbox),
+                entity,
+            );
         } catch (e) {
             getLogger(["federation", "delivery"])
-                .error`Federating ${chalk.gray(entity.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
+                .error`Federating ${chalk.gray(entity.data.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
             getLogger(["federation", "delivery"]).error`${e}`;
             sentry?.captureException(e);
 
@@ -1176,17 +1142,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    public toVersia(): VersiaUser {
+    public toVersia(): VersiaEntities.User {
         if (this.isRemote()) {
             throw new Error("Cannot convert remote user to Versia format");
         }
 
         const user = this.data;
 
-        return {
+        return new VersiaEntities.User({
             id: user.id,
             type: "User",
-            uri: this.getUri().toString(),
+            uri: this.getUri(),
             bio: {
                 "text/html": {
                     content: user.note,
@@ -1202,44 +1168,42 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 featured: new URL(
                     `/users/${user.id}/featured`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 "pub.versia:likes/Likes": new URL(
                     `/users/${user.id}/likes`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 "pub.versia:likes/Dislikes": new URL(
                     `/users/${user.id}/dislikes`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 followers: new URL(
                     `/users/${user.id}/followers`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 following: new URL(
                     `/users/${user.id}/following`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 outbox: new URL(
                     `/users/${user.id}/outbox`,
                     config.http.base_url,
-                ).toString(),
+                ),
             },
-            inbox: new URL(
-                `/users/${user.id}/inbox`,
-                config.http.base_url,
-            ).toString(),
+            inbox: new URL(`/users/${user.id}/inbox`, config.http.base_url),
             indexable: this.data.isIndexable,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
-            avatar: this.avatar?.toVersia(),
-            header: this.header?.toVersia(),
+            avatar: this.avatar?.toVersia().data as z.infer<
+                typeof ImageContentFormatSchema
+            >,
+            header: this.header?.toVersia().data as z.infer<
+                typeof ImageContentFormatSchema
+            >,
             display_name: user.displayName,
             fields: user.fields,
             public_key: {
-                actor: new URL(
-                    `/users/${user.id}`,
-                    config.http.base_url,
-                ).toString(),
+                actor: new URL(`/users/${user.id}`, config.http.base_url),
                 key: user.publicKey,
                 algorithm: "ed25519",
             },
@@ -1250,7 +1214,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     ),
                 },
             },
-        };
+        });
     }
 
     public toMention(): z.infer<typeof MentionSchema> {

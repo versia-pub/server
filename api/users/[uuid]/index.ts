@@ -1,6 +1,6 @@
 import { apiRoute, handleZodError } from "@/api";
-import { User as UserSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
+import { UserSchema } from "@versia/sdk/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -43,6 +43,7 @@ export default apiRoute((app) =>
             }),
             handleZodError,
         ),
+        // @ts-expect-error
         async (context) => {
             const { uuid } = context.req.valid("param");
 

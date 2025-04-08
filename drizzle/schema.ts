@@ -4,7 +4,13 @@ import type {
     Status as StatusSchema,
 } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
-import type { ContentFormat, InstanceMetadata } from "@versia/federation/types";
+import type {
+    ContentFormatSchema,
+    ImageContentFormatSchema,
+    InstanceMetadataSchema,
+    NonTextContentFormatSchema,
+    TextContentFormatSchema,
+} from "@versia/sdk/schemas";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -361,9 +367,13 @@ export const TokensRelations = relations(Tokens, ({ one }) => ({
 
 export const Medias = pgTable("Medias", {
     id: id(),
-    content: jsonb("content").notNull().$type<ContentFormat>(),
-    originalContent: jsonb("original_content").$type<ContentFormat>(),
-    thumbnail: jsonb("thumbnail").$type<ContentFormat>(),
+    content: jsonb("content")
+        .notNull()
+        .$type<z.infer<typeof ContentFormatSchema>>(),
+    originalContent:
+        jsonb("original_content").$type<z.infer<typeof ContentFormatSchema>>(),
+    thumbnail:
+        jsonb("thumbnail").$type<z.infer<typeof ImageContentFormatSchema>>(),
     blurhash: text("blurhash"),
 });
 
@@ -506,7 +516,7 @@ export const Instances = pgTable("Instances", {
     baseUrl: text("base_url").notNull(),
     name: text("name").notNull(),
     version: text("version").notNull(),
-    logo: jsonb("logo").$type<ContentFormat>(),
+    logo: jsonb("logo").$type<typeof NonTextContentFormatSchema._input>(),
     disableAutomoderation: boolean("disable_automoderation")
         .default(false)
         .notNull(),
@@ -515,8 +525,14 @@ export const Instances = pgTable("Instances", {
         .$type<"versia" | "activitypub">()
         .default("versia"),
     inbox: text("inbox"),
-    publicKey: jsonb("public_key").$type<InstanceMetadata["public_key"]>(),
-    extensions: jsonb("extensions").$type<InstanceMetadata["extensions"]>(),
+    publicKey:
+        jsonb("public_key").$type<
+            (typeof InstanceMetadataSchema._input)["public_key"]
+        >(),
+    extensions:
+        jsonb("extensions").$type<
+            (typeof InstanceMetadataSchema._input)["extensions"]
+        >(),
 });
 
 export const InstancesRelations = relations(Instances, ({ many }) => ({
@@ -549,8 +565,8 @@ export const Users = pgTable(
         passwordResetToken: text("password_reset_token"),
         fields: jsonb("fields").notNull().default("[]").$type<
             {
-                key: ContentFormat;
-                value: ContentFormat;
+                key: z.infer<typeof TextContentFormatSchema>;
+                value: z.infer<typeof TextContentFormatSchema>;
             }[]
         >(),
         endpoints: jsonb("endpoints").$type<Partial<{

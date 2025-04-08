@@ -5,6 +5,7 @@ import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -186,12 +187,14 @@ export default apiRoute((app) =>
 
             if (note && self.source) {
                 self.source.note = note;
-                self.note = await contentToHtml({
-                    "text/markdown": {
-                        content: note,
-                        remote: false,
-                    },
-                });
+                self.note = await contentToHtml(
+                    new VersiaEntities.TextContentFormat({
+                        "text/markdown": {
+                            content: note,
+                            remote: false,
+                        },
+                    }),
+                );
             }
 
             if (source?.privacy) {
@@ -275,23 +278,23 @@ export default apiRoute((app) =>
                 for (const field of fields_attributes) {
                     // Can be Markdown or plaintext, also has emojis
                     const parsedName = await contentToHtml(
-                        {
+                        new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.name,
                                 remote: false,
                             },
-                        },
+                        }),
                         undefined,
                         true,
                     );
 
                     const parsedValue = await contentToHtml(
-                        {
+                        new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.value,
                                 remote: false,
                             },
-                        },
+                        }),
                         undefined,
                         true,
                     );

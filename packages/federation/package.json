@@ -1,0 +1,69 @@
+{
+    "name": "@versia/sdk",
+    "displayName": "Versia SDK",
+    "version": "0.0.1",
+    "author": {
+        "email": "jesse.wierzbinski@lysand.org",
+        "name": "Jesse Wierzbinski (CPlusPatch)",
+        "url": "https://cpluspatch.com"
+    },
+    "readme": "README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/versia-pub/server.git",
+        "directory": "packages/federation"
+    },
+    "bugs": {
+        "url": "https://github.com/versia-pub/server/issues"
+    },
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Jesse Wierzbinski",
+            "email": "jesse.wierzbinski@lysand.org",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "maintainers": [
+        {
+            "name": "Jesse Wierzbinski",
+            "email": "jesse.wierzbinski@lysand.org",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "description": "Versia Federation SDK",
+    "categories": ["Other"],
+    "type": "module",
+    "engines": {
+        "bun": ">=1.2.5"
+    },
+    "exports": {
+        ".": {
+            "import": "./inbox-processor.ts",
+            "default": "./inbox-processor.ts"
+        },
+        "./http": {
+            "import": "./http.ts",
+            "default": "./http.ts"
+        },
+        "./crypto": {
+            "import": "./crypto.ts",
+            "default": "./crypto.ts"
+        },
+        "./entities": {
+            "import": "./entities/index.ts",
+            "default": "./entities/index.ts"
+        },
+        "./schemas": {
+            "import": "./schemas/index.ts",
+            "default": "./schemas/index.ts"
+        }
+    },
+    "funding": {
+        "type": "opencollective",
+        "url": "https://opencollective.com/lysand"
+    },
+    "homepage": "https://versia.pub",
+    "keywords": ["versia", "typescript", "sdk"],
+    "packageManager": "bun@1.2.5"
+}

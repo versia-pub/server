@@ -1,10 +1,10 @@
 import { apiRoute, handleZodError } from "@/api";
-import type { Entity } from "@versia/federation/types";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
+import type { JSONObject } from "~/packages/federation/types";
 
 export default apiRoute((app) =>
     app.post(
@@ -89,7 +89,7 @@ export default apiRoute((app) =>
         ),
         validator("json", z.any(), handleZodError),
         async (context) => {
-            const body: Entity = await context.req.valid("json");
+            const body: JSONObject = await context.req.valid("json");
 
             await inboxQueue.add(InboxJobType.ProcessEntity, {
                 data: body,

@@ -1,8 +1,8 @@
 import { apiRoute, handleZodError } from "@/api";
 import { Status as StatusSchema } from "@versia/client/schemas";
-import { LikeExtension as LikeSchema } from "@versia/federation/schemas";
 import { Like, User } from "@versia/kit/db";
 import { Likes } from "@versia/kit/tables";
+import { LikeSchema } from "@versia/sdk/schemas";
 import { and, eq, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

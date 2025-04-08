@@ -1,8 +1,9 @@
 import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import type { CustomEmoji } from "@versia/client/schemas";
-import type { CustomEmojiExtension } from "@versia/federation/types";
 import { type Instance, Media, db } from "@versia/kit/db";
 import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
+import * as VersiaEntities from "@versia/sdk/entities";
+import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
 import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
@@ -130,7 +131,10 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
     }
 
     public static async fetchFromRemote(
-        emojiToFetch: CustomEmojiExtension["emojis"][0],
+        emojiToFetch: {
+            name: string;
+            url: z.infer<typeof ImageContentFormatSchema>;
+        },
         instance: Instance,
     ): Promise<Emoji> {
         const existingEmoji = await Emoji.fromSql(
@@ -189,15 +193,23 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
         };
     }
 
-    public toVersia(): CustomEmojiExtension["emojis"][0] {
+    public toVersia(): {
+        name: string;
+        url: z.infer<typeof ImageContentFormatSchema>;
+    } {
         return {
             name: `:${this.data.shortcode}:`,
-            url: this.media.toVersia(),
+            url: this.media.toVersia().data as z.infer<
+                typeof ImageContentFormatSchema
+            >,
         };
     }
 
     public static async fromVersia(
-        emoji: CustomEmojiExtension["emojis"][0],
+        emoji: {
+            name: string;
+            url: z.infer<typeof ImageContentFormatSchema>;
+        },
         instance: Instance,
     ): Promise<Emoji> {
         // Extracts the shortcode from the emoji name (e.g. :shortcode: -> shortcode)
@@ -209,7 +221,9 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
             throw new Error("Could not extract shortcode from emoji name");
         }
 
-        const media = await Media.fromVersia(emoji.url);
+        const media = await Media.fromVersia(
+            new VersiaEntities.ImageContentFormat(emoji.url),
+        );
 
         return Emoji.insert({
             id: randomUUIDv7(),

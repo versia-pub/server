@@ -1,9 +1,9 @@
 import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import type { ContentFormat } from "@versia/federation/types";
 import { type Note, User, db } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
+import type * as VersiaEntities from "@versia/sdk/entities";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
@@ -276,21 +276,17 @@ export const parseTextMentions = async (
 
     // Resolve remote mentions not in database
     for (const person of notFoundRemoteUsers) {
-        const manager = await author.getFederationRequester();
-        const uri = await User.webFinger(
-            manager,
+        const url = await (await author.federationRequester).resolveWebFinger(
             person[1] ?? "",
             person[2] ?? "",
         );
 
-        if (!uri) {
-            continue;
-        }
+        if (url) {
+            const user = await User.resolve(url);
 
-        const user = await User.resolve(uri);
-
-        if (user) {
-            finalList.push(user);
+            if (user) {
+                finalList.push(user);
+            }
         }
     }
 
@@ -327,21 +323,21 @@ export const replaceTextMentions = (text: string, mentions: User[]): string => {
 };
 
 export const contentToHtml = async (
-    content: ContentFormat,
+    content: VersiaEntities.TextContentFormat,
     mentions: User[] = [],
     inline = false,
 ): Promise<string> => {
     const sanitizer = inline ? sanitizeHtmlInline : sanitizeHtml;
     let htmlContent = "";
 
-    if (content["text/html"]) {
-        htmlContent = await sanitizer(content["text/html"].content);
-    } else if (content["text/markdown"]) {
+    if (content.data["text/html"]) {
+        htmlContent = await sanitizer(content.data["text/html"].content);
+    } else if (content.data["text/markdown"]) {
         htmlContent = await sanitizer(
-            await markdownParse(content["text/markdown"].content),
+            await markdownParse(content.data["text/markdown"].content),
         );
-    } else if (content["text/plain"]?.content) {
-        htmlContent = (await sanitizer(content["text/plain"].content))
+    } else if (content.data["text/plain"]?.content) {
+        htmlContent = (await sanitizer(content.data["text/plain"].content))
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");

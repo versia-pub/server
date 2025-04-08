@@ -1,4 +1,3 @@
-import type { Delete, LikeExtension } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import {
     Likes,
@@ -6,6 +5,7 @@ import {
     Notifications,
     type Users,
 } from "@versia/kit/tables";
+import * as VersiaEntities from "@versia/sdk/entities";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -149,25 +149,24 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return new URL(`/likes/${this.data.id}`, config.http.base_url);
     }
 
-    public toVersia(): LikeExtension {
-        return {
+    public toVersia(): VersiaEntities.Like {
+        return new VersiaEntities.Like({
             id: this.data.id,
             author: User.getUri(
                 this.data.liker.id,
                 this.data.liker.uri ? new URL(this.data.liker.uri) : null,
-            ).toString(),
+            ),
             type: "pub.versia:likes/Like",
             created_at: new Date(this.data.createdAt).toISOString(),
-            liked:
-                this.data.liked.uri ??
-                new URL(`/notes/${this.data.liked.id}`, config.http.base_url)
-                    .href,
-            uri: this.getUri().toString(),
-        };
+            liked: this.data.liked.uri
+                ? new URL(this.data.liked.uri)
+                : new URL(`/notes/${this.data.liked.id}`, config.http.base_url),
+            uri: this.getUri(),
+        });
     }
 
-    public unlikeToVersia(unliker?: User): Delete {
-        return {
+    public unlikeToVersia(unliker?: User): VersiaEntities.Delete {
+        return new VersiaEntities.Delete({
             type: "Delete",
             id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
@@ -178,9 +177,9 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                     : this.data.liker.uri
                       ? new URL(this.data.liker.uri)
                       : null,
-            ).toString(),
+            ),
             deleted_type: "pub.versia:likes/Like",
-            deleted: this.getUri().toString(),
-        };
+            deleted: this.getUri(),
+        });
     }
 }

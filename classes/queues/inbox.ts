@@ -1,10 +1,10 @@
 import { getLogger } from "@logtape/logtape";
-import type { Entity } from "@versia/federation/types";
 import { Instance, User } from "@versia/kit/db";
 import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import { config } from "~/config.ts";
+import type { JSONObject } from "~/packages/federation/types.ts";
 import { connection } from "~/utils/redis.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
@@ -14,7 +14,7 @@ export enum InboxJobType {
 }
 
 export type InboxJobData = {
-    data: Entity;
+    data: JSONObject;
     headers: {
         "versia-signature"?: string;
         "versia-signed-at"?: number;
@@ -46,18 +46,25 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
 
                     await job.log(`Processing entity [${data.id}]`);
 
+                    const req = new Request(request.url, {
+                        method: request.method,
+                        headers: new Headers(
+                            Object.entries(headers)
+                                .map(([k, v]) => [k, String(v)])
+                                .concat([
+                                    ["content-type", "application/json"],
+                                ]) as [string, string][],
+                        ),
+                        body: request.body,
+                    });
+
                     if (headers.authorization) {
                         try {
                             const processor = new InboxProcessor(
-                                {
-                                    ...request,
-                                    url: new URL(request.url),
-                                },
+                                req,
                                 data,
                                 null,
-                                {
-                                    authorization: headers.authorization,
-                                },
+                                headers.authorization,
                                 getLogger(["federation", "inbox"]),
                                 ip,
                             );
@@ -91,13 +98,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         return;
                     }
 
-                    const {
-                        "versia-signature": signature,
-                        "versia-signed-at": signedAt,
-                        "versia-signed-by": signedBy,
-                    } = headers as {
-                        "versia-signature": string;
-                        "versia-signed-at": number;
+                    const { "versia-signed-by": signedBy } = headers as {
                         "versia-signed-by": string;
                     };
 
@@ -139,24 +140,27 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         );
                     }
 
+                    const key = await crypto.subtle.importKey(
+                        "spki",
+                        Buffer.from(
+                            sender?.data.publicKey ??
+                                remoteInstance.data.publicKey.key,
+                            "base64",
+                        ),
+                        "Ed25519",
+                        false,
+                        ["verify"],
+                    );
+
                     try {
                         const processor = new InboxProcessor(
-                            {
-                                ...request,
-                                url: new URL(request.url),
-                            },
+                            req,
                             data,
                             {
                                 instance: remoteInstance,
-                                key:
-                                    sender?.data.publicKey ??
-                                    remoteInstance.data.publicKey.key,
+                                key,
                             },
-                            {
-                                signature,
-                                signedAt: new Date(signedAt * 1000),
-                                authorization: undefined,
-                            },
+                            undefined,
                             getLogger(["federation", "inbox"]),
                             ip,
                         );

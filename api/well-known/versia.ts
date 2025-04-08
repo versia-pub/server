@@ -1,8 +1,8 @@
 import { apiRoute } from "@/api";
 import { urlToContentFormat } from "@/content_types";
-import { InstanceMetadata as InstanceMetadataSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { InstanceMetadataSchema } from "@versia/sdk/schemas";
 import { asc } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";

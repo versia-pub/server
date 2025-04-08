@@ -1,22 +1,10 @@
 import { sentry } from "@/sentry";
 import { type Logger, getLogger } from "@logtape/logtape";
-import {
-    EntityValidator,
-    RequestParserHandler,
-    SignatureValidator,
-} from "@versia/federation";
-import type {
-    Entity,
-    Delete as VersiaDelete,
-    Follow as VersiaFollow,
-    FollowAccept as VersiaFollowAccept,
-    FollowReject as VersiaFollowReject,
-    LikeExtension as VersiaLikeExtension,
-    Note as VersiaNote,
-    User as VersiaUser,
-} from "@versia/federation/types";
-import { Instance, Like, Note, Relationship, User } from "@versia/kit/db";
+import { type Instance, Like, Note, Relationship, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
+import { EntitySorter } from "@versia/sdk";
+import { verify } from "@versia/sdk/crypto";
+import * as VersiaEntities from "@versia/sdk/entities";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
 import chalk from "chalk";
@@ -24,6 +12,7 @@ import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { isValidationError } from "zod-validation-error";
 import { config } from "~/config.ts";
+import type { JSONObject } from "~/packages/federation/types.ts";
 import { ApiError } from "../errors/api-error.ts";
 
 /**
@@ -63,21 +52,13 @@ export class InboxProcessor {
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
      */
     public constructor(
-        private request: {
-            url: URL;
-            method: string;
-            body: string;
-        },
-        private body: Entity,
+        private request: Request,
+        private body: JSONObject,
         private sender: {
             instance: Instance;
-            key: string;
+            key: CryptoKey;
         } | null,
-        private headers: {
-            signature?: string;
-            signedAt?: Date;
-            authorization?: string;
-        },
+        private authorizationHeader?: string,
         private logger: Logger = getLogger(["federation", "inbox"]),
         private requestIp: SocketAddress | null = null,
     ) {}
@@ -87,40 +68,12 @@ export class InboxProcessor {
      *
      * @returns {Promise<boolean>} - Whether the signature is valid.
      */
-    private async isSignatureValid(): Promise<boolean> {
+    private isSignatureValid(): Promise<boolean> {
         if (!this.sender) {
             throw new Error("Sender is not defined");
         }
 
-        if (config.debug?.federation) {
-            this.logger.debug`Sender public key: ${chalk.gray(
-                this.sender.key,
-            )}`;
-        }
-
-        const validator = await SignatureValidator.fromStringKey(
-            this.sender.key,
-        );
-
-        if (!(this.headers.signature && this.headers.signedAt)) {
-            throw new Error("Missing signature or signature timestamp");
-        }
-
-        // HACK: Making a fake Request object instead of passing the values directly is necessary because otherwise the validation breaks for some unknown reason
-        const isValid = await validator.validate(
-            new Request(this.request.url, {
-                method: this.request.method,
-                headers: {
-                    "Versia-Signature": this.headers.signature,
-                    "Versia-Signed-At": (
-                        this.headers.signedAt.getTime() / 1000
-                    ).toString(),
-                },
-                body: this.request.body,
-            }),
-        );
-
-        return isValid;
+        return verify(this.sender.key, this.request);
     }
 
     /**
@@ -131,7 +84,7 @@ export class InboxProcessor {
      */
     private shouldCheckSignature(): boolean {
         if (config.federation.bridge) {
-            const token = this.headers.authorization?.split("Bearer ")[1];
+            const token = this.authorizationHeader?.split("Bearer ")[1];
 
             if (token) {
                 return this.isRequestFromBridge(token);
@@ -226,58 +179,48 @@ export class InboxProcessor {
 
         shouldCheckSignature && this.logger.debug`Signature is valid`;
 
-        const validator = new EntityValidator();
-        const handler = new RequestParserHandler(this.body, validator);
-
         try {
-            return await handler.parseBody<void>({
-                note: (): Promise<void> => this.processNote(),
-                follow: (): Promise<void> => this.processFollowRequest(),
-                followAccept: (): Promise<void> => this.processFollowAccept(),
-                followReject: (): Promise<void> => this.processFollowReject(),
-                "pub.versia:likes/Like": (): Promise<void> =>
-                    this.processLikeRequest(),
-                delete: (): Promise<void> => this.processDelete(),
-                user: (): Promise<void> => this.processUserRequest(),
-                unknown: (): void => {
+            new EntitySorter(this.body)
+                .on(VersiaEntities.Note, async (n) => {
+                    await Note.fromVersia(n);
+                })
+                .on(VersiaEntities.Follow, (f) => {
+                    this.processFollowRequest(f);
+                })
+                .on(VersiaEntities.FollowAccept, (f) => {
+                    this.processFollowAccept(f);
+                })
+                .on(VersiaEntities.FollowReject, (f) => {
+                    this.processFollowReject(f);
+                })
+                .on(VersiaEntities.Like, (l) => {
+                    this.processLikeRequest(l);
+                })
+                .on(VersiaEntities.Delete, (d) => {
+                    this.processDelete(d);
+                })
+                .on(VersiaEntities.User, async (u) => {
+                    await User.fromVersia(u);
+                })
+                .sort(() => {
                     throw new ApiError(400, "Unknown entity type");
-                },
-            });
+                });
         } catch (e) {
             return this.handleError(e as Error);
         }
     }
 
     /**
-     * Handles Note entity processing.
-     *
-     * @returns {Promise<void>}
-     */
-    private async processNote(): Promise<void> {
-        const note = this.body as VersiaNote;
-        const author = await User.resolve(new URL(note.author));
-        const instance = await Instance.resolve(new URL(note.uri));
-
-        if (!instance) {
-            throw new ApiError(404, "Instance not found");
-        }
-
-        if (!author) {
-            throw new ApiError(404, "Author not found");
-        }
-
-        await Note.fromVersia(note, author, instance);
-    }
-
-    /**
      * Handles Follow entity processing.
      *
+     * @param {VersiaFollow} follow - The Follow entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowRequest(): Promise<void> {
-        const follow = this.body as unknown as VersiaFollow;
-        const author = await User.resolve(new URL(follow.author));
-        const followee = await User.resolve(new URL(follow.followee));
+    private async processFollowRequest(
+        follow: VersiaEntities.Follow,
+    ): Promise<void> {
+        const author = await User.resolve(follow.data.author);
+        const followee = await User.resolve(follow.data.followee);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -318,12 +261,14 @@ export class InboxProcessor {
     /**
      * Handles FollowAccept entity processing
      *
+     * @param {VersiaFollowAccept} followAccept - The FollowAccept entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowAccept(): Promise<void> {
-        const followAccept = this.body as unknown as VersiaFollowAccept;
-        const author = await User.resolve(new URL(followAccept.author));
-        const follower = await User.resolve(new URL(followAccept.follower));
+    private async processFollowAccept(
+        followAccept: VersiaEntities.FollowAccept,
+    ): Promise<void> {
+        const author = await User.resolve(followAccept.data.author);
+        const follower = await User.resolve(followAccept.data.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -351,12 +296,14 @@ export class InboxProcessor {
     /**
      * Handles FollowReject entity processing
      *
+     * @param {VersiaFollowReject} followReject - The FollowReject entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowReject(): Promise<void> {
-        const followReject = this.body as unknown as VersiaFollowReject;
-        const author = await User.resolve(new URL(followReject.author));
-        const follower = await User.resolve(new URL(followReject.follower));
+    private async processFollowReject(
+        followReject: VersiaEntities.FollowReject,
+    ): Promise<void> {
+        const author = await User.resolve(followReject.data.author);
+        const follower = await User.resolve(followReject.data.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -384,21 +331,20 @@ export class InboxProcessor {
     /**
      * Handles Delete entity processing.
      *
+     * @param {VersiaDelete} delete_ - The Delete entity to process.
      * @returns {Promise<void>}
-     */
-    public async processDelete(): Promise<void> {
-        // JS doesn't allow the use of `delete` as a variable name
-        const delete_ = this.body as unknown as VersiaDelete;
-        const toDelete = delete_.deleted;
+     */ // JS doesn't allow the use of `delete` as a variable name
+    public async processDelete(delete_: VersiaEntities.Delete): Promise<void> {
+        const toDelete = delete_.data.deleted;
 
-        const author = delete_.author
-            ? await User.resolve(new URL(delete_.author))
+        const author = delete_.data.author
+            ? await User.resolve(delete_.data.author)
             : null;
 
-        switch (delete_.deleted_type) {
+        switch (delete_.data.deleted_type) {
             case "Note": {
                 const note = await Note.fromSql(
-                    eq(Notes.uri, toDelete),
+                    eq(Notes.uri, toDelete.href),
                     author ? eq(Notes.authorId, author.id) : undefined,
                 );
 
@@ -413,7 +359,7 @@ export class InboxProcessor {
                 return;
             }
             case "User": {
-                const userToDelete = await User.resolve(new URL(toDelete));
+                const userToDelete = await User.resolve(toDelete);
 
                 if (!userToDelete) {
                     throw new ApiError(404, "User to delete not found");
@@ -428,7 +374,7 @@ export class InboxProcessor {
             }
             case "pub.versia:likes/Like": {
                 const like = await Like.fromSql(
-                    eq(Likes.uri, toDelete),
+                    eq(Likes.uri, toDelete.href),
                     author ? eq(Likes.likerId, author.id) : undefined,
                 );
 
@@ -445,7 +391,7 @@ export class InboxProcessor {
             default: {
                 throw new ApiError(
                     400,
-                    `Deletion of object ${toDelete} not implemented`,
+                    `Deletion of object ${toDelete.href} not implemented`,
                 );
             }
         }
@@ -454,12 +400,12 @@ export class InboxProcessor {
     /**
      * Handles Like entity processing.
      *
+     * @param {VersiaLikeExtension} like - The Like entity to process.
      * @returns {Promise<void>}
      */
-    private async processLikeRequest(): Promise<void> {
-        const like = this.body as unknown as VersiaLikeExtension;
-        const author = await User.resolve(new URL(like.author));
-        const likedNote = await Note.resolve(new URL(like.liked));
+    private async processLikeRequest(like: VersiaEntities.Like): Promise<void> {
+        const author = await User.resolve(like.data.author);
+        const likedNote = await Note.resolve(like.data.liked);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -469,23 +415,7 @@ export class InboxProcessor {
             throw new ApiError(404, "Liked Note not found");
         }
 
-        await author.like(likedNote, like.uri);
-    }
-
-    /**
-     * Handles User entity processing (profile edits).
-     *
-     * @returns {Promise<void>}
-     */
-    private async processUserRequest(): Promise<void> {
-        const user = this.body as unknown as VersiaUser;
-        const instance = await Instance.resolve(new URL(user.uri));
-
-        if (!instance) {
-            throw new ApiError(404, "Instance not found");
-        }
-
-        await User.fromVersia(user, instance);
+        await author.like(likedNote, like.data.uri);
     }
 
     /**

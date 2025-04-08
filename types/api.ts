@@ -1,14 +1,4 @@
-import type {
-    Delete,
-    Follow,
-    FollowAccept,
-    FollowReject,
-    InstanceMetadata,
-    LikeExtension,
-    Note,
-    Unfollow,
-    User,
-} from "@versia/federation/types";
+import type * as VersiaEntities from "@versia/sdk/entities";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
@@ -33,12 +23,12 @@ export interface ApiRouteExports {
 }
 
 export type KnownEntity =
-    | Note
-    | InstanceMetadata
-    | User
-    | Follow
-    | FollowAccept
-    | FollowReject
-    | Unfollow
-    | Delete
-    | LikeExtension;
+    | VersiaEntities.Note
+    | VersiaEntities.InstanceMetadata
+    | VersiaEntities.User
+    | VersiaEntities.Follow
+    | VersiaEntities.FollowAccept
+    | VersiaEntities.FollowReject
+    | VersiaEntities.Unfollow
+    | VersiaEntities.Delete
+    | VersiaEntities.Like;

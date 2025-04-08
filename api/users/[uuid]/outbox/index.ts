@@ -1,10 +1,8 @@
 import { apiRoute, handleZodError } from "@/api";
-import {
-    Collection as CollectionSchema,
-    Note as NoteSchema,
-} from "@versia/federation/schemas";
 import { Note, User, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { CollectionSchema, NoteSchema } from "@versia/sdk/schemas";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -96,35 +94,35 @@ export default apiRoute((app) =>
                 ),
             );
 
-            const json = {
+            const json = new VersiaEntities.Collection({
                 first: new URL(
                     `/users/${uuid}/outbox?page=1`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 last: new URL(
                     `/users/${uuid}/outbox?page=${Math.ceil(
                         totalNotes / NOTES_PER_PAGE,
                     )}`,
                     config.http.base_url,
-                ).toString(),
+                ),
                 total: totalNotes,
-                author: author.getUri().toString(),
+                author: author.getUri(),
                 next:
                     notes.length === NOTES_PER_PAGE
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber + 1}`,
                               config.http.base_url,
-                          ).toString()
+                          )
                         : null,
                 previous:
                     pageNumber > 1
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber - 1}`,
                               config.http.base_url,
-                          ).toString()
+                          )
                         : null,
                 items: notes.map((note) => note.toVersia()),
-            };
+            });
 
             const { headers } = await author.sign(
                 json,

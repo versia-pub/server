@@ -6,10 +6,9 @@ import {
     webfingerMention,
 } from "@/api";
 import { getLogger } from "@logtape/logtape";
-import type { ResponseError } from "@versia/federation";
-import { WebFinger } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { WebFingerSchema } from "@versia/sdk/schemas";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -28,7 +27,7 @@ export default apiRoute((app) =>
                     description: "User information",
                     content: {
                         "application/json": {
-                            schema: resolver(WebFinger),
+                            schema: resolver(WebFingerSchema),
                         },
                     },
                 },
@@ -81,23 +80,22 @@ export default apiRoute((app) =>
                 throw ApiError.accountNotFound();
             }
 
-            let activityPubUrl = "";
+            let activityPubUrl: URL | null = null;
 
             if (config.federation.bridge) {
-                const manager = await User.getFederationRequester();
-
                 try {
-                    activityPubUrl = await manager.webFinger(
-                        user.data.username,
-                        config.http.base_url.host,
-                        "application/activity+json",
-                        config.federation.bridge.url.origin,
-                    );
+                    activityPubUrl =
+                        await User.federationRequester.resolveWebFinger(
+                            user.data.username,
+                            config.http.base_url.host,
+                            "application/activity+json",
+                            config.federation.bridge.url.origin,
+                        );
                 } catch (e) {
-                    const error = e as ResponseError;
+                    const error = e as ApiError;
 
                     getLogger(["federation", "bridge"])
-                        .error`Error from bridge: ${await error.response.data}`;
+                        .error`Error from bridge: ${error.message}`;
                 }
             }
 
@@ -112,7 +110,7 @@ export default apiRoute((app) =>
                             ? {
                                   rel: "self",
                                   type: "application/activity+json",
-                                  href: activityPubUrl,
+                                  href: activityPubUrl.href,
                               }
                             : undefined,
                         {

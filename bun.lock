@@ -20,8 +20,8 @@
         "@scalar/hono-api-reference": "^0.8.0",
         "@sentry/bun": "^9.11.0",
         "@versia/client": "workspace:*",
-        "@versia/federation": "^0.2.1",
         "@versia/kit": "workspace:*",
+        "@versia/sdk": "workspace:*",
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",
         "bullmq": "^5.47.2",
@@ -94,6 +94,10 @@
       "dependencies": {
         "@badgateway/oauth2-client": "^2.4.2",
       },
+    },
+    "packages/federation": {
+      "name": "@versia/sdk",
+      "version": "0.0.1",
     },
     "packages/plugin-kit": {
       "name": "@versia/kit",
@@ -568,9 +572,9 @@
 
     "@versia/client": ["@versia/client@workspace:packages/client"],
 
-    "@versia/federation": ["@versia/federation@0.2.1", "", { "dependencies": { "magic-regexp": "^0.8.0", "mime-types": "^2.1.35", "zod": "^3.24.1", "zod-validation-error": "^3.4.0" } }, "sha512-FTo3VGNJBGmCi0ZEQMzqFZBbcfbX81kmg0UgY4cKamr1dJWgEf72IAZnEDgrBffFjYtreLGdEjFkkcq3JfS8oQ=="],
-
     "@versia/kit": ["@versia/kit@workspace:packages/plugin-kit"],
+
+    "@versia/sdk": ["@versia/sdk@workspace:packages/federation"],
 
     "@vitejs/plugin-vue": ["@vitejs/plugin-vue@5.2.3", "", { "peerDependencies": { "vite": "^5.0.0 || ^6.0.0", "vue": "^3.2.25" } }, "sha512-IYSLEQj4LgZZuoVpdSUCw3dIynTWQgPlaRP6iAvMle4My0HdYwr5g5wQAfwOeHQBmYwEkqF70nRpSilr6PoUDg=="],
 
@@ -1412,8 +1416,6 @@
 
     "@ts-morph/common/minimatch": ["minimatch@3.1.2", "", { "dependencies": { "brace-expansion": "^1.1.7" } }, "sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw=="],
 
-    "@versia/federation/mime-types": ["mime-types@2.1.35", "", { "dependencies": { "mime-db": "1.52.0" } }, "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw=="],
-
     "@vue/compiler-core/estree-walker": ["estree-walker@2.0.2", "", {}, "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w=="],
 
     "@vue/compiler-sfc/estree-walker": ["estree-walker@2.0.2", "", {}, "sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w=="],
@@ -1531,8 +1533,6 @@
     "@opentelemetry/instrumentation-pg/@types/pg/pg-types": ["pg-types@2.2.0", "", { "dependencies": { "pg-int8": "1.0.1", "postgres-array": "~2.0.0", "postgres-bytea": "~1.0.0", "postgres-date": "~1.0.4", "postgres-interval": "^1.1.0" } }, "sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA=="],
 
     "@ts-morph/common/minimatch/brace-expansion": ["brace-expansion@1.1.11", "", { "dependencies": { "balanced-match": "^1.0.0", "concat-map": "0.0.1" } }, "sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA=="],
-
-    "@versia/federation/mime-types/mime-db": ["mime-db@1.52.0", "", {}, "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg=="],
 
     "cheerio-select/domutils/dom-serializer": ["dom-serializer@1.4.1", "", { "dependencies": { "domelementtype": "^2.0.1", "domhandler": "^4.2.0", "entities": "^2.0.0" } }, "sha512-VHwB3KfrcOOkelEG2ZOfxqLZdfkil8PtJi4P8N2MMXucZq2yLp75ClViUlOVwyoHEDjYU433Aq+5zWP61+RGag=="],
 

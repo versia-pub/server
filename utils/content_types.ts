@@ -1,10 +1,11 @@
-import type { ContentFormat } from "@versia/federation/types";
+import type { ContentFormatSchema } from "@versia/sdk/schemas";
 import { htmlToText as htmlToTextLib } from "html-to-text";
 import { lookup } from "mime-types";
+import type { z } from "zod";
 import { config } from "~/config.ts";
 
 export const getBestContentType = (
-    content?: ContentFormat | null,
+    content?: z.infer<typeof ContentFormatSchema> | null,
 ): {
     content: string;
     format: string;
@@ -32,7 +33,7 @@ export const getBestContentType = (
 export const urlToContentFormat = (
     url: URL,
     contentType?: string,
-): ContentFormat | null => {
+): z.infer<typeof ContentFormatSchema> | null => {
     if (url.href.startsWith("https://api.dicebear.com/")) {
         return {
             "image/svg+xml": {

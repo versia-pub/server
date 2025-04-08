@@ -49,7 +49,6 @@ export default apiRoute((app) =>
         ),
         async (context) => {
             const { acct } = context.req.valid("query");
-            const { user } = context.get("auth");
 
             // Check if acct is matching format username@domain.com or @username@domain.com
             const { username, domain } = parseUserAddress(acct);
@@ -93,9 +92,7 @@ export default apiRoute((app) =>
             }
 
             // Fetch from remote instance
-            const manager = await (user ?? User).getFederationRequester();
-
-            const uri = await User.webFinger(manager, username, domain);
+            const uri = await User.webFinger(username, domain);
 
             if (!uri) {
                 throw ApiError.accountNotFound();

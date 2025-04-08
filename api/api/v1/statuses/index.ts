@@ -8,6 +8,7 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Media, Note } from "@versia/kit/db";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -176,12 +177,12 @@ export default apiRoute((app) =>
 
             const newNote = await Note.fromData({
                 author: user,
-                content: {
+                content: new VersiaEntities.TextContentFormat({
                     [content_type]: {
                         content: status ?? "",
                         remote: false,
                     },
-                },
+                }),
                 visibility,
                 isSensitive: sensitive ?? false,
                 spoilerText: spoiler_text ?? "",

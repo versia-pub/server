@@ -1,9 +1,10 @@
 import { User } from "@versia/kit/db";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import chalk from "chalk";
 import { config } from "~/config.ts";
-import type { KnownEntity } from "~/types/api";
+import type { JSONObject } from "~/packages/federation/types";
 import { connection } from "~/utils/redis.ts";
 
 export enum DeliveryJobType {
@@ -11,7 +12,7 @@ export enum DeliveryJobType {
 }
 
 export type DeliveryJobData = {
-    entity: KnownEntity;
+    entity: JSONObject;
     recipientId: string;
     senderId: string;
 };
@@ -55,7 +56,23 @@ export const getDeliveryWorker = (): Worker<
                         `Federating entity [${entity.id}] from @${sender.getAcct()} to @${recipient.getAcct()}`,
                     );
 
-                    await sender.federateToUser(entity, recipient);
+                    const type = entity.type;
+                    const entityCtor = Object.values(VersiaEntities).find(
+                        (ctor) => ctor.name === type,
+                    ) as typeof VersiaEntities.Entity | undefined;
+
+                    if (!entityCtor) {
+                        throw new Error(
+                            `Could not resolve entity type ${chalk.gray(
+                                type,
+                            )} for entity [${entity.id}]`,
+                        );
+                    }
+
+                    await sender.federateToUser(
+                        await entityCtor.fromJSON(entity),
+                        recipient,
+                    );
 
                     await job.log(
                         `✔ Finished federating entity [${entity.id}]`,

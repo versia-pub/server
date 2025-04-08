@@ -1,9 +1,13 @@
 import { join } from "node:path";
 import { mimeLookup } from "@/content_types.ts";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
-import type { ContentFormat } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
+import * as VersiaEntities from "@versia/sdk/entities";
+import type {
+    ContentFormatSchema,
+    ImageContentFormatSchema,
+} from "@versia/sdk/schemas";
 import { S3Client, SHA256, randomUUIDv7, write } from "bun";
 import {
     type InferInsertModel,
@@ -202,7 +206,9 @@ export class Media extends BaseInterface<typeof Medias> {
         const newAttachment = await Media.insert({
             id: randomUUIDv7(),
             content,
-            thumbnail: thumbnailContent,
+            thumbnail: thumbnailContent as z.infer<
+                typeof ImageContentFormatSchema
+            >,
         });
 
         if (config.media.conversion.convert_images) {
@@ -234,7 +240,7 @@ export class Media extends BaseInterface<typeof Medias> {
     ): Promise<Media> {
         const mimeType = await mimeLookup(uri);
 
-        const content: ContentFormat = {
+        const content: z.infer<typeof ContentFormatSchema> = {
             [mimeType]: {
                 content: uri.toString(),
                 remote: true,
@@ -303,7 +309,7 @@ export class Media extends BaseInterface<typeof Medias> {
     public async updateFromUrl(uri: URL): Promise<void> {
         const mimeType = await mimeLookup(uri);
 
-        const content: ContentFormat = {
+        const content: z.infer<typeof ContentFormatSchema> = {
             [mimeType]: {
                 content: uri.toString(),
                 remote: true,
@@ -333,12 +339,19 @@ export class Media extends BaseInterface<typeof Medias> {
         const content = await Media.fileToContentFormat(file, url);
 
         await this.update({
-            thumbnail: content,
+            thumbnail: content as z.infer<typeof ImageContentFormatSchema>,
         });
     }
 
     public async updateMetadata(
-        metadata: Partial<Omit<ContentFormat[keyof ContentFormat], "content">>,
+        metadata: Partial<
+            Omit<
+                z.infer<typeof ContentFormatSchema>[keyof z.infer<
+                    typeof ContentFormatSchema
+                >],
+                "content"
+            >
+        >,
     ): Promise<void> {
         const content = this.data.content;
 
@@ -447,7 +460,7 @@ export class Media extends BaseInterface<typeof Medias> {
         options?: Partial<{
             description: string;
         }>,
-    ): Promise<ContentFormat> {
+    ): Promise<z.infer<typeof ContentFormatSchema>> {
         const buffer = await file.arrayBuffer();
         const isImage = file.type.startsWith("image/");
         const { width, height } = isImage ? await sharp(buffer).metadata() : {};
@@ -521,15 +534,17 @@ export class Media extends BaseInterface<typeof Medias> {
         };
     }
 
-    public toVersia(): ContentFormat {
-        return this.data.content;
+    public toVersia(): VersiaEntities.ContentFormat {
+        return new VersiaEntities.ContentFormat(this.data.content);
     }
 
-    public static fromVersia(contentFormat: ContentFormat): Promise<Media> {
+    public static fromVersia(
+        contentFormat: VersiaEntities.ContentFormat,
+    ): Promise<Media> {
         return Media.insert({
             id: randomUUIDv7(),
-            content: contentFormat,
-            originalContent: contentFormat,
+            content: contentFormat.data,
+            originalContent: contentFormat.data,
         });
     }
 }

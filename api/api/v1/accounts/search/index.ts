@@ -91,9 +91,7 @@ export default apiRoute((app) =>
             const accounts: User[] = [];
 
             if (resolve && domain) {
-                const manager = await (user ?? User).getFederationRequester();
-
-                const uri = await User.webFinger(manager, username, domain);
+                const uri = await User.webFinger(username, domain);
 
                 if (uri) {
                     const resolvedUser = await User.resolve(uri);
