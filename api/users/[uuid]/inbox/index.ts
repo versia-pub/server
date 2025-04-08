@@ -4,7 +4,7 @@ import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
-import type { JSONObject } from "~/packages/federation/types";
+import type { JSONObject } from "~/packages/sdk/types";
 
 export default apiRoute((app) =>
     app.post(

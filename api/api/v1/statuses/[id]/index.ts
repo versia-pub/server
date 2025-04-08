@@ -15,13 +15,13 @@ import {
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media } from "@versia/kit/db";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml, parseTextMentions } from "~/classes/functions/status";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities";
 
 const schema = z
     .object({

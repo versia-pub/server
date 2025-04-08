@@ -10,7 +10,6 @@ import {
     Notes,
     Users,
 } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
@@ -28,7 +27,8 @@ import { createRegExp, exactly, global } from "magic-regexp";
 import type { z } from "zod";
 import { contentToHtml, findManyNotes } from "~/classes/functions/status";
 import { config } from "~/config.ts";
-import type { NonTextContentFormatSchema } from "~/packages/federation/schemas/contentformat.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import type { NonTextContentFormatSchema } from "~/packages/sdk/schemas/contentformat.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";

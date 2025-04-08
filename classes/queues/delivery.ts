@@ -1,10 +1,10 @@
 import { User } from "@versia/kit/db";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import chalk from "chalk";
 import { config } from "~/config.ts";
-import type { JSONObject } from "~/packages/federation/types";
+import * as VersiaEntities from "~/packages/sdk/entities";
+import type { JSONObject } from "~/packages/sdk/types";
 import { connection } from "~/utils/redis.ts";
 
 export enum DeliveryJobType {
@@ -40,7 +40,9 @@ export const getDeliveryWorker = (): Worker<
 
                     if (!sender) {
                         throw new Error(
-                            `Could not resolve sender ID ${chalk.gray(senderId)}`,
+                            `Could not resolve sender ID ${chalk.gray(
+                                senderId,
+                            )}`,
                         );
                     }
 
@@ -48,12 +50,16 @@ export const getDeliveryWorker = (): Worker<
 
                     if (!recipient) {
                         throw new Error(
-                            `Could not resolve recipient ID ${chalk.gray(recipientId)}`,
+                            `Could not resolve recipient ID ${chalk.gray(
+                                recipientId,
+                            )}`,
                         );
                     }
 
                     await job.log(
-                        `Federating entity [${entity.id}] from @${sender.getAcct()} to @${recipient.getAcct()}`,
+                        `Federating entity [${
+                            entity.id
+                        }] from @${sender.getAcct()} to @${recipient.getAcct()}`,
                     );
 
                     const type = entity.type;

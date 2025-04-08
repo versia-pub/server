@@ -9,6 +9,16 @@ const stringToBase64Hash = async (str: string): Promise<string> => {
 const base64ToArrayBuffer = (base64: string): ArrayBuffer =>
     Uint8Array.fromBase64(base64).buffer as ArrayBuffer;
 
+/**
+ * Signs a request using the Ed25519 algorithm, according to the [**Versia**](https://versia.pub/signatures) specification.
+ *
+ * @see https://versia.pub/signatures
+ * @param privateKey - Private key of the User that is signing the request.
+ * @param authorUrl - URL of the User that is signing the request.
+ * @param req - Request to sign.
+ * @param timestamp - (optional) Timestamp of the request.
+ * @returns The signed request.
+ */
 export const sign = async (
     privateKey: CryptoKey,
     authorUrl: URL,
@@ -45,6 +55,14 @@ export const sign = async (
     return newReq;
 };
 
+/**
+ * Verifies a signed request using the Ed25519 algorithm, according to the [**Versia**](https://versia.pub/signatures) specification.
+ *
+ * @see https://versia.pub/signatures
+ * @param publicKey - Public key of the User that is verifying the request.
+ * @param req - Request to verify.
+ * @returns Whether the request signature is valid or not.
+ */
 export const verify = async (
     publicKey: CryptoKey,
     req: Request,
@@ -62,7 +80,9 @@ export const verify = async (
 
     const digest = await stringToBase64Hash(body);
 
-    const expectedSignedString = `${req.method.toLowerCase()} ${encodeURI(url.pathname)} ${signedAt} ${digest}`;
+    const expectedSignedString = `${req.method.toLowerCase()} ${encodeURI(
+        url.pathname,
+    )} ${signedAt} ${digest}`;
 
     // Check if this matches the signature
     return crypto.subtle.verify(

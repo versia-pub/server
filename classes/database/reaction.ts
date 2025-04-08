@@ -1,6 +1,5 @@
 import { Emoji, Instance, type Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
@@ -11,6 +10,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { BaseInterface } from "./base.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {

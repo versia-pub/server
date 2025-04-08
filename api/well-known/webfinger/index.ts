@@ -8,13 +8,13 @@ import {
 import { getLogger } from "@logtape/logtape";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
-import { WebFingerSchema } from "@versia/sdk/schemas";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { WebFingerSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
@@ -101,7 +101,9 @@ export default apiRoute((app) =>
 
             return context.json(
                 {
-                    subject: `acct:${isUuid ? user.id : user.data.username}@${host}`,
+                    subject: `acct:${
+                        isUuid ? user.id : user.data.username
+                    }@${host}`,
 
                     links: [
                         // Keep the ActivityPub link first, because Misskey only searches

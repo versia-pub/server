@@ -10,7 +10,7 @@ type MaybePromise<T> = T | Promise<T>;
 /**
  * @example
  * const jsonData = { ... };
- * const processor = new EntitySorter(jsonData)
+ * const processor = await new EntitySorter(jsonData)
  *     .on(User, async (user) => {
  *        // Do something with the user
  *     })

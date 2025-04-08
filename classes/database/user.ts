@@ -19,10 +19,6 @@ import {
     UserToPinnedNotes,
     Users,
 } from "@versia/kit/tables";
-import { sign } from "@versia/sdk/crypto";
-import * as VersiaEntities from "@versia/sdk/entities";
-import { FederationRequester } from "@versia/sdk/http";
-import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
 import { randomUUIDv7 } from "bun";
 import { password as bunPassword } from "bun";
 import chalk from "chalk";
@@ -45,6 +41,10 @@ import type { z } from "zod";
 import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
+import { sign } from "~/packages/sdk/crypto.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import { FederationRequester } from "~/packages/sdk/http.ts";
+import type { ImageContentFormatSchema } from "~/packages/sdk/schemas/index.ts";
 import type { HttpVerb, KnownEntity } from "~/types/api.ts";
 import { ProxiableUrl } from "../media/url.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
@@ -1023,8 +1023,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 entity,
             );
         } catch (e) {
-            getLogger(["federation", "delivery"])
-                .error`Federating ${chalk.gray(entity.data.type)} to ${user.uri} ${chalk.bold.red("failed")}`;
+            getLogger(["federation", "delivery"]).error`Federating ${chalk.gray(
+                entity.data.type,
+            )} to ${user.uri} ${chalk.bold.red("failed")}`;
             getLogger(["federation", "delivery"]).error`${e}`;
             sentry?.captureException(e);
 

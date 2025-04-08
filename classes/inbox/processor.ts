@@ -2,9 +2,6 @@ import { sentry } from "@/sentry";
 import { type Logger, getLogger } from "@logtape/logtape";
 import { type Instance, Like, Note, Relationship, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
-import { EntitySorter } from "@versia/sdk";
-import { verify } from "@versia/sdk/crypto";
-import * as VersiaEntities from "@versia/sdk/entities";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
 import chalk from "chalk";
@@ -12,7 +9,10 @@ import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { isValidationError } from "zod-validation-error";
 import { config } from "~/config.ts";
-import type { JSONObject } from "~/packages/federation/types.ts";
+import { verify } from "~/packages/sdk/crypto.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import { EntitySorter } from "~/packages/sdk/inbox-processor.ts";
+import type { JSONObject } from "~/packages/sdk/types.ts";
 import { ApiError } from "../errors/api-error.ts";
 
 /**

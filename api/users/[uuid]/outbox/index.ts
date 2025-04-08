@@ -1,14 +1,14 @@
 import { apiRoute, handleZodError } from "@/api";
 import { Note, User, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
-import { CollectionSchema, NoteSchema } from "@versia/sdk/schemas";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities";
+import { CollectionSchema, NoteSchema } from "~/packages/sdk/schemas";
 
 const NOTES_PER_PAGE = 20;
 

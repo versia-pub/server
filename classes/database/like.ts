@@ -5,7 +5,6 @@ import {
     Notifications,
     type Users,
 } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
 import {
     type InferInsertModel,
     type InferSelectModel,
@@ -16,6 +15,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 

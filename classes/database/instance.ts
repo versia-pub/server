@@ -1,7 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { db } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
@@ -13,6 +12,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
@@ -319,7 +319,9 @@ export class Instance extends BaseInterface<typeof Instances> {
         );
 
         if (!output) {
-            logger.error`Failed to update instance ${chalk.bold(this.data.baseUrl)}`;
+            logger.error`Failed to update instance ${chalk.bold(
+                this.data.baseUrl,
+            )}`;
             throw new Error("Failed to update instance");
         }
 

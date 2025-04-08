@@ -3,7 +3,6 @@ import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { type Note, User, db } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
-import type * as VersiaEntities from "@versia/sdk/entities";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
@@ -19,6 +18,7 @@ import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { config } from "~/config.ts";
+import type * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,

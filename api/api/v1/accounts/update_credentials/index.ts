@@ -5,7 +5,6 @@ import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -14,6 +13,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { config } from "~/config.ts";
 import { rateLimit } from "~/middlewares/rate-limit";
+import * as VersiaEntities from "~/packages/sdk/entities";
 
 export default apiRoute((app) =>
     app.patch(

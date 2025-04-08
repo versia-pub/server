@@ -1,8 +1,8 @@
-import type { ContentFormatSchema } from "@versia/sdk/schemas";
 import { htmlToText as htmlToTextLib } from "html-to-text";
 import { lookup } from "mime-types";
 import type { z } from "zod";
 import { config } from "~/config.ts";
+import type { ContentFormatSchema } from "~/packages/sdk/schemas";
 
 export const getBestContentType = (
     content?: z.infer<typeof ContentFormatSchema> | null,

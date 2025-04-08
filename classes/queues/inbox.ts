@@ -4,7 +4,7 @@ import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import { config } from "~/config.ts";
-import type { JSONObject } from "~/packages/federation/types.ts";
+import type { JSONObject } from "~/packages/sdk/types.ts";
 import { connection } from "~/utils/redis.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
@@ -182,7 +182,9 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                             );
 
                             await remoteInstance.sendMessage(
-                                `Failed processing entity [${data.uri}] delivered to inbox. Returned error:\n\n${JSON.stringify(
+                                `Failed processing entity [${
+                                    data.uri
+                                }] delivered to inbox. Returned error:\n\n${JSON.stringify(
                                     e.message,
                                     null,
                                     4,

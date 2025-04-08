@@ -2,13 +2,13 @@ import { apiRoute, handleZodError } from "@/api";
 import { Status as StatusSchema } from "@versia/client/schemas";
 import { Like, User } from "@versia/kit/db";
 import { Likes } from "@versia/kit/tables";
-import { LikeSchema } from "@versia/sdk/schemas";
 import { and, eq, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { LikeSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(

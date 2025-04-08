@@ -4,13 +4,6 @@ import type {
     Status as StatusSchema,
 } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
-import type {
-    ContentFormatSchema,
-    ImageContentFormatSchema,
-    InstanceMetadataSchema,
-    NonTextContentFormatSchema,
-    TextContentFormatSchema,
-} from "@versia/sdk/schemas";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -26,6 +19,13 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 import type { z } from "zod";
+import type {
+    ContentFormatSchema,
+    ImageContentFormatSchema,
+    InstanceMetadataSchema,
+    NonTextContentFormatSchema,
+    TextContentFormatSchema,
+} from "~/packages/sdk/schemas";
 
 // biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>

@@ -3,11 +3,6 @@ import { mimeLookup } from "@/content_types.ts";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
-import type {
-    ContentFormatSchema,
-    ImageContentFormatSchema,
-} from "@versia/sdk/schemas";
 import { S3Client, SHA256, randomUUIDv7, write } from "bun";
 import {
     type InferInsertModel,
@@ -21,6 +16,11 @@ import sharp from "sharp";
 import type { z } from "zod";
 import { MediaBackendType } from "~/classes/config/schema.ts";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import type {
+    ContentFormatSchema,
+    ImageContentFormatSchema,
+} from "~/packages/sdk/schemas/index.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { getMediaHash } from "../media/media-hasher.ts";
 import { ProxiableUrl } from "../media/url.ts";
@@ -278,7 +278,9 @@ export class Media extends BaseInterface<typeof Medias> {
             throw new ApiError(
                 415,
                 `File type ${file.type} is not allowed`,
-                `Allowed types: ${config.validation.media.allowed_mime_types.join(", ")}`,
+                `Allowed types: ${config.validation.media.allowed_mime_types.join(
+                    ", ",
+                )}`,
             );
         }
     }

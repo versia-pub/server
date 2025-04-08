@@ -2,8 +2,6 @@ import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import type { CustomEmoji } from "@versia/client/schemas";
 import { type Instance, Media, db } from "@versia/kit/db";
 import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
-import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
 import { randomUUIDv7 } from "bun";
 import {
     type InferInsertModel,
@@ -16,6 +14,8 @@ import {
     isNull,
 } from "drizzle-orm";
 import type { z } from "zod";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import type { ImageContentFormatSchema } from "~/packages/sdk/schemas/index.ts";
 import { BaseInterface } from "./base.ts";
 
 type EmojiType = InferSelectModel<typeof Emojis> & {
