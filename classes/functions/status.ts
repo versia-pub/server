@@ -296,7 +296,7 @@ export const parseTextMentions = async (
 export const replaceTextMentions = (text: string, mentions: User[]): string => {
     return mentions.reduce((finalText, mention) => {
         const { username, instance } = mention.data;
-        const uri = mention.getUri();
+        const { uri } = mention;
         const baseHost = config.http.base_url.host;
         const linkTemplate = (displayText: string): string =>
             `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${uri}">${displayText}</a>`;

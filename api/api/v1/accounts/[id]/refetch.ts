@@ -3,6 +3,7 @@ import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { User } from "~/classes/database/user";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>
@@ -48,7 +49,7 @@ export default apiRoute((app) =>
                 throw new ApiError(400, "Cannot refetch a local user");
             }
 
-            const newUser = await otherUser.updateFromRemote();
+            const newUser = await User.fromVersia(otherUser.uri);
 
             return context.json(newUser.toApi(false), 200);
         },

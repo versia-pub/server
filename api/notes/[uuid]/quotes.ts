@@ -89,7 +89,7 @@ export default apiRoute((app) =>
             );
 
             const uriCollection = new VersiaEntities.URICollection({
-                author: note.author.getUri(),
+                author: note.author.uri,
                 first: new URL(
                     `/notes/${note.id}/quotes?offset=0`,
                     config.http.base_url,

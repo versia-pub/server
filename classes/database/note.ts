@@ -861,7 +861,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         return new VersiaEntities.Delete({
             type: "Delete",
             id,
-            author: this.author.getUri(),
+            author: this.author.uri,
             deleted_type: "Note",
             deleted: this.getUri(),
             created_at: new Date().toISOString(),
@@ -878,7 +878,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: this.author.getUri(),
+            author: this.author.uri,
             uri: this.getUri(),
             content: {
                 "text/html": {

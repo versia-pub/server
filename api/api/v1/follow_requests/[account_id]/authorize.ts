@@ -73,7 +73,7 @@ export default apiRoute((app) =>
             // Check if accepting remote follow
             if (account.isRemote()) {
                 // Federate follow accept
-                await user.sendFollowAccept(account);
+                await user.acceptFollowRequest(account);
             }
 
             return context.json(foundRelationship.toApi(), 200);

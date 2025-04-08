@@ -106,7 +106,7 @@ export default apiRoute((app) =>
                     config.http.base_url,
                 ),
                 total: totalNotes,
-                author: author.getUri(),
+                author: author.uri,
                 next:
                     notes.length === NOTES_PER_PAGE
                         ? new URL(

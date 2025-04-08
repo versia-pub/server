@@ -156,7 +156,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return !this.isLocal();
     }
 
-    public getUri(): URL {
+    public get uri(): URL {
         return this.data.uri
             ? new URL(this.data.uri)
             : new URL(`/users/${this.data.id}`, config.http.base_url);
@@ -208,8 +208,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 entity: {
                     type: "Follow",
                     id: crypto.randomUUID(),
-                    author: this.getUri().toString(),
-                    followee: otherUser.getUri().toString(),
+                    author: this.uri.href,
+                    followee: otherUser.uri.href,
                     created_at: new Date().toISOString(),
                 },
                 recipientId: otherUser.id,
@@ -247,13 +247,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new VersiaEntities.Unfollow({
             type: "Unfollow",
             id,
-            author: this.getUri(),
+            author: this.uri,
             created_at: new Date().toISOString(),
-            followee: followee.getUri(),
+            followee: followee.uri,
         });
     }
 
-    public async sendFollowAccept(follower: User): Promise<void> {
+    public async acceptFollowRequest(follower: User): Promise<void> {
         if (!follower.isRemote()) {
             throw new Error("Follower must be a remote user");
         }
@@ -265,9 +265,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity = new VersiaEntities.FollowAccept({
             type: "FollowAccept",
             id: crypto.randomUUID(),
-            author: this.getUri(),
+            author: this.uri,
             created_at: new Date().toISOString(),
-            follower: follower.getUri(),
+            follower: follower.uri,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -277,7 +277,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         });
     }
 
-    public async sendFollowReject(follower: User): Promise<void> {
+    public async rejectFollowRequest(follower: User): Promise<void> {
         if (!follower.isRemote()) {
             throw new Error("Follower must be a remote user");
         }
@@ -289,9 +289,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity = new VersiaEntities.FollowReject({
             type: "FollowReject",
             id: crypto.randomUUID(),
-            author: this.getUri(),
+            author: this.uri,
             created_at: new Date().toISOString(),
-            follower: follower.getUri(),
+            follower: follower.uri,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -326,7 +326,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const { headers } = await sign(
             privateKey,
-            this.getUri(),
+            this.uri,
             new Request(signatureUrl, {
                 method: signatureMethod,
                 body: JSON.stringify(entity),
@@ -600,66 +600,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
     }
 
-    public async updateFromRemote(): Promise<User> {
-        if (!this.isRemote()) {
-            throw new Error(
-                "Cannot refetch a local user (they are not remote)",
-            );
-        }
-
-        const updated = await User.fetchFromRemote(this.getUri());
-
-        if (!updated) {
-            throw new Error("Failed to update user from remote");
-        }
-
-        this.data = updated.data;
-
-        return this;
-    }
-
-    public static async fetchFromRemote(uri: URL): Promise<User | null> {
-        const instance = await Instance.resolve(uri);
-
-        if (!instance) {
-            return null;
-        }
-
-        if (instance.data.protocol === "versia") {
-            return await User.saveFromVersia(uri);
-        }
-
-        if (instance.data.protocol === "activitypub") {
-            if (!config.federation.bridge) {
-                throw new Error("ActivityPub bridge is not enabled");
-            }
-
-            const bridgeUri = new URL(
-                `/apbridge/versia/query?${new URLSearchParams({
-                    user_url: uri.toString(),
-                })}`,
-                config.federation.bridge.url,
-            );
-
-            return await User.saveFromVersia(bridgeUri);
-        }
-
-        throw new Error(`Unsupported protocol: ${instance.data.protocol}`);
-    }
-
-    private static async saveFromVersia(uri: URL): Promise<User> {
-        const userData = await User.federationRequester.fetchEntity(
-            uri,
-            VersiaEntities.User,
-        );
-
-        const user = await User.fromVersia(userData);
-
-        await searchManager.addUser(user);
-
-        return user;
-    }
-
     /**
      * Change the emojis linked to this user in database
      * @param emojis
@@ -680,6 +620,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
+     * Tries to fetch a Versia user from the given URL.
+     *
+     * @param url The URL to fetch the user from
+     */
+    public static async fromVersia(url: URL): Promise<User>;
+
+    /**
      * Takes a Versia User representation, and serializes it to the database.
      *
      * If the user already exists, it will update it.
@@ -687,7 +634,36 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      */
     public static async fromVersia(
         versiaUser: VersiaEntities.User,
+    ): Promise<User>;
+
+    public static async fromVersia(
+        versiaUser: VersiaEntities.User | URL,
     ): Promise<User> {
+        if (versiaUser instanceof URL) {
+            let uri = versiaUser;
+            const instance = await Instance.resolve(uri);
+
+            if (instance.data.protocol === "activitypub") {
+                if (!config.federation.bridge) {
+                    throw new Error("ActivityPub bridge is not enabled");
+                }
+
+                uri = new URL(
+                    `/apbridge/versia/query?${new URLSearchParams({
+                        user_url: uri.href,
+                    })}`,
+                    config.federation.bridge.url,
+                );
+            }
+
+            const user = await User.federationRequester.fetchEntity(
+                uri,
+                VersiaEntities.User,
+            );
+
+            return User.fromVersia(user);
+        }
+
         const {
             username,
             inbox,
@@ -799,7 +775,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         getLogger(["federation", "resolvers"])
             .debug`Resolving user ${chalk.gray(uri)}`;
         // Check if user not already in database
-        const foundUser = await User.fromSql(eq(Users.uri, uri.toString()));
+        const foundUser = await User.fromSql(eq(Users.uri, uri.href));
 
         if (foundUser) {
             return foundUser;
@@ -821,7 +797,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         getLogger(["federation", "resolvers"])
             .debug`User not found in database, fetching from remote`;
 
-        return await User.fetchFromRemote(uri);
+        return User.fromVersia(uri);
     }
 
     /**
@@ -983,7 +959,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 ["sign"],
             )
             .then((k) => {
-                return new FederationRequester(k, this.getUri());
+                return new FederationRequester(k, this.uri);
             });
     }
 
@@ -1037,7 +1013,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         if (!inbox) {
             throw new Error(
-                `User ${chalk.gray(user.getUri())} does not have an inbox endpoint`,
+                `User ${chalk.gray(user.uri)} does not have an inbox endpoint`,
             );
         }
 
@@ -1048,7 +1024,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             );
         } catch (e) {
             getLogger(["federation", "delivery"])
-                .error`Federating ${chalk.gray(entity.data.type)} to ${user.getUri()} ${chalk.bold.red("failed")}`;
+                .error`Federating ${chalk.gray(entity.data.type)} to ${user.uri} ${chalk.bold.red("failed")}`;
             getLogger(["federation", "delivery"]).error`${e}`;
             sentry?.captureException(e);
 
@@ -1066,10 +1042,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             username: user.username,
             display_name: user.displayName || user.username,
             note: user.note,
-            uri: this.getUri().toString(),
+            uri: this.uri.href,
             url:
                 user.uri ||
-                new URL(`/@${user.username}`, config.http.base_url).toString(),
+                new URL(`/@${user.username}`, config.http.base_url).href,
             avatar: this.getAvatarUrl().proxied,
             header: this.getHeaderUrl()?.proxied ?? "",
             locked: user.isLocked,
@@ -1123,7 +1099,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new VersiaEntities.User({
             id: user.id,
             type: "User",
-            uri: this.getUri(),
+            uri: this.uri,
             bio: {
                 "text/html": {
                     content: user.note,
@@ -1190,7 +1166,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public toMention(): z.infer<typeof MentionSchema> {
         return {
-            url: this.getUri().toString(),
+            url: this.uri.href,
             username: this.data.username,
             acct: this.getAcct(),
             id: this.id,

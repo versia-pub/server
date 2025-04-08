@@ -254,7 +254,7 @@ export class InboxProcessor {
         );
 
         if (!followee.data.isLocked) {
-            await followee.sendFollowAccept(author);
+            await followee.acceptFollowRequest(author);
         }
     }
 
