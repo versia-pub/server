@@ -103,8 +103,7 @@ export const getTestUsers = async (
     for (let i = 0; i < count; i++) {
         const password = randomString(32, "hex");
 
-        const user = await User.fromDataLocal({
-            username: `test-${randomString(8, "hex")}`,
+        const user = await User.register(`test-${randomString(8, "hex")}`, {
             email: `${randomString(16, "hex")}@test.com`,
             password,
         });

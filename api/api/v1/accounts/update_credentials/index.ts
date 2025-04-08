@@ -176,6 +176,15 @@ export default apiRoute((app) =>
             } = context.req.valid("json");
 
             const self = user.data;
+            if (!self.source) {
+                self.source = {
+                    fields: [],
+                    privacy: "public",
+                    language: "en",
+                    sensitive: false,
+                    note: "",
+                };
+            }
 
             const sanitizedDisplayName = await sanitizedHtmlStrip(
                 display_name ?? "",
@@ -185,7 +194,7 @@ export default apiRoute((app) =>
                 self.displayName = sanitizedDisplayName;
             }
 
-            if (note && self.source) {
+            if (note) {
                 self.source.note = note;
                 self.note = await contentToHtml(
                     new VersiaEntities.TextContentFormat({
@@ -197,16 +206,13 @@ export default apiRoute((app) =>
                 );
             }
 
-            if (source?.privacy) {
-                self.source.privacy = source.privacy;
-            }
-
-            if (source?.sensitive) {
-                self.source.sensitive = source.sensitive;
-            }
-
-            if (source?.language) {
-                self.source.language = source.language;
+            if (source) {
+                self.source = {
+                    ...self.source,
+                    privacy: source.privacy ?? self.source.privacy,
+                    sensitive: source.sensitive ?? self.source.sensitive,
+                    language: source.language ?? self.source.language,
+                };
             }
 
             if (username) {

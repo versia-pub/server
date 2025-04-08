@@ -353,8 +353,7 @@ export default apiRoute((app) =>
                 );
             }
 
-            await User.fromDataLocal({
-                username,
+            await User.register(username, {
                 password,
                 email,
             });

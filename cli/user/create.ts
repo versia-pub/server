@@ -48,11 +48,10 @@ export const createUserCommand = defineCommand(
             throw new Error(`User ${chalk.gray(username)} is taken.`);
         }
 
-        const user = await User.fromDataLocal({
+        const user = await User.register(username, {
             email,
             password,
-            username,
-            admin,
+            isAdmin: admin,
         });
 
         if (!user) {

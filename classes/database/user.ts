@@ -679,120 +679,106 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
     }
 
-    public static async fromVersia(user: VersiaEntities.User): Promise<User> {
-        const instance = await Instance.resolve(user.data.uri);
-
-        const data = {
-            username: user.data.username,
-            uri: user.data.uri.href,
-            createdAt: new Date(user.data.created_at).toISOString(),
-            endpoints: {
-                dislikes:
-                    user.data.collections["pub.versia:likes/Dislikes"]?.href ??
-                    undefined,
-                featured: user.data.collections.featured.href,
-                likes:
-                    user.data.collections["pub.versia:likes/Likes"]?.href ??
-                    undefined,
-                followers: user.data.collections.followers.href,
-                following: user.data.collections.following.href,
-                inbox: user.data.inbox.href,
-                outbox: user.data.collections.outbox.href,
-            },
-            fields: user.data.fields ?? [],
-            updatedAt: new Date(user.data.created_at).toISOString(),
-            instanceId: instance.id,
-            displayName: user.data.display_name ?? "",
-            note: getBestContentType(user.data.bio).content,
-            publicKey: user.data.public_key.key,
-            source: {
-                language: "en",
-                note: "",
-                privacy: "public",
-                sensitive: false,
-                fields: [],
-            } as z.infer<typeof Source>,
-        };
-
-        const userEmojis =
-            user.data.extensions?.["pub.versia:custom_emojis"]?.emojis ?? [];
-
-        const emojis = await Promise.all(
-            userEmojis.map((emoji) => Emoji.fromVersia(emoji, instance)),
+    /**
+     * Takes a Versia User representation, and serializes it to the database.
+     *
+     * If the user already exists, it will update it.
+     * @param user
+     */
+    public static async fromVersia(
+        versiaUser: VersiaEntities.User,
+    ): Promise<User> {
+        const {
+            username,
+            inbox,
+            avatar,
+            header,
+            display_name,
+            fields,
+            collections,
+            created_at,
+            bio,
+            public_key,
+            uri,
+            extensions,
+        } = versiaUser.data;
+        const instance = await Instance.resolve(versiaUser.data.uri);
+        const existingUser = await User.fromSql(
+            eq(Users.uri, versiaUser.data.uri.href),
         );
 
-        // Check if new user already exists
-        const foundUser = await User.fromSql(eq(Users.uri, user.data.uri.href));
+        const user =
+            existingUser ??
+            (await User.insert({
+                username,
+                id: randomUUIDv7(),
+                publicKey: public_key.key,
+                uri: uri.href,
+                instanceId: instance.id,
+            }));
 
-        // If it exists, simply update it
-        if (foundUser) {
-            let avatar: Media | null = null;
-            let header: Media | null = null;
+        // Avatars and headers are stored in a separate table, so we need to update them separately
+        let userAvatar: Media | null = null;
+        let userHeader: Media | null = null;
 
-            if (user.data.avatar) {
-                if (foundUser.avatar) {
-                    avatar = new Media(
-                        await foundUser.avatar.update({
-                            content: user.data.avatar,
-                        }),
-                    );
-                } else {
-                    avatar = await Media.insert({
-                        id: randomUUIDv7(),
-                        content: user.data.avatar,
-                    });
-                }
+        if (avatar) {
+            if (user.avatar) {
+                userAvatar = new Media(
+                    await user.avatar.update({
+                        content: avatar,
+                    }),
+                );
+            } else {
+                userAvatar = await Media.insert({
+                    id: randomUUIDv7(),
+                    content: avatar,
+                });
             }
-
-            if (user.data.header) {
-                if (foundUser.header) {
-                    header = new Media(
-                        await foundUser.header.update({
-                            content: user.data.header,
-                        }),
-                    );
-                } else {
-                    header = await Media.insert({
-                        id: randomUUIDv7(),
-                        content: user.data.header,
-                    });
-                }
-            }
-
-            await foundUser.update({
-                ...data,
-                avatarId: avatar?.id,
-                headerId: header?.id,
-            });
-            await foundUser.updateEmojis(emojis);
-
-            return foundUser;
         }
 
-        // Else, create a new user
-        const avatar = user.data.avatar
-            ? await Media.insert({
-                  id: randomUUIDv7(),
-                  content: user.data.avatar,
-              })
-            : null;
+        if (header) {
+            if (user.header) {
+                userHeader = new Media(
+                    await user.header.update({
+                        content: header,
+                    }),
+                );
+            } else {
+                userHeader = await Media.insert({
+                    id: randomUUIDv7(),
+                    content: header,
+                });
+            }
+        }
 
-        const header = user.data.header
-            ? await Media.insert({
-                  id: randomUUIDv7(),
-                  content: user.data.header,
-              })
-            : null;
-
-        const newUser = await User.insert({
-            id: randomUUIDv7(),
-            ...data,
-            avatarId: avatar?.id,
-            headerId: header?.id,
+        await user.update({
+            createdAt: new Date(created_at).toISOString(),
+            endpoints: {
+                inbox: inbox.href,
+                outbox: collections.outbox.href,
+                followers: collections.followers.href,
+                following: collections.following.href,
+                featured: collections.featured.href,
+                likes: collections["pub.versia:likes/Likes"]?.href,
+                dislikes: collections["pub.versia:likes/Dislikes"]?.href,
+            },
+            avatarId: userAvatar?.id,
+            headerId: userHeader?.id,
+            fields: fields ?? [],
+            displayName: display_name,
+            note: getBestContentType(bio).content,
         });
-        await newUser.updateEmojis(emojis);
 
-        return newUser;
+        // Emojis are stored in a separate table, so we need to update them separately
+        const emojis = await Promise.all(
+            extensions?.["pub.versia:custom_emojis"]?.emojis.map((e) =>
+                Emoji.fromVersia(e, instance),
+            ) ?? [],
+        );
+
+        await user.updateEmojis(emojis);
+
+        return user;
     }
 
     public static async insert(
@@ -879,60 +865,45 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         };
     }
 
-    public static async fromDataLocal(data: {
-        username: string;
-        display_name?: string;
-        password: string | undefined;
-        email: string | undefined;
-        bio?: string;
-        avatar?: Media;
-        header?: Media;
-        admin?: boolean;
-        skipPasswordHash?: boolean;
-    }): Promise<User> {
+    public static async register(
+        username: string,
+        options?: Partial<{
+            email: string;
+            password: string;
+            avatar: Media;
+            isAdmin: boolean;
+        }>,
+    ): Promise<User> {
         const keys = await User.generateKeys();
 
-        const newUser = (
-            await db
-                .insert(Users)
-                .values({
-                    id: randomUUIDv7(),
-                    username: data.username,
-                    displayName: data.display_name ?? data.username,
-                    password:
-                        data.skipPasswordHash || !data.password
-                            ? data.password
-                            : await bunPassword.hash(data.password),
-                    email: data.email,
-                    note: data.bio ?? "",
-                    avatarId: data.avatar?.id,
-                    headerId: data.header?.id,
-                    isAdmin: data.admin ?? false,
-                    publicKey: keys.public_key,
-                    fields: [],
-                    privateKey: keys.private_key,
-                    updatedAt: new Date().toISOString(),
-                    source: {
-                        language: "en",
-                        note: "",
-                        privacy: "public",
-                        sensitive: false,
-                        fields: [],
-                    } as z.infer<typeof Source>,
-                })
-                .returning()
-        )[0];
-
-        const finalUser = await User.fromId(newUser.id);
-
-        if (!finalUser) {
-            throw new Error("Failed to create user");
-        }
+        const user = await User.insert({
+            id: randomUUIDv7(),
+            username: username,
+            displayName: username,
+            password: options?.password
+                ? await bunPassword.hash(options.password)
+                : null,
+            email: options?.email,
+            note: "",
+            avatarId: options?.avatar?.id,
+            isAdmin: options?.isAdmin,
+            publicKey: keys.public_key,
+            fields: [],
+            privateKey: keys.private_key,
+            updatedAt: new Date().toISOString(),
+            source: {
+                language: "en",
+                note: "",
+                privacy: "public",
+                sensitive: false,
+                fields: [],
+            } as z.infer<typeof Source>,
+        });
 
         // Add to search index
-        await searchManager.addUser(finalUser);
+        await searchManager.addUser(user);
 
-        return finalUser;
+        return user;
     }
 
     /**
@@ -1093,7 +1064,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return {
             id: user.id,
             username: user.username,
-            display_name: user.displayName,
+            display_name: user.displayName || user.username,
             note: user.note,
             uri: this.getUri().toString(),
             url:
@@ -1119,7 +1090,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 verified_at: null,
             })),
             bot: user.isBot,
-            source: isOwnAccount ? user.source : undefined,
+            source: isOwnAccount ? (user.source ?? undefined) : undefined,
             // TODO: Add static avatar and header
             avatar_static: this.getAvatarUrl().proxied,
             header_static: this.getHeaderUrl()?.proxied ?? "",

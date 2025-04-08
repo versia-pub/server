@@ -556,7 +556,7 @@ export const Users = pgTable(
         id: id(),
         uri: uri(),
         username: text("username").notNull(),
-        displayName: text("display_name").notNull(),
+        displayName: text("display_name"),
         password: text("password"),
         email: text("email"),
         note: text("note").default("").notNull(),
@@ -578,7 +578,7 @@ export const Users = pgTable(
             inbox: string;
             outbox: string;
         }> | null>(),
-        source: jsonb("source").notNull().$type<z.infer<typeof Source>>(),
+        source: jsonb("source").$type<z.infer<typeof Source>>(),
         avatarId: uuid("avatarId").references(() => Medias.id, {
             onDelete: "set null",
             onUpdate: "cascade",
