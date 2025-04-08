@@ -165,7 +165,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
               );
     }
 
-    public isLocal(): boolean {
+    public get local(): boolean {
         return this.data.author.instanceId === null;
     }
 
@@ -174,7 +174,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
     }
 
     public toVersia(): VersiaEntities.Reaction {
-        if (!this.isLocal()) {
+        if (!this.local) {
             throw new Error("Cannot convert a non-local reaction to Versia");
         }
 
@@ -212,7 +212,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         author: User,
         note: Note,
     ): Promise<Reaction> {
-        if (author.isLocal()) {
+        if (author.local) {
             throw new Error("Cannot process a reaction from a local user");
         }
 

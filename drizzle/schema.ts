@@ -458,7 +458,7 @@ export const Notes = pgTable("Notes", {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
-    sensitive: boolean("sensitive").notNull(),
+    sensitive: boolean("sensitive").notNull().default(false),
     spoilerText: text("spoiler_text").default("").notNull(),
     applicationId: uuid("applicationId").references(() => Applications.id, {
         onDelete: "set null",

@@ -21,7 +21,7 @@ export const refetchUserCommand = defineCommand(
             throw new Error(`User ${chalk.gray(handle)} not found.`);
         }
 
-        if (user.isLocal()) {
+        if (user.local) {
             throw new Error(
                 "This user is local and as such cannot be refetched.",
             );

@@ -53,10 +53,7 @@ export default apiRoute((app) =>
                 ),
             );
 
-            if (
-                !(note && (await note.isViewableByUser(null))) ||
-                note.isRemote()
-            ) {
+            if (!(note && (await note.isViewableByUser(null))) || note.remote) {
                 throw ApiError.noteNotFound();
             }
 

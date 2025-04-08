@@ -45,7 +45,7 @@ export default apiRoute((app) =>
         async (context) => {
             const otherUser = context.get("user");
 
-            if (otherUser.isLocal()) {
+            if (otherUser.local) {
                 throw new ApiError(400, "Cannot refetch a local user");
             }
 

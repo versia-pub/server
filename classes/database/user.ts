@@ -148,12 +148,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.data.id;
     }
 
-    public isLocal(): boolean {
+    public get local(): boolean {
         return this.data.instanceId === null;
     }
 
-    public isRemote(): boolean {
-        return !this.isLocal();
+    public get remote(): boolean {
+        return !this.local;
     }
 
     public get uri(): URL {
@@ -196,14 +196,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         );
 
         await foundRelationship.update({
-            following: otherUser.isRemote() ? false : !otherUser.data.isLocked,
-            requested: otherUser.isRemote() ? true : otherUser.data.isLocked,
+            following: otherUser.remote ? false : !otherUser.data.isLocked,
+            requested: otherUser.remote ? true : otherUser.data.isLocked,
             showingReblogs: options?.reblogs,
             notifying: options?.notify,
             languages: options?.languages,
         });
 
-        if (otherUser.isRemote()) {
+        if (otherUser.remote) {
             await deliveryQueue.add(DeliveryJobType.FederateEntity, {
                 entity: {
                     type: "Follow",
@@ -229,7 +229,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         followee: User,
         relationship: Relationship,
     ): Promise<void> {
-        if (followee.isRemote()) {
+        if (followee.remote) {
             await deliveryQueue.add(DeliveryJobType.FederateEntity, {
                 entity: this.unfollowToVersia(followee).toJSON(),
                 recipientId: followee.id,
@@ -254,11 +254,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public async acceptFollowRequest(follower: User): Promise<void> {
-        if (!follower.isRemote()) {
+        if (!follower.remote) {
             throw new Error("Follower must be a remote user");
         }
 
-        if (this.isRemote()) {
+        if (this.remote) {
             throw new Error("Followee must be a local user");
         }
 
@@ -278,11 +278,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public async rejectFollowRequest(follower: User): Promise<void> {
-        if (!follower.isRemote()) {
+        if (!follower.remote) {
             throw new Error("Follower must be a remote user");
         }
 
-        if (this.isRemote()) {
+        if (this.remote) {
             throw new Error("Followee must be a local user");
         }
 
@@ -497,10 +497,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri: uri?.href,
         });
 
-        if (this.isLocal() && note.author.isLocal()) {
+        if (this.local && note.author.local) {
             // Notify the user that their post has been favourited
             await note.author.notify("favourite", this, note);
-        } else if (this.isLocal() && note.author.isRemote()) {
+        } else if (this.local && note.author.remote) {
             // Federate the like
             this.federateToFollowers(newLike.toVersia());
         }
@@ -526,10 +526,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         await likeToDelete.delete();
 
-        if (this.isLocal() && note.author.isLocal()) {
+        if (this.local && note.author.local) {
             // Remove any eventual notifications for this like
             await likeToDelete.clearRelatedNotifications();
-        } else if (this.isLocal() && note.author.isRemote()) {
+        } else if (this.local && note.author.remote) {
             // User is local, federate the delete
             this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }
@@ -630,7 +630,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * Takes a Versia User representation, and serializes it to the database.
      *
      * If the user already exists, it will update it.
-     * @param user
+     * @param versiaUser
      */
     public static async fromVersia(
         versiaUser: VersiaEntities.User,
@@ -895,7 +895,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public getAcct(): string {
-        return this.isLocal()
+        return this.local
             ? this.data.username
             : `${this.data.username}@${this.data.instance?.baseUrl}`;
     }
@@ -921,7 +921,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         // If something important is updated, federate it
         if (
-            this.isLocal() &&
+            this.local &&
             (newUser.username ||
                 newUser.displayName ||
                 newUser.note ||
@@ -1090,7 +1090,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public toVersia(): VersiaEntities.User {
-        if (this.isRemote()) {
+        if (this.remote) {
             throw new Error("Cannot convert remote user to Versia format");
         }
 

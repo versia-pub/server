@@ -59,7 +59,7 @@ export default apiRoute((app) =>
 
             const liker = await User.fromId(like.data.likerId);
 
-            if (!liker || liker.isRemote()) {
+            if (!liker || liker.remote) {
                 throw ApiError.accountNotFound();
             }
 

@@ -70,7 +70,7 @@ export default apiRoute((app) =>
                 throw new ApiError(404, "User not found");
             }
 
-            if (author.isRemote()) {
+            if (author.remote) {
                 throw new ApiError(403, "User is not on this instance");
             }
 

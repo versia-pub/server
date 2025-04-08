@@ -301,7 +301,7 @@ export const replaceTextMentions = (text: string, mentions: User[]): string => {
         const linkTemplate = (displayText: string): string =>
             `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${uri}">${displayText}</a>`;
 
-        if (mention.isRemote()) {
+        if (mention.remote) {
             return finalText.replaceAll(
                 `@${username}@${instance?.baseUrl}`,
                 linkTemplate(`@${username}@${instance?.baseUrl}`),

@@ -112,7 +112,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                         return;
                     }
 
-                    if (sender?.isLocal()) {
+                    if (sender?.local) {
                         throw new Error(
                             "Cannot process federation requests from local users",
                         );

@@ -53,7 +53,7 @@ export default apiRoute((app) =>
                 throw ApiError.accountNotFound();
             }
 
-            if (user.isRemote()) {
+            if (user.remote) {
                 throw new ApiError(403, "User is not on this instance");
             }
 
