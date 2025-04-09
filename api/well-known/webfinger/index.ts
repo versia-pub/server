@@ -6,16 +6,16 @@ import {
     webfingerMention,
 } from "@/api";
 import { getLogger } from "@logtape/logtape";
-import type { ResponseError } from "@versia/federation";
-import { WebFinger } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { FederationRequester } from "@versia/sdk/http";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { WebFingerSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
@@ -28,7 +28,7 @@ export default apiRoute((app) =>
                     description: "User information",
                     content: {
                         "application/json": {
-                            schema: resolver(WebFinger),
+                            schema: resolver(WebFingerSchema),
                         },
                     },
                 },
@@ -81,29 +81,29 @@ export default apiRoute((app) =>
                 throw ApiError.accountNotFound();
             }
 
-            let activityPubUrl = "";
+            let activityPubUrl: URL | null = null;
 
             if (config.federation.bridge) {
-                const manager = await User.getFederationRequester();
-
                 try {
-                    activityPubUrl = await manager.webFinger(
+                    activityPubUrl = await FederationRequester.resolveWebFinger(
                         user.data.username,
                         config.http.base_url.host,
                         "application/activity+json",
                         config.federation.bridge.url.origin,
                     );
                 } catch (e) {
-                    const error = e as ResponseError;
+                    const error = e as ApiError;
 
                     getLogger(["federation", "bridge"])
-                        .error`Error from bridge: ${await error.response.data}`;
+                        .error`Error from bridge: ${error.message}`;
                 }
             }
 
             return context.json(
                 {
-                    subject: `acct:${isUuid ? user.id : user.data.username}@${host}`,
+                    subject: `acct:${
+                        isUuid ? user.id : user.data.username
+                    }@${host}`,
 
                     links: [
                         // Keep the ActivityPub link first, because Misskey only searches
@@ -112,7 +112,7 @@ export default apiRoute((app) =>
                             ? {
                                   rel: "self",
                                   type: "application/activity+json",
-                                  href: activityPubUrl,
+                                  href: activityPubUrl.href,
                               }
                             : undefined,
                         {

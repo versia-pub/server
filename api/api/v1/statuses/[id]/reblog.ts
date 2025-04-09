@@ -83,7 +83,7 @@ export default apiRoute((app) =>
                 throw new Error("Failed to reblog");
             }
 
-            if (note.author.isLocal() && user.isLocal()) {
+            if (note.author.local && user.local) {
                 await note.author.notify("reblog", user, newReblog);
             }
 

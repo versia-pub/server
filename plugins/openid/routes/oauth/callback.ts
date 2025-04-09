@@ -235,11 +235,9 @@ export default (plugin: PluginType): void => {
                             : null;
 
                         // Create new user
-                        const user = await User.fromDataLocal({
+                        const user = await User.register(username, {
                             email: doesEmailExist ? undefined : email,
-                            username,
                             avatar: avatar ?? undefined,
-                            password: undefined,
                         });
 
                         // Link account

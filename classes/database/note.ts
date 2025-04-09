@@ -1,15 +1,7 @@
 import { idValidator } from "@/api";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { sentry } from "@/sentry";
-import { getLogger } from "@logtape/logtape";
-import type { Status, Status as StatusSchema } from "@versia/client/schemas";
-import { EntityValidator } from "@versia/federation";
-import type {
-    ContentFormat,
-    Delete as VersiaDelete,
-    Note as VersiaNote,
-} from "@versia/federation/types";
+import type { Status } from "@versia/client/schemas";
 import { Instance, db } from "@versia/kit/db";
 import {
     EmojiToNote,
@@ -33,12 +25,10 @@ import {
 import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
 import type { z } from "zod";
-import {
-    contentToHtml,
-    findManyNotes,
-    parseTextMentions,
-} from "~/classes/functions/status";
+import { contentToHtml, findManyNotes } from "~/classes/functions/status";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
+import type { NonTextContentFormatSchema } from "~/packages/sdk/schemas/contentformat.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";
@@ -222,7 +212,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         await deliveryQueue.addBulk(
             users.map((user) => ({
                 data: {
-                    entity: this.toVersia(),
+                    entity: this.toVersia().toJSON(),
                     recipientId: user.id,
                     senderId: this.author.id,
                 },
@@ -310,173 +300,12 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         );
     }
 
-    public isRemote(): boolean {
-        return this.author.isRemote();
+    public get remote(): boolean {
+        return this.author.remote;
     }
 
-    /**
-     * Update a note from remote federated servers
-     * @returns The updated note
-     */
-    public async updateFromRemote(): Promise<Note> {
-        if (!this.isRemote()) {
-            throw new Error("Cannot refetch a local note (it is not remote)");
-        }
-
-        const updated = await Note.fetchFromRemote(this.getUri());
-
-        if (!updated) {
-            throw new Error("Note not found after update");
-        }
-
-        this.data = updated.data;
-
-        return this;
-    }
-
-    /**
-     * Create a new note from user input
-     * @param data - The data to create the note from
-     * @returns The created note
-     */
-    public static async fromData(data: {
-        author: User;
-        content: ContentFormat;
-        visibility: z.infer<typeof StatusSchema.shape.visibility>;
-        isSensitive: boolean;
-        spoilerText: string;
-        emojis?: Emoji[];
-        uri?: string;
-        mentions?: User[];
-        /** List of IDs of database Attachment objects */
-        mediaAttachments?: Media[];
-        replyId?: string;
-        quoteId?: string;
-        application?: Application;
-    }): Promise<Note> {
-        const plaintextContent =
-            data.content["text/plain"]?.content ??
-            Object.entries(data.content)[0][1].content;
-
-        const parsedMentions = mergeAndDeduplicate(
-            data.mentions ?? [],
-            await parseTextMentions(plaintextContent, data.author),
-        );
-        const parsedEmojis = mergeAndDeduplicate(
-            data.emojis ?? [],
-            await Emoji.parseFromText(plaintextContent),
-        );
-
-        const htmlContent = await contentToHtml(data.content, parsedMentions);
-
-        const newNote = await Note.insert({
-            id: randomUUIDv7(),
-            authorId: data.author.id,
-            content: htmlContent,
-            contentSource:
-                data.content["text/plain"]?.content ||
-                data.content["text/markdown"]?.content ||
-                Object.entries(data.content)[0][1].content ||
-                "",
-            contentType: "text/html",
-            visibility: data.visibility,
-            sensitive: data.isSensitive,
-            spoilerText: await sanitizedHtmlStrip(data.spoilerText),
-            uri: data.uri || null,
-            replyId: data.replyId ?? null,
-            quotingId: data.quoteId ?? null,
-            applicationId: data.application?.id ?? null,
-        });
-
-        // Connect emojis
-        await newNote.updateEmojis(parsedEmojis);
-
-        // Connect mentions
-        await newNote.updateMentions(parsedMentions);
-
-        // Set attachment parents
-        await newNote.updateAttachments(data.mediaAttachments ?? []);
-
-        // Send notifications for mentioned local users
-        for (const mention of parsedMentions) {
-            if (mention.isLocal()) {
-                await mention.notify("mention", data.author, newNote);
-            }
-        }
-
-        await newNote.reload(data.author.id);
-
-        return newNote;
-    }
-
-    /**
-     * Update a note from user input
-     * @param data - The data to update the note from
-     * @returns The updated note
-     */
-    public async updateFromData(data: {
-        author: User;
-        content?: ContentFormat;
-        visibility?: z.infer<typeof StatusSchema.shape.visibility>;
-        isSensitive?: boolean;
-        spoilerText?: string;
-        emojis?: Emoji[];
-        uri?: string;
-        mentions?: User[];
-        mediaAttachments?: Media[];
-        replyId?: string;
-        quoteId?: string;
-        application?: Application;
-    }): Promise<Note> {
-        const plaintextContent = data.content
-            ? (data.content["text/plain"]?.content ??
-              Object.entries(data.content)[0][1].content)
-            : undefined;
-
-        const parsedMentions = mergeAndDeduplicate(
-            data.mentions ?? [],
-            plaintextContent
-                ? await parseTextMentions(plaintextContent, data.author)
-                : [],
-        );
-        const parsedEmojis = mergeAndDeduplicate(
-            data.emojis ?? [],
-            plaintextContent ? await Emoji.parseFromText(plaintextContent) : [],
-        );
-
-        const htmlContent = data.content
-            ? await contentToHtml(data.content, parsedMentions)
-            : undefined;
-
-        await this.update({
-            content: htmlContent,
-            contentSource: data.content
-                ? data.content["text/plain"]?.content ||
-                  data.content["text/markdown"]?.content ||
-                  Object.entries(data.content)[0][1].content ||
-                  ""
-                : undefined,
-            contentType: "text/html",
-            visibility: data.visibility,
-            sensitive: data.isSensitive,
-            spoilerText: data.spoilerText,
-            replyId: data.replyId,
-            quotingId: data.quoteId,
-            applicationId: data.application?.id,
-        });
-
-        // Connect emojis
-        await this.updateEmojis(parsedEmojis);
-
-        // Connect mentions
-        await this.updateMentions(parsedMentions);
-
-        // Set attachment parents
-        await this.updateAttachments(data.mediaAttachments ?? []);
-
-        await this.reload(data.author.id);
-
-        return this;
+    public get local(): boolean {
+        return this.author.local;
     }
 
     /**
@@ -556,7 +385,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      */
     public static async resolve(uri: URL): Promise<Note | null> {
         // Check if note not already in database
-        const foundNote = await Note.fromSql(eq(Notes.uri, uri.toString()));
+        const foundNote = await Note.fromSql(eq(Notes.uri, uri.href));
 
         if (foundNote) {
             return foundNote;
@@ -575,137 +404,124 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             return await Note.fromId(uuid[0]);
         }
 
-        return await Note.fetchFromRemote(uri);
+        return Note.fromVersia(uri);
     }
 
     /**
-     * Save a note from a remote server
-     * @param uri - The URI of the note to save
-     * @returns The saved note, or null if the note could not be fetched
+     * Tries to fetch a Versia Note from the given URL.
+     *
+     * @param url The URL to fetch the note from
      */
-    public static async fetchFromRemote(uri: URL): Promise<Note | null> {
-        const instance = await Instance.resolve(uri);
-
-        if (!instance) {
-            return null;
-        }
-
-        const requester = await User.getFederationRequester();
-
-        const { data } = await requester.get(uri, {
-            // @ts-expect-error Bun extension
-            proxy: config.http.proxy_address,
-        });
-
-        const note = await new EntityValidator().Note(data);
-
-        const author = await User.resolve(new URL(note.author));
-
-        if (!author) {
-            throw new Error("Invalid object author");
-        }
-
-        return await Note.fromVersia(note, author, instance);
-    }
+    public static async fromVersia(url: URL): Promise<Note>;
 
     /**
-     * Turns a Versia Note into a database note (saved)
-     * @param note Versia Note
-     * @param author Author of the note
-     * @param instance Instance of the note
-     * @returns The saved note
+     * Takes a Versia Note representation, and serializes it to the database.
+     *
+     * If the note already exists, it will update it.
+     * @param versiaNote
      */
     public static async fromVersia(
-        note: VersiaNote,
-        author: User,
-        instance: Instance,
+        versiaNote: VersiaEntities.Note,
+    ): Promise<Note>;
+
+    public static async fromVersia(
+        versiaNote: VersiaEntities.Note | URL,
     ): Promise<Note> {
-        const emojis: Emoji[] = [];
-        const logger = getLogger(["federation", "resolvers"]);
-
-        for (const emoji of note.extensions?.["pub.versia:custom_emojis"]
-            ?.emojis ?? []) {
-            const resolvedEmoji = await Emoji.fetchFromRemote(
-                emoji,
-                instance,
-            ).catch((e) => {
-                logger.error`${e}`;
-                sentry?.captureException(e);
-                return null;
-            });
-
-            if (resolvedEmoji) {
-                emojis.push(resolvedEmoji);
-            }
-        }
-
-        const attachments: Media[] = [];
-
-        for (const attachment of note.attachments ?? []) {
-            const resolvedAttachment = await Media.fromVersia(attachment).catch(
-                (e) => {
-                    logger.error`${e}`;
-                    sentry?.captureException(e);
-                    return null;
-                },
+        if (versiaNote instanceof URL) {
+            // No bridge support for notes yet
+            const note = await User.federationRequester.fetchEntity(
+                versiaNote,
+                VersiaEntities.Note,
             );
 
-            if (resolvedAttachment) {
-                attachments.push(resolvedAttachment);
+            return Note.fromVersia(note);
+        }
+
+        const {
+            author: authorUrl,
+            created_at,
+            uri,
+            extensions,
+            group,
+            is_sensitive,
+            mentions: noteMentions,
+            quotes,
+            replies_to,
+            subject,
+        } = versiaNote.data;
+        const instance = await Instance.resolve(authorUrl);
+        const author = await User.resolve(authorUrl);
+
+        if (!author) {
+            throw new Error("Entity author could not be resolved");
+        }
+
+        const existingNote = await Note.fromSql(eq(Notes.uri, uri.href));
+
+        const note =
+            existingNote ??
+            (await Note.insert({
+                id: randomUUIDv7(),
+                authorId: author.id,
+                visibility: "public",
+                uri: uri.href,
+                createdAt: new Date(created_at).toISOString(),
+            }));
+
+        const attachments = await Promise.all(
+            versiaNote.attachments.map((a) => Media.fromVersia(a)),
+        );
+
+        const emojis = await Promise.all(
+            extensions?.["pub.versia:custom_emojis"]?.emojis.map((emoji) =>
+                Emoji.fetchFromRemote(emoji, instance),
+            ) ?? [],
+        );
+
+        const mentions = (
+            await Promise.all(
+                noteMentions?.map((mention) => User.resolve(mention)) ?? [],
+            )
+        ).filter((m) => m !== null);
+
+        // TODO: Implement groups
+        const visibility = !group || group instanceof URL ? "direct" : group;
+
+        const reply = replies_to ? await Note.resolve(replies_to) : null;
+        const quote = quotes ? await Note.resolve(quotes) : null;
+        const spoiler = subject ? await sanitizedHtmlStrip(subject) : undefined;
+
+        await note.update({
+            content: versiaNote.content
+                ? await contentToHtml(versiaNote.content, mentions)
+                : undefined,
+            contentSource: versiaNote.content
+                ? versiaNote.content.data["text/plain"]?.content ||
+                  versiaNote.content.data["text/markdown"]?.content
+                : undefined,
+            contentType: "text/html",
+            visibility: visibility === "followers" ? "private" : visibility,
+            sensitive: is_sensitive ?? false,
+            spoilerText: spoiler,
+            replyId: reply?.id,
+            quotingId: quote?.id,
+        });
+
+        // Emojis, mentions, and attachments are stored in a different table, so update them there too
+        await note.updateEmojis(emojis);
+        await note.updateMentions(mentions);
+        await note.updateAttachments(attachments);
+
+        await note.reload(author.id);
+
+        // Send notifications for mentioned local users
+        for (const mentioned of mentions) {
+            if (mentioned.local) {
+                await mentioned.notify("mention", author, note);
             }
         }
 
-        let visibility = note.group
-            ? ["public", "followers"].includes(note.group)
-                ? (note.group as "public" | "private")
-                : ("url" as const)
-            : ("direct" as const);
-
-        if (visibility === "url") {
-            // TODO: Implement groups
-            visibility = "direct";
-        }
-
-        const newData = {
-            author,
-            content: note.content ?? {
-                "text/plain": {
-                    content: "",
-                    remote: false,
-                },
-            },
-            visibility,
-            isSensitive: note.is_sensitive ?? false,
-            spoilerText: note.subject ?? "",
-            emojis,
-            uri: note.uri,
-            mentions: await Promise.all(
-                (note.mentions ?? [])
-                    .map((mention) => User.resolve(new URL(mention)))
-                    .filter((mention) => mention !== null) as Promise<User>[],
-            ),
-            mediaAttachments: attachments,
-            replyId: note.replies_to
-                ? (await Note.resolve(new URL(note.replies_to)))?.data.id
-                : undefined,
-            quoteId: note.quotes
-                ? (await Note.resolve(new URL(note.quotes)))?.data.id
-                : undefined,
-        };
-
-        // Check if new note already exists
-
-        const foundNote = await Note.fromSql(eq(Notes.uri, note.uri));
-
-        // If it exists, simply update it
-        if (foundNote) {
-            await foundNote.updateFromData(newData);
-
-            return foundNote;
-        }
-
-        // Else, create a new note
-        return await Note.fromData(newData);
+        return note;
     }
 
     public async delete(ids?: string[]): Promise<void> {
@@ -872,31 +688,31 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         );
     }
 
-    public deleteToVersia(): VersiaDelete {
+    public deleteToVersia(): VersiaEntities.Delete {
         const id = crypto.randomUUID();
 
-        return {
+        return new VersiaEntities.Delete({
             type: "Delete",
             id,
-            author: this.author.getUri().toString(),
+            author: this.author.uri,
             deleted_type: "Note",
-            deleted: this.getUri().toString(),
+            deleted: this.getUri(),
             created_at: new Date().toISOString(),
-        };
+        });
     }
 
     /**
      * Convert a note to the Versia format
      * @returns The note in the Versia format
      */
-    public toVersia(): VersiaNote {
+    public toVersia(): VersiaEntities.Note {
         const status = this.data;
-        return {
+        return new VersiaEntities.Note({
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: this.author.getUri().toString(),
-            uri: this.getUri().toString(),
+            author: this.author.uri,
+            uri: this.getUri(),
             content: {
                 "text/html": {
                     content: status.content,
@@ -908,28 +724,37 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 },
             },
             collections: {
-                replies: `/notes/${status.id}/replies`,
-                quotes: `/notes/${status.id}/quotes`,
+                replies: new URL(
+                    `/notes/${status.id}/replies`,
+                    config.http.base_url,
+                ),
+                quotes: new URL(
+                    `/notes/${status.id}/quotes`,
+                    config.http.base_url,
+                ),
             },
-            attachments: (status.attachments ?? []).map((attachment) =>
-                new Media(attachment).toVersia(),
+            attachments: status.attachments.map(
+                (attachment) =>
+                    new Media(attachment).toVersia().data as z.infer<
+                        typeof NonTextContentFormatSchema
+                    >,
             ),
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) =>
                 User.getUri(
                     mention.id,
                     mention.uri ? new URL(mention.uri) : null,
-                ).toString(),
+                ),
             ),
             quotes: status.quote
-                ? (status.quote.uri ??
-                  new URL(`/notes/${status.quote.id}`, config.http.base_url)
-                      .href)
+                ? status.quote.uri
+                    ? new URL(status.quote.uri)
+                    : new URL(`/notes/${status.quote.id}`, config.http.base_url)
                 : null,
             replies_to: status.reply
-                ? (status.reply.uri ??
-                  new URL(`/notes/${status.reply.id}`, config.http.base_url)
-                      .href)
+                ? status.reply.uri
+                    ? new URL(status.reply.uri)
+                    : new URL(`/notes/${status.reply.id}`, config.http.base_url)
                 : null,
             subject: status.spoilerText,
             // TODO: Refactor as part of groups
@@ -942,7 +767,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 },
                 // TODO: Add polls and reactions
             },
-        };
+        });
     }
 
     /**

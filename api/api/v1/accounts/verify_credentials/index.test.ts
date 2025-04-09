@@ -28,7 +28,7 @@ describe("/api/v1/accounts/verify_credentials", () => {
             expect(data.id).toBe(users[0].id);
             expect(data.username).toBe(users[0].data.username);
             expect(data.acct).toBe(users[0].data.username);
-            expect(data.display_name).toBe(users[0].data.displayName);
+            expect(data.display_name).toBe(users[0].data.displayName ?? "");
             expect(data.note).toBe(users[0].data.note);
             expect(data.url).toBe(
                 new URL(

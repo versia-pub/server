@@ -1,9 +1,9 @@
 import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import type { ContentFormat } from "@versia/federation/types";
 import { type Note, User, db } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
+import { FederationRequester } from "@versia/sdk/http";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
@@ -19,6 +19,7 @@ import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { config } from "~/config.ts";
+import type * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import {
     transformOutputToUserWithRelations,
     userExtrasTemplate,
@@ -222,10 +223,7 @@ export const findManyNotes = async (
  * @param text The text to parse mentions from.
  * @returns An array of users mentioned in the text.
  */
-export const parseTextMentions = async (
-    text: string,
-    author: User,
-): Promise<User[]> => {
+export const parseTextMentions = async (text: string): Promise<User[]> => {
     const mentionedPeople = [...text.matchAll(mentionValidator)];
     if (mentionedPeople.length === 0) {
         return [];
@@ -276,21 +274,17 @@ export const parseTextMentions = async (
 
     // Resolve remote mentions not in database
     for (const person of notFoundRemoteUsers) {
-        const manager = await author.getFederationRequester();
-        const uri = await User.webFinger(
-            manager,
+        const url = await FederationRequester.resolveWebFinger(
             person[1] ?? "",
             person[2] ?? "",
         );
 
-        if (!uri) {
-            continue;
-        }
+        if (url) {
+            const user = await User.resolve(url);
 
-        const user = await User.resolve(uri);
-
-        if (user) {
-            finalList.push(user);
+            if (user) {
+                finalList.push(user);
+            }
         }
     }
 
@@ -300,12 +294,12 @@ export const parseTextMentions = async (
 export const replaceTextMentions = (text: string, mentions: User[]): string => {
     return mentions.reduce((finalText, mention) => {
         const { username, instance } = mention.data;
-        const uri = mention.getUri();
+        const { uri } = mention;
         const baseHost = config.http.base_url.host;
         const linkTemplate = (displayText: string): string =>
             `<a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${uri}">${displayText}</a>`;
 
-        if (mention.isRemote()) {
+        if (mention.remote) {
             return finalText.replaceAll(
                 `@${username}@${instance?.baseUrl}`,
                 linkTemplate(`@${username}@${instance?.baseUrl}`),
@@ -327,21 +321,21 @@ export const replaceTextMentions = (text: string, mentions: User[]): string => {
 };
 
 export const contentToHtml = async (
-    content: ContentFormat,
+    content: VersiaEntities.TextContentFormat,
     mentions: User[] = [],
     inline = false,
 ): Promise<string> => {
     const sanitizer = inline ? sanitizeHtmlInline : sanitizeHtml;
     let htmlContent = "";
 
-    if (content["text/html"]) {
-        htmlContent = await sanitizer(content["text/html"].content);
-    } else if (content["text/markdown"]) {
+    if (content.data["text/html"]) {
+        htmlContent = await sanitizer(content.data["text/html"].content);
+    } else if (content.data["text/markdown"]) {
         htmlContent = await sanitizer(
-            await markdownParse(content["text/markdown"].content),
+            await markdownParse(content.data["text/markdown"].content),
         );
-    } else if (content["text/plain"]?.content) {
-        htmlContent = (await sanitizer(content["text/plain"].content))
+    } else if (content.data["text/plain"]?.content) {
+        htmlContent = (await sanitizer(content.data["text/plain"].content))
             .split("\n")
             .map((line) => `<p>${line}</p>`)
             .join("\n");

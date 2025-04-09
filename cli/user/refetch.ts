@@ -3,6 +3,7 @@ import chalk from "chalk";
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { type Root, defineCommand } from "clerc";
 import ora from "ora";
+import { User } from "~/classes/database/user.ts";
 import { retrieveUser } from "../utils.ts";
 
 export const refetchUserCommand = defineCommand(
@@ -20,7 +21,7 @@ export const refetchUserCommand = defineCommand(
             throw new Error(`User ${chalk.gray(handle)} not found.`);
         }
 
-        if (user.isLocal()) {
+        if (user.local) {
             throw new Error(
                 "This user is local and as such cannot be refetched.",
             );
@@ -29,7 +30,7 @@ export const refetchUserCommand = defineCommand(
         const spinner = ora("Refetching user").start();
 
         try {
-            await user.updateFromRemote();
+            await User.fromVersia(user.uri);
         } catch (error) {
             spinner.fail(
                 `Failed to refetch user ${chalk.gray(user.data.username)}`,

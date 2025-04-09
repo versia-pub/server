@@ -13,6 +13,7 @@ import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { config } from "~/config.ts";
 import { rateLimit } from "~/middlewares/rate-limit";
+import * as VersiaEntities from "~/packages/sdk/entities";
 
 export default apiRoute((app) =>
     app.patch(
@@ -175,6 +176,15 @@ export default apiRoute((app) =>
             } = context.req.valid("json");
 
             const self = user.data;
+            if (!self.source) {
+                self.source = {
+                    fields: [],
+                    privacy: "public",
+                    language: "en",
+                    sensitive: false,
+                    note: "",
+                };
+            }
 
             const sanitizedDisplayName = await sanitizedHtmlStrip(
                 display_name ?? "",
@@ -184,26 +194,25 @@ export default apiRoute((app) =>
                 self.displayName = sanitizedDisplayName;
             }
 
-            if (note && self.source) {
+            if (note) {
                 self.source.note = note;
-                self.note = await contentToHtml({
-                    "text/markdown": {
-                        content: note,
-                        remote: false,
-                    },
-                });
+                self.note = await contentToHtml(
+                    new VersiaEntities.TextContentFormat({
+                        "text/markdown": {
+                            content: note,
+                            remote: false,
+                        },
+                    }),
+                );
             }
 
-            if (source?.privacy) {
-                self.source.privacy = source.privacy;
-            }
-
-            if (source?.sensitive) {
-                self.source.sensitive = source.sensitive;
-            }
-
-            if (source?.language) {
-                self.source.language = source.language;
+            if (source) {
+                self.source = {
+                    ...self.source,
+                    privacy: source.privacy ?? self.source.privacy,
+                    sensitive: source.sensitive ?? self.source.sensitive,
+                    language: source.language ?? self.source.language,
+                };
             }
 
             if (username) {
@@ -275,23 +284,23 @@ export default apiRoute((app) =>
                 for (const field of fields_attributes) {
                     // Can be Markdown or plaintext, also has emojis
                     const parsedName = await contentToHtml(
-                        {
+                        new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.name,
                                 remote: false,
                             },
-                        },
+                        }),
                         undefined,
                         true,
                     );
 
                     const parsedValue = await contentToHtml(
-                        {
+                        new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.value,
                                 remote: false,
                             },
-                        },
+                        }),
                         undefined,
                         true,
                     );

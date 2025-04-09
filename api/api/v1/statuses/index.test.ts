@@ -218,7 +218,7 @@ describe("/api/v1/statuses", () => {
 
             expect(ok).toBe(true);
             expect(data).toMatchObject({
-                content: `<p>Hello, <a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${users[1].getUri()}">@${users[1].data.username}</a>!</p>`,
+                content: `<p>Hello, <a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${users[1].uri.href}">@${users[1].data.username}</a>!</p>`,
             });
             expect((data as z.infer<typeof Status>).mentions).toBeArrayOfSize(
                 1,
@@ -241,7 +241,7 @@ describe("/api/v1/statuses", () => {
 
             expect(ok).toBe(true);
             expect(data).toMatchObject({
-                content: `<p>Hello, <a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${users[1].getUri()}">@${users[1].data.username}</a>!</p>`,
+                content: `<p>Hello, <a class="u-url mention" rel="nofollow noopener noreferrer" target="_blank" href="${users[1].uri.href}">@${users[1].data.username}</a>!</p>`,
             });
             expect((data as z.infer<typeof Status>).mentions).toBeArrayOfSize(
                 1,

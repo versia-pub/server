@@ -1,7 +1,5 @@
 import { apiRoute, handleZodError } from "@/api";
 import { Status as StatusSchema } from "@versia/client/schemas";
-import { URICollection as URICollectionSchema } from "@versia/federation/schemas";
-import type { URICollection } from "@versia/federation/types";
 import { Note, db } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
@@ -10,6 +8,8 @@ import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities";
+import { URICollectionSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
@@ -61,10 +61,7 @@ export default apiRoute((app) =>
                 ),
             );
 
-            if (
-                !(note && (await note.isViewableByUser(null))) ||
-                note.isRemote()
-            ) {
+            if (!(note && (await note.isViewableByUser(null))) || note.remote) {
                 throw ApiError.noteNotFound();
             }
 
@@ -86,39 +83,45 @@ export default apiRoute((app) =>
                 ),
             );
 
-            const uriCollection = {
-                author: note.author.getUri().href,
+            const uriCollection = new VersiaEntities.URICollection({
+                author: note.author.uri,
                 first: new URL(
                     `/notes/${note.id}/replies?offset=0`,
                     config.http.base_url,
-                ).href,
+                ),
                 last:
                     replyCount > limit
                         ? new URL(
-                              `/notes/${note.id}/replies?offset=${replyCount - limit}`,
+                              `/notes/${note.id}/replies?offset=${
+                                  replyCount - limit
+                              }`,
                               config.http.base_url,
-                          ).href
+                          )
                         : new URL(
                               `/notes/${note.id}/replies`,
                               config.http.base_url,
-                          ).href,
+                          ),
                 next:
                     offset + limit < replyCount
                         ? new URL(
-                              `/notes/${note.id}/replies?offset=${offset + limit}`,
+                              `/notes/${note.id}/replies?offset=${
+                                  offset + limit
+                              }`,
                               config.http.base_url,
-                          ).href
+                          )
                         : null,
                 previous:
                     offset - limit >= 0
                         ? new URL(
-                              `/notes/${note.id}/replies?offset=${offset - limit}`,
+                              `/notes/${note.id}/replies?offset=${
+                                  offset - limit
+                              }`,
                               config.http.base_url,
-                          ).href
+                          )
                         : null,
                 total: replyCount,
-                items: replies.map((reply) => reply.getUri().href),
-            } satisfies URICollection;
+                items: replies.map((reply) => reply.getUri()),
+            });
 
             // If base_url uses https and request uses http, rewrite request to use https
             // This fixes reverse proxy errors

@@ -1,6 +1,4 @@
 import { getLogger } from "@logtape/logtape";
-import { EntityValidator, type ResponseError } from "@versia/federation";
-import type { InstanceMetadata } from "@versia/federation/types";
 import { db } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -14,6 +12,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { ApiError } from "../errors/api-error.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
@@ -137,24 +136,20 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public static async fetchMetadata(url: URL): Promise<{
-        metadata: InstanceMetadata;
+        metadata: VersiaEntities.InstanceMetadata;
         protocol: "versia" | "activitypub";
     }> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/versia", origin);
 
-        const requester = await User.getFederationRequester();
+        try {
+            const metadata = await User.federationRequester.fetchEntity(
+                wellKnownUrl,
+                VersiaEntities.InstanceMetadata,
+            );
 
-        const { ok, raw, data } = await requester
-            .get(wellKnownUrl, {
-                // @ts-expect-error Bun extension
-                proxy: config.http.proxy_address,
-            })
-            .catch((e) => ({
-                ...(e as ResponseError).response,
-            }));
-
-        if (!(ok && raw.headers.get("content-type")?.includes("json"))) {
+            return { metadata, protocol: "versia" };
+        } catch {
             // If the server doesn't have a Versia well-known endpoint, it's not a Versia instance
             // Try to resolve ActivityPub metadata instead
             const data = await Instance.fetchActivityPubMetadata(url);
@@ -171,56 +166,34 @@ export class Instance extends BaseInterface<typeof Instances> {
                 protocol: "activitypub",
             };
         }
-
-        try {
-            const metadata = await new EntityValidator().InstanceMetadata(data);
-
-            return { metadata, protocol: "versia" };
-        } catch {
-            throw new ApiError(
-                404,
-                `Instance at ${origin} has invalid metadata`,
-            );
-        }
     }
 
     private static async fetchActivityPubMetadata(
         url: URL,
-    ): Promise<InstanceMetadata | null> {
+    ): Promise<VersiaEntities.InstanceMetadata | null> {
         const origin = new URL(url).origin;
         const wellKnownUrl = new URL("/.well-known/nodeinfo", origin);
 
         // Go to endpoint, then follow the links to the actual metadata
 
         const logger = getLogger(["federation", "resolvers"]);
-        const requester = await User.getFederationRequester();
 
         try {
-            const {
-                raw: response,
-                ok,
-                data: wellKnown,
-            } = await requester
-                .get<{
-                    links: { rel: string; href: string }[];
-                }>(wellKnownUrl, {
-                    // @ts-expect-error Bun extension
-                    proxy: config.http.proxy_address,
-                })
-                .catch((e) => ({
-                    ...(
-                        e as ResponseError<{
-                            links: { rel: string; href: string }[];
-                        }>
-                    ).response,
-                }));
+            const { json, ok, status } = await fetch(wellKnownUrl, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy_address,
+            });
 
             if (!ok) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
-                )} - HTTP ${response.status}`;
+                )} - HTTP ${status}`;
                 return null;
             }
+
+            const wellKnown = (await json()) as {
+                links: { rel: string; href: string }[];
+            };
 
             if (!wellKnown.links) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
@@ -243,44 +216,32 @@ export class Instance extends BaseInterface<typeof Instances> {
             }
 
             const {
-                raw: metadataResponse,
+                json: json2,
                 ok: ok2,
-                data: metadata,
-            } = await requester
-                .get<{
-                    metadata: {
-                        nodeName?: string;
-                        title?: string;
-                        nodeDescription?: string;
-                        description?: string;
-                    };
-                    software: { version: string };
-                }>(metadataUrl.href, {
-                    // @ts-expect-error Bun extension
-                    proxy: config.http.proxy_address,
-                })
-                .catch((e) => ({
-                    ...(
-                        e as ResponseError<{
-                            metadata: {
-                                nodeName?: string;
-                                title?: string;
-                                nodeDescription?: string;
-                                description?: string;
-                            };
-                            software: { version: string };
-                        }>
-                    ).response,
-                }));
+                status: status2,
+            } = await fetch(metadataUrl.href, {
+                // @ts-expect-error Bun extension
+                proxy: config.http.proxy_address,
+            });
 
             if (!ok2) {
                 logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
-                )} - HTTP ${metadataResponse.status}`;
+                )} - HTTP ${status2}`;
                 return null;
             }
 
-            return {
+            const metadata = (await json2()) as {
+                metadata: {
+                    nodeName?: string;
+                    title?: string;
+                    nodeDescription?: string;
+                    description?: string;
+                };
+                software: { version: string };
+            };
+
+            return new VersiaEntities.InstanceMetadata({
                 name:
                     metadata.metadata.nodeName || metadata.metadata.title || "",
                 description:
@@ -301,7 +262,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                     extensions: [],
                     versions: [],
                 },
-            };
+            });
         } catch (error) {
             logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                 origin,
@@ -340,13 +301,13 @@ export class Instance extends BaseInterface<typeof Instances> {
         return Instance.insert({
             id: randomUUIDv7(),
             baseUrl: host,
-            name: metadata.name,
-            version: metadata.software.version,
-            logo: metadata.logo,
+            name: metadata.data.name,
+            version: metadata.data.software.version,
+            logo: metadata.data.logo,
             protocol,
-            publicKey: metadata.public_key,
-            inbox: metadata.shared_inbox ?? null,
-            extensions: metadata.extensions ?? null,
+            publicKey: metadata.data.public_key,
+            inbox: metadata.data.shared_inbox?.href ?? null,
+            extensions: metadata.data.extensions ?? null,
         });
     }
 
@@ -358,20 +319,22 @@ export class Instance extends BaseInterface<typeof Instances> {
         );
 
         if (!output) {
-            logger.error`Failed to update instance ${chalk.bold(this.data.baseUrl)}`;
+            logger.error`Failed to update instance ${chalk.bold(
+                this.data.baseUrl,
+            )}`;
             throw new Error("Failed to update instance");
         }
 
         const { metadata, protocol } = output;
 
         await this.update({
-            name: metadata.name,
-            version: metadata.software.version,
-            logo: metadata.logo,
+            name: metadata.data.name,
+            version: metadata.data.software.version,
+            logo: metadata.data.logo,
             protocol,
-            publicKey: metadata.public_key,
-            inbox: metadata.shared_inbox ?? null,
-            extensions: metadata.extensions ?? null,
+            publicKey: metadata.data.public_key,
+            inbox: metadata.data.shared_inbox?.href ?? null,
+            extensions: metadata.data.extensions ?? null,
         });
 
         return this;

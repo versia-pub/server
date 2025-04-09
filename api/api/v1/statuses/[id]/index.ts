@@ -5,6 +5,7 @@ import {
     jsonOrForm,
     withNoteParam,
 } from "@/api";
+import { sanitizedHtmlStrip } from "@/sanitization";
 import {
     Attachment as AttachmentSchema,
     PollOption,
@@ -13,12 +14,14 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
-import { Media } from "@versia/kit/db";
+import { Emoji, Media } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { contentToHtml, parseTextMentions } from "~/classes/functions/status";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities";
 
 const schema = z
     .object({
@@ -225,22 +228,50 @@ export default apiRoute((app) => {
                 );
             }
 
-            const newNote = await note.updateFromData({
-                author: user,
-                content: statusText
-                    ? {
-                          [content_type]: {
-                              content: statusText,
-                              remote: false,
-                          },
-                      }
+            const sanitizedSpoilerText = spoiler_text
+                ? await sanitizedHtmlStrip(spoiler_text)
+                : undefined;
+
+            const content = statusText
+                ? new VersiaEntities.TextContentFormat({
+                      [content_type]: {
+                          content: statusText,
+                          remote: false,
+                      },
+                  })
+                : undefined;
+
+            const parsedMentions = statusText
+                ? await parseTextMentions(statusText)
+                : [];
+
+            const parsedEmojis = statusText
+                ? await Emoji.parseFromText(statusText)
+                : [];
+
+            await note.update({
+                spoilerText: sanitizedSpoilerText,
+                sensitive,
+                content: content
+                    ? await contentToHtml(content, parsedMentions)
                     : undefined,
-                isSensitive: sensitive,
-                spoilerText: spoiler_text,
-                mediaAttachments: foundAttachments,
             });
 
-            return context.json(await newNote.toApi(user), 200);
+            // Emojis, mentions, and attachments are stored in a different table, so update them there too
+            await note.updateEmojis(parsedEmojis);
+            await note.updateMentions(parsedMentions);
+            await note.updateAttachments(foundAttachments);
+
+            await note.reload();
+
+            // Send notifications for mentioned local users
+            for (const mentioned of parsedMentions) {
+                if (mentioned.local) {
+                    await mentioned.notify("mention", user, note);
+                }
+            }
+
+            return context.json(await note.toApi(user), 200);
         },
     );
 });

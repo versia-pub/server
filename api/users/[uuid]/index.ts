@@ -1,10 +1,10 @@
 import { apiRoute, handleZodError } from "@/api";
-import { User as UserSchema } from "@versia/federation/schemas";
 import { User } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
+import { UserSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
@@ -43,6 +43,7 @@ export default apiRoute((app) =>
             }),
             handleZodError,
         ),
+        // @ts-expect-error idk why this is happening and I don't care
         async (context) => {
             const { uuid } = context.req.valid("param");
 
@@ -52,7 +53,7 @@ export default apiRoute((app) =>
                 throw ApiError.accountNotFound();
             }
 
-            if (user.isRemote()) {
+            if (user.remote) {
                 throw new ApiError(403, "User is not on this instance");
             }
 

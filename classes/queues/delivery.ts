@@ -3,7 +3,8 @@ import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import chalk from "chalk";
 import { config } from "~/config.ts";
-import type { KnownEntity } from "~/types/api";
+import * as VersiaEntities from "~/packages/sdk/entities";
+import type { JSONObject } from "~/packages/sdk/types";
 import { connection } from "~/utils/redis.ts";
 
 export enum DeliveryJobType {
@@ -11,7 +12,7 @@ export enum DeliveryJobType {
 }
 
 export type DeliveryJobData = {
-    entity: KnownEntity;
+    entity: JSONObject;
     recipientId: string;
     senderId: string;
 };
@@ -39,7 +40,9 @@ export const getDeliveryWorker = (): Worker<
 
                     if (!sender) {
                         throw new Error(
-                            `Could not resolve sender ID ${chalk.gray(senderId)}`,
+                            `Could not resolve sender ID ${chalk.gray(
+                                senderId,
+                            )}`,
                         );
                     }
 
@@ -47,15 +50,35 @@ export const getDeliveryWorker = (): Worker<
 
                     if (!recipient) {
                         throw new Error(
-                            `Could not resolve recipient ID ${chalk.gray(recipientId)}`,
+                            `Could not resolve recipient ID ${chalk.gray(
+                                recipientId,
+                            )}`,
                         );
                     }
 
                     await job.log(
-                        `Federating entity [${entity.id}] from @${sender.getAcct()} to @${recipient.getAcct()}`,
+                        `Federating entity [${
+                            entity.id
+                        }] from @${sender.getAcct()} to @${recipient.getAcct()}`,
                     );
 
-                    await sender.federateToUser(entity, recipient);
+                    const type = entity.type;
+                    const entityCtor = Object.values(VersiaEntities).find(
+                        (ctor) => ctor.name === type,
+                    ) as typeof VersiaEntities.Entity | undefined;
+
+                    if (!entityCtor) {
+                        throw new Error(
+                            `Could not resolve entity type ${chalk.gray(
+                                type,
+                            )} for entity [${entity.id}]`,
+                        );
+                    }
+
+                    await sender.federateToUser(
+                        await entityCtor.fromJSON(entity),
+                        recipient,
+                    );
 
                     await job.log(
                         `✔ Finished federating entity [${entity.id}]`,

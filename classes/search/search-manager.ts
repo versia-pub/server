@@ -155,7 +155,7 @@ export class SonicSearchManager {
     private static getNthDatabaseAccountBatch(
         n: number,
         batchSize = 1000,
-    ): Promise<Record<string, string | Date>[]> {
+    ): Promise<Record<string, string | null | Date>[]> {
         return db.query.Users.findMany({
             offset: n * batchSize,
             limit: batchSize,

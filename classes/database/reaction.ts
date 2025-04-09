@@ -1,4 +1,3 @@
-import type { ReactionExtension } from "@versia/federation/types";
 import { Emoji, Instance, type Note, User, db } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -11,6 +10,7 @@ import {
     inArray,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
+import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { BaseInterface } from "./base.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {
@@ -165,7 +165,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
               );
     }
 
-    public isLocal(): boolean {
+    public get local(): boolean {
         return this.data.author.instanceId === null;
     }
 
@@ -173,24 +173,23 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         return !!this.data.emoji || !this.data.emojiText;
     }
 
-    public toVersia(): ReactionExtension {
-        if (!this.isLocal()) {
+    public toVersia(): VersiaEntities.Reaction {
+        if (!this.local) {
             throw new Error("Cannot convert a non-local reaction to Versia");
         }
 
-        return {
-            uri: this.getUri(config.http.base_url).toString(),
+        return new VersiaEntities.Reaction({
+            uri: this.getUri(config.http.base_url),
             type: "pub.versia:reactions/Reaction",
             author: User.getUri(
                 this.data.authorId,
                 this.data.author.uri ? new URL(this.data.author.uri) : null,
-            ).toString(),
+            ),
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.id,
-            object:
-                this.data.note.uri ??
-                new URL(`/notes/${this.data.noteId}`, config.http.base_url)
-                    .href,
+            object: this.data.note.uri
+                ? new URL(this.data.note.uri)
+                : new URL(`/notes/${this.data.noteId}`, config.http.base_url),
             content: this.hasCustomEmoji()
                 ? `:${this.data.emoji?.shortcode}:`
                 : this.data.emojiText || "",
@@ -205,20 +204,20 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                       },
                   }
                 : undefined,
-        };
+        });
     }
 
     public static async fromVersia(
-        reactionToConvert: ReactionExtension,
+        reactionToConvert: VersiaEntities.Reaction,
         author: User,
         note: Note,
     ): Promise<Reaction> {
-        if (author.isLocal()) {
+        if (author.local) {
             throw new Error("Cannot process a reaction from a local user");
         }
 
         const emojiEntity =
-            reactionToConvert.extensions?.["pub.versia:custom_emojis"]
+            reactionToConvert.data.extensions?.["pub.versia:custom_emojis"]
                 ?.emojis[0];
         const emoji = emojiEntity
             ? await Emoji.fetchFromRemote(
@@ -233,11 +232,11 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
         return Reaction.insert({
             id: randomUUIDv7(),
-            uri: reactionToConvert.uri,
+            uri: reactionToConvert.data.uri.href,
             authorId: author.id,
             noteId: note.id,
             emojiId: emoji ? emoji.id : null,
-            emojiText: emoji ? null : reactionToConvert.content,
+            emojiText: emoji ? null : reactionToConvert.data.content,
         });
     }
 }

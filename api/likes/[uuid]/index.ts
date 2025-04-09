@@ -1,6 +1,5 @@
 import { apiRoute, handleZodError } from "@/api";
 import { Status as StatusSchema } from "@versia/client/schemas";
-import { LikeExtension as LikeSchema } from "@versia/federation/schemas";
 import { Like, User } from "@versia/kit/db";
 import { Likes } from "@versia/kit/tables";
 import { and, eq, sql } from "drizzle-orm";
@@ -9,6 +8,7 @@ import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
+import { LikeSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
@@ -59,7 +59,7 @@ export default apiRoute((app) =>
 
             const liker = await User.fromId(like.data.likerId);
 
-            if (!liker || liker.isRemote()) {
+            if (!liker || liker.remote) {
                 throw ApiError.accountNotFound();
             }
 
