@@ -3,6 +3,7 @@ import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { type Note, User, db } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
+import { FederationRequester } from "@versia/sdk/http";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
@@ -222,10 +223,7 @@ export const findManyNotes = async (
  * @param text The text to parse mentions from.
  * @returns An array of users mentioned in the text.
  */
-export const parseTextMentions = async (
-    text: string,
-    author: User,
-): Promise<User[]> => {
+export const parseTextMentions = async (text: string): Promise<User[]> => {
     const mentionedPeople = [...text.matchAll(mentionValidator)];
     if (mentionedPeople.length === 0) {
         return [];
@@ -276,7 +274,7 @@ export const parseTextMentions = async (
 
     // Resolve remote mentions not in database
     for (const person of notFoundRemoteUsers) {
-        const url = await (await author.federationRequester).resolveWebFinger(
+        const url = await FederationRequester.resolveWebFinger(
             person[1] ?? "",
             person[2] ?? "",
         );

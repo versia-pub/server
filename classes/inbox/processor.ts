@@ -185,19 +185,19 @@ export class InboxProcessor {
                     await Note.fromVersia(n);
                 })
                 .on(VersiaEntities.Follow, (f) => {
-                    this.processFollowRequest(f);
+                    InboxProcessor.processFollowRequest(f);
                 })
                 .on(VersiaEntities.FollowAccept, (f) => {
-                    this.processFollowAccept(f);
+                    InboxProcessor.processFollowAccept(f);
                 })
                 .on(VersiaEntities.FollowReject, (f) => {
-                    this.processFollowReject(f);
+                    InboxProcessor.processFollowReject(f);
                 })
                 .on(VersiaEntities.Like, (l) => {
-                    this.processLikeRequest(l);
+                    InboxProcessor.processLikeRequest(l);
                 })
                 .on(VersiaEntities.Delete, (d) => {
-                    this.processDelete(d);
+                    InboxProcessor.processDelete(d);
                 })
                 .on(VersiaEntities.User, async (u) => {
                     await User.fromVersia(u);
@@ -216,7 +216,7 @@ export class InboxProcessor {
      * @param {VersiaFollow} follow - The Follow entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowRequest(
+    private static async processFollowRequest(
         follow: VersiaEntities.Follow,
     ): Promise<void> {
         const author = await User.resolve(follow.data.author);
@@ -264,7 +264,7 @@ export class InboxProcessor {
      * @param {VersiaFollowAccept} followAccept - The FollowAccept entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowAccept(
+    private static async processFollowAccept(
         followAccept: VersiaEntities.FollowAccept,
     ): Promise<void> {
         const author = await User.resolve(followAccept.data.author);
@@ -299,7 +299,7 @@ export class InboxProcessor {
      * @param {VersiaFollowReject} followReject - The FollowReject entity to process.
      * @returns {Promise<void>}
      */
-    private async processFollowReject(
+    private static async processFollowReject(
         followReject: VersiaEntities.FollowReject,
     ): Promise<void> {
         const author = await User.resolve(followReject.data.author);
@@ -334,7 +334,9 @@ export class InboxProcessor {
      * @param {VersiaDelete} delete_ - The Delete entity to process.
      * @returns {Promise<void>}
      */ // JS doesn't allow the use of `delete` as a variable name
-    public async processDelete(delete_: VersiaEntities.Delete): Promise<void> {
+    public static async processDelete(
+        delete_: VersiaEntities.Delete,
+    ): Promise<void> {
         const toDelete = delete_.data.deleted;
 
         const author = delete_.data.author
@@ -403,7 +405,9 @@ export class InboxProcessor {
      * @param {VersiaLikeExtension} like - The Like entity to process.
      * @returns {Promise<void>}
      */
-    private async processLikeRequest(like: VersiaEntities.Like): Promise<void> {
+    private static async processLikeRequest(
+        like: VersiaEntities.Like,
+    ): Promise<void> {
         const author = await User.resolve(like.data.author);
         const likedNote = await Note.resolve(like.data.liked);
 

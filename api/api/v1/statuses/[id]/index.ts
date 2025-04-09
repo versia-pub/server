@@ -242,7 +242,7 @@ export default apiRoute((app) => {
                 : undefined;
 
             const parsedMentions = statusText
-                ? await parseTextMentions(statusText, user)
+                ? await parseTextMentions(statusText)
                 : [];
 
             const parsedEmojis = statusText

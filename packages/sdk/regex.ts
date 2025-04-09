@@ -10,7 +10,7 @@ import {
     oneOrMore,
 } from "magic-regexp";
 
-export const semverRegex: RegExp = new RegExp(
+export const semverRegex = new RegExp(
     /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/gm,
 );
 
@@ -57,8 +57,8 @@ export const emojiRegex: RegExp = createRegExp(
 // This will accept a lot of stuff that isn't an ISO string
 // but ISO validation is incredibly complex so fuck it
 export const isISOString = (val: string | Date): boolean => {
-    const d = new Date(val);
-    return !Number.isNaN(d.valueOf());
+    const date = new Date(val);
+    return !Number.isNaN(date.valueOf());
 };
 
 export const ianaTimezoneRegex = /^(?:[A-Za-z]+(?:\/[A-Za-z_]+)+|UTC)$/;

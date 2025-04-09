@@ -347,13 +347,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         hostname: string,
     ): Promise<URL | null> {
         try {
-            return User.federationRequester.resolveWebFinger(
-                username,
-                hostname,
-            );
+            return FederationRequester.resolveWebFinger(username, hostname);
         } catch {
             try {
-                return User.federationRequester.resolveWebFinger(
+                return FederationRequester.resolveWebFinger(
                     username,
                     hostname,
                     "application/activity+json",
@@ -854,7 +851,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const user = await User.insert({
             id: randomUUIDv7(),
-            username: username,
+            username,
             displayName: username,
             password: options?.password
                 ? await bunPassword.hash(options.password)

@@ -158,7 +158,7 @@ export class FederationRequester {
      * Attempt to resolve a webfinger URL to a User
      * @returns {Promise<User | null>} The resolved User or null if not found
      */
-    public async resolveWebFinger(
+    public static async resolveWebFinger(
         username: string,
         hostname: string,
         contentType = "application/json",

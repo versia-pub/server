@@ -43,7 +43,7 @@ export default apiRoute((app) =>
             }),
             handleZodError,
         ),
-        // @ts-expect-error
+        // @ts-expect-error idk why this is happening and I don't care
         async (context) => {
             const { uuid } = context.req.valid("param");
 

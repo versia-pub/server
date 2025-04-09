@@ -8,6 +8,7 @@ import {
 import { getLogger } from "@logtape/logtape";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
+import { FederationRequester } from "@versia/sdk/http";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -84,13 +85,12 @@ export default apiRoute((app) =>
 
             if (config.federation.bridge) {
                 try {
-                    activityPubUrl =
-                        await User.federationRequester.resolveWebFinger(
-                            user.data.username,
-                            config.http.base_url.host,
-                            "application/activity+json",
-                            config.federation.bridge.url.origin,
-                        );
+                    activityPubUrl = await FederationRequester.resolveWebFinger(
+                        user.data.username,
+                        config.http.base_url.host,
+                        "application/activity+json",
+                        config.federation.bridge.url.origin,
+                    );
                 } catch (e) {
                     const error = e as ApiError;
 

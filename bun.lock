@@ -95,10 +95,6 @@
         "@badgateway/oauth2-client": "^2.4.2",
       },
     },
-    "packages/federation": {
-      "name": "@versia/sdk",
-      "version": "0.0.1",
-    },
     "packages/plugin-kit": {
       "name": "@versia/kit",
       "version": "0.0.0",
@@ -108,6 +104,10 @@
         "zod-to-json-schema": "^3.23.3",
         "zod-validation-error": "^3.3.0",
       },
+    },
+    "packages/sdk": {
+      "name": "@versia/sdk",
+      "version": "0.0.1",
     },
   },
   "trustedDependencies": [
@@ -574,7 +574,7 @@
 
     "@versia/kit": ["@versia/kit@workspace:packages/plugin-kit"],
 
-    "@versia/sdk": ["@versia/sdk@workspace:packages/federation"],
+    "@versia/sdk": ["@versia/sdk@workspace:packages/sdk"],
 
     "@vitejs/plugin-vue": ["@vitejs/plugin-vue@5.2.3", "", { "peerDependencies": { "vite": "^5.0.0 || ^6.0.0", "vue": "^3.2.25" } }, "sha512-IYSLEQj4LgZZuoVpdSUCw3dIynTWQgPlaRP6iAvMle4My0HdYwr5g5wQAfwOeHQBmYwEkqF70nRpSilr6PoUDg=="],
 
