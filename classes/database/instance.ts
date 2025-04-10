@@ -4,12 +4,12 @@ import { Instances } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";

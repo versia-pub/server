@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { randomString } from "@/math";
 import { Application } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
+import { randomString } from "@/math";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 

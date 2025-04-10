@@ -1,8 +1,8 @@
-import { apiRoute, auth, withUserParam } from "@/api";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { User } from "~/classes/database/user";
 import { ApiError } from "~/classes/errors/api-error";
 

@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { randomString } from "@/math";
 import { RolePermission } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { SignJWT } from "jose";
+import { randomString } from "@/math";
 import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 

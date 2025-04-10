@@ -1,8 +1,8 @@
-import { apiRoute } from "@/api";
 import { Rule as RuleSchema } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute } from "@/api";
 import { config } from "~/config.ts";
 
 export default apiRoute((app) =>

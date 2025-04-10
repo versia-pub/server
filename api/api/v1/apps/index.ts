@@ -1,5 +1,3 @@
-import { apiRoute, handleZodError, jsonOrForm } from "@/api";
-import { randomString } from "@/math";
 import {
     Application as ApplicationSchema,
     CredentialApplication as CredentialApplicationSchema,
@@ -9,6 +7,8 @@ import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, handleZodError, jsonOrForm } from "@/api";
+import { randomString } from "@/math";
 import { ApiError } from "~/classes/errors/api-error";
 import { rateLimit } from "~/middlewares/rate-limit";
 

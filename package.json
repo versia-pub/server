@@ -14,8 +14,14 @@
     },
     "icon": "https://cdn.versia.pub/branding/icon.svg",
     "license": "AGPL-3.0-or-later",
-    "keywords": ["federated", "activitypub", "bun"],
-    "workspaces": ["packages/*"],
+    "keywords": [
+        "federated",
+        "activitypub",
+        "bun"
+    ],
+    "workspaces": [
+        "packages/*"
+    ],
     "maintainers": [
         {
             "email": "contact@cpluspatch.com",
@@ -53,7 +59,7 @@
         "sharp"
     ],
     "devDependencies": {
-        "@biomejs/biome": "^1.9.4",
+        "@biomejs/biome": "2.0.0-beta.1",
         "@types/bun": "^1.2.9",
         "@types/html-to-text": "^9.0.4",
         "@types/markdown-it-container": "^2.0.10",

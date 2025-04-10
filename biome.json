@@ -1,31 +1,16 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-    "organizeImports": {
-        "enabled": true
+    "$schema": "https://biomejs.dev/schemas/2.0.0-beta.1/schema.json",
+    "assist": {
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
     },
     "linter": {
         "enabled": true,
         "rules": {
-            "all": true,
-            "correctness": {
-                "noNodejsModules": "off"
-            },
-            "performance": {
-                "useTopLevelRegex": "off"
-            },
-            "complexity": {
-                "noExcessiveCognitiveComplexity": "off"
-            },
-            "suspicious": {
-                "noMisplacedAssertion": "off",
-                "noConsole": "off"
-            },
             "style": {
-                "noDefaultExport": "off",
-                "noParameterProperties": "off",
-                "noNamespaceImport": "off",
-                "useFilenamingConvention": "off",
-                "useDefaultSwitchClause": "off",
                 "useNamingConvention": {
                     "level": "warn",
                     "options": {
@@ -57,7 +42,32 @@
                             }
                         ]
                     }
-                }
+                },
+                "useLiteralEnumMembers": "error",
+                "noCommaOperator": "error",
+                "useNodejsImportProtocol": "error",
+                "useAsConstAssertion": "error",
+                "useNumericLiterals": "error",
+                "useEnumInitializers": "error",
+                "useSelfClosingElements": "error",
+                "useConst": "error",
+                "useSingleVarDeclarator": "error",
+                "noUnusedTemplateLiteral": "error",
+                "useNumberNamespace": "error",
+                "noInferrableTypes": "error",
+                "useExponentiationOperator": "error",
+                "useTemplate": "error",
+                "noParameterAssign": "error",
+                "noNonNullAssertion": "error",
+                "useDefaultParameterLast": "error",
+                "noArguments": "error",
+                "useImportType": "error",
+                "useExportType": "error",
+                "noUselessElse": "error",
+                "useShorthandFunctionType": "error"
+            },
+            "correctness": {
+                "useImportExtensions": "error"
             },
             "nursery": {
                 "noDuplicateElseIf": "warn",
@@ -79,12 +89,19 @@
                 "useExplicitType": "warn",
                 "useGuardForIn": "warn",
                 "useTrimStartEnd": "warn"
+            },
+            "complexity": {
+                "noExcessiveCognitiveComplexity": "off"
+            },
+            "suspicious": {
+                "noMisplacedAssertion": "off",
+                "noConsole": "off"
             }
         }
     },
     "overrides": [
         {
-            "include": ["packages/client/versia/client.ts"],
+            "includes": ["**/packages/client/versia/client.ts"],
             "linter": {
                 "rules": {
                     "style": {
@@ -103,6 +120,12 @@
         "globals": ["HTMLRewriter", "BufferEncoding"]
     },
     "files": {
-        "ignore": ["node_modules", "dist", "cache", "build"]
+        "includes": [
+            "**",
+            "!**/node_modules",
+            "!**/dist",
+            "!**/cache",
+            "!**/build"
+        ]
     }
 }

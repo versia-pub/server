@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
-import { type NodePgDatabase, drizzle } from "drizzle-orm/node-postgres";
+import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { withReplicas } from "drizzle-orm/pg-core";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { Pool } from "pg";

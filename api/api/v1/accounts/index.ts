@@ -1,5 +1,3 @@
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
-import { tempmailDomains } from "@/tempmail";
 import { zBoolean } from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -8,6 +6,8 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
+import { tempmailDomains } from "@/tempmail";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 import { rateLimit } from "~/middlewares/rate-limit";

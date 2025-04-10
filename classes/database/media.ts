@@ -1,19 +1,19 @@
 import { join } from "node:path";
-import { mimeLookup } from "@/content_types.ts";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Medias } from "@versia/kit/tables";
-import { S3Client, SHA256, randomUUIDv7, write } from "bun";
+import { randomUUIDv7, S3Client, SHA256, write } from "bun";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import sharp from "sharp";
 import type { z } from "zod";
+import { mimeLookup } from "@/content_types.ts";
 import { MediaBackendType } from "~/classes/config/schema.ts";
 import { config } from "~/config.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";

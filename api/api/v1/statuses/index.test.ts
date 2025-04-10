@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Status } from "@versia/client/schemas";
-import { Media, db } from "@versia/kit/db";
+import { db, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { eq } from "drizzle-orm";

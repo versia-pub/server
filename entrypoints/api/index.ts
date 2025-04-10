@@ -1,7 +1,7 @@
 import cluster from "node:cluster";
+import { Youch } from "youch";
 import { sentry } from "@/sentry";
 import { createServer } from "@/server";
-import { Youch } from "youch";
 import { appFactory } from "~/app";
 import { config } from "~/config.ts";
 

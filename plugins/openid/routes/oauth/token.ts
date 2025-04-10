@@ -1,10 +1,10 @@
-import { handleZodError, jsonOrForm } from "@/api";
 import { Application, Token } from "@versia/kit/db";
 import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { handleZodError, jsonOrForm } from "@/api";
 import type { PluginType } from "../../index.ts";
 
 export default (plugin: PluginType): void => {

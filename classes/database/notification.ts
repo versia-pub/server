@@ -1,13 +1,13 @@
 import type { Notification as NotificationSchema } from "@versia/client/schemas";
-import { Note, User, db } from "@versia/kit/db";
+import { db, Note, User } from "@versia/kit/db";
 import { Notifications } from "@versia/kit/tables";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
 import {

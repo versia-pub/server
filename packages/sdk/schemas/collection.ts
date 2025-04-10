@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { url, u64 } from "./common.ts";
+import { u64, url } from "./common.ts";
 
 export const CollectionSchema = z.strictObject({
     author: url.nullable(),

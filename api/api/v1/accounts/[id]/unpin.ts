@@ -1,9 +1,9 @@
-import { apiRoute, auth, withUserParam } from "@/api";
 import { Relationship as RelationshipSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute, auth, withUserParam } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

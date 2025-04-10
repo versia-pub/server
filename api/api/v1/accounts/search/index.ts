@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
@@ -8,6 +7,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import stringComparison from "string-comparison";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { rateLimit } from "~/middlewares/rate-limit";
 

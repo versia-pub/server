@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { AccountWarning } from "./account-warning.ts";
 import { Account } from "./account.ts";
+import { AccountWarning } from "./account-warning.ts";
 import { Id } from "./common.ts";
 import { Report } from "./report.ts";
 import { Status } from "./status.ts";

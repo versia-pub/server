@@ -1,8 +1,8 @@
-import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import { RolePermission } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

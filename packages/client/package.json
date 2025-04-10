@@ -32,7 +32,9 @@
         }
     ],
     "description": "Client for Mastodon and Versia API",
-    "categories": ["Other"],
+    "categories": [
+        "Other"
+    ],
     "type": "module",
     "engines": {
         "bun": ">=1.2.5"
@@ -52,7 +54,13 @@
         "url": "https://opencollective.com/lysand"
     },
     "homepage": "https://versia.pub",
-    "keywords": ["versia", "mastodon", "api", "typescript", "rest"],
+    "keywords": [
+        "versia",
+        "mastodon",
+        "api",
+        "typescript",
+        "rest"
+    ],
     "packageManager": "bun@1.2.5",
     "dependencies": {
         "@badgateway/oauth2-client": "^2.4.2"

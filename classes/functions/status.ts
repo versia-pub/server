@@ -1,7 +1,5 @@
-import { mentionValidator } from "@/api";
-import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
-import { type Note, User, db } from "@versia/kit/db";
+import { db, type Note, User } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
 import { FederationRequester } from "@versia/sdk/http";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
@@ -18,6 +16,8 @@ import {
 import MarkdownIt from "markdown-it";
 import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
+import { mentionValidator } from "@/api";
+import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import { config } from "~/config.ts";
 import type * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import {

@@ -1,8 +1,8 @@
-import { configureLoggers } from "@/loggers";
-import { connection } from "@/redis.ts";
 import { getLogger } from "@logtape/logtape";
 import { Note } from "@versia/kit/db";
 import chalk from "chalk";
+import { configureLoggers } from "@/loggers";
+import { connection } from "@/redis.ts";
 import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
 import { searchManager } from "../../classes/search/search-manager.ts";

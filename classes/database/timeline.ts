@@ -1,5 +1,5 @@
 import { Notes, Notifications, Users } from "@versia/kit/tables";
-import { type SQL, gt } from "drizzle-orm";
+import { gt, type SQL } from "drizzle-orm";
 import { config } from "~/config.ts";
 import { Note } from "./note.ts";
 import { Notification } from "./notification.ts";

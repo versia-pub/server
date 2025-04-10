@@ -1,5 +1,4 @@
-import { sentry } from "@/sentry";
-import { type Logger, getLogger } from "@logtape/logtape";
+import { getLogger, type Logger } from "@logtape/logtape";
 import { type Instance, Like, Note, Relationship, User } from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
@@ -8,6 +7,7 @@ import chalk from "chalk";
 import { eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { isValidationError } from "zod-validation-error";
+import { sentry } from "@/sentry";
 import { config } from "~/config.ts";
 import { verify } from "~/packages/sdk/crypto.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";

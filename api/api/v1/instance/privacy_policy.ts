@@ -1,7 +1,7 @@
-import { apiRoute } from "@/api";
 import { PrivacyPolicy as PrivacyPolicySchema } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute } from "@/api";
 import { markdownParse } from "~/classes/functions/status";
 import { config } from "~/config.ts";
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isISOString } from "../../regex.ts";
-import { url, u64 } from "../common.ts";
+import { u64, url } from "../common.ts";
 import { TextContentFormatSchema } from "../contentformat.ts";
 import { EntitySchema } from "../entity.ts";
 

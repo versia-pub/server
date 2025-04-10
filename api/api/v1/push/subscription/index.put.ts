@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import {
     WebPushSubscriptionInput,
     WebPushSubscription as WebPushSubscriptionSchema,
@@ -7,6 +6,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

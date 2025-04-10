@@ -1,14 +1,14 @@
-import { apiRoute, handleZodError } from "@/api";
 import { Application, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";
+import { setCookie } from "hono/cookie";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
-import { setCookie } from "hono/cookie";
 import { SignJWT } from "jose";
 import { z } from "zod";
+import { apiRoute, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 

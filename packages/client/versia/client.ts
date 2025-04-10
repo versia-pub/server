@@ -1,4 +1,3 @@
-// biome-ignore lint/correctness/noUndeclaredDependencies: biome is looking at the wrong package.json
 import { OAuth2Client } from "@badgateway/oauth2-client";
 import type { z } from "zod";
 import type { Account } from "../schemas/account.ts";

@@ -1,7 +1,7 @@
-import { apiRoute } from "@/api";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { describeRoute } from "hono-openapi";
+import { apiRoute } from "@/api";
 
 export default apiRoute((app) =>
     app.post(

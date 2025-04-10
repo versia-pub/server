@@ -1,8 +1,8 @@
-import { htmlToText } from "@/content_types.ts";
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
 import { Queue } from "bullmq";
 import { Worker } from "bullmq";
 import { sendNotification } from "web-push";
+import { htmlToText } from "@/content_types.ts";
 import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 

@@ -1,5 +1,3 @@
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
-import { sanitizedHtmlStrip } from "@/sanitization";
 import {
     Attachment as AttachmentSchema,
     PollOption,
@@ -13,6 +11,8 @@ import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
+import { sanitizedHtmlStrip } from "@/sanitization";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml, parseTextMentions } from "~/classes/functions/status";
 import { config } from "~/config.ts";

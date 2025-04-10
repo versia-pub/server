@@ -1,6 +1,6 @@
-import { apiRoute, auth } from "@/api";
 import { RolePermission } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
+import { apiRoute, auth } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

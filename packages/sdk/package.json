@@ -32,7 +32,9 @@
         }
     ],
     "description": "Versia Federation SDK",
-    "categories": ["Other"],
+    "categories": [
+        "Other"
+    ],
     "type": "module",
     "engines": {
         "bun": ">=1.2.5"
@@ -64,6 +66,10 @@
         "url": "https://opencollective.com/lysand"
     },
     "homepage": "https://versia.pub",
-    "keywords": ["versia", "typescript", "sdk"],
+    "keywords": [
+        "versia",
+        "typescript",
+        "sdk"
+    ],
     "packageManager": "bun@1.2.5"
 }

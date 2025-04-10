@@ -1,7 +1,7 @@
 import type { Hono, MiddlewareHandler } from "hono";
 import { createMiddleware } from "hono/factory";
 import type { z } from "zod";
-import { type ZodError, fromZodError } from "zod-validation-error";
+import { fromZodError, type ZodError } from "zod-validation-error";
 import type { HonoEnv } from "~/types/api";
 import type { ServerHooks } from "./hooks.ts";
 

@@ -1,6 +1,6 @@
-import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
+import { sentry } from "@/sentry";
 import { getDeliveryWorker } from "~/classes/queues/delivery";
 import { getFetchWorker } from "~/classes/queues/fetch";
 import { getInboxWorker } from "~/classes/queues/inbox";

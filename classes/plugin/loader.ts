@@ -1,11 +1,11 @@
 import { readdir } from "node:fs/promises";
-import { type Logger, getLogger } from "@logtape/logtape";
+import { getLogger, type Logger } from "@logtape/logtape";
 import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { Hono } from "hono";
 import type { ZodTypeAny } from "zod";
-import { type ValidationError, fromZodError } from "zod-validation-error";
+import { fromZodError, type ValidationError } from "zod-validation-error";
 import { config } from "~/config.ts";
 import { Plugin } from "~/packages/plugin-kit/plugin";
 import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";

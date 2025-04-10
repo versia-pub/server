@@ -1,13 +1,13 @@
-import { Emoji, Instance, type Note, User, db } from "@versia/kit/db";
+import { db, Emoji, Instance, type Note, User } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";

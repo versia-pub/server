@@ -1,4 +1,3 @@
-import { apiRoute, auth } from "@/api";
 import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji } from "@versia/kit/db";
@@ -7,6 +6,7 @@ import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

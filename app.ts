@@ -1,19 +1,19 @@
 import { join } from "node:path";
-import { applyToHono } from "@/bull-board.ts";
-import { configureLoggers } from "@/loggers";
-import { sentry } from "@/sentry";
 /* import { prometheus } from "@hono/prometheus"; */
 import { getLogger } from "@logtape/logtape";
 import { apiReference } from "@scalar/hono-api-reference";
 import chalk from "chalk";
 import { Hono } from "hono";
-import { openAPISpecs } from "hono-openapi";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
+import { openAPISpecs } from "hono-openapi";
 import { Youch } from "youch";
+import { applyToHono } from "@/bull-board.ts";
+import { configureLoggers } from "@/loggers";
+import { sentry } from "@/sentry";
 import { config } from "~/config.ts";
 import pkg from "~/package.json" with { type: "application/json" };
 import { ApiError } from "./classes/errors/api-error.ts";

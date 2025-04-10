@@ -1,11 +1,11 @@
-import { auth, handleZodError } from "@/api";
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { type SQL, eq } from "@versia/kit/drizzle";
+import { eq, type SQL } from "@versia/kit/drizzle";
 import { OpenIdAccounts } from "@versia/kit/tables";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { auth, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 

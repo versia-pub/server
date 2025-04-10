@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError } from "@/api";
 import {
     Marker as MarkerSchema,
     Notification as NotificationSchema,
@@ -8,10 +7,11 @@ import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Markers } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
-import { type SQL, and, eq } from "drizzle-orm";
+import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 const MarkerResponseSchema = z.object({

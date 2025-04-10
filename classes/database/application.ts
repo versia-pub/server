@@ -2,15 +2,15 @@ import type {
     Application as ApplicationSchema,
     CredentialApplication,
 } from "@versia/client/schemas";
-import { Token, db } from "@versia/kit/db";
+import { db, Token } from "@versia/kit/db";
 import { Applications } from "@versia/kit/tables";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
 import { BaseInterface } from "./base.ts";

@@ -1,23 +1,23 @@
 import {
-    apiRoute,
-    auth,
-    handleZodError,
-    parseUserAddress,
-    userAddressValidator,
-} from "@/api";
-import {
     Account as AccountSchema,
     Id,
     Search as SearchSchema,
     zBoolean,
 } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
-import { Note, User, db } from "@versia/kit/db";
+import { db, Note, User } from "@versia/kit/db";
 import { Instances, Notes, Users } from "@versia/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    parseUserAddress,
+    userAddressValidator,
+} from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";

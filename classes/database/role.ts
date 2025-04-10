@@ -1,20 +1,21 @@
 import type { Role as RoleSchema } from "@versia/client/schemas";
 import type { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { RoleToUsers, Roles } from "@versia/kit/tables";
+import { Roles, RoleToUsers } from "@versia/kit/tables";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     and,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
 import { config } from "~/config.ts";
 import { ProxiableUrl } from "../media/url.ts";
 import { BaseInterface } from "./base.ts";
+
 type RoleType = InferSelectModel<typeof Roles>;
 
 export class Role extends BaseInterface<typeof Roles> {

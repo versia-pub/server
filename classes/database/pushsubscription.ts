@@ -1,13 +1,13 @@
 import type { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client/schemas";
-import { type Token, type User, db } from "@versia/kit/db";
+import { db, type Token, type User } from "@versia/kit/db";
 import { PushSubscriptions, Tokens } from "@versia/kit/tables";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
 import { BaseInterface } from "./base.ts";

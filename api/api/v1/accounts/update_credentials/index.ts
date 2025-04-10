@@ -1,6 +1,3 @@
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
-import { mergeAndDeduplicate } from "@/lib";
-import { sanitizedHtmlStrip } from "@/sanitization";
 import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media, User } from "@versia/kit/db";
@@ -9,6 +6,9 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
+import { mergeAndDeduplicate } from "@/lib";
+import { sanitizedHtmlStrip } from "@/sanitization";
 import { ApiError } from "~/classes/errors/api-error";
 import { contentToHtml } from "~/classes/functions/status";
 import { config } from "~/config.ts";

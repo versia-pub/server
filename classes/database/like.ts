@@ -6,13 +6,13 @@ import {
     type Users,
 } from "@versia/kit/tables";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     and,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";

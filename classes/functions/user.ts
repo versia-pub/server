@@ -1,12 +1,12 @@
 import {
     type Application,
+    db,
     type Emoji,
     type Instance,
     type Media,
     type Role,
     type Token,
     type User,
-    db,
 } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, type SQL, sql } from "drizzle-orm";

@@ -1,8 +1,8 @@
-import { apiRoute, handleZodError } from "@/api";
 import { file as bunFile } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

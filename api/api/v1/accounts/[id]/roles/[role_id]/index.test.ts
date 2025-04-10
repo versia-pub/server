@@ -3,6 +3,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { generateClient, getTestUsers } from "~/tests/utils";
+
 const { users, deleteUsers } = await getTestUsers(2);
 let role: Role;
 let higherPriorityRole: Role;

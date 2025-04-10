@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError, withUserParam } from "@/api";
 import { Account as AccountSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
@@ -7,6 +6,7 @@ import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, withUserParam } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

@@ -1,15 +1,15 @@
 import { getLogger } from "@logtape/logtape";
 import type { RolePermission } from "@versia/client/schemas";
-import { Application, Emoji, Note, Token, User, db } from "@versia/kit/db";
+import { Application, db, Emoji, Note, Token, User } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
 import { extractParams, verifySolution } from "altcha-lib";
 import { SHA256 } from "bun";
 import chalk from "chalk";
-import { type SQL, eq } from "drizzle-orm";
+import { eq, type SQL } from "drizzle-orm";
 import type { Context, Hono, MiddlewareHandler } from "hono";
-import { validator } from "hono-openapi/zod";
 import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
+import { validator } from "hono-openapi/zod";
 import {
     anyOf,
     caseInsensitive,

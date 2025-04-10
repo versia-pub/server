@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { randomString } from "@/math";
 import { db } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq } from "drizzle-orm";
+import { randomString } from "@/math";
 import { generateClient, getSolvedChallenge } from "~/tests/utils";
 
 const username = randomString(10, "hex");

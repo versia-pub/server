@@ -1,6 +1,5 @@
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { type Root, defineCommand } from "clerc";
+import { defineCommand, type Root } from "clerc";
 import ora from "ora";
 import {
     SonicIndexType,

@@ -4,7 +4,7 @@
  */
 
 import { getLogger } from "@logtape/logtape";
-import { Note, User, db } from "@versia/kit/db";
+import { db, Note, User } from "@versia/kit/db";
 import type { SQL, ValueOrArray } from "drizzle-orm";
 import {
     Ingest as SonicChannelIngest,

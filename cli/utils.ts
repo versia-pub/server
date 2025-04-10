@@ -1,5 +1,5 @@
-import { parseUserAddress } from "@/api";
 import { and, eq, isNull } from "drizzle-orm";
+import { parseUserAddress } from "@/api";
 import { Instance } from "~/classes/database/instance";
 import { User } from "~/classes/database/user";
 import { Users } from "~/drizzle/schema";

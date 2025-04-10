@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError } from "@/api";
 import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
@@ -8,6 +7,7 @@ import { Relationship, User } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

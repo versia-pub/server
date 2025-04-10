@@ -1,8 +1,8 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
 import { StatusSource as StatusSourceSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

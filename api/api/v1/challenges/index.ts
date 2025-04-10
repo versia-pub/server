@@ -1,8 +1,8 @@
-import { apiRoute, auth } from "@/api";
-import { generateChallenge } from "@/challenges";
 import { Challenge } from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute, auth } from "@/api";
+import { generateChallenge } from "@/challenges";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 

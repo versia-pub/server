@@ -1,3 +1,8 @@
+import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
+import { RolePermission } from "@versia/client/schemas";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import {
     apiRoute,
     auth,
@@ -6,11 +11,6 @@ import {
     withEmojiParam,
 } from "@/api";
 import { mimeLookup } from "@/content_types";
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 

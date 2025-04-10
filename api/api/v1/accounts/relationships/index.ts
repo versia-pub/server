@@ -1,4 +1,3 @@
-import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
@@ -9,6 +8,7 @@ import { Relationship } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { rateLimit } from "~/middlewares/rate-limit";
 

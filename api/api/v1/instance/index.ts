@@ -1,4 +1,3 @@
-import { apiRoute } from "@/api";
 import { InstanceV1 as InstanceV1Schema } from "@versia/client/schemas";
 import { Instance, Note, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -6,6 +5,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import type { z } from "zod";
+import { apiRoute } from "@/api";
 import { markdownParse } from "~/classes/functions/status";
 import type { ProxiableUrl } from "~/classes/media/url";
 import { config } from "~/config.ts";

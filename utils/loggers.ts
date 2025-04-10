@@ -2,11 +2,11 @@ import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { getRotatingFileSink } from "@logtape/file";
 import {
-    type LogLevel,
-    type LogRecord,
     configure,
     getConsoleSink,
     getLevelFilter,
+    type LogLevel,
+    type LogRecord,
 } from "@logtape/logtape";
 import chalk from "chalk";
 import { config } from "~/config.ts";

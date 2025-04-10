@@ -5,7 +5,7 @@ import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { z } from "zod";
-import { url, keyPair, sensitiveString } from "~/classes/config/schema.ts";
+import { keyPair, sensitiveString, url } from "~/classes/config/schema.ts";
 import { ApiError } from "~/classes/errors/api-error.ts";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";

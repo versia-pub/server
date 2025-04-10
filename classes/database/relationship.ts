@@ -3,13 +3,13 @@ import { db } from "@versia/kit/db";
 import { Relationships } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
-    type InferInsertModel,
-    type InferSelectModel,
-    type SQL,
     and,
     desc,
     eq,
+    type InferInsertModel,
+    type InferSelectModel,
     inArray,
+    type SQL,
 } from "drizzle-orm";
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";

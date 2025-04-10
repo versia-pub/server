@@ -1,4 +1,3 @@
-import { handleZodError } from "@/api.ts";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -11,6 +10,7 @@ import {
     processDiscoveryResponse,
 } from "oauth4webapi";
 import { z } from "zod";
+import { handleZodError } from "@/api.ts";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 

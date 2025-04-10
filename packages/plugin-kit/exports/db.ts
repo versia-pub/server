@@ -1,16 +1,15 @@
-// biome-ignore lint/performance/noBarrelFile: <explanation>
-export { User } from "~/classes/database/user.ts";
-export { Role } from "~/classes/database/role.ts";
-export { Media } from "~/classes/database/media";
+export { Application } from "~/classes/database/application.ts";
 export { Emoji } from "~/classes/database/emoji.ts";
 export { Instance } from "~/classes/database/instance.ts";
-export { Note } from "~/classes/database/note.ts";
-export { Timeline } from "~/classes/database/timeline.ts";
-export { Application } from "~/classes/database/application.ts";
-export { db } from "~/drizzle/db.ts";
-export { Relationship } from "~/classes/database/relationship.ts";
 export { Like } from "~/classes/database/like.ts";
-export { Token } from "~/classes/database/token.ts";
+export { Media } from "~/classes/database/media";
+export { Note } from "~/classes/database/note.ts";
 export { Notification } from "~/classes/database/notification.ts";
-export { Reaction } from "~/classes/database/reaction.ts";
 export { PushSubscription } from "~/classes/database/pushsubscription.ts";
+export { Reaction } from "~/classes/database/reaction.ts";
+export { Relationship } from "~/classes/database/relationship.ts";
+export { Role } from "~/classes/database/role.ts";
+export { Timeline } from "~/classes/database/timeline.ts";
+export { Token } from "~/classes/database/token.ts";
+export { User } from "~/classes/database/user.ts";
+export { db } from "~/drizzle/db.ts";

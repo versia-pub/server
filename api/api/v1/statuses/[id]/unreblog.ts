@@ -1,4 +1,3 @@
-import { apiRoute, auth, withNoteParam } from "@/api";
 import { Status as StatusSchema } from "@versia/client/schemas";
 import { RolePermission } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
@@ -6,6 +5,7 @@ import { Notes } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
+import { apiRoute, auth, withNoteParam } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 
 export default apiRoute((app) =>

@@ -1,4 +1,3 @@
-import { apiRoute, handleZodError } from "@/api";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { password as bunPassword } from "bun";
@@ -7,7 +6,9 @@ import type { Context } from "hono";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, handleZodError } from "@/api";
 import { config } from "~/config.ts";
+
 const returnError = (
     context: Context,
     token: string,

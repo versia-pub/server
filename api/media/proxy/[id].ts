@@ -1,9 +1,9 @@
-import { apiRoute, handleZodError } from "@/api";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
 import { proxy } from "hono/proxy";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 

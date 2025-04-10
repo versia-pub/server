@@ -1,8 +1,8 @@
-import { sentry } from "@/sentry";
 import { getLogger } from "@logtape/logtape";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
+import { sentry } from "@/sentry";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 

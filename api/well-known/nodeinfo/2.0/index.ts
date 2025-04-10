@@ -1,8 +1,8 @@
-import { apiRoute } from "@/api";
 import { Note, User } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
+import { apiRoute } from "@/api";
 import { config } from "~/config.ts";
 import manifest from "~/package.json";
 

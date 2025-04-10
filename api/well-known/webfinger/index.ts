@@ -1,10 +1,3 @@
-import {
-    apiRoute,
-    handleZodError,
-    idValidator,
-    parseUserAddress,
-    webfingerMention,
-} from "@/api";
 import { getLogger } from "@logtape/logtape";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
@@ -13,6 +6,13 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
+import {
+    apiRoute,
+    handleZodError,
+    idValidator,
+    parseUserAddress,
+    webfingerMention,
+} from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
 import { WebFingerSchema } from "~/packages/sdk/schemas";
