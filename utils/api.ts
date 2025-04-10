@@ -421,7 +421,9 @@ async function parseFormData(context: Context): Promise<{
     const formData = await context.req.formData();
     const urlparams = new URLSearchParams();
     const files = new Map<string, File>();
-    for (const [key, value] of [...formData.entries()]) {
+    for (const [key, value] of [
+        ...(formData.entries() as IterableIterator<[string, string | File]>),
+    ]) {
         if (Array.isArray(value)) {
             for (const val of value) {
                 urlparams.append(key, val);
