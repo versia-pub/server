@@ -93,12 +93,16 @@
       "version": "0.2.0-alpha.1",
       "dependencies": {
         "@badgateway/oauth2-client": "^2.4.2",
+        "iso-639-1": "^3.1.5",
+        "zod": "^3.24.2",
       },
     },
     "packages/plugin-kit": {
       "name": "@versia/kit",
       "version": "0.0.0",
       "dependencies": {
+        "drizzle-orm": "^0.41.0",
+        "hono": "^4.7.6",
         "mitt": "^3.0.1",
         "zod": "^3.23.8",
         "zod-to-json-schema": "^3.23.3",
@@ -108,6 +112,11 @@
     "packages/sdk": {
       "name": "@versia/sdk",
       "version": "0.0.1",
+      "dependencies": {
+        "magic-regexp": "^0.9.0",
+        "mime-types": "^3.0.1",
+        "zod": "^3.24.2",
+      },
     },
   },
   "trustedDependencies": [

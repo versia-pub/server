@@ -499,7 +499,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             await note.author.notify("favourite", this, note);
         } else if (this.local && note.author.remote) {
             // Federate the like
-            this.federateToFollowers(newLike.toVersia());
+            await this.federateToFollowers(newLike.toVersia());
         }
 
         return newLike;
@@ -528,7 +528,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             await likeToDelete.clearRelatedNotifications();
         } else if (this.local && note.author.remote) {
             // User is local, federate the delete
-            this.federateToFollowers(likeToDelete.unlikeToVersia(this));
+            await this.federateToFollowers(likeToDelete.unlikeToVersia(this));
         }
     }
 

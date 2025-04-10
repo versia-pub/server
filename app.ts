@@ -27,6 +27,7 @@ import { routes } from "./routes.ts";
 import type { ApiRouteExports, HonoEnv } from "./types/api.ts";
 // Extends Zod with OpenAPI schema generation
 import "zod-openapi/extend";
+import { cwd } from "node:process";
 
 export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     await configureLoggers();
@@ -121,7 +122,7 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     const loader = new PluginLoader();
 
     const plugins = await loader.loadPlugins(
-        join(process.cwd(), "plugins"),
+        join(cwd(), "plugins"),
         config.plugins?.autoload ?? true,
         config.plugins?.overrides.enabled,
         config.plugins?.overrides.disabled,

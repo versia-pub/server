@@ -1,3 +1,4 @@
+import process from "node:process";
 import { getLogger } from "@logtape/logtape";
 import chalk from "chalk";
 import { sentry } from "@/sentry";

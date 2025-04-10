@@ -52,7 +52,7 @@ const isConvertible = (
  */
 const extractFilenameFromPath = (path: string): string => {
     const pathParts = path.split(/(?<!\\)\//);
-    return pathParts[pathParts.length - 1];
+    return pathParts.at(-1) as string;
 };
 
 /**

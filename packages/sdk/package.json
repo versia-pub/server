@@ -71,5 +71,10 @@
         "typescript",
         "sdk"
     ],
-    "packageManager": "bun@1.2.5"
+    "packageManager": "bun@1.2.5",
+    "dependencies": {
+        "magic-regexp": "^0.9.0",
+        "mime-types": "^3.0.1",
+        "zod": "^3.24.2"
+    }
 }

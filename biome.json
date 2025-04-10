@@ -45,6 +45,23 @@
                 },
                 "useLiteralEnumMembers": "error",
                 "noCommaOperator": "error",
+                "noNegationElse": "error",
+                "noYodaExpression": "error",
+                "useBlockStatements": "error",
+                "useCollapsedElseIf": "error",
+                "useConsistentArrayType": {
+                    "level": "error",
+                    "options": {
+                        "syntax": "shorthand"
+                    }
+                },
+                "useConsistentBuiltinInstantiation": "error",
+                "useExplicitLengthCheck": "error",
+                "useForOf": "error",
+                "useNodeAssertStrict": "error",
+                "useShorthandAssign": "error",
+                "useThrowNewError": "error",
+                "useThrowOnlyError": "error",
                 "useNodejsImportProtocol": "error",
                 "useAsConstAssertion": "error",
                 "useNumericLiterals": "error",
@@ -67,16 +84,39 @@
                 "useShorthandFunctionType": "error"
             },
             "correctness": {
-                "useImportExtensions": "error"
+                "useImportExtensions": "error",
+                "noConstantMathMinMaxClamp": "error",
+                "noUndeclaredDependencies": "error",
+                "noUnusedFunctionParameters": "error",
+                "noUnusedImports": "error",
+                "noUnusedPrivateClassMembers": "error",
+                "useArrayLiterals": "error"
             },
             "nursery": {
+                "noBitwiseOperators": "error",
+                "noConstantBinaryExpression": "error",
+                "noFloatingPromises": "error",
+                "noGlobalDirnameFilename": "error",
+                "noOctalEscape": "error",
+                "noProcessEnv": "error",
                 "noDuplicateElseIf": "warn",
+                "noProcessGlobal": "warn",
+                "noTsIgnore": "warn",
+                "useAtIndex": "warn",
+                "useCollapsedIf": "warn",
+                "useConsistentObjectDefinition": {
+                    "level": "warn",
+                    "options": {
+                        "syntax": "shorthand"
+                    }
+                },
                 "useConsistentMemberAccessibility": {
                     "level": "warn",
                     "options": {
                         "accessibility": "explicit"
                     }
                 },
+                "useParseIntRadix": "warn",
                 "noCommonJs": "warn",
                 "noDynamicNamespaceImportAccess": "warn",
                 "noExportedImports": "warn",
@@ -91,11 +131,21 @@
                 "useTrimStartEnd": "warn"
             },
             "complexity": {
-                "noExcessiveCognitiveComplexity": "off"
+                "noForEach": "error",
+                "noUselessStringConcat": "error",
+                "useDateNow": "error",
+                "useSimplifiedLogicExpression": "error",
+                "useWhile": "error"
             },
             "suspicious": {
-                "noMisplacedAssertion": "off",
-                "noConsole": "off"
+                "noDuplicateTestHooks": "error",
+                "noEmptyBlockStatements": "error",
+                "noEvolvingTypes": "error",
+                "noExportsInTest": "error",
+                "noVar": "error",
+                "useAwait": "error",
+                "useErrorMessage": "error",
+                "useNumberToFixedDigitsArgument": "error"
             }
         }
     },

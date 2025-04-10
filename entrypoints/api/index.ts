@@ -1,4 +1,5 @@
 import cluster from "node:cluster";
+import process from "node:process";
 import { Youch } from "youch";
 import { sentry } from "@/sentry";
 import { createServer } from "@/server";

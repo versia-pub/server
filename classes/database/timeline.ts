@@ -141,11 +141,11 @@ export class Timeline<Type extends Note | User | Notification> {
 
         if (notes.length >= (limit ?? 20)) {
             const objectAfter = await Note.fromSql(
-                gt(Notes.id, notes[notes.length - 1].data.id),
+                gt(Notes.id, notes.at(-1)?.data.id ?? ""),
             );
             if (objectAfter) {
                 linkHeader.push(
-                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${notes[notes.length - 1].data.id}>; rel="next"`,
+                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${notes.at(-1)?.data.id}>; rel="next"`,
                 );
             }
         }
@@ -169,11 +169,11 @@ export class Timeline<Type extends Note | User | Notification> {
 
         if (users.length >= (limit ?? 20)) {
             const objectAfter = await User.fromSql(
-                gt(Users.id, users[users.length - 1].id),
+                gt(Users.id, users.at(-1)?.id ?? ""),
             );
             if (objectAfter) {
                 linkHeader.push(
-                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${users[users.length - 1].id}>; rel="next"`,
+                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${users.at(-1)?.id}>; rel="next"`,
                 );
             }
         }
@@ -199,14 +199,11 @@ export class Timeline<Type extends Note | User | Notification> {
 
         if (notifications.length >= (limit ?? 20)) {
             const objectAfter = await Notification.fromSql(
-                gt(
-                    Notifications.id,
-                    notifications[notifications.length - 1].data.id,
-                ),
+                gt(Notifications.id, notifications.at(-1)?.data.id ?? ""),
             );
             if (objectAfter) {
                 linkHeader.push(
-                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${notifications[notifications.length - 1].data.id}>; rel="next"`,
+                    `<${urlWithoutQuery}?limit=${limit ?? 20}&max_id=${notifications.at(-1)?.data.id}>; rel="next"`,
                 );
             }
         }

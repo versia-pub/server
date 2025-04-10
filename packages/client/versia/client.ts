@@ -1229,10 +1229,8 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Account>[]>> {
         const params = new URLSearchParams();
 
-        if (options) {
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
         }
 
         return this.get<z.infer<typeof Account>[]>(
@@ -1449,10 +1447,8 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Tag>[]>> {
         const params = new URLSearchParams();
 
-        if (options) {
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
         }
 
         return this.get<z.infer<typeof Tag>[]>(`/api/v1/trends?${params}`);
@@ -1839,10 +1835,8 @@ export class Client extends BaseClient {
             params.append("id[]", id);
         }
 
-        if (options) {
-            if (options.with_suspended) {
-                params.set("with_suspended", "true");
-            }
+        if (options?.with_suspended) {
+            params.set("with_suspended", "true");
         }
 
         return this.get<z.infer<typeof Relationship>[]>(
@@ -2121,10 +2115,8 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof Account>[]>> {
         const params = new URLSearchParams();
 
-        if (options) {
-            if (options.limit) {
-                params.set("limit", options.limit.toString());
-            }
+        if (options?.limit) {
+            params.set("limit", options.limit.toString());
         }
 
         return this.get<z.infer<typeof Account>[]>(

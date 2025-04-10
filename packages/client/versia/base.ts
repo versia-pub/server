@@ -151,11 +151,9 @@ export class BaseClient {
         if (this.accessToken) {
             headers.set("Authorization", `Bearer ${this.accessToken}`);
         }
-        if (body) {
-            if (!(body instanceof FormData)) {
-                headers.set("Content-Type", "application/json; charset=utf-8");
-            } // else: let FormData set the content type, as it knows best (boundary, etc.)
-        }
+        if (body && !(body instanceof FormData)) {
+            headers.set("Content-Type", "application/json; charset=utf-8");
+        } // else: let FormData set the content type, as it knows best (boundary, etc.)
 
         for (const [key, value] of Object.entries(extra?.headers || {})) {
             headers.set(key, value);
