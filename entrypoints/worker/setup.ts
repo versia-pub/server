@@ -1,8 +1,8 @@
 import { configureLoggers } from "@/loggers";
+import { connection } from "@/redis.ts";
 import { getLogger } from "@logtape/logtape";
 import { Note } from "@versia/kit/db";
 import chalk from "chalk";
-import IORedis from "ioredis";
 import { config } from "~/config.ts";
 import { setupDatabase } from "~/drizzle/db";
 import { searchManager } from "../../classes/search/search-manager.ts";
@@ -14,7 +14,7 @@ await configureLoggers();
 const serverLogger = getLogger("server");
 
 console.info(`
-██╗   ██╗███████╗██████╗ ███████╗██╗ █████╗ 
+██╗   ██╗███████╗██████╗ ███████╗██╗ █████╗
 ██║   ██║██╔════╝██╔══██╗██╔════╝██║██╔══██╗
 ██║   ██║█████╗  ██████╔╝███████╗██║███████║
 ╚██╗ ██╔╝██╔══╝  ██╔══██╗╚════██║██║██╔══██║
@@ -39,14 +39,6 @@ serverLogger.info`Versia Server Worker started at ${config.http.bind}:${config.h
 serverLogger.info`Database is online, containing ${postCount} posts`;
 
 // Check if Redis is reachable
-const connection = new IORedis({
-    host: config.redis.queue.host,
-    port: config.redis.queue.port,
-    password: config.redis.queue.password,
-    db: config.redis.queue.database,
-    maxRetriesPerRequest: null,
-});
-
 await connection.ping();
 
 serverLogger.info`Redis is online`;
