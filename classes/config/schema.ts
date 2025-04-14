@@ -5,7 +5,6 @@ import { generateVAPIDKeys } from "web-push";
 import { z } from "zod";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { cwdFromEntrypoint } from "@/lib.ts";
 import { ProxiableUrl } from "~/classes/media/url.ts";
 import { RolePermission } from "~/packages/client/schemas/permissions.ts";
 
@@ -402,9 +401,7 @@ export const ConfigSchema = z
         }),
         frontend: z.strictObject({
             enabled: z.boolean().default(true),
-            path: z
-                .string()
-                .default(env.VERSIA_FRONTEND_PATH || cwdFromEntrypoint()),
+            path: z.string().default(env.VERSIA_FRONTEND_PATH || "frontend"),
             routes: z.strictObject({
                 home: urlPath.default("/"),
                 login: urlPath.default("/oauth/authorize"),
