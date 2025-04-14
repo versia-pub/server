@@ -14,8 +14,11 @@
     ...
   }:
     {
-      overlays.default = final: prev: {
+      overlays.default = final: prev: rec {
         versia-server = final.callPackage ./nix/package.nix {};
+        versia-server-worker = final.callPackage ./nix/package-worker.nix {
+          inherit versia-server;
+        };
       };
     }
     // flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
@@ -25,7 +28,7 @@
       };
     in {
       packages = {
-        inherit (pkgs) versia-server;
+        inherit (pkgs) versia-server versia-server-worker;
         default = self.packages.${system}.versia-server;
       };
     });

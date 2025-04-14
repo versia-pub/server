@@ -8,7 +8,7 @@ await $`rm -rf dist && mkdir dist`;
 
 await build({
     entrypoints: [
-        "entrypoints/worker/index.ts",
+        "worker.ts",
         // HACK: Include to avoid cyclical import errors
         "config.ts",
     ],
@@ -21,13 +21,13 @@ await build({
 buildSpinner.text = "Transforming";
 
 // Copy Drizzle migrations to dist
-await $`cp -r drizzle dist/drizzle`;
+await $`cp -rL drizzle dist/drizzle`;
 
 // Copy Sharp to dist
 await $`mkdir -p dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-libvips-linuxmusl-* dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-linuxmusl-* dist/node_modules/@img`;
+await $`cp -rL node_modules/@img/sharp-libvips-linux* dist/node_modules/@img`;
+await $`cp -rL node_modules/@img/sharp-linux* dist/node_modules/@img`;
 
-await $`cp -r node_modules/detect-libc dist/node_modules/`;
+await $`cp -rL node_modules/detect-libc dist/node_modules/`;
 
 buildSpinner.stop();

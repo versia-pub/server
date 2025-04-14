@@ -44,6 +44,8 @@ in
       runHook postBuild
     '';
 
+    entrypointPath = "index.js";
+
     installPhase = let
       libPath = lib.makeLibraryPath [
         vips
@@ -60,7 +62,7 @@ in
       cp -r dist $out/${finalAttrs.pname}
 
       makeWrapper ${lib.getExe bun} $out/bin/${finalAttrs.pname} \
-        --add-flags "run $out/${finalAttrs.pname}/index.js" \
+        --add-flags "run $out/${finalAttrs.pname}/${finalAttrs.entrypointPath}" \
         --set NODE_PATH $out/${finalAttrs.pname}/node_modules \
         --prefix PATH : ${binPath} \
         --prefix LD_LIBRARY_PATH : ${libPath}

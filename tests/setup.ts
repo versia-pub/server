@@ -5,4 +5,4 @@ await setupDatabase();
 await deleteOldTestUsers();
 
 // Start workers
-await import("~/entrypoints/worker/index.ts");
+await import("~/worker.ts");
