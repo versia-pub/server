@@ -47,15 +47,15 @@ await $`mkdir -p dist/node_modules`;
 
 // Copy Sharp to dist
 await $`mkdir -p dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-libvips-linuxmusl-* dist/node_modules/@img`;
-await $`cp -r node_modules/@img/sharp-linuxmusl-* dist/node_modules/@img`;
+await $`cp -rL node_modules/@img/sharp-libvips-linux* dist/node_modules/@img`;
+await $`cp -rL node_modules/@img/sharp-linux* dist/node_modules/@img`;
 
 // Copy acorn to dist
-await $`cp -r node_modules/acorn dist/node_modules/acorn`;
+await $`cp -rL node_modules/acorn dist/node_modules/acorn`;
 
 // Copy bull-board to dist
 await $`mkdir -p dist/node_modules/@bull-board`;
-await $`cp -r node_modules/@bull-board/ui dist/node_modules/@bull-board/ui`;
+await $`cp -rL node_modules/@bull-board/ui dist/node_modules/@bull-board/ui`;
 
 // Copy the Bee Movie script from pages
 await $`cp beemovie.txt dist/beemovie.txt`;

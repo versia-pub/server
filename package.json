@@ -3,7 +3,8 @@
     "module": "index.ts",
     "type": "module",
     "version": "0.8.0-alpha",
-    "description": "A project to build a federated social network",
+    "description": "Powerful, configurable and modular federated server using the Versia Protocol.",
+    "homepage": "https://versia.pub",
     "author": {
         "email": "contact@cpluspatch.com",
         "name": "Jesse Wierzbinski",

@@ -1,33 +1,34 @@
 diff --git a/build.ts b/build.ts
-index 3b3ebe9..9531121 100644
+index a4ad17b2..516b55bf 100644
 --- a/build.ts
 +++ b/build.ts
-@@ -1,10 +1,10 @@
+@@ -1,12 +1,12 @@
+ import { readdir } from "node:fs/promises";
  import { $ } from "bun";
+ import { build } from "bun";
 -import ora from "ora";
 +// import ora from "ora";
  import { routes } from "~/routes";
- 
+
 -const buildSpinner = ora("Building").start();
 +// const buildSpinner = ora("Building").start();
- 
--await $`rm -rf dist && mkdir dist`;
-+// await $`rm -rf dist && mkdir dist`;
- 
- await Bun.build({
-     entrypoints: [
-@@ -25,7 +25,7 @@ await Bun.build({
-     }
+
+ await $`rm -rf dist && mkdir dist`;
+
+ // Get all directories under the plugins/ directory
+ const pluginDirs = await readdir("plugins", { withFileTypes: true });
+@@ -31,7 +31,7 @@ await build({
+     external: ["acorn", "@bull-board/ui"],
  });
- 
+
 -buildSpinner.text = "Transforming";
 +// buildSpinner.text = "Transforming";
- 
- // Copy Drizzle migrations to dist
- await $`cp -r drizzle dist/drizzle`;
-@@ -49,4 +49,4 @@ await $`cp package.json dist/package.json`;
- // Copy cli/theme.json
- await $`cp cli/theme.json dist/cli/theme.json`;
- 
+
+ // Fix Bun incorrectly transforming aliased imports
+ await $`sed -i 's/var serveStatic = (options) => {/var serveStaticBase = (options) => {/g' dist/*.js`;
+@@ -63,4 +63,4 @@ await $`cp beemovie.txt dist/beemovie.txt`;
+ // Copy package.json
+ await $`cp package.json dist/package.json`;
+
 -buildSpinner.stop();
 +// buildSpinner.stop();
