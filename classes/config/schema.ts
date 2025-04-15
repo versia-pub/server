@@ -207,8 +207,8 @@ export const keyPair = z
 
 export const vapidKeyPair = z
     .strictObject({
-        public: sensitiveString,
-        private: sensitiveString,
+        public: sensitiveString.optional(),
+        private: sensitiveString.optional(),
     })
     .optional()
     .transform((k, ctx) => {
