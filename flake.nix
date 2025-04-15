@@ -32,6 +32,30 @@
         default = self.packages.${system}.versia-server;
       };
     })
+    // flake-utils.lib.eachDefaultSystem (system: let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [self.overlays.default];
+      };
+    in {
+      devShells = {
+        default = pkgs.mkShell rec {
+          libPath = with pkgs;
+            lib.makeLibraryPath [
+              stdenv.cc.cc.lib
+            ];
+          LD_LIBRARY_PATH = "${libPath}";
+          buildInputs = with pkgs; [
+            bun
+            vips
+            pnpm
+            nodePackages.typescript
+            nodePackages.typescript-language-server
+            nix-ld
+          ];
+        };
+      };
+    })
     // {
       nixosModules = {
         versia-server = import ./nix/module.nix;
