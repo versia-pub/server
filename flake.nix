@@ -31,5 +31,10 @@
         inherit (pkgs) versia-server versia-server-worker;
         default = self.packages.${system}.versia-server;
       };
-    });
+    })
+    // {
+      nixosModules = {
+        versia-server = import ./nix/module.nix;
+      };
+    };
 }
