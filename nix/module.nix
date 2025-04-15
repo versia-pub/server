@@ -54,6 +54,7 @@ in {
                   freeformType = configFormat.type;
                   options = {};
                 };
+                default = {};
                 description = "Overrides for the node's configuration file.";
               };
             };
@@ -67,6 +68,7 @@ in {
                   freeformType = configFormat.type;
                   options = {};
                 };
+                default = {};
                 description = "Overrides for the node's configuration file.";
               };
             };
@@ -97,70 +99,91 @@ in {
     ];
 
     systemd.services =
-      builtins.mapAttrs (nodeName: node: let
-        config = cfg.config // node.configOverrides;
-        configFile = builtins.toFile (configFormat.generate "config-${nodeName}" config);
-      in {
-        after = ["network-online.target"];
-        wantedBy = ["multi-user.target"];
-        requires = ["network-online.target"];
-
-        serviceConfig = {
-          Type = "simple";
-          Restart = "always";
-
-          User = cfg.user;
-          Group = cfg.group;
-
-          StateDirectory = "${name}";
-          StateDirectoryMode = "0700";
-          RuntimeDirectory = "${name}";
-          RuntimeDirectoryMode = "0700";
-
-          # Set the working directory to the data directory
-          WorkingDirectory = cfg.dataDir;
-
-          StandardOutput = "journal";
-          StandardError = "journal";
-          SyslogIdentifier = "${name}";
-
-          Environment = [
-            "CONFIG_FILE=${configFile}"
-          ];
-        };
-        path = [pkgs.versia-server];
-      }) (cfg.nodes.api ++ cfg.nodes.worker)
-      // builtins.mapAttrs (nodeName: node: let
+      lib.mapAttrs' (nodeName: node: let
         type = "api";
         exe = lib.getExe pkgs.versia-server;
-      in {
-        name = "${name}-${type}-${nodeName}";
-        description = "Versia Server ${node.name} (${type})";
+        config = lib.recursiveUpdate cfg.config node.configOverrides;
+        configFile = configFormat.generate "config-${nodeName}.toml" config;
+      in
+        lib.nameValuePair "${name}-${type}-${nodeName}" {
+          description = "Versia Server ${nodeName} (${type})";
 
-        serviceConfig.ExecStart = "${exe}";
-      }) (cfg.nodes.api)
-      // builtins.mapAttrs (nodeName: node: let
+          requires = ["versia-server-root.target"];
+          partOf = ["versia-server-root.target"];
+
+          serviceConfig = {
+            ExecStart = "${exe}";
+            Type = "simple";
+            Restart = "always";
+
+            User = cfg.user;
+            Group = cfg.group;
+
+            StateDirectory = "${name}";
+            StateDirectoryMode = "0700";
+            RuntimeDirectory = "${name}";
+            RuntimeDirectoryMode = "0700";
+
+            # Set the working directory to the data directory
+            WorkingDirectory = cfg.dataDir;
+
+            StandardOutput = "journal";
+            StandardError = "journal";
+            SyslogIdentifier = "${name}";
+
+            Environment = [
+              "CONFIG_FILE=${configFile}"
+            ];
+          };
+        }) (cfg.nodes.api)
+      // lib.mapAttrs' (nodeName: node: let
         type = "worker";
         exe = lib.getExe pkgs.versia-server-worker;
-      in {
-        name = "${name}-${type}-${nodeName}";
-        description = "Versia Server ${node.name} (${type})";
+        config = lib.recursiveUpdate cfg.config node.configOverrides;
+        configFile = configFormat.generate "config-${nodeName}.toml" config;
+      in
+        lib.nameValuePair "${name}-${type}-${nodeName}" {
+          description = "Versia Server ${nodeName} (${type})";
 
-        serviceConfig.ExecStart = "${exe}";
-      }) (cfg.nodes.worker);
+          requires = ["versia-server-root.target"];
+          partOf = ["versia-server-root.target"];
 
-    systemd.tmpfiles.rules = [
-      {
-        # Create the data directory with the correct permissions
-        line = "d ${cfg.dataDir} - - - - ${cfg.user} ${cfg.group}";
-      }
-    ];
+          serviceConfig = {
+            ExecStart = "${exe}";
+            Type = "simple";
+            Restart = "always";
+
+            User = cfg.user;
+            Group = cfg.group;
+
+            StateDirectory = "${name}";
+            StateDirectoryMode = "0700";
+            RuntimeDirectory = "${name}";
+            RuntimeDirectoryMode = "0700";
+
+            # Set the working directory to the data directory
+            WorkingDirectory = cfg.dataDir;
+
+            StandardOutput = "journal";
+            StandardError = "journal";
+            SyslogIdentifier = "${name}";
+
+            Environment = [
+              "CONFIG_FILE=${configFile}"
+            ];
+          };
+        }) (cfg.nodes.worker);
+
+    systemd.targets.versia-server-root = {
+      description = "Versia Server root target, starts and stop all the child nodes.";
+      wantedBy = ["multi-user.target"];
+    };
+
+    systemd.tmpfiles.rules = ["d ${cfg.dataDir} - - - - ${cfg.user} ${cfg.group}"];
 
     users = {
       groups = {
-        "${cfg.group}" = {
-          description = "Group for the Versia Server";
-        };
+        "${cfg.group}" = {};
       };
 
       users = {
