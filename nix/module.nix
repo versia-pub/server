@@ -108,7 +108,7 @@ in {
         lib.nameValuePair "${name}-${type}-${nodeName}" {
           description = "Versia Server ${nodeName} (${type})";
 
-          requires = ["versia-server-root.target"];
+          wantedBy = ["versia-server-root.target"];
           partOf = ["versia-server-root.target"];
 
           serviceConfig = {
@@ -145,7 +145,7 @@ in {
         lib.nameValuePair "${name}-${type}-${nodeName}" {
           description = "Versia Server ${nodeName} (${type})";
 
-          requires = ["versia-server-root.target"];
+          wantedBy = ["versia-server-root.target"];
           partOf = ["versia-server-root.target"];
 
           serviceConfig = {
