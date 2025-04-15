@@ -47,7 +47,7 @@ in {
 
       nodes = {
         api = mkOption {
-          type = lib.types.attrsOf lib.types.submodule {
+          type = lib.types.attrsOf (lib.types.submodule {
             options = {
               configOverrides = mkOption {
                 type = lib.types.submodule {
@@ -57,10 +57,10 @@ in {
                 description = "Overrides for the node's configuration file.";
               };
             };
-          };
+          });
         };
         worker = mkOption {
-          type = lib.types.attrsOf lib.types.submodule {
+          type = lib.types.attrsOf (lib.types.submodule {
             options = {
               configOverrides = mkOption {
                 type = lib.types.submodule {
@@ -70,7 +70,7 @@ in {
                 description = "Overrides for the node's configuration file.";
               };
             };
-          };
+          });
         };
       };
 
