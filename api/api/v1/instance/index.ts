@@ -7,7 +7,6 @@ import { resolver } from "hono-openapi/zod";
 import type { z } from "zod";
 import { apiRoute } from "@/api";
 import { markdownParse } from "~/classes/functions/status";
-import type { ProxiableUrl } from "~/classes/media/url";
 import { config } from "~/config.ts";
 import manifest from "~/package.json";
 
@@ -56,7 +55,7 @@ export default apiRoute((app) =>
                       providers?: {
                           id: string;
                           name: string;
-                          icon?: ProxiableUrl;
+                          icon?: string;
                       }[];
                   }
                 | undefined;
@@ -129,7 +128,7 @@ export default apiRoute((app) =>
                     providers:
                         oidcConfig?.providers?.map((p) => ({
                             name: p.name,
-                            icon: p.icon?.proxied,
+                            icon: p.icon,
                             id: p.id,
                         })) ?? [],
                 },

@@ -5,7 +5,6 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiRoute } from "@/api";
-import type { ProxiableUrl } from "~/classes/media/url";
 import { config } from "~/config.ts";
 import pkg from "~/package.json";
 
@@ -47,7 +46,7 @@ export default apiRoute((app) =>
                       providers?: {
                           id: string;
                           name: string;
-                          icon?: ProxiableUrl;
+                          icon?: string;
                       }[];
                   }
                 | undefined;
@@ -168,7 +167,7 @@ export default apiRoute((app) =>
                     providers:
                         oidcConfig?.providers?.map((p) => ({
                             name: p.name,
-                            icon: p.icon?.proxied,
+                            icon: p.icon,
                             id: p.id,
                         })) ?? [],
                 },
