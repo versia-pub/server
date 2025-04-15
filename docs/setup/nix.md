@@ -60,7 +60,7 @@ services.versia-server = {
             three = {
                 configOverrides.postgres.port = 5433;
             };
-        }:
+        };
     };
 
     config = {
