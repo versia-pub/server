@@ -212,7 +212,7 @@ export const vapidKeyPair = z
     })
     .optional()
     .transform((k, ctx) => {
-        if (!k) {
+        if (!(k?.public && k?.private)) {
             const keys = generateVAPIDKeys();
 
             ctx.addIssue({
