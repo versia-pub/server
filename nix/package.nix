@@ -65,6 +65,7 @@ in
       makeWrapper ${lib.getExe bun} $out/bin/${finalAttrs.pname} \
         --add-flags "run $out/${finalAttrs.pname}/${finalAttrs.entrypointPath}" \
         --set NODE_PATH $out/${finalAttrs.pname}/node_modules \
+        --set MSGPACKR_NATIVE_ACCELERATION_DISABLED true \
         --prefix PATH : ${binPath} \
         --prefix LD_LIBRARY_PATH : ${libPath}
 
