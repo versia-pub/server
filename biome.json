@@ -175,7 +175,8 @@
             "!**/node_modules",
             "!**/dist",
             "!**/cache",
-            "!**/build"
+            "!**/build",
+            "!**/result"
         ]
     }
 }

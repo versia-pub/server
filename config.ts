@@ -6,29 +6,23 @@
  */
 
 import { env, file } from "bun";
-import { loadConfig, watchConfig } from "c12";
 import chalk from "chalk";
+import { parseTOML } from "confbox";
 import type { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ConfigSchema } from "./classes/config/schema.ts";
 
 const CONFIG_LOCATION = env.CONFIG_LOCATION ?? "./config/config.toml";
+const configFile = file(CONFIG_LOCATION);
 
-if (!(await file(CONFIG_LOCATION).exists())) {
+if (!(await configFile.exists())) {
     throw new Error(
         `config file at "${CONFIG_LOCATION}" does not exist or is not accessible.`,
     );
 }
 
-const { config } = await watchConfig<z.infer<typeof ConfigSchema>>({
-    configFile: CONFIG_LOCATION,
-    overrides:
-        (
-            await loadConfig<z.infer<typeof ConfigSchema>>({
-                configFile: "./config/config.internal.toml",
-            })
-        ).config ?? undefined,
-});
+const configText = await configFile.text();
+const config = await parseTOML<z.infer<typeof ConfigSchema>>(configText);
 
 const parsed = await ConfigSchema.safeParseAsync(config);
 

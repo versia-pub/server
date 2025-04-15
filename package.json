@@ -104,7 +104,6 @@
         "altcha-lib": "^1.2.0",
         "blurhash": "^2.0.5",
         "bullmq": "^5.48.1",
-        "c12": "^3.0.3",
         "chalk": "^5.4.1",
         "clerc": "^0.44.0",
         "confbox": "^0.2.2",
@@ -142,8 +141,5 @@
         "zod": "^3.24.2",
         "zod-openapi": "^4.2.4",
         "zod-validation-error": "^3.4.0"
-    },
-    "patchedDependencies": {
-        "giget@2.0.0": "patches/giget@2.0.0.patch"
     }
 }
