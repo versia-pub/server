@@ -153,6 +153,12 @@ convert_vectors = false
 # region = "us-east-1"
 # bucket_name = "versia"
 # public_url = "https://cdn.example.com"
+# Adds a prefix to the uploaded files
+# path = "versia"
+# Use path-style URLs during upload (e.g. https://s3.example.com/versia)
+# instead of the default virtual-hosted style (e.g. https://versia.s3.example.com)
+# This is required for some S3-compatible services, such as MinIO
+# path_style = true
 
 [validation]
 # Checks user data

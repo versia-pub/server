@@ -449,6 +449,8 @@ export const ConfigSchema = z
                 public_url: url.describe(
                     "Public URL that uploaded media will be accessible at",
                 ),
+                path: z.string().optional(),
+                path_style: z.boolean().default(true),
             })
             .optional(),
         validation: z.strictObject({

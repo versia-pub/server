@@ -159,11 +159,15 @@ export class Media extends BaseInterface<typeof Medias> {
                     bucket: config.s3.bucket_name,
                     accessKeyId: config.s3.access_key,
                     secretAccessKey: config.s3.secret_access_key,
+                    virtualHostedStyle: !config.s3.path_style,
                 });
 
                 await client.write(path, file);
+                const finalPath = config.s3.path
+                    ? join(config.s3.path, path)
+                    : path;
 
-                return { path };
+                return { path: finalPath };
             }
         }
     }
