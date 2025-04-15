@@ -57,8 +57,9 @@
       };
     })
     // {
-      nixosModules = {
+      nixosModules = rec {
         versia-server = import ./nix/module.nix;
+        default = versia-server;
       };
     };
 }

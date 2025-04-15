@@ -36,7 +36,16 @@ export default defineConfig({
         sidebar: [
             {
                 text: "Installation",
-                link: "/setup/installation",
+                items: [
+                    {
+                        text: "Normal",
+                        link: "/setup/installation",
+                    },
+                    {
+                        text: "Nix",
+                        link: "/setup/nix",
+                    },
+                ],
             },
             {
                 text: "CLI",

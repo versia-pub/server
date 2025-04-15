@@ -78,7 +78,7 @@ in {
           freeformType = configFormat.type;
           options = {};
         };
-        description = "Contents of the config file. Check the Versia Server documentation for information on its contents.";
+        description = "Contents of the config file, which is serialized to TOML. Check the Versia Server documentation for information on its contents.";
       };
     };
   };
