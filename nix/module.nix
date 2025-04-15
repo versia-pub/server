@@ -21,14 +21,6 @@ in {
         '';
       };
 
-      dataDir = mkOption {
-        type = lib.types.path;
-        default = "/var/lib/${name}";
-        description = ''
-          Directory where the server will store its data.
-        '';
-      };
-
       user = mkOption {
         type = lib.types.str;
         default = name;
@@ -125,7 +117,7 @@ in {
             RuntimeDirectoryMode = "0700";
 
             # Set the working directory to the data directory
-            WorkingDirectory = cfg.dataDir;
+            WorkingDirectory = "${pkgs.versia-server}/versia-server";
 
             StandardOutput = "journal";
             StandardError = "journal";
@@ -162,7 +154,7 @@ in {
             RuntimeDirectoryMode = "0700";
 
             # Set the working directory to the data directory
-            WorkingDirectory = cfg.dataDir;
+            WorkingDirectory = "${pkgs.versia-server-worker}/versia-server-worker";
 
             StandardOutput = "journal";
             StandardError = "journal";
@@ -179,8 +171,6 @@ in {
       wantedBy = ["multi-user.target"];
     };
 
-    systemd.tmpfiles.rules = ["d ${cfg.dataDir} - - - - ${cfg.user} ${cfg.group}"];
-
     users = {
       groups = {
         "${cfg.group}" = {};
@@ -190,7 +180,6 @@ in {
         "${cfg.user}" = {
           isSystemUser = true;
           group = cfg.group;
-          home = cfg.dataDir;
           packages = [pkgs.versia-server pkgs.versia-server-worker];
         };
       };
