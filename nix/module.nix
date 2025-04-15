@@ -132,7 +132,7 @@ in {
             SyslogIdentifier = "${name}";
 
             Environment = [
-              "CONFIG_FILE=${configFile}"
+              "CONFIG_LOCATION=${configFile}"
             ];
           };
         }) (cfg.nodes.api)
@@ -169,7 +169,7 @@ in {
             SyslogIdentifier = "${name}";
 
             Environment = [
-              "CONFIG_FILE=${configFile}"
+              "CONFIG_LOCATION=${configFile}"
             ];
           };
         }) (cfg.nodes.worker);
