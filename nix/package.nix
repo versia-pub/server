@@ -6,6 +6,7 @@
   nodejs,
   vips,
   makeWrapper,
+  ...
 }: let
   packageJson = builtins.fromJSON (builtins.readFile ../package.json);
 in
