@@ -2,7 +2,7 @@
 
 import { resolve } from "node:path";
 import { getLogger } from "@logtape/logtape";
-import { apiReference } from "@scalar/hono-api-reference";
+import { Scalar } from "@scalar/hono-api-reference";
 import chalk from "chalk";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
@@ -155,7 +155,7 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
 
     app.get(
         "/docs",
-        apiReference({
+        Scalar({
             theme: "deepSpace",
             hideClientButton: true,
             pageTitle: "Versia Server API",
