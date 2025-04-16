@@ -35,6 +35,16 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                 return;
             }
 
+            if (
+                !(
+                    config.notifications.push.vapid_keys.private ||
+                    config.notifications.push.vapid_keys.public
+                )
+            ) {
+                await job.log("Push notifications are not configured");
+                return;
+            }
+
             await job.log(
                 `Sending push notification for note [${notificationId}]`,
             );
@@ -132,8 +142,9 @@ export const getPushWorker = (): Worker<PushJobData, void, PushJobType> =>
                             config.notifications.push.subject ||
                             config.http.base_url.origin,
                         privateKey:
-                            config.notifications.push.vapid_keys.private,
-                        publicKey: config.notifications.push.vapid_keys.public,
+                            config.notifications.push.vapid_keys.private ?? "",
+                        publicKey:
+                            config.notifications.push.vapid_keys.public ?? "",
                     },
                     contentEncoding: "aesgcm",
                 },

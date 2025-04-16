@@ -11,7 +11,4 @@ export const u64 = z
     .nonnegative()
     .max(2 ** 64 - 1);
 
-export const url = z
-    .string()
-    .url()
-    .transform((z) => new URL(z));
+export const url = z.string().url();

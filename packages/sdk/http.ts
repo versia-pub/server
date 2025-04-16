@@ -118,7 +118,9 @@ export class FederationRequester {
                 }
             }
 
-            nextUrl = collection.data.next;
+            nextUrl = collection.data.next
+                ? new URL(collection.data.next)
+                : null;
             limit -= collection.data.items.length;
         }
 
@@ -136,7 +138,7 @@ export class FederationRequester {
             limit?: number;
         },
     ): Promise<URL[]> {
-        const entities: URL[] = [];
+        const entities: string[] = [];
         let nextUrl: URL | null = url;
         let limit = options?.limit ?? Number.POSITIVE_INFINITY;
 
@@ -147,11 +149,13 @@ export class FederationRequester {
             );
 
             entities.push(...collection.data.items);
-            nextUrl = collection.data.next;
+            nextUrl = collection.data.next
+                ? new URL(collection.data.next)
+                : null;
             limit -= collection.data.items.length;
         }
 
-        return entities;
+        return entities.map((u) => new URL(u));
     }
 
     /**

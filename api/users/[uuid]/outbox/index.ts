@@ -98,28 +98,28 @@ export default apiRoute((app) =>
                 first: new URL(
                     `/users/${uuid}/outbox?page=1`,
                     config.http.base_url,
-                ),
+                ).href,
                 last: new URL(
                     `/users/${uuid}/outbox?page=${Math.ceil(
                         totalNotes / NOTES_PER_PAGE,
                     )}`,
                     config.http.base_url,
-                ),
+                ).href,
                 total: totalNotes,
-                author: author.uri,
+                author: author.uri.href,
                 next:
                     notes.length === NOTES_PER_PAGE
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber + 1}`,
                               config.http.base_url,
-                          )
+                          ).href
                         : null,
                 previous:
                     pageNumber > 1
                         ? new URL(
                               `/users/${uuid}/outbox?page=${pageNumber - 1}`,
                               config.http.base_url,
-                          )
+                          ).href
                         : null,
                 items: notes.map((note) => note.toVersia()),
             });

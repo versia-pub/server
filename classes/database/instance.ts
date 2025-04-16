@@ -306,7 +306,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.data.logo,
             protocol,
             publicKey: metadata.data.public_key,
-            inbox: metadata.data.shared_inbox?.href ?? null,
+            inbox: metadata.data.shared_inbox ?? null,
             extensions: metadata.data.extensions ?? null,
         });
     }
@@ -333,7 +333,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.data.logo,
             protocol,
             publicKey: metadata.data.public_key,
-            inbox: metadata.data.shared_inbox?.href ?? null,
+            inbox: metadata.data.shared_inbox ?? null,
             extensions: metadata.data.extensions ?? null,
         });
 

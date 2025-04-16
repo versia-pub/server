@@ -155,13 +155,14 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             author: User.getUri(
                 this.data.liker.id,
                 this.data.liker.uri ? new URL(this.data.liker.uri) : null,
-            ),
+            ).href,
             type: "pub.versia:likes/Like",
             created_at: new Date(this.data.createdAt).toISOString(),
             liked: this.data.liked.uri
-                ? new URL(this.data.liked.uri)
-                : new URL(`/notes/${this.data.liked.id}`, config.http.base_url),
-            uri: this.getUri(),
+                ? new URL(this.data.liked.uri).href
+                : new URL(`/notes/${this.data.liked.id}`, config.http.base_url)
+                      .href,
+            uri: this.getUri().href,
         });
     }
 
@@ -177,9 +178,9 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                     : this.data.liker.uri
                       ? new URL(this.data.liker.uri)
                       : null,
-            ),
+            ).href,
             deleted_type: "pub.versia:likes/Like",
-            deleted: this.getUri(),
+            deleted: this.getUri().href,
         });
     }
 }

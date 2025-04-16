@@ -179,17 +179,18 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         }
 
         return new VersiaEntities.Reaction({
-            uri: this.getUri(config.http.base_url),
+            uri: this.getUri(config.http.base_url).href,
             type: "pub.versia:reactions/Reaction",
             author: User.getUri(
                 this.data.authorId,
                 this.data.author.uri ? new URL(this.data.author.uri) : null,
-            ),
+            ).href,
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.id,
             object: this.data.note.uri
-                ? new URL(this.data.note.uri)
-                : new URL(`/notes/${this.data.noteId}`, config.http.base_url),
+                ? new URL(this.data.note.uri).href
+                : new URL(`/notes/${this.data.noteId}`, config.http.base_url)
+                      .href,
             content: this.hasCustomEmoji()
                 ? `:${this.data.emoji?.shortcode}:`
                 : this.data.emojiText || "",
@@ -232,7 +233,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
         return Reaction.insert({
             id: randomUUIDv7(),
-            uri: reactionToConvert.data.uri.href,
+            uri: reactionToConvert.data.uri,
             authorId: author.id,
             noteId: note.id,
             emojiId: emoji ? emoji.id : null,

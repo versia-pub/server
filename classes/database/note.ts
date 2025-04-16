@@ -449,14 +449,14 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             replies_to,
             subject,
         } = versiaNote.data;
-        const instance = await Instance.resolve(authorUrl);
-        const author = await User.resolve(authorUrl);
+        const instance = await Instance.resolve(new URL(authorUrl));
+        const author = await User.resolve(new URL(authorUrl));
 
         if (!author) {
             throw new Error("Entity author could not be resolved");
         }
 
-        const existingNote = await Note.fromSql(eq(Notes.uri, uri.href));
+        const existingNote = await Note.fromSql(eq(Notes.uri, uri));
 
         const note =
             existingNote ??
@@ -464,7 +464,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 id: randomUUIDv7(),
                 authorId: author.id,
                 visibility: "public",
-                uri: uri.href,
+                uri,
                 createdAt: new Date(created_at).toISOString(),
             }));
 
@@ -480,15 +480,22 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const mentions = (
             await Promise.all(
-                noteMentions?.map((mention) => User.resolve(mention)) ?? [],
+                noteMentions?.map((mention) =>
+                    User.resolve(new URL(mention)),
+                ) ?? [],
             )
         ).filter((m) => m !== null);
 
         // TODO: Implement groups
-        const visibility = !group || group instanceof URL ? "direct" : group;
+        const visibility =
+            !group || URL.canParse(group)
+                ? "direct"
+                : (group as "public" | "followers" | "unlisted");
 
-        const reply = replies_to ? await Note.resolve(replies_to) : null;
-        const quote = quotes ? await Note.resolve(quotes) : null;
+        const reply = replies_to
+            ? await Note.resolve(new URL(replies_to))
+            : null;
+        const quote = quotes ? await Note.resolve(new URL(quotes)) : null;
         const spoiler = subject ? await sanitizedHtmlStrip(subject) : undefined;
 
         await note.update({
@@ -694,9 +701,9 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         return new VersiaEntities.Delete({
             type: "Delete",
             id,
-            author: this.author.uri,
+            author: this.author.uri.href,
             deleted_type: "Note",
-            deleted: this.getUri(),
+            deleted: this.getUri().href,
             created_at: new Date().toISOString(),
         });
     }
@@ -711,8 +718,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             type: "Note",
             created_at: new Date(status.createdAt).toISOString(),
             id: status.id,
-            author: this.author.uri,
-            uri: this.getUri(),
+            author: this.author.uri.href,
+            uri: this.getUri().href,
             content: {
                 "text/html": {
                     content: status.content,
@@ -727,11 +734,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 replies: new URL(
                     `/notes/${status.id}/replies`,
                     config.http.base_url,
-                ),
+                ).href,
                 quotes: new URL(
                     `/notes/${status.id}/quotes`,
                     config.http.base_url,
-                ),
+                ).href,
             },
             attachments: status.attachments.map(
                 (attachment) =>
@@ -740,21 +747,24 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     >,
             ),
             is_sensitive: status.sensitive,
-            mentions: status.mentions.map((mention) =>
-                User.getUri(
-                    mention.id,
-                    mention.uri ? new URL(mention.uri) : null,
-                ),
+            mentions: status.mentions.map(
+                (mention) =>
+                    User.getUri(
+                        mention.id,
+                        mention.uri ? new URL(mention.uri) : null,
+                    ).href,
             ),
             quotes: status.quote
                 ? status.quote.uri
-                    ? new URL(status.quote.uri)
+                    ? new URL(status.quote.uri).href
                     : new URL(`/notes/${status.quote.id}`, config.http.base_url)
+                          .href
                 : null,
             replies_to: status.reply
                 ? status.reply.uri
-                    ? new URL(status.reply.uri)
+                    ? new URL(status.reply.uri).href
                     : new URL(`/notes/${status.reply.id}`, config.http.base_url)
+                          .href
                 : null,
             subject: status.spoilerText,
             // TODO: Refactor as part of groups

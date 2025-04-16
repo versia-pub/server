@@ -84,11 +84,11 @@ export default apiRoute((app) =>
             );
 
             const uriCollection = new VersiaEntities.URICollection({
-                author: note.author.uri,
+                author: note.author.uri.href,
                 first: new URL(
                     `/notes/${note.id}/replies?offset=0`,
                     config.http.base_url,
-                ),
+                ).href,
                 last:
                     replyCount > limit
                         ? new URL(
@@ -96,11 +96,11 @@ export default apiRoute((app) =>
                                   replyCount - limit
                               }`,
                               config.http.base_url,
-                          )
+                          ).href
                         : new URL(
                               `/notes/${note.id}/replies`,
                               config.http.base_url,
-                          ),
+                          ).href,
                 next:
                     offset + limit < replyCount
                         ? new URL(
@@ -108,7 +108,7 @@ export default apiRoute((app) =>
                                   offset + limit
                               }`,
                               config.http.base_url,
-                          )
+                          ).href
                         : null,
                 previous:
                     offset - limit >= 0
@@ -117,10 +117,10 @@ export default apiRoute((app) =>
                                   offset - limit
                               }`,
                               config.http.base_url,
-                          )
+                          ).href
                         : null,
                 total: replyCount,
-                items: replies.map((reply) => reply.getUri()),
+                items: replies.map((reply) => reply.getUri().href),
             });
 
             // If base_url uses https and request uses http, rewrite request to use https

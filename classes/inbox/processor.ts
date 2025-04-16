@@ -219,8 +219,8 @@ export class InboxProcessor {
     private static async processFollowRequest(
         follow: VersiaEntities.Follow,
     ): Promise<void> {
-        const author = await User.resolve(follow.data.author);
-        const followee = await User.resolve(follow.data.followee);
+        const author = await User.resolve(new URL(follow.data.author));
+        const followee = await User.resolve(new URL(follow.data.followee));
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -267,8 +267,10 @@ export class InboxProcessor {
     private static async processFollowAccept(
         followAccept: VersiaEntities.FollowAccept,
     ): Promise<void> {
-        const author = await User.resolve(followAccept.data.author);
-        const follower = await User.resolve(followAccept.data.follower);
+        const author = await User.resolve(new URL(followAccept.data.author));
+        const follower = await User.resolve(
+            new URL(followAccept.data.follower),
+        );
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -302,8 +304,10 @@ export class InboxProcessor {
     private static async processFollowReject(
         followReject: VersiaEntities.FollowReject,
     ): Promise<void> {
-        const author = await User.resolve(followReject.data.author);
-        const follower = await User.resolve(followReject.data.follower);
+        const author = await User.resolve(new URL(followReject.data.author));
+        const follower = await User.resolve(
+            new URL(followReject.data.follower),
+        );
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -340,13 +344,13 @@ export class InboxProcessor {
         const toDelete = delete_.data.deleted;
 
         const author = delete_.data.author
-            ? await User.resolve(delete_.data.author)
+            ? await User.resolve(new URL(delete_.data.author))
             : null;
 
         switch (delete_.data.deleted_type) {
             case "Note": {
                 const note = await Note.fromSql(
-                    eq(Notes.uri, toDelete.href),
+                    eq(Notes.uri, toDelete),
                     author ? eq(Notes.authorId, author.id) : undefined,
                 );
 
@@ -361,7 +365,7 @@ export class InboxProcessor {
                 return;
             }
             case "User": {
-                const userToDelete = await User.resolve(toDelete);
+                const userToDelete = await User.resolve(new URL(toDelete));
 
                 if (!userToDelete) {
                     throw new ApiError(404, "User to delete not found");
@@ -376,7 +380,7 @@ export class InboxProcessor {
             }
             case "pub.versia:likes/Like": {
                 const like = await Like.fromSql(
-                    eq(Likes.uri, toDelete.href),
+                    eq(Likes.uri, toDelete),
                     author ? eq(Likes.likerId, author.id) : undefined,
                 );
 
@@ -393,7 +397,7 @@ export class InboxProcessor {
             default: {
                 throw new ApiError(
                     400,
-                    `Deletion of object ${toDelete.href} not implemented`,
+                    `Deletion of object ${toDelete} not implemented`,
                 );
             }
         }
@@ -408,8 +412,8 @@ export class InboxProcessor {
     private static async processLikeRequest(
         like: VersiaEntities.Like,
     ): Promise<void> {
-        const author = await User.resolve(like.data.author);
-        const likedNote = await Note.resolve(like.data.liked);
+        const author = await User.resolve(new URL(like.data.author));
+        const likedNote = await Note.resolve(new URL(like.data.liked));
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -419,7 +423,7 @@ export class InboxProcessor {
             throw new ApiError(404, "Liked Note not found");
         }
 
-        await author.like(likedNote, like.data.uri);
+        await author.like(likedNote, new URL(like.data.uri));
     }
 
     /**

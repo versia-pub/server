@@ -247,9 +247,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new VersiaEntities.Unfollow({
             type: "Unfollow",
             id,
-            author: this.uri,
+            author: this.uri.href,
             created_at: new Date().toISOString(),
-            followee: followee.uri,
+            followee: followee.uri.href,
         });
     }
 
@@ -265,9 +265,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity = new VersiaEntities.FollowAccept({
             type: "FollowAccept",
             id: crypto.randomUUID(),
-            author: this.uri,
+            author: this.uri.href,
             created_at: new Date().toISOString(),
-            follower: follower.uri,
+            follower: follower.uri.href,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -289,9 +289,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         const entity = new VersiaEntities.FollowReject({
             type: "FollowReject",
             id: crypto.randomUUID(),
-            author: this.uri,
+            author: this.uri.href,
             created_at: new Date().toISOString(),
-            follower: follower.uri,
+            follower: follower.uri.href,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -675,9 +675,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri,
             extensions,
         } = versiaUser.data;
-        const instance = await Instance.resolve(versiaUser.data.uri);
+        const instance = await Instance.resolve(new URL(versiaUser.data.uri));
         const existingUser = await User.fromSql(
-            eq(Users.uri, versiaUser.data.uri.href),
+            eq(Users.uri, versiaUser.data.uri),
         );
 
         const user =
@@ -686,7 +686,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 username,
                 id: randomUUIDv7(),
                 publicKey: public_key.key,
-                uri: uri.href,
+                uri,
                 instanceId: instance.id,
             }));
 
@@ -727,13 +727,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         await user.update({
             createdAt: new Date(created_at).toISOString(),
             endpoints: {
-                inbox: inbox.href,
-                outbox: collections.outbox.href,
-                followers: collections.followers.href,
-                following: collections.following.href,
-                featured: collections.featured.href,
-                likes: collections["pub.versia:likes/Likes"]?.href,
-                dislikes: collections["pub.versia:likes/Dislikes"]?.href,
+                inbox,
+                outbox: collections.outbox,
+                followers: collections.followers,
+                following: collections.following,
+                featured: collections.featured,
+                likes: collections["pub.versia:likes/Likes"] ?? undefined,
+                dislikes: collections["pub.versia:likes/Dislikes"] ?? undefined,
             },
             avatarId: userAvatar?.id,
             headerId: userHeader?.id,
@@ -1097,7 +1097,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new VersiaEntities.User({
             id: user.id,
             type: "User",
-            uri: this.uri,
+            uri: this.uri.href,
             bio: {
                 "text/html": {
                     content: user.note,
@@ -1113,29 +1113,30 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 featured: new URL(
                     `/users/${user.id}/featured`,
                     config.http.base_url,
-                ),
+                ).href,
                 "pub.versia:likes/Likes": new URL(
                     `/users/${user.id}/likes`,
                     config.http.base_url,
-                ),
+                ).href,
                 "pub.versia:likes/Dislikes": new URL(
                     `/users/${user.id}/dislikes`,
                     config.http.base_url,
-                ),
+                ).href,
                 followers: new URL(
                     `/users/${user.id}/followers`,
                     config.http.base_url,
-                ),
+                ).href,
                 following: new URL(
                     `/users/${user.id}/following`,
                     config.http.base_url,
-                ),
+                ).href,
                 outbox: new URL(
                     `/users/${user.id}/outbox`,
                     config.http.base_url,
-                ),
+                ).href,
             },
-            inbox: new URL(`/users/${user.id}/inbox`, config.http.base_url),
+            inbox: new URL(`/users/${user.id}/inbox`, config.http.base_url)
+                .href,
             indexable: this.data.isIndexable,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
@@ -1148,7 +1149,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             display_name: user.displayName,
             fields: user.fields,
             public_key: {
-                actor: new URL(`/users/${user.id}`, config.http.base_url),
+                actor: new URL(`/users/${user.id}`, config.http.base_url).href,
                 key: user.publicKey,
                 algorithm: "ed25519",
             },
