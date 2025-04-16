@@ -1,5 +1,3 @@
-/* import { prometheus } from "@hono/prometheus"; */
-
 import { resolve } from "node:path";
 import { getLogger } from "@logtape/logtape";
 import { Scalar } from "@scalar/hono-api-reference";
@@ -98,8 +96,6 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     app.use("/api/v1/timelines/*", rateLimit(40));
     app.use("/api/v1/push/*", rateLimit(10));
 
-    /* app.use("*", registerMetrics);
-    app.get("/metrics", printMetrics); */
     // Disabled as federation now checks for this
     // app.use(urlCheck);
 
