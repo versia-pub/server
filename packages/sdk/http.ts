@@ -39,15 +39,15 @@ export class FederationRequester {
 
         const finalReq = await sign(this.privateKey, this.authorUrl, req);
 
-        const { ok, json, text, headers, status } = await fetch(finalReq);
+        const res = await fetch(finalReq);
 
-        if (!ok) {
+        if (!res.ok) {
             throw new Error(
-                `Failed to fetch entity from ${url.toString()}: got HTTP code ${status} with body "${await text()}"`,
+                `Failed to fetch entity from ${url.toString()}: got HTTP code ${res.status} with body "${await res.text()}"`,
             );
         }
 
-        const contentType = headers.get("Content-Type");
+        const contentType = res.headers.get("Content-Type");
 
         if (!contentType?.includes("application/json")) {
             throw new Error(
@@ -55,7 +55,7 @@ export class FederationRequester {
             );
         }
 
-        const jsonData = await json();
+        const jsonData = await res.json();
         const type = jsonData.type;
 
         if (type && type !== expectedType.name) {
@@ -168,7 +168,7 @@ export class FederationRequester {
         contentType = "application/json",
         serverUrl = `https://${hostname}`,
     ): Promise<URL | null> {
-        const { ok, json, text } = await fetch(
+        const res = await fetch(
             new URL(
                 `/.well-known/webfinger?${new URLSearchParams({
                     resource: `acct:${username}@${hostname}`,
@@ -184,14 +184,14 @@ export class FederationRequester {
             },
         );
 
-        if (!ok) {
+        if (!res.ok) {
             throw new Error(
-                `Failed to fetch webfinger from ${serverUrl}: got HTTP code ${ok} with body "${await text()}"`,
+                `Failed to fetch webfinger from ${serverUrl}: got HTTP code ${res.ok} with body "${await res.text()}"`,
             );
         }
 
         // Validate the response
-        const data = await WebFingerSchema.parseAsync(await json());
+        const data = await WebFingerSchema.parseAsync(await res.json());
 
         // Get the first link with a rel of "self"
         const selfLink = data.links?.find(
