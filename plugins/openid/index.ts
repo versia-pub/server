@@ -51,9 +51,9 @@ jwksRoute(plugin);
 ssoLoginRoute(plugin);
 ssoLoginCallbackRoute(plugin);
 
-plugin.registerRoute("/admin/*", (app) => {
+plugin.registerRoute("/admin/queues/api/*", (app) => {
     // Check for JWT when accessing the admin panel
-    app.use("/admin/*", async (context, next) => {
+    app.use("/admin/queues/api/*", async (context, next) => {
         const jwtCookie = getCookie(context, "jwt");
 
         if (!jwtCookie) {
