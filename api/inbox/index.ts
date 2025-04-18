@@ -33,10 +33,21 @@ export default apiRoute((app) =>
         ),
         async (context) => {
             const body = await context.req.valid("json");
+            const {
+                "versia-signature": signature,
+                "versia-signed-at": signedAt,
+                "versia-signed-by": signedBy,
+                authorization,
+            } = context.req.valid("header");
 
             await inboxQueue.add(InboxJobType.ProcessEntity, {
                 data: body,
-                headers: context.req.valid("header"),
+                headers: {
+                    "versia-signature": signature,
+                    "versia-signed-at": signedAt,
+                    "versia-signed-by": signedBy,
+                    authorization,
+                },
                 request: {
                     body: await context.req.text(),
                     method: context.req.method,
