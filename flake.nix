@@ -44,7 +44,9 @@
             lib.makeLibraryPath [
               stdenv.cc.cc.lib
             ];
+
           LD_LIBRARY_PATH = "${libPath}";
+
           buildInputs = with pkgs; [
             bun
             vips
