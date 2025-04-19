@@ -1,13 +1,13 @@
 import { getLogger } from "@logtape/logtape";
+import { SQL } from "bun";
 import chalk from "chalk";
-import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { type BunSQLDatabase, drizzle } from "drizzle-orm/bun-sql";
 import { withReplicas } from "drizzle-orm/pg-core";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import { Pool } from "pg";
 import { config } from "~/config.ts";
 import * as schema from "./schema.ts";
 
-const primaryDb = new Pool({
+const primaryDb = new SQL({
     host: config.postgres.host,
     port: config.postgres.port,
     user: config.postgres.username,
@@ -17,7 +17,7 @@ const primaryDb = new Pool({
 
 const replicas = config.postgres.replicas.map(
     (replica) =>
-        new Pool({
+        new SQL({
             host: replica.host,
             port: replica.port,
             user: replica.username,
@@ -32,9 +32,9 @@ export const db =
               drizzle(primaryDb, { schema }),
               replicas.map((r) => drizzle(r, { schema })) as [
                   // biome-ignore lint/style/useNamingConvention: <explanation>
-                  NodePgDatabase<typeof schema> & { $client: Pool },
+                  BunSQLDatabase<typeof schema> & { $client: SQL },
                   // biome-ignore lint/style/useNamingConvention: <explanation>
-                  ...(NodePgDatabase<typeof schema> & { $client: Pool })[],
+                  ...(BunSQLDatabase<typeof schema> & { $client: SQL })[],
               ],
           )
         : drizzle(primaryDb, { schema });

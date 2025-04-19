@@ -36,6 +36,13 @@
             "program": "${workspaceFolder}/index.ts",
             "cwd": "${workspaceFolder}",
             "watchMode": true
+        },
+        {
+            "type": "bun",
+            "internalConsoleOptions": "neverOpen",
+            "request": "launch",
+            "name": "Run tests",
+            "program": "test"
         }
     ]
 }

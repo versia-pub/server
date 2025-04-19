@@ -88,7 +88,7 @@ export default apiRoute((app) =>
                                     AND "IdsFollowers"."following" = true
                             )
                     `)
-                        ).rows.map((u) => u.id as string),
+                        ).map((u) => u.id as string),
                     ),
                 })),
             );
