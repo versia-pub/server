@@ -4,7 +4,6 @@ import { z } from "zod";
 import { apiRoute, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
-import type { JSONObject } from "~/packages/sdk/types";
 
 export default apiRoute((app) =>
     app.post(
@@ -87,9 +86,8 @@ export default apiRoute((app) =>
             }),
             handleZodError,
         ),
-        validator("json", z.any(), handleZodError),
         async (context) => {
-            const body: JSONObject = await context.req.valid("json");
+            const body = await context.req.json();
             const {
                 "versia-signature": signature,
                 "versia-signed-at": signedAt,

@@ -28,7 +28,7 @@ export const sign = async (
     const body = await req.clone().text();
     const url = new URL(req.url);
 
-    const digest = stringToBase64Hash(body);
+    const digest = await stringToBase64Hash(body);
     const timestampSecs = Math.floor(timestamp.getTime() / 1000);
 
     const signedString = `${req.method.toLowerCase()} ${encodeURI(

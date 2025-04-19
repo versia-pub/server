@@ -16,7 +16,6 @@ export default apiRoute((app) =>
                 },
             },
         }),
-        validator("json", z.any(), handleZodError),
         validator(
             "header",
             z.object({
@@ -32,7 +31,7 @@ export default apiRoute((app) =>
             handleZodError,
         ),
         async (context) => {
-            const body = await context.req.valid("json");
+            const body = await context.req.json();
             const {
                 "versia-signature": signature,
                 "versia-signed-at": signedAt,
@@ -53,7 +52,7 @@ export default apiRoute((app) =>
                     method: context.req.method,
                     url: context.req.url,
                 },
-                ip: context.env.ip ?? null,
+                ip: context.env?.ip ?? null,
             });
 
             return context.body(

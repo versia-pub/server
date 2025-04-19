@@ -204,6 +204,9 @@ importers:
       '@types/web-push':
         specifier: ^3.6.4
         version: 3.6.4
+      bun-bagel:
+        specifier: ^1.2.0
+        version: 1.2.0(typescript@5.8.3)
       drizzle-kit:
         specifier: ^0.31.0
         version: 0.31.0
@@ -1832,6 +1835,11 @@ packages:
   bullmq@5.49.0:
     resolution: {integrity: sha512-qwNOgUfD3kHI33bU2HOsn6YKEoSdUfHTledQUy95V8HogVdgGg/HS3+TQh7Y7YH19h5yK2Oo/FFEnzyXJhgy3w==}
 
+  bun-bagel@1.2.0:
+    resolution: {integrity: sha512-c4S68dNddpnog9nxXp9PAhcep0alOy49jpRlC1yACoxplUvgX22NZxeQUIIov5TCJJDH/snT5R9bMyix7AG0KQ==}
+    peerDependencies:
+      typescript: ^5.0.0
+
   bun-types@1.2.9:
     resolution: {integrity: sha512-dk/kOEfQbajENN/D6FyiSgOKEuUi9PWfqKQJEgwKrCMWbjS/S6tEXp178mWvWAcUSYm9ArDlWHZKO3T/4cLXiw==}
 
@@ -3105,6 +3113,7 @@ packages:
 
   speech-rule-engine@4.1.0:
     resolution: {integrity: sha512-jRP6QUyvi+C94QvcQR8wBfla2ySD5KXBr6XnmEBy8DcW/R1DN08Yykuwq7xEX90VM5E4Iv7UJoMvhW6U660x8A==}
+    deprecated: breaking change
     hasBin: true
 
   split2@4.2.0:
@@ -4853,6 +4862,10 @@ snapshots:
       uuid: 9.0.1
     transitivePeerDependencies:
       - supports-color
+
+  bun-bagel@1.2.0(typescript@5.8.3):
+    dependencies:
+      typescript: 5.8.3
 
   bun-types@1.2.9:
     dependencies:
