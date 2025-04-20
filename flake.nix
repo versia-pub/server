@@ -20,6 +20,11 @@
           inherit versia-server;
         };
       };
+
+      nixosModules = rec {
+        versia-server = import ./nix/module.nix;
+        default = versia-server;
+      };
     }
     // flake-utils.lib.eachSystem ["x86_64-linux" "aarch64-linux"] (system: let
       pkgs = import nixpkgs {
@@ -29,7 +34,6 @@
     in {
       packages = {
         inherit (pkgs) versia-server versia-server-worker;
-        default = self.packages.${system}.versia-server;
       };
     })
     // flake-utils.lib.eachDefaultSystem (system: let
@@ -57,11 +61,5 @@
           ];
         };
       };
-    })
-    // {
-      nixosModules = rec {
-        versia-server = import ./nix/module.nix;
-        default = versia-server;
-      };
-    };
+    });
 }
