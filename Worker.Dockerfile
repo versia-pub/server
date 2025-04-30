@@ -50,4 +50,4 @@ ENV GIT_COMMIT=$GIT_COMMIT
 WORKDIR /app/dist
 ENV NODE_ENV=production
 # Run migrations and start the server
-CMD [ "bun", "run", "index.js" ]
+CMD [ "bun", "run", "worker.js" ]
