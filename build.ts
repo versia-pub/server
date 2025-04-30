@@ -59,4 +59,7 @@ await $`cp beemovie.txt dist/beemovie.txt`;
 // Copy package.json
 await $`cp package.json dist/package.json`;
 
+// Fixes issues with sharp
+await $`cp -rL node_modules/detect-libc dist/node_modules/`;
+
 buildSpinner.stop();
