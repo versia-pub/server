@@ -41,7 +41,7 @@ Versia Server now serves static files directly from a configurable path, and `ve
 
 ### Backend
 
--   [x] 🚀 Upgraded Bun to `1.2.10`
+-   [x] 🚀 Upgraded Bun to `1.2.11`
 -   [x] 🔥 Removed dependency on the `pg_uuidv7` extension. Versia Server can now be used with "vanilla" PostgreSQL.
 -   [x] 🖼️ Simplified media pipeline: this will improve S3 performance
     -   [ ] 📈 It is now possible to disable media proxying for your CDN (offloading considerable bandwidth to your more optimized CDN).
