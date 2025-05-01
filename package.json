@@ -106,6 +106,7 @@
         "clerc": "^0.44.0",
         "confbox": "^0.2.2",
         "drizzle-orm": "^0.43.1",
+        "feed": "^4.2.2",
         "hono": "^4.7.8",
         "hono-openapi": "^0.4.8",
         "hono-rate-limiter": "^0.4.2",
