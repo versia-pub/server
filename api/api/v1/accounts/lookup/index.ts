@@ -36,7 +36,7 @@ export default apiRoute((app) =>
             auth: false,
             permissions: [RolePermission.Search],
         }),
-        rateLimit(5),
+        rateLimit(60),
         validator(
             "query",
             z.object({
