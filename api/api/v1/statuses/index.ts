@@ -225,6 +225,8 @@ export default apiRoute((app) =>
                 replyId: in_reply_to_id ?? undefined,
                 quotingId: quote_id ?? undefined,
                 applicationId: application?.id,
+                contentSource: status,
+                contentType: content_type,
             });
 
             // Emojis, mentions, and attachments are stored in a different table, so update them there too
