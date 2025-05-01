@@ -1,5 +1,7 @@
-import { Application as ApplicationSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Application as ApplicationSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";

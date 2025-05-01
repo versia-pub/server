@@ -1,5 +1,7 @@
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    CustomEmoji as CustomEmojiSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

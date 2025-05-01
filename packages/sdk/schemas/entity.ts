@@ -11,7 +11,7 @@ export const ExtensionPropertySchema = z
     .catchall(z.any());
 
 export const EntitySchema = z.strictObject({
-    // biome-ignore lint/style/useNamingConvention:
+    // biome-ignore lint/style/useNamingConvention: required for JSON schema
     $schema: z.string().url().nullish(),
     id: z.string().max(512),
     created_at: z

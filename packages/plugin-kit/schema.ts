@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const manifestSchema = z.object({
-    // biome-ignore lint/style/useNamingConvention: <explanation>
+    // biome-ignore lint/style/useNamingConvention: JSON schema requires this to be $schema
     $schema: z.string().optional(),
     name: z.string().min(3).max(100),
     version: z
@@ -94,7 +94,6 @@ export type Manifest = {
 };
 
 // This is a type guard to ensure that the schema and the type are in sync
-// biome-ignore lint/nursery/useExplicitType: <explanation>
 function assert<_T extends never>() {
     // ...
 }

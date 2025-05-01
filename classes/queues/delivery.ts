@@ -1,6 +1,5 @@
 import { User } from "@versia/kit/db";
-import { Queue } from "bullmq";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import chalk from "chalk";
 import { config } from "~/config.ts";
 import * as VersiaEntities from "~/packages/sdk/entities";

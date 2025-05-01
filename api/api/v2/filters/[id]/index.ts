@@ -1,9 +1,9 @@
 import {
     FilterKeyword as FilterKeywordSchema,
     Filter as FilterSchema,
+    RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
 import { and, eq, inArray, type SQL } from "drizzle-orm";

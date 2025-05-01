@@ -1,5 +1,4 @@
-import { Status as StatusSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
@@ -28,7 +27,7 @@ export default apiRoute((app) =>
                             schema: resolver(z.array(StatusSchema)),
                         },
                     },
-                    headers: z.object({
+                    headers: {
                         link: z
                             .string()
                             .optional()
@@ -41,7 +40,7 @@ export default apiRoute((app) =>
                                     url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
                                 },
                             }),
-                    }),
+                    },
                 },
                 422: ApiError.validationFailed().schema,
             },

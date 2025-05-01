@@ -1,8 +1,6 @@
-import { build } from "bun";
-import { $ } from "bun";
-import ora from "ora";
+import { $, build } from "bun";
 
-const buildSpinner = ora("Building").start();
+console.log("Building...");
 
 await $`rm -rf dist && mkdir dist`;
 
@@ -18,7 +16,7 @@ await build({
     minify: false,
 });
 
-buildSpinner.text = "Transforming";
+console.log("Copying files...");
 
 // Copy Drizzle migrations to dist
 await $`cp -rL drizzle dist/drizzle`;
@@ -30,4 +28,4 @@ await $`cp -rL node_modules/@img/sharp-linux* dist/node_modules/@img`;
 
 await $`cp -rL node_modules/detect-libc dist/node_modules/`;
 
-buildSpinner.stop();
+console.log("Build complete!");

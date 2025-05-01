@@ -1,5 +1,7 @@
-import { Account as AccountSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiRoute, auth, withUserParam } from "@/api";

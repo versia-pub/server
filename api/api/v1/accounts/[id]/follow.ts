@@ -1,8 +1,8 @@
 import {
     iso631,
     Relationship as RelationshipSchema,
+    RolePermission,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

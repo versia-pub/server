@@ -15,14 +15,13 @@ in
     version = packageJson.version;
 
     src = ../.;
-    patches = [./fix-build-spinner.patch];
 
     # Fixes the build script mv usage
     pnpmInstallFlags = ["--shamefully-hoist"];
 
     pnpmDeps = pnpm.fetchDeps {
       inherit (finalAttrs) pname version src pnpmInstallFlags;
-      hash = "sha256-bDgLkz0aT3/jM2inVsfMoJBKZacxqfHFi8GtIg7zc+M=";
+      hash = "sha256-q5Ec7b77XdGpRul7mM4AfSuHC2jayMD4u5zwZksA85g=";
     };
 
     nativeBuildInputs = [

@@ -1,5 +1,8 @@
-import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+    zBoolean,
+} from "@versia/client/schemas";
 import { Emoji, Media, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";

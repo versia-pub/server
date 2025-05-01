@@ -1,8 +1,8 @@
 import {
+    RolePermission,
     WebPushSubscriptionInput,
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { PushSubscription } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

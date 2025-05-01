@@ -1,6 +1,5 @@
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
-import { Queue } from "bullmq";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import { sendNotification } from "web-push";
 import { htmlToText } from "@/content_types.ts";
 import { config } from "~/config.ts";

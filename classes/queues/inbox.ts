@@ -1,7 +1,6 @@
 import { getLogger } from "@logtape/logtape";
 import { Instance, User } from "@versia/kit/db";
-import { Queue } from "bullmq";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import { config } from "~/config.ts";
 import type { JSONObject } from "~/packages/sdk/types.ts";

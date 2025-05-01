@@ -1,5 +1,4 @@
-import { Status as StatusSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";

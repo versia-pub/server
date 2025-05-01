@@ -1,5 +1,8 @@
-import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+    zBoolean,
+} from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";

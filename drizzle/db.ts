@@ -31,9 +31,9 @@ export const db =
         ? withReplicas(
               drizzle(primaryDb, { schema }),
               replicas.map((r) => drizzle(r, { schema })) as [
-                  // biome-ignore lint/style/useNamingConvention: <explanation>
+                  // biome-ignore lint/style/useNamingConvention: Required by drizzle-orm
                   BunSQLDatabase<typeof schema> & { $client: SQL },
-                  // biome-ignore lint/style/useNamingConvention: <explanation>
+                  // biome-ignore lint/style/useNamingConvention: Required by drizzle-orm
                   ...(BunSQLDatabase<typeof schema> & { $client: SQL })[],
               ],
           )

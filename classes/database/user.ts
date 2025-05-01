@@ -2,9 +2,9 @@ import { getLogger } from "@logtape/logtape";
 import type {
     Account,
     Mention as MentionSchema,
+    RolePermission,
     Source,
 } from "@versia/client/schemas";
-import type { RolePermission } from "@versia/client/schemas";
 import { db, Media, Notification, PushSubscription } from "@versia/kit/db";
 import {
     EmojiToUser,
@@ -15,8 +15,7 @@ import {
     Users,
     UserToPinnedNotes,
 } from "@versia/kit/tables";
-import { randomUUIDv7 } from "bun";
-import { password as bunPassword } from "bun";
+import { password as bunPassword, randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
     and,

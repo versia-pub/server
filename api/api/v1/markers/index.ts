@@ -1,9 +1,9 @@
 import {
     Marker as MarkerSchema,
     Notification as NotificationSchema,
+    RolePermission,
     Status as StatusSchema,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Markers } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";

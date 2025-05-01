@@ -1,5 +1,7 @@
-import { Account as AccountSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
@@ -29,7 +31,7 @@ export default apiRoute((app) =>
                             schema: resolver(z.array(AccountSchema)),
                         },
                     },
-                    headers: z.object({
+                    headers: {
                         link: z
                             .string()
                             .optional()
@@ -42,7 +44,7 @@ export default apiRoute((app) =>
                                     url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
                                 },
                             }),
-                    }),
+                    },
                 },
                 401: ApiError.missingAuthentication().schema,
                 422: ApiError.validationFailed().schema,

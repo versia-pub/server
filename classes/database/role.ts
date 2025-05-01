@@ -1,5 +1,7 @@
-import type { Role as RoleSchema } from "@versia/client/schemas";
-import type { RolePermission } from "@versia/client/schemas";
+import type {
+    RolePermission,
+    Role as RoleSchema,
+} from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { Roles, RoleToUsers } from "@versia/kit/tables";
 import {

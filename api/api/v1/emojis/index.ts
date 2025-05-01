@@ -1,5 +1,7 @@
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    CustomEmoji as CustomEmojiSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";

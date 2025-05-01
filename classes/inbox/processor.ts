@@ -184,21 +184,21 @@ export class InboxProcessor {
                 .on(VersiaEntities.Note, async (n) => {
                     await Note.fromVersia(n);
                 })
-                .on(VersiaEntities.Follow, (f) => {
-                    InboxProcessor.processFollowRequest(f);
-                })
-                .on(VersiaEntities.FollowAccept, (f) => {
-                    InboxProcessor.processFollowAccept(f);
-                })
-                .on(VersiaEntities.FollowReject, (f) => {
-                    InboxProcessor.processFollowReject(f);
-                })
-                .on(VersiaEntities.Like, (l) => {
-                    InboxProcessor.processLikeRequest(l);
-                })
-                .on(VersiaEntities.Delete, (d) => {
-                    InboxProcessor.processDelete(d);
-                })
+                .on(VersiaEntities.Follow, (f) =>
+                    InboxProcessor.processFollowRequest(f),
+                )
+                .on(VersiaEntities.FollowAccept, (f) =>
+                    InboxProcessor.processFollowAccept(f),
+                )
+                .on(VersiaEntities.FollowReject, (f) =>
+                    InboxProcessor.processFollowReject(f),
+                )
+                .on(VersiaEntities.Like, (l) =>
+                    InboxProcessor.processLikeRequest(l),
+                )
+                .on(VersiaEntities.Delete, (d) =>
+                    InboxProcessor.processDelete(d),
+                )
                 .on(VersiaEntities.User, async (u) => {
                     await User.fromVersia(u);
                 })

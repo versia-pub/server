@@ -1,5 +1,7 @@
-import { Notification as NotificationSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Notification as NotificationSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Notification } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

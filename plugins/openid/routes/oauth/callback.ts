@@ -1,5 +1,7 @@
-import { Account as AccountSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { db, Media, Token, User } from "@versia/kit/db";
 import { and, eq, isNull, type SQL } from "@versia/kit/drizzle";
 import { OpenIdAccounts, Users } from "@versia/kit/tables";

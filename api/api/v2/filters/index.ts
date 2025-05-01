@@ -1,8 +1,8 @@
 import {
     FilterKeyword as FilterKeywordSchema,
     Filter as FilterSchema,
+    RolePermission,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";

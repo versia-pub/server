@@ -1,11 +1,11 @@
 import {
     Attachment as AttachmentSchema,
     PollOption,
+    RolePermission,
     Status as StatusSchema,
     StatusSource as StatusSourceSchema,
     zBoolean,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { Emoji, Media, Note } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";

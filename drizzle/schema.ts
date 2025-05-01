@@ -1,9 +1,9 @@
 import type {
     Notification as NotificationSchema,
+    RolePermission,
     Source,
     Status as StatusSchema,
 } from "@versia/client/schemas";
-import type { RolePermission } from "@versia/client/schemas";
 import type { Challenge } from "altcha-lib/types";
 import { relations, sql } from "drizzle-orm";
 import {
@@ -27,22 +27,18 @@ import type {
     TextContentFormatSchema,
 } from "~/packages/sdk/schemas";
 
-// biome-ignore lint/nursery/useExplicitType: Type is too complex
 const createdAt = () =>
     timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull();
 
-// biome-ignore lint/nursery/useExplicitType: Type is too complex
 const updatedAt = () =>
     timestamp("updated_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull();
 
-// biome-ignore lint/nursery/useExplicitType: Type is too complex
 const uri = () => text("uri").unique();
 
-// biome-ignore lint/nursery/useExplicitType: Type is too complex
 const id = () => uuid("id").primaryKey().notNull();
 
 export const Challenges = pgTable("Challenges", {

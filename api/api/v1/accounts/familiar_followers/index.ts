@@ -1,8 +1,8 @@
 import {
     Account as AccountSchema,
     FamiliarFollowers as FamiliarFollowersSchema,
+    RolePermission,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { db, User } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";

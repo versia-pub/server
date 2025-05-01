@@ -1,9 +1,9 @@
 import {
     Account as AccountSchema,
     Relationship as RelationshipSchema,
+    RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { Relationship } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

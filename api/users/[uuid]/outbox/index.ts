@@ -23,9 +23,11 @@ export default apiRoute((app) =>
                     description: "User outbox",
                     content: {
                         "application/json": {
-                            schema: CollectionSchema.extend({
-                                items: z.array(NoteSchema),
-                            }),
+                            schema: resolver(
+                                CollectionSchema.extend({
+                                    items: z.array(NoteSchema),
+                                }),
+                            ),
                         },
                     },
                 },

@@ -33,7 +33,9 @@ export class ApiError extends Error {
             .optional(),
     });
 
-    public get schema(): DescribeRouteOptions["responses"] {
+    public get schema(): NonNullable<
+        DescribeRouteOptions["responses"]
+    >[number] {
         return {
             description: this.message,
             content: {

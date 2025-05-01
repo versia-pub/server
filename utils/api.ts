@@ -481,7 +481,7 @@ export const setContextFormDataToObject = (
     context.req.bodyCache.json = setTo;
     context.req.parseBody = (): Promise<unknown> =>
         Promise.resolve(context.req.bodyCache.json);
-    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    // biome-ignore lint/suspicious/noExplicitAny: Monkeypatching
     context.req.json = (): Promise<any> =>
         Promise.resolve(context.req.bodyCache.json);
 

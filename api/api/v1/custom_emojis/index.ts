@@ -1,5 +1,7 @@
-import { CustomEmoji as CustomEmojiSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    CustomEmoji as CustomEmojiSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Emoji } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";

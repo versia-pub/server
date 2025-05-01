@@ -1,9 +1,9 @@
 import {
     Account as AccountSchema,
     Notification as NotificationSchema,
+    RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Notifications } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";

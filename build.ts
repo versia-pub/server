@@ -1,10 +1,8 @@
 import { readdir } from "node:fs/promises";
-import { $ } from "bun";
-import { build } from "bun";
-import ora from "ora";
+import { $, build } from "bun";
 import { routes } from "~/routes";
 
-const buildSpinner = ora("Building").start();
+console.log("Building...");
 
 await $`rm -rf dist && mkdir dist`;
 
@@ -31,7 +29,7 @@ await build({
     external: ["acorn", "@bull-board/ui"],
 });
 
-buildSpinner.text = "Transforming";
+console.log("Copying files...");
 
 // Copy Drizzle migrations to dist
 await $`cp -r drizzle dist/drizzle`;
@@ -62,4 +60,4 @@ await $`cp package.json dist/package.json`;
 // Fixes issues with sharp
 await $`cp -rL node_modules/detect-libc dist/node_modules/`;
 
-buildSpinner.stop();
+console.log("Build complete!");

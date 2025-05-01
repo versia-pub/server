@@ -1,6 +1,5 @@
 import { Relationship, User } from "@versia/kit/db";
-import { Queue } from "bullmq";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 

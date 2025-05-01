@@ -1,5 +1,4 @@
-import { Status as StatusSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq } from "drizzle-orm";

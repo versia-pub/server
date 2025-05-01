@@ -1,5 +1,7 @@
-import { Attachment as AttachmentSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Attachment as AttachmentSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Media } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

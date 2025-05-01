@@ -11,8 +11,6 @@ versia-server.overrideAttrs (oldAttrs: {
   '';
   entrypointPath = "worker.js";
 
-  patches = [./fix-build-spinner-worker.patch];
-
   meta =
     oldAttrs.meta
     // {

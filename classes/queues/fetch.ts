@@ -1,7 +1,6 @@
 import { Instance } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
-import { Queue } from "bullmq";
-import { Worker } from "bullmq";
+import { Queue, Worker } from "bullmq";
 import { eq } from "drizzle-orm";
 import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";

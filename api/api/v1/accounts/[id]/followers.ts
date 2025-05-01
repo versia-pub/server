@@ -1,5 +1,7 @@
-import { Account as AccountSchema } from "@versia/client/schemas";
-import { RolePermission } from "@versia/client/schemas";
+import {
+    Account as AccountSchema,
+    RolePermission,
+} from "@versia/client/schemas";
 import { Timeline } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
@@ -28,22 +30,20 @@ export default apiRoute((app) =>
                             schema: resolver(z.array(AccountSchema)),
                         },
                     },
-                    headers: resolver(
-                        z.object({
-                            link: z
-                                .string()
-                                .optional()
-                                .openapi({
-                                    description:
-                                        "Links to the next and previous pages",
-                                    example:
-                                        '<https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/followers?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/followers?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"',
-                                    externalDocs: {
-                                        url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
-                                    },
-                                }),
-                        }),
-                    ),
+                    headers: {
+                        link: z
+                            .string()
+                            .optional()
+                            .openapi({
+                                description:
+                                    "Links to the next and previous pages",
+                                example:
+                                    '<https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/followers?limit=2&max_id=359ae97f-78dd-43e7-8e13-1d8e1d7829b5>; rel="next", <https://versia.social/api/v1/accounts/46be88d3-25b4-4edc-8be9-c28c4ac5ea95/followers?limit=2&since_id=75e9f5a9-f455-48eb-8f60-435b4a088bc0>; rel="prev"',
+                                externalDocs: {
+                                    url: "https://docs.joinmastodon.org/api/guidelines/#pagination",
+                                },
+                            }),
+                    },
                 },
                 404: ApiError.accountNotFound().schema,
                 422: ApiError.validationFailed().schema,
