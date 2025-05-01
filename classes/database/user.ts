@@ -494,12 +494,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri: uri?.href,
         });
 
-        if (this.local && note.author.local) {
+        if (note.author.local) {
             // Notify the user that their post has been favourited
             await note.author.notify("favourite", this, note);
-        } else if (this.local && note.author.remote) {
-            // Federate the like
-            await this.federateToFollowers(newLike.toVersia());
+        }
+
+        const federatedUsers = await this.federateToFollowers(
+            newLike.toVersia(),
+        );
+
+        if (
+            note.remote &&
+            !federatedUsers.find((u) => u.id === note.author.id)
+        ) {
+            await this.federateToUser(newLike.toVersia(), note.author);
         }
 
         return newLike;
@@ -523,12 +531,24 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         await likeToDelete.delete();
 
-        if (this.local && note.author.local) {
+        if (note.author.local) {
             // Remove any eventual notifications for this like
             await likeToDelete.clearRelatedNotifications();
-        } else if (this.local && note.author.remote) {
-            // User is local, federate the delete
-            await this.federateToFollowers(likeToDelete.unlikeToVersia(this));
+        }
+
+        // User is local, federate the delete
+        const federatedUsers = await this.federateToFollowers(
+            likeToDelete.unlikeToVersia(this),
+        );
+
+        if (
+            note.remote &&
+            !federatedUsers.find((u) => u.id === note.author.id)
+        ) {
+            await this.federateToUser(
+                likeToDelete.unlikeToVersia(this),
+                note.author,
+            );
         }
     }
 
@@ -977,8 +997,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * Federates an entity to all followers of the user
      *
      * @param entity Entity to federate
+     * @returns The followers that received the entity
      */
-    public async federateToFollowers(entity: KnownEntity): Promise<void> {
+    public async federateToFollowers(entity: KnownEntity): Promise<User[]> {
         // Get followers
         const followers = await this.getRemoteFollowers();
 
@@ -993,6 +1014,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 },
             })),
         );
+
+        return followers;
     }
 
     /**
