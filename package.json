@@ -121,6 +121,7 @@
         "markdown-it": "^14.1.0",
         "markdown-it-anchor": "^9.2.0",
         "markdown-it-container": "^4.0.0",
+        "markdown-it-mathjax3": "^4.3.2",
         "markdown-it-toc-done-right": "^4.2.0",
         "mime-types": "^3.0.1",
         "mitata": "^1.0.34",
