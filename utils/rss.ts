@@ -1,5 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { Feed } from "feed";
+import { Media } from "~/classes/database/media";
 import { Note } from "~/classes/database/note";
 import type { User } from "~/classes/database/user";
 import { config } from "~/config";
@@ -48,6 +49,11 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
     });
 
     for (const note of notes) {
+        const attachments = note.data.attachments.map((a) => new Media(a));
+        const image = attachments.find((a) => a.getMastodonType() === "image");
+        const video = attachments.find((a) => a.getMastodonType() === "video");
+        const audio = attachments.find((a) => a.getMastodonType() === "audio");
+
         feed.addItem({
             link: new URL(
                 `/@${user.data.username}/${note.id}`,
@@ -61,6 +67,48 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
             ).href,
             published: new Date(note.data.createdAt),
             title: "",
+            image: image
+                ? {
+                      url: image.getUrl().href,
+                      title:
+                          image.data.content[image.getPreferredMimeType()]
+                              .description ?? undefined,
+                      type: image.getPreferredMimeType(),
+                      length:
+                          image.data.content[image.getPreferredMimeType()]
+                              .size ?? undefined,
+                  }
+                : undefined,
+            video: video
+                ? {
+                      url: video.getUrl().href,
+                      title:
+                          video.data.content[video.getPreferredMimeType()]
+                              .description ?? undefined,
+                      type: video.getPreferredMimeType(),
+                      duration:
+                          video.data.content[video.getPreferredMimeType()]
+                              .duration ?? undefined,
+                      length:
+                          video.data.content[video.getPreferredMimeType()]
+                              .size ?? undefined,
+                  }
+                : undefined,
+            audio: audio
+                ? {
+                      url: audio.getUrl().href,
+                      title:
+                          audio.data.content[audio.getPreferredMimeType()]
+                              .description ?? undefined,
+                      type: audio.getPreferredMimeType(),
+                      duration:
+                          audio.data.content[audio.getPreferredMimeType()]
+                              .duration ?? undefined,
+                      length:
+                          audio.data.content[audio.getPreferredMimeType()]
+                              .size ?? undefined,
+                  }
+                : undefined,
         });
     }
 
