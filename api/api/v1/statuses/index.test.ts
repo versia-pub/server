@@ -208,6 +208,44 @@ describe("/api/v1/statuses", () => {
         });
     });
 
+    test("shouldn't allow replying to a reblog", async () => {
+        await using client = await generateClient(users[0]);
+        await using client2 = await generateClient(users[1]);
+
+        const { data, ok } = await client.postStatus("Hello, world!");
+
+        expect(ok).toBe(true);
+
+        const { data: reblog, ok: ok2 } = await client2.reblogStatus(data.id);
+
+        expect(ok2).toBe(true);
+
+        const { ok: ok3 } = await client.postStatus("Hello, world again!", {
+            in_reply_to_id: reblog.id,
+        });
+
+        expect(ok3).toBe(false);
+    });
+
+    test("shouldn't allow quoting a reblog", async () => {
+        await using client = await generateClient(users[0]);
+        await using client2 = await generateClient(users[1]);
+
+        const { data, ok } = await client.postStatus("Hello, world!");
+
+        expect(ok).toBe(true);
+
+        const { data: reblog, ok: ok2 } = await client2.reblogStatus(data.id);
+
+        expect(ok2).toBe(true);
+
+        const { ok: ok3 } = await client.postStatus("Hello, world again!", {
+            quote_id: reblog.id,
+        });
+
+        expect(ok3).toBe(false);
+    });
+
     describe("mentions testing", () => {
         test("should correctly parse @mentions", async () => {
             await using client = await generateClient(users[0]);

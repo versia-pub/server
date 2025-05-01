@@ -163,19 +163,33 @@ export default apiRoute((app) =>
                 );
             }
 
+            const reply = in_reply_to_id
+                ? await Note.fromId(in_reply_to_id)
+                : null;
+
             // Check that in_reply_to_id and quote_id are real posts if provided
-            if (in_reply_to_id && !(await Note.fromId(in_reply_to_id))) {
+            if (in_reply_to_id && !reply) {
                 throw new ApiError(
                     422,
                     "Note referenced by in_reply_to_id not found",
                 );
             }
 
-            if (quote_id && !(await Note.fromId(quote_id))) {
+            if (in_reply_to_id && reply?.data.reblogId) {
+                throw new ApiError(422, "Cannot reply to a reblog");
+            }
+
+            const quote = quote_id ? await Note.fromId(quote_id) : null;
+
+            if (quote_id && !quote) {
                 throw new ApiError(
                     422,
                     "Note referenced by quote_id not found",
                 );
+            }
+
+            if (quote_id && quote?.data.reblogId) {
+                throw new ApiError(422, "Cannot quote a reblog");
             }
 
             const sanitizedSpoilerText = spoiler_text
