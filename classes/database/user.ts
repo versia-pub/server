@@ -4,6 +4,7 @@ import type {
     Mention as MentionSchema,
     RolePermission,
     Source,
+    Status as StatusSchema,
 } from "@versia/client/schemas";
 import { db, Media, Notification, PushSubscription } from "@versia/kit/db";
 import {
@@ -52,7 +53,7 @@ import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
 import { Like } from "./like.ts";
-import type { Note } from "./note.ts";
+import { Note } from "./note.ts";
 import { Relationship } from "./relationship.ts";
 import { Role } from "./role.ts";
 
@@ -469,6 +470,123 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
+     * Reblog a note.
+     *
+     * If the note is already reblogged, it will return the existing reblog. Also creates a notification for the author of the note.
+     * @param note The note to reblog
+     * @param visibility The visibility of the reblog
+     * @param uri The URI of the reblog, if it is remote
+     * @returns The reblog object created or the existing reblog
+     */
+    public async reblog(
+        note: Note,
+        visibility: z.infer<typeof StatusSchema.shape.visibility>,
+        uri?: URL,
+    ): Promise<Note> {
+        const existingReblog = await Note.fromSql(
+            and(eq(Notes.authorId, this.id), eq(Notes.reblogId, note.id)),
+            undefined,
+            this.id,
+        );
+
+        if (existingReblog) {
+            return existingReblog;
+        }
+
+        const newReblog = await Note.insert({
+            id: randomUUIDv7(),
+            authorId: this.id,
+            reblogId: note.id,
+            visibility,
+            sensitive: false,
+            updatedAt: new Date().toISOString(),
+            applicationId: null,
+            uri: uri?.href,
+        });
+
+        // Refetch the note *again* to get the proper value of .reblogged
+        const finalNewReblog = await Note.fromId(newReblog.id, this?.id);
+
+        if (!finalNewReblog) {
+            throw new Error("Failed to reblog");
+        }
+
+        if (note.author.local) {
+            // Notify the user that their post has been reblogged
+            await note.author.notify("reblog", this, finalNewReblog);
+        }
+
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
+                finalNewReblog.toVersiaShare(),
+            );
+
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(
+                    finalNewReblog.toVersiaShare(),
+                    note.author,
+                );
+            }
+        }
+
+        return finalNewReblog;
+    }
+
+    /**
+     * Unreblog a note.
+     *
+     * If the note is not reblogged, it will return without doing anything. Also removes any notifications for this reblog.
+     * @param note The note to unreblog
+     * @returns
+     */
+    public async unreblog(note: Note): Promise<void> {
+        const reblogToDelete = await Note.fromSql(
+            and(eq(Notes.authorId, this.id), eq(Notes.reblogId, note.id)),
+            undefined,
+            this.id,
+        );
+
+        if (!reblogToDelete) {
+            return;
+        }
+
+        await reblogToDelete.delete();
+
+        if (note.author.local) {
+            // Remove any eventual notifications for this reblog
+            await db
+                .delete(Notifications)
+                .where(
+                    and(
+                        eq(Notifications.accountId, this.id),
+                        eq(Notifications.type, "reblog"),
+                        eq(Notifications.notifiedId, note.data.authorId),
+                        eq(Notifications.noteId, note.id),
+                    ),
+                );
+        }
+
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
+                reblogToDelete.toVersiaUnshare(),
+            );
+
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(
+                    reblogToDelete.toVersiaUnshare(),
+                    note.author,
+                );
+            }
+        }
+    }
+
+    /**
      * Like a note.
      *
      * If the note is already liked, it will return the existing like. Also creates a notification for the author of the note.
@@ -498,15 +616,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             await note.author.notify("favourite", this, note);
         }
 
-        const federatedUsers = await this.federateToFollowers(
-            newLike.toVersia(),
-        );
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
+                newLike.toVersia(),
+            );
 
-        if (
-            note.remote &&
-            !federatedUsers.find((u) => u.id === note.author.id)
-        ) {
-            await this.federateToUser(newLike.toVersia(), note.author);
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(newLike.toVersia(), note.author);
+            }
         }
 
         return newLike;
@@ -535,19 +655,20 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             await likeToDelete.clearRelatedNotifications();
         }
 
-        // User is local, federate the delete
-        const federatedUsers = await this.federateToFollowers(
-            likeToDelete.unlikeToVersia(this),
-        );
-
-        if (
-            note.remote &&
-            !federatedUsers.find((u) => u.id === note.author.id)
-        ) {
-            await this.federateToUser(
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
                 likeToDelete.unlikeToVersia(this),
-                note.author,
             );
+
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(
+                    likeToDelete.unlikeToVersia(this),
+                    note.author,
+                );
+            }
         }
     }
 

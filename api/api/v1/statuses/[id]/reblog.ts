@@ -1,8 +1,4 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
-import { Note } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
-import { randomUUIDv7 } from "bun";
-import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
@@ -54,39 +50,9 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
             const note = context.get("note");
 
-            const existingReblog = await Note.fromSql(
-                and(
-                    eq(Notes.authorId, user.id),
-                    eq(Notes.reblogId, note.data.id),
-                ),
-            );
+            const reblog = await user.reblog(note, visibility);
 
-            if (existingReblog) {
-                return context.json(await existingReblog.toApi(user), 200);
-            }
-
-            const newReblog = await Note.insert({
-                id: randomUUIDv7(),
-                authorId: user.id,
-                reblogId: note.data.id,
-                visibility,
-                sensitive: false,
-                updatedAt: new Date().toISOString(),
-                applicationId: null,
-            });
-
-            // Refetch the note *again* to get the proper value of .reblogged
-            const finalNewReblog = await Note.fromId(newReblog.id, user?.id);
-
-            if (!finalNewReblog) {
-                throw new Error("Failed to reblog");
-            }
-
-            if (note.author.local && user.local) {
-                await note.author.notify("reblog", user, newReblog);
-            }
-
-            return context.json(await finalNewReblog.toApi(user), 200);
+            return context.json(await reblog.toApi(user), 200);
         },
     ),
 );

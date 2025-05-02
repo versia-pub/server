@@ -6,7 +6,7 @@ import {
     enableRealRequests,
     mock,
 } from "bun-bagel";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Instance } from "~/classes/database/instance";
 import { Note } from "~/classes/database/note";
 import { User } from "~/classes/database/user";
@@ -19,6 +19,7 @@ import { fakeRequest } from "~/tests/utils";
 const instanceUrl = new URL("https://versia.example.com");
 const noteId = randomUUIDv7();
 const userId = randomUUIDv7();
+const shareId = randomUUIDv7();
 const userKeys = await User.generateKeys();
 const privateKey = await crypto.subtle.importKey(
     "pkcs8",
@@ -166,5 +167,58 @@ describe("Inbox Tests", () => {
         const note = await Note.fromSql(eq(Notes.uri, exampleRequest.data.uri));
 
         expect(note).not.toBeNull();
+    });
+
+    test("should correctly process Share", async () => {
+        const exampleRequest = new VersiaEntities.Share({
+            id: shareId,
+            created_at: "2025-04-18T10:32:01.427Z",
+            uri: new URL(`/shares/${shareId}`, instanceUrl).href,
+            type: "pub.versia:share/Share",
+            author: new URL(`/users/${userId}`, instanceUrl).href,
+            shared: new URL(`/notes/${noteId}`, instanceUrl).href,
+        });
+
+        const signedRequest = await sign(
+            privateKey,
+            new URL(exampleRequest.data.author),
+            new Request(inboxUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "User-Agent": "Versia/1.0.0",
+                },
+                body: JSON.stringify(exampleRequest.toJSON()),
+            }),
+        );
+
+        const response = await fakeRequest(inboxUrl, {
+            method: "POST",
+            headers: signedRequest.headers,
+            body: signedRequest.body,
+        });
+
+        expect(response.status).toBe(200);
+
+        await sleep(500);
+
+        const dbNote = await Note.fromSql(
+            eq(Notes.uri, new URL(`/notes/${noteId}`, instanceUrl).href),
+        );
+
+        if (!dbNote) {
+            throw new Error("DBNote not found");
+        }
+
+        // Check if share was created in the database
+        const share = await Note.fromSql(
+            and(
+                eq(Notes.reblogId, dbNote.id),
+                eq(Notes.authorId, dbNote.data.authorId),
+            ),
+        );
+
+        expect(share).not.toBeNull();
     });
 });

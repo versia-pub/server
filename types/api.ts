@@ -31,4 +31,5 @@ export type KnownEntity =
     | VersiaEntities.FollowReject
     | VersiaEntities.Unfollow
     | VersiaEntities.Delete
-    | VersiaEntities.Like;
+    | VersiaEntities.Like
+    | VersiaEntities.Share;

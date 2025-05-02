@@ -1,7 +1,5 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { Note } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
-import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiRoute, auth, withNoteParam } from "@/api";
@@ -42,22 +40,7 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
             const note = context.get("note");
 
-            const existingReblog = await Note.fromSql(
-                and(
-                    eq(Notes.authorId, user.id),
-                    eq(Notes.reblogId, note.data.id),
-                ),
-                undefined,
-                user?.id,
-            );
-
-            if (!existingReblog) {
-                return context.json(await note.toApi(user), 200);
-            }
-
-            await existingReblog.delete();
-
-            await user.federateToFollowers(existingReblog.deleteToVersia());
+            await user.unreblog(note);
 
             const newNote = await Note.fromId(note.data.id, user.id);
 

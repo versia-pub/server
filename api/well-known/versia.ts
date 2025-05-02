@@ -47,6 +47,8 @@ export default apiRoute((app) =>
                         extensions: [
                             "pub.versia:custom_emojis",
                             "pub.versia:instance_messaging",
+                            "pub.versia:likes",
+                            "pub.versia:shares",
                         ],
                         versions: ["0.5.0"],
                     },

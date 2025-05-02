@@ -739,6 +739,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     `/notes/${status.id}/quotes`,
                     config.http.base_url,
                 ).href,
+                "pub.versia:share/Shares": new URL(
+                    `/notes/${status.id}/shares`,
+                    config.http.base_url,
+                ).href,
             },
             attachments: status.attachments.map(
                 (attachment) =>
@@ -777,6 +781,36 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 },
                 // TODO: Add polls and reactions
             },
+        });
+    }
+
+    public toVersiaShare(): VersiaEntities.Share {
+        if (!(this.data.reblogId && this.data.reblog)) {
+            throw new Error("Cannot share a non-reblogged note");
+        }
+
+        return new VersiaEntities.Share({
+            type: "pub.versia:share/Share",
+            id: crypto.randomUUID(),
+            author: this.author.uri.href,
+            uri: new URL(`/shares/${this.id}`, config.http.base_url).href,
+            created_at: new Date().toISOString(),
+            shared: new Note(this.data.reblog as NoteTypeWithRelations).getUri()
+                .href,
+        });
+    }
+
+    public toVersiaUnshare(): VersiaEntities.Delete {
+        return new VersiaEntities.Delete({
+            type: "Delete",
+            id: crypto.randomUUID(),
+            created_at: new Date().toISOString(),
+            author: User.getUri(
+                this.data.authorId,
+                this.data.author.uri ? new URL(this.data.author.uri) : null,
+            ).href,
+            deleted_type: "pub.versia:share/Share",
+            deleted: new URL(`/shares/${this.id}`, config.http.base_url).href,
         });
     }
 

@@ -4,7 +4,7 @@ import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
 import chalk from "chalk";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { isValidationError } from "zod-validation-error";
 import { sentry } from "@/sentry";
@@ -202,6 +202,9 @@ export class InboxProcessor {
                 .on(VersiaEntities.User, async (u) => {
                     await User.fromVersia(u);
                 })
+                .on(VersiaEntities.Share, async (s) =>
+                    InboxProcessor.processShare(s),
+                )
                 .sort(() => {
                     throw new ApiError(400, "Unknown entity type");
                 });
@@ -333,6 +336,29 @@ export class InboxProcessor {
     }
 
     /**
+     * Handles Share entity processing.
+     *
+     * @param {VersiaShare} share - The Share entity to process.
+     * @returns {Promise<void>}
+     */
+    private static async processShare(
+        share: VersiaEntities.Share,
+    ): Promise<void> {
+        const author = await User.resolve(new URL(share.data.author));
+        const sharedNote = await Note.resolve(new URL(share.data.shared));
+
+        if (!author) {
+            throw new ApiError(404, "Author not found");
+        }
+
+        if (!sharedNote) {
+            throw new ApiError(404, "Shared Note not found");
+        }
+
+        await author.reblog(sharedNote, "public", new URL(share.data.uri));
+    }
+
+    /**
      * Handles Delete entity processing.
      *
      * @param {VersiaDelete} delete_ - The Delete entity to process.
@@ -392,6 +418,37 @@ export class InboxProcessor {
                 }
 
                 await like.delete();
+                return;
+            }
+            case "pub.versia:shares/Share": {
+                if (!author) {
+                    throw new ApiError(404, "Author not found");
+                }
+
+                const reblog = await Note.fromSql(
+                    and(eq(Notes.uri, toDelete), eq(Notes.authorId, author.id)),
+                );
+
+                if (!reblog) {
+                    throw new ApiError(
+                        404,
+                        "Share not found or not owned by sender",
+                    );
+                }
+
+                const reblogged = await Note.fromId(
+                    reblog.data.reblogId,
+                    author.id,
+                );
+
+                if (!reblogged) {
+                    throw new ApiError(
+                        404,
+                        "Share not found or not owned by sender",
+                    );
+                }
+
+                await author.unreblog(reblogged);
                 return;
             }
             default: {

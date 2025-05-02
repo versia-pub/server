@@ -13,13 +13,13 @@ import { URICollectionSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>
     app.get(
-        "/notes/:id/quotes",
+        "/notes/:id/shares",
         describeRoute({
-            summary: "Retrieve all quotes of a Versia Note.",
+            summary: "Retrieve all shares of a Versia Note.",
             tags: ["Federation"],
             responses: {
                 200: {
-                    description: "Note quotes",
+                    description: "Note shares",
                     content: {
                         "application/json": {
                             schema: resolver(URICollectionSchema),
@@ -67,9 +67,9 @@ export default apiRoute((app) =>
                 throw ApiError.noteNotFound();
             }
 
-            const quotes = await Note.manyFromSql(
+            const shares = await Note.manyFromSql(
                 and(
-                    eq(Notes.quotingId, note.id),
+                    eq(Notes.reblogId, note.id),
                     inArray(Notes.visibility, ["public", "unlisted"]),
                 ),
                 undefined,
@@ -77,10 +77,10 @@ export default apiRoute((app) =>
                 offset,
             );
 
-            const quoteCount = await db.$count(
+            const shareCount = await db.$count(
                 Notes,
                 and(
-                    eq(Notes.quotingId, note.id),
+                    eq(Notes.reblogId, note.id),
                     inArray(Notes.visibility, ["public", "unlisted"]),
                 ),
             );
@@ -88,25 +88,25 @@ export default apiRoute((app) =>
             const uriCollection = new VersiaEntities.URICollection({
                 author: note.author.uri.href,
                 first: new URL(
-                    `/notes/${note.id}/quotes?offset=0`,
+                    `/notes/${note.id}/shares?offset=0`,
                     config.http.base_url,
                 ).href,
                 last:
-                    quoteCount > limit
+                    shareCount > limit
                         ? new URL(
-                              `/notes/${note.id}/quotes?offset=${
-                                  quoteCount - limit
+                              `/notes/${note.id}/shares?offset=${
+                                  shareCount - limit
                               }`,
                               config.http.base_url,
                           ).href
                         : new URL(
-                              `/notes/${note.id}/quotes`,
+                              `/notes/${note.id}/shares`,
                               config.http.base_url,
                           ).href,
                 next:
-                    offset + limit < quoteCount
+                    offset + limit < shareCount
                         ? new URL(
-                              `/notes/${note.id}/quotes?offset=${
+                              `/notes/${note.id}/shares?offset=${
                                   offset + limit
                               }`,
                               config.http.base_url,
@@ -115,14 +115,18 @@ export default apiRoute((app) =>
                 previous:
                     offset - limit >= 0
                         ? new URL(
-                              `/notes/${note.id}/quotes?offset=${
+                              `/notes/${note.id}/shares?offset=${
                                   offset - limit
                               }`,
                               config.http.base_url,
                           ).href
                         : null,
-                total: quoteCount,
-                items: quotes.map((reply) => reply.getUri().href),
+                total: shareCount,
+                items: shares.map(
+                    (share) =>
+                        new URL(`/shares/${share.id}`, config.http.base_url)
+                            .href,
+                ),
             });
 
             // If base_url uses https and request uses http, rewrite request to use https
