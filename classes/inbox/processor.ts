@@ -417,7 +417,22 @@ export class InboxProcessor {
                     );
                 }
 
-                await like.delete();
+                const likeAuthor = await User.fromId(like.data.likerId);
+                const liked = await Note.fromId(like.data.likedId);
+
+                if (!liked) {
+                    throw new ApiError(
+                        404,
+                        "Liked Note not found or not owned by sender",
+                    );
+                }
+
+                if (!likeAuthor) {
+                    throw new ApiError(404, "Like author not found");
+                }
+
+                await likeAuthor.unlike(liked);
+
                 return;
             }
             case "pub.versia:shares/Share": {

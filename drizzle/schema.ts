@@ -446,6 +446,9 @@ export const Notes = pgTable("Notes", {
     visibility: text("visibility")
         .$type<z.infer<typeof StatusSchema.shape.visibility>>()
         .notNull(),
+    reblogCount: integer("reblog_count").default(0).notNull(),
+    likeCount: integer("like_count").default(0).notNull(),
+    replyCount: integer("reply_count").default(0).notNull(),
     replyId: uuid("replyId").references((): AnyPgColumn => Notes.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
@@ -583,6 +586,9 @@ export const Users = pgTable(
             onDelete: "set null",
             onUpdate: "cascade",
         }),
+        followerCount: integer("follower_count").default(0).notNull(),
+        followingCount: integer("following_count").default(0).notNull(),
+        statusCount: integer("status_count").default(0).notNull(),
         createdAt: createdAt(),
         updatedAt: updatedAt(),
         isBot: boolean("is_bot").default(false).notNull(),

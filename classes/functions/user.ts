@@ -9,7 +9,7 @@ import {
     type User,
 } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
-import { type InferSelectModel, type SQL, sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 
 export const userRelations = {
     instance: true,
@@ -31,42 +31,6 @@ export const userRelations = {
         },
     },
 } as const;
-
-export const userExtras = {
-    followerCount:
-        sql`(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "Users".id AND "relationships"."following" = true))`.as(
-            "follower_count",
-        ),
-    followingCount:
-        sql`(SELECT COUNT(*) FROM "Relationships" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "Users".id AND "relationshipSubjects"."following" = true))`.as(
-            "following_count",
-        ),
-    statusCount:
-        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."authorId" = "Users".id)`.as(
-            "status_count",
-        ),
-};
-
-export const userExtrasTemplate = (
-    name: string,
-): {
-    followerCount: SQL.Aliased<unknown>;
-    followingCount: SQL.Aliased<unknown>;
-    statusCount: SQL.Aliased<unknown>;
-} => ({
-    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
-    followerCount: sql([
-        `(SELECT COUNT(*) FROM "Relationships" "relationships" WHERE ("relationships"."ownerId" = "${name}".id AND "relationships"."following" = true))`,
-    ]).as("follower_count"),
-    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
-    followingCount: sql([
-        `(SELECT COUNT(*) FROM "Relationships" "relationshipSubjects" WHERE ("relationshipSubjects"."subjectId" = "${name}".id AND "relationshipSubjects"."following" = true))`,
-    ]).as("following_count"),
-    // @ts-expect-error sql is a template tag, so it gets confused when we use it as a function
-    statusCount: sql([
-        `(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."authorId" = "${name}".id)`,
-    ]).as("status_count"),
-});
 
 export interface AuthData {
     user: User | null;
@@ -130,10 +94,6 @@ export const findManyUsers = async (
         with: {
             ...userRelations,
             ...query?.with,
-        },
-        extras: {
-            ...userExtras,
-            ...query?.extras,
         },
     });
 

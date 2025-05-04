@@ -106,12 +106,8 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         return this.update(this.data);
     }
 
-    public async delete(ids?: string[]): Promise<void> {
-        if (Array.isArray(ids)) {
-            await db.delete(Likes).where(inArray(Likes.id, ids));
-        } else {
-            await db.delete(Likes).where(eq(Likes.id, this.id));
-        }
+    public async delete(): Promise<void> {
+        await db.delete(Likes).where(eq(Likes.id, this.id));
     }
 
     public static async insert(
@@ -119,13 +115,13 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
     ): Promise<Like> {
         const inserted = (await db.insert(Likes).values(data).returning())[0];
 
-        const role = await Like.fromId(inserted.id);
+        const like = await Like.fromId(inserted.id);
 
-        if (!role) {
+        if (!like) {
             throw new Error("Failed to insert like");
         }
 
-        return role;
+        return like;
     }
 
     public get id(): string {

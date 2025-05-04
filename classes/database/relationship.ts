@@ -1,6 +1,6 @@
 import type { Relationship as RelationshipSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { Relationships } from "@versia/kit/tables";
+import { Relationships, Users } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
     and,
@@ -10,6 +10,7 @@ import {
     type InferSelectModel,
     inArray,
     type SQL,
+    sql,
 } from "drizzle-orm";
 import { z } from "zod";
 import { BaseInterface } from "./base.ts";
@@ -245,6 +246,40 @@ export class Relationship extends BaseInterface<
             .update(Relationships)
             .set(newRelationship)
             .where(eq(Relationships.id, this.id));
+
+        // If a user follows another user, update followerCount and followingCount
+        if (newRelationship.following && !this.data.following) {
+            await db
+                .update(Users)
+                .set({
+                    followingCount: sql`${Users.followingCount} + 1`,
+                })
+                .where(eq(Users.id, this.data.ownerId));
+
+            await db
+                .update(Users)
+                .set({
+                    followerCount: sql`${Users.followerCount} + 1`,
+                })
+                .where(eq(Users.id, this.data.subjectId));
+        }
+
+        // If a user unfollows another user, update followerCount and followingCount
+        if (!newRelationship.following && this.data.following) {
+            await db
+                .update(Users)
+                .set({
+                    followingCount: sql`${Users.followingCount} - 1`,
+                })
+                .where(eq(Users.id, this.data.ownerId));
+
+            await db
+                .update(Users)
+                .set({
+                    followerCount: sql`${Users.followerCount} - 1`,
+                })
+                .where(eq(Users.id, this.data.subjectId));
+        }
 
         const updated = await Relationship.fromId(this.data.id);
 

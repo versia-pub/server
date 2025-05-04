@@ -20,11 +20,7 @@ import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
 import { config } from "~/config.ts";
 import type * as VersiaEntities from "~/packages/sdk/entities/index.ts";
-import {
-    transformOutputToUserWithRelations,
-    userExtrasTemplate,
-    userRelations,
-} from "./user.ts";
+import { transformOutputToUserWithRelations, userRelations } from "./user.ts";
 
 /**
  * Wrapper against the Status object to make it easier to work with
@@ -58,7 +54,6 @@ export const findManyNotes = async (
                 with: {
                     ...userRelations,
                 },
-                extras: userExtrasTemplate("Notes_author"),
             },
             mentions: {
                 with: {
@@ -92,9 +87,6 @@ export const findManyNotes = async (
                         with: {
                             user: {
                                 with: userRelations,
-                                extras: userExtrasTemplate(
-                                    "Notes_reblog_mentions_user",
-                                ),
                             },
                         },
                     },
@@ -102,22 +94,9 @@ export const findManyNotes = async (
                         with: {
                             ...userRelations,
                         },
-                        extras: userExtrasTemplate("Notes_reblog_author"),
                     },
                 },
                 extras: {
-                    reblogCount:
-                        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes_reblog".id)`.as(
-                            "reblog_count",
-                        ),
-                    likeCount:
-                        sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes_reblog".id)`.as(
-                            "like_count",
-                        ),
-                    replyCount:
-                        sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes_reblog".id)`.as(
-                            "reply_count",
-                        ),
                     pinned: userId
                         ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes_reblog".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
                               "pinned",
@@ -144,18 +123,6 @@ export const findManyNotes = async (
             quote: true,
         },
         extras: {
-            reblogCount:
-                sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."reblogId" = "Notes".id)`.as(
-                    "reblog_count",
-                ),
-            likeCount:
-                sql`(SELECT COUNT(*) FROM "Likes" WHERE "Likes"."likedId" = "Notes".id)`.as(
-                    "like_count",
-                ),
-            replyCount:
-                sql`(SELECT COUNT(*) FROM "Notes" WHERE "Notes"."replyId" = "Notes".id)`.as(
-                    "reply_count",
-                ),
             pinned: userId
                 ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
                       "pinned",
@@ -200,17 +167,11 @@ export const findManyNotes = async (
                 (attachment) => attachment.media,
             ),
             emojis: (post.reblog.emojis ?? []).map((emoji) => emoji.emoji),
-            reblogCount: Number(post.reblog.reblogCount),
-            likeCount: Number(post.reblog.likeCount),
-            replyCount: Number(post.reblog.replyCount),
             pinned: Boolean(post.reblog.pinned),
             reblogged: Boolean(post.reblog.reblogged),
             muted: Boolean(post.reblog.muted),
             liked: Boolean(post.reblog.liked),
         },
-        reblogCount: Number(post.reblogCount),
-        likeCount: Number(post.likeCount),
-        replyCount: Number(post.replyCount),
         pinned: Boolean(post.pinned),
         reblogged: Boolean(post.reblogged),
         muted: Boolean(post.muted),

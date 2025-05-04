@@ -12,7 +12,6 @@ import {
 import type { z } from "zod";
 import {
     transformOutputToUserWithRelations,
-    userExtrasTemplate,
     userRelations,
 } from "../functions/user.ts";
 import { BaseInterface } from "./base.ts";
@@ -78,7 +77,6 @@ export class Notification extends BaseInterface<
                     with: {
                         ...userRelations,
                     },
-                    extras: userExtrasTemplate("Notifications_account"),
                 },
             },
         });
@@ -112,7 +110,6 @@ export class Notification extends BaseInterface<
                     with: {
                         ...userRelations,
                     },
-                    extras: userExtrasTemplate("Notifications_account"),
                 },
             },
             extras: extra?.extras,

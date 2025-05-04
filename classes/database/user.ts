@@ -13,6 +13,7 @@ import {
     Notes,
     NoteToMentions,
     Notifications,
+    Relationships,
     Users,
     UserToPinnedNotes,
 } from "@versia/kit/tables";
@@ -203,6 +204,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             languages: options?.languages,
         });
 
+        if (!otherUser.data.isLocked) {
+            // Update the follower count
+            await otherUser.recalculateFollowerCount();
+            await this.recalculateFollowingCount();
+        }
+
         if (otherUser.remote) {
             await deliveryQueue.add(DeliveryJobType.FederateEntity, {
                 entity: {
@@ -237,6 +244,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             });
         }
 
+        await this.recalculateFollowingCount();
+        await followee.recalculateFollowerCount();
+
         await relationship.update({
             following: false,
         });
@@ -261,6 +271,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         if (this.remote) {
             throw new Error("Followee must be a local user");
         }
+
+        await follower.recalculateFollowerCount();
+        await this.recalculateFollowingCount();
 
         const entity = new VersiaEntities.FollowAccept({
             type: "FollowAccept",
@@ -504,6 +517,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri: uri?.href,
         });
 
+        await note.recalculateReblogCount();
+
         // Refetch the note *again* to get the proper value of .reblogged
         const finalNewReblog = await Note.fromId(newReblog.id, this?.id);
 
@@ -555,6 +570,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         await reblogToDelete.delete();
 
+        await note.recalculateReblogCount();
+
         if (note.author.local) {
             // Remove any eventual notifications for this reblog
             await db
@@ -586,6 +603,45 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
     }
 
+    public async recalculateFollowerCount(): Promise<void> {
+        const followerCount = await db.$count(
+            Relationships,
+            and(
+                eq(Relationships.subjectId, this.id),
+                eq(Relationships.following, true),
+            ),
+        );
+
+        await this.update({
+            followerCount,
+        });
+    }
+
+    public async recalculateFollowingCount(): Promise<void> {
+        const followingCount = await db.$count(
+            Relationships,
+            and(
+                eq(Relationships.ownerId, this.id),
+                eq(Relationships.following, true),
+            ),
+        );
+
+        await this.update({
+            followingCount,
+        });
+    }
+
+    public async recalculateStatusCount(): Promise<void> {
+        const statusCount = await db.$count(
+            Notes,
+            and(eq(Notes.authorId, this.id)),
+        );
+
+        await this.update({
+            statusCount,
+        });
+    }
+
     /**
      * Like a note.
      *
@@ -610,6 +666,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             likedId: note.id,
             uri: uri?.href,
         });
+
+        await note.recalculateLikeCount();
 
         if (note.author.local) {
             // Notify the user that their post has been favourited
@@ -649,6 +707,8 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         await likeToDelete.delete();
+
+        await note.recalculateLikeCount();
 
         if (note.author.local) {
             // Remove any eventual notifications for this like

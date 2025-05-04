@@ -2,6 +2,7 @@ import type { Status } from "@versia/client/schemas";
 import { db, Instance } from "@versia/kit/db";
 import {
     EmojiToNote,
+    Likes,
     MediasToNotes,
     Notes,
     NoteToMentions,
@@ -49,9 +50,6 @@ type NoteTypeWithRelations = NoteType & {
     reply: NoteType | null;
     quote: NoteType | null;
     application: typeof Application.$type | null;
-    reblogCount: number;
-    likeCount: number;
-    replyCount: number;
     pinned: boolean;
     reblogged: boolean;
     muted: boolean;
@@ -102,6 +100,16 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         if (!note) {
             throw new Error("Failed to insert status");
+        }
+
+        // Update author's status count
+        await note.author.recalculateStatusCount();
+
+        if (note.data.replyId) {
+            // Update the reply's reply count
+            await new Note(
+                note.data.reply as typeof Note.$type,
+            ).recalculateReplyCount();
         }
 
         return note;
@@ -306,6 +314,24 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
     public get local(): boolean {
         return this.author.local;
+    }
+
+    public async recalculateReblogCount(): Promise<void> {
+        const reblogCount = await db.$count(Notes, eq(Notes.reblogId, this.id));
+
+        await this.update({ reblogCount });
+    }
+
+    public async recalculateLikeCount(): Promise<void> {
+        const likeCount = await db.$count(Likes, eq(Likes.likedId, this.id));
+
+        await this.update({ likeCount });
+    }
+
+    public async recalculateReplyCount(): Promise<void> {
+        const replyCount = await db.$count(Notes, eq(Notes.replyId, this.id));
+
+        await this.update({ replyCount });
     }
 
     /**
@@ -531,12 +557,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         return note;
     }
 
-    public async delete(ids?: string[]): Promise<void> {
-        if (Array.isArray(ids)) {
-            await db.delete(Notes).where(inArray(Notes.id, ids));
-        } else {
-            await db.delete(Notes).where(eq(Notes.id, this.id));
-        }
+    public async delete(): Promise<void> {
+        await db.delete(Notes).where(eq(Notes.id, this.id));
+
+        // Update author's status count
+        await this.author.recalculateStatusCount();
     }
 
     public async update(

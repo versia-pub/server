@@ -46,4 +46,29 @@ describe("POST /api/v1/statuses/:id/reblog", () => {
         expect(ok).toBe(true);
         expect(data.reblog?.id).toBe(statuses[0].id);
     });
+
+    test("should update reblog count on original status", async () => {
+        await using client = await generateClient(users[0]);
+
+        // Unreblog the status first
+        await client.unreblogStatus(statuses[0].id);
+
+        // Check that the reblog count is 0
+        const { ok: ok1, data: data1 } = await client.getStatus(statuses[0].id);
+
+        expect(ok1).toBe(true);
+        expect(data1.reblogs_count).toBe(0);
+
+        const { ok: ok2, data: data2 } = await client.reblogStatus(
+            statuses[0].id,
+        );
+
+        expect(ok2).toBe(true);
+        expect(data2.reblog?.reblogs_count).toBe(1);
+
+        const { ok: ok3, data: data3 } = await client.getStatus(statuses[0].id);
+
+        expect(ok3).toBe(true);
+        expect(data3.reblogs_count).toBe(1);
+    });
 });

@@ -351,6 +351,13 @@
             "when": 1744979203068,
             "tag": "0049_graceful_iron_man",
             "breakpoints": true
+        },
+        {
+            "idx": 50,
+            "version": "7",
+            "when": 1746368175263,
+            "tag": "0050_thick_lester",
+            "breakpoints": true
         }
     ]
 }
