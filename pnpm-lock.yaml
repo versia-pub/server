@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@bull-board/api':
-        specifier: ^6.9.2
-        version: 6.9.2(@bull-board/ui@6.9.2)
+        specifier: ^6.9.5
+        version: 6.9.5(@bull-board/ui@6.9.5)
       '@bull-board/hono':
-        specifier: ^6.9.2
-        version: 6.9.2
+        specifier: ^6.9.5
+        version: 6.9.5
       '@clerc/plugin-completions':
         specifier: ^0.44.0
         version: 0.44.0(@clerc/core@0.44.0)
@@ -34,7 +34,7 @@ importers:
         version: 2.1.4
       '@hono/zod-validator':
         specifier: ^0.5.0
-        version: 0.5.0(hono@4.7.8)(zod@3.24.3)
+        version: 0.5.0(hono@4.7.8)(zod@3.24.4)
       '@inquirer/confirm':
         specifier: ^5.1.9
         version: 5.1.9(@types/node@22.15.3)
@@ -45,8 +45,8 @@ importers:
         specifier: ^0.9.1
         version: 0.9.1
       '@scalar/hono-api-reference':
-        specifier: ^0.8.7
-        version: 0.8.7(hono@4.7.8)
+        specifier: ^0.8.8
+        version: 0.8.8(hono@4.7.8)
       '@sentry/bun':
         specifier: ^9.15.0
         version: 9.15.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.32.0)
@@ -66,8 +66,8 @@ importers:
         specifier: ^2.0.5
         version: 2.0.5
       bullmq:
-        specifier: ^5.52.0
-        version: 5.52.0
+        specifier: ^5.52.1
+        version: 5.52.1
       chalk:
         specifier: ^5.4.1
         version: 5.4.1
@@ -79,7 +79,7 @@ importers:
         version: 0.2.2
       drizzle-orm:
         specifier: ^0.43.1
-        version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.11)
+        version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.12)
       feed:
         specifier: ^4.2.2
         version: 4.2.2
@@ -88,7 +88,7 @@ importers:
         version: 4.7.8
       hono-openapi:
         specifier: ^0.4.8
-        version: 0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3)
+        version: 0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.4))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.4))(zod@3.24.4)
       hono-rate-limiter:
         specifier: ^0.4.2
         version: 0.4.2(hono@4.7.8)
@@ -105,8 +105,8 @@ importers:
         specifier: ^3.1.5
         version: 3.1.5
       jose:
-        specifier: ^6.0.10
-        version: 6.0.10
+        specifier: ^6.0.11
+        version: 6.0.11
       linkify-html:
         specifier: ^4.2.0
         version: 4.2.0(linkifyjs@4.2.0)
@@ -174,21 +174,21 @@ importers:
         specifier: ^4.1.0-beta.7
         version: 4.1.0-beta.7
       zod:
-        specifier: ^3.24.3
-        version: 3.24.3
+        specifier: ^3.24.4
+        version: 3.24.4
       zod-openapi:
         specifier: ^4.2.4
-        version: 4.2.4(zod@3.24.3)
+        version: 4.2.4(zod@3.24.4)
       zod-validation-error:
         specifier: ^3.4.0
-        version: 3.4.0(zod@3.24.3)
+        version: 3.4.0(zod@3.24.4)
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.0.0-beta.2
         version: 2.0.0-beta.2
       '@types/bun':
-        specifier: ^1.2.11
-        version: 1.2.11
+        specifier: ^1.2.12
+        version: 1.2.12
       '@types/html-to-text':
         specifier: ^9.0.4
         version: 9.0.4
@@ -208,8 +208,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.8.3)
       drizzle-kit:
-        specifier: ^0.31.0
-        version: 0.31.0
+        specifier: ^0.31.1
+        version: 0.31.1
       markdown-it-image-figures:
         specifier: ^2.1.1
         version: 2.1.1(markdown-it@14.1.0)
@@ -223,8 +223,8 @@ importers:
         specifier: ^1.6.3
         version: 1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3)
       vitepress-plugin-tabs:
-        specifier: ^0.7.0
-        version: 0.7.0(vitepress@1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
+        specifier: ^0.7.1
+        version: 0.7.1(vitepress@1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3))
       vitepress-sidebar:
         specifier: ^1.31.1
         version: 1.31.1
@@ -233,7 +233,7 @@ importers:
         version: 3.5.13(typescript@5.8.3)
       zod-to-json-schema:
         specifier: ^3.24.5
-        version: 3.24.5(zod@3.24.3)
+        version: 3.24.5(zod@3.24.4)
 
   packages/client:
     dependencies:
@@ -254,7 +254,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.43.1
-        version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.11)
+        version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.12)
       hono:
         specifier: ^4.7.7
         version: 4.7.8
@@ -443,16 +443,16 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@bull-board/api@6.9.2':
-    resolution: {integrity: sha512-cWnOl6taWHSHadHjRoCRBwatIb68DahvD/Fko4RP6bvOqbmIRF6FeuBOqJ6OOEceTvROqvh3Nn96tAksnicB6g==}
+  '@bull-board/api@6.9.5':
+    resolution: {integrity: sha512-9d03Mu9fuQ3sHAxAwUmlTo8C9KwKHd6Ef2IUOZMG93cAHsQ0oaOpYc5d0roZacYFvfYKr7bTANptKO1f3GLp2g==}
     peerDependencies:
-      '@bull-board/ui': 6.9.2
+      '@bull-board/ui': 6.9.5
 
-  '@bull-board/hono@6.9.2':
-    resolution: {integrity: sha512-bw/Ynxahu4Vc6WWKOS/TE5mDe+T1o7C9XXYcCzFfQmEV1+KmEo/WAj4B0pMPI6jLmwCsqg0Isyqar6Z/VT4y4g==}
+  '@bull-board/hono@6.9.5':
+    resolution: {integrity: sha512-IVL5stkMhbJk34iBONxBVu/na6H9fGfKAaUsQiqd8lKWgiW6gYLs4v9MXuf3fqugQQslDAB0WEjQTMFQTxVAAw==}
 
-  '@bull-board/ui@6.9.2':
-    resolution: {integrity: sha512-vRIUat5JM39TR38YSnEresCFDMxvJMfBmAD9zQjS4xiwHtlRqNjY7fGIKWb9Agq0gQzSvYqOo2bPqz7pO0hOBw==}
+  '@bull-board/ui@6.9.5':
+    resolution: {integrity: sha512-+4YnDvyuY3MOVkXFxkspRbqawLtIExHzRQ4raQWagOc35KD7v2/ccFGyRPDI/N0bemsiNkOPkcZGf/LFcaOZmA==}
 
   '@clerc/core@0.44.0':
     resolution: {integrity: sha512-o8RgXNcMRoHRujSw9OPDMxqrmoNk7HG0XAZkjZgOrSyIfRXCf85VLyHGBT3XmaOrPEGY964h02ZxMVFdp8RnNQ==}
@@ -1480,22 +1480,22 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/core@0.2.13':
-    resolution: {integrity: sha512-d0MjF9hUh1rmK3nS1RkpVYLPO5oCl0pfS2mI6uzXmk7uspu2AE9YATbQ9j7SShM0UTOThKTtkYT8N2DJB3vE6g==}
+  '@scalar/core@0.2.14':
+    resolution: {integrity: sha512-w2oLqUVJt88ed2uHKFgg8UOFeyHDpi3QmSJqqc4CZPjAz/lKj34antHYMEG3A4Iom+06W31XQeqFO9zQ2eNsfA==}
     engines: {node: '>=18'}
 
-  '@scalar/hono-api-reference@0.8.7':
-    resolution: {integrity: sha512-ZKCzb2nylucwI+/YCL402pMAdq4JEoux4on72aD9rRxTuEsP3R3lVSTNt1rJMCpiXXZXyLk/caMVzvFreCsLgw==}
+  '@scalar/hono-api-reference@0.8.8':
+    resolution: {integrity: sha512-VLpgkUOcKg4SSnWwp6/hGF5gNypeL+e791HD4ANmxImU8k+VbsKh53W7ZOivRY1fIMkPcd0TvzQvKm2MqyJDJw==}
     engines: {node: '>=18'}
     peerDependencies:
       hono: ^4.0.0
 
-  '@scalar/openapi-types@0.2.1':
-    resolution: {integrity: sha512-UMxX54taQXnEWYEuesbH+pkjlXRVV1u/Wx6YbVeU3QoJdFGqT3Z7si9zsokoG6MXDcdi1LGny7A0KwownmPvUQ==}
+  '@scalar/openapi-types@0.2.2':
+    resolution: {integrity: sha512-fwWboUf3W5U4qWU7nj4jrs+KYilnfKyVp0d6LC1ejB2aROgWXIAscRtVaPLPaNLpTZOBsMC8XpiAPm3/SlU+mA==}
     engines: {node: '>=18'}
 
-  '@scalar/types@0.1.13':
-    resolution: {integrity: sha512-9PgGX4TSNWUcfuGwE4kHvKypc5VhLS450C0V9IuhIIVLrLsyiz8ZA3X/lxQEPoB1zlFbUBmceLD6Xh9c41P7oQ==}
+  '@scalar/types@0.1.14':
+    resolution: {integrity: sha512-N7qZ9qARJfi4Gl5MEsRfwPHFWs68qDXWQ+jGi05LGExDqErAJStc4PPkEmxt44uSO4+TVx4ADxWB6xNoGMG/Zg==}
     engines: {node: '>=18'}
 
   '@selderee/plugin-htmlparser2@0.11.0':
@@ -1558,8 +1558,8 @@ packages:
   '@ts-morph/common@0.12.3':
     resolution: {integrity: sha512-4tUmeLyXJnJWvTFOKtcNJ1yh0a3SsTLi2MUoyj8iUNznFRN1ZquaNe7Oukqrnki2FzZkm0J9adCNLDZxUzvj+w==}
 
-  '@types/bun@1.2.11':
-    resolution: {integrity: sha512-ZLbbI91EmmGwlWTRWuV6J19IUiUC5YQ3TCEuSHI3usIP75kuoA8/0PVF+LTrbEnVc8JIhpElWOxv1ocI1fJBbw==}
+  '@types/bun@1.2.12':
+    resolution: {integrity: sha512-lY/GQTXDGsolT/TiH72p1tuyUORuRrdV7VwOTOjDOt8uTBJQOJc5zz3ufwwDl0VBaoxotSk4LdP0hhjLJ6ypIQ==}
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
@@ -1632,9 +1632,6 @@ packages:
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
-
-  '@unhead/schema@1.11.20':
-    resolution: {integrity: sha512-0zWykKAaJdm+/Y7yi/Yds20PrUK7XabLe9c3IRcjnwYmSWY6z0Cr19VIs3ozCj8P+GhR+/TI2mwtGlueCEYouA==}
 
   '@vitejs/plugin-vue@5.2.3':
     resolution: {integrity: sha512-IYSLEQj4LgZZuoVpdSUCw3dIynTWQgPlaRP6iAvMle4My0HdYwr5g5wQAfwOeHQBmYwEkqF70nRpSilr6PoUDg==}
@@ -1823,16 +1820,16 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
-  bullmq@5.52.0:
-    resolution: {integrity: sha512-2PRR7DuH4iFjrIam5kL08VLHe1FCZtr1jsL3Um/18EML9Gd7w9eFgzlriaiYUyUxU0gFVql0sijo1aBcoTrTTA==}
+  bullmq@5.52.1:
+    resolution: {integrity: sha512-u7CSV9wID3MBEX2DNubEErbAlrADgm8abUBAi6h8rQTnuTkhhgMs2iD7uhqplK8lIgUOkBIW3sDJWaMSInH47A==}
 
   bun-bagel@1.2.0:
     resolution: {integrity: sha512-c4S68dNddpnog9nxXp9PAhcep0alOy49jpRlC1yACoxplUvgX22NZxeQUIIov5TCJJDH/snT5R9bMyix7AG0KQ==}
     peerDependencies:
       typescript: ^5.0.0
 
-  bun-types@1.2.11:
-    resolution: {integrity: sha512-dbkp5Lo8HDrXkLrONm6bk+yiiYQSntvFUzQp0v3pzTAsXk6FtgVMjdQ+lzFNVAmQFUkPQZ3WMZqH5tTo+Dp/IA==}
+  bun-types@1.2.12:
+    resolution: {integrity: sha512-tvWMx5vPqbRXgE8WUZI94iS1xAYs8bkqESR9cxBB1Wi+urvfTrF1uzuDgBHFAdO0+d2lmsbG3HmeKMvUyj6pWA==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -2031,8 +2028,8 @@ packages:
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
 
-  drizzle-kit@0.31.0:
-    resolution: {integrity: sha512-pcKVT+GbfPA+bUovPIilgVOoq+onNBo/YQBG86sf3/GFHkN6lRJPm1l7dKN0IMAk57RQoIm4GUllRrasLlcaSg==}
+  drizzle-kit@0.31.1:
+    resolution: {integrity: sha512-PUjYKWtzOzPtdtQlTHQG3qfv4Y0XT8+Eas6UbxCmxTj7qgMf+39dDujf1BP1I+qqZtw9uzwTh8jYtkMuCq+B0Q==}
     hasBin: true
 
   drizzle-orm@0.43.1:
@@ -2478,8 +2475,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  jose@6.0.10:
-    resolution: {integrity: sha512-skIAxZqcMkOrSwjJvplIPYrlXGpxTPnro2/QWTDCxAdWQrSTV5/KqspMWmi5WAx5+ULswASJiZ0a+1B/Lxt9cw==}
+  jose@6.0.11:
+    resolution: {integrity: sha512-QxG7EaliDARm1O1S8BGakqncGT9s25bKL1WSf6/oa17Tkqwi8D2ZNglqCF+DsYF88/rV66Q/Q2mFAy697E1DUg==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -3227,8 +3224,8 @@ packages:
       terser:
         optional: true
 
-  vitepress-plugin-tabs@0.7.0:
-    resolution: {integrity: sha512-++RyeFNEsj/bJBXJK1IURRbJOB9vRqCahRwk1a2ntp9+SZy+7qgE5806vw9W7+uKR9CMi1iW+6plOcCKpmDnfA==}
+  vitepress-plugin-tabs@0.7.1:
+    resolution: {integrity: sha512-jxJvsicxnMSIYX9b8mAFLD2nwyKUcMO10dEt4nDSbinZhM8cGvAmMFOHPdf6TBX6gYZRl+/++/iYHtoM14fERQ==}
     peerDependencies:
       vitepress: ^1.0.0
       vue: ^3.5.0
@@ -3328,9 +3325,6 @@ packages:
     resolution: {integrity: sha512-HUn0M24AUTMvjdkoMtH8fJz2FEd+k1xvtR9EoTrDUoVUi6o7xl5X+pST/vjk4T3GEQo2mJ9FlAvhWBm8dIdD4g==}
     engines: {node: '>=18'}
 
-  zhead@2.2.4:
-    resolution: {integrity: sha512-8F0OI5dpWIA5IGG5NHUg9staDwz/ZPxZtvGVf01j7vHqSyZ0raHY+78atOVxRqb73AotX22uV1pXt3gYSstGag==}
-
   zod-openapi@4.2.4:
     resolution: {integrity: sha512-tsrQpbpqFCXqVXUzi3TPwFhuMtLN3oNZobOtYnK6/5VkXsNdnIgyNr4r8no4wmYluaxzN3F7iS+8xCW8BmMQ8g==}
     engines: {node: '>=18'}
@@ -3353,6 +3347,9 @@ packages:
 
   zod@3.24.3:
     resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
+
+  zod@3.24.4:
+    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -3528,21 +3525,21 @@ snapshots:
   '@biomejs/cli-win32-x64@2.0.0-beta.2':
     optional: true
 
-  '@bull-board/api@6.9.2(@bull-board/ui@6.9.2)':
+  '@bull-board/api@6.9.5(@bull-board/ui@6.9.5)':
     dependencies:
-      '@bull-board/ui': 6.9.2
+      '@bull-board/ui': 6.9.5
       redis-info: 3.1.0
 
-  '@bull-board/hono@6.9.2':
+  '@bull-board/hono@6.9.5':
     dependencies:
-      '@bull-board/api': 6.9.2(@bull-board/ui@6.9.2)
-      '@bull-board/ui': 6.9.2
+      '@bull-board/api': 6.9.5(@bull-board/ui@6.9.5)
+      '@bull-board/ui': 6.9.5
       ejs: 3.1.10
       hono: 4.7.8
 
-  '@bull-board/ui@6.9.2':
+  '@bull-board/ui@6.9.5':
     dependencies:
-      '@bull-board/api': 6.9.2(@bull-board/ui@6.9.2)
+      '@bull-board/api': 6.9.5(@bull-board/ui@6.9.5)
 
   '@clerc/core@0.44.0':
     dependencies:
@@ -3845,10 +3842,10 @@ snapshots:
 
   '@hackmd/markdown-it-task-lists@2.1.4': {}
 
-  '@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3)':
+  '@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.4)':
     dependencies:
       hono: 4.7.8
-      zod: 3.24.3
+      zod: 3.24.4
 
   '@iconify-json/simple-icons@1.2.33':
     dependencies:
@@ -4344,25 +4341,23 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.1':
     optional: true
 
-  '@scalar/core@0.2.13':
+  '@scalar/core@0.2.14':
     dependencies:
-      '@scalar/types': 0.1.13
+      '@scalar/types': 0.1.14
 
-  '@scalar/hono-api-reference@0.8.7(hono@4.7.8)':
+  '@scalar/hono-api-reference@0.8.8(hono@4.7.8)':
     dependencies:
-      '@scalar/core': 0.2.13
+      '@scalar/core': 0.2.14
       hono: 4.7.8
 
-  '@scalar/openapi-types@0.2.1':
+  '@scalar/openapi-types@0.2.2':
     dependencies:
-      zod: 3.24.3
+      zod: 3.24.1
 
-  '@scalar/types@0.1.13':
+  '@scalar/types@0.1.14':
     dependencies:
-      '@scalar/openapi-types': 0.2.1
-      '@unhead/schema': 1.11.20
+      '@scalar/openapi-types': 0.2.2
       nanoid: 5.1.5
-      type-fest: 4.40.1
       zod: 3.24.1
 
   '@selderee/plugin-htmlparser2@0.11.0':
@@ -4486,9 +4481,9 @@ snapshots:
       mkdirp: 1.0.4
       path-browserify: 1.0.1
 
-  '@types/bun@1.2.11':
+  '@types/bun@1.2.12':
     dependencies:
-      bun-types: 1.2.11
+      bun-types: 1.2.12
 
   '@types/connect@3.4.38':
     dependencies:
@@ -4562,11 +4557,6 @@ snapshots:
       '@types/node': 22.15.3
 
   '@ungap/structured-clone@1.3.0': {}
-
-  '@unhead/schema@1.11.20':
-    dependencies:
-      hookable: 5.5.3
-      zhead: 2.2.4
 
   '@vitejs/plugin-vue@5.2.3(vite@5.4.19(@types/node@22.15.3))(vue@3.5.13(typescript@5.8.3))':
     dependencies:
@@ -4758,7 +4748,7 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
-  bullmq@5.52.0:
+  bullmq@5.52.1:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.6.1
@@ -4774,7 +4764,7 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
-  bun-types@1.2.11:
+  bun-types@1.2.12:
     dependencies:
       '@types/node': 22.15.3
 
@@ -4977,7 +4967,7 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  drizzle-kit@0.31.0:
+  drizzle-kit@0.31.1:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
       '@esbuild-kit/esm-loader': 2.6.5
@@ -4986,11 +4976,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.11):
+  drizzle-orm@0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.12):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.6.1
-      bun-types: 1.2.11
+      bun-types: 1.2.12
 
   dunder-proto@1.0.1:
     dependencies:
@@ -5257,15 +5247,15 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.3))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.3))(zod@3.24.3):
+  hono-openapi@0.4.8(@hono/zod-validator@0.5.0(hono@4.7.8)(zod@3.24.4))(hono@4.7.8)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.24.4))(zod@3.24.4):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@hono/zod-validator': 0.5.0(hono@4.7.8)(zod@3.24.3)
+      '@hono/zod-validator': 0.5.0(hono@4.7.8)(zod@3.24.4)
       hono: 4.7.8
-      zod: 3.24.3
-      zod-openapi: 4.2.4(zod@3.24.3)
+      zod: 3.24.4
+      zod-openapi: 4.2.4(zod@3.24.4)
 
   hono-rate-limiter@0.4.2(hono@4.7.8):
     dependencies:
@@ -5392,7 +5382,7 @@ snapshots:
       filelist: 1.0.4
       minimatch: 3.1.2
 
-  jose@6.0.10: {}
+  jose@6.0.11: {}
 
   js-tokens@4.0.0: {}
 
@@ -6148,7 +6138,7 @@ snapshots:
       '@types/node': 22.15.3
       fsevents: 2.3.3
 
-  vitepress-plugin-tabs@0.7.0(vitepress@1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
+  vitepress-plugin-tabs@0.7.1(vitepress@1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3))(vue@3.5.13(typescript@5.8.3)):
     dependencies:
       vitepress: 1.6.3(@algolia/client-search@5.24.0)(@types/node@22.15.3)(markdown-it-mathjax3@4.3.2)(postcss@8.5.3)(search-insights@2.17.3)(typescript@5.8.3)
       vue: 3.5.13(typescript@5.8.3)
@@ -6302,22 +6292,34 @@ snapshots:
       cookie: 1.0.2
       youch-core: 0.3.2
 
-  zhead@2.2.4: {}
-
   zod-openapi@4.2.4(zod@3.24.3):
     dependencies:
       zod: 3.24.3
+
+  zod-openapi@4.2.4(zod@3.24.4):
+    dependencies:
+      zod: 3.24.4
 
   zod-to-json-schema@3.24.5(zod@3.24.3):
     dependencies:
       zod: 3.24.3
 
+  zod-to-json-schema@3.24.5(zod@3.24.4):
+    dependencies:
+      zod: 3.24.4
+
   zod-validation-error@3.4.0(zod@3.24.3):
     dependencies:
       zod: 3.24.3
 
+  zod-validation-error@3.4.0(zod@3.24.4):
+    dependencies:
+      zod: 3.24.4
+
   zod@3.24.1: {}
 
   zod@3.24.3: {}
+
+  zod@3.24.4: {}
 
   zwitch@2.0.4: {}
