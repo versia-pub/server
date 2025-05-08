@@ -21,7 +21,7 @@ in
 
     pnpmDeps = pnpm.fetchDeps {
       inherit (finalAttrs) pname version src pnpmInstallFlags;
-      hash = "sha256-bSL4Sy9WCcnKcqtkny6CNrJ3rZO91o8ejlBDznxOa/c=";
+      hash = "sha256-uvIPeOelwoEutS+02ZHP+LQ/8gnGlkoYdDV6T12FOa4=";
     };
 
     nativeBuildInputs = [
