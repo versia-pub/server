@@ -221,4 +221,59 @@ describe("Inbox Tests", () => {
 
         expect(share).not.toBeNull();
     });
+
+    test("should correctly process Delete for Note", async () => {
+        const deleteId = randomUUIDv7();
+
+        // First check that the note exists in the database
+        const noteToDelete = await Note.fromSql(
+            eq(Notes.uri, new URL(`/notes/${noteId}`, instanceUrl).href),
+        );
+
+        expect(noteToDelete).not.toBeNull();
+
+        // Create a Delete request
+        const exampleRequest = new VersiaEntities.Delete({
+            id: deleteId,
+            created_at: new Date().toISOString(),
+            type: "Delete",
+            author: new URL(`/users/${userId}`, instanceUrl).href,
+            deleted_type: "Note",
+            deleted: new URL(`/notes/${noteId}`, instanceUrl).href,
+        });
+
+        // The author field is non-null in our test case, so we can safely assert it as a string
+        const authorUrl = exampleRequest.data.author as string;
+
+        const signedRequest = await sign(
+            privateKey,
+            new URL(authorUrl),
+            new Request(inboxUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "User-Agent": "Versia/1.0.0",
+                },
+                body: JSON.stringify(exampleRequest.toJSON()),
+            }),
+        );
+
+        const response = await fakeRequest(inboxUrl, {
+            method: "POST",
+            headers: signedRequest.headers,
+            body: signedRequest.body,
+        });
+
+        expect(response.status).toBe(200);
+
+        await sleep(500);
+
+        // Verify that the note was deleted from the database
+        const noteExists = await Note.fromSql(
+            eq(Notes.uri, new URL(`/notes/${noteId}`, instanceUrl).href),
+        );
+
+        expect(noteExists).toBeNull();
+    });
 });
