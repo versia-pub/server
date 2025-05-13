@@ -2,8 +2,7 @@ import { type BunFile, env, file } from "bun";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
-import { ZodError, z } from "zod";
-import { fromZodError } from "zod-validation-error";
+import { z } from "zod";
 import { ProxiableUrl } from "~/classes/media/url.ts";
 import { RolePermission } from "~/packages/client/schemas/permissions.ts";
 
@@ -270,16 +269,6 @@ export const hmacKey = sensitiveString.transform(async (text, ctx) => {
 
     return text;
 });
-
-try {
-    console.info();
-} catch (e) {
-    if (e instanceof ZodError) {
-        throw fromZodError(e);
-    }
-
-    throw e;
-}
 
 export const ConfigSchema = z
     .strictObject({

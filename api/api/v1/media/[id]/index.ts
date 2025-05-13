@@ -8,6 +8,7 @@ import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { apiRoute, auth, handleZodError } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
+import { config } from "~/config";
 
 export default apiRoute((app) => {
     app.get(
@@ -109,7 +110,10 @@ export default apiRoute((app) => {
                         description:
                             "The custom thumbnail of the media to be attached, encoded using multipart form data.",
                     }),
-                    description: AttachmentSchema.shape.description,
+                    description: AttachmentSchema.shape.description
+                        .unwrap()
+                        .max(config.validation.media.max_description_characters)
+                        .optional(),
                     focus: z.string().openapi({
                         description:
                             "Two floating points (x,y), comma-delimited, ranging from -1.0 to 1.0. Used for media cropping on clients.",

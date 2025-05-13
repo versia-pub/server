@@ -1,3 +1,9 @@
+export {
+    emojiRegex,
+    emojiWithColonsRegex,
+    emojiWithIdentifiersRegex,
+    userAddressRegex,
+} from "./regex.ts";
 export { Account, Field, Source } from "./schemas/account.ts";
 export { AccountWarning } from "./schemas/account-warning.ts";
 export { Appeal } from "./schemas/appeal.ts";

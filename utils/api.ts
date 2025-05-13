@@ -14,14 +14,12 @@ import {
     anyOf,
     caseInsensitive,
     charIn,
-    charNotIn,
     createRegExp,
     digit,
     exactly,
     global,
     letter,
     maybe,
-    not,
     oneOrMore,
 } from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
@@ -49,28 +47,6 @@ export const idValidator = createRegExp(
     [caseInsensitive],
 );
 
-export const emojiValidator = createRegExp(
-    // A-Z a-z 0-9 _ -
-    oneOrMore(letter.or(digit).or(charIn("_-"))),
-    [caseInsensitive, global],
-);
-
-export const emojiValidatorWithColons = createRegExp(
-    exactly(":"),
-    oneOrMore(letter.or(digit).or(charIn("_-"))),
-    exactly(":"),
-    [caseInsensitive, global],
-);
-
-export const emojiValidatorWithIdentifiers = createRegExp(
-    exactly(
-        exactly(not.letter.or(not.digit).or(charNotIn("_-"))).times(1),
-        oneOrMore(letter.or(digit).or(charIn("_-"))).groupedAs("shortcode"),
-        exactly(not.letter.or(not.digit).or(charNotIn("_-"))).times(1),
-    ),
-    [caseInsensitive, global],
-);
-
 export const mentionValidator = createRegExp(
     exactly("@"),
     oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
@@ -80,28 +56,6 @@ export const mentionValidator = createRegExp(
         exactly("@"),
         oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
     ),
-    [global],
-);
-
-export const userAddressValidator = createRegExp(
-    maybe("@"),
-    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
-        "username",
-    ),
-    maybe(
-        exactly("@"),
-        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
-    ),
-    [global],
-);
-
-export const userAddressValidatorRemote = createRegExp(
-    maybe("@"),
-    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
-        "username",
-    ),
-    exactly("@"),
-    oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
     [global],
 );
 

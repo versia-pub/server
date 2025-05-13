@@ -1,4 +1,8 @@
-import type { CustomEmoji } from "@versia/client/schemas";
+import {
+    type CustomEmoji,
+    emojiWithColonsRegex,
+    emojiWithIdentifiersRegex,
+} from "@versia/client/schemas";
 import { db, type Instance, Media } from "@versia/kit/db";
 import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -13,7 +17,6 @@ import {
     type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
-import { emojiValidatorWithColons, emojiValidatorWithIdentifiers } from "@/api";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import type { ImageContentFormatSchema } from "~/packages/sdk/schemas/index.ts";
 import { BaseInterface } from "./base.ts";
@@ -162,7 +165,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
      * @returns An array of emojis
      */
     public static parseFromText(text: string): Promise<Emoji[]> {
-        const matches = text.match(emojiValidatorWithColons);
+        const matches = text.match(emojiWithColonsRegex);
         if (!matches || matches.length === 0) {
             return Promise.resolve([]);
         }
@@ -213,9 +216,8 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
         instance: Instance,
     ): Promise<Emoji> {
         // Extracts the shortcode from the emoji name (e.g. :shortcode: -> shortcode)
-        const shortcode = [
-            ...emoji.name.matchAll(emojiValidatorWithIdentifiers),
-        ][0].groups.shortcode;
+        const shortcode = [...emoji.name.matchAll(emojiWithIdentifiersRegex)][0]
+            .groups.shortcode;
 
         if (!shortcode) {
             throw new Error("Could not extract shortcode from emoji name");

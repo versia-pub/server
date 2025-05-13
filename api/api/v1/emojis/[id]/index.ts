@@ -113,7 +113,9 @@ export default apiRoute((app) => {
             "json",
             z
                 .object({
-                    shortcode: CustomEmojiSchema.shape.shortcode,
+                    shortcode: CustomEmojiSchema.shape.shortcode.max(
+                        config.validation.emojis.max_shortcode_characters,
+                    ),
                     element: z
                         .string()
                         .url()
@@ -136,7 +138,12 @@ export default apiRoute((app) => {
                                 ),
                         ),
                     category: CustomEmojiSchema.shape.category.optional(),
-                    alt: CustomEmojiSchema.shape.description.optional(),
+                    alt: CustomEmojiSchema.shape.description
+                        .unwrap()
+                        .max(
+                            config.validation.emojis.max_description_characters,
+                        )
+                        .optional(),
                     global: CustomEmojiSchema.shape.global.default(false),
                 })
                 .partial(),

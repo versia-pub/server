@@ -1,5 +1,4 @@
 import { z } from "zod";
-import pkg from "~/package.json";
 import { Account } from "./account.ts";
 import { iso631 } from "./common.ts";
 import { Rule } from "./rule.ts";
@@ -48,7 +47,7 @@ export const Instance = z
         source_url: z.string().url().openapi({
             description:
                 "The URL for the source code of the software running on this instance, in keeping with AGPL license requirements.",
-            example: pkg.repository.url,
+            example: "https://github.com/versia-pub/server",
         }),
         description: z.string().openapi({
             description:

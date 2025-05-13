@@ -20,10 +20,20 @@ import * as VersiaEntities from "~/packages/sdk/entities";
 
 const schema = z
     .object({
-        status: StatusSourceSchema.shape.text.optional().openapi({
-            description:
-                "The text content of the status. If media_ids is provided, this becomes optional. Attaching a poll is optional while status is provided.",
-        }),
+        status: StatusSourceSchema.shape.text
+            .max(config.validation.notes.max_characters)
+            .refine(
+                (s) =>
+                    !config.validation.filters.note_content.some((filter) =>
+                        filter.test(s),
+                    ),
+                "Status contains blocked words",
+            )
+            .optional()
+            .openapi({
+                description:
+                    "The text content of the status. If media_ids is provided, this becomes optional. Attaching a poll is optional while status is provided.",
+            }),
         /* Versia Server API Extension */
         content_type: z
             .enum(["text/plain", "text/html", "text/markdown"])
@@ -49,7 +59,11 @@ const schema = z
         }),
         language: StatusSchema.shape.language.optional(),
         "poll[options]": z
-            .array(PollOption.shape.title)
+            .array(
+                PollOption.shape.title.max(
+                    config.validation.polls.max_option_characters,
+                ),
+            )
             .max(config.validation.polls.max_options)
             .optional()
             .openapi({

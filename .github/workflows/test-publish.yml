@@ -1,0 +1,33 @@
+name: Test Publish
+
+on:
+    push:
+
+permissions:
+    contents: read
+    # For provenance generation
+    id-token: write
+
+jobs:
+    # Build job
+    build:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package: ["sdk", "client"]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - name: Install
+              run: bun install
+
+            - name: Publish to NPM
+              run: bun publish --dry-run
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish to JSR
+              run: bunx jsr publish --allow-slow-types --allow-dirty --dry-run

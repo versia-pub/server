@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 
@@ -9,7 +8,6 @@ export const PollOption = z
             .string()
             .trim()
             .min(1)
-            .max(config.validation.polls.max_option_characters)
             .openapi({
                 description: "The text value of the poll option.",
                 example: "yes",

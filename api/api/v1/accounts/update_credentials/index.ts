@@ -52,17 +52,56 @@ export default apiRoute((app) =>
             "json",
             z
                 .object({
-                    display_name: AccountSchema.shape.display_name.openapi({
-                        description: "The display name to use for the profile.",
-                        example: "Lexi",
-                    }),
-                    username: AccountSchema.shape.username.openapi({
-                        description: "The username to use for the profile.",
-                        example: "lexi",
-                    }),
-                    note: AccountSchema.shape.note.openapi({
-                        description: "The account bio. Markdown is supported.",
-                    }),
+                    display_name: AccountSchema.shape.display_name
+                        .openapi({
+                            description:
+                                "The display name to use for the profile.",
+                            example: "Lexi",
+                        })
+                        .max(
+                            config.validation.accounts
+                                .max_displayname_characters,
+                        )
+                        .refine(
+                            (s) =>
+                                !config.validation.filters.displayname.some(
+                                    (filter) => filter.test(s),
+                                ),
+                            "Display name contains blocked words",
+                        ),
+                    username: AccountSchema.shape.username
+                        .openapi({
+                            description: "The username to use for the profile.",
+                            example: "lexi",
+                        })
+                        .max(config.validation.accounts.max_username_characters)
+                        .refine(
+                            (s) =>
+                                !config.validation.filters.username.some(
+                                    (filter) => filter.test(s),
+                                ),
+                            "Username contains blocked words",
+                        )
+                        .refine(
+                            (s) =>
+                                !config.validation.accounts.disallowed_usernames.some(
+                                    (u) => u.test(s),
+                                ),
+                            "Username is disallowed",
+                        ),
+                    note: AccountSchema.shape.note
+                        .openapi({
+                            description:
+                                "The account bio. Markdown is supported.",
+                        })
+                        .max(config.validation.accounts.max_bio_characters)
+                        .refine(
+                            (s) =>
+                                !config.validation.filters.bio.some((filter) =>
+                                    filter.test(s),
+                                ),
+                            "Bio contains blocked words",
+                        ),
                     avatar: z
                         .string()
                         .url()
@@ -150,10 +189,14 @@ export default apiRoute((app) =>
                     fields_attributes: z
                         .array(
                             z.object({
-                                name: AccountSchema.shape.fields.element.shape
-                                    .name,
-                                value: AccountSchema.shape.fields.element.shape
-                                    .value,
+                                name: AccountSchema.shape.fields.element.shape.name.max(
+                                    config.validation.accounts
+                                        .max_field_name_characters,
+                                ),
+                                value: AccountSchema.shape.fields.element.shape.value.max(
+                                    config.validation.accounts
+                                        .max_field_value_characters,
+                                ),
                             }),
                         )
                         .max(config.validation.accounts.max_field_count),

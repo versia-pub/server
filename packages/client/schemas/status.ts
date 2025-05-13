@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { config } from "~/config.ts";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
 import { PreviewCard } from "./card.ts";
@@ -55,21 +54,10 @@ export const StatusSource = z
             description: "ID of the status in the database.",
             example: "c7db92a4-e472-4e94-a115-7411ee934ba1",
         }),
-        text: z
-            .string()
-            .max(config.validation.notes.max_characters)
-            .trim()
-            .refine(
-                (s) =>
-                    !config.validation.filters.note_content.some((filter) =>
-                        filter.test(s),
-                    ),
-                "Status contains blocked words",
-            )
-            .openapi({
-                description: "The plain text used to compose the status.",
-                example: "this is a status that will be edited",
-            }),
+        text: z.string().trim().openapi({
+            description: "The plain text used to compose the status.",
+            example: "this is a status that will be edited",
+        }),
         spoiler_text: z.string().trim().min(1).max(1024).openapi({
             description:
                 "The plain text used to compose the status’s subject or content warning.",

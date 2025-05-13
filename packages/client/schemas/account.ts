@@ -1,6 +1,5 @@
 import { z } from "zod";
-import { userAddressValidator } from "@/api.ts";
-import { config } from "~/config.ts";
+import { userAddressRegex } from "../regex.ts";
 import { iso631, zBoolean } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 import { Role } from "./versia.ts";
@@ -11,7 +10,6 @@ export const Field = z
             .string()
             .trim()
             .min(1)
-            .max(config.validation.accounts.max_field_name_characters)
             .openapi({
                 description: "The key of a given field’s key-value pair.",
                 example: "Freak level",
@@ -23,7 +21,6 @@ export const Field = z
             .string()
             .trim()
             .min(1)
-            .max(config.validation.accounts.max_field_value_characters)
             .openapi({
                 description: "The value associated with the name key.",
                 example: "<p>High</p>",
@@ -87,14 +84,6 @@ export const Source = z
             .string()
             .trim()
             .min(0)
-            .max(config.validation.accounts.max_bio_characters)
-            .refine(
-                (s) =>
-                    !config.validation.filters.bio.some((filter) =>
-                        filter.test(s),
-                    ),
-                "Bio contains blocked words",
-            )
             .openapi({
                 description: "Profile bio, in plain-text instead of in HTML.",
                 example: "ermmm what the meow meow",
@@ -102,12 +91,9 @@ export const Source = z
                     url: "https://docs.joinmastodon.org/entities/Account/#source-note",
                 },
             }),
-        fields: z
-            .array(Field)
-            .max(config.validation.accounts.max_field_count)
-            .openapi({
-                description: "Metadata about the account.",
-            }),
+        fields: z.array(Field).openapi({
+            description: "Metadata about the account.",
+        }),
     })
     .openapi({
         description:
@@ -135,24 +121,9 @@ const BaseAccount = z
             .string()
             .min(3)
             .trim()
-            .max(config.validation.accounts.max_username_characters)
             .regex(
                 /^[a-z0-9_-]+$/,
                 "Username can only contain letters, numbers, underscores and hyphens",
-            )
-            .refine(
-                (s) =>
-                    !config.validation.filters.username.some((filter) =>
-                        filter.test(s),
-                    ),
-                "Username contains blocked words",
-            )
-            .refine(
-                (s) =>
-                    !config.validation.accounts.disallowed_usernames.some((u) =>
-                        u.test(s),
-                    ),
-                "Username is disallowed",
             )
             .openapi({
                 description:
@@ -166,7 +137,7 @@ const BaseAccount = z
             .string()
             .min(1)
             .trim()
-            .regex(userAddressValidator, "Invalid user address")
+            .regex(userAddressRegex, "Invalid user address")
             .openapi({
                 description:
                     "The Webfinger account URI. Equal to username for local users, or username@domain for remote users.",
@@ -189,14 +160,6 @@ const BaseAccount = z
             .string()
             .min(3)
             .trim()
-            .max(config.validation.accounts.max_displayname_characters)
-            .refine(
-                (s) =>
-                    !config.validation.filters.displayname.some((filter) =>
-                        filter.test(s),
-                    ),
-                "Display name contains blocked words",
-            )
             .openapi({
                 description: "The profile’s display name.",
                 example: "Lexi :flower:",
@@ -207,15 +170,7 @@ const BaseAccount = z
         note: z
             .string()
             .min(0)
-            .max(config.validation.accounts.max_bio_characters)
             .trim()
-            .refine(
-                (s) =>
-                    !config.validation.filters.bio.some((filter) =>
-                        filter.test(s),
-                    ),
-                "Bio contains blocked words",
-            )
             .openapi({
                 description: "The profile’s bio or description.",
                 example: "<p>ermmm what the meow meow</p>",
@@ -279,16 +234,13 @@ const BaseAccount = z
                 url: "https://docs.joinmastodon.org/entities/Account/#locked",
             },
         }),
-        fields: z
-            .array(Field)
-            .max(config.validation.accounts.max_field_count)
-            .openapi({
-                description:
-                    "Additional metadata attached to a profile as name-value pairs.",
-                externalDocs: {
-                    url: "https://docs.joinmastodon.org/entities/Account/#fields",
-                },
-            }),
+        fields: z.array(Field).openapi({
+            description:
+                "Additional metadata attached to a profile as name-value pairs.",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Account/#fields",
+            },
+        }),
         emojis: z.array(CustomEmoji).openapi({
             description:
                 "Custom emoji entities to be used when rendering the profile.",

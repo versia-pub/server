@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { config } from "~/config.ts";
 import { Id } from "./common.ts";
 import { RolePermission } from "./permissions.ts";
 
@@ -55,15 +54,10 @@ export const Role = z
 /* Versia Server API extension */
 export const NoteReaction = z
     .object({
-        name: z
-            .string()
-            .min(1)
-            .max(config.validation.emojis.max_shortcode_characters)
-            .trim()
-            .openapi({
-                description: "Custom Emoji shortcode or Unicode emoji.",
-                example: "blobfox_coffee",
-            }),
+        name: z.string().min(1).trim().openapi({
+            description: "Custom Emoji shortcode or Unicode emoji.",
+            example: "blobfox_coffee",
+        }),
         count: z.number().int().nonnegative().openapi({
             description: "Number of users who reacted with this emoji.",
             example: 5,

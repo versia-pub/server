@@ -3,6 +3,7 @@ import {
     Id,
     RolePermission,
     Search as SearchSchema,
+    userAddressRegex,
     zBoolean,
 } from "@versia/client/schemas";
 import { db, Note, User } from "@versia/kit/db";
@@ -11,13 +12,7 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import {
-    apiRoute,
-    auth,
-    handleZodError,
-    parseUserAddress,
-    userAddressValidator,
-} from "@/api";
+import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { ApiError } from "~/classes/errors/api-error";
 import { searchManager } from "~/classes/search/search-manager";
 import { config } from "~/config.ts";
@@ -151,7 +146,7 @@ export default apiRoute((app) =>
 
             if (!type || type === "accounts") {
                 // Check if q is matching format username@domain.com or @username@domain.com
-                const accountMatches = q?.trim().match(userAddressValidator);
+                const accountMatches = q?.trim().match(userAddressRegex);
                 if (accountMatches) {
                     // Remove leading @ if it exists
                     if (accountMatches[0].startsWith("@")) {
