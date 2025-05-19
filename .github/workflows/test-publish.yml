@@ -25,9 +25,11 @@ jobs:
               run: bun install
 
             - name: Publish to NPM
+              working-directory: packages/${{ matrix.package }}
               run: bun publish --dry-run
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Publish to JSR
+              working-directory: packages/${{ matrix.package }}
               run: bunx jsr publish --allow-slow-types --allow-dirty --dry-run
