@@ -12,6 +12,7 @@ jobs:
     # Build job
     build:
         runs-on: ubuntu-latest
+        environment: NPM Deploy
         strategy:
             matrix:
                 package: ["sdk", "client"]
@@ -24,11 +25,14 @@ jobs:
             - name: Install
               run: bun install
 
+            - name: Configure .npmrc
+              working-directory: packages/${{ matrix.package }}
+              run: |
+                  echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
             - name: Publish to NPM
               working-directory: packages/${{ matrix.package }}
               run: bun publish --dry-run
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
             - name: Publish to JSR
               working-directory: packages/${{ matrix.package }}
