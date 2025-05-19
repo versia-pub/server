@@ -26,6 +26,7 @@ Please see [Database Changes](#database-changes) and [New Configuration](#new-co
 -   [x] ✨️ Implemented rate limiting support for API endpoints.
 -   [x] 🔒 Implemented `is_indexable` and `is_hiding_collections` fields to the [**Accounts API**](https://docs.joinmastodon.org/methods/accounts/#update_credentials).
 -   [x] ✨️ Muting other users now lets you specify a duration, after which the mute will be automatically removed.
+-   [x] 📰 All accounts now have an RSS/Atom feed attached to them.
 
 ### CLI
 
@@ -44,10 +45,11 @@ Versia Server now serves static files directly from a configurable path, and `ve
 -   [x] 🚀 Upgraded Bun to `1.2.13`
 -   [x] 🔥 Removed dependency on the `pg_uuidv7` extension. Versia Server can now be used with "vanilla" PostgreSQL.
 -   [x] 🖼️ Simplified media pipeline: this will improve S3 performance
-    -   [ ] 📈 It is now possible to disable media proxying for your CDN (offloading considerable bandwidth to your more optimized CDN).
+    -   [x] 📈 It is now possible to disable media proxying for your CDN (offloading considerable bandwidth to your more optimized CDN).
 -   [x] 👷 Outbound federation, inbox processing, data fetching and media processing are now handled by a queue system.
     -   [x] 🌐 An administration panel is available at `/admin/queues` to monitor and manage queues.
 -   [x] 🔥 Removed support for **from-source** installations, as Versia Server is designed around containerization and maintaining support was a large burden.
+-   [x] ❄️ A [**Nix**](https://nixos.org/) package is now available for this project, packaged as a [Flake](https://wiki.nixos.org/wiki/Flakes). A **NixOS** module is also provided.
 
 ## New Configuration
 
@@ -70,6 +72,7 @@ In the case that you've been running secret instances in the shadows, let us kno
 -   🐛 Fixed OpenAPI schema generation and `/docs` endpoint.
 -   🐛 Logs folder is now automatically created if it doesn't exist.
 -   🐛 Media hosted on the configured S3 bucket and on the local filesystem is no longer unnecessarily proxied.
+-   🐛 Likes and Shares now federate properly.
 
 # `0.7.0` • The Auth and APIs Update
 
