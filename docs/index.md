@@ -10,7 +10,7 @@ features:
   - icon: 🖥
     title: API Reference
     details: Writing your own client? Check out the API reference
-    link: ./api/emojis
+    link: ./api/challenges
   - icon: 📚
     title: Frontend Building
     details: Information on developing your own frontend

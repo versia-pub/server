@@ -27,7 +27,10 @@ nixosConfigurations = {
     system = "x86_64-linux"; # arm64-linux is also supported
     modules = [
       # ...
-      versia-server.nixosModules.default
+      {
+        nixpkgs.overlays = [versia-server.overlays.default];
+      }
+      versia-server.nixosModules.versia-server
     ];
   };
 };
@@ -42,7 +45,6 @@ This module exposes the following configuration option:
 ```nix
 services.versia-server = {
     enable = true;
-    dataDir = "/var/lib/versia-server";
 
     user = "versia-server";
     group = "versia-server";
@@ -79,7 +81,6 @@ services.versia-server = {
 ### Configuration Options
 
 - `enable`: Whether to enable the service. Default: `true`.
-- `dataDir`: The directory where the data will be stored. Default: `/var/lib/versia-server`.
 - `user`: The user under which the service will run. Default: `versia-server`.
 - `group`: The group under which the service will run. Default: `versia-server`.
 - `nodes`: A set of nodes to run. Each node can have its own configuration overrides, which will be merged with the default configuration. You must have at least one of each type (`api` and `worker`).

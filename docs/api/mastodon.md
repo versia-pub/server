@@ -363,7 +363,7 @@ type ExtendedAccount = Account & {
 
 ### `roles`
 
-An array of [`Roles`](./roles.md#role) that the user has.
+An array of `Roles` that the user has.
 
 ### `uri`
 

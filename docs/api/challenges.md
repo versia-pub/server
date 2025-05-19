@@ -8,57 +8,9 @@ This is a form of proof of work CAPTCHA, and should be mostly invisible to users
 
 Challenges are powered by the [Altcha](https://altcha.org/) library. You may either reimplement their solution code (which is very simple), or use [`altcha-lib`](https://github.com/altcha-org/altcha-lib) to solve the challenges.
 
-## Challenge
-
-```typescript
-type UUID = string;
-
-interface Challenge {
-    id: UUID;
-    algorithm: "SHA-256" | "SHA-384" | "SHA-512";
-    challenge: string;
-    maxnumber?: number;
-    salt: string;
-    signature: string;
-}
-```
-
 ## Request Challenge
 
-```http
-POST /api/v1/challenges
-```
-
-Generates a new challenge for the client to solve.
-
-- **Returns:**: [`Challenge`](#challenge)
-- **Authentication:**: Not required
-- **Permissions:**: None
-- **Version History**:
-  - `0.7.0`: Added.
-
-### Example
-
-```http
-POST /api/v1/challenges
-```
-
-### Response
-
-#### `200 OK`
-
-Challenge data.
-
-```json
-{
-    "id":"01931621-1456-7b5b-be65-c044e6b47cbb",
-    "salt":"d15e43fa3709d85ce3c74644?challenge_id=01931621-1456-7b5b-be65-c044e6b47cbb&expires=1731243386",
-    "algorithm":"SHA-256",
-    "challenge":"5dc6b352632912664583940e14b9dfbdf447459d4517708ce8766a39ac040eb5",
-    "maxnumber":50000,
-    "signature":"22c3a687dc2500cbffcb022ae8474360d5c2f63a50ba376325c211bb2ca06b7f"
-}
-```
+To request a challenge, you may use the [`POST /api/v1/challenges`](https://vs.cpluspatch.com/docs#tag/challenges/POST/api/v1/challenges) endpoint.
 
 ## Sending a Solution
 

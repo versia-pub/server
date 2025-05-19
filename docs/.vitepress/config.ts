@@ -55,24 +55,12 @@ export default defineConfig({
                 text: "API",
                 items: [
                     {
-                        text: "Emojis",
-                        link: "/api/emojis",
-                    },
-                    {
                         text: "Reactions",
                         link: "/api/reactions",
                     },
                     {
-                        text: "Roles",
-                        link: "/api/roles",
-                    },
-                    {
                         text: "Challenges",
                         link: "/api/challenges",
-                    },
-                    {
-                        text: "SSO",
-                        link: "/api/sso",
                     },
                     {
                         text: "Mastodon Extensions",
