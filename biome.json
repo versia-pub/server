@@ -1,11 +1,16 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.0.0-beta.1/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.0.0-beta.5/schema.json",
     "assist": {
         "actions": {
             "source": {
                 "organizeImports": "on"
             }
         }
+    },
+    "vcs": {
+        "clientKind": "git",
+        "enabled": true,
+        "useIgnoreFile": true
     },
     "linter": {
         "enabled": true,
@@ -64,24 +69,40 @@
                 "useThrowOnlyError": "error",
                 "useNodejsImportProtocol": "error",
                 "useAsConstAssertion": "error",
-                "useNumericLiterals": "error",
                 "useEnumInitializers": "error",
                 "useSelfClosingElements": "error",
                 "useConst": "error",
                 "useSingleVarDeclarator": "error",
                 "noUnusedTemplateLiteral": "error",
                 "useNumberNamespace": "error",
+                "useAtIndex": "warn",
                 "noInferrableTypes": "error",
+                "useCollapsedIf": "warn",
                 "useExponentiationOperator": "error",
                 "useTemplate": "error",
                 "noParameterAssign": "error",
                 "noNonNullAssertion": "error",
                 "useDefaultParameterLast": "error",
+                "useConsistentMemberAccessibility": {
+                    "level": "warn",
+                    "options": {
+                        "accessibility": "explicit"
+                    }
+                },
                 "noArguments": "error",
                 "useImportType": "error",
                 "useExportType": "error",
                 "noUselessElse": "error",
-                "useShorthandFunctionType": "error"
+                "noProcessEnv": "error",
+                "useShorthandFunctionType": "error",
+                "useArrayLiterals": "error",
+                "noCommonJs": "warn",
+                "noExportedImports": "warn",
+                "noSubstr": "warn",
+                "useTrimStartEnd": "warn"
+            },
+            "performance": {
+                "noDynamicNamespaceImportAccess": "warn"
             },
             "correctness": {
                 "useImportExtensions": "error",
@@ -89,57 +110,43 @@
                 "noUndeclaredDependencies": "error",
                 "noUnusedFunctionParameters": "error",
                 "noUnusedImports": "error",
-                "noUnusedPrivateClassMembers": "error",
-                "useArrayLiterals": "error"
+                "noUnusedPrivateClassMembers": "error"
             },
             "nursery": {
                 "noBitwiseOperators": "error",
                 "noConstantBinaryExpression": "error",
                 "noFloatingPromises": "error",
                 "noGlobalDirnameFilename": "error",
-                "noOctalEscape": "error",
-                "noProcessEnv": "error",
-                "noDuplicateElseIf": "warn",
                 "noProcessGlobal": "warn",
                 "noTsIgnore": "warn",
-                "useAtIndex": "warn",
-                "useCollapsedIf": "warn",
                 "useConsistentObjectDefinition": {
                     "level": "warn",
                     "options": {
                         "syntax": "shorthand"
                     }
                 },
-                "useConsistentMemberAccessibility": {
-                    "level": "warn",
-                    "options": {
-                        "accessibility": "explicit"
-                    }
-                },
-                "useParseIntRadix": "warn",
-                "noCommonJs": "warn",
-                "noDynamicNamespaceImportAccess": "warn",
-                "noExportedImports": "warn",
-                "noIrregularWhitespace": "warn",
-                "noSubstr": "warn",
-                "noTemplateCurlyInString": "warn",
-                "noUselessEscapeInRegex": "warn",
-                "noUselessStringRaw": "warn",
-                "useAdjacentOverloadSignatures": "warn",
-                "useGuardForIn": "warn",
-                "useTrimStartEnd": "warn"
+                "useParseIntRadix": "warn"
             },
             "complexity": {
                 "noForEach": "error",
                 "noUselessStringConcat": "error",
                 "useDateNow": "error",
+                "noUselessStringRaw": "warn",
+                "noUselessEscapeInRegex": "warn",
                 "useSimplifiedLogicExpression": "error",
-                "useWhile": "error"
+                "useWhile": "error",
+                "useNumericLiterals": "error"
             },
             "suspicious": {
                 "noDuplicateTestHooks": "error",
+                "noOctalEscape": "error",
+                "noTemplateCurlyInString": "warn",
                 "noEmptyBlockStatements": "error",
+                "useAdjacentOverloadSignatures": "warn",
+                "useGuardForIn": "warn",
+                "noDuplicateElseIf": "warn",
                 "noEvolvingTypes": "error",
+                "noIrregularWhitespace": "warn",
                 "noExportsInTest": "error",
                 "noVar": "error",
                 "useAwait": "error",
@@ -169,13 +176,6 @@
         "globals": ["HTMLRewriter", "BufferEncoding"]
     },
     "files": {
-        "includes": [
-            "**",
-            "!**/node_modules",
-            "!**/dist",
-            "!**/cache",
-            "!**/build",
-            "!**/result"
-        ]
+        "includes": ["**"]
     }
 }

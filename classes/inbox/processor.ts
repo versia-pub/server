@@ -180,7 +180,7 @@ export class InboxProcessor {
         shouldCheckSignature && this.logger.debug`Signature is valid`;
 
         try {
-            new EntitySorter(this.body)
+            await new EntitySorter(this.body)
                 .on(VersiaEntities.Note, async (n) => {
                     await Note.fromVersia(n);
                 })
