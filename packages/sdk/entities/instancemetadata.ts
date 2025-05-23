@@ -5,9 +5,11 @@ import { ImageContentFormat } from "./contentformat.ts";
 import { Entity } from "./entity.ts";
 
 export class InstanceMetadata extends Entity {
-    public static name = "InstanceMetadata";
+    public static override name = "InstanceMetadata";
 
-    public constructor(public data: z.infer<typeof InstanceMetadataSchema>) {
+    public constructor(
+        public override data: z.infer<typeof InstanceMetadataSchema>,
+    ) {
         super(data);
     }
 
@@ -23,7 +25,9 @@ export class InstanceMetadata extends Entity {
             : undefined;
     }
 
-    public static fromJSON(json: JSONObject): Promise<InstanceMetadata> {
+    public static override fromJSON(
+        json: JSONObject,
+    ): Promise<InstanceMetadata> {
         return InstanceMetadataSchema.parseAsync(json).then(
             (u) => new InstanceMetadata(u),
         );

@@ -4,13 +4,13 @@ import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";
 
 export class Share extends Entity {
-    public static name = "pub.versia:share/Share";
+    public static override name = "pub.versia:share/Share";
 
-    public constructor(public data: z.infer<typeof ShareSchema>) {
+    public constructor(public override data: z.infer<typeof ShareSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Share> {
+    public static override fromJSON(json: JSONObject): Promise<Share> {
         return ShareSchema.parseAsync(json).then((u) => new Share(u));
     }
 }

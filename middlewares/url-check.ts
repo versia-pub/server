@@ -15,4 +15,5 @@ export const urlCheck = createMiddleware(async (context, next) => {
     }
 
     await next();
+    return;
 });

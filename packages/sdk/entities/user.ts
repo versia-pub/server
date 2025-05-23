@@ -5,13 +5,13 @@ import { ImageContentFormat, TextContentFormat } from "./contentformat.ts";
 import { Entity } from "./entity.ts";
 
 export class User extends Entity {
-    public static name = "User";
+    public static override name = "User";
 
-    public constructor(public data: z.infer<typeof UserSchema>) {
+    public constructor(public override data: z.infer<typeof UserSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<User> {
+    public static override fromJSON(json: JSONObject): Promise<User> {
         return UserSchema.parseAsync(json).then((u) => new User(u));
     }
 

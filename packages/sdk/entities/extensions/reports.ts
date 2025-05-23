@@ -4,13 +4,13 @@ import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";
 
 export class Report extends Entity {
-    public static name = "pub.versia:reports/Report";
+    public static override name = "pub.versia:reports/Report";
 
-    public constructor(public data: z.infer<typeof ReportSchema>) {
+    public constructor(public override data: z.infer<typeof ReportSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Report> {
+    public static override fromJSON(json: JSONObject): Promise<Report> {
         return ReportSchema.parseAsync(json).then((u) => new Report(u));
     }
 }

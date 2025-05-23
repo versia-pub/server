@@ -72,6 +72,8 @@ export class PluginLoader {
             if (manifestFile.endsWith(".jsonc")) {
                 return parseJSONC(manifestText);
             }
+
+            throw new Error(`Unsupported manifest file type: ${manifestFile}`);
         } catch (e) {
             this.logger
                 .fatal`Could not parse plugin manifest ${chalk.blue(manifestPath)} as ${manifestFile.split(".").pop()?.toUpperCase()}.`;

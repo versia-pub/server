@@ -36,4 +36,5 @@ export const ipBans = createMiddleware(async (context, next) => {
     }
 
     await next();
+    return;
 });

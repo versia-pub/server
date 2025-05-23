@@ -4,13 +4,13 @@ import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";
 
 export class Vote extends Entity {
-    public static name = "pub.versia:polls/Vote";
+    public static override name = "pub.versia:polls/Vote";
 
-    public constructor(public data: z.infer<typeof VoteSchema>) {
+    public constructor(public override data: z.infer<typeof VoteSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Vote> {
+    public static override fromJSON(json: JSONObject): Promise<Vote> {
         return VoteSchema.parseAsync(json).then((u) => new Vote(u));
     }
 }

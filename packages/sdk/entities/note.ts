@@ -5,13 +5,13 @@ import { NonTextContentFormat, TextContentFormat } from "./contentformat.ts";
 import { Entity } from "./entity.ts";
 
 export class Note extends Entity {
-    public static name = "Note";
+    public static override name = "Note";
 
-    public constructor(public data: z.infer<typeof NoteSchema>) {
+    public constructor(public override data: z.infer<typeof NoteSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Note> {
+    public static override fromJSON(json: JSONObject): Promise<Note> {
         return NoteSchema.parseAsync(json).then((n) => new Note(n));
     }
 

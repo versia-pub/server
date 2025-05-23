@@ -18,7 +18,7 @@ export class ApiError extends Error {
      */
     public constructor(
         public status: ContentfulStatusCode,
-        public message: string,
+        public override message: string,
         public details?: string | JSONObject,
     ) {
         super(message);

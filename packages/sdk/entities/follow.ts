@@ -9,25 +9,27 @@ import type { JSONObject } from "../types.ts";
 import { Entity } from "./entity.ts";
 
 export class Follow extends Entity {
-    public static name = "Follow";
+    public static override name = "Follow";
 
-    public constructor(public data: z.infer<typeof FollowSchema>) {
+    public constructor(public override data: z.infer<typeof FollowSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Follow> {
+    public static override fromJSON(json: JSONObject): Promise<Follow> {
         return FollowSchema.parseAsync(json).then((u) => new Follow(u));
     }
 }
 
 export class FollowAccept extends Entity {
-    public static name = "FollowAccept";
+    public static override name = "FollowAccept";
 
-    public constructor(public data: z.infer<typeof FollowAcceptSchema>) {
+    public constructor(
+        public override data: z.infer<typeof FollowAcceptSchema>,
+    ) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<FollowAccept> {
+    public static override fromJSON(json: JSONObject): Promise<FollowAccept> {
         return FollowAcceptSchema.parseAsync(json).then(
             (u) => new FollowAccept(u),
         );
@@ -35,13 +37,15 @@ export class FollowAccept extends Entity {
 }
 
 export class FollowReject extends Entity {
-    public static name = "FollowReject";
+    public static override name = "FollowReject";
 
-    public constructor(public data: z.infer<typeof FollowRejectSchema>) {
+    public constructor(
+        public override data: z.infer<typeof FollowRejectSchema>,
+    ) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<FollowReject> {
+    public static override fromJSON(json: JSONObject): Promise<FollowReject> {
         return FollowRejectSchema.parseAsync(json).then(
             (u) => new FollowReject(u),
         );
@@ -49,13 +53,13 @@ export class FollowReject extends Entity {
 }
 
 export class Unfollow extends Entity {
-    public static name = "Unfollow";
+    public static override name = "Unfollow";
 
-    public constructor(public data: z.infer<typeof UnfollowSchema>) {
+    public constructor(public override data: z.infer<typeof UnfollowSchema>) {
         super(data);
     }
 
-    public static fromJSON(json: JSONObject): Promise<Unfollow> {
+    public static override fromJSON(json: JSONObject): Promise<Unfollow> {
         return UnfollowSchema.parseAsync(json).then((u) => new Unfollow(u));
     }
 }

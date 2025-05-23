@@ -1,40 +1,45 @@
 {
     "compilerOptions": {
-        "lib": ["ESNext", "DOM", "DOM.Iterable"],
-        "module": "esnext",
-        "target": "esnext",
-        "moduleResolution": "bundler",
-        "moduleDetection": "force",
-        "allowImportingTsExtensions": true,
-        "noEmit": true,
-        "composite": true,
-        "strict": true,
-        "downlevelIteration": true,
-        "skipLibCheck": true,
+        "alwaysStrict": true,
+        "exactOptionalPropertyTypes": false,
         "noImplicitAny": true,
-        "jsx": "preserve",
-        "allowSyntheticDefaultImports": true,
-        "strictNullChecks": true,
-        "strictFunctionTypes": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noPropertyAccessFromIndexSignature": false,
+        "noUncheckedIndexedAccess": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strict": true,
+        "useUnknownInCatchVariables": true,
+
+        "allowImportingTsExtensions": true,
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "noUncheckedSideEffectImports": true,
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "allowJs": false,
+        // Soon...
+        //"erasableSyntaxOnly": true,
         "forceConsistentCasingInFileNames": true,
-        "allowJs": true,
-        "emitDecoratorMetadata": false,
-        "experimentalDecorators": true,
+        //"isolatedDeclarations": true,
         "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "target": "esnext",
+        "jsx": "preserve",
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
+        "composite": true,
+        "incremental": true,
+        "skipLibCheck": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": false,
         "paths": {
             "@/*": ["./utils/*"],
             "~/*": ["./*"],
             "+/*": ["./api/*"]
-        },
-        "noUnusedLocals": true
+        }
     },
     "exclude": ["node_modules"],
-    "include": [
-        "*.ts",
-        "*.d.ts",
-        "**/*.ts",
-        "**/*.d.ts",
-        "api/well-known/**/*.ts",
-        "packages/cli/index.mts"
-    ]
+    "include": ["*.ts", "*.d.ts", "**/*.ts", "**/*.d.ts"]
 }

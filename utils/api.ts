@@ -99,6 +99,8 @@ export const handleZodError = (
             422,
         );
     }
+
+    return undefined;
 };
 
 const checkPermissions = (
