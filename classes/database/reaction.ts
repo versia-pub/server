@@ -2,11 +2,13 @@ import { db, Emoji, Instance, type Note, User } from "@versia/kit/db";
 import { type Notes, Reactions, type Users } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
+    and,
     desc,
     eq,
     type InferInsertModel,
     type InferSelectModel,
     inArray,
+    isNull,
     type SQL,
 } from "drizzle-orm";
 import { config } from "~/config.ts";
@@ -154,6 +156,32 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
     public get id(): string {
         return this.data.id;
+    }
+
+    public static fromEmoji(
+        emoji: Emoji | string,
+        author: User,
+        note: Note,
+    ): Promise<Reaction | null> {
+        if (emoji instanceof Emoji) {
+            return Reaction.fromSql(
+                and(
+                    eq(Reactions.authorId, author.id),
+                    eq(Reactions.noteId, note.id),
+                    isNull(Reactions.emojiText),
+                    eq(Reactions.emojiId, emoji.id),
+                ),
+            );
+        }
+
+        return Reaction.fromSql(
+            and(
+                eq(Reactions.authorId, author.id),
+                eq(Reactions.noteId, note.id),
+                eq(Reactions.emojiText, emoji),
+                isNull(Reactions.emojiId),
+            ),
+        );
     }
 
     public getUri(baseUrl: URL): URL {

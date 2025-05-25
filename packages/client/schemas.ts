@@ -44,6 +44,7 @@ export { TermsOfService } from "./schemas/tos.ts";
 export {
     Challenge,
     NoteReaction,
+    NoteReactionWithAccounts,
     Role,
     SSOConfig,
 } from "./schemas/versia.ts";

@@ -6,7 +6,13 @@ import type {
     Source,
     Status as StatusSchema,
 } from "@versia/client/schemas";
-import { db, Media, Notification, PushSubscription } from "@versia/kit/db";
+import {
+    db,
+    Media,
+    Notification,
+    PushSubscription,
+    Reaction,
+} from "@versia/kit/db";
 import {
     EmojiToUser,
     Likes,
@@ -730,6 +736,48 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 );
             }
         }
+    }
+
+    /**
+     * Add an emoji reaction to a note
+     * @param note - The note to react to
+     * @param emoji - The emoji to react with (Emoji object for custom emojis, or Unicode emoji)
+     * @returns The created reaction
+     */
+    public async react(note: Note, emoji: Emoji | string): Promise<void> {
+        const existingReaction = await Reaction.fromEmoji(emoji, this, note);
+
+        if (existingReaction) {
+            return; // Reaction already exists, don't create duplicate
+        }
+
+        // Create the reaction
+        await Reaction.insert({
+            id: randomUUIDv7(),
+            authorId: this.id,
+            noteId: note.id,
+            emojiText: emoji instanceof Emoji ? null : emoji,
+            emojiId: emoji instanceof Emoji ? emoji.id : null,
+        });
+
+        // TODO: Handle federation and notifications
+    }
+
+    /**
+     * Remove an emoji reaction from a note
+     * @param note - The note to remove reaction from
+     * @param emoji - The emoji to remove reaction for (Emoji object for custom emojis, or Unicode emoji)
+     */
+    public async unreact(note: Note, emoji: Emoji | string): Promise<void> {
+        const reactionToDelete = await Reaction.fromEmoji(emoji, this, note);
+
+        if (!reactionToDelete) {
+            return; // Reaction doesn't exist, nothing to delete
+        }
+
+        await reactionToDelete.delete();
+
+        // TODO: Handle federation and notifications
     }
 
     public async notify(

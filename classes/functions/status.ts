@@ -40,6 +40,16 @@ export const findManyNotes = async (
                     media: true,
                 },
             },
+            reactions: {
+                with: {
+                    emoji: {
+                        with: {
+                            instance: true,
+                            media: true,
+                        },
+                    },
+                },
+            },
             emojis: {
                 with: {
                     emoji: {
@@ -69,6 +79,16 @@ export const findManyNotes = async (
                     attachments: {
                         with: {
                             media: true,
+                        },
+                    },
+                    reactions: {
+                        with: {
+                            emoji: {
+                                with: {
+                                    instance: true,
+                                    media: true,
+                                },
+                            },
                         },
                     },
                     emojis: {

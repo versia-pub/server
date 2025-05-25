@@ -1,5 +1,5 @@
-import type { Status } from "@versia/client/schemas";
-import { db, Instance } from "@versia/kit/db";
+import type { NoteReactionWithAccounts, Status } from "@versia/client/schemas";
+import { db, Instance, type Reaction } from "@versia/kit/db";
 import {
     EmojiToNote,
     Likes,
@@ -54,6 +54,7 @@ type NoteTypeWithRelations = NoteType & {
     reblogged: boolean;
     muted: boolean;
     liked: boolean;
+    reactions: Omit<typeof Reaction.$type, "note" | "author">[];
 };
 
 export type NoteTypeWithoutRecursiveRelations = Omit<
@@ -698,7 +699,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             edited_at: data.updatedAt
                 ? new Date(data.updatedAt).toISOString()
                 : null,
-            reactions: [],
+            reactions: this.getReactions(userFetching ?? undefined).map(
+                // Remove account_ids
+                (r) => ({
+                    ...r,
+                    account_ids: undefined,
+                }),
+            ),
             text: data.contentSource,
         };
     }
@@ -914,5 +921,68 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         );
 
         return viewableDescendants;
+    }
+
+    /**
+     * Get reactions for this note grouped by emoji name
+     * @param user - The user requesting reactions (to determine 'me' field)
+     * @returns Array of reactions grouped by emoji name with counts and account IDs
+     */
+    public getReactions(
+        user?: User,
+    ): z.infer<typeof NoteReactionWithAccounts>[] {
+        // Group reactions by emoji name (either emojiText for Unicode or formatted shortcode for custom)
+        const groupedReactions = new Map<
+            string,
+            {
+                count: number;
+                me: boolean;
+                account_ids: string[];
+            }
+        >();
+
+        for (const reaction of this.data.reactions) {
+            let emojiName: string;
+
+            // Determine emoji name based on type
+            if (reaction.emojiText) {
+                emojiName = reaction.emojiText;
+            } else if (reaction.emoji) {
+                emojiName = `:${reaction.emoji.shortcode}:`;
+            } else {
+                continue; // Skip invalid reactions
+            }
+
+            // Initialize group if it doesn't exist
+            if (!groupedReactions.has(emojiName)) {
+                groupedReactions.set(emojiName, {
+                    count: 0,
+                    me: false,
+                    account_ids: [],
+                });
+            }
+
+            const group = groupedReactions.get(emojiName);
+
+            if (!group) {
+                continue;
+            }
+
+            group.count += 1;
+            group.account_ids.push(reaction.authorId);
+
+            // Check if current user reacted with this emoji
+            if (user && reaction.authorId === user.id) {
+                group.me = true;
+            }
+        }
+
+        // Convert map to array format
+        return Array.from(groupedReactions.entries()).map(([name, data]) => ({
+            name,
+            count: data.count,
+            me: data.me,
+            account_ids: data.account_ids,
+        }));
     }
 }

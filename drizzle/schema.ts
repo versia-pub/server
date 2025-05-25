@@ -166,6 +166,7 @@ export const ReactionRelations = relations(Reactions, ({ one }) => ({
     note: one(Notes, {
         fields: [Reactions.noteId],
         references: [Notes.id],
+        relationName: "NoteToReactions",
     }),
     author: one(Users, {
         fields: [Reactions.authorId],
@@ -508,6 +509,9 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
         relationName: "NoteToReblogs",
     }),
     notifications: many(Notifications),
+    reactions: many(Reactions, {
+        relationName: "NoteToReactions",
+    }),
 }));
 
 export const Instances = pgTable("Instances", {

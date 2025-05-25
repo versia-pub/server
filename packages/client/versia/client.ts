@@ -27,7 +27,11 @@ import type {
 import type { Tag } from "../schemas/tag.ts";
 import type { Token } from "../schemas/token.ts";
 import type { TermsOfService } from "../schemas/tos.ts";
-import type { Challenge, Role } from "../schemas/versia.ts";
+import type {
+    Challenge,
+    NoteReactionWithAccounts,
+    Role,
+} from "../schemas/versia.ts";
 import { BaseClient, type Output } from "./base.ts";
 import { DEFAULT_SCOPE, NO_REDIRECT } from "./constants.ts";
 
@@ -217,7 +221,7 @@ export class Client extends BaseClient {
         emoji: string,
         extra?: RequestInit,
     ): Promise<Output<z.infer<typeof Status>>> {
-        return this.post<z.infer<typeof Status>>(
+        return this.put<z.infer<typeof Status>>(
             `/api/v1/statuses/${id}/reactions/${emoji}`,
             undefined,
             extra,
@@ -2086,6 +2090,22 @@ export class Client extends BaseClient {
     ): Promise<Output<z.infer<typeof StatusSource>>> {
         return this.get<z.infer<typeof StatusSource>>(
             `/api/v1/statuses/${id}/source`,
+            extra,
+        );
+    }
+
+    /**
+     * GET /api/v1/statuses/:id/reactions
+     *
+     * @param id The target status id.
+     * @return Array of reactions with accounts.
+     */
+    public getStatusReactions(
+        id: string,
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof NoteReactionWithAccounts>[]>> {
+        return this.get<z.infer<typeof NoteReactionWithAccounts>[]>(
+            `/api/v1/statuses/${id}/reactions`,
             extra,
         );
     }

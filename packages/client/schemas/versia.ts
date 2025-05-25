@@ -74,6 +74,21 @@ export const NoteReaction = z
     });
 
 /* Versia Server API extension */
+export const NoteReactionWithAccounts = NoteReaction.extend({
+    account_ids: z.array(Id).openapi({
+        description: "Array of user IDs who reacted with this emoji.",
+        example: [
+            "1d0185bc-d949-4ff5-8a15-1d691b256489",
+            "d9de4aeb-4591-424d-94ec-659f958aa23d",
+            "1f0c4eb9-a742-4c82-96c9-697a39831cd1",
+        ],
+    }),
+}).openapi({
+    description: "Information about a reaction to a note with account IDs.",
+    ref: "NoteReactionWithAccounts",
+});
+
+/* Versia Server API extension */
 export const SSOConfig = z.object({
     forced: z.boolean().openapi({
         description:

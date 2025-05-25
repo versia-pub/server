@@ -1,3 +1,11 @@
+# `0.9.0` (upcoming)
+
+## Features
+
+### API
+
+-  [x] 🥺 Emoji Reactions are now available! You can react to any note with custom emojis.
+
 # `0.8.0` • Federation 2: Electric Boogaloo
 
 ## Backwards Compatibility
