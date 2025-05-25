@@ -2,7 +2,7 @@
     "name": "versia-server",
     "module": "index.ts",
     "type": "module",
-    "version": "0.8.0",
+    "version": "0.9.0-alpha.0",
     "description": "Powerful, configurable and modular federated server using the Versia Protocol.",
     "homepage": "https://versia.pub",
     "author": {
