@@ -1,11 +1,37 @@
-import { afterAll, describe, expect, test } from "bun:test";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { randomUUIDv7 } from "bun";
+import { Emoji } from "~/classes/database/emoji";
+import { Media } from "~/classes/database/media";
 import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(3);
 const timeline = (await getTestStatuses(2, users[0])).toReversed();
+let emojiMedia: Media;
+let customEmoji: Emoji;
+
+beforeAll(async () => {
+    emojiMedia = await Media.insert({
+        id: randomUUIDv7(),
+        content: {
+            "image/png": {
+                content: "https://example.com/image.png",
+                remote: true,
+            },
+        },
+    });
+
+    customEmoji = await Emoji.insert({
+        id: randomUUIDv7(),
+        shortcode: "test_emoji",
+        visibleInPicker: true,
+        mediaId: emojiMedia.id,
+    });
+});
 
 afterAll(async () => {
     await deleteUsers();
+    await customEmoji.delete();
+    await emojiMedia.delete();
 });
 
 describe("/api/v1/statuses/:id/reactions/:name", () => {
@@ -36,6 +62,29 @@ describe("/api/v1/statuses/:id/reactions/:name", () => {
                     name: "👍",
                     count: 1,
                     me: true,
+                }),
+            );
+        });
+
+        test("should add custom emoji reaction", async () => {
+            await using client = await generateClient(users[1]);
+
+            const { data, ok } = await client.createEmojiReaction(
+                timeline[0].id,
+                `:${customEmoji.data.shortcode}:`,
+            );
+
+            expect(ok).toBe(true);
+            expect(data.reactions).toContainEqual(
+                expect.objectContaining({
+                    name: `:${customEmoji.data.shortcode}:`,
+                    count: 1,
+                    me: true,
+                }),
+            );
+            expect(data.emojis).toContainEqual(
+                expect.objectContaining({
+                    shortcode: customEmoji.data.shortcode,
                 }),
             );
         });

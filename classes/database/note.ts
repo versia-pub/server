@@ -641,6 +641,18 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             );
         }
 
+        const reactions = this.getReactions(userFetching ?? undefined).map(
+            // Remove account_ids
+            (r) => ({
+                ...r,
+                account_ids: undefined,
+            }),
+        );
+
+        const emojis = data.emojis.concat(
+            data.reactions.map((r) => r.emoji).filter((v) => v !== null),
+        );
+
         return {
             id: data.id,
             in_reply_to_id: data.replyId || null,
@@ -652,7 +664,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 : undefined,
             card: null,
             content: replacedContent,
-            emojis: data.emojis.map((emoji) => new Emoji(emoji).toApi()),
+            emojis: emojis.map((emoji) => new Emoji(emoji).toApi()),
             favourited: data.liked,
             favourites_count: data.likeCount,
             media_attachments: (data.attachments ?? []).map((a) =>
@@ -699,13 +711,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             edited_at: data.updatedAt
                 ? new Date(data.updatedAt).toISOString()
                 : null,
-            reactions: this.getReactions(userFetching ?? undefined).map(
-                // Remove account_ids
-                (r) => ({
-                    ...r,
-                    account_ids: undefined,
-                }),
-            ),
+            reactions,
             text: data.contentSource,
         };
     }

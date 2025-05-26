@@ -105,19 +105,12 @@ export default apiRoute((app) => {
                 emoji = unicodeEmoji;
             }
 
-            // Use the User react method
-            try {
-                await user.react(note, emoji);
+            await user.react(note, emoji);
 
-                // Reload note to get updated reactions
-                await note.reload(user.id);
+            // Reload note to get updated reactions
+            await note.reload(user.id);
 
-                return context.json(await note.toApi(user), 201);
-            } catch {
-                // If it's already reacted, just return the current status
-                await note.reload(user.id);
-                return context.json(await note.toApi(user), 201);
-            }
+            return context.json(await note.toApi(user), 201);
         },
     );
 
@@ -206,7 +199,6 @@ export default apiRoute((app) => {
                 emoji = unicodeEmoji;
             }
 
-            // Use the User unreact method
             await user.unreact(note, emoji);
 
             // Reload note to get updated reactions
