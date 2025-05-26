@@ -10,7 +10,7 @@ import { mediaQueue } from "~/classes/queues/media";
 import { pushQueue } from "~/classes/queues/push";
 import { relationshipQueue } from "~/classes/queues/relationships";
 import { config } from "~/config.ts";
-import pkg from "~/package.json";
+import pkg from "~/package.json" with { type: "json" };
 import type { HonoEnv } from "~/types/api";
 
 export const applyToHono = (app: Hono<HonoEnv>): void => {

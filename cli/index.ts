@@ -6,7 +6,7 @@ import { versionPlugin } from "@clerc/plugin-version";
 import { Clerc } from "clerc";
 import { searchManager } from "~/classes/search/search-manager.ts";
 import { setupDatabase } from "~/drizzle/db.ts";
-import pkg from "~/package.json";
+import pkg from "~/package.json" with { type: "json" };
 import { rebuildIndexCommand } from "./index/rebuild.ts";
 import { refetchInstanceCommand } from "./instance/refetch.ts";
 import { createUserCommand } from "./user/create.ts";

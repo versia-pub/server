@@ -6,7 +6,7 @@ import { resolver } from "hono-openapi/zod";
 import { apiRoute } from "@/api";
 import { urlToContentFormat } from "@/content_types";
 import { config } from "~/config.ts";
-import pkg from "~/package.json";
+import pkg from "~/package.json" with { type: "json" };
 import { InstanceMetadataSchema } from "~/packages/sdk/schemas";
 
 export default apiRoute((app) =>

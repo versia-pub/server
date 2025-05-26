@@ -6,7 +6,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiRoute } from "@/api";
 import { config } from "~/config.ts";
-import pkg from "~/package.json";
+import pkg from "~/package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(

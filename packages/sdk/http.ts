@@ -1,7 +1,7 @@
 import { sign } from "./crypto.ts";
 import { Collection, URICollection } from "./entities/collection.ts";
 import type { Entity } from "./entities/entity.ts";
-import { homepage, version } from "./package.json";
+import { homepage, version } from "./package.json" with { type: "json" };
 import { WebFingerSchema } from "./schemas/webfinger.ts";
 
 const DEFAULT_UA = `VersiaFederationClient/${version} (+${homepage})`;

@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/bun";
 import { env } from "bun";
 import { config } from "~/config.ts";
-import pkg from "~/package.json";
+import pkg from "~/package.json" with { type: "json" };
 
 const sentryInstance =
     config.logging.sentry &&

@@ -4,7 +4,7 @@ import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
 import { apiRoute } from "@/api";
 import { config } from "~/config.ts";
-import manifest from "~/package.json";
+import manifest from "~/package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(
