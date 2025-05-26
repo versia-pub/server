@@ -9,7 +9,8 @@
         "plugin",
         "worker",
         "media",
-        "client"
+        "packages/client",
+        "packages/sdk"
     ],
     "languageToolLinter.languageTool.ignoredWordsInWorkspace": ["versia"]
 }

@@ -1,0 +1,48 @@
+name: Build & Publish Packages
+
+on:
+    workflow_dispatch:
+        inputs:
+            package:
+                description: "Package to publish"
+                required: true
+                type: choice
+                options:
+                    - client
+                    - sdk
+            tag:
+                description: "NPM tag to use"
+                required: true
+                type: choice
+                default: nightly
+                options:
+                    - latest
+                    - nightly
+
+permissions:
+    contents: read
+    # For provenance generation
+    id-token: write
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        environment: NPM Deploy
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: oven-sh/setup-bun@v2
+
+            - name: Install
+              run: bun install --frozen-lockfile
+
+            - name: Publish to NPM
+              working-directory: packages/${{ inputs.package }}
+              run: bun publish --provenance --tag ${{ inputs.tag }} --access public
+              env:
+                  NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish to JSR
+              working-directory: packages/${{ inputs.package }}
+              run: bunx jsr publish --allow-slow-types --allow-dirty
