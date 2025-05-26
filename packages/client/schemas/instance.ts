@@ -102,6 +102,25 @@ export const Instance = z
             .openapi({
                 description: "An image used to represent this instance.",
             }),
+        /* Versia Server API extension */
+        banner: z
+            .object({
+                url: z.string().url().openapi({
+                    description: "The URL for the banner image.",
+                    example:
+                        "https://files.mastodon.social/site_uploads/files/000/000/001/@1x/57c12f441d083cde.png",
+                }),
+                blurhash: z.string().optional().openapi({
+                    description:
+                        "A hash computed by the BlurHash algorithm, for generating colorful preview thumbnails when media has not been downloaded yet.",
+                    example: "UUKJMXv|x]t7^*t7Rjaz^jazRjaz",
+                }),
+            })
+            .optional()
+            .openapi({
+                description:
+                    "A wide banner image used to represent this instance.",
+            }),
         icon: z.array(InstanceIcon).openapi({
             description:
                 "The list of available size variants for this instance configured icon.",

@@ -61,8 +61,6 @@ export const generateClient = async (
         token?.data.accessToken,
     );
 
-    // @ts-expect-error This doesn't include fetch.preconnect, which is a custom property
-    // added by Bun
     // biome-ignore lint/complexity/useLiteralKeys: Overriding private properties
     client["fetch"] = (
         input: RequestInfo | string | URL | Request,
