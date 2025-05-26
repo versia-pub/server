@@ -1,4 +1,4 @@
-import { zBoolean } from "@versia/client/schemas";
+import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
@@ -6,7 +6,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
+import { apiRoute, auth, handleZodError, jsonOrForm, qsQuery } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { ApiError } from "~/classes/errors/api-error";
 import { config } from "~/config.ts";
@@ -42,7 +42,67 @@ const schema = z.object({
     }),
 });
 
-export default apiRoute((app) =>
+export default apiRoute((app) => {
+    app.get(
+        "/api/v1/accounts",
+        describeRoute({
+            summary: "Get multiple accounts",
+            description: "View information about multiple profiles.",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/methods/accounts/#index",
+            },
+            tags: ["Accounts"],
+            responses: {
+                200: {
+                    description:
+                        "Account records for the requested confirmed and approved accounts. There can be fewer records than requested if the accounts do not exist or are not confirmed.",
+                    content: {
+                        "application/json": {
+                            schema: resolver(z.array(AccountSchema)),
+                        },
+                    },
+                },
+                422: ApiError.validationFailed().schema,
+            },
+        }),
+        qsQuery(),
+        auth({
+            auth: false,
+            scopes: [],
+            challenge: false,
+        }),
+        rateLimit(40),
+        validator(
+            "query",
+            z.object({
+                id: z
+                    .array(AccountSchema.shape.id)
+                    .min(1)
+                    .max(40)
+                    .or(AccountSchema.shape.id.transform((v) => [v]))
+                    .openapi({
+                        description: "The IDs of the Accounts in the database.",
+                        example: [
+                            "f137ce6f-ff5e-4998-b20f-0361ba9be007",
+                            "8424c654-5d03-4a1b-bec8-4e87db811b5d",
+                        ],
+                    }),
+            }),
+            handleZodError,
+        ),
+        async (context) => {
+            const { id: ids } = context.req.valid("query");
+
+            // Find accounts by IDs
+            const accounts = await User.fromIds(ids);
+
+            return context.json(
+                accounts.map((account) => account.toApi()),
+                200,
+            );
+        },
+    );
+
     app.post(
         "/api/v1/accounts",
         describeRoute({
@@ -360,5 +420,5 @@ export default apiRoute((app) =>
 
             return context.text("", 200);
         },
-    ),
-);
+    );
+});

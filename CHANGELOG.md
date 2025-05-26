@@ -5,6 +5,7 @@
 ### API
 
 -  [x] 🥺 Emoji Reactions are now available! You can react to any note with custom emojis.
+-  [x] 🔎 Added support for [batch account data API](https://docs.joinmastodon.org/methods/accounts/#index).
 
 # `0.8.0` • Federation 2: Electric Boogaloo
 

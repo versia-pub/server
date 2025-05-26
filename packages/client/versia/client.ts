@@ -704,6 +704,28 @@ export class Client extends BaseClient {
     }
 
     /**
+     * GET /api/v1/accounts
+     *
+     * @param ids The account IDs.
+     * @return An array of accounts.
+     */
+    public getAccounts(
+        ids: string[],
+        extra?: RequestInit,
+    ): Promise<Output<z.infer<typeof Account>[]>> {
+        const params = new URLSearchParams();
+
+        for (const id of ids) {
+            params.append("id[]", id);
+        }
+
+        return this.get<z.infer<typeof Account>[]>(
+            `/api/v1/accounts?${params.toString()}`,
+            extra,
+        );
+    }
+
+    /**
      * GET /api/v1/accounts/id
      *
      * Versia API only.

@@ -71,9 +71,7 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
 
             // TODO: Implement with_suspended
-            const { id } = context.req.valid("query");
-
-            const ids = Array.isArray(id) ? id : [id];
+            const { id: ids } = context.req.valid("query");
 
             const relationships = await Relationship.fromOwnerAndSubjects(
                 user,
