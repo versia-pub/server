@@ -8,7 +8,8 @@
         "config",
         "plugin",
         "worker",
-        "media"
+        "media",
+        "client"
     ],
     "languageToolLinter.languageTool.ignoredWordsInWorkspace": ["versia"]
 }

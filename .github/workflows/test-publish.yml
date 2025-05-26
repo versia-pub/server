@@ -23,16 +23,13 @@ jobs:
             - uses: oven-sh/setup-bun@v2
 
             - name: Install
-              run: bun install
-
-            - name: Configure .npmrc
-              working-directory: packages/${{ matrix.package }}
-              run: |
-                  echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+              run: bun install --frozen-lockfile
 
             - name: Publish to NPM
               working-directory: packages/${{ matrix.package }}
-              run: bun publish --dry-run
+              env:
+                  NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: bun publish --dry-run --access public
 
             - name: Publish to JSR
               working-directory: packages/${{ matrix.package }}
