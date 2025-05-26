@@ -170,7 +170,7 @@ export const checkRouteNeedsChallenge = async (
     }
 
     const challenge = await db.query.Challenges.findFirst({
-        where: (c, { eq }): SQL | undefined => eq(c.id, challenge_id),
+        where: (c): SQL | undefined => eq(c.id, challenge_id),
     });
 
     if (!challenge) {

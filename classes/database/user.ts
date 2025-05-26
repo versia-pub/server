@@ -464,7 +464,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     > {
         // Get all linked accounts
         const accounts = await db.query.OpenIdAccounts.findMany({
-            where: (User, { eq }): SQL | undefined => eq(User.userId, this.id),
+            where: (User): SQL | undefined => eq(User.userId, this.id),
         });
 
         return accounts

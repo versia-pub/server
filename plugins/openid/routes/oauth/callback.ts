@@ -156,7 +156,7 @@ export default (plugin: PluginType): void => {
 
                     // Check if account is already linked
                     const account = await db.query.OpenIdAccounts.findFirst({
-                        where: (account, { eq, and }): SQL | undefined =>
+                        where: (account): SQL | undefined =>
                             and(
                                 eq(account.serverId, sub),
                                 eq(account.issuerId, issuer.id),
@@ -195,7 +195,7 @@ export default (plugin: PluginType): void => {
 
                 let userId = (
                     await db.query.OpenIdAccounts.findFirst({
-                        where: (account, { eq, and }): SQL | undefined =>
+                        where: (account): SQL | undefined =>
                             and(
                                 eq(account.serverId, sub),
                                 eq(account.issuerId, issuer.id),

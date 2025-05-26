@@ -261,7 +261,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             {
                 with: {
                     relationships: {
-                        where: (relationship, { eq, and }): SQL | undefined =>
+                        where: (relationship): SQL | undefined =>
                             and(
                                 eq(relationship.subjectId, this.data.authorId),
                                 eq(relationship.following, true),
@@ -597,7 +597,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         if (this.data.visibility === "private") {
             return user
                 ? !!(await db.query.Relationships.findFirst({
-                      where: (relationship, { and, eq }): SQL | undefined =>
+                      where: (relationship): SQL | undefined =>
                           and(
                               eq(relationship.ownerId, user?.id),
                               eq(relationship.subjectId, Notes.authorId),

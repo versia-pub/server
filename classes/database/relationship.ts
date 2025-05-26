@@ -204,7 +204,7 @@ export class Relationship extends BaseInterface<
         ownerId: string;
     }): Promise<RelationshipType> {
         let output = await db.query.Relationships.findFirst({
-            where: (rel, { and, eq }): SQL | undefined =>
+            where: (rel): SQL | undefined =>
                 and(
                     eq(rel.ownerId, oppositeTo.subjectId),
                     eq(rel.subjectId, oppositeTo.ownerId),

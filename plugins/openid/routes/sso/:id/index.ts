@@ -1,6 +1,6 @@
 import { RolePermission } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import { eq, type SQL } from "@versia/kit/drizzle";
+import { and, eq, type SQL } from "@versia/kit/drizzle";
 import { OpenIdAccounts } from "@versia/kit/tables";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -58,7 +58,7 @@ export default (plugin: PluginType): void => {
                 }
 
                 const account = await db.query.OpenIdAccounts.findFirst({
-                    where: (account, { eq, and }): SQL | undefined =>
+                    where: (account): SQL | undefined =>
                         and(
                             eq(account.userId, user.id),
                             eq(account.issuerId, issuerId),
@@ -127,7 +127,7 @@ export default (plugin: PluginType): void => {
                 }
 
                 const account = await db.query.OpenIdAccounts.findFirst({
-                    where: (account, { eq, and }): SQL | undefined =>
+                    where: (account): SQL | undefined =>
                         and(
                             eq(account.userId, user.id),
                             eq(account.issuerId, issuerId),

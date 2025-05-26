@@ -1,5 +1,5 @@
 import { type Application, db } from "@versia/kit/db";
-import type { InferSelectModel, SQL } from "@versia/kit/drizzle";
+import { eq, type InferSelectModel, type SQL } from "@versia/kit/drizzle";
 import type { OpenIdLoginFlows } from "@versia/kit/tables";
 import {
     type AuthorizationResponseError,
@@ -39,7 +39,7 @@ const getFlow = (
     | undefined
 > => {
     return db.query.OpenIdLoginFlows.findFirst({
-        where: (flow, { eq }): SQL | undefined => eq(flow.id, flowId),
+        where: (flow): SQL | undefined => eq(flow.id, flowId),
         with: {
             application: true,
         },

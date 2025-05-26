@@ -56,7 +56,7 @@ export default apiRoute((app) => {
             const { id } = context.req.valid("param");
 
             const userFilter = await db.query.Filters.findFirst({
-                where: (filter, { eq, and }): SQL | undefined =>
+                where: (filter): SQL | undefined =>
                     and(eq(filter.userId, user.id), eq(filter.id, id)),
                 with: {
                     keywords: true,
@@ -224,7 +224,7 @@ export default apiRoute((app) => {
             }
 
             const updatedFilter = await db.query.Filters.findFirst({
-                where: (filter, { eq, and }): SQL | undefined =>
+                where: (filter): SQL | undefined =>
                     and(eq(filter.userId, user.id), eq(filter.id, id)),
                 with: {
                     keywords: true,

@@ -1,6 +1,6 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { db } from "@versia/kit/db";
-import type { SQL } from "drizzle-orm";
+import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { apiRoute, auth, withNoteParam } from "@/api";
@@ -51,7 +51,7 @@ export default apiRoute((app) =>
 
             if (
                 await db.query.UserToPinnedNotes.findFirst({
-                    where: (userPinnedNote, { and, eq }): SQL | undefined =>
+                    where: (userPinnedNote): SQL | undefined =>
                         and(
                             eq(userPinnedNote.noteId, note.data.id),
                             eq(userPinnedNote.userId, user.id),

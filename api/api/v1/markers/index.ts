@@ -76,7 +76,7 @@ export default apiRoute((app) => {
 
             if (timeline.includes("home")) {
                 const found = await db.query.Markers.findFirst({
-                    where: (marker, { and, eq }): SQL | undefined =>
+                    where: (marker): SQL | undefined =>
                         and(
                             eq(marker.userId, user.id),
                             eq(marker.timeline, "home"),
@@ -102,7 +102,7 @@ export default apiRoute((app) => {
 
             if (timeline.includes("notifications")) {
                 const found = await db.query.Markers.findFirst({
-                    where: (marker, { and, eq }): SQL | undefined =>
+                    where: (marker): SQL | undefined =>
                         and(
                             eq(marker.userId, user.id),
                             eq(marker.timeline, "notifications"),

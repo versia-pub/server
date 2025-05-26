@@ -91,8 +91,7 @@ export class Role extends BaseInterface<typeof Roles> {
     ): Promise<Role[]> {
         return (
             await db.query.RoleToUsers.findMany({
-                where: (role, { eq }): SQL | undefined =>
-                    eq(role.userId, userId),
+                where: (role): SQL | undefined => eq(role.userId, userId),
                 with: {
                     role: true,
                     user: {
