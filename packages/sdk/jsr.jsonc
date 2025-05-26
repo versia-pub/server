@@ -1,0 +1,12 @@
+{
+    "$schema": "https://jsr.io/schema/config-file.v1.json",
+    "name": "@versia/sdk",
+    "version": "0.0.1",
+    "exports": {
+        ".": "./inbox-processor.ts",
+        "./http": "./http.ts",
+        "./crypto": "./crypto.ts",
+        "./entities": "./entities.ts",
+        "./schemas": "./schemas.ts"
+    }
+}
