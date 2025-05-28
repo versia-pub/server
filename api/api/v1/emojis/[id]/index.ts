@@ -113,9 +113,15 @@ export default apiRoute((app) => {
             "json",
             z
                 .object({
-                    shortcode: CustomEmojiSchema.shape.shortcode.max(
-                        config.validation.emojis.max_shortcode_characters,
-                    ),
+                    shortcode: CustomEmojiSchema.shape.shortcode
+                        .max(config.validation.emojis.max_shortcode_characters)
+                        .refine(
+                            (s) =>
+                                !config.validation.filters.emoji_shortcode.some(
+                                    (filter) => filter.test(s),
+                                ),
+                            "Shortcode contains blocked words",
+                        ),
                     element: z
                         .string()
                         .url()
