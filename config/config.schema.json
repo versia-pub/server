@@ -57,27 +57,14 @@
                                 "default": "versia"
                             }
                         },
-                        "required": [
-                            "host",
-                            "port",
-                            "username",
-                            "password",
-                            "database"
-                        ],
+                        "required": ["host", "username"],
                         "additionalProperties": false
                     },
                     "description": "Additional read-only replicas",
                     "default": []
                 }
             },
-            "required": [
-                "host",
-                "port",
-                "username",
-                "password",
-                "database",
-                "replicas"
-            ],
+            "required": ["username"],
             "additionalProperties": false,
             "description": "PostgreSQL database configuration"
         },
@@ -106,7 +93,6 @@
                             "default": 0
                         }
                     },
-                    "required": ["host", "port", "password", "database"],
                     "additionalProperties": false,
                     "description": "A Redis database used for managing queues."
                 },
@@ -132,12 +118,11 @@
                             "default": 1
                         }
                     },
-                    "required": ["host", "port", "password", "database"],
                     "additionalProperties": false,
                     "description": "A Redis database used for caching SQL queries. Optional."
                 }
             },
-            "required": ["queue", "cache"],
+            "required": ["queue"],
             "additionalProperties": false,
             "description": "Redis configuration. Used for queues and caching."
         },
@@ -165,12 +150,11 @@
                             "$ref": "#/properties/postgres/properties/password"
                         }
                     },
-                    "required": ["host", "port", "password"],
+                    "required": ["password"],
                     "additionalProperties": false,
                     "description": "Sonic database configuration"
                 }
             },
-            "required": ["enabled", "sonic"],
             "additionalProperties": false,
             "description": "Search and indexing configuration"
         },
@@ -191,7 +175,6 @@
                     "description": "Message to show to users when registration is disabled"
                 }
             },
-            "required": ["allow", "require_approval", "message"],
             "additionalProperties": false
         },
         "http": {
@@ -250,20 +233,12 @@
                             "description": "This value must be a file path"
                         }
                     },
-                    "required": ["key", "cert", "passphrase", "ca"],
+                    "required": ["key", "cert"],
                     "additionalProperties": false,
                     "description": "TLS configuration. You should probably be using a reverse proxy instead of this"
                 }
             },
-            "required": [
-                "base_url",
-                "bind",
-                "bind_port",
-                "banned_ips",
-                "banned_user_agents",
-                "proxy_address",
-                "tls"
-            ],
+            "required": ["base_url"],
             "additionalProperties": false
         },
         "frontend": {
@@ -275,7 +250,7 @@
                 },
                 "path": {
                     "type": "string",
-                    "default": "/home/jessew/Dev/versia-server"
+                    "default": "frontend"
                 },
                 "routes": {
                     "type": "object",
@@ -302,13 +277,6 @@
                             "default": "/oauth/reset"
                         }
                     },
-                    "required": [
-                        "home",
-                        "login",
-                        "consent",
-                        "register",
-                        "password_reset"
-                    ],
                     "additionalProperties": false
                 },
                 "settings": {
@@ -317,7 +285,7 @@
                     "default": {}
                 }
             },
-            "required": ["enabled", "path", "routes", "settings"],
+            "required": ["routes"],
             "additionalProperties": false
         },
         "email": {
@@ -351,17 +319,10 @@
                             "default": true
                         }
                     },
-                    "required": [
-                        "server",
-                        "port",
-                        "username",
-                        "password",
-                        "tls"
-                    ],
+                    "required": ["server", "username"],
                     "additionalProperties": false
                 }
             },
-            "required": ["send_emails", "smtp"],
             "additionalProperties": false
         },
         "media": {
@@ -393,15 +354,10 @@
                             "default": false
                         }
                     },
-                    "required": [
-                        "convert_images",
-                        "convert_to",
-                        "convert_vectors"
-                    ],
                     "additionalProperties": false
                 }
             },
-            "required": ["backend", "uploads_path", "conversion"],
+            "required": ["conversion"],
             "additionalProperties": false
         },
         "s3": {
@@ -425,14 +381,19 @@
                 "public_url": {
                     "$ref": "#/properties/http/properties/base_url",
                     "description": "Public URL that uploaded media will be accessible at"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "path_style": {
+                    "type": "boolean",
+                    "default": true
                 }
             },
             "required": [
                 "endpoint",
                 "access_key",
                 "secret_access_key",
-                "region",
-                "bucket_name",
                 "public_url"
             ],
             "additionalProperties": false
@@ -518,18 +479,6 @@
                             "default": 20
                         }
                     },
-                    "required": [
-                        "max_displayname_characters",
-                        "max_username_characters",
-                        "max_bio_characters",
-                        "max_avatar_bytes",
-                        "max_header_bytes",
-                        "disallowed_usernames",
-                        "max_field_count",
-                        "max_field_name_characters",
-                        "max_field_value_characters",
-                        "max_pinned_notes"
-                    ],
                     "additionalProperties": false
                 },
                 "notes": {
@@ -570,11 +519,6 @@
                             "default": 16
                         }
                     },
-                    "required": [
-                        "max_characters",
-                        "allowed_url_schemes",
-                        "max_attachments"
-                    ],
                     "additionalProperties": false
                 },
                 "media": {
@@ -1838,11 +1782,6 @@
                             ]
                         }
                     },
-                    "required": [
-                        "max_bytes",
-                        "max_description_characters",
-                        "allowed_mime_types"
-                    ],
                     "additionalProperties": false
                 },
                 "emojis": {
@@ -1864,11 +1803,6 @@
                             "default": 1000
                         }
                     },
-                    "required": [
-                        "max_bytes",
-                        "max_shortcode_characters",
-                        "max_description_characters"
-                    ],
                     "additionalProperties": false
                 },
                 "polls": {
@@ -1895,12 +1829,6 @@
                             "default": 8640000
                         }
                     },
-                    "required": [
-                        "max_options",
-                        "max_option_characters",
-                        "min_duration_seconds",
-                        "max_duration_seconds"
-                    ],
                     "additionalProperties": false
                 },
                 "emails": {
@@ -1919,7 +1847,6 @@
                             "default": []
                         }
                     },
-                    "required": ["disallow_tempmail", "disallowed_domains"],
                     "additionalProperties": false
                 },
                 "challenges": {
@@ -1940,7 +1867,7 @@
                             "description": "You can use PATH:/path/to/file to load this value from a file"
                         }
                     },
-                    "required": ["difficulty", "expiration", "key"],
+                    "required": ["key"],
                     "additionalProperties": false,
                     "description": "CAPTCHA challenge configuration. Challenges are disabled if not provided."
                 },
@@ -1983,13 +1910,6 @@
                             "default": []
                         }
                     },
-                    "required": [
-                        "note_content",
-                        "emoji_shortcode",
-                        "username",
-                        "displayname",
-                        "bio"
-                    ],
                     "additionalProperties": false,
                     "description": "Block content that matches these regular expressions"
                 }
@@ -2001,7 +1921,6 @@
                 "emojis",
                 "polls",
                 "emails",
-                "challenges",
                 "filters"
             ],
             "additionalProperties": false
@@ -2016,13 +1935,14 @@
                             "type": "object",
                             "properties": {
                                 "public": {
-                                    "$ref": "#/properties/postgres/properties/password"
+                                    "$ref": "#/properties/postgres/properties/password",
+                                    "description": "You can use PATH:/path/to/file to load this value from a file"
                                 },
                                 "private": {
-                                    "$ref": "#/properties/postgres/properties/password"
+                                    "$ref": "#/properties/postgres/properties/password",
+                                    "description": "You can use PATH:/path/to/file to load this value from a file"
                                 }
                             },
-                            "required": ["public", "private"],
                             "additionalProperties": false
                         },
                         "subject": {
@@ -2030,12 +1950,11 @@
                             "description": "Subject field embedded in the push notification. Example: 'mailto:contact@example.com'"
                         }
                     },
-                    "required": ["vapid_keys", "subject"],
+                    "required": ["vapid_keys"],
                     "additionalProperties": false,
                     "description": "Web Push Notifications configuration. Leave out to disable."
                 }
             },
-            "required": ["push"],
             "additionalProperties": false
         },
         "defaults": {
@@ -2062,13 +1981,6 @@
                     "description": "A style name from https://www.dicebear.com/styles"
                 }
             },
-            "required": [
-                "visibility",
-                "language",
-                "avatar",
-                "header",
-                "placeholder_style"
-            ],
             "additionalProperties": false
         },
         "federation": {
@@ -2155,17 +2067,6 @@
                             "default": []
                         }
                     },
-                    "required": [
-                        "reports",
-                        "deletes",
-                        "updates",
-                        "media",
-                        "follows",
-                        "likes",
-                        "reactions",
-                        "banners",
-                        "avatars"
-                    ],
                     "additionalProperties": false
                 },
                 "bridge": {
@@ -2196,11 +2097,11 @@
                             "$ref": "#/properties/http/properties/proxy_address"
                         }
                     },
-                    "required": ["software", "allowed_ips", "token", "url"],
+                    "required": ["software", "token", "url"],
                     "additionalProperties": false
                 }
             },
-            "required": ["blocked", "followers_only", "discard", "bridge"],
+            "required": ["discard"],
             "additionalProperties": false
         },
         "queues": {
@@ -2219,10 +2120,6 @@
                         "default": 31536000
                     }
                 },
-                "required": [
-                    "remove_after_complete_seconds",
-                    "remove_after_failure_seconds"
-                ],
                 "additionalProperties": false
             },
             "propertyNames": {
@@ -2264,7 +2161,6 @@
                             "$ref": "#/properties/http/properties/proxy_address"
                         }
                     },
-                    "required": ["logo", "banner"],
                     "additionalProperties": false
                 },
                 "languages": {
@@ -2489,7 +2385,7 @@
                                 "description": "Longer version of the rule with additional information"
                             }
                         },
-                        "required": ["text", "hint"],
+                        "required": ["text"],
                         "additionalProperties": false
                     },
                     "default": []
@@ -2498,28 +2394,18 @@
                     "type": "object",
                     "properties": {
                         "public": {
-                            "$ref": "#/properties/postgres/properties/password"
+                            "$ref": "#/properties/postgres/properties/password",
+                            "description": "You can use PATH:/path/to/file to load this value from a file"
                         },
                         "private": {
-                            "$ref": "#/properties/postgres/properties/password"
+                            "$ref": "#/properties/postgres/properties/password",
+                            "description": "You can use PATH:/path/to/file to load this value from a file"
                         }
                     },
-                    "required": ["public", "private"],
                     "additionalProperties": false
                 }
             },
-            "required": [
-                "name",
-                "description",
-                "extended_description_path",
-                "tos_path",
-                "privacy_policy_path",
-                "branding",
-                "languages",
-                "contact",
-                "rules",
-                "keys"
-            ],
+            "required": ["branding", "languages", "contact"],
             "additionalProperties": false
         },
         "permissions": {
@@ -2798,7 +2684,6 @@
                     ]
                 }
             },
-            "required": ["anonymous", "default", "admin"],
             "additionalProperties": false
         },
         "logging": {
@@ -2830,7 +2715,6 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["level", "log_file_path"],
                                 "additionalProperties": false
                             }
                         ]
@@ -2886,15 +2770,7 @@
                             "type": "string"
                         }
                     },
-                    "required": [
-                        "dsn",
-                        "debug",
-                        "sample_rate",
-                        "traces_sample_rate",
-                        "trace_propagation_targets",
-                        "max_breadcrumbs",
-                        "environment"
-                    ],
+                    "required": ["dsn"],
                     "additionalProperties": false
                 },
                 "log_file_path": {
@@ -2902,7 +2778,7 @@
                     "default": "logs/versia.log"
                 }
             },
-            "required": ["types", "log_level", "sentry", "log_file_path"],
+            "required": ["types"],
             "additionalProperties": false
         },
         "debug": {
@@ -2913,7 +2789,6 @@
                     "default": false
                 }
             },
-            "required": ["federation"],
             "additionalProperties": false
         },
         "plugins": {
@@ -2941,7 +2816,6 @@
                             "default": []
                         }
                     },
-                    "required": ["enabled", "disabled"],
                     "additionalProperties": false
                 },
                 "config": {
@@ -2949,7 +2823,7 @@
                     "additionalProperties": {}
                 }
             },
-            "required": ["autoload", "overrides", "config"],
+            "required": ["overrides"],
             "additionalProperties": false
         }
     },
@@ -2962,7 +2836,6 @@
         "frontend",
         "email",
         "media",
-        "s3",
         "validation",
         "notifications",
         "defaults",
@@ -2971,7 +2844,6 @@
         "instance",
         "permissions",
         "logging",
-        "debug",
         "plugins"
     ],
     "additionalProperties": false,

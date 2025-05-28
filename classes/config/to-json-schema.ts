@@ -1,6 +1,12 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { ConfigSchema } from "./schema.ts";
 
-const jsonSchema = zodToJsonSchema(ConfigSchema, {});
+await import("~/config.ts");
 
-console.write(`${JSON.stringify(jsonSchema, null, 4)}\n`);
+// This is an awkward way to avoid import cycles for some reason
+await (async () => {
+    const { ConfigSchema } = await import("./schema.ts");
+
+    const jsonSchema = zodToJsonSchema(ConfigSchema, {});
+
+    console.write(`${JSON.stringify(jsonSchema, null, 4)}\n`);
+})();
