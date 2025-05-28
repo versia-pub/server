@@ -62,6 +62,11 @@ export const NoteReaction = z
             description: "Number of users who reacted with this emoji.",
             example: 5,
         }),
+        remote: z.boolean().openapi({
+            description:
+                "Whether this reaction is from a remote instance (federated).",
+            example: false,
+        }),
         me: z.boolean().optional().openapi({
             description:
                 "Whether the current authenticated user reacted with this emoji.",

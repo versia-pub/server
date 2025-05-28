@@ -6,7 +6,7 @@ import {
     enableRealRequests,
     mock,
 } from "bun-bagel";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Instance } from "~/classes/database/instance";
 import { Note } from "~/classes/database/note";
 import { Reaction } from "~/classes/database/reaction";
@@ -15,13 +15,14 @@ import { config } from "~/config";
 import { Notes, Reactions, Users } from "~/drizzle/schema";
 import { sign } from "~/packages/sdk/crypto";
 import * as VersiaEntities from "~/packages/sdk/entities";
-import { fakeRequest } from "~/tests/utils";
+import { fakeRequest, generateClient, getTestUsers } from "~/tests/utils";
 
 const instanceUrl = new URL("https://versia.example.com");
 const noteId = randomUUIDv7();
 const userId = randomUUIDv7();
 const shareId = randomUUIDv7();
 const reactionId = randomUUIDv7();
+const reaction2Id = randomUUIDv7();
 const userKeys = await User.generateKeys();
 const privateKey = await crypto.subtle.importKey(
     "pkcs8",
@@ -32,6 +33,7 @@ const privateKey = await crypto.subtle.importKey(
 );
 const instanceKeys = await User.generateKeys();
 const inboxUrl = new URL("/inbox", config.http.base_url);
+const { users, deleteUsers } = await getTestUsers(1);
 
 disableRealRequests();
 
@@ -101,6 +103,7 @@ afterAll(async () => {
     }
 
     await instance.delete();
+    await deleteUsers();
     clearMocks();
     enableRealRequests();
 });
@@ -286,6 +289,122 @@ describe("Inbox Tests", () => {
         );
 
         expect(reaction).not.toBeNull();
+
+        // Check if API returns the reaction correctly
+        await using client = await generateClient(users[1]);
+
+        const { data, ok } = await client.getStatusReactions(dbNote.id);
+
+        expect(ok).toBe(true);
+        expect(data).toContainEqual(
+            expect.objectContaining({
+                name: "👍",
+                count: 1,
+                me: false,
+                remote: false,
+            }),
+        );
+    });
+
+    test("should correctly process Reaction with custom emoji", async () => {
+        const exampleRequest = new VersiaEntities.Reaction({
+            id: reaction2Id,
+            created_at: "2025-04-18T10:32:01.427Z",
+            uri: new URL(`/reactions/${reaction2Id}`, instanceUrl).href,
+            type: "pub.versia:reactions/Reaction",
+            author: new URL(`/users/${userId}`, instanceUrl).href,
+            object: new URL(`/notes/${noteId}`, instanceUrl).href,
+            content: ":neocat:",
+            extensions: {
+                "pub.versia:custom_emojis": {
+                    emojis: [
+                        {
+                            name: ":neocat:",
+                            url: {
+                                "image/webp": {
+                                    hash: {
+                                        sha256: "e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649",
+                                    },
+                                    size: 4664,
+                                    width: 256,
+                                    height: 256,
+                                    remote: true,
+                                    content:
+                                        "https://cdn.cpluspatch.com/versia-cpp/e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649/neocat.webp",
+                                },
+                            },
+                        },
+                    ],
+                },
+            },
+        });
+
+        const signedRequest = await sign(
+            privateKey,
+            new URL(exampleRequest.data.author),
+            new Request(inboxUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "User-Agent": "Versia/1.0.0",
+                },
+                body: JSON.stringify(exampleRequest.toJSON()),
+            }),
+        );
+
+        const response = await fakeRequest(inboxUrl, {
+            method: "POST",
+            headers: signedRequest.headers,
+            body: signedRequest.body,
+        });
+
+        expect(response.status).toBe(200);
+
+        await sleep(500);
+
+        const dbNote = await Note.fromSql(
+            eq(Notes.uri, new URL(`/notes/${noteId}`, instanceUrl).href),
+        );
+
+        if (!dbNote) {
+            throw new Error("DBNote not found");
+        }
+
+        // Find the remote user who reacted by URI
+        const remoteUser = await User.fromSql(
+            eq(Users.uri, new URL(`/users/${userId}`, instanceUrl).href),
+        );
+
+        if (!remoteUser) {
+            throw new Error("Remote user not found");
+        }
+
+        // Check if reaction was created in the database
+        const reaction = await Reaction.fromSql(
+            and(
+                eq(Reactions.noteId, dbNote.id),
+                eq(Reactions.authorId, remoteUser.id),
+                isNull(Reactions.emojiText), // Custom emoji reactions have emojiText as NULL
+            ),
+        );
+
+        expect(reaction).not.toBeNull();
+
+        // Check if API returns the reaction correctly
+        await using client = await generateClient(users[1]);
+
+        const { data, ok } = await client.getStatusReactions(dbNote.id);
+
+        expect(ok).toBe(true);
+        expect(data).toContainEqual(
+            expect.objectContaining({
+                name: ":neocat@versia.example.com:",
+                count: 1,
+                me: false,
+                remote: true,
+            }),
+        );
     });
 
     test("should correctly process Delete", async () => {

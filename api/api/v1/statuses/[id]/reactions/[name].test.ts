@@ -106,6 +106,7 @@ describe("/api/v1/statuses/:id/reactions/:name", () => {
                     name: "❤️",
                     count: 1,
                     me: false,
+                    remote: false,
                 }),
             );
             expect(data.reactions).toContainEqual(
@@ -113,6 +114,7 @@ describe("/api/v1/statuses/:id/reactions/:name", () => {
                     name: "😂",
                     count: 1,
                     me: true,
+                    remote: false,
                 }),
             );
         });
@@ -133,6 +135,7 @@ describe("/api/v1/statuses/:id/reactions/:name", () => {
                 name: "👍",
                 count: 1,
                 me: true,
+                remote: false,
             });
         });
 

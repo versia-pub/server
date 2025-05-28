@@ -39,6 +39,7 @@ describe("/api/v1/statuses/:id/reactions", () => {
             count: 1,
             me: true,
             account_ids: [users[1].id],
+            remote: false,
         });
 
         // Check for ❤️ reaction
@@ -48,6 +49,7 @@ describe("/api/v1/statuses/:id/reactions", () => {
             count: 1,
             me: false,
             account_ids: [users[2].id],
+            remote: false,
         });
 
         // Check for 😂 reaction
@@ -57,6 +59,7 @@ describe("/api/v1/statuses/:id/reactions", () => {
             count: 1,
             me: true,
             account_ids: [users[1].id],
+            remote: false,
         });
     });
 
@@ -71,6 +74,7 @@ describe("/api/v1/statuses/:id/reactions", () => {
         // All reactions should have me: false when not authenticated
         for (const reaction of data) {
             expect(reaction.me).toBe(false);
+            expect(reaction.remote).toBe(false);
         }
     });
 });

@@ -948,6 +948,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             {
                 count: number;
                 me: boolean;
+                instance: typeof Instance.$type | null;
                 account_ids: string[];
             }
         >();
@@ -958,8 +959,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             // Determine emoji name based on type
             if (reaction.emojiText) {
                 emojiName = reaction.emojiText;
-            } else if (reaction.emoji) {
+            } else if (reaction.emoji?.instance === null) {
                 emojiName = `:${reaction.emoji.shortcode}:`;
+            } else if (reaction.emoji?.instance) {
+                emojiName = `:${reaction.emoji.shortcode}@${reaction.emoji.instance.baseUrl}:`;
             } else {
                 continue; // Skip invalid reactions
             }
@@ -970,6 +973,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     count: 0,
                     me: false,
                     account_ids: [],
+                    instance: reaction.emoji?.instance ?? null,
                 });
             }
 
@@ -994,6 +998,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             count: data.count,
             me: data.me,
             account_ids: data.account_ids,
+            remote: data.instance !== null,
         }));
     }
 }
