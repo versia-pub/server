@@ -236,6 +236,20 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         });
     }
 
+    public toVersiaUnreact(): VersiaEntities.Delete {
+        return new VersiaEntities.Delete({
+            type: "Delete",
+            id: crypto.randomUUID(),
+            created_at: new Date().toISOString(),
+            author: User.getUri(
+                this.data.authorId,
+                this.data.author.uri ? new URL(this.data.author.uri) : null,
+            ).href,
+            deleted_type: "pub.versia:reactions/Reaction",
+            deleted: this.getUri(config.http.base_url).href,
+        });
+    }
+
     public static async fromVersia(
         reactionToConvert: VersiaEntities.Reaction,
         author: User,

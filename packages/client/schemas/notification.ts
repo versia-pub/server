@@ -21,6 +21,7 @@ export const Notification = z
                 "favourite",
                 "poll",
                 "update",
+                "reaction",
                 "admin.sign_up",
                 "admin.report",
                 "severed_relationships",

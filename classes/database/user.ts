@@ -752,7 +752,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         // Create the reaction
-        await Reaction.insert({
+        const reaction = await Reaction.insert({
             id: randomUUIDv7(),
             authorId: this.id,
             noteId: note.id,
@@ -760,7 +760,29 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             emojiId: emoji instanceof Emoji ? emoji.id : null,
         });
 
-        // TODO: Handle federation and notifications
+        const finalNote = await Note.fromId(note.id, this.id);
+
+        if (!finalNote) {
+            throw new Error("Failed to fetch note after reaction");
+        }
+
+        if (note.author.local) {
+            // Notify the user that their post has been reacted to
+            await note.author.notify("reaction", this, finalNote);
+        }
+
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
+                reaction.toVersia(),
+            );
+
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(reaction.toVersia(), note.author);
+            }
+        }
     }
 
     /**
@@ -777,11 +799,45 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         await reactionToDelete.delete();
 
-        // TODO: Handle federation and notifications
+        if (note.author.local) {
+            // Remove any eventual notifications for this reaction
+            await db
+                .delete(Notifications)
+                .where(
+                    and(
+                        eq(Notifications.accountId, this.id),
+                        eq(Notifications.type, "reaction"),
+                        eq(Notifications.notifiedId, note.data.authorId),
+                        eq(Notifications.noteId, note.id),
+                    ),
+                );
+        }
+
+        if (this.local) {
+            const federatedUsers = await this.federateToFollowers(
+                reactionToDelete.toVersiaUnreact(),
+            );
+
+            if (
+                note.remote &&
+                !federatedUsers.find((u) => u.id === note.author.id)
+            ) {
+                await this.federateToUser(
+                    reactionToDelete.toVersiaUnreact(),
+                    note.author,
+                );
+            }
+        }
     }
 
     public async notify(
-        type: "mention" | "follow_request" | "follow" | "favourite" | "reblog",
+        type:
+            | "mention"
+            | "follow_request"
+            | "follow"
+            | "favourite"
+            | "reblog"
+            | "reaction",
         relatedUser: User,
         note?: Note,
     ): Promise<void> {
@@ -801,7 +857,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     private async notifyPush(
         notificationId: string,
-        type: "mention" | "follow_request" | "follow" | "favourite" | "reblog",
+        type:
+            | "mention"
+            | "follow_request"
+            | "follow"
+            | "favourite"
+            | "reblog"
+            | "reaction",
         relatedUser: User,
         note?: Note,
     ): Promise<void> {
