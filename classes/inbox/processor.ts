@@ -1,5 +1,12 @@
 import { getLogger, type Logger } from "@logtape/logtape";
-import { type Instance, Like, Note, Relationship, User } from "@versia/kit/db";
+import {
+    type Instance,
+    Like,
+    Note,
+    Reaction,
+    Relationship,
+    User,
+} from "@versia/kit/db";
 import { Likes, Notes } from "@versia/kit/tables";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
@@ -198,8 +205,9 @@ export class InboxProcessor {
                     InboxProcessor.processDelete(d),
                 )
                 .on(VersiaEntities.User, (u) => InboxProcessor.processUser(u))
-                .on(VersiaEntities.Share, async (s) =>
-                    InboxProcessor.processShare(s),
+                .on(VersiaEntities.Share, (s) => InboxProcessor.processShare(s))
+                .on(VersiaEntities.Reaction, (r) =>
+                    InboxProcessor.processReaction(r),
                 )
                 .sort(() => {
                     throw new ApiError(400, "Unknown entity type");
@@ -207,6 +215,29 @@ export class InboxProcessor {
         } catch (e) {
             return this.handleError(e as Error);
         }
+    }
+
+    /**
+     * Handles Reaction entity processing
+     *
+     * @param {VersiaEntities.Reaction} reaction - The Reaction entity to process.
+     * @returns {Promise<void>}
+     */
+    private static async processReaction(
+        reaction: VersiaEntities.Reaction,
+    ): Promise<void> {
+        const author = await User.resolve(new URL(reaction.data.author));
+        const note = await Note.resolve(new URL(reaction.data.object));
+
+        if (!author) {
+            throw new ApiError(404, "Author not found");
+        }
+
+        if (!note) {
+            throw new ApiError(404, "Note not found");
+        }
+
+        await Reaction.fromVersia(reaction, author, note);
     }
 
     /**

@@ -9,9 +9,10 @@ import {
 import { and, eq } from "drizzle-orm";
 import { Instance } from "~/classes/database/instance";
 import { Note } from "~/classes/database/note";
+import { Reaction } from "~/classes/database/reaction";
 import { User } from "~/classes/database/user";
 import { config } from "~/config";
-import { Notes } from "~/drizzle/schema";
+import { Notes, Reactions, Users } from "~/drizzle/schema";
 import { sign } from "~/packages/sdk/crypto";
 import * as VersiaEntities from "~/packages/sdk/entities";
 import { fakeRequest } from "~/tests/utils";
@@ -20,6 +21,7 @@ const instanceUrl = new URL("https://versia.example.com");
 const noteId = randomUUIDv7();
 const userId = randomUUIDv7();
 const shareId = randomUUIDv7();
+const reactionId = randomUUIDv7();
 const userKeys = await User.generateKeys();
 const privateKey = await crypto.subtle.importKey(
     "pkcs8",
@@ -222,7 +224,71 @@ describe("Inbox Tests", () => {
         expect(share).not.toBeNull();
     });
 
-    test("should correctly process Delete for Note", async () => {
+    test("should correctly process Reaction", async () => {
+        const exampleRequest = new VersiaEntities.Reaction({
+            id: reactionId,
+            created_at: "2025-04-18T10:32:01.427Z",
+            uri: new URL(`/reactions/${reactionId}`, instanceUrl).href,
+            type: "pub.versia:reactions/Reaction",
+            author: new URL(`/users/${userId}`, instanceUrl).href,
+            object: new URL(`/notes/${noteId}`, instanceUrl).href,
+            content: "👍",
+        });
+
+        const signedRequest = await sign(
+            privateKey,
+            new URL(exampleRequest.data.author),
+            new Request(inboxUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    "User-Agent": "Versia/1.0.0",
+                },
+                body: JSON.stringify(exampleRequest.toJSON()),
+            }),
+        );
+
+        const response = await fakeRequest(inboxUrl, {
+            method: "POST",
+            headers: signedRequest.headers,
+            body: signedRequest.body,
+        });
+
+        expect(response.status).toBe(200);
+
+        await sleep(500);
+
+        const dbNote = await Note.fromSql(
+            eq(Notes.uri, new URL(`/notes/${noteId}`, instanceUrl).href),
+        );
+
+        if (!dbNote) {
+            throw new Error("DBNote not found");
+        }
+
+        // Find the remote user who reacted by URI
+        const remoteUser = await User.fromSql(
+            eq(Users.uri, new URL(`/users/${userId}`, instanceUrl).href),
+        );
+
+        if (!remoteUser) {
+            throw new Error("Remote user not found");
+        }
+
+        // Check if reaction was created in the database
+        const reaction = await Reaction.fromSql(
+            and(
+                eq(Reactions.noteId, dbNote.id),
+                eq(Reactions.authorId, remoteUser.id),
+                eq(Reactions.emojiText, "👍"),
+            ),
+        );
+
+        expect(reaction).not.toBeNull();
+    });
+
+    test("should correctly process Delete", async () => {
         const deleteId = randomUUIDv7();
 
         // First check that the note exists in the database
