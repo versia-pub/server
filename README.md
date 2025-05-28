@@ -95,6 +95,7 @@ The following extensions are currently supported or being worked on:
 - `pub.versia:instance_messaging`: Instance Messaging
 - `pub.versia:likes`: Likes
 - `pub.versia:share`: Share
+- `pub.versia:reactions`: Reactions
 
 ## API
 

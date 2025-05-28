@@ -49,6 +49,7 @@ export default apiRoute((app) =>
                             "pub.versia:instance_messaging",
                             "pub.versia:likes",
                             "pub.versia:shares",
+                            "pub.versia:reactions",
                         ],
                         versions: ["0.5.0"],
                     },
