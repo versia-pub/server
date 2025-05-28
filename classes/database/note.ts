@@ -500,9 +500,14 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         );
 
         const emojis = await Promise.all(
-            extensions?.["pub.versia:custom_emojis"]?.emojis.map((emoji) =>
-                Emoji.fetchFromRemote(emoji, instance),
-            ) ?? [],
+            extensions?.["pub.versia:custom_emojis"]?.emojis
+                .filter(
+                    (e) =>
+                        !config.validation.filters.emoji_shortcode.some(
+                            (filter) => filter.test(e.name),
+                        ),
+                )
+                .map((emoji) => Emoji.fetchFromRemote(emoji, instance)) ?? [],
         );
 
         const mentions = (

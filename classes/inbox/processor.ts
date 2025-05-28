@@ -181,9 +181,7 @@ export class InboxProcessor {
 
         try {
             await new EntitySorter(this.body)
-                .on(VersiaEntities.Note, async (n) => {
-                    await Note.fromVersia(n);
-                })
+                .on(VersiaEntities.Note, (n) => InboxProcessor.processNote(n))
                 .on(VersiaEntities.Follow, (f) =>
                     InboxProcessor.processFollowRequest(f),
                 )
@@ -199,9 +197,7 @@ export class InboxProcessor {
                 .on(VersiaEntities.Delete, (d) =>
                     InboxProcessor.processDelete(d),
                 )
-                .on(VersiaEntities.User, async (u) => {
-                    await User.fromVersia(u);
-                })
+                .on(VersiaEntities.User, (u) => InboxProcessor.processUser(u))
                 .on(VersiaEntities.Share, async (s) =>
                     InboxProcessor.processShare(s),
                 )
@@ -211,6 +207,66 @@ export class InboxProcessor {
         } catch (e) {
             return this.handleError(e as Error);
         }
+    }
+
+    /**
+     * Handles Note entity processing
+     *
+     * @param {VersiaNote} note - The Note entity to process.
+     * @returns {Promise<void>}
+     */
+    private static async processNote(note: VersiaEntities.Note): Promise<void> {
+        // If note has a blocked word
+        if (
+            Object.values(note.content?.data ?? {})
+                .flatMap((c) => c.content)
+                .some((content) =>
+                    config.validation.filters.note_content.some((filter) =>
+                        filter.test(content),
+                    ),
+                )
+        ) {
+            // Drop silently
+            return;
+        }
+
+        await Note.fromVersia(note);
+    }
+
+    /**
+     * Handles User entity processing.
+     *
+     * @param {VersiaUser} user - The User entity to process.
+     * @returns {Promise<void>}
+     */
+    private static async processUser(user: VersiaEntities.User): Promise<void> {
+        if (
+            config.validation.filters.username.some((filter) =>
+                filter.test(user.data.username),
+            ) ||
+            (user.data.display_name &&
+                config.validation.filters.displayname.some((filter) =>
+                    filter.test(user.data.display_name ?? ""),
+                ))
+        ) {
+            // Drop silently
+            return;
+        }
+
+        if (
+            Object.values(user.bio?.data ?? {})
+                .flatMap((c) => c.content)
+                .some((content) =>
+                    config.validation.filters.bio.some((filter) =>
+                        filter.test(content),
+                    ),
+                )
+        ) {
+            // Drop silently
+            return;
+        }
+
+        await User.fromVersia(user);
     }
 
     /**
