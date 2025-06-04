@@ -1,3 +1,4 @@
+import type { Hook } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import type { RolePermission } from "@versia/client/schemas";
 import { Application, db, Emoji, Note, Token, User } from "@versia/kit/db";
@@ -6,7 +7,7 @@ import { extractParams, verifySolution } from "altcha-lib";
 import { SHA256 } from "bun";
 import chalk from "chalk";
 import { eq, type SQL } from "drizzle-orm";
-import type { Context, Hono, MiddlewareHandler } from "hono";
+import type { Context, Hono, MiddlewareHandler, ValidationTargets } from "hono";
 import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
 import { validator } from "hono-openapi/zod";
@@ -23,7 +24,7 @@ import {
     oneOrMore,
 } from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
-import { z } from "zod";
+import { type ZodAny, type ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
@@ -85,16 +86,16 @@ export const parseUserAddress = (
     return { username, domain };
 };
 
-export const handleZodError = (
-    result:
-        | { success: true; data?: object }
-        | { success: false; error: z.ZodError<z.AnyZodObject>; data?: object },
-    context: Context,
-): Response | undefined => {
+export const handleZodError: Hook<
+    z.infer<ZodAny>,
+    HonoEnv,
+    string,
+    keyof ValidationTargets
+> = (result, context): Response | undefined => {
     if (!result.success) {
         return context.json(
             {
-                error: fromZodError(result.error).message,
+                error: fromZodError(result.error as ZodError).message,
             },
             422,
         );
