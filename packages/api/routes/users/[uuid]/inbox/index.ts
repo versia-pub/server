@@ -1,8 +1,8 @@
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError } from "@versia/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, handleZodError } from "@/api";
 import { InboxJobType, inboxQueue } from "~/classes/queues/inbox";
 
 export default apiRoute((app) =>

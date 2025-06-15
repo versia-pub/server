@@ -133,6 +133,7 @@
         "sharp"
     ],
     "devDependencies": {
+        "@biomejs/biome": "catalog:",
         "@types/bun": "catalog:",
         "@types/html-to-text": "catalog:",
         "@types/markdown-it-container": "catalog:",

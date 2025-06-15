@@ -1,5 +1,6 @@
 import { Status as StatusSchema } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError } from "@versia/kit/api";
 import { Note } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { NoteSchema } from "@versia/sdk/schemas";
@@ -8,7 +9,6 @@ import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, handleZodError } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

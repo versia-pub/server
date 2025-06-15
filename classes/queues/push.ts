@@ -1,9 +1,9 @@
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
+import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import { sendNotification } from "web-push";
 import { htmlToText } from "@/content_types.ts";
-import { connection } from "~/utils/redis.ts";
 
 export enum PushJobType {
     Notify = "notify",

@@ -1,8 +1,8 @@
+import { auth } from "@versia/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { exportJWK } from "jose";
 import { z } from "zod";
-import { auth } from "@/api";
 import type { PluginType } from "../index.ts";
 
 export default (plugin: PluginType): void => {

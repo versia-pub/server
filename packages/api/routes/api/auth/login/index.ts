@@ -1,4 +1,5 @@
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError } from "@versia/kit/api";
 import { Application, User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
@@ -10,7 +11,6 @@ import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { apiRoute, handleZodError } from "@/api";
 
 const returnError = (
     context: Context,

@@ -3,10 +3,10 @@ import {
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth } from "@versia/kit/api";
 import { PushSubscription } from "@versia/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute, auth } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

@@ -1,5 +1,6 @@
 import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { auth, handleZodError } from "@versia/kit/api";
 import { Application, db } from "@versia/kit/db";
 import { OpenIdLoginFlows } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -10,7 +11,6 @@ import {
     generateRandomCodeVerifier,
 } from "oauth4webapi";
 import { z } from "zod";
-import { auth, handleZodError } from "@/api";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
 

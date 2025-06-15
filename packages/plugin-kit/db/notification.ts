@@ -10,11 +10,8 @@ import {
     type SQL,
 } from "drizzle-orm";
 import type { z } from "zod";
-import {
-    transformOutputToUserWithRelations,
-    userRelations,
-} from "../../../classes/functions/user.ts";
 import { BaseInterface } from "./base.ts";
+import { transformOutputToUserWithRelations, userRelations } from "./user.ts";
 
 export type NotificationType = InferSelectModel<typeof Notifications> & {
     status: typeof Note.$type | null;

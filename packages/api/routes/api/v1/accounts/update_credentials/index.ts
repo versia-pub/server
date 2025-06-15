@@ -4,7 +4,9 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { Emoji, Media, User } from "@versia/kit/db";
+import { versiaTextToHtml } from "@versia/kit/parsers";
 import { Users } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
@@ -12,10 +14,8 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { contentToHtml } from "~/classes/functions/status";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
@@ -242,7 +242,7 @@ export default apiRoute((app) =>
 
             if (note) {
                 self.source.note = note;
-                self.note = await contentToHtml(
+                self.note = await versiaTextToHtml(
                     new VersiaEntities.TextContentFormat({
                         "text/markdown": {
                             content: note,
@@ -329,7 +329,7 @@ export default apiRoute((app) =>
                 self.source.fields = [];
                 for (const field of fields_attributes) {
                     // Can be Markdown or plaintext, also has emojis
-                    const parsedName = await contentToHtml(
+                    const parsedName = await versiaTextToHtml(
                         new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.name,
@@ -340,7 +340,7 @@ export default apiRoute((app) =>
                         true,
                     );
 
-                    const parsedValue = await contentToHtml(
+                    const parsedValue = await versiaTextToHtml(
                         new VersiaEntities.TextContentFormat({
                             "text/markdown": {
                                 content: field.value,

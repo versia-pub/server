@@ -1,5 +1,7 @@
 import type { NoteReactionWithAccounts, Status } from "@versia/client/schemas";
 import { db, Instance, type Reaction } from "@versia/kit/db";
+import { versiaTextToHtml } from "@versia/kit/parsers";
+import { uuid } from "@versia/kit/regex";
 import {
     EmojiToNote,
     Likes,
@@ -26,10 +28,8 @@ import {
 import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
 import type { z } from "zod";
-import { idValidator } from "@/api";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { contentToHtml, findManyNotes } from "~/classes/functions/status";
 import {
     DeliveryJobType,
     deliveryQueue,
@@ -38,7 +38,188 @@ import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Media } from "./media.ts";
-import { User } from "./user.ts";
+import {
+    transformOutputToUserWithRelations,
+    User,
+    userRelations,
+} from "./user.ts";
+
+/**
+ * Wrapper against the Status object to make it easier to work with
+ * @param query
+ * @returns
+ */
+const findManyNotes = async (
+    query: Parameters<typeof db.query.Notes.findMany>[0],
+    userId?: string,
+): Promise<(typeof Note.$type)[]> => {
+    const output = await db.query.Notes.findMany({
+        ...query,
+        with: {
+            ...query?.with,
+            attachments: {
+                with: {
+                    media: true,
+                },
+            },
+            reactions: {
+                with: {
+                    emoji: {
+                        with: {
+                            instance: true,
+                            media: true,
+                        },
+                    },
+                },
+            },
+            emojis: {
+                with: {
+                    emoji: {
+                        with: {
+                            instance: true,
+                            media: true,
+                        },
+                    },
+                },
+            },
+            author: {
+                with: {
+                    ...userRelations,
+                },
+            },
+            mentions: {
+                with: {
+                    user: {
+                        with: {
+                            instance: true,
+                        },
+                    },
+                },
+            },
+            reblog: {
+                with: {
+                    attachments: {
+                        with: {
+                            media: true,
+                        },
+                    },
+                    reactions: {
+                        with: {
+                            emoji: {
+                                with: {
+                                    instance: true,
+                                    media: true,
+                                },
+                            },
+                        },
+                    },
+                    emojis: {
+                        with: {
+                            emoji: {
+                                with: {
+                                    instance: true,
+                                    media: true,
+                                },
+                            },
+                        },
+                    },
+                    likes: true,
+                    application: true,
+                    mentions: {
+                        with: {
+                            user: {
+                                with: userRelations,
+                            },
+                        },
+                    },
+                    author: {
+                        with: {
+                            ...userRelations,
+                        },
+                    },
+                },
+                extras: {
+                    pinned: userId
+                        ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes_reblog".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
+                              "pinned",
+                          )
+                        : sql`false`.as("pinned"),
+                    reblogged: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."authorId" = ${userId} AND "Notes"."reblogId" = "Notes_reblog".id)`.as(
+                              "reblogged",
+                          )
+                        : sql`false`.as("reblogged"),
+                    muted: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."ownerId" = ${userId} AND "Relationships"."subjectId" = "Notes_reblog"."authorId" AND "Relationships"."muting" = true)`.as(
+                              "muted",
+                          )
+                        : sql`false`.as("muted"),
+                    liked: userId
+                        ? sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = "Notes_reblog".id AND "Likes"."likerId" = ${userId})`.as(
+                              "liked",
+                          )
+                        : sql`false`.as("liked"),
+                },
+            },
+            reply: true,
+            quote: true,
+        },
+        extras: {
+            pinned: userId
+                ? sql`EXISTS (SELECT 1 FROM "UserToPinnedNotes" WHERE "UserToPinnedNotes"."noteId" = "Notes".id AND "UserToPinnedNotes"."userId" = ${userId})`.as(
+                      "pinned",
+                  )
+                : sql`false`.as("pinned"),
+            reblogged: userId
+                ? sql`EXISTS (SELECT 1 FROM "Notes" WHERE "Notes"."authorId" = ${userId} AND "Notes"."reblogId" = "Notes".id)`.as(
+                      "reblogged",
+                  )
+                : sql`false`.as("reblogged"),
+            muted: userId
+                ? sql`EXISTS (SELECT 1 FROM "Relationships" WHERE "Relationships"."ownerId" = ${userId} AND "Relationships"."subjectId" = "Notes"."authorId" AND "Relationships"."muting" = true)`.as(
+                      "muted",
+                  )
+                : sql`false`.as("muted"),
+            liked: userId
+                ? sql`EXISTS (SELECT 1 FROM "Likes" WHERE "Likes"."likedId" = "Notes".id AND "Likes"."likerId" = ${userId})`.as(
+                      "liked",
+                  )
+                : sql`false`.as("liked"),
+            ...query?.extras,
+        },
+    });
+
+    return output.map((post) => ({
+        ...post,
+        author: transformOutputToUserWithRelations(post.author),
+        mentions: post.mentions.map((mention) => ({
+            ...mention.user,
+            endpoints: mention.user.endpoints,
+        })),
+        attachments: post.attachments.map((attachment) => attachment.media),
+        emojis: (post.emojis ?? []).map((emoji) => emoji.emoji),
+        reblog: post.reblog && {
+            ...post.reblog,
+            author: transformOutputToUserWithRelations(post.reblog.author),
+            mentions: post.reblog.mentions.map((mention) => ({
+                ...mention.user,
+                endpoints: mention.user.endpoints,
+            })),
+            attachments: post.reblog.attachments.map(
+                (attachment) => attachment.media,
+            ),
+            emojis: (post.reblog.emojis ?? []).map((emoji) => emoji.emoji),
+            pinned: Boolean(post.reblog.pinned),
+            reblogged: Boolean(post.reblog.reblogged),
+            muted: Boolean(post.reblog.muted),
+            liked: Boolean(post.reblog.liked),
+        },
+        pinned: Boolean(post.pinned),
+        reblogged: Boolean(post.reblogged),
+        muted: Boolean(post.muted),
+        liked: Boolean(post.liked),
+    }));
+};
 
 type NoteType = InferSelectModel<typeof Notes>;
 
@@ -423,15 +604,15 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         // Check if URI is of a local note
         if (uri.origin === config.http.base_url.origin) {
-            const uuid = uri.pathname.match(idValidator);
+            const noteUuid = uri.pathname.match(uuid);
 
-            if (!uuid?.[0]) {
+            if (!noteUuid?.[0]) {
                 throw new Error(
                     `URI ${uri} is of a local note, but it could not be parsed`,
                 );
             }
 
-            return await Note.fromId(uuid[0]);
+            return await Note.fromId(noteUuid[0]);
         }
 
         return Note.fromVersia(uri);
@@ -535,7 +716,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         await note.update({
             content: versiaNote.content
-                ? await contentToHtml(versiaNote.content, mentions)
+                ? await versiaTextToHtml(versiaNote.content, mentions)
                 : undefined,
             contentSource: versiaNote.content
                 ? versiaNote.content.data["text/plain"]?.content ||

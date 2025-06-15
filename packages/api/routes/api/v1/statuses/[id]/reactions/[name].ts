@@ -1,5 +1,6 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, withNoteParam } from "@versia/kit/api";
 import { Emoji } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
@@ -9,7 +10,6 @@ import emojis from "unicode-emoji-json/data-ordered-emoji.json" with {
     type: "json",
 };
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, withNoteParam } from "@/api";
 
 export default apiRoute((app) => {
     app.put(

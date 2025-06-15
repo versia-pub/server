@@ -1,9 +1,9 @@
 import { Challenge } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth } from "@versia/kit/api";
 import { config } from "@versia-server/config";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute, auth } from "@/api";
 import { generateChallenge } from "@/challenges";
 
 export default apiRoute((app) =>

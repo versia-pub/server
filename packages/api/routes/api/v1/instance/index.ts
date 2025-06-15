@@ -1,13 +1,13 @@
 import { InstanceV1 as InstanceV1Schema } from "@versia/client/schemas";
+import { apiRoute } from "@versia/kit/api";
 import { Instance, Note, User } from "@versia/kit/db";
+import { markdownToHtml } from "@versia/kit/markdown";
 import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import type { z } from "zod";
-import { apiRoute } from "@/api";
-import { markdownParse } from "~/classes/functions/status";
 import manifest from "~/package.json" with { type: "json" };
 
 export default apiRoute((app) =>
@@ -60,7 +60,7 @@ export default apiRoute((app) =>
                   }
                 | undefined;
 
-            const content = await markdownParse(
+            const content = await markdownToHtml(
                 config.instance.extended_description_path?.content ??
                     "This is a [Versia](https://versia.pub) server with the default extended description.",
             );

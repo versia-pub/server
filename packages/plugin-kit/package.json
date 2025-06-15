@@ -47,7 +47,15 @@
         "sharp": "catalog:",
         "magic-regexp": "catalog:",
         "altcha-lib": "catalog:",
-        "hono-openapi": "catalog:"
+        "hono-openapi": "catalog:",
+        "qs": "catalog:",
+        "@hono/zod-validator": "catalog:",
+        "ioredis": "catalog:",
+        "linkify-html": "catalog:",
+        "markdown-it": "catalog:",
+        "markdown-it-toc-done-right": "catalog:",
+        "markdown-it-container": "catalog:",
+        "@hackmd/markdown-it-task-lists": "catalog:"
     },
     "files": [
         "tables/migrations"
@@ -64,6 +72,26 @@
         "./tables": {
             "import": "./tables/schema.ts",
             "default": "./tables/schema.ts"
+        },
+        "./api": {
+            "import": "./api.ts",
+            "default": "./api.ts"
+        },
+        "./redis": {
+            "import": "./redis.ts",
+            "default": "./redis.ts"
+        },
+        "./regex": {
+            "import": "./regex.ts",
+            "default": "./regex.ts"
+        },
+        "./markdown": {
+            "import": "./markdown.ts",
+            "default": "./markdown.ts"
+        },
+        "./parsers": {
+            "import": "./parsers.ts",
+            "default": "./parsers.ts"
         }
     }
 }

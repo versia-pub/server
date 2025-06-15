@@ -1,5 +1,12 @@
 import { Account as AccountSchema, zBoolean } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    jsonOrForm,
+    qsQuery,
+} from "@versia/kit/api";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
@@ -8,7 +15,6 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import ISO6391 from "iso-639-1";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm, qsQuery } from "@/api";
 import { tempmailDomains } from "@/tempmail";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 

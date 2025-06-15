@@ -3,12 +3,12 @@ import {
     CredentialApplication as CredentialApplicationSchema,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { Application } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 

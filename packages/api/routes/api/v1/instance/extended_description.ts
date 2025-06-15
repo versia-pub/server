@@ -1,9 +1,9 @@
 import { ExtendedDescription as ExtendedDescriptionSchema } from "@versia/client/schemas";
+import { apiRoute } from "@versia/kit/api";
+import { markdownToHtml } from "@versia/kit/markdown";
 import { config } from "@versia-server/config";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute } from "@/api";
-import { markdownParse } from "~/classes/functions/status";
 
 export default apiRoute((app) =>
     app.get(
@@ -27,7 +27,7 @@ export default apiRoute((app) =>
             },
         }),
         async (context) => {
-            const content = await markdownParse(
+            const content = await markdownToHtml(
                 config.instance.extended_description_path?.content ??
                     "This is a [Versia](https://versia.pub) server with the default extended description.",
             );

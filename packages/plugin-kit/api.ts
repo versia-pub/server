@@ -1,90 +1,28 @@
 import type { Hook } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import type { RolePermission } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { Application, db, Emoji, Note, Token, User } from "@versia/kit/db";
-import { Challenges } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
 import { extractParams, verifySolution } from "altcha-lib";
-import { SHA256 } from "bun";
 import chalk from "chalk";
 import { eq, type SQL } from "drizzle-orm";
 import type { Context, Hono, MiddlewareHandler, ValidationTargets } from "hono";
 import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
 import { validator } from "hono-openapi/zod";
-import {
-    anyOf,
-    caseInsensitive,
-    charIn,
-    createRegExp,
-    digit,
-    exactly,
-    global,
-    letter,
-    maybe,
-    oneOrMore,
-} from "magic-regexp";
 import { type ParsedQs, parse } from "qs";
 import { type ZodAny, type ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import type { AuthData } from "~/classes/functions/user";
-import type { HonoEnv } from "~/types/api";
+import type { AuthData, HonoEnv } from "~/types/api";
+import { ApiError } from "./api-error.ts";
+import { Application } from "./db/application.ts";
+import { Emoji } from "./db/emoji.ts";
+import { Note } from "./db/note.ts";
+import { Token } from "./db/token.ts";
+import { User } from "./db/user.ts";
+import { db } from "./tables/db.ts";
+import { Challenges } from "./tables/schema.ts";
 
 export const apiRoute = (fn: (app: Hono<HonoEnv>) => void): typeof fn => fn;
-
-export const idValidator = createRegExp(
-    anyOf(digit, charIn("ABCDEF")).times(8),
-    exactly("-"),
-    anyOf(digit, charIn("ABCDEF")).times(4),
-    exactly("-"),
-    exactly("7"),
-    anyOf(digit, charIn("ABCDEF")).times(3),
-    exactly("-"),
-    anyOf("8", "9", "A", "B").times(1),
-    anyOf(digit, charIn("ABCDEF")).times(3),
-    exactly("-"),
-    anyOf(digit, charIn("ABCDEF")).times(12),
-    [caseInsensitive],
-);
-
-export const mentionValidator = createRegExp(
-    exactly("@"),
-    oneOrMore(anyOf(letter.lowercase, digit, charIn("-_"))).groupedAs(
-        "username",
-    ),
-    maybe(
-        exactly("@"),
-        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
-    ),
-    [global],
-);
-
-export const webfingerMention = createRegExp(
-    exactly("acct:"),
-    oneOrMore(anyOf(letter, digit, charIn("-_"))).groupedAs("username"),
-    maybe(
-        exactly("@"),
-        oneOrMore(anyOf(letter, digit, charIn("_-.:"))).groupedAs("domain"),
-    ),
-    [],
-);
-
-export const parseUserAddress = (
-    address: string,
-): {
-    username: string;
-    domain?: string;
-} => {
-    let output = address;
-    // Remove leading @ if it exists
-    if (output.startsWith("@")) {
-        output = output.slice(1);
-    }
-
-    const [username, domain] = output.split("@");
-    return { username, domain };
-};
 
 export const handleZodError: Hook<
     z.infer<ZodAny>,
@@ -476,31 +414,6 @@ export const jsonOrForm = (): MiddlewareHandler<HonoEnv> => {
 
         await next();
     });
-};
-
-export const debugRequest = async (req: Request): Promise<void> => {
-    const body = await req.text();
-    const logger = getLogger("server");
-
-    const urlAndMethod = `${chalk.green(req.method)} ${chalk.blue(req.url)}`;
-
-    const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
-        new SHA256().update(body).digest("hex"),
-    )}`;
-
-    const headers = `${chalk.bold("Headers")}:\n${Array.from(
-        req.headers.entries(),
-    )
-        .map(([key, value]) => ` - ${chalk.cyan(key)}: ${chalk.white(value)}`)
-        .join("\n")}`;
-
-    const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
-
-    if (config.logging.types.requests_content) {
-        logger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
-    } else {
-        logger.debug`${urlAndMethod}`;
-    }
 };
 
 export const debugResponse = async (res: Response): Promise<void> => {

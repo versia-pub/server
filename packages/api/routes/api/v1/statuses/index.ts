@@ -7,16 +7,16 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { Emoji, Media, Note } from "@versia/kit/db";
+import { parseMentionsFromText, versiaTextToHtml } from "@versia/kit/parsers";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import { contentToHtml, parseTextMentions } from "~/classes/functions/status";
 
 const schema = z
     .object({
@@ -220,7 +220,7 @@ export default apiRoute((app) =>
                 : undefined;
 
             const parsedMentions = status
-                ? await parseTextMentions(status)
+                ? await parseMentionsFromText(status)
                 : [];
 
             const parsedEmojis = status
@@ -232,7 +232,7 @@ export default apiRoute((app) =>
                 authorId: user.id,
                 visibility,
                 content: content
-                    ? await contentToHtml(content, parsedMentions)
+                    ? await versiaTextToHtml(content, parsedMentions)
                     : undefined,
                 sensitive,
                 spoilerText: sanitizedSpoilerText,

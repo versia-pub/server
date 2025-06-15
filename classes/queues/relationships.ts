@@ -1,7 +1,7 @@
 import { Relationship, User } from "@versia/kit/db";
+import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
-import { connection } from "~/utils/redis.ts";
 
 export enum RelationshipJobType {
     Unmute = "unmute",

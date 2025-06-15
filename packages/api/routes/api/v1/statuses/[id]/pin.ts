@@ -1,10 +1,10 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, withNoteParam } from "@versia/kit/api";
 import { db } from "@versia/kit/db";
 import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute, auth, withNoteParam } from "@/api";
 
 export default apiRoute((app) =>
     app.post(

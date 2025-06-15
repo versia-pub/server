@@ -7,14 +7,15 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError } from "@versia/kit/api";
 import { db, Note, User } from "@versia/kit/db";
+import { parseUserAddress } from "@versia/kit/parsers";
 import { Instances, Notes, Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { searchManager } from "~/classes/search/search-manager";
 
 export default apiRoute((app) =>

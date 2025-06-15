@@ -1,9 +1,9 @@
 import { getLogger } from "@logtape/logtape";
 import { Note, setupDatabase } from "@versia/kit/db";
+import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
 import chalk from "chalk";
 import { configureLoggers } from "@/loggers";
-import { connection } from "@/redis.ts";
 import { searchManager } from "../../classes/search/search-manager.ts";
 
 const timeAtStart = performance.now();

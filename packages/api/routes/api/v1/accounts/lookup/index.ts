@@ -3,14 +3,15 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError } from "@versia/kit/api";
 import { Instance, User } from "@versia/kit/db";
+import { parseUserAddress } from "@versia/kit/parsers";
 import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>

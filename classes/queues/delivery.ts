@@ -1,10 +1,10 @@
 import { User } from "@versia/kit/db";
+import { connection } from "@versia/kit/redis";
 import type { JSONObject } from "@versia/sdk";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import chalk from "chalk";
-import { connection } from "~/utils/redis.ts";
 
 export enum DeliveryJobType {
     FederateEntity = "federateEntity",

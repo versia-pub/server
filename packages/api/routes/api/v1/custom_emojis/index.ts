@@ -3,13 +3,13 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth } from "@versia/kit/api";
 import { Emoji } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

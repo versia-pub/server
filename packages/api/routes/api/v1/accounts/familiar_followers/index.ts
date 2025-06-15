@@ -4,13 +4,13 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, qsQuery } from "@versia/kit/api";
 import { db, User } from "@versia/kit/db";
 import type { Users } from "@versia/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>

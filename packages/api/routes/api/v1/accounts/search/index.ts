@@ -4,14 +4,15 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError } from "@versia/kit/api";
 import { User } from "@versia/kit/db";
+import { parseUserAddress } from "@versia/kit/parsers";
 import { Users } from "@versia/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import stringComparison from "string-comparison";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, parseUserAddress } from "@/api";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>

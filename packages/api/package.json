@@ -63,6 +63,11 @@
         "zod-openapi": "catalog:",
         "@scalar/hono-api-reference": "catalog:",
         "hono-rate-limiter": "catalog:",
-        "ip-matching": "catalog:"
+        "ip-matching": "catalog:",
+        "qs": "catalog:",
+        "magic-regexp": "catalog:",
+        "altcha-lib": "catalog:",
+        "@hono/zod-validator": "catalog:",
+        "zod-validation-error": "catalog:"
     }
 }

@@ -1,9 +1,9 @@
 import { Rule as RuleSchema } from "@versia/client/schemas";
+import { apiRoute } from "@versia/kit/api";
 import { config } from "@versia-server/config";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

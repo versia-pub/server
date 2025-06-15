@@ -3,6 +3,7 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { handleZodError } from "@versia/kit/api";
 import { db, Media, Token, User } from "@versia/kit/db";
 import { OpenIdAccounts, Users } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -12,7 +13,6 @@ import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { SignJWT } from "jose";
 import { z } from "zod";
-import { handleZodError } from "@/api";
 import { randomString } from "@/math.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";

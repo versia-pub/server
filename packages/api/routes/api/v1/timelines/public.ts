@@ -4,13 +4,13 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError } from "@versia/kit/api";
 import { Timeline } from "@versia/kit/db";
 import { Notes } from "@versia/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

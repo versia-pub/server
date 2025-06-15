@@ -13,6 +13,7 @@ import {
     PushSubscription,
     Reaction,
 } from "@versia/kit/db";
+import { uuid } from "@versia/kit/regex";
 import {
     EmojiToUser,
     Likes,
@@ -46,11 +47,9 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import type { z } from "zod";
-import { idValidator } from "@/api";
 import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
 import { sentry } from "@/sentry";
-import { findManyUsers } from "~/classes/functions/user";
 import { searchManager } from "~/classes/search/search-manager";
 import type { HttpVerb, KnownEntity } from "~/types/api.ts";
 import {
@@ -65,6 +64,89 @@ import { Like } from "./like.ts";
 import { Note } from "./note.ts";
 import { Relationship } from "./relationship.ts";
 import { Role } from "./role.ts";
+
+export const userRelations = {
+    instance: true,
+    emojis: {
+        with: {
+            emoji: {
+                with: {
+                    instance: true,
+                    media: true,
+                },
+            },
+        },
+    },
+    avatar: true,
+    header: true,
+    roles: {
+        with: {
+            role: true,
+        },
+    },
+} as const;
+
+export const transformOutputToUserWithRelations = (
+    user: Omit<InferSelectModel<typeof Users>, "endpoints"> & {
+        followerCount: unknown;
+        followingCount: unknown;
+        statusCount: unknown;
+        avatar: typeof Media.$type | null;
+        header: typeof Media.$type | null;
+        emojis: {
+            userId: string;
+            emojiId: string;
+            emoji?: typeof Emoji.$type;
+        }[];
+        instance: typeof Instance.$type | null;
+        roles: {
+            userId: string;
+            roleId: string;
+            role?: typeof Role.$type;
+        }[];
+        endpoints: unknown;
+    },
+): typeof User.$type => {
+    return {
+        ...user,
+        followerCount: Number(user.followerCount),
+        followingCount: Number(user.followingCount),
+        statusCount: Number(user.statusCount),
+        endpoints:
+            user.endpoints ??
+            ({} as Partial<{
+                dislikes: string;
+                featured: string;
+                likes: string;
+                followers: string;
+                following: string;
+                inbox: string;
+                outbox: string;
+            }>),
+        emojis: user.emojis.map(
+            (emoji) =>
+                (emoji as unknown as Record<string, object>)
+                    .emoji as typeof Emoji.$type,
+        ),
+        roles: user.roles
+            .map((role) => role.role)
+            .filter(Boolean) as (typeof Role.$type)[],
+    };
+};
+
+const findManyUsers = async (
+    query: Parameters<typeof db.query.Users.findMany>[0],
+): Promise<(typeof User.$type)[]> => {
+    const output = await db.query.Users.findMany({
+        ...query,
+        with: {
+            ...userRelations,
+            ...query?.with,
+        },
+    });
+
+    return output.map((user) => transformOutputToUserWithRelations(user));
+};
 
 type UserWithInstance = InferSelectModel<typeof Users> & {
     instance: typeof Instance.$type | null;
@@ -1094,15 +1176,15 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         // Check if URI is of a local user
         if (uri.origin === config.http.base_url.origin) {
-            const uuid = uri.href.match(idValidator);
+            const userUuid = uri.href.match(uuid);
 
-            if (!uuid?.[0]) {
+            if (!userUuid?.[0]) {
                 throw new Error(
                     `URI ${uri} is of a local user, but it could not be parsed`,
                 );
             }
 
-            return await User.fromId(uuid[0]);
+            return await User.fromId(userUuid[0]);
         }
 
         getLogger(["federation", "resolvers"])

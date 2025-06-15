@@ -3,10 +3,10 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, withNoteParam } from "@versia/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, withNoteParam } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

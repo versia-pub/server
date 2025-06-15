@@ -1,6 +1,9 @@
 import { getLogger } from "@logtape/logtape";
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError } from "@versia/kit/api";
 import { User } from "@versia/kit/db";
+import { parseUserAddress } from "@versia/kit/parsers";
+import { uuid, webfingerMention } from "@versia/kit/regex";
 import { Users } from "@versia/kit/tables";
 import { FederationRequester } from "@versia/sdk/http";
 import { WebFingerSchema } from "@versia/sdk/schemas";
@@ -9,13 +12,6 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import {
-    apiRoute,
-    handleZodError,
-    idValidator,
-    parseUserAddress,
-    webfingerMention,
-} from "@/api";
 
 export default apiRoute((app) =>
     app.get(
@@ -68,7 +64,7 @@ export default apiRoute((app) =>
                 );
             }
 
-            const isUuid = username.match(idValidator);
+            const isUuid = username.match(uuid);
 
             const user = await User.fromSql(
                 and(

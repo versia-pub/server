@@ -1,9 +1,9 @@
 import { TermsOfService as TermsOfServiceSchema } from "@versia/client/schemas";
+import { apiRoute } from "@versia/kit/api";
+import { markdownToHtml } from "@versia/kit/markdown";
 import { config } from "@versia-server/config";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute } from "@/api";
-import { markdownParse } from "~/classes/functions/status";
 
 export default apiRoute((app) =>
     app.get(
@@ -28,7 +28,7 @@ export default apiRoute((app) =>
             },
         }),
         async (context) => {
-            const content = await markdownParse(
+            const content = await markdownToHtml(
                 config.instance.tos_path?.content ??
                     "This instance has not provided any terms of service.",
             );

@@ -3,6 +3,7 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { Emoji, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
@@ -11,7 +12,6 @@ import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 import { mimeLookup } from "@/content_types";
 
 export default apiRoute((app) =>

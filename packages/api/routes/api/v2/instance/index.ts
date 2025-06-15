@@ -1,11 +1,11 @@
 import { Instance as InstanceSchema } from "@versia/client/schemas";
+import { apiRoute } from "@versia/kit/api";
 import { User } from "@versia/kit/db";
 import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import { apiRoute } from "@/api";
 import pkg from "~/package.json" with { type: "json" };
 
 export default apiRoute((app) =>

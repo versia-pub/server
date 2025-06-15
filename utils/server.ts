@@ -1,9 +1,9 @@
+import { debugResponse } from "@versia/kit/api";
 import type { ConfigSchema } from "@versia-server/config/schema";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";
 import type { z } from "zod";
 import type { HonoEnv } from "~/types/api";
-import { debugResponse } from "./api.ts";
 
 export const createServer = (
     config: z.infer<typeof ConfigSchema>,

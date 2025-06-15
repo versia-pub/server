@@ -1,12 +1,18 @@
+import type { Application, Token, User } from "@versia/kit/db";
 import type * as VersiaEntities from "@versia/sdk/entities";
 import type { ConfigSchema } from "@versia-server/config/schema";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
 import type { z } from "zod";
-import type { AuthData } from "~/classes/functions/user";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
+
+export interface AuthData {
+    user: User | null;
+    token: Token | null;
+    application: Application | null;
+}
 
 export type HonoEnv = {
     Variables: {

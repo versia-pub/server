@@ -1,9 +1,9 @@
 import { RolePermission } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, qsQuery } from "@versia/kit/api";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, qsQuery } from "@/api";
 
 export default apiRoute((app) =>
     app.delete(

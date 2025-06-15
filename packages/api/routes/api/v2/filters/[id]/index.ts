@@ -5,13 +5,13 @@ import {
     zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { db } from "@versia/kit/db";
 import { FilterKeywords, Filters } from "@versia/kit/tables";
 import { and, eq, inArray, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 
 export default apiRoute((app) => {
     app.get(

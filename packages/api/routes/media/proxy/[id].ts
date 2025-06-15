@@ -1,11 +1,11 @@
 import { ApiError } from "@versia/kit";
+import { apiRoute, handleZodError } from "@versia/kit/api";
 import { config } from "@versia-server/config";
 import { proxy } from "hono/proxy";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { apiRoute, handleZodError } from "@/api";
 
 export default apiRoute((app) =>
     app.get(

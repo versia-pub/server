@@ -1,7 +1,7 @@
 import { Media } from "@versia/kit/db";
+import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
-import { connection } from "~/utils/redis.ts";
 import { calculateBlurhash } from "../media/preprocessors/blurhash.ts";
 import { convertImage } from "../media/preprocessors/image-conversion.ts";
 

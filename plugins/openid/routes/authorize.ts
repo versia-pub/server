@@ -1,4 +1,5 @@
 import { RolePermission } from "@versia/client/schemas";
+import { auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { Application, Token, User } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
@@ -6,7 +7,6 @@ import { validator } from "hono-openapi/zod";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { JOSEError } from "jose/errors";
 import { z } from "zod";
-import { auth, handleZodError, jsonOrForm } from "@/api";
 import { randomString } from "@/math";
 import { errorRedirect, errors } from "../errors.ts";
 import type { PluginType } from "../index.ts";

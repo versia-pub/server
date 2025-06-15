@@ -4,11 +4,11 @@ import {
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
+import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
 import { PushSubscription } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@/api";
 
 export default apiRoute((app) =>
     app.post(

@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@biomejs/biome':
+      specifier: 2.0.0-beta.5
+      version: 2.0.0-beta.5
     '@bull-board/api':
       specifier: ^6.10.1
       version: 6.10.1
@@ -414,6 +417,9 @@ importers:
         specifier: 'catalog:'
         version: 3.5.0(zod@3.25.64)
     devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.0.0-beta.5
       '@types/bun':
         specifier: 'catalog:'
         version: 1.2.16
@@ -465,6 +471,9 @@ importers:
 
   packages/api:
     dependencies:
+      '@hono/zod-validator':
+        specifier: 'catalog:'
+        version: 0.7.0(hono@4.7.11)(zod@3.25.64)
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 0.12.0
@@ -486,6 +495,9 @@ importers:
       '@versia/sdk':
         specifier: workspace:*
         version: link:../sdk
+      altcha-lib:
+        specifier: 'catalog:'
+        version: 1.3.0
       bun-bagel:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.8.3)
@@ -513,6 +525,12 @@ importers:
       jose:
         specifier: 'catalog:'
         version: 6.0.11
+      magic-regexp:
+        specifier: 'catalog:'
+        version: 0.10.0
+      qs:
+        specifier: 'catalog:'
+        version: 6.14.0
       sharp:
         specifier: 'catalog:'
         version: 0.34.2
@@ -531,6 +549,9 @@ importers:
       zod-openapi:
         specifier: 'catalog:'
         version: 4.2.4(zod@3.25.64)
+      zod-validation-error:
+        specifier: 'catalog:'
+        version: 3.5.0(zod@3.25.64)
 
   packages/client:
     dependencies:
@@ -582,6 +603,12 @@ importers:
 
   packages/plugin-kit:
     dependencies:
+      '@hackmd/markdown-it-task-lists':
+        specifier: 'catalog:'
+        version: 2.1.4
+      '@hono/zod-validator':
+        specifier: 'catalog:'
+        version: 0.7.0(hono@4.7.11)(zod@3.25.64)
       '@logtape/logtape':
         specifier: 'catalog:'
         version: 0.12.0
@@ -612,12 +639,30 @@ importers:
       html-to-text:
         specifier: 'catalog:'
         version: 9.0.5
+      ioredis:
+        specifier: 'catalog:'
+        version: 5.6.1
+      linkify-html:
+        specifier: 'catalog:'
+        version: 4.3.1(linkifyjs@4.3.1)
       magic-regexp:
         specifier: 'catalog:'
         version: 0.10.0
+      markdown-it:
+        specifier: 'catalog:'
+        version: 14.1.0
+      markdown-it-container:
+        specifier: 'catalog:'
+        version: 4.0.0
+      markdown-it-toc-done-right:
+        specifier: 'catalog:'
+        version: 4.2.0
       mitt:
         specifier: 'catalog:'
         version: 3.0.1
+      qs:
+        specifier: 'catalog:'
+        version: 6.14.0
       sharp:
         specifier: 'catalog:'
         version: 0.34.2
@@ -782,6 +827,59 @@ packages:
   '@badgateway/oauth2-client@3.2.0':
     resolution: {integrity: sha512-EHsoV6oLHot7HeYkIoSxCZApNgBjwNo1OTV9kXIDnmijGAshlVkJreVAAtexFn+sfDKPE0JW5SCPYJV1y4IoMg==}
     engines: {node: '>= 18'}
+
+  '@biomejs/biome@2.0.0-beta.5':
+    resolution: {integrity: sha512-1ldO4AepieVvg4aLi1ubZkA7NsefQT2UTNssbJbDiQTGem8kCHx/PZCwLxIR6UzFpGIjh0xsDzivyVvhnmqmuA==}
+    engines: {node: '>=14.21.3'}
+    hasBin: true
+
+  '@biomejs/cli-darwin-arm64@2.0.0-beta.5':
+    resolution: {integrity: sha512-pnJiaoDpwGo+ctGkMu4POcO8jgOgCErBdYbhutr+K9rxxJS+TlHLr0LR91GCEWbGV2O1oyZRFQcW21rYFoak4w==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@biomejs/cli-darwin-x64@2.0.0-beta.5':
+    resolution: {integrity: sha512-WwEZpqcmsNoFpZkUFNQcbZo52WK4hLGQ0vZk3PQ8JlZ55gJsHiyhtv6aem6fVlyVCvZgpsC0sYPLE3VvFVKNAQ==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@biomejs/cli-linux-arm64-musl@2.0.0-beta.5':
+    resolution: {integrity: sha512-4vxNkYx1uEt211W8hLdXddc7icRHQgYENb72g6uTd/tLVPSBvIwqUAxAOkU+9Ai1E/8R4sWy7HIxREgpuFgbNA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@biomejs/cli-linux-arm64@2.0.0-beta.5':
+    resolution: {integrity: sha512-lAF1de+Ki0vnq14NwDXouKkAR/iviyMNrUngSHjTGFC4z8XGVEfIw0ZMSm7fAdJZ5fAWodt9HiYmEAVs5EtHQg==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@biomejs/cli-linux-x64-musl@2.0.0-beta.5':
+    resolution: {integrity: sha512-nUeKGO517GtRCxziVD9les1HiCs2s2/WIVITMN9+9RRuLOko8r+T77E8ZXEmlfLOfOIOeE6z62WITqei3oNccA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [linux]
+
+  '@biomejs/cli-linux-x64@2.0.0-beta.5':
+    resolution: {integrity: sha512-I0Pt1VHeL1mN8G7ZwV2u9AfzBd5ZKfbvHUI4x2wETUZbwcQlAu/nEzEa2LUe5HqSmnctTR36ig7RkkM9qbmIrA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [linux]
+
+  '@biomejs/cli-win32-arm64@2.0.0-beta.5':
+    resolution: {integrity: sha512-YXW6hgbrgBcWQ1SLO69ypWlluPchgQV5C1lTG4xOcBUWdCsfYuQirM64S6Dov7SFPqsMIoFC6LlQRW+n8qAyiA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@biomejs/cli-win32-x64@2.0.0-beta.5':
+    resolution: {integrity: sha512-N7Yby52BJmvEdst1iMbclE5hxxefboaXKRJLm1tLfBYr4FeuoCe6j8HdiQSwhCRdIUGFFqBLaDXh//LLF6EReA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [win32]
 
   '@bull-board/api@6.10.1':
     resolution: {integrity: sha512-VPkZa2XZI2Wk2MqK1XyiiS+tOhNan54mnm2fpv2KA0fdZ92mQqNjhKkOpsykhQv9XUEc8cCRlZqGxf67YCMJbQ==}
@@ -3836,6 +3934,41 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@badgateway/oauth2-client@3.2.0': {}
+
+  '@biomejs/biome@2.0.0-beta.5':
+    optionalDependencies:
+      '@biomejs/cli-darwin-arm64': 2.0.0-beta.5
+      '@biomejs/cli-darwin-x64': 2.0.0-beta.5
+      '@biomejs/cli-linux-arm64': 2.0.0-beta.5
+      '@biomejs/cli-linux-arm64-musl': 2.0.0-beta.5
+      '@biomejs/cli-linux-x64': 2.0.0-beta.5
+      '@biomejs/cli-linux-x64-musl': 2.0.0-beta.5
+      '@biomejs/cli-win32-arm64': 2.0.0-beta.5
+      '@biomejs/cli-win32-x64': 2.0.0-beta.5
+
+  '@biomejs/cli-darwin-arm64@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-darwin-x64@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-linux-arm64-musl@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-linux-arm64@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-linux-x64-musl@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-linux-x64@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-win32-arm64@2.0.0-beta.5':
+    optional: true
+
+  '@biomejs/cli-win32-x64@2.0.0-beta.5':
+    optional: true
 
   '@bull-board/api@6.10.1(@bull-board/ui@6.10.1)':
     dependencies:

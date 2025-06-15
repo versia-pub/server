@@ -3,17 +3,17 @@ import {
     RolePermission,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia/kit";
-import { config } from "@versia-server/config";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
 import {
     apiRoute,
     auth,
     handleZodError,
     jsonOrForm,
     withEmojiParam,
-} from "@/api";
+} from "@versia/kit/api";
+import { config } from "@versia-server/config";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 import { mimeLookup } from "@/content_types";
 
 export default apiRoute((app) => {
