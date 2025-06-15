@@ -21,7 +21,7 @@ in
 
     pnpmDeps = pnpm.fetchDeps {
       inherit (finalAttrs) pname version src pnpmInstallFlags;
-      hash = "sha256-/VCzDp8EfvQkaz/5W3rcoEyOlSB4zeW97qqOTJf6WvA=";
+      hash = "sha256-6lcsXcMEh7UbB5aLJzgJKUzynZbSZPgdj6l9E7RVx7c=";
     };
 
     nativeBuildInputs = [
@@ -39,12 +39,12 @@ in
     buildPhase = ''
       runHook preBuild
 
-      bun run build
+      bun run packages/api/build.ts
 
       runHook postBuild
     '';
 
-    entrypointPath = "index.js";
+    entrypointPath = "packages/api/index.js";
 
     installPhase = let
       libPath = lib.makeLibraryPath [

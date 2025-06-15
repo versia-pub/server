@@ -5,11 +5,11 @@ versia-server.overrideAttrs (oldAttrs: {
   buildPhase = ''
     runHook preBuild
 
-    bun run build:worker
+    bun run packages/worker/build.ts
 
     runHook postBuild
   '';
-  entrypointPath = "worker.js";
+  entrypointPath = "packages/worker/index.js";
 
   meta =
     oldAttrs.meta
