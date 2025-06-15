@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification } from "@versia/client/schemas";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 import type { z } from "zod";
-import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(2);
 let notifications: z.infer<typeof Notification>[] = [];

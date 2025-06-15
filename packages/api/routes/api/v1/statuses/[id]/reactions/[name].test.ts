@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { Emoji, Media } from "@versia/kit/db";
+import {
+    generateClient,
+    getTestStatuses,
+    getTestUsers,
+} from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
-import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(3);
 const timeline = (await getTestStatuses(2, users[0])).toReversed();

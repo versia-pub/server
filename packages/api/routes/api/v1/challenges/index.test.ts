@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { generateClient } from "~/tests/utils";
+import { generateClient } from "@versia-server/tests";
 
 // /api/v1/challenges
 describe("/api/v1/challenges", () => {

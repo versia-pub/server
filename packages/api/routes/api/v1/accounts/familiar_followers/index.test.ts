@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { generateClient, getTestUsers } from "~/tests/utils.ts";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 
 const { users, deleteUsers } = await getTestUsers(5);
 

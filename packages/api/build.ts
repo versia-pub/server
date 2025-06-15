@@ -1,6 +1,6 @@
 import { readdir } from "node:fs/promises";
 import { $, build } from "bun";
-import { routes } from "~/packages/api/routes";
+import { routes } from "./routes.ts";
 
 console.log("Building...");
 

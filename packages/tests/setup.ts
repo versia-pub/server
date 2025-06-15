@@ -1,5 +1,5 @@
 import { setupDatabase } from "@versia/kit/db";
-import { deleteOldTestUsers } from "./utils.ts";
+import { deleteOldTestUsers } from "./index.ts";
 
 await setupDatabase();
 await deleteOldTestUsers();

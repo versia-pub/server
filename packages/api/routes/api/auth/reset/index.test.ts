@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { Application } from "@versia/kit/db";
 import { config } from "@versia-server/config";
+import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 import { randomString } from "@/math";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 const token = randomString(32, "hex");

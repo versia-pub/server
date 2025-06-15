@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { Application, Token } from "@versia/kit/db";
+import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, users } = await getTestUsers(1);
 

@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { db } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 import { inArray } from "drizzle-orm";
 import sharp from "sharp";
-import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(3);
 

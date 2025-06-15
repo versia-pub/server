@@ -4,6 +4,11 @@ import { Notes, Reactions, Users } from "@versia/kit/tables";
 import { sign } from "@versia/sdk/crypto";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
+import {
+    fakeRequest,
+    generateClient,
+    getTestUsers,
+} from "@versia-server/tests";
 import { randomUUIDv7, sleep } from "bun";
 import {
     clearMocks,
@@ -12,7 +17,6 @@ import {
     mock,
 } from "bun-bagel";
 import { and, eq, isNull } from "drizzle-orm";
-import { fakeRequest, generateClient, getTestUsers } from "~/tests/utils";
 
 const instanceUrl = new URL("https://versia.example.com");
 const noteId = randomUUIDv7();

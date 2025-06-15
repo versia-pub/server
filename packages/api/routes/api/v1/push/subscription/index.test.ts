@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 import { PushSubscription } from "@versia/kit/db";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
-import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, tokens, deleteUsers } = await getTestUsers(2);
 

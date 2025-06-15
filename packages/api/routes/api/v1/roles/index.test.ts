@@ -2,8 +2,8 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { RolePermission } from "@versia/client/schemas";
 import { Role } from "@versia/kit/db";
 import { config } from "@versia-server/config";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
-import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(1);
 let role: Role;

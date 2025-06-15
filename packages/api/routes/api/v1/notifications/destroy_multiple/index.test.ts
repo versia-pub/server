@@ -1,7 +1,11 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Notification } from "@versia/client/schemas";
+import {
+    generateClient,
+    getTestStatuses,
+    getTestUsers,
+} from "@versia-server/tests";
 import type { z } from "zod";
-import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(2);
 const statuses = await getTestStatuses(5, users[0]);

@@ -3,10 +3,10 @@ import type { Status } from "@versia/client/schemas";
 import { db, Media } from "@versia/kit/db";
 import { Emojis } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
-import { generateClient, getTestUsers } from "~/tests/utils";
 
 const { users, deleteUsers } = await getTestUsers(5);
 let media: Media;

@@ -19,6 +19,7 @@
         "@scalar/hono-api-reference": "catalog:",
         "@sentry/bun": "catalog:",
         "@versia-server/config": "workspace:*",
+        "@versia-server/tests": "workspace:*",
         "@versia/client": "workspace:*",
         "@versia/kit": "workspace:*",
         "@versia/sdk": "workspace:*",
@@ -166,6 +167,17 @@
         "magic-regexp": "catalog:",
         "mime-types": "catalog:",
         "zod": "catalog:",
+      },
+    },
+    "packages/tests": {
+      "name": "@versia-server/tests",
+      "version": "0.0.1",
+      "dependencies": {
+        "@versia-server/config": "workspace:*",
+        "@versia/client": "workspace:*",
+        "@versia/kit": "workspace:*",
+        "altcha-lib": "catalog:",
+        "drizzle-orm": "catalog:",
       },
     },
     "packages/worker": {
@@ -692,6 +704,8 @@
     "@versia-server/api": ["@versia-server/api@workspace:packages/api"],
 
     "@versia-server/config": ["@versia-server/config@workspace:packages/config"],
+
+    "@versia-server/tests": ["@versia-server/tests@workspace:packages/tests"],
 
     "@versia-server/worker": ["@versia-server/worker@workspace:packages/worker"],
 

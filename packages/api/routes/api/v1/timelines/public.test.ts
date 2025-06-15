@@ -1,6 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "@versia-server/config";
-import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
+import {
+    generateClient,
+    getTestStatuses,
+    getTestUsers,
+} from "@versia-server/tests";
 
 const { users, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(10, users[0])).toReversed();

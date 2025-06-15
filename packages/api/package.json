@@ -43,6 +43,7 @@
     },
     "dependencies": {
         "@versia-server/config": "workspace:*",
+        "@versia-server/tests": "workspace:*",
         "@versia/kit": "workspace:*",
         "@versia/client": "workspace:*",
         "@versia/sdk": "workspace:*",

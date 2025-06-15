@@ -3,7 +3,7 @@ import {
     generateClient,
     getTestStatuses,
     getTestUsers,
-} from "~/tests/utils.ts";
+} from "@versia-server/tests";
 
 const { users, deleteUsers } = await getTestUsers(5);
 const timeline = (await getTestStatuses(5, users[1])).toReversed();

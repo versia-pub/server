@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { fakeRequest, getTestUsers } from "~/tests/utils";
+import { fakeRequest, getTestUsers } from "@versia-server/tests";
 
 const { deleteUsers, tokens } = await getTestUsers(1);
 

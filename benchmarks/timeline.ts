@@ -1,8 +1,12 @@
 import type { Status } from "@versia/client/schemas";
+import {
+    fakeRequest,
+    getTestStatuses,
+    getTestUsers,
+} from "@versia-server/tests";
 import { bench, run } from "mitata";
 import type { z } from "zod";
 import { configureLoggers } from "@/loggers";
-import { fakeRequest, getTestStatuses, getTestUsers } from "~/tests/utils";
 
 await configureLoggers(true);
 

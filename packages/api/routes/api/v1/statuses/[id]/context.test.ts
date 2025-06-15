@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { generateClient, getTestStatuses, getTestUsers } from "~/tests/utils";
+import {
+    generateClient,
+    getTestStatuses,
+    getTestUsers,
+} from "@versia-server/tests";
 
 const { users, deleteUsers } = await getTestUsers(3);
 const statuses = await getTestStatuses(1, users[0]);

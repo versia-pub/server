@@ -1,10 +1,11 @@
-/**
- * @deprecated
- */
 import { afterAll, describe, expect, test } from "bun:test";
-import type { Application, Token } from "@versia/client/schemas";
+import type { Token } from "@versia/client/schemas";
+import {
+    fakeRequest,
+    generateClient,
+    getTestUsers,
+} from "@versia-server/tests";
 import type { z } from "zod";
-import { fakeRequest, getTestUsers } from "./utils.ts";
 
 let clientId: string;
 let clientSecret: string;
@@ -17,36 +18,18 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-describe("POST /api/v1/apps/", () => {
+describe("Login flow", () => {
     test("should create an application", async () => {
-        const formData = new FormData();
+        const client = await generateClient(users[0]);
 
-        formData.append("client_name", "Test Application");
-        formData.append("website", "https://example.com");
-        formData.append("redirect_uris", "https://example.com");
-        formData.append("scopes", "read write");
-
-        const response = await fakeRequest("/api/v1/apps", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                client_name: "Test Application",
-                website: "https://example.com",
-                redirect_uris: "https://example.com",
-                scopes: "read write",
-            }),
+        const { ok, data } = await client.createApp("Test Application", {
+            redirect_uris: "https://example.com",
+            website: "https://example.com",
+            scopes: ["read", "write"],
         });
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
-
-        const json = await response.json();
-
-        expect(json).toEqual({
+        expect(ok).toBe(true);
+        expect(data).toEqual({
             name: "Test Application",
             website: "https://example.com",
             client_id: expect.any(String),
@@ -57,12 +40,10 @@ describe("POST /api/v1/apps/", () => {
             scopes: ["read", "write"],
         });
 
-        clientId = json.client_id;
-        clientSecret = json.client_secret;
+        clientId = data.client_id;
+        clientSecret = data.client_secret;
     });
-});
 
-describe("POST /api/auth/login/", () => {
     test("should get a JWT", async () => {
         const formData = new FormData();
 
@@ -83,9 +64,7 @@ describe("POST /api/auth/login/", () => {
             response.headers.get("Set-Cookie")?.match(/jwt=([^;]+);/)?.[1] ??
             "";
     });
-});
 
-describe("GET /oauth/authorize/", () => {
     test("should get a code", async () => {
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -113,9 +92,7 @@ describe("GET /oauth/authorize/", () => {
 
         code = locationHeader.searchParams.get("code") ?? "";
     });
-});
 
-describe("POST /oauth/token/", () => {
     test("should get an access token", async () => {
         const response = await fakeRequest("/oauth/token", {
             method: "POST",
@@ -151,24 +128,19 @@ describe("POST /oauth/token/", () => {
 
         token = json;
     });
-});
 
-describe("GET /api/v1/apps/verify_credentials", () => {
     test("should return the authenticated application's credentials", async () => {
-        const response = await fakeRequest("/api/v1/apps/verify_credentials", {
+        const client = await generateClient(users[0]);
+
+        const { ok, data } = await client.verifyAppCredentials({
             headers: {
                 Authorization: `Bearer ${token.access_token}`,
             },
         });
 
-        expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain(
-            "application/json",
-        );
+        expect(ok).toBe(true);
 
-        const credentials = (await response.json()) as Partial<
-            z.infer<typeof Application>
-        >;
+        const credentials = data;
 
         expect(credentials.name).toBe("Test Application");
         expect(credentials.website).toBe("https://example.com");

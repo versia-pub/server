@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { config } from "@versia-server/config";
-import { generateClient } from "~/tests/utils";
+import { generateClient } from "@versia-server/tests";
 
 // /api/v1/instance/rules
 describe("/api/v1/instance/rules", () => {

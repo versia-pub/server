@@ -121,7 +121,9 @@
         "check": "bunx tsc -p .",
         "test": "bun test",
         "run-api": "bun run packages/api/build.ts && cd dist && ln -s ../config config && bun run packages/api/index.js",
-        "run-worker": "bun run packages/worker/build.ts && cd dist && ln -s ../config config && bun run packages/worker/index.js"
+        "run-worker": "bun run packages/worker/build.ts && cd dist && ln -s ../config config && bun run packages/worker/index.js",
+        "dev": "bun run --hot packages/api/index.ts",
+        "worker:dev": "bun run --hot packages/worker/index.ts"
     },
     "trustedDependencies": [
         "@biomejs/biome",
@@ -166,6 +168,7 @@
         "@versia/client": "workspace:*",
         "@versia/kit": "workspace:*",
         "@versia/sdk": "workspace:*",
+        "@versia-server/tests": "workspace:*",
         "@versia-server/config": "workspace:*",
         "altcha-lib": "catalog:",
         "blurhash": "catalog:",
