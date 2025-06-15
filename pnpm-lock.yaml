@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@bull-board/api':
-        specifier: ^6.9.6
-        version: 6.9.6(@bull-board/ui@6.9.6)
+        specifier: ^6.10.1
+        version: 6.10.1(@bull-board/ui@6.10.1)
       '@bull-board/hono':
-        specifier: ^6.9.6
-        version: 6.9.6
+        specifier: ^6.10.1
+        version: 6.10.1(hono@4.7.11)
       '@clerc/plugin-completions':
         specifier: ^0.44.0
         version: 0.44.0(@clerc/core@0.44.0)
@@ -34,22 +34,22 @@ importers:
         version: 2.1.4
       '@hono/zod-validator':
         specifier: ^0.7.0
-        version: 0.7.0(hono@4.7.11)(zod@3.25.51)
+        version: 0.7.0(hono@4.7.11)(zod@3.25.64)
       '@inquirer/confirm':
         specifier: ^5.1.12
         version: 5.1.12(@types/node@22.15.3)
       '@logtape/file':
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.12.0
+        version: 0.12.0(@logtape/logtape@0.12.0)
       '@logtape/logtape':
-        specifier: ^0.11.0
-        version: 0.11.0
+        specifier: ^0.12.0
+        version: 0.12.0
       '@scalar/hono-api-reference':
-        specifier: ^0.9.2
-        version: 0.9.2(hono@4.7.11)
+        specifier: ^0.9.4
+        version: 0.9.4(hono@4.7.11)
       '@sentry/bun':
-        specifier: ^9.26.0
-        version: 9.26.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
+        specifier: ^9.29.0
+        version: 9.29.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
       '@versia/client':
         specifier: workspace:*
         version: link:packages/client
@@ -60,14 +60,14 @@ importers:
         specifier: workspace:*
         version: link:packages/sdk
       altcha-lib:
-        specifier: ^1.2.0
-        version: 1.2.0
+        specifier: ^1.3.0
+        version: 1.3.0
       blurhash:
         specifier: ^2.0.5
         version: 2.0.5
       bullmq:
-        specifier: ^5.53.2
-        version: 5.53.2
+        specifier: ^5.53.3
+        version: 5.53.3
       chalk:
         specifier: ^5.4.1
         version: 5.4.1
@@ -79,7 +79,7 @@ importers:
         version: 0.2.2
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.15)
+        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.16)
       feed:
         specifier: ^5.1.0
         version: 5.1.0
@@ -88,7 +88,7 @@ importers:
         version: 4.7.11
       hono-openapi:
         specifier: ^0.4.8
-        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.51))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.51))(zod@3.25.51)
+        version: 0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.64))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.64))(zod@3.25.64)
       hono-rate-limiter:
         specifier: ^0.4.2
         version: 0.4.2(hono@4.7.11)
@@ -141,8 +141,8 @@ importers:
         specifier: ^1.0.34
         version: 1.0.34
       oauth4webapi:
-        specifier: ^3.5.1
-        version: 3.5.1
+        specifier: ^3.5.2
+        version: 3.5.2
       ora:
         specifier: ^8.2.0
         version: 8.2.0
@@ -177,21 +177,21 @@ importers:
         specifier: ^4.1.0-beta.7
         version: 4.1.0-beta.7
       zod:
-        specifier: ^3.25.51
-        version: 3.25.51
+        specifier: ^3.25.64
+        version: 3.25.64
       zod-openapi:
         specifier: ^4.2.4
-        version: 4.2.4(zod@3.25.51)
+        version: 4.2.4(zod@3.25.64)
       zod-validation-error:
-        specifier: ^3.4.1
-        version: 3.4.1(zod@3.25.51)
+        specifier: ^3.5.0
+        version: 3.5.0(zod@3.25.64)
     devDependencies:
       '@biomejs/biome':
         specifier: 2.0.0-beta.5
         version: 2.0.0-beta.5
       '@types/bun':
-        specifier: ^1.2.15
-        version: 1.2.15
+        specifier: ^1.2.16
+        version: 1.2.16
       '@types/html-to-text':
         specifier: ^9.0.4
         version: 9.0.4
@@ -199,8 +199,8 @@ importers:
         specifier: ^2.0.10
         version: 2.0.10
       '@types/mime-types':
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^3.0.1
+        version: 3.0.1
       '@types/qs':
         specifier: ^6.14.0
         version: 6.14.0
@@ -236,7 +236,7 @@ importers:
         version: 3.5.16(typescript@5.8.3)
       zod-to-json-schema:
         specifier: ^3.24.5
-        version: 3.24.5(zod@3.25.51)
+        version: 3.24.5(zod@3.25.64)
 
   packages/client:
     dependencies:
@@ -260,7 +260,7 @@ importers:
     dependencies:
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.15)
+        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.16)
       hono:
         specifier: ^4.7.7
         version: 4.7.8
@@ -449,16 +449,18 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@bull-board/api@6.9.6':
-    resolution: {integrity: sha512-k1h35Q+y5hdf9UoPhp6mLG5+QM9AHP8luyggxEJ+/ZkoSMJ0h45HjHhqbexEAzdgsVN7lncXNLNn6myKwwcjkw==}
+  '@bull-board/api@6.10.1':
+    resolution: {integrity: sha512-VPkZa2XZI2Wk2MqK1XyiiS+tOhNan54mnm2fpv2KA0fdZ92mQqNjhKkOpsykhQv9XUEc8cCRlZqGxf67YCMJbQ==}
     peerDependencies:
-      '@bull-board/ui': 6.9.6
+      '@bull-board/ui': 6.10.1
 
-  '@bull-board/hono@6.9.6':
-    resolution: {integrity: sha512-R9LG+WvF6YUBf8qD01nWXKD+B2Wo90nRdUM0BHRHNTNvvyYClmuldAfG16ytEVzMfla2xuEJy2GUZzHi1xwVWw==}
+  '@bull-board/hono@6.10.1':
+    resolution: {integrity: sha512-2I9BUS7jbtQ4tCKOJdVKQn6uW8MXJKUGIhHLK2r4X8kiXZvk2I7jjt0KZ4VNyF9nfoBblgX5WemxE4sU61kGGg==}
+    peerDependencies:
+      hono: ^4
 
-  '@bull-board/ui@6.9.6':
-    resolution: {integrity: sha512-uRYJ3G4hsodEuhVd7yIl7MSsGNYZNa0nCcivK472ojUV22t4ZB2j2KKew07jBhlhPN5jxzQ5PJh16lOnrWk9vQ==}
+  '@bull-board/ui@6.10.1':
+    resolution: {integrity: sha512-b6z6MBid/0DEShAMFPjPVZoPSoWqRBHCvTknyaxr/m8gL2/C+QP7jlCXut+L7uTFbCj9qs+CreAP0x/VdLI/Ig==}
 
   '@clerc/core@0.44.0':
     resolution: {integrity: sha512-o8RgXNcMRoHRujSw9OPDMxqrmoNk7HG0XAZkjZgOrSyIfRXCf85VLyHGBT3XmaOrPEGY964h02ZxMVFdp8RnNQ==}
@@ -1130,11 +1132,13 @@ packages:
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
 
-  '@logtape/file@0.11.0':
-    resolution: {integrity: sha512-ftm80EKUHcW0bbRnZfF4Y2cGDIePF0NBNfitJ5gtEUH+Fnae1t0GIPeE+XGWyABgC+mZRTks6/NZBY18ymMa6g==}
+  '@logtape/file@0.12.0':
+    resolution: {integrity: sha512-C3VLzKF8RQJUjozj8xstmfw3LRVMHScR9275MaIb/krLooNdy8z14IaQ2XGESfQr2NM946wRPBdAcNKm0DV6Ww==}
+    peerDependencies:
+      '@logtape/logtape': 0.12.0
 
-  '@logtape/logtape@0.11.0':
-    resolution: {integrity: sha512-CV14Jf+gXCdgICvMZbkUOrVPJ2eBuLFaacEYJ3vI6ohv6n2mVepakxTfuZNhtWYVeIB1EblRRQNkFs/n5vFYqA==}
+  '@logtape/logtape@0.12.0':
+    resolution: {integrity: sha512-FPAI0VHDLaU/+sFC53k50RhJyMvj8tsuENF7Bzf+jKdMac2HavV2/eB4YyFltjt4PwSbvKimXc0cE9iwfHbPpw==}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
@@ -1486,41 +1490,41 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/core@0.3.1':
-    resolution: {integrity: sha512-k5TsihZcSdVnqE6JrRFdsvePDTe2RxjE+1wHdcnyFdIPief+ZdPn2fxCTlN0ozLoe08xlY3N9DHzDaneMpX58Q==}
+  '@scalar/core@0.3.3':
+    resolution: {integrity: sha512-OedH8YQriBsE7JnCN2ly4p3u7iobjzAoDkxD/o1hiF55m6WRicvtklEdByHlceu9UnJ/znikZ50ymo98uG3aqA==}
     engines: {node: '>=20'}
 
-  '@scalar/hono-api-reference@0.9.2':
-    resolution: {integrity: sha512-vGjzijTrNkfSLEBv013xzsTAQYhdVpuH0WACT2IlchjBcjUHKkvIktQ/N1z9bizysZYmH8HLG/BA0kXiSq/prg==}
+  '@scalar/hono-api-reference@0.9.4':
+    resolution: {integrity: sha512-pAUWS8MRGcS5VjMjAVd6DrhST63NpVXGel2BbYsKPQAaONwwA3hU30fAFxSs3PUGA8M7q+e76F6w4ALBtHxLRA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4.0.0
 
-  '@scalar/openapi-types@0.3.1':
-    resolution: {integrity: sha512-635pb0OIxhhr2yVPwqExOyNh8eo01JLOqXkDvvflHFBaGo7CHvq5sduwriXdplkn2TRNkxdkdy/eNSOMNPVa1A==}
+  '@scalar/openapi-types@0.3.3':
+    resolution: {integrity: sha512-mr3OvbCyvuzSDgv9gR9D3pJAsl82BRNBp1P8ldgRgKF4Wiswfa7nQeKibpX0kHSGXLgiyvxWJULUFwgdWMXNNA==}
     engines: {node: '>=20'}
 
-  '@scalar/types@0.2.1':
-    resolution: {integrity: sha512-eXcxuwazLABrnCjpqE4tG+FgiCKyHhKxB4V8Bn4Uj/XCBTemRd+WSzXp0mmpGuBbqz820j5UGrlZ5cWlUWaWWw==}
+  '@scalar/types@0.2.3':
+    resolution: {integrity: sha512-K1/Vp5xaQ8TEGDYwHg88OBuQWJRWrE3ToZ0Z2LJwskcY1Eg+uDiRQXKF4QPngZzu5rrWgRErAq4yte4Y7omqgA==}
     engines: {node: '>=20'}
 
   '@selderee/plugin-htmlparser2@0.11.0':
     resolution: {integrity: sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ==}
 
-  '@sentry/bun@9.26.0':
-    resolution: {integrity: sha512-y8WPSuQ703sP1tx5fSGhgWJiXKybmma6oQGUmfKICaKQJCoTAUOxZobXQxmuzzGBM6+X7iDAHzMouNwvXpJfNQ==}
+  '@sentry/bun@9.29.0':
+    resolution: {integrity: sha512-85wFqI0oEOZ/73KcTTmd4wMkKCyaxMLMWCiDJVrXxGbuC37pevQqZmIEgNABfs6NZLc2bHSxOzKlWzgJs30Pig==}
     engines: {node: '>=18'}
 
-  '@sentry/core@9.26.0':
-    resolution: {integrity: sha512-XTFSqOPn6wsZgF3NLRVY/FjYCkFahZoR46BtLVmBliD60QZLChpya81slD3M8BgLQpjsA2q6N1xrQor1Rc29gg==}
+  '@sentry/core@9.29.0':
+    resolution: {integrity: sha512-wDyNe45PM+RCGtUn1tK7LzJ08ksv8i8KRUHrst7lsinEfRm83YH+wbWrPmwkVNEngUZvYkHwGLbNXM7xgFUuDQ==}
     engines: {node: '>=18'}
 
-  '@sentry/node@9.26.0':
-    resolution: {integrity: sha512-B7VdUtXlg1Y8DeZMWc9gOIoSmGT9hkKepits+kmkZgjYlyPhZtT8a0fwUNBLYFYq1Ti/JzKWw3ZNIlg00BY40w==}
+  '@sentry/node@9.29.0':
+    resolution: {integrity: sha512-oABipgC/fClRuvyMeK43rigv9F+OAaoR84UaMKB7aPXN6iz634wBRVsaoZAwiR3xLL+R7MafEPPA/s9XqlG7ag==}
     engines: {node: '>=18'}
 
-  '@sentry/opentelemetry@9.26.0':
-    resolution: {integrity: sha512-yVxRv6GtrtKFfNKpfb+b/focF4cKslInIN+HPzllQBoVebrq+KeCjUYzDEj9b6OwZGbUZDbQdxGRgXrrxcZUMg==}
+  '@sentry/opentelemetry@9.29.0':
+    resolution: {integrity: sha512-QTUmre8i5+832RjzQW+g8IQ3UmBe5fbQXGbCF5hQ0UNuHle9r3Z8UZcIff5W8tm5AXMxPqvptTnDEZUUXHgBiA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@opentelemetry/api': ^1.9.0
@@ -1564,8 +1568,8 @@ packages:
   '@ts-morph/common@0.12.3':
     resolution: {integrity: sha512-4tUmeLyXJnJWvTFOKtcNJ1yh0a3SsTLi2MUoyj8iUNznFRN1ZquaNe7Oukqrnki2FzZkm0J9adCNLDZxUzvj+w==}
 
-  '@types/bun@1.2.15':
-    resolution: {integrity: sha512-U1ljPdBEphF0nw1MIk0hI7kPg7dFdPyM7EenHsp6W5loNHl7zqy6JQf/RKCgnUn2KDzUpkBwHPnEJEjII594bA==}
+  '@types/bun@1.2.16':
+    resolution: {integrity: sha512-1aCZJ/6nSiViw339RsaNhkNoEloLaPzZhxMOYEa7OzRzO41IGg5n/7I43/ZIAW/c+Q6cT12Vf7fOZOoVIzb5BQ==}
 
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
@@ -1597,8 +1601,8 @@ packages:
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
-  '@types/mime-types@3.0.0':
-    resolution: {integrity: sha512-9gFWMsVgEtbsD6yY/2z8pAtnZhdRKl4Q9xmKQJy5gv0fMpzJeeWtQyd7WpdhaIbRSwPCfnjXOsNMcoQvu5giGg==}
+  '@types/mime-types@3.0.1':
+    resolution: {integrity: sha512-xRMsfuQbnRq1Ef+C+RKaENOxXX87Ygl38W1vDfPHRku02TgQr+Qd8iivLtAMcR0KF5/29xlnFihkTlbqFrGOVQ==}
 
   '@types/mysql@2.15.26':
     resolution: {integrity: sha512-DSLCOXhkvfS5WNNPbfn2KdICAmk8lLc+/PNvnPnF7gOdMZCxopXduqv0OQ13y/yA/zXTSikZZqVgybUxOEg6YQ==}
@@ -1759,8 +1763,8 @@ packages:
     resolution: {integrity: sha512-CkaUygzZ91Xbw11s0CsHMawrK3tl+Ue57725HGRgRzKgt2Z4wvXVXRCtQfvzh8K7Tp4Zp7f1pyHAtMROtTJHxg==}
     engines: {node: '>= 14.0.0'}
 
-  altcha-lib@1.2.0:
-    resolution: {integrity: sha512-S5WF8QLNRaM1hvK24XPhOLfu9is2EBCvH7+nv50sM5CaIdUCqQCd0WV/qm/ZZFGTdSoKLuDp+IapZxBLvC+SNg==}
+  altcha-lib@1.3.0:
+    resolution: {integrity: sha512-PpFg/JPuR+Jiud7Vs54XSDqDxvylcp+0oDa/i1ARxBA/iKDqLeNlO8PorQbfuDTMVLYRypAa/2VDK3nbBTAu5A==}
 
   ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
@@ -1829,16 +1833,16 @@ packages:
   buffer-from@1.1.2:
     resolution: {integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==}
 
-  bullmq@5.53.2:
-    resolution: {integrity: sha512-xHgxrP/yNJHD7VCw1h+eRBh+2TCPBCM39uC9gCyksYc6ufcJP+HTZ/A2lzB2x7qMFWrvsX7tM40AT2BmdkYL/Q==}
+  bullmq@5.53.3:
+    resolution: {integrity: sha512-8E/5fbVmJ3W/5FoDnRf3TW7vXgpg+A2RqOoQqpHxlvs3ws6SALw6f2NjHA1q5ePF0T4zsDZ/LAZwdMknk3b0MQ==}
 
   bun-bagel@1.2.0:
     resolution: {integrity: sha512-c4S68dNddpnog9nxXp9PAhcep0alOy49jpRlC1yACoxplUvgX22NZxeQUIIov5TCJJDH/snT5R9bMyix7AG0KQ==}
     peerDependencies:
       typescript: ^5.0.0
 
-  bun-types@1.2.15:
-    resolution: {integrity: sha512-NarRIaS+iOaQU1JPfyKhZm4AsUOrwUOqRNHY0XxI8GI8jYxiLXLcdjYMG9UKS+fwWasc1uw1htV9AX24dD+p4w==}
+  bun-types@1.2.16:
+    resolution: {integrity: sha512-ciXLrHV4PXax9vHvUrkvun9VPVGOVwbbbBF/Ev1cXz12lyEZMoJpIJABOfPcN9gDJRaiKF9MVbSygLg4NXu3/A==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -2767,8 +2771,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  oauth4webapi@3.5.1:
-    resolution: {integrity: sha512-txg/jZQwcbaF7PMJgY7aoxc9QuCxHVFMiEkDIJ60DwDz3PbtXPQnrzo+3X4IRYGChIwWLabRBRpf1k9hO9+xrQ==}
+  oauth4webapi@3.5.2:
+    resolution: {integrity: sha512-VYz5BaP3izIrUc1GAVzIoz4JnljiW0YAUFObMBwsqDnfHxz2sjLu3W7/8vE8Ms9IbMewN9+1kcvhY3tMscAeGQ==}
 
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
@@ -3361,11 +3365,11 @@ packages:
     peerDependencies:
       zod: ^3.18.0
 
-  zod-validation-error@3.4.1:
-    resolution: {integrity: sha512-1KP64yqDPQ3rupxNv7oXhf7KdhHHgaqbKuspVoiN93TT0xrBjql+Svjkdjq/Qh/7GSMmgQs3AfvBT0heE35thw==}
+  zod-validation-error@3.5.0:
+    resolution: {integrity: sha512-IWK6O51sRkq0YsnYD2oLDuK2BNsIjYUlR0+1YSd4JyBzm6/892IWroUnLc7oW4FU+b0f6948BHi6H8MDcqpOGw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      zod: ^3.24.4
+      zod: ^3.25.0
 
   zod@3.24.1:
     resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
@@ -3373,8 +3377,8 @@ packages:
   zod@3.24.3:
     resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
 
-  zod@3.25.51:
-    resolution: {integrity: sha512-TQSnBldh+XSGL+opiSIq0575wvDPqu09AqWe1F7JhUMKY+M91/aGlK4MhpVNO7MgYfHcVCB1ffwAUTJzllKJqg==}
+  zod@3.25.64:
+    resolution: {integrity: sha512-hbP9FpSZf7pkS7hRVUrOjhwKJNyampPgtXKc3AN6DsWtoHsg2Sb4SQaS4Tcay380zSwd2VPo9G9180emBACp5g==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
@@ -3550,21 +3554,21 @@ snapshots:
   '@biomejs/cli-win32-x64@2.0.0-beta.5':
     optional: true
 
-  '@bull-board/api@6.9.6(@bull-board/ui@6.9.6)':
+  '@bull-board/api@6.10.1(@bull-board/ui@6.10.1)':
     dependencies:
-      '@bull-board/ui': 6.9.6
+      '@bull-board/ui': 6.10.1
       redis-info: 3.1.0
 
-  '@bull-board/hono@6.9.6':
+  '@bull-board/hono@6.10.1(hono@4.7.11)':
     dependencies:
-      '@bull-board/api': 6.9.6(@bull-board/ui@6.9.6)
-      '@bull-board/ui': 6.9.6
+      '@bull-board/api': 6.10.1(@bull-board/ui@6.10.1)
+      '@bull-board/ui': 6.10.1
       ejs: 3.1.10
       hono: 4.7.11
 
-  '@bull-board/ui@6.9.6':
+  '@bull-board/ui@6.10.1':
     dependencies:
-      '@bull-board/api': 6.9.6(@bull-board/ui@6.9.6)
+      '@bull-board/api': 6.10.1(@bull-board/ui@6.10.1)
 
   '@clerc/core@0.44.0':
     dependencies:
@@ -3867,10 +3871,10 @@ snapshots:
 
   '@hackmd/markdown-it-task-lists@2.1.4': {}
 
-  '@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.51)':
+  '@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.64)':
     dependencies:
       hono: 4.7.11
-      zod: 3.25.51
+      zod: 3.25.64
 
   '@iconify-json/simple-icons@1.2.33':
     dependencies:
@@ -4000,11 +4004,11 @@ snapshots:
 
   '@jsdevtools/ono@7.1.3': {}
 
-  '@logtape/file@0.11.0':
+  '@logtape/file@0.12.0(@logtape/logtape@0.12.0)':
     dependencies:
-      '@logtape/logtape': 0.11.0
+      '@logtape/logtape': 0.12.0
 
-  '@logtape/logtape@0.11.0': {}
+  '@logtape/logtape@0.12.0': {}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     optional: true
@@ -4360,22 +4364,22 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.40.1':
     optional: true
 
-  '@scalar/core@0.3.1':
+  '@scalar/core@0.3.3':
     dependencies:
-      '@scalar/types': 0.2.1
+      '@scalar/types': 0.2.3
 
-  '@scalar/hono-api-reference@0.9.2(hono@4.7.11)':
+  '@scalar/hono-api-reference@0.9.4(hono@4.7.11)':
     dependencies:
-      '@scalar/core': 0.3.1
+      '@scalar/core': 0.3.3
       hono: 4.7.11
 
-  '@scalar/openapi-types@0.3.1':
+  '@scalar/openapi-types@0.3.3':
     dependencies:
       zod: 3.24.1
 
-  '@scalar/types@0.2.1':
+  '@scalar/types@0.2.3':
     dependencies:
-      '@scalar/openapi-types': 0.3.1
+      '@scalar/openapi-types': 0.3.3
       nanoid: 5.1.5
       zod: 3.24.1
 
@@ -4384,11 +4388,11 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@sentry/bun@9.26.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
+  '@sentry/bun@9.29.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
     dependencies:
-      '@sentry/core': 9.26.0
-      '@sentry/node': 9.26.0
-      '@sentry/opentelemetry': 9.26.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
+      '@sentry/core': 9.29.0
+      '@sentry/node': 9.29.0
+      '@sentry/opentelemetry': 9.29.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
     transitivePeerDependencies:
       - '@opentelemetry/api'
       - '@opentelemetry/context-async-hooks'
@@ -4398,9 +4402,9 @@ snapshots:
       - '@opentelemetry/semantic-conventions'
       - supports-color
 
-  '@sentry/core@9.26.0': {}
+  '@sentry/core@9.29.0': {}
 
-  '@sentry/node@9.26.0':
+  '@sentry/node@9.29.0':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 1.30.1(@opentelemetry/api@1.9.0)
@@ -4432,14 +4436,14 @@ snapshots:
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.34.0
       '@prisma/instrumentation': 6.8.2(@opentelemetry/api@1.9.0)
-      '@sentry/core': 9.26.0
-      '@sentry/opentelemetry': 9.26.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
+      '@sentry/core': 9.29.0
+      '@sentry/opentelemetry': 9.29.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)
       import-in-the-middle: 1.13.1
       minimatch: 9.0.5
     transitivePeerDependencies:
       - supports-color
 
-  '@sentry/opentelemetry@9.26.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
+  '@sentry/opentelemetry@9.29.0(@opentelemetry/api@1.9.0)(@opentelemetry/context-async-hooks@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/core@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/instrumentation@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(@opentelemetry/semantic-conventions@1.34.0)':
     dependencies:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/context-async-hooks': 1.30.1(@opentelemetry/api@1.9.0)
@@ -4447,7 +4451,7 @@ snapshots:
       '@opentelemetry/instrumentation': 0.57.2(@opentelemetry/api@1.9.0)
       '@opentelemetry/sdk-trace-base': 1.30.1(@opentelemetry/api@1.9.0)
       '@opentelemetry/semantic-conventions': 1.34.0
-      '@sentry/core': 9.26.0
+      '@sentry/core': 9.29.0
 
   '@shikijs/core@2.5.0':
     dependencies:
@@ -4500,9 +4504,9 @@ snapshots:
       mkdirp: 1.0.4
       path-browserify: 1.0.1
 
-  '@types/bun@1.2.15':
+  '@types/bun@1.2.16':
     dependencies:
-      bun-types: 1.2.15
+      bun-types: 1.2.16
 
   '@types/connect@3.4.38':
     dependencies:
@@ -4535,7 +4539,7 @@ snapshots:
 
   '@types/mdurl@2.0.0': {}
 
-  '@types/mime-types@3.0.0': {}
+  '@types/mime-types@3.0.1': {}
 
   '@types/mysql@2.15.26':
     dependencies:
@@ -4709,7 +4713,7 @@ snapshots:
       '@algolia/requester-fetch': 5.24.0
       '@algolia/requester-node-http': 5.24.0
 
-  altcha-lib@1.2.0: {}
+  altcha-lib@1.3.0: {}
 
   ansi-colors@4.1.3: {}
 
@@ -4769,7 +4773,7 @@ snapshots:
 
   buffer-from@1.1.2: {}
 
-  bullmq@5.53.2:
+  bullmq@5.53.3:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.6.1
@@ -4785,7 +4789,7 @@ snapshots:
     dependencies:
       typescript: 5.8.3
 
-  bun-types@1.2.15:
+  bun-types@1.2.16:
     dependencies:
       '@types/node': 22.15.3
 
@@ -4997,11 +5001,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.15):
+  drizzle-orm@0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.16):
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.6.1
-      bun-types: 1.2.15
+      bun-types: 1.2.16
 
   dunder-proto@1.0.1:
     dependencies:
@@ -5268,15 +5272,15 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
 
-  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.51))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.51))(zod@3.25.51):
+  hono-openapi@0.4.8(@hono/zod-validator@0.7.0(hono@4.7.11)(zod@3.25.64))(hono@4.7.11)(openapi-types@12.1.3)(zod-openapi@4.2.4(zod@3.25.64))(zod@3.25.64):
     dependencies:
       json-schema-walker: 2.0.0
       openapi-types: 12.1.3
     optionalDependencies:
-      '@hono/zod-validator': 0.7.0(hono@4.7.11)(zod@3.25.51)
+      '@hono/zod-validator': 0.7.0(hono@4.7.11)(zod@3.25.64)
       hono: 4.7.11
-      zod: 3.25.51
-      zod-openapi: 4.2.4(zod@3.25.51)
+      zod: 3.25.64
+      zod-openapi: 4.2.4(zod@3.25.64)
 
   hono-rate-limiter@0.4.2(hono@4.7.11):
     dependencies:
@@ -5676,7 +5680,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  oauth4webapi@3.5.1: {}
+  oauth4webapi@3.5.2: {}
 
   object-inspect@1.13.4: {}
 
@@ -6322,30 +6326,30 @@ snapshots:
     dependencies:
       zod: 3.24.3
 
-  zod-openapi@4.2.4(zod@3.25.51):
+  zod-openapi@4.2.4(zod@3.25.64):
     dependencies:
-      zod: 3.25.51
+      zod: 3.25.64
 
   zod-to-json-schema@3.24.5(zod@3.24.3):
     dependencies:
       zod: 3.24.3
 
-  zod-to-json-schema@3.24.5(zod@3.25.51):
+  zod-to-json-schema@3.24.5(zod@3.25.64):
     dependencies:
-      zod: 3.25.51
+      zod: 3.25.64
 
   zod-validation-error@3.4.0(zod@3.24.3):
     dependencies:
       zod: 3.24.3
 
-  zod-validation-error@3.4.1(zod@3.25.51):
+  zod-validation-error@3.5.0(zod@3.25.64):
     dependencies:
-      zod: 3.25.51
+      zod: 3.25.64
 
   zod@3.24.1: {}
 
   zod@3.24.3: {}
 
-  zod@3.25.51: {}
+  zod@3.25.64: {}
 
   zwitch@2.0.4: {}

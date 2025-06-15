@@ -20,6 +20,7 @@ const levelAbbreviations: Record<LogLevel, string> = {
     warning: "WRN",
     error: "ERR",
     fatal: "FTL",
+    trace: "TRC",
 };
 
 /**
@@ -31,6 +32,7 @@ const logLevelStyles: Record<LogLevel, (text: string) => string> = {
     warning: chalk.black.bgYellow,
     error: chalk.white.bgRed,
     fatal: chalk.white.bgRedBright,
+    trace: chalk.white.bgBlue,
 };
 
 /**
