@@ -275,6 +275,9 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:packages/config
+      '@versia-server/tests':
+        specifier: workspace:*
+        version: link:packages/tests
       '@versia/client':
         specifier: workspace:*
         version: link:packages/client
@@ -471,6 +474,9 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:../config
+      '@versia-server/tests':
+        specifier: workspace:*
+        version: link:../tests
       '@versia/client':
         specifier: workspace:*
         version: link:../client
@@ -636,6 +642,24 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.64
+
+  packages/tests:
+    dependencies:
+      '@versia-server/config':
+        specifier: workspace:*
+        version: link:../config
+      '@versia/client':
+        specifier: workspace:*
+        version: link:../client
+      '@versia/kit':
+        specifier: workspace:*
+        version: link:../plugin-kit
+      altcha-lib:
+        specifier: 'catalog:'
+        version: 1.3.0
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.44.2(@opentelemetry/api@1.9.0)(@types/pg@8.6.1)(bun-types@1.2.16)
 
   packages/worker:
     dependencies:
