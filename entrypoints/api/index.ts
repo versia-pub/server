@@ -1,4 +1,3 @@
-import cluster from "node:cluster";
 import process from "node:process";
 import { Youch } from "youch";
 import { sentry } from "@/sentry";
@@ -16,13 +15,7 @@ process.on("uncaughtException", async (error) => {
     console.error(await youch.toANSI(error));
 });
 
-if (cluster.isPrimary) {
-    for (let i = 0; i < Number(process.env.NUM_CPUS ?? 1); i++) {
-        cluster.fork();
-    }
+await import("~/entrypoints/api/setup.ts");
+sentry?.captureMessage("Server started", "info");
 
-    await import("~/entrypoints/api/setup.ts");
-    sentry?.captureMessage("Server started", "info");
-} else {
-    createServer(config, await appFactory());
-}
+createServer(config, await appFactory());
