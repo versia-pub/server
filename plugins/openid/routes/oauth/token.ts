@@ -1,6 +1,6 @@
-import { handleZodError, jsonOrForm } from "@versia/kit/api";
-import { Application, Token } from "@versia/kit/db";
-import { Tokens } from "@versia/kit/tables";
+import { handleZodError, jsonOrForm } from "@versia-server/kit/api";
+import { Application, Token } from "@versia-server/kit/db";
+import { Tokens } from "@versia-server/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

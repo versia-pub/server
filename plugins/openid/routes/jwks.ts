@@ -1,4 +1,4 @@
-import { auth } from "@versia/kit/api";
+import { auth } from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { exportJWK } from "jose";

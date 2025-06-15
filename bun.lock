@@ -19,9 +19,9 @@
         "@scalar/hono-api-reference": "catalog:",
         "@sentry/bun": "catalog:",
         "@versia-server/config": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia-server/tests": "workspace:*",
         "@versia/client": "workspace:*",
-        "@versia/kit": "workspace:*",
         "@versia/sdk": "workspace:*",
         "altcha-lib": "catalog:",
         "blurhash": "catalog:",
@@ -94,9 +94,9 @@
         "@logtape/logtape": "catalog:",
         "@scalar/hono-api-reference": "catalog:",
         "@versia-server/config": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia-server/tests": "workspace:*",
         "@versia/client": "workspace:*",
-        "@versia/kit": "workspace:*",
         "@versia/sdk": "workspace:*",
         "altcha-lib": "catalog:",
         "bun-bagel": "catalog:",
@@ -146,7 +146,7 @@
       },
     },
     "packages/plugin-kit": {
-      "name": "@versia/kit",
+      "name": "@versia-server/kit",
       "version": "0.0.0",
       "dependencies": {
         "@hackmd/markdown-it-task-lists": "catalog:",
@@ -189,8 +189,8 @@
       "version": "0.0.1",
       "dependencies": {
         "@versia-server/config": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia/client": "workspace:*",
-        "@versia/kit": "workspace:*",
         "altcha-lib": "catalog:",
         "drizzle-orm": "catalog:",
       },
@@ -201,7 +201,7 @@
       "dependencies": {
         "@logtape/logtape": "catalog:",
         "@versia-server/config": "workspace:*",
-        "@versia/kit": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "chalk": "catalog:",
       },
     },
@@ -739,13 +739,13 @@
 
     "@versia-server/config": ["@versia-server/config@workspace:packages/config"],
 
+    "@versia-server/kit": ["@versia-server/kit@workspace:packages/plugin-kit"],
+
     "@versia-server/tests": ["@versia-server/tests@workspace:packages/tests"],
 
     "@versia-server/worker": ["@versia-server/worker@workspace:packages/worker"],
 
     "@versia/client": ["@versia/client@workspace:packages/client"],
-
-    "@versia/kit": ["@versia/kit@workspace:packages/plugin-kit"],
 
     "@versia/sdk": ["@versia/sdk@workspace:packages/sdk"],
 

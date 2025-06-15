@@ -2,8 +2,8 @@ import {
     Account as AccountSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, withUserParam } from "@versia/kit/api";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, withUserParam } from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 

@@ -2,10 +2,10 @@ import {
     Account as AccountSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { handleZodError } from "@versia/kit/api";
-import { db, Media, Token, User } from "@versia/kit/db";
-import { OpenIdAccounts, Users } from "@versia/kit/tables";
+import { ApiError } from "@versia-server/kit";
+import { handleZodError } from "@versia-server/kit/api";
+import { db, Media, Token, User } from "@versia-server/kit/db";
+import { OpenIdAccounts, Users } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { setCookie } from "hono/cookie";

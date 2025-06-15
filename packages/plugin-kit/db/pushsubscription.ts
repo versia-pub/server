@@ -1,6 +1,6 @@
 import type { WebPushSubscription as WebPushSubscriptionSchema } from "@versia/client/schemas";
-import { db, type Token, type User } from "@versia/kit/db";
-import { PushSubscriptions, Tokens } from "@versia/kit/tables";
+import { db, type Token, type User } from "@versia-server/kit/db";
+import { PushSubscriptions, Tokens } from "@versia-server/kit/tables";
 import {
     desc,
     eq,

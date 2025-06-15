@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Application } from "@versia/kit/db";
 import { config } from "@versia-server/config";
+import { Application } from "@versia-server/kit/db";
 import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 import { randomString } from "@/math";

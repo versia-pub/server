@@ -1,8 +1,8 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError } from "@versia/kit/api";
-import { Timeline } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
+import { Timeline } from "@versia-server/kit/db";
+import { Notes } from "@versia-server/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

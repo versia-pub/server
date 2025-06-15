@@ -44,7 +44,7 @@
     "dependencies": {
         "@versia-server/config": "workspace:*",
         "@versia-server/tests": "workspace:*",
-        "@versia/kit": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia/client": "workspace:*",
         "@versia/sdk": "workspace:*",
         "@logtape/logtape": "catalog:",

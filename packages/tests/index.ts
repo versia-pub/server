@@ -1,8 +1,8 @@
 import { mock } from "bun:test";
 import { Client as VersiaClient } from "@versia/client";
-import { db, Note, setupDatabase, Token, User } from "@versia/kit/db";
-import { Notes, Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { db, Note, setupDatabase, Token, User } from "@versia-server/kit/db";
+import { Notes, Users } from "@versia-server/kit/tables";
 import { solveChallenge } from "altcha-lib";
 import { env, randomUUIDv7 } from "bun";
 import { asc, type InferSelectModel, inArray, like } from "drizzle-orm";

@@ -1,7 +1,7 @@
 import { RolePermission } from "@versia/client/schemas";
-import { ApiError, Hooks, Plugin } from "@versia/kit";
-import { User } from "@versia/kit/db";
 import { keyPair, sensitiveString, url } from "@versia-server/config/schema";
+import { ApiError, Hooks, Plugin } from "@versia-server/kit";
+import { User } from "@versia-server/kit/db";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";

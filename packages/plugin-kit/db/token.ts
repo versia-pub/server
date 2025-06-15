@@ -1,6 +1,6 @@
 import type { Token as TokenSchema } from "@versia/client/schemas";
-import { type Application, db, User } from "@versia/kit/db";
-import { Tokens } from "@versia/kit/tables";
+import { type Application, db, User } from "@versia-server/kit/db";
+import { Tokens } from "@versia-server/kit/tables";
 import {
     desc,
     eq,

@@ -1,5 +1,5 @@
-import { debugResponse } from "@versia/kit/api";
 import type { ConfigSchema } from "@versia-server/config/schema";
+import { debugResponse } from "@versia-server/kit/api";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";
 import type { z } from "zod";

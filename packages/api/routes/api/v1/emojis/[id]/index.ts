@@ -2,15 +2,15 @@ import {
     CustomEmoji as CustomEmojiSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
+import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
 import {
     apiRoute,
     auth,
     handleZodError,
     jsonOrForm,
     withEmojiParam,
-} from "@versia/kit/api";
-import { config } from "@versia-server/config";
+} from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

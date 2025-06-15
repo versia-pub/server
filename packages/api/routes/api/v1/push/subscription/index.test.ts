@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, test } from "bun:test";
-import { PushSubscription } from "@versia/kit/db";
+import { PushSubscription } from "@versia-server/kit/db";
 import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 

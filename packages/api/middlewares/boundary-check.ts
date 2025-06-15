@@ -1,4 +1,4 @@
-import { ApiError } from "@versia/kit";
+import { ApiError } from "@versia-server/kit";
 import { createMiddleware } from "hono/factory";
 
 export const boundaryCheck = createMiddleware(async (context, next) => {

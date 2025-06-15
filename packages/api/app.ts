@@ -1,8 +1,8 @@
 import { resolve } from "node:path";
 import { getLogger } from "@logtape/logtape";
 import { Scalar } from "@scalar/hono-api-reference";
-import { ApiError } from "@versia/kit";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
 import chalk from "chalk";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";

@@ -1,9 +1,9 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Instance, Note, Reaction, User } from "@versia/kit/db";
-import { Notes, Reactions, Users } from "@versia/kit/tables";
 import { sign } from "@versia/sdk/crypto";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
+import { Instance, Note, Reaction, User } from "@versia-server/kit/db";
+import { Notes, Reactions, Users } from "@versia-server/kit/tables";
 import {
     fakeRequest,
     generateClient,

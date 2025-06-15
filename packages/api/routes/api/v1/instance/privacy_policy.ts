@@ -1,7 +1,7 @@
 import { PrivacyPolicy as PrivacyPolicySchema } from "@versia/client/schemas";
-import { apiRoute } from "@versia/kit/api";
-import { markdownToHtml } from "@versia/kit/markdown";
 import { config } from "@versia-server/config";
+import { apiRoute } from "@versia-server/kit/api";
+import { markdownToHtml } from "@versia-server/kit/markdown";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 

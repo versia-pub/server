@@ -2,8 +2,8 @@ import type {
     Application as ApplicationSchema,
     CredentialApplication,
 } from "@versia/client/schemas";
-import { db, Token } from "@versia/kit/db";
-import { Applications } from "@versia/kit/tables";
+import { db, Token } from "@versia-server/kit/db";
+import { Applications } from "@versia-server/kit/tables";
 import {
     desc,
     eq,

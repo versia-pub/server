@@ -39,7 +39,7 @@
     },
     "dependencies": {
         "@versia-server/config": "workspace:*",
-        "@versia/kit": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "chalk": "catalog:",
         "@logtape/logtape": "catalog:"
     }

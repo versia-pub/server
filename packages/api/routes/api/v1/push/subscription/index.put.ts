@@ -3,9 +3,14 @@ import {
     WebPushSubscriptionInput,
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
-import { PushSubscription } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    jsonOrForm,
+} from "@versia-server/kit/api";
+import { PushSubscription } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 

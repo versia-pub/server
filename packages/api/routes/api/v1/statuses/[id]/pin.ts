@@ -1,7 +1,7 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, withNoteParam } from "@versia/kit/api";
-import { db } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, withNoteParam } from "@versia-server/kit/api";
+import { db } from "@versia-server/kit/db";
 import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";

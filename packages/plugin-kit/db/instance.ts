@@ -1,9 +1,9 @@
 import { getLogger } from "@logtape/logtape";
-import { ApiError } from "@versia/kit";
-import { db } from "@versia/kit/db";
-import { Instances } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { db } from "@versia-server/kit/db";
+import { Instances } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {

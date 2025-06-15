@@ -1,6 +1,6 @@
 import { RolePermission } from "@versia/client/schemas";
-import { auth, handleZodError, jsonOrForm } from "@versia/kit/api";
-import { Application, Token, User } from "@versia/kit/db";
+import { auth, handleZodError, jsonOrForm } from "@versia-server/kit/api";
+import { Application, Token, User } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";

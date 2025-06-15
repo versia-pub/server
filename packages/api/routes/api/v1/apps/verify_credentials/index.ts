@@ -2,9 +2,9 @@ import {
     Application as ApplicationSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth } from "@versia/kit/api";
-import { Application } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth } from "@versia-server/kit/api";
+import { Application } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 

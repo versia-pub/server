@@ -1,6 +1,6 @@
-import { Media, Note, type User } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { Media, Note, type User } from "@versia-server/kit/db";
+import { Notes } from "@versia-server/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { Feed } from "feed";
 

@@ -1,8 +1,5 @@
 import { join } from "node:path";
 import type { Attachment as AttachmentSchema } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { db } from "@versia/kit/db";
-import { Medias } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import type {
     ContentFormatSchema,
@@ -10,6 +7,9 @@ import type {
 } from "@versia/sdk/schemas";
 import { config, ProxiableUrl } from "@versia-server/config";
 import { MediaBackendType } from "@versia-server/config/schema";
+import { ApiError } from "@versia-server/kit";
+import { db } from "@versia-server/kit/db";
+import { Medias } from "@versia-server/kit/tables";
 import { randomUUIDv7, S3Client, SHA256, write } from "bun";
 import {
     desc,

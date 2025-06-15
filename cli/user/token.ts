@@ -1,4 +1,4 @@
-import { Token } from "@versia/kit/db";
+import { Token } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work

@@ -1,12 +1,12 @@
-import { db } from "@versia/kit/db";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { config } from "@versia-server/config";
+import { db } from "@versia-server/kit/db";
 import {
     Likes,
     type Notes,
     Notifications,
     type Users,
-} from "@versia/kit/tables";
-import * as VersiaEntities from "@versia/sdk/entities";
-import { config } from "@versia-server/config";
+} from "@versia-server/kit/tables";
 import {
     and,
     desc,

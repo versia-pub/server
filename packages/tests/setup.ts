@@ -1,4 +1,4 @@
-import { setupDatabase } from "@versia/kit/db";
+import { setupDatabase } from "@versia-server/kit/db";
 import { deleteOldTestUsers } from "./index.ts";
 
 await setupDatabase();

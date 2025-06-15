@@ -2,12 +2,12 @@ import {
     Account as AccountSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError } from "@versia/kit/api";
-import { Instance, User } from "@versia/kit/db";
-import { parseUserAddress } from "@versia/kit/parsers";
-import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
+import { Instance, User } from "@versia-server/kit/db";
+import { parseUserAddress } from "@versia-server/kit/parsers";
+import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

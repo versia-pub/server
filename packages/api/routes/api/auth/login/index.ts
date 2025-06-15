@@ -1,8 +1,8 @@
-import { ApiError } from "@versia/kit";
-import { apiRoute, handleZodError } from "@versia/kit/api";
-import { Application, User } from "@versia/kit/db";
-import { Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, handleZodError } from "@versia-server/kit/api";
+import { Application, User } from "@versia-server/kit/db";
+import { Users } from "@versia-server/kit/tables";
 import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";

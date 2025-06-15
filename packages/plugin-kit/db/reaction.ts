@@ -1,7 +1,7 @@
-import { db, Emoji, Instance, type Note, User } from "@versia/kit/db";
-import { type Notes, Reactions, type Users } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
+import { db, Emoji, Instance, type Note, User } from "@versia-server/kit/db";
+import { type Notes, Reactions, type Users } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
     and,

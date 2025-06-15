@@ -12,7 +12,7 @@
     },
     "dependencies": {
         "@versia-server/config": "workspace:*",
-        "@versia/kit": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia/client": "workspace:*",
         "altcha-lib": "catalog:",
         "drizzle-orm": "catalog:"

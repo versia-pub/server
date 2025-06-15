@@ -278,15 +278,15 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:packages/config
+      '@versia-server/kit':
+        specifier: workspace:*
+        version: link:packages/plugin-kit
       '@versia-server/tests':
         specifier: workspace:*
         version: link:packages/tests
       '@versia/client':
         specifier: workspace:*
         version: link:packages/client
-      '@versia/kit':
-        specifier: workspace:*
-        version: link:packages/plugin-kit
       '@versia/sdk':
         specifier: workspace:*
         version: link:packages/sdk
@@ -483,15 +483,15 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:../config
+      '@versia-server/kit':
+        specifier: workspace:*
+        version: link:../plugin-kit
       '@versia-server/tests':
         specifier: workspace:*
         version: link:../tests
       '@versia/client':
         specifier: workspace:*
         version: link:../client
-      '@versia/kit':
-        specifier: workspace:*
-        version: link:../plugin-kit
       '@versia/sdk':
         specifier: workspace:*
         version: link:../sdk
@@ -693,12 +693,12 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:../config
+      '@versia-server/kit':
+        specifier: workspace:*
+        version: link:../plugin-kit
       '@versia/client':
         specifier: workspace:*
         version: link:../client
-      '@versia/kit':
-        specifier: workspace:*
-        version: link:../plugin-kit
       altcha-lib:
         specifier: 'catalog:'
         version: 1.3.0
@@ -714,7 +714,7 @@ importers:
       '@versia-server/config':
         specifier: workspace:*
         version: link:../config
-      '@versia/kit':
+      '@versia-server/kit':
         specifier: workspace:*
         version: link:../plugin-kit
       chalk:

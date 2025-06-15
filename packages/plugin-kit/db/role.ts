@@ -2,9 +2,9 @@ import type {
     RolePermission,
     Role as RoleSchema,
 } from "@versia/client/schemas";
-import { db } from "@versia/kit/db";
-import { Roles, RoleToUsers } from "@versia/kit/tables";
 import { config, ProxiableUrl } from "@versia-server/config";
+import { db } from "@versia-server/kit/db";
+import { Roles, RoleToUsers } from "@versia-server/kit/tables";
 import {
     and,
     desc,

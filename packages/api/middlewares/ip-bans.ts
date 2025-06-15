@@ -1,6 +1,6 @@
 import { getLogger } from "@logtape/logtape";
-import { ApiError } from "@versia/kit";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";

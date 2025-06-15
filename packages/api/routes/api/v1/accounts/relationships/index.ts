@@ -4,9 +4,14 @@ import {
     RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, qsQuery } from "@versia/kit/api";
-import { Relationship } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    qsQuery,
+} from "@versia-server/kit/api";
+import { Relationship } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

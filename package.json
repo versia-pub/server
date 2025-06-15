@@ -167,7 +167,7 @@
         "@scalar/hono-api-reference": "catalog:",
         "@sentry/bun": "catalog:",
         "@versia/client": "workspace:*",
-        "@versia/kit": "workspace:*",
+        "@versia-server/kit": "workspace:*",
         "@versia/sdk": "workspace:*",
         "@versia-server/tests": "workspace:*",
         "@versia-server/config": "workspace:*",

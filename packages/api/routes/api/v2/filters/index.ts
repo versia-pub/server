@@ -3,10 +3,15 @@ import {
     Filter as FilterSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
-import { db } from "@versia/kit/db";
-import { FilterKeywords, Filters } from "@versia/kit/tables";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    jsonOrForm,
+} from "@versia-server/kit/api";
+import { db } from "@versia-server/kit/db";
+import { FilterKeywords, Filters } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";

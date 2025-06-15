@@ -1,6 +1,6 @@
-import { handleZodError } from "@versia/kit/api";
-import { Application, db } from "@versia/kit/db";
-import { OpenIdLoginFlows } from "@versia/kit/tables";
+import { handleZodError } from "@versia-server/kit/api";
+import { Application, db } from "@versia-server/kit/db";
+import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";

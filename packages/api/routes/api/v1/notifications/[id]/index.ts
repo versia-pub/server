@@ -2,9 +2,9 @@ import {
     Notification as NotificationSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError } from "@versia/kit/api";
-import { Notification } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
+import { Notification } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

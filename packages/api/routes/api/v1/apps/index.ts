@@ -2,9 +2,9 @@ import {
     Application as ApplicationSchema,
     CredentialApplication as CredentialApplicationSchema,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, handleZodError, jsonOrForm } from "@versia/kit/api";
-import { Application } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
+import { Application } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

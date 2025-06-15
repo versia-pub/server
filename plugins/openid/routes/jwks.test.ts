@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Application } from "@versia/kit/db";
+import { Application } from "@versia-server/kit/db";
 import { fakeRequest } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 

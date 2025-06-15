@@ -1,4 +1,4 @@
-import type { ApiError } from "@versia/kit";
+import type { ApiError } from "@versia-server/kit";
 import { env } from "bun";
 import type { MiddlewareHandler } from "hono";
 import { rateLimiter } from "hono-rate-limiter";

@@ -1,5 +1,5 @@
-import { ApiError } from "@versia/kit";
-import { apiRoute, handleZodError } from "@versia/kit/api";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { file as bunFile } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

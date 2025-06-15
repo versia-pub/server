@@ -1,6 +1,6 @@
-import { Relationship, User } from "@versia/kit/db";
-import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
+import { Relationship, User } from "@versia-server/kit/db";
+import { connection } from "@versia-server/kit/redis";
 import { Queue, Worker } from "bullmq";
 
 export enum RelationshipJobType {

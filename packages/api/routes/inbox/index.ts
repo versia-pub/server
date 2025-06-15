@@ -1,4 +1,4 @@
-import { apiRoute, handleZodError } from "@versia/kit/api";
+import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";

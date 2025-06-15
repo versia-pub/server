@@ -6,12 +6,12 @@ import {
     userAddressRegex,
     zBoolean,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError } from "@versia/kit/api";
-import { db, Note, User } from "@versia/kit/db";
-import { parseUserAddress } from "@versia/kit/parsers";
-import { Instances, Notes, Users } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
+import { db, Note, User } from "@versia-server/kit/db";
+import { parseUserAddress } from "@versia-server/kit/parsers";
+import { Instances, Notes, Users } from "@versia-server/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

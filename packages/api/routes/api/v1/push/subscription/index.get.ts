@@ -2,9 +2,9 @@ import {
     RolePermission,
     WebPushSubscription as WebPushSubscriptionSchema,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth } from "@versia/kit/api";
-import { PushSubscription } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth } from "@versia-server/kit/api";
+import { PushSubscription } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 

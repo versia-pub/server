@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { getLogger, type Logger } from "@logtape/logtape";
-import { type Manifest, manifestSchema, Plugin } from "@versia/kit";
 import { config } from "@versia-server/config";
+import { type Manifest, manifestSchema, Plugin } from "@versia-server/kit";
 import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";

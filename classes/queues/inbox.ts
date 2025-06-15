@@ -1,9 +1,9 @@
 import { getLogger } from "@logtape/logtape";
-import { ApiError } from "@versia/kit";
-import { Instance, User } from "@versia/kit/db";
-import { connection } from "@versia/kit/redis";
 import type { JSONObject } from "@versia/sdk";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { Instance, User } from "@versia-server/kit/db";
+import { connection } from "@versia-server/kit/redis";
 import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
 import { InboxProcessor } from "../inbox/processor.ts";

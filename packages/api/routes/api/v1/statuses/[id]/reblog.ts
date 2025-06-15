@@ -1,6 +1,11 @@
 import { RolePermission, Status as StatusSchema } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, jsonOrForm, withNoteParam } from "@versia/kit/api";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    jsonOrForm,
+    withNoteParam,
+} from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

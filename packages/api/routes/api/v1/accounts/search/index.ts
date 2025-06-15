@@ -3,11 +3,11 @@ import {
     RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError } from "@versia/kit/api";
-import { User } from "@versia/kit/db";
-import { parseUserAddress } from "@versia/kit/parsers";
-import { Users } from "@versia/kit/tables";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
+import { User } from "@versia-server/kit/db";
+import { parseUserAddress } from "@versia-server/kit/parsers";
+import { Users } from "@versia-server/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

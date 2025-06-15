@@ -1,7 +1,7 @@
 import { getLogger } from "@logtape/logtape";
-import { Note, setupDatabase } from "@versia/kit/db";
-import { connection } from "@versia/kit/redis";
 import { config } from "@versia-server/config";
+import { Note, setupDatabase } from "@versia-server/kit/db";
+import { connection } from "@versia-server/kit/redis";
 import { configureLoggers } from "@/loggers";
 import { searchManager } from "../../classes/search/search-manager.ts";
 

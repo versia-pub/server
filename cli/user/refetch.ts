@@ -1,4 +1,4 @@
-import { User } from "@versia/kit/db";
+import { User } from "@versia-server/kit/db";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work

@@ -3,10 +3,15 @@ import {
     FamiliarFollowers as FamiliarFollowersSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, qsQuery } from "@versia/kit/api";
-import { db, User } from "@versia/kit/db";
-import type { Users } from "@versia/kit/tables";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    qsQuery,
+} from "@versia-server/kit/api";
+import { db, User } from "@versia-server/kit/db";
+import type { Users } from "@versia-server/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

@@ -1,5 +1,5 @@
 import { getLogger } from "@logtape/logtape";
-import { apiRoute } from "@versia/kit/api";
+import { apiRoute } from "@versia-server/kit/api";
 import chalk from "chalk";
 import { describeRoute } from "hono-openapi";
 

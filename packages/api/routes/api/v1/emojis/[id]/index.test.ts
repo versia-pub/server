@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { db } from "@versia/kit/db";
-import { Emojis } from "@versia/kit/tables";
+import { db } from "@versia-server/kit/db";
+import { Emojis } from "@versia-server/kit/tables";
 import { generateClient, getTestUsers } from "@versia-server/tests";
 import { inArray } from "drizzle-orm";
 

@@ -1,8 +1,8 @@
-import { User } from "@versia/kit/db";
-import { connection } from "@versia/kit/redis";
 import type { JSONObject } from "@versia/sdk";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
+import { User } from "@versia-server/kit/db";
+import { connection } from "@versia-server/kit/redis";
 import { Queue, Worker } from "bullmq";
 import chalk from "chalk";
 

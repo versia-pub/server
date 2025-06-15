@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { db } from "@versia/kit/db";
-import { Users } from "@versia/kit/tables";
+import { db } from "@versia-server/kit/db";
+import { Users } from "@versia-server/kit/tables";
 import { generateClient, getTestUsers } from "@versia-server/tests";
 import { eq } from "drizzle-orm";
 

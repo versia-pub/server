@@ -1,5 +1,5 @@
-import { type Application, db } from "@versia/kit/db";
-import type { OpenIdLoginFlows } from "@versia/kit/tables";
+import { type Application, db } from "@versia-server/kit/db";
+import type { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { eq, type InferSelectModel, type SQL } from "drizzle-orm";
 import {
     type AuthorizationResponseError,

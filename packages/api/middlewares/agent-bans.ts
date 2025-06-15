@@ -1,5 +1,5 @@
-import { ApiError } from "@versia/kit";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
 import { createMiddleware } from "hono/factory";
 
 export const agentBans = createMiddleware(async (context, next) => {

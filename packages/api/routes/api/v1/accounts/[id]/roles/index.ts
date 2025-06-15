@@ -1,6 +1,6 @@
 import { Role as RoleSchema } from "@versia/client/schemas";
-import { apiRoute, auth, withUserParam } from "@versia/kit/api";
-import { Role } from "@versia/kit/db";
+import { apiRoute, auth, withUserParam } from "@versia-server/kit/api";
+import { Role } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";

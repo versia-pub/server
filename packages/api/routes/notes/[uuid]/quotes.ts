@@ -1,11 +1,11 @@
 import { Status as StatusSchema } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, handleZodError } from "@versia/kit/api";
-import { db, Note } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { URICollectionSchema } from "@versia/sdk/schemas";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, handleZodError } from "@versia-server/kit/api";
+import { db, Note } from "@versia-server/kit/db";
+import { Notes } from "@versia-server/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

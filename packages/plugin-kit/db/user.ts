@@ -6,14 +6,19 @@ import type {
     Source,
     Status as StatusSchema,
 } from "@versia/client/schemas";
+import { sign } from "@versia/sdk/crypto";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { FederationRequester } from "@versia/sdk/http";
+import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
+import { config, ProxiableUrl } from "@versia-server/config";
 import {
     db,
     Media,
     Notification,
     PushSubscription,
     Reaction,
-} from "@versia/kit/db";
-import { uuid } from "@versia/kit/regex";
+} from "@versia-server/kit/db";
+import { uuid } from "@versia-server/kit/regex";
 import {
     EmojiToUser,
     Likes,
@@ -23,12 +28,7 @@ import {
     Relationships,
     Users,
     UserToPinnedNotes,
-} from "@versia/kit/tables";
-import { sign } from "@versia/sdk/crypto";
-import * as VersiaEntities from "@versia/sdk/entities";
-import { FederationRequester } from "@versia/sdk/http";
-import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
-import { config, ProxiableUrl } from "@versia-server/config";
+} from "@versia-server/kit/tables";
 import { password as bunPassword, randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {

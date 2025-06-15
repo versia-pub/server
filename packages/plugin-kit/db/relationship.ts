@@ -1,6 +1,6 @@
 import type { Relationship as RelationshipSchema } from "@versia/client/schemas";
-import { db } from "@versia/kit/db";
-import { Relationships, Users } from "@versia/kit/tables";
+import { db } from "@versia-server/kit/db";
+import { Relationships, Users } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
     and,

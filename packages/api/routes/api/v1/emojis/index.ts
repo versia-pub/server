@@ -2,11 +2,16 @@ import {
     CustomEmoji as CustomEmojiSchema,
     RolePermission,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, jsonOrForm } from "@versia/kit/api";
-import { Emoji, Media } from "@versia/kit/db";
-import { Emojis } from "@versia/kit/tables";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    jsonOrForm,
+} from "@versia-server/kit/api";
+import { Emoji, Media } from "@versia-server/kit/db";
+import { Emojis } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";

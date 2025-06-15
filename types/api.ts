@@ -1,6 +1,6 @@
-import type { Application, Token, User } from "@versia/kit/db";
 import type * as VersiaEntities from "@versia/sdk/entities";
 import type { ConfigSchema } from "@versia-server/config/schema";
+import type { Application, Token, User } from "@versia-server/kit/db";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";

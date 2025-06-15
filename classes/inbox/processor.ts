@@ -1,5 +1,9 @@
 import { getLogger, type Logger } from "@logtape/logtape";
-import { ApiError } from "@versia/kit";
+import { EntitySorter, type JSONObject } from "@versia/sdk";
+import { verify } from "@versia/sdk/crypto";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
 import {
     type Instance,
     Like,
@@ -7,12 +11,8 @@ import {
     Reaction,
     Relationship,
     User,
-} from "@versia/kit/db";
-import { Likes, Notes } from "@versia/kit/tables";
-import { EntitySorter, type JSONObject } from "@versia/sdk";
-import { verify } from "@versia/sdk/crypto";
-import * as VersiaEntities from "@versia/sdk/entities";
-import { config } from "@versia-server/config";
+} from "@versia-server/kit/db";
+import { Likes, Notes } from "@versia-server/kit/tables";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
 import chalk from "chalk";

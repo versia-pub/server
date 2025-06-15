@@ -1,6 +1,6 @@
-import { apiRoute } from "@versia/kit/api";
-import { Note, User } from "@versia/kit/db";
 import { config } from "@versia-server/config";
+import { apiRoute } from "@versia-server/kit/api";
+import { Note, User } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";

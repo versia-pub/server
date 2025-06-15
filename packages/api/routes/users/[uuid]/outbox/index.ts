@@ -1,10 +1,10 @@
-import { ApiError } from "@versia/kit";
-import { apiRoute, handleZodError } from "@versia/kit/api";
-import { db, Note, User } from "@versia/kit/db";
-import { Notes } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { CollectionSchema, NoteSchema } from "@versia/sdk/schemas";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, handleZodError } from "@versia-server/kit/api";
+import { db, Note, User } from "@versia-server/kit/db";
+import { Notes } from "@versia-server/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";

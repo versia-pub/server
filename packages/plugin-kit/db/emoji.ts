@@ -3,10 +3,10 @@ import {
     emojiWithColonsRegex,
     emojiWithIdentifiersRegex,
 } from "@versia/client/schemas";
-import { db, type Instance, Media } from "@versia/kit/db";
-import { Emojis, type Instances, type Medias } from "@versia/kit/tables";
 import * as VersiaEntities from "@versia/sdk/entities";
 import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
+import { db, type Instance, Media } from "@versia-server/kit/db";
+import { Emojis, type Instances, type Medias } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import {
     and,

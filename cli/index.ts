@@ -3,7 +3,7 @@ import { friendlyErrorPlugin } from "@clerc/plugin-friendly-error";
 import { helpPlugin } from "@clerc/plugin-help";
 import { notFoundPlugin } from "@clerc/plugin-not-found";
 import { versionPlugin } from "@clerc/plugin-version";
-import { setupDatabase } from "@versia/kit/db";
+import { setupDatabase } from "@versia-server/kit/db";
 import { Clerc } from "clerc";
 import { searchManager } from "~/classes/search/search-manager.ts";
 import pkg from "~/package.json" with { type: "json" };

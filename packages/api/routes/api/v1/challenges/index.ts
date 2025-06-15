@@ -1,7 +1,7 @@
 import { Challenge } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth } from "@versia/kit/api";
 import { config } from "@versia-server/config";
+import { ApiError } from "@versia-server/kit";
+import { apiRoute, auth } from "@versia-server/kit/api";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { generateChallenge } from "@/challenges";

@@ -3,9 +3,14 @@ import {
     RolePermission,
     Role as RoleSchema,
 } from "@versia/client/schemas";
-import { ApiError } from "@versia/kit";
-import { apiRoute, auth, handleZodError, withUserParam } from "@versia/kit/api";
-import { Role } from "@versia/kit/db";
+import { ApiError } from "@versia-server/kit";
+import {
+    apiRoute,
+    auth,
+    handleZodError,
+    withUserParam,
+} from "@versia-server/kit/api";
+import { Role } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { validator } from "hono-openapi/zod";
 import { z } from "zod";

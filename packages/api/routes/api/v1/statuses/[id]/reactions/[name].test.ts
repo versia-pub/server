@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { Emoji, Media } from "@versia/kit/db";
+import { Emoji, Media } from "@versia-server/kit/db";
 import {
     generateClient,
     getTestStatuses,

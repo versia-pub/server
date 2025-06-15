@@ -1,6 +1,6 @@
 import type { Notification as NotificationSchema } from "@versia/client/schemas";
-import { db, Note, User } from "@versia/kit/db";
-import { Notifications } from "@versia/kit/tables";
+import { db, Note, User } from "@versia-server/kit/db";
+import { Notifications } from "@versia-server/kit/tables";
 import {
     desc,
     eq,
