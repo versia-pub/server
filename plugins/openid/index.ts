@@ -1,12 +1,11 @@
 import { RolePermission } from "@versia/client/schemas";
-import { Hooks, Plugin } from "@versia/kit";
+import { ApiError, Hooks, Plugin } from "@versia/kit";
 import { User } from "@versia/kit/db";
+import { keyPair, sensitiveString, url } from "@versia-server/config/schema";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { z } from "zod";
-import { keyPair, sensitiveString, url } from "~/classes/config/schema.ts";
-import { ApiError } from "~/classes/errors/api-error.ts";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
 import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";

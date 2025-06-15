@@ -1,6 +1,6 @@
 import { Application, Token } from "@versia/kit/db";
-import { and, eq } from "@versia/kit/drizzle";
 import { Tokens } from "@versia/kit/tables";
+import { and, eq } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";

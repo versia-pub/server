@@ -1,16 +1,15 @@
 import { mock } from "bun:test";
 import { Client as VersiaClient } from "@versia/client";
-import { db, Note, Token, User } from "@versia/kit/db";
+import { db, Note, setupDatabase, Token, User } from "@versia/kit/db";
 import { Notes, Users } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
 import { solveChallenge } from "altcha-lib";
 import { env, randomUUIDv7 } from "bun";
 import { asc, type InferSelectModel, inArray, like } from "drizzle-orm";
 import { generateChallenge } from "@/challenges";
 import { randomString } from "@/math";
-import { appFactory } from "~/app";
 import { searchManager } from "~/classes/search/search-manager";
-import { config } from "~/config.ts";
-import { setupDatabase } from "~/drizzle/db";
+import { appFactory } from "~/packages/api/app";
 
 env.DISABLE_RATE_LIMIT = "true";
 await setupDatabase();

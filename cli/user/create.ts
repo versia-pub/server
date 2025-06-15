@@ -1,12 +1,12 @@
+import { User } from "@versia/kit/db";
+import { Users } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import { and, eq, isNull } from "drizzle-orm";
 import { renderUnicodeCompact } from "uqr";
-import { User } from "~/classes/database/user";
-import { config } from "~/config";
-import { Users } from "~/drizzle/schema";
 
 export const createUserCommand = defineCommand(
     {

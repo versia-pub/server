@@ -1,14 +1,13 @@
 import { readdir } from "node:fs/promises";
 import { getLogger, type Logger } from "@logtape/logtape";
+import { type Manifest, manifestSchema, Plugin } from "@versia/kit";
+import { config } from "@versia-server/config";
 import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { Hono } from "hono";
 import type { ZodTypeAny } from "zod";
 import { fromZodError, type ValidationError } from "zod-validation-error";
-import { config } from "~/config.ts";
-import { Plugin } from "~/packages/plugin-kit/plugin";
-import { type Manifest, manifestSchema } from "~/packages/plugin-kit/schema";
 import type { HonoEnv } from "~/types/api";
 
 /**

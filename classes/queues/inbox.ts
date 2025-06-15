@@ -1,11 +1,11 @@
 import { getLogger } from "@logtape/logtape";
+import { ApiError } from "@versia/kit";
 import { Instance, User } from "@versia/kit/db";
+import type { JSONObject } from "@versia/sdk";
+import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
-import { config } from "~/config.ts";
-import type { JSONObject } from "~/packages/sdk/types.ts";
 import { connection } from "~/utils/redis.ts";
-import { ApiError } from "../errors/api-error.ts";
 import { InboxProcessor } from "../inbox/processor.ts";
 
 export enum InboxJobType {

@@ -52,3 +52,5 @@ export class EntitySorter {
         }
     }
 }
+
+export type { JSONObject } from "./types.ts";

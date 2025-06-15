@@ -32,29 +32,38 @@
     },
     "private": true,
     "dependencies": {
-        "drizzle-orm": "^0.44.2",
-        "hono": "^4.7.7",
-        "mitt": "^3.0.1",
-        "zod": "^3.24.2",
-        "zod-to-json-schema": "^3.24.5",
-        "zod-validation-error": "^3.4.0"
+        "drizzle-orm": "catalog:",
+        "hono": "catalog:",
+        "mitt": "catalog:",
+        "zod": "catalog:",
+        "zod-to-json-schema": "catalog:",
+        "zod-validation-error": "catalog:",
+        "chalk": "catalog:",
+        "@versia/client": "workspace:*",
+        "@versia-server/config": "workspace:*",
+        "@versia/sdk": "workspace:*",
+        "html-to-text": "catalog:",
+        "@logtape/logtape": "catalog:",
+        "sharp": "catalog:",
+        "magic-regexp": "catalog:",
+        "altcha-lib": "catalog:",
+        "hono-openapi": "catalog:"
     },
+    "files": [
+        "tables/migrations"
+    ],
     "exports": {
         ".": {
             "import": "./index.ts",
             "default": "./index.ts"
         },
         "./db": {
-            "import": "./exports/db.ts",
-            "default": "./exports/db.ts"
-        },
-        "./drizzle": {
-            "import": "./exports/drizzle.ts",
-            "default": "./exports/drizzle.ts"
+            "import": "./db/index.ts",
+            "default": "./db/index.ts"
         },
         "./tables": {
-            "import": "./exports/tables.ts",
-            "default": "./exports/tables.ts"
+            "import": "./tables/schema.ts",
+            "default": "./tables/schema.ts"
         }
     }
 }

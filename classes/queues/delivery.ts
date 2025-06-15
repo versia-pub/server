@@ -1,9 +1,9 @@
 import { User } from "@versia/kit/db";
+import type { JSONObject } from "@versia/sdk";
+import * as VersiaEntities from "@versia/sdk/entities";
+import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import chalk from "chalk";
-import { config } from "~/config.ts";
-import * as VersiaEntities from "~/packages/sdk/entities";
-import type { JSONObject } from "~/packages/sdk/types";
 import { connection } from "~/utils/redis.ts";
 
 export enum DeliveryJobType {

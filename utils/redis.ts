@@ -1,5 +1,5 @@
+import { config } from "@versia-server/config";
 import IORedis from "ioredis";
-import { config } from "~/config.ts";
 
 export const connection = new IORedis({
     host: config.redis.queue.host,

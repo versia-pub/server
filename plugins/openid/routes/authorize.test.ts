@@ -1,10 +1,10 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { RolePermission } from "@versia/client/schemas";
 import { Application } from "@versia/kit/db";
+import { config } from "@versia-server/config";
 import { randomUUIDv7 } from "bun";
 import { SignJWT } from "jose";
 import { randomString } from "@/math";
-import { config } from "~/config.ts";
 import { fakeRequest, getTestUsers } from "~/tests/utils";
 
 const { deleteUsers, tokens, users } = await getTestUsers(1);

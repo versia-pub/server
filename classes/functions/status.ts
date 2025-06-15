@@ -1,7 +1,9 @@
 import markdownItTaskLists from "@hackmd/markdown-it-task-lists";
 import { db, type Note, User } from "@versia/kit/db";
 import { Instances, Users } from "@versia/kit/tables";
+import type * as VersiaEntities from "@versia/sdk/entities";
 import { FederationRequester } from "@versia/sdk/http";
+import { config } from "@versia-server/config";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import linkifyHtml from "linkify-html";
 import {
@@ -18,8 +20,6 @@ import markdownItContainer from "markdown-it-container";
 import markdownItTocDoneRight from "markdown-it-toc-done-right";
 import { mentionValidator } from "@/api";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
-import { config } from "~/config.ts";
-import type * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import { transformOutputToUserWithRelations, userRelations } from "./user.ts";
 
 /**

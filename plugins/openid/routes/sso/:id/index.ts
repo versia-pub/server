@@ -1,12 +1,12 @@
 import { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "@versia/kit";
 import { db } from "@versia/kit/db";
-import { and, eq, type SQL } from "@versia/kit/drizzle";
 import { OpenIdAccounts } from "@versia/kit/tables";
+import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
 import { auth, handleZodError } from "@/api";
-import { ApiError } from "~/classes/errors/api-error";
 import type { PluginType } from "~/plugins/openid";
 
 export default (plugin: PluginType): void => {

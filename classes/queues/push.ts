@@ -1,8 +1,8 @@
 import { Note, PushSubscription, Token, User } from "@versia/kit/db";
+import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import { sendNotification } from "web-push";
 import { htmlToText } from "@/content_types.ts";
-import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 
 export enum PushJobType {

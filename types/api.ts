@@ -1,10 +1,10 @@
+import type * as VersiaEntities from "@versia/sdk/entities";
+import type { ConfigSchema } from "@versia-server/config/schema";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
 import type { z } from "zod";
-import type { ConfigSchema } from "~/classes/config/schema";
 import type { AuthData } from "~/classes/functions/user";
-import type * as VersiaEntities from "~/packages/sdk/entities";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 

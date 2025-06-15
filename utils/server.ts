@@ -1,7 +1,7 @@
+import type { ConfigSchema } from "@versia-server/config/schema";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";
 import type { z } from "zod";
-import type { ConfigSchema } from "~/classes/config/schema.ts";
 import type { HonoEnv } from "~/types/api";
 import { debugResponse } from "./api.ts";
 

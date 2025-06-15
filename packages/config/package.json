@@ -1,0 +1,28 @@
+{
+    "name": "@versia-server/config",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.0.1",
+    "private": true,
+    "exports": {
+        ".": {
+            "import": "./index.ts",
+            "default": "./index.ts"
+        },
+        "./schema": {
+            "import": "./schema.ts",
+            "default": "./schema.ts"
+        }
+    },
+    "dependencies": {
+        "chalk": "catalog:",
+        "zod": "catalog:",
+        "zod-validation-error": "catalog:",
+        "confbox": "catalog:",
+        "web-push": "catalog:",
+        "iso-639-1": "catalog:",
+        "mime-types": "catalog:",
+        "@versia/client": "workspace:*",
+        "zod-to-json-schema": "catalog:"
+    }
+}

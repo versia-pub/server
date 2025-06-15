@@ -5,12 +5,12 @@
 
 import { getLogger } from "@logtape/logtape";
 import { db, Note, User } from "@versia/kit/db";
+import { config } from "@versia-server/config";
 import type { SQL, ValueOrArray } from "drizzle-orm";
 import {
     Ingest as SonicChannelIngest,
     Search as SonicChannelSearch,
 } from "sonic-channel";
-import { config } from "~/config.ts";
 
 /**
  * Enum for Sonic index types

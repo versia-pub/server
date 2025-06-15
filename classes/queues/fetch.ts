@@ -1,8 +1,8 @@
 import { Instance } from "@versia/kit/db";
 import { Instances } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
 import { Queue, Worker } from "bullmq";
 import { eq } from "drizzle-orm";
-import { config } from "~/config.ts";
 import { connection } from "~/utils/redis.ts";
 
 export enum FetchJobType {

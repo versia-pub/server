@@ -1,6 +1,7 @@
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { HonoAdapter } from "@bull-board/hono";
+import { config } from "@versia-server/config";
 import type { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { deliveryQueue } from "~/classes/queues/delivery";
@@ -9,7 +10,6 @@ import { inboxQueue } from "~/classes/queues/inbox";
 import { mediaQueue } from "~/classes/queues/media";
 import { pushQueue } from "~/classes/queues/push";
 import { relationshipQueue } from "~/classes/queues/relationships";
-import { config } from "~/config.ts";
 import pkg from "~/package.json" with { type: "json" };
 import type { HonoEnv } from "~/types/api";
 
@@ -43,6 +43,5 @@ export const applyToHono = (app: Hono<HonoEnv>): void => {
     });
 
     serverAdapter.setBasePath("/admin/queues");
-    // @ts-expect-error idk why it's like this
     app.route("/admin/queues", serverAdapter.registerPlugin());
 };

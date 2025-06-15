@@ -8,8 +8,8 @@ import {
     type LogLevel,
     type LogRecord,
 } from "@logtape/logtape";
+import { config } from "@versia-server/config";
 import chalk from "chalk";
-import { config } from "~/config.ts";
 
 // config.logging.log_file_path is a path to a file, create the directory if it doesn't exist
 await mkdir(dirname(config.logging.log_file_path), { recursive: true });

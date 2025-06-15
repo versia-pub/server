@@ -1,8 +1,10 @@
 import type { Hook } from "@hono/zod-validator";
 import { getLogger } from "@logtape/logtape";
 import type { RolePermission } from "@versia/client/schemas";
+import { ApiError } from "@versia/kit";
 import { Application, db, Emoji, Note, Token, User } from "@versia/kit/db";
 import { Challenges } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
 import { extractParams, verifySolution } from "altcha-lib";
 import { SHA256 } from "bun";
 import chalk from "chalk";
@@ -26,9 +28,7 @@ import {
 import { type ParsedQs, parse } from "qs";
 import { type ZodAny, type ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
-import { ApiError } from "~/classes/errors/api-error";
 import type { AuthData } from "~/classes/functions/user";
-import { config } from "~/config.ts";
 import type { HonoEnv } from "~/types/api";
 
 export const apiRoute = (fn: (app: Hono<HonoEnv>) => void): typeof fn => fn;

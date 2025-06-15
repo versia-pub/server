@@ -1,10 +1,8 @@
+import { Media, Note, type User } from "@versia/kit/db";
+import { Notes } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
 import { and, eq, inArray } from "drizzle-orm";
 import { Feed } from "feed";
-import { Media } from "~/classes/database/media";
-import { Note } from "~/classes/database/note";
-import type { User } from "~/classes/database/user";
-import { config } from "~/config";
-import { Notes } from "~/drizzle/schema";
 
 export const getFeed = async (user: User, page = 0): Promise<Feed> => {
     const notes = await Note.manyFromSql(

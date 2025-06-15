@@ -71,10 +71,9 @@
         "typescript",
         "sdk"
     ],
-    "packageManager": "bun@1.2.5",
     "dependencies": {
-        "magic-regexp": "^0.10.0",
-        "mime-types": "^3.0.1",
-        "zod": "^3.24.2"
+        "magic-regexp": "catalog:",
+        "mime-types": "catalog:",
+        "zod": "catalog:"
     }
 }

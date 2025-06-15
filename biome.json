@@ -99,7 +99,15 @@
                 "noCommonJs": "warn",
                 "noExportedImports": "warn",
                 "noSubstr": "warn",
-                "useTrimStartEnd": "warn"
+                "useTrimStartEnd": "warn",
+                "noRestrictedImports": {
+                    "options": {
+                        "paths": {
+                            "~/packages/": "Use the appropriate package instead of importing from the packages directory directly."
+                        }
+                    },
+                    "level": "error"
+                }
             },
             "performance": {
                 "noDynamicNamespaceImportAccess": "warn"

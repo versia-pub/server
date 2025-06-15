@@ -1,11 +1,11 @@
+import { Instance } from "@versia/kit/db";
+import { Instances } from "@versia/kit/tables";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import { eq } from "drizzle-orm";
-import { Instance } from "~/classes/database/instance.ts";
 import { FetchJobType, fetchQueue } from "~/classes/queues/fetch.ts";
-import { Instances } from "~/drizzle/schema.ts";
 
 export const refetchInstanceCommand = defineCommand(
     {

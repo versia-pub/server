@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/bun";
+import { config } from "@versia-server/config";
 import { env } from "bun";
-import { config } from "~/config.ts";
 import pkg from "~/package.json" with { type: "json" };
 
 const sentryInstance =
