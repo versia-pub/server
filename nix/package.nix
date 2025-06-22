@@ -1,11 +1,14 @@
 {
   lib,
   stdenv,
-  pnpm,
   bun,
   nodejs,
   vips,
   makeWrapper,
+  fetchBunDeps,
+  bunConfigHook,
+  bunInstallHook,
+  bunBuildHook,
   ...
 }: let
   packageJson = builtins.fromJSON (builtins.readFile ../package.json);
@@ -16,33 +19,21 @@ in
 
     src = ../.;
 
-    # Fixes the build script mv usage
-    pnpmInstallFlags = ["--shamefully-hoist"];
-
-    pnpmDeps = pnpm.fetchDeps {
-      inherit (finalAttrs) pname version src pnpmInstallFlags;
-      hash = "sha256-nC1bYW+It2N0Mp8+Yh1uk3MOj8DABOCNP5E3LbMuCEQ=";
+    bunOfflineCache = fetchBunDeps {
+      bunLock = finalAttrs.src + "/bun.lock";
+      hash = "sha256-8R+LzgqAiqRGCMDBw2R7QO6hbdNrtIwzSjR3A8xhfVw=";
     };
 
+    bunBuildScript = "packages/api/build.ts";
+
     nativeBuildInputs = [
-      pnpm
-      pnpm.configHook
       bun
       nodejs
       makeWrapper
+      bunConfigHook
+      bunInstallHook
+      bunBuildHook
     ];
-
-    buildInputs = [
-      vips
-    ];
-
-    buildPhase = ''
-      runHook preBuild
-
-      bun run packages/api/build.ts
-
-      runHook postBuild
-    '';
 
     entrypointPath = "packages/api/index.js";
 

@@ -20,16 +20,32 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1749903597,
-        "narHash": "sha256-jp0D4vzBcRKwNZwfY4BcWHemLGUs4JrS3X9w5k/JYDA=",
-        "owner": "nixos",
+        "lastModified": 1750365781,
+        "narHash": "sha256-XE/lFNhz5lsriMm/yjXkvSZz5DfvKJLUjsS6pP8EC50=",
+        "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "41da1e3ea8e23e094e5e3eeb1e6b830468a7399e",
+        "rev": "08f22084e6085d19bcfb4be30d1ca76ecb96fe54",
         "type": "github"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-bun": {
+      "locked": {
+        "lastModified": 1749427688,
+        "narHash": "sha256-mMfhQsEYlfOvtjMs6BNPduuRc4YP/+Mj3G+/KYLQLUw=",
+        "owner": "0xdsqr",
+        "repo": "nixpkgs",
+        "rev": "09f139e43b59756fcbd9437b3a8726238fa62880",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xdsqr",
+        "ref": "add-bun-support",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -37,7 +53,8 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-bun": "nixpkgs-bun"
       }
     },
     "systems": {
