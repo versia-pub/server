@@ -6,9 +6,6 @@ import {
 } from "@versia-server/tests";
 import { bench, run } from "mitata";
 import type { z } from "zod";
-import { configureLoggers } from "@/loggers";
-
-await configureLoggers(true);
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 await getTestStatuses(40, users[0]);

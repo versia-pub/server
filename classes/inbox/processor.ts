@@ -1,4 +1,3 @@
-import { getLogger, type Logger } from "@logtape/logtape";
 import { EntitySorter, type JSONObject } from "@versia/sdk";
 import { verify } from "@versia/sdk/crypto";
 import * as VersiaEntities from "@versia/sdk/entities";
@@ -13,13 +12,13 @@ import {
     User,
 } from "@versia-server/kit/db";
 import { Likes, Notes } from "@versia-server/kit/tables";
+import { federationInboxLogger } from "@versia-server/logging";
 import type { SocketAddress } from "bun";
 import { Glob } from "bun";
 import chalk from "chalk";
 import { and, eq } from "drizzle-orm";
 import { matches } from "ip-matching";
 import { isValidationError } from "zod-validation-error";
-import { sentry } from "@/sentry";
 
 /**
  * Checks if the hostname is defederated using glob matching.
@@ -65,7 +64,6 @@ export class InboxProcessor {
             key: CryptoKey;
         } | null,
         private authorizationHeader?: string,
-        private logger: Logger = getLogger(["federation", "inbox"]),
         private requestIp: SocketAddress | null = null,
     ) {}
 
@@ -156,7 +154,7 @@ export class InboxProcessor {
      */
     public async process(): Promise<void> {
         !this.sender &&
-            this.logger.debug`Processing request from potential bridge`;
+            federationInboxLogger.debug`Processing request from potential bridge`;
 
         if (this.sender && isDefederated(this.sender.instance.data.baseUrl)) {
             // Return 201 to avoid
@@ -165,15 +163,15 @@ export class InboxProcessor {
             return;
         }
 
-        this.logger.debug`Instance ${chalk.gray(
+        federationInboxLogger.debug`Instance ${chalk.gray(
             this.sender?.instance.data.baseUrl,
         )} is not defederated`;
 
         const shouldCheckSignature = this.shouldCheckSignature();
 
         shouldCheckSignature
-            ? this.logger.debug`Checking signature`
-            : this.logger.debug`Skipping signature check`;
+            ? federationInboxLogger.debug`Checking signature`
+            : federationInboxLogger.debug`Skipping signature check`;
 
         if (shouldCheckSignature) {
             const isValid = await this.isSignatureValid();
@@ -183,7 +181,7 @@ export class InboxProcessor {
             }
         }
 
-        shouldCheckSignature && this.logger.debug`Signature is valid`;
+        shouldCheckSignature && federationInboxLogger.debug`Signature is valid`;
 
         try {
             await new EntitySorter(this.body)
@@ -596,8 +594,7 @@ export class InboxProcessor {
             throw new ApiError(400, "Failed to process request", e.message);
         }
 
-        this.logger.error`${e}`;
-        sentry?.captureException(e);
+        federationInboxLogger.error`${e}`;
 
         throw new ApiError(500, "Failed to process request", e.message);
     }

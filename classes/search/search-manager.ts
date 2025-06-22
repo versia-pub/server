@@ -3,9 +3,9 @@
  * @description Sonic search integration for indexing and searching accounts and statuses
  */
 
-import { getLogger } from "@logtape/logtape";
 import { config } from "@versia-server/config";
 import { db, Note, User } from "@versia-server/kit/db";
+import { sonicLogger } from "@versia-server/logging";
 import type { SQL, ValueOrArray } from "drizzle-orm";
 import {
     Ingest as SonicChannelIngest,
@@ -27,7 +27,6 @@ export class SonicSearchManager {
     private searchChannel: SonicChannelSearch;
     private ingestChannel: SonicChannelIngest;
     private connected = false;
-    private logger = getLogger("sonic");
 
     /**
      * @param config Configuration for Sonic
@@ -55,7 +54,7 @@ export class SonicSearchManager {
      */
     public async connect(silent = false): Promise<void> {
         if (!config.search.enabled) {
-            !silent && this.logger.info`Sonic search is disabled`;
+            !silent && sonicLogger.info`Sonic search is disabled`;
             return;
         }
 
@@ -63,28 +62,24 @@ export class SonicSearchManager {
             return;
         }
 
-        !silent && this.logger.info`Connecting to Sonic...`;
+        !silent && sonicLogger.info`Connecting to Sonic...`;
 
         // Connect to Sonic
         await new Promise<boolean>((resolve, reject) => {
             this.searchChannel.connect({
                 connected: (): void => {
                     !silent &&
-                        this.logger.info`Connected to Sonic Search Channel`;
+                        sonicLogger.info`Connected to Sonic Search Channel`;
                     resolve(true);
                 },
                 disconnected: (): void =>
-                    this.logger
-                        .error`Disconnected from Sonic Search Channel. You might be using an incorrect password.`,
+                    sonicLogger.error`Disconnected from Sonic Search Channel. You might be using an incorrect password.`,
                 timeout: (): void =>
-                    this.logger
-                        .error`Sonic Search Channel connection timed out`,
+                    sonicLogger.error`Sonic Search Channel connection timed out`,
                 retrying: (): void =>
-                    this.logger
-                        .warn`Retrying connection to Sonic Search Channel`,
+                    sonicLogger.warn`Retrying connection to Sonic Search Channel`,
                 error: (error): void => {
-                    this.logger
-                        .error`Failed to connect to Sonic Search Channel: ${error}`;
+                    sonicLogger.error`Failed to connect to Sonic Search Channel: ${error}`;
                     reject(error);
                 },
             });
@@ -94,20 +89,17 @@ export class SonicSearchManager {
             this.ingestChannel.connect({
                 connected: (): void => {
                     !silent &&
-                        this.logger.info`Connected to Sonic Ingest Channel`;
+                        sonicLogger.info`Connected to Sonic Ingest Channel`;
                     resolve(true);
                 },
                 disconnected: (): void =>
-                    this.logger.error`Disconnected from Sonic Ingest Channel`,
+                    sonicLogger.error`Disconnected from Sonic Ingest Channel`,
                 timeout: (): void =>
-                    this.logger
-                        .error`Sonic Ingest Channel connection timed out`,
+                    sonicLogger.error`Sonic Ingest Channel connection timed out`,
                 retrying: (): void =>
-                    this.logger
-                        .warn`Retrying connection to Sonic Ingest Channel`,
+                    sonicLogger.warn`Retrying connection to Sonic Ingest Channel`,
                 error: (error): void => {
-                    this.logger
-                        .error`Failed to connect to Sonic Ingest Channel: ${error}`;
+                    sonicLogger.error`Failed to connect to Sonic Ingest Channel: ${error}`;
                     reject(error);
                 },
             });
@@ -119,9 +111,9 @@ export class SonicSearchManager {
                 this.ingestChannel.ping(),
             ]);
             this.connected = true;
-            !silent && this.logger.info`Connected to Sonic`;
+            !silent && sonicLogger.info`Connected to Sonic`;
         } catch (error) {
-            this.logger.fatal`Error while connecting to Sonic: ${error}`;
+            sonicLogger.fatal`Error while connecting to Sonic: ${error}`;
             throw error;
         }
     }
@@ -143,7 +135,7 @@ export class SonicSearchManager {
                 `${user.data.username} ${user.data.displayName} ${user.data.note}`,
             );
         } catch (error) {
-            this.logger.error`Failed to add user to Sonic: ${error}`;
+            sonicLogger.error`Failed to add user to Sonic: ${error}`;
         }
     }
 

@@ -1,10 +1,9 @@
-import { getLogger } from "@logtape/logtape";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
+import { serverLogger } from "@versia-server/logging";
 import type { SocketAddress } from "bun";
 import { createMiddleware } from "hono/factory";
 import { matches } from "ip-matching";
-import { sentry } from "@/sentry";
 
 export const ipBans = createMiddleware(async (context, next) => {
     // Check for banned IPs
@@ -22,11 +21,8 @@ export const ipBans = createMiddleware(async (context, next) => {
                 throw new ApiError(403, "Forbidden");
             }
         } catch (e) {
-            const logger = getLogger("server");
-
-            logger.error`Error while parsing banned IP "${ip}" `;
-            logger.error`${e}`;
-            sentry?.captureException(e);
+            serverLogger.error`Error while parsing banned IP "${ip}" `;
+            serverLogger.error`${e}`;
 
             return context.json(
                 { error: `A server error occured: ${(e as Error).message}` },

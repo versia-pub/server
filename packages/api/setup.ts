@@ -1,15 +1,10 @@
-import { getLogger } from "@logtape/logtape";
 import { config } from "@versia-server/config";
 import { Note, setupDatabase } from "@versia-server/kit/db";
 import { connection } from "@versia-server/kit/redis";
-import { configureLoggers } from "@/loggers";
+import { serverLogger } from "@versia-server/logging";
 import { searchManager } from "../../classes/search/search-manager.ts";
 
 const timeAtStart = performance.now();
-
-await configureLoggers();
-
-const serverLogger = getLogger("server");
 
 console.info(`
 ██╗   ██╗███████╗██████╗ ███████╗██╗ █████╗

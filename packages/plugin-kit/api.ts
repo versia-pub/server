@@ -1,7 +1,7 @@
 import type { Hook } from "@hono/zod-validator";
-import { getLogger } from "@logtape/logtape";
 import type { RolePermission } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
+import { serverLogger } from "@versia-server/logging";
 import { extractParams, verifySolution } from "altcha-lib";
 import chalk from "chalk";
 import { eq, type SQL } from "drizzle-orm";
@@ -418,7 +418,6 @@ export const jsonOrForm = (): MiddlewareHandler<HonoEnv> => {
 
 export const debugResponse = async (res: Response): Promise<void> => {
     const body = await res.clone().text();
-    const logger = getLogger("server");
 
     const status = `${chalk.bold("Status")}: ${chalk.green(res.status)}`;
 
@@ -430,9 +429,5 @@ export const debugResponse = async (res: Response): Promise<void> => {
 
     const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
-    if (config.logging.types.requests_content) {
-        logger.debug`${status}\n${headers}\n${bodyLog}`;
-    } else {
-        logger.debug`${status}`;
-    }
+    serverLogger.debug`${status}\n${headers}\n${bodyLog}`;
 };

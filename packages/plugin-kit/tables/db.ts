@@ -1,5 +1,5 @@
-import { getLogger } from "@logtape/logtape";
 import { config } from "@versia-server/config";
+import { databaseLogger } from "@versia-server/logging";
 import { SQL } from "bun";
 import chalk from "chalk";
 import { type BunSQLDatabase, drizzle } from "drizzle-orm/bun-sql";
@@ -40,8 +40,6 @@ export const db =
         : drizzle(primaryDb, { schema });
 
 export const setupDatabase = async (info = true): Promise<void> => {
-    const logger = getLogger("database");
-
     for (const dbPool of [primaryDb, ...replicas]) {
         try {
             await dbPool.connect();
@@ -53,7 +51,7 @@ export const setupDatabase = async (info = true): Promise<void> => {
                 return;
             }
 
-            logger.fatal`Failed to connect to database ${chalk.bold(
+            databaseLogger.fatal`Failed to connect to database ${chalk.bold(
                 // Index of the database in the array
                 replicas.indexOf(dbPool) === -1
                     ? "primary"
@@ -65,17 +63,17 @@ export const setupDatabase = async (info = true): Promise<void> => {
     }
 
     // Migrate the database
-    info && logger.info`Migrating database...`;
+    info && databaseLogger.info`Migrating database...`;
 
     try {
         await migrate(db, {
             migrationsFolder: "./packages/plugin-kit/tables/migrations",
         });
     } catch (e) {
-        logger.fatal`Failed to migrate database. Please check your configuration.`;
+        databaseLogger.fatal`Failed to migrate database. Please check your configuration.`;
 
         throw e;
     }
 
-    info && logger.info`Database migrated`;
+    info && databaseLogger.info`Database migrated`;
 };

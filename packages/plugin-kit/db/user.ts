@@ -1,4 +1,3 @@
-import { getLogger } from "@logtape/logtape";
 import type {
     Account,
     Mention as MentionSchema,
@@ -29,6 +28,10 @@ import {
     Users,
     UserToPinnedNotes,
 } from "@versia-server/kit/tables";
+import {
+    federationDeliveryLogger,
+    federationResolversLogger,
+} from "@versia-server/logging";
 import { password as bunPassword, randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
@@ -49,7 +52,6 @@ import { htmlToText } from "html-to-text";
 import type { z } from "zod";
 import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
-import { sentry } from "@/sentry";
 import { searchManager } from "~/classes/search/search-manager";
 import type { HttpVerb, KnownEntity } from "~/types/api.ts";
 import {
@@ -1165,8 +1167,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     public static async resolve(uri: URL): Promise<User | null> {
-        getLogger(["federation", "resolvers"])
-            .debug`Resolving user ${chalk.gray(uri)}`;
+        federationResolversLogger.debug`Resolving user ${chalk.gray(uri)}`;
         // Check if user not already in database
         const foundUser = await User.fromSql(eq(Users.uri, uri.href));
 
@@ -1187,8 +1188,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             return await User.fromId(userUuid[0]);
         }
 
-        getLogger(["federation", "resolvers"])
-            .debug`User not found in database, fetching from remote`;
+        federationResolversLogger.debug`User not found in database, fetching from remote`;
 
         return User.fromVersia(uri);
     }
@@ -1419,11 +1419,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 entity,
             );
         } catch (e) {
-            getLogger(["federation", "delivery"]).error`Federating ${chalk.gray(
+            federationDeliveryLogger.error`Federating ${chalk.gray(
                 entity.data.type,
             )} to ${user.uri} ${chalk.bold.red("failed")}`;
-            getLogger(["federation", "delivery"]).error`${e}`;
-            sentry?.captureException(e);
+            federationDeliveryLogger.error`${e}`;
 
             return { ok: false };
         }

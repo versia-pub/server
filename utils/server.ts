@@ -24,9 +24,7 @@ export const createServer = (
         async fetch(req, server): Promise<Response> {
             const output = await app.fetch(req, { ip: server.requestIP(req) });
 
-            if (config.logging.types.responses) {
-                await debugResponse(output.clone());
-            }
+            await debugResponse(output.clone());
 
             return output;
         },

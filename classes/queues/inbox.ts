@@ -1,4 +1,3 @@
-import { getLogger } from "@logtape/logtape";
 import type { JSONObject } from "@versia/sdk";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
@@ -64,7 +63,6 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                                 data,
                                 null,
                                 headers.authorization,
-                                getLogger(["federation", "inbox"]),
                                 ip,
                             );
 
@@ -160,7 +158,6 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                                 key,
                             },
                             undefined,
-                            getLogger(["federation", "inbox"]),
                             ip,
                         );
 

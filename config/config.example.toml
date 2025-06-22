@@ -435,31 +435,29 @@ text = "No spam"
 
 [logging]
 
-# Available levels: debug, info, warning, error, fatal
-log_level = "debug"
+# Available levels: trace, debug, info, warning, error, fatal
+log_level = "info" # For console output
 
-log_file_path = "logs/versia.log"
-
-[logging.types]
-# Either pass a boolean
-# requests = true
-# Or a table with the following keys:
-# requests_content = { level = "debug", log_file_path = "logs/requests.log" }
-# Available types are: requests, responses, requests_content, filters
-
+# [logging.file]
+# path = "logs/versia.log"
+# log_level = "info"
+#
+# [logging.file.rotation]
+# max_size = 10_000_000 # 10 MB
+# max_files = 10 # Keep 10 rotated files
+#
 # https://sentry.io support
-# Uncomment to enable
 # [logging.sentry]
-# Sentry DSN for error logging
 # dsn = "https://example.com"
 # debug = false
-
 # sample_rate = 1.0
 # traces_sample_rate = 1.0
 # Can also be regex
 # trace_propagation_targets = []
 # max_breadcrumbs = 100
 # environment = "production"
+# log_level = "info"
+
 
 [plugins]
 # Whether to automatically load all plugins in the plugins directory

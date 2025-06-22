@@ -1,37 +1,26 @@
-import { getLogger } from "@logtape/logtape";
-import { config } from "@versia-server/config";
+import { serverLogger } from "@versia-server/logging";
 import { SHA256 } from "bun";
 import chalk from "chalk";
 import { createMiddleware } from "hono/factory";
 
 export const logger = createMiddleware(async (context, next) => {
-    if (config.logging.types.requests) {
-        const serverLogger = getLogger("server");
-        const body = await context.req.raw.clone().text();
+    const body = await context.req.raw.clone().text();
 
-        const urlAndMethod = `${chalk.green(context.req.method)} ${chalk.blue(context.req.url)}`;
+    const urlAndMethod = `${chalk.green(context.req.method)} ${chalk.blue(context.req.url)}`;
 
-        const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
-            new SHA256().update(body).digest("hex"),
-        )}`;
+    const hash = `${chalk.bold("Hash")}: ${chalk.yellow(
+        new SHA256().update(body).digest("hex"),
+    )}`;
 
-        const headers = `${chalk.bold("Headers")}:\n${Array.from(
-            context.req.raw.headers.entries(),
-        )
-            .map(
-                ([key, value]) =>
-                    ` - ${chalk.cyan(key)}: ${chalk.white(value)}`,
-            )
-            .join("\n")}`;
+    const headers = `${chalk.bold("Headers")}:\n${Array.from(
+        context.req.raw.headers.entries(),
+    )
+        .map(([key, value]) => ` - ${chalk.cyan(key)}: ${chalk.white(value)}`)
+        .join("\n")}`;
 
-        const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
+    const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
 
-        if (config.logging.types.requests_content) {
-            serverLogger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
-        } else {
-            serverLogger.debug`${urlAndMethod}`;
-        }
-    }
+    serverLogger.debug`${urlAndMethod}\n${hash}\n${headers}\n${bodyLog}`;
 
     await next();
 });

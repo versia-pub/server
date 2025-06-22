@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
-import { getLogger, type Logger } from "@logtape/logtape";
 import { config } from "@versia-server/config";
 import { type Manifest, manifestSchema, Plugin } from "@versia-server/kit";
+import { pluginLogger, serverLogger } from "@versia-server/logging";
 import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
@@ -14,8 +14,6 @@ import type { HonoEnv } from "~/types/api";
  * Class to manage plugins.
  */
 export class PluginLoader {
-    private logger = getLogger("plugin");
-
     /**
      * Get all directories in a given directory.
      * @param {string} dir - The directory to search.
@@ -74,8 +72,7 @@ export class PluginLoader {
 
             throw new Error(`Unsupported manifest file type: ${manifestFile}`);
         } catch (e) {
-            this.logger
-                .fatal`Could not parse plugin manifest ${chalk.blue(manifestPath)} as ${manifestFile.split(".").pop()?.toUpperCase()}.`;
+            pluginLogger.fatal`Could not parse plugin manifest ${chalk.blue(manifestPath)} as ${manifestFile.split(".").pop()?.toUpperCase()}.`;
             throw e;
         }
     }
@@ -129,8 +126,7 @@ export class PluginLoader {
         const result = await manifestSchema.safeParseAsync(manifest);
 
         if (!result.success) {
-            this.logger
-                .fatal`Plugin manifest ${chalk.blue(manifestPath)} is invalid.`;
+            pluginLogger.fatal`Plugin manifest ${chalk.blue(manifestPath)} is invalid.`;
             throw fromZodError(result.error);
         }
 
@@ -154,8 +150,7 @@ export class PluginLoader {
             return plugin;
         }
 
-        this.logger
-            .fatal`Default export of entrypoint ${chalk.blue(entrypoint)} at ${chalk.blue(dir)} is not a Plugin.`;
+        pluginLogger.fatal`Default export of entrypoint ${chalk.blue(entrypoint)} at ${chalk.blue(dir)} is not a Plugin.`;
 
         throw new Error("Entrypoint is not a Plugin");
     }
@@ -177,8 +172,7 @@ export class PluginLoader {
         const disabledOn = (disabled?.length ?? 0) > 0;
 
         if (enabledOn && disabledOn) {
-            this.logger
-                .fatal`Both enabled and disabled lists are specified. Only one of them can be used.`;
+            pluginLogger.fatal`Both enabled and disabled lists are specified. Only one of them can be used.`;
             throw new Error("Invalid configuration");
         }
 
@@ -219,10 +213,9 @@ export class PluginLoader {
             plugin: Plugin<ZodTypeAny>;
         }[],
         app: Hono<HonoEnv>,
-        logger: Logger,
     ): Promise<void> {
         for (const data of plugins) {
-            logger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
+            serverLogger.info`Loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} ${chalk.gray(`[${plugins.indexOf(data) + 1}/${plugins.length}]`)}`;
 
             const time1 = performance.now();
 
@@ -232,13 +225,13 @@ export class PluginLoader {
                     config.plugins?.config?.[data.manifest.name],
                 );
             } catch (e) {
-                logger.fatal`Error encountered while loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} configuration.`;
-                logger.fatal`This is due to invalid, missing or incomplete configuration.`;
-                logger.fatal`Put your configuration at ${chalk.blueBright(
+                serverLogger.fatal`Error encountered while loading plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(data.manifest.version)} configuration.`;
+                serverLogger.fatal`This is due to invalid, missing or incomplete configuration.`;
+                serverLogger.fatal`Put your configuration at ${chalk.blueBright(
                     "plugins.config.<plugin-name>",
                 )}`;
-                logger.fatal`Here is the error message, please fix the configuration file accordingly:`;
-                logger.fatal`${(e as ValidationError).message}`;
+                serverLogger.fatal`Here is the error message, please fix the configuration file accordingly:`;
+                serverLogger.fatal`${(e as ValidationError).message}`;
 
                 await sleep(Number.POSITIVE_INFINITY);
             }
@@ -250,7 +243,7 @@ export class PluginLoader {
 
             const time3 = performance.now();
 
-            logger.info`Plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(
+            serverLogger.info`Plugin ${chalk.blueBright(data.manifest.name)} ${chalk.blueBright(
                 data.manifest.version,
             )} loaded in ${chalk.gray(
                 `${(time2 - time1).toFixed(2)}ms`,

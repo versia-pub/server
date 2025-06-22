@@ -716,34 +716,35 @@ export const ConfigSchema = z
             admin: z.array(z.nativeEnum(RolePermission)).default(ADMIN_ROLES),
         }),
         logging: z.strictObject({
-            types: z.record(
-                z.enum([
-                    "requests",
-                    "responses",
-                    "requests_content",
-                    "filters",
-                ]),
-                z
-                    .boolean()
-                    .default(false)
-                    .or(
-                        z.strictObject({
-                            level: z
-                                .enum([
-                                    "debug",
-                                    "info",
-                                    "warning",
-                                    "error",
-                                    "fatal",
-                                ])
-                                .default("info"),
-                            log_file_path: z.string().optional(),
-                        }),
-                    ),
-            ),
-            log_level: z
-                .enum(["debug", "info", "warning", "error", "fatal"])
-                .default("info"),
+            file: z
+                .strictObject({
+                    path: z.string().default("logs/versia.log"),
+                    rotation: z
+                        .strictObject({
+                            max_size: z
+                                .number()
+                                .int()
+                                .nonnegative()
+                                .default(10_000_000), // 10 MB
+                            max_files: z
+                                .number()
+                                .int()
+                                .nonnegative()
+                                .default(10),
+                        })
+                        .optional(),
+                    log_level: z
+                        .enum([
+                            "trace",
+                            "debug",
+                            "info",
+                            "warning",
+                            "error",
+                            "fatal",
+                        ])
+                        .default("info"),
+                })
+                .optional(),
             sentry: z
                 .strictObject({
                     dsn: url,
@@ -753,9 +754,21 @@ export const ConfigSchema = z
                     trace_propagation_targets: z.array(z.string()).default([]),
                     max_breadcrumbs: z.number().default(100),
                     environment: z.string().optional(),
+                    log_level: z
+                        .enum([
+                            "trace",
+                            "debug",
+                            "info",
+                            "warning",
+                            "error",
+                            "fatal",
+                        ])
+                        .default("info"),
                 })
                 .optional(),
-            log_file_path: z.string().default("logs/versia.log"),
+            log_level: z
+                .enum(["trace", "debug", "info", "warning", "error", "fatal"])
+                .default("info"),
         }),
         debug: z
             .strictObject({

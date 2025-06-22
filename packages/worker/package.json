@@ -40,7 +40,7 @@
     "dependencies": {
         "@versia-server/config": "workspace:*",
         "@versia-server/kit": "workspace:*",
-        "chalk": "catalog:",
-        "@logtape/logtape": "catalog:"
+        "@versia-server/logging": "workspace:*",
+        "chalk": "catalog:"
     }
 }

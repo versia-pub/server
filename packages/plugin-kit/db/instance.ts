@@ -1,9 +1,12 @@
-import { getLogger } from "@logtape/logtape";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { db } from "@versia-server/kit/db";
 import { Instances } from "@versia-server/kit/tables";
+import {
+    federationMessagingLogger,
+    federationResolversLogger,
+} from "@versia-server/logging";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
@@ -175,9 +178,6 @@ export class Instance extends BaseInterface<typeof Instances> {
         const wellKnownUrl = new URL("/.well-known/nodeinfo", origin);
 
         // Go to endpoint, then follow the links to the actual metadata
-
-        const logger = getLogger(["federation", "resolvers"]);
-
         try {
             const { json, ok, status } = await fetch(wellKnownUrl, {
                 // @ts-expect-error Bun extension
@@ -185,7 +185,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             });
 
             if (!ok) {
-                logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
+                federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - HTTP ${status}`;
                 return null;
@@ -196,7 +196,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             };
 
             if (!wellKnown.links) {
-                logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
+                federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - No links found`;
                 return null;
@@ -209,7 +209,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             );
 
             if (!metadataUrl) {
-                logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
+                federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - No metadata URL found`;
                 return null;
@@ -225,7 +225,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             });
 
             if (!ok2) {
-                logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
+                federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
                 )} - HTTP ${status2}`;
                 return null;
@@ -264,7 +264,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                 },
             });
         } catch (error) {
-            logger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
+            federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                 origin,
             )} - Error! ${error}`;
             return null;
@@ -312,14 +312,12 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public async updateFromRemote(): Promise<Instance> {
-        const logger = getLogger(["federation", "resolvers"]);
-
         const output = await Instance.fetchMetadata(
             new URL(`https://${this.data.baseUrl}`),
         );
 
         if (!output) {
-            logger.error`Failed to update instance ${chalk.bold(
+            federationResolversLogger.error`Failed to update instance ${chalk.bold(
                 this.data.baseUrl,
             )}`;
             throw new Error("Failed to update instance");
@@ -341,12 +339,10 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public async sendMessage(content: string): Promise<void> {
-        const logger = getLogger(["federation", "messaging"]);
-
         if (
             !this.data.extensions?.["pub.versia:instance_messaging"]?.endpoint
         ) {
-            logger.info`Instance ${chalk.gray(
+            federationMessagingLogger.info`Instance ${chalk.gray(
                 this.data.baseUrl,
             )} does not support Instance Messaging, skipping message`;
 

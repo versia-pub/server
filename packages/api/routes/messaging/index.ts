@@ -1,5 +1,5 @@
-import { getLogger } from "@logtape/logtape";
 import { apiRoute } from "@versia-server/kit/api";
+import { federationMessagingLogger } from "@versia-server/logging";
 import chalk from "chalk";
 import { describeRoute } from "hono-openapi";
 
@@ -19,8 +19,7 @@ export default apiRoute((app) =>
         async (context) => {
             const content = await context.req.text();
 
-            getLogger(["federation", "messaging"])
-                .info`Received message via ${chalk.bold("Instance Messaging")}:\n${content}`;
+            federationMessagingLogger.info`Received message via ${chalk.bold("Instance Messaging")}:\n${content}`;
 
             return context.text("", 200);
         },

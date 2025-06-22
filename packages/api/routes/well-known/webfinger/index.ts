@@ -1,4 +1,3 @@
-import { getLogger } from "@logtape/logtape";
 import { FederationRequester } from "@versia/sdk/http";
 import { WebFingerSchema } from "@versia/sdk/schemas";
 import { config } from "@versia-server/config";
@@ -8,6 +7,7 @@ import { User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
 import { uuid, webfingerMention } from "@versia-server/kit/regex";
 import { Users } from "@versia-server/kit/tables";
+import { federationBridgeLogger } from "@versia-server/logging";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -90,8 +90,7 @@ export default apiRoute((app) =>
                 } catch (e) {
                     const error = e as ApiError;
 
-                    getLogger(["federation", "bridge"])
-                        .error`Error from bridge: ${error.message}`;
+                    federationBridgeLogger.error`Error from bridge: ${error.message}`;
                 }
             }
 

@@ -1,8 +1,8 @@
 import { resolve } from "node:path";
-import { getLogger } from "@logtape/logtape";
 import { Scalar } from "@scalar/hono-api-reference";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
+import { serverLogger } from "@versia-server/logging";
 import chalk from "chalk";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
@@ -13,8 +13,6 @@ import { secureHeaders } from "hono/secure-headers";
 import { openAPISpecs } from "hono-openapi";
 import { Youch } from "youch";
 import { applyToHono } from "@/bull-board.ts";
-import { configureLoggers } from "@/loggers";
-import { sentry } from "@/sentry";
 import pkg from "~/package.json" with { type: "application/json" };
 import { PluginLoader } from "../../classes/plugin/loader.ts";
 import type { ApiRouteExports, HonoEnv } from "../../types/api.ts";
@@ -28,9 +26,6 @@ import { routes } from "./routes.ts";
 import "zod-openapi/extend";
 
 export const appFactory = async (): Promise<Hono<HonoEnv>> => {
-    await configureLoggers();
-    const serverLogger = getLogger("server");
-
     const app = new Hono<HonoEnv>({
         strict: false,
     });
@@ -124,7 +119,7 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
         config.plugins?.overrides.disabled,
     );
 
-    await PluginLoader.addToApp(plugins, app, serverLogger);
+    await PluginLoader.addToApp(plugins, app);
 
     const time2 = performance.now();
 
@@ -193,7 +188,6 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
         const youch = new Youch();
         console.error(await youch.toANSI(error));
 
-        sentry?.captureException(error);
         return c.json(
             {
                 error: "A server error occured",
