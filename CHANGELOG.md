@@ -9,7 +9,7 @@
 
 ### Backend
 
--   [x] 🚀 Upgraded Bun to `1.2.15`
+-   [x] 🚀 Upgraded Bun to `1.2.17`
 
 # `0.8.0` • Federation 2: Electric Boogaloo
 
