@@ -58,7 +58,9 @@ export const StatusSource = z
             description: "The plain text used to compose the status.",
             example: "this is a status that will be edited",
         }),
-        spoiler_text: z.string().trim().min(1).max(1024).openapi({
+        // min(0) because some masto-fe clients send empty spoiler_text
+        // when they don't want to set it.
+        spoiler_text: z.string().trim().min(0).max(1024).openapi({
             description:
                 "The plain text used to compose the status’s subject or content warning.",
             example: "",

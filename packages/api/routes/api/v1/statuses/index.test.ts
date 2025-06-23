@@ -246,6 +246,20 @@ describe("/api/v1/statuses", () => {
         expect(ok3).toBe(false);
     });
 
+    test("should work with an empty spoiler_text", async () => {
+        await using client = await generateClient(users[0]);
+
+        const { data, ok } = await client.postStatus("Hello, world!", {
+            spoiler_text: "",
+        });
+
+        expect(ok).toBe(true);
+        expect(data).toMatchObject({
+            content: "<p>Hello, world!</p>",
+            spoiler_text: "",
+        });
+    });
+
     describe("mentions testing", () => {
         test("should correctly parse @mentions", async () => {
             await using client = await generateClient(users[0]);
