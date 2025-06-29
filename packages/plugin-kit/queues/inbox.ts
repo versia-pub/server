@@ -1,11 +1,12 @@
 import type { JSONObject } from "@versia/sdk";
 import { config } from "@versia-server/config";
-import { ApiError } from "@versia-server/kit";
-import { Instance, User } from "@versia-server/kit/db";
-import { connection } from "@versia-server/kit/redis";
 import { Queue, Worker } from "bullmq";
 import type { SocketAddress } from "bun";
-import { InboxProcessor } from "../inbox/processor.ts";
+import { ApiError } from "../api-error.ts";
+import { Instance } from "../db/instance.ts";
+import { User } from "../db/user.ts";
+import { InboxProcessor } from "../inbox-processor.ts";
+import { connection } from "../redis.ts";
 
 export enum InboxJobType {
     ProcessEntity = "processEntity",

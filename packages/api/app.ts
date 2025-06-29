@@ -13,14 +13,14 @@ import { secureHeaders } from "hono/secure-headers";
 import { openAPISpecs } from "hono-openapi";
 import { Youch } from "youch";
 import { applyToHono } from "@/bull-board.ts";
-import pkg from "~/package.json" with { type: "application/json" };
-import { PluginLoader } from "../../classes/plugin/loader.ts";
+import pkg from "../../package.json" with { type: "application/json" };
 import type { ApiRouteExports, HonoEnv } from "../../types/api.ts";
 import { agentBans } from "./middlewares/agent-bans.ts";
 import { boundaryCheck } from "./middlewares/boundary-check.ts";
 import { ipBans } from "./middlewares/ip-bans.ts";
 import { logger } from "./middlewares/logger.ts";
 import { rateLimit } from "./middlewares/rate-limit.ts";
+import { PluginLoader } from "./plugin-loader.ts";
 import { routes } from "./routes.ts";
 // Extends Zod with OpenAPI schema generation
 import "zod-openapi/extend";

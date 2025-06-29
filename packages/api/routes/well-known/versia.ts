@@ -7,7 +7,7 @@ import { asc } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { urlToContentFormat } from "@/content_types";
-import pkg from "~/package.json" with { type: "json" };
+import pkg from "../../../../package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(

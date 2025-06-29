@@ -1,9 +1,9 @@
 import { config } from "@versia-server/config";
-import { Media } from "@versia-server/kit/db";
-import { connection } from "@versia-server/kit/redis";
 import { Queue, Worker } from "bullmq";
-import { calculateBlurhash } from "../media/preprocessors/blurhash.ts";
-import { convertImage } from "../media/preprocessors/image-conversion.ts";
+import { calculateBlurhash } from "../../../classes/media/preprocessors/blurhash.ts";
+import { convertImage } from "../../../classes/media/preprocessors/image-conversion.ts";
+import { Media } from "../db/media.ts";
+import { connection } from "../redis.ts";
 
 export enum MediaJobType {
     ConvertMedia = "convertMedia",

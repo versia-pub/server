@@ -68,6 +68,7 @@
         "magic-regexp": "catalog:",
         "altcha-lib": "catalog:",
         "@hono/zod-validator": "catalog:",
-        "zod-validation-error": "catalog:"
+        "zod-validation-error": "catalog:",
+        "confbox": "catalog:"
     }
 }

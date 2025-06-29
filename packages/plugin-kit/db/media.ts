@@ -23,7 +23,7 @@ import sharp from "sharp";
 import type { z } from "zod";
 import { mimeLookup } from "@/content_types.ts";
 import { getMediaHash } from "../../../classes/media/media-hasher.ts";
-import { MediaJobType, mediaQueue } from "../../../classes/queues/media.ts";
+import { MediaJobType, mediaQueue } from "../queues/media.ts";
 import { BaseInterface } from "./base.ts";
 
 type MediaType = InferSelectModel<typeof Medias>;

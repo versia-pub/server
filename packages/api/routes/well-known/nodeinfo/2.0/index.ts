@@ -4,7 +4,7 @@ import { Note, User } from "@versia-server/kit/db";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import { z } from "zod";
-import manifest from "~/package.json" with { type: "json" };
+import manifest from "../../../../../../package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(

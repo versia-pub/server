@@ -7,7 +7,7 @@ import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import type { PluginType } from "~/plugins/openid";
+import type { PluginType } from "../../../index.ts";
 
 export default (plugin: PluginType): void => {
     plugin.registerRoute("/api/v1/sso/:id", (app) => {

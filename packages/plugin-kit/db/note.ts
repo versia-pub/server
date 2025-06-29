@@ -30,10 +30,7 @@ import { createRegExp, exactly, global } from "magic-regexp";
 import type { z } from "zod";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
-import {
-    DeliveryJobType,
-    deliveryQueue,
-} from "../../../classes/queues/delivery.ts";
+import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
 import { Application } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";

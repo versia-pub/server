@@ -10,13 +10,13 @@ import {
     withUserParam,
 } from "@versia-server/kit/api";
 import { Relationship } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
 import {
     RelationshipJobType,
     relationshipQueue,
-} from "~/classes/queues/relationships";
+} from "@versia-server/kit/queues/relationships";
+import { describeRoute } from "hono-openapi";
+import { resolver, validator } from "hono-openapi/zod";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.post(

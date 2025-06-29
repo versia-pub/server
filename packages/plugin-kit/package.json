@@ -55,7 +55,10 @@
         "markdown-it": "catalog:",
         "markdown-it-toc-done-right": "catalog:",
         "markdown-it-container": "catalog:",
-        "@hackmd/markdown-it-task-lists": "catalog:"
+        "@hackmd/markdown-it-task-lists": "catalog:",
+        "bullmq": "catalog:",
+        "web-push": "catalog:",
+        "ip-matching": "catalog:"
     },
     "files": [
         "tables/migrations"
@@ -84,6 +87,10 @@
         "./regex": {
             "import": "./regex.ts",
             "default": "./regex.ts"
+        },
+        "./queues/*": {
+            "import": "./queues/*.ts",
+            "default": "./queues/*.ts"
         },
         "./markdown": {
             "import": "./markdown.ts",

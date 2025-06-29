@@ -54,11 +54,8 @@ import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
 import { searchManager } from "~/classes/search/search-manager";
 import type { HttpVerb, KnownEntity } from "~/types/api.ts";
-import {
-    DeliveryJobType,
-    deliveryQueue,
-} from "../../../classes/queues/delivery.ts";
-import { PushJobType, pushQueue } from "../../../classes/queues/push.ts";
+import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
+import { PushJobType, pushQueue } from "../queues/push.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";

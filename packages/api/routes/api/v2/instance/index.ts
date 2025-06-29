@@ -6,7 +6,7 @@ import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
-import pkg from "~/package.json" with { type: "json" };
+import pkg from "../../../../../../package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(

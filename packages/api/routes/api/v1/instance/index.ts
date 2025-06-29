@@ -8,7 +8,7 @@ import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver } from "hono-openapi/zod";
 import type { z } from "zod";
-import manifest from "~/package.json" with { type: "json" };
+import manifest from "../../../../../../package.json" with { type: "json" };
 
 export default apiRoute((app) =>
     app.get(
