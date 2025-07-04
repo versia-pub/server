@@ -1,8 +1,10 @@
+import { join } from "node:path";
 import { FileSystemRouter } from "bun";
+
 // Returns the route filesystem path when given a URL
 export const routeMatcher = new FileSystemRouter({
     style: "nextjs",
-    dir: "packages/api/routes",
+    dir: join(import.meta.dir, "routes"),
     fileExtensions: [".ts", ".js"],
 });
 

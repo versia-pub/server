@@ -7,6 +7,9 @@
         "name": "Jesse Wierzbinski (CPlusPatch)",
         "url": "https://cpluspatch.com"
     },
+    "scripts": {
+        "build": "bun run build.ts"
+    },
     "readme": "README.md",
     "repository": {
         "type": "git",
@@ -41,12 +44,10 @@
     },
     "exports": {
         ".": {
-            "import": "./index.ts",
-            "default": "./index.ts"
+            "import": "./index.ts"
         },
         "./schemas": {
-            "import": "./schemas.ts",
-            "default": "./schemas.ts"
+            "import": "./schemas.ts"
         }
     },
     "funding": {

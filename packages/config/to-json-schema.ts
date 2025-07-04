@@ -1,5 +1,5 @@
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { ConfigSchema } from "./schema.ts";
+import { ConfigSchema } from "./index.ts";
 
 const jsonSchema = zodToJsonSchema(ConfigSchema, {});
 

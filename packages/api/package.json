@@ -36,10 +36,18 @@
     "scripts": {
         "dev": "bun run --hot index.ts",
         "build": "bun run build.ts",
-        "schema:generate": "bun run classes/config/to-json-schema.ts > config/config.schema.json && bun run packages/plugin-kit/json-schema.ts > packages/plugin-kit/manifest.schema.json",
+        "schema:generate": "bun run classes/config/to-json-schema.ts > config/config.schema.json && bun run packages/kit/json-schema.ts > packages/kit/manifest.schema.json",
         "docs:dev": "vitepress dev docs",
         "docs:build": "vitepress build docs",
         "docs:preview": "vitepress preview docs"
+    },
+    "exports": {
+        ".": {
+            "import": "./app.ts"
+        },
+        "./setup": {
+            "import": "./setup.ts"
+        }
     },
     "dependencies": {
         "@versia-server/config": "workspace:*",
@@ -65,10 +73,10 @@
         "hono-rate-limiter": "catalog:",
         "ip-matching": "catalog:",
         "qs": "catalog:",
-        "magic-regexp": "catalog:",
         "altcha-lib": "catalog:",
         "@hono/zod-validator": "catalog:",
         "zod-validation-error": "catalog:",
-        "confbox": "catalog:"
+        "confbox": "catalog:",
+        "oauth4webapi": "catalog:"
     }
 }

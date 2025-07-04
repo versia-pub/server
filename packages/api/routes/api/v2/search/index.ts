@@ -11,12 +11,12 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { db, Note, User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
+import { searchManager } from "@versia-server/kit/search";
 import { Instances, Notes, Users } from "@versia-server/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
 import { z } from "zod";
-import { searchManager } from "~/classes/search/search-manager";
 
 export default apiRoute((app) =>
     app.get(

@@ -1,0 +1,17 @@
+{
+    "$schema": "https://raw.githubusercontent.com/versia-pub/server/refs/heads/main/packages/kit/manifest.schema.json",
+    "name": "@versia/openid",
+    "description": "OpenID authentication.",
+    "version": "0.1.0",
+    "authors": [
+        {
+            "name": "Jesse Wierzbinski",
+            "email": "contact@cpluspatch.com",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/versia-pub/server.git"
+    }
+}

@@ -110,7 +110,7 @@ export default apiRoute((app) => {
                 emoji = unicodeEmoji;
             }
 
-            await user.react(note, emoji);
+            await note.react(user, emoji);
 
             // Reload note to get updated reactions
             await note.reload(user.id);
@@ -204,7 +204,7 @@ export default apiRoute((app) => {
                 emoji = unicodeEmoji;
             }
 
-            await user.unreact(note, emoji);
+            await note.unreact(user, emoji);
 
             // Reload note to get updated reactions
             await note.reload(user.id);

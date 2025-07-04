@@ -39,7 +39,7 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
             const note = context.get("note");
 
-            await user.like(note);
+            await note.like(user);
 
             await note.reload(user.id);
 

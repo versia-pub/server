@@ -1,9 +1,9 @@
 import { config } from "@versia-server/config";
 import { Note, setupDatabase } from "@versia-server/kit/db";
 import { connection } from "@versia-server/kit/redis";
+import { searchManager } from "@versia-server/kit/search";
 import { serverLogger } from "@versia-server/logging";
 import chalk from "chalk";
-import { searchManager } from "../../classes/search/search-manager.ts";
 
 const timeAtStart = performance.now();
 

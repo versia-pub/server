@@ -16,10 +16,12 @@
         "@inquirer/confirm": "catalog:",
         "@scalar/hono-api-reference": "catalog:",
         "@sentry/bun": "catalog:",
+        "@versia-server/api": "workspace:*",
         "@versia-server/config": "workspace:*",
         "@versia-server/kit": "workspace:*",
         "@versia-server/logging": "workspace:*",
         "@versia-server/tests": "workspace:*",
+        "@versia-server/worker": "workspace:*",
         "@versia/client": "workspace:*",
         "@versia/sdk": "workspace:*",
         "altcha-lib": "catalog:",
@@ -108,7 +110,7 @@
         "ip-matching": "catalog:",
         "iso-639-1": "catalog:",
         "jose": "catalog:",
-        "magic-regexp": "catalog:",
+        "oauth4webapi": "catalog:",
         "qs": "catalog:",
         "sharp": "catalog:",
         "string-comparison": "catalog:",
@@ -145,20 +147,7 @@
         "zod-validation-error": "catalog:",
       },
     },
-    "packages/logging": {
-      "name": "@versia-server/logging",
-      "version": "0.0.1",
-      "dependencies": {
-        "@logtape/file": "catalog:",
-        "@logtape/logtape": "catalog:",
-        "@logtape/otel": "catalog:",
-        "@logtape/sentry": "catalog:",
-        "@sentry/bun": "catalog:",
-        "@versia-server/config": "workspace:*",
-        "chalk": "catalog:",
-      },
-    },
-    "packages/plugin-kit": {
+    "packages/kit": {
       "name": "@versia-server/kit",
       "version": "0.0.0",
       "dependencies": {
@@ -185,10 +174,24 @@
         "mitt": "catalog:",
         "qs": "catalog:",
         "sharp": "catalog:",
+        "sonic-channel": "catalog:",
         "web-push": "catalog:",
         "zod": "catalog:",
         "zod-to-json-schema": "catalog:",
         "zod-validation-error": "catalog:",
+      },
+    },
+    "packages/logging": {
+      "name": "@versia-server/logging",
+      "version": "0.0.1",
+      "dependencies": {
+        "@logtape/file": "catalog:",
+        "@logtape/logtape": "catalog:",
+        "@logtape/otel": "catalog:",
+        "@logtape/sentry": "catalog:",
+        "@sentry/bun": "catalog:",
+        "@versia-server/config": "workspace:*",
+        "chalk": "catalog:",
       },
     },
     "packages/sdk": {
@@ -792,7 +795,7 @@
 
     "@versia-server/config": ["@versia-server/config@workspace:packages/config"],
 
-    "@versia-server/kit": ["@versia-server/kit@workspace:packages/plugin-kit"],
+    "@versia-server/kit": ["@versia-server/kit@workspace:packages/kit"],
 
     "@versia-server/logging": ["@versia-server/logging@workspace:packages/logging"],
 

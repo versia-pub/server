@@ -40,7 +40,7 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
             const note = context.get("note");
 
-            await user.unreblog(note);
+            await note.unreblog(user);
 
             const newNote = await Note.fromId(note.data.id, user.id);
 

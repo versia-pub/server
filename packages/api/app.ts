@@ -1,4 +1,4 @@
-import { resolve } from "node:path";
+import { join } from "node:path";
 import { Scalar } from "@scalar/hono-api-reference";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
@@ -113,7 +113,7 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     const loader = new PluginLoader();
 
     const plugins = await loader.loadPlugins(
-        resolve("./plugins"),
+        join(import.meta.dir, "plugins"),
         config.plugins?.autoload ?? true,
         config.plugins?.overrides.enabled,
         config.plugins?.overrides.disabled,

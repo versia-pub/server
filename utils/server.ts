@@ -1,4 +1,4 @@
-import type { ConfigSchema } from "@versia-server/config/schema";
+import type { ConfigSchema } from "@versia-server/config";
 import { debugResponse } from "@versia-server/kit/api";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";

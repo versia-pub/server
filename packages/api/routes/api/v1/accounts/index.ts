@@ -9,6 +9,7 @@ import {
     qsQuery,
 } from "@versia-server/kit/api";
 import { User } from "@versia-server/kit/db";
+import { searchManager } from "@versia-server/kit/search";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute } from "hono-openapi";
@@ -419,10 +420,13 @@ export default apiRoute((app) => {
                 );
             }
 
-            await User.register(username, {
+            const user = await User.register(username, {
                 password,
                 email,
             });
+
+            // Add to search index
+            await searchManager.addUser(user);
 
             return context.text("", 200);
         },

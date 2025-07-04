@@ -1,12 +1,9 @@
 import { config } from "@versia-server/config";
+import { SonicIndexType, searchManager } from "@versia-server/kit/search";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import ora from "ora";
-import {
-    SonicIndexType,
-    searchManager,
-} from "~/classes/search/search-manager.ts";
 
 export const rebuildIndexCommand = defineCommand(
     {

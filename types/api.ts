@@ -1,5 +1,5 @@
 import type * as VersiaEntities from "@versia/sdk/entities";
-import type { ConfigSchema } from "@versia-server/config/schema";
+import type { ConfigSchema } from "@versia-server/config";
 import type { Application, Token, User } from "@versia-server/kit/db";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";

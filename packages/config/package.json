@@ -4,14 +4,12 @@
     "type": "module",
     "version": "0.0.1",
     "private": true,
+    "scripts": {
+        "build": "bun run build.ts"
+    },
     "exports": {
         ".": {
-            "import": "./index.ts",
-            "default": "./index.ts"
-        },
-        "./schema": {
-            "import": "./schema.ts",
-            "default": "./schema.ts"
+            "import": "./index.ts"
         }
     },
     "dependencies": {

@@ -6,8 +6,7 @@
     "private": true,
     "exports": {
         ".": {
-            "import": "./index.ts",
-            "default": "./index.ts"
+            "import": "./index.ts"
         }
     },
     "dependencies": {

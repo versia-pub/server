@@ -55,7 +55,7 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
             const note = context.get("note");
 
-            const reblog = await user.reblog(note, visibility);
+            const reblog = await note.reblog(user, visibility);
 
             return context.json(await reblog.toApi(user), 200);
         },

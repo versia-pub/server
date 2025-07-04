@@ -112,7 +112,7 @@ TypeScript errors should be ignored with `// @ts-expect-error` comments, as well
 
 To scan for all TypeScript errors, run:
 ```sh
-bun check
+bun typecheck
 ```
 
 ### Commit messages

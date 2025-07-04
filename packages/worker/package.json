@@ -35,7 +35,15 @@
     "private": true,
     "scripts": {
         "dev": "bun run --hot index.ts",
-        "build": "bun run build-worker.ts"
+        "build": "bun run build.ts"
+    },
+    "exports": {
+        ".": {
+            "import": "./workers.ts"
+        },
+        "./setup": {
+            "import": "./setup.ts"
+        }
     },
     "dependencies": {
         "@versia-server/config": "workspace:*",

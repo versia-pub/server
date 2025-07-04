@@ -18,6 +18,9 @@ jobs:
     tests:
         uses: ./.github/workflows/tests.yml
 
+    detect-circular:
+        uses: ./.github/workflows/circular-imports.yml
+
     build:
         if: ${{ success() }}
         needs: [lint, check, tests]
