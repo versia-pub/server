@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-bun.url = "github:0xdsqr/nixpkgs/add-bun-support";
 
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -11,21 +10,14 @@
   outputs = {
     self,
     nixpkgs,
-    nixpkgs-bun,
     flake-utils,
     ...
   }:
     {
       overlays.default = final: prev: rec {
-        versia-server = final.callPackage ./nix/package.nix {
-          inherit
-            (nixpkgs-bun.legacyPackages.x86_64-linux)
-            fetchBunDeps
-            bunConfigHook
-            bunInstallHook
-            bunBuildHook
-            ;
-        };
+        versia-server =
+          final.callPackage ./nix/package.nix {
+          };
         versia-server-worker = final.callPackage ./nix/package-worker.nix {
           inherit versia-server;
         };
@@ -64,7 +56,6 @@
           buildInputs = with pkgs; [
             bun
             vips
-            pnpm
             nodePackages.typescript
             nodePackages.typescript-language-server
             nix-ld
