@@ -6,6 +6,9 @@ import {
     MediasToNotes,
     Notes,
     NoteToMentions,
+    PollOptions,
+    Polls,
+    PollVotes,
     Users,
 } from "@versia/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -56,7 +59,12 @@ type NoteTypeWithRelations = NoteType & {
     muted: boolean;
     liked: boolean;
     reactions: Omit<typeof Reaction.$type, "note" | "author">[];
-    poll: typeof Poll.$type | null;
+    poll: (InferSelectModel<typeof Polls> & {
+        options: (InferSelectModel<typeof PollOptions> & {
+            votes: InferSelectModel<typeof PollVotes>[];
+        })[];
+        votes: InferSelectModel<typeof PollVotes>[];
+    }) | null;
 };
 
 export type NoteTypeWithoutRecursiveRelations = Omit<
@@ -693,7 +701,27 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             language: null,
             muted: data.muted,
             pinned: data.pinned,
-            poll: data.poll ? data.poll.toApi(userFetching) : null,
+            poll: data.poll ? {
+                id: data.poll.id,
+                expires_at: data.poll.expiresAt,
+                expired: data.poll.expiresAt ? new Date(data.poll.expiresAt) < new Date() : false,
+                multiple: data.poll.multiple,
+                votes_count: data.poll.votesCount,
+                voters_count: data.poll.votersCount,
+                options: data.poll.options.map((option) => ({
+                    title: option.title,
+                    votes_count: data.poll.hideTotals && !((data.poll.expiresAt ? new Date(data.poll.expiresAt) < new Date() : false)) ? null : option.votesCount,
+                })),
+                emojis: [], // TODO: Parse emojis from poll options
+                voted: userFetching ? data.poll.votes.some((vote) => vote.userId === userFetching.id) : undefined,
+                own_votes: userFetching ? data.poll.votes
+                    .filter((vote) => vote.userId === userFetching.id)
+                    .map((vote) => {
+                        const option = data.poll.options.find((opt) => opt.id === vote.optionId);
+                        return option?.index ?? -1;
+                    })
+                    .filter((index) => index !== -1) : undefined,
+            } : null,
             reblog: data.reblog
                 ? await new Note(data.reblog as NoteTypeWithRelations).toApi(
                       userFetching,

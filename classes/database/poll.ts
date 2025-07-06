@@ -13,6 +13,7 @@ import {
     type InferSelectModel,
     inArray,
 } from "drizzle-orm";
+import { randomUUIDv7 } from "bun";
 import type { z } from "zod";
 import type { Poll as PollSchema } from "@versia/client/schemas";
 import { BaseInterface } from "./base.ts";
@@ -203,7 +204,7 @@ export class Poll extends BaseInterface<typeof Polls, PollTypeWithRelations> {
 
             // Insert poll options
             const optionInserts = options.map((title, index) => ({
-                id: crypto.randomUUID(),
+                id: randomUUIDv7(),
                 pollId: insertedPoll.id,
                 title,
                 index,
