@@ -512,6 +512,10 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
     reactions: many(Reactions, {
         relationName: "NoteToReactions",
     }),
+    poll: one(Polls, {
+        fields: [Notes.id],
+        references: [Polls.noteId],
+    }),
 }));
 
 export const Instances = pgTable("Instances", {
@@ -945,5 +949,99 @@ export const MediasToNotesRelations = relations(MediasToNotes, ({ one }) => ({
         fields: [MediasToNotes.noteId],
         references: [Notes.id],
         relationName: "AttachmentToNote",
+    }),
+}));
+
+export const Polls = pgTable("Polls", {
+    id: id(),
+    noteId: uuid("noteId")
+        .notNull()
+        .references(() => Notes.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .unique(),
+    expiresAt: timestamp("expires_at", { precision: 3, mode: "string" }),
+    multiple: boolean("multiple").notNull().default(false),
+    hideTotals: boolean("hide_totals").notNull().default(false),
+    votesCount: integer("votes_count").notNull().default(0),
+    votersCount: integer("voters_count").notNull().default(0),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+});
+
+export const PollOptions = pgTable("PollOptions", {
+    id: id(),
+    pollId: uuid("pollId")
+        .notNull()
+        .references(() => Polls.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        }),
+    title: text("title").notNull(),
+    index: integer("index").notNull(),
+    votesCount: integer("votes_count").notNull().default(0),
+});
+
+export const PollVotes = pgTable(
+    "PollVotes",
+    {
+        id: id(),
+        pollId: uuid("pollId")
+            .notNull()
+            .references(() => Polls.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        optionId: uuid("optionId")
+            .notNull()
+            .references(() => PollOptions.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        userId: uuid("userId")
+            .notNull()
+            .references(() => Users.id, {
+                onDelete: "cascade",
+                onUpdate: "cascade",
+            }),
+        createdAt: createdAt(),
+    },
+    (table) => [
+        uniqueIndex().on(table.pollId, table.userId, table.optionId),
+        index().on(table.pollId),
+        index().on(table.userId),
+    ],
+);
+
+export const PollsRelations = relations(Polls, ({ one, many }) => ({
+    note: one(Notes, {
+        fields: [Polls.noteId],
+        references: [Notes.id],
+    }),
+    options: many(PollOptions),
+    votes: many(PollVotes),
+}));
+
+export const PollOptionsRelations = relations(PollOptions, ({ one, many }) => ({
+    poll: one(Polls, {
+        fields: [PollOptions.pollId],
+        references: [Polls.id],
+    }),
+    votes: many(PollVotes),
+}));
+
+export const PollVotesRelations = relations(PollVotes, ({ one }) => ({
+    poll: one(Polls, {
+        fields: [PollVotes.pollId],
+        references: [Polls.id],
+    }),
+    option: one(PollOptions, {
+        fields: [PollVotes.optionId],
+        references: [PollOptions.id],
+    }),
+    user: one(Users, {
+        fields: [PollVotes.userId],
+        references: [Users.id],
     }),
 }));

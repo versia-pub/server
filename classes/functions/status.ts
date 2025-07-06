@@ -115,6 +115,16 @@ export const findManyNotes = async (
                             ...userRelations,
                         },
                     },
+                    poll: {
+                        with: {
+                            options: {
+                                with: {
+                                    votes: true,
+                                },
+                            },
+                            votes: true,
+                        },
+                    },
                 },
                 extras: {
                     pinned: userId
@@ -141,6 +151,16 @@ export const findManyNotes = async (
             },
             reply: true,
             quote: true,
+            poll: {
+                with: {
+                    options: {
+                        with: {
+                            votes: true,
+                        },
+                    },
+                    votes: true,
+                },
+            },
         },
         extras: {
             pinned: userId
@@ -176,6 +196,10 @@ export const findManyNotes = async (
         })),
         attachments: post.attachments.map((attachment) => attachment.media),
         emojis: (post.emojis ?? []).map((emoji) => emoji.emoji),
+        poll: post.poll ? {
+            ...post.poll,
+            options: post.poll.options.sort((a, b) => a.index - b.index),
+        } : null,
         reblog: post.reblog && {
             ...post.reblog,
             author: transformOutputToUserWithRelations(post.reblog.author),
@@ -187,6 +211,10 @@ export const findManyNotes = async (
                 (attachment) => attachment.media,
             ),
             emojis: (post.reblog.emojis ?? []).map((emoji) => emoji.emoji),
+            poll: post.reblog.poll ? {
+                ...post.reblog.poll,
+                options: post.reblog.poll.options.sort((a, b) => a.index - b.index),
+            } : null,
             pinned: Boolean(post.reblog.pinned),
             reblogged: Boolean(post.reblog.reblogged),
             muted: Boolean(post.reblog.muted),

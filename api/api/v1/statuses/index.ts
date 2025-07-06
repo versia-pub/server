@@ -6,7 +6,7 @@ import {
     StatusSource as StatusSourceSchema,
     zBoolean,
 } from "@versia/client/schemas";
-import { Emoji, Media, Note } from "@versia/kit/db";
+import { Emoji, Media, Note, Poll } from "@versia/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator } from "hono-openapi/zod";
@@ -164,6 +164,10 @@ export default apiRoute((app) =>
                 visibility,
                 content_type,
                 local_only,
+                "poll[options]": pollOptions,
+                "poll[expires_in]": pollExpiresIn,
+                "poll[multiple]": pollMultiple,
+                "poll[hide_totals]": pollHideTotals,
             } = context.req.valid("json");
 
             // Check if media attachments are all valid
@@ -175,6 +179,27 @@ export default apiRoute((app) =>
                     422,
                     "Some attachments referenced by media_ids not found",
                 );
+            }
+
+            // Validate poll parameters
+            if (pollOptions && pollOptions.length > 0) {
+                if (media_ids.length > 0) {
+                    throw new ApiError(422, "Cannot attach poll to media");
+                }
+
+                if (!pollExpiresIn) {
+                    throw new ApiError(
+                        422, 
+                        "poll[expires_in] must be provided when creating a poll"
+                    );
+                }
+
+                if (pollOptions.length < 2) {
+                    throw new ApiError(
+                        422,
+                        "Poll must have at least 2 options"
+                    );
+                }
             }
 
             const reply = in_reply_to_id
@@ -247,6 +272,21 @@ export default apiRoute((app) =>
             await newNote.updateEmojis(parsedEmojis);
             await newNote.updateMentions(parsedMentions);
             await newNote.updateAttachments(foundAttachments);
+
+            // Create poll if poll options are provided
+            if (pollOptions && pollOptions.length > 0 && pollExpiresIn) {
+                const expiresAt = new Date(Date.now() + pollExpiresIn * 1000).toISOString();
+                
+                await Poll.insert({
+                    id: randomUUIDv7(),
+                    noteId: newNote.data.id,
+                    expiresAt,
+                    multiple: pollMultiple ?? false,
+                    hideTotals: pollHideTotals ?? false,
+                    votesCount: 0,
+                    votersCount: 0,
+                }, pollOptions);
+            }
 
             await newNote.reload();
 

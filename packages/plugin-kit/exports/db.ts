@@ -5,6 +5,7 @@ export { Like } from "~/classes/database/like.ts";
 export { Media } from "~/classes/database/media";
 export { Note } from "~/classes/database/note.ts";
 export { Notification } from "~/classes/database/notification.ts";
+export { Poll } from "~/classes/database/poll.ts";
 export { PushSubscription } from "~/classes/database/pushsubscription.ts";
 export { Reaction } from "~/classes/database/reaction.ts";
 export { Relationship } from "~/classes/database/relationship.ts";

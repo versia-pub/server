@@ -28,6 +28,7 @@ import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { contentToHtml, findManyNotes } from "~/classes/functions/status";
 import { config } from "~/config.ts";
+import { Poll } from "./poll.ts";
 import * as VersiaEntities from "~/packages/sdk/entities/index.ts";
 import type { NonTextContentFormatSchema } from "~/packages/sdk/schemas/contentformat.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery.ts";
@@ -55,6 +56,7 @@ type NoteTypeWithRelations = NoteType & {
     muted: boolean;
     liked: boolean;
     reactions: Omit<typeof Reaction.$type, "note" | "author">[];
+    poll: typeof Poll.$type | null;
 };
 
 export type NoteTypeWithoutRecursiveRelations = Omit<
@@ -691,8 +693,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             language: null,
             muted: data.muted,
             pinned: data.pinned,
-            // TODO: Add polls
-            poll: null,
+            poll: data.poll ? data.poll.toApi(userFetching) : null,
             reblog: data.reblog
                 ? await new Note(data.reblog as NoteTypeWithRelations).toApi(
                       userFetching,
