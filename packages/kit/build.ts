@@ -18,7 +18,7 @@ await build({
         "acorn",
         // Excluded because Standard Schema imports those, but the code is never executed
         "@valibot/to-json-schema",
-        "effect"
+        "effect",
     ],
 });
 

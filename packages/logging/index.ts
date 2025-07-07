@@ -44,35 +44,31 @@ const getSinks = (): Record<"file" | "console" | "sentry", Sink> => {
     }
 
     if (config.logging.sentry) {
-        sinks.sentry = getSentrySink(
-            Sentry.init({
-                dsn: config.logging.sentry.dsn.origin,
-                debug: config.logging.sentry.debug,
-                sampleRate: config.logging.sentry.sample_rate,
-                maxBreadcrumbs: config.logging.sentry.max_breadcrumbs,
-                tracesSampleRate: config.logging.sentry.traces_sample_rate,
-                environment: config.logging.sentry.environment,
-                tracePropagationTargets:
-                    config.logging.sentry.trace_propagation_targets,
-                release: env.GIT_COMMIT
-                    ? `${pkg.version}-${env.GIT_COMMIT}`
-                    : pkg.version,
-                integrations: [Sentry.extraErrorDataIntegration()],
-            }),
-        );
-
         sinks.sentry = withFilter(
-            sinks.sentry,
+            getSentrySink(
+                Sentry.init({
+                    dsn: config.logging.sentry.dsn.origin,
+                    debug: config.logging.sentry.debug,
+                    sampleRate: config.logging.sentry.sample_rate,
+                    maxBreadcrumbs: config.logging.sentry.max_breadcrumbs,
+                    tracesSampleRate: config.logging.sentry.traces_sample_rate,
+                    environment: config.logging.sentry.environment,
+                    tracePropagationTargets:
+                        config.logging.sentry.trace_propagation_targets,
+                    release: env.GIT_COMMIT
+                        ? `${pkg.version}-${env.GIT_COMMIT}`
+                        : pkg.version,
+                    integrations: [Sentry.extraErrorDataIntegration()],
+                }),
+            ),
             getLevelFilter(config.logging.sentry.log_level),
         );
     }
 
-    sinks.console = getConsoleSink({
-        formatter: consoleFormatter,
-    });
-
     sinks.console = withFilter(
-        sinks.console,
+        getConsoleSink({
+            formatter: consoleFormatter,
+        }),
         getLevelFilter(config.logging.log_level),
     );
 

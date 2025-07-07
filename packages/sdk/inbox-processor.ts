@@ -17,9 +17,9 @@ type MaybePromise<T> = T | Promise<T>;
  *    .sort();
  */
 export class EntitySorter {
-    private handlers: EntitySorterHandlers = new Map();
+    private readonly handlers: EntitySorterHandlers = new Map();
 
-    public constructor(private jsonData: JSONObject) {}
+    public constructor(private readonly jsonData: JSONObject) {}
 
     public on<T extends typeof Entity>(
         entity: T,

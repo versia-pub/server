@@ -180,19 +180,19 @@ export class Instance extends BaseInterface<typeof Instances> {
 
         // Go to endpoint, then follow the links to the actual metadata
         try {
-            const { json, ok, status } = await fetch(wellKnownUrl, {
+            const result = await fetch(wellKnownUrl, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy_address,
             });
 
-            if (!ok) {
+            if (!result.ok) {
                 federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
-                )} - HTTP ${status}`;
+                )} - HTTP ${result.status}`;
                 return null;
             }
 
-            const wellKnown = (await json()) as {
+            const wellKnown = (await result.json()) as {
                 links: { rel: string; href: string }[];
             };
 
@@ -216,23 +216,19 @@ export class Instance extends BaseInterface<typeof Instances> {
                 return null;
             }
 
-            const {
-                json: json2,
-                ok: ok2,
-                status: status2,
-            } = await fetch(metadataUrl.href, {
+            const result2 = await fetch(metadataUrl.href, {
                 // @ts-expect-error Bun extension
                 proxy: config.http.proxy_address,
             });
 
-            if (!ok2) {
+            if (!result2.ok) {
                 federationResolversLogger.error`Failed to fetch ActivityPub metadata for instance ${chalk.bold(
                     origin,
-                )} - HTTP ${status2}`;
+                )} - HTTP ${result2.status}`;
                 return null;
             }
 
-            const metadata = (await json2()) as {
+            const metadata = (await result2.json()) as {
                 metadata: {
                     nodeName?: string;
                     title?: string;

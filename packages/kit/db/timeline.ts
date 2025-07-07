@@ -12,7 +12,7 @@ enum TimelineType {
 }
 
 export class Timeline<Type extends Note | User | Notification> {
-    public constructor(private type: TimelineType) {}
+    public constructor(private readonly type: TimelineType) {}
 
     public static getNoteTimeline(
         sql: SQL<unknown> | undefined,

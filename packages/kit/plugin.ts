@@ -12,14 +12,15 @@ export type HonoPluginEnv<ConfigType extends z.ZodTypeAny> = HonoEnv & {
 };
 
 export class Plugin<ConfigSchema extends z.ZodTypeAny> {
-    private handlers: Partial<ServerHooks> = {};
+    private readonly handlers: Partial<ServerHooks> = {};
+    // biome-ignore lint/nursery/useReadonlyClassProperties: biome is wrong lol
     private store: z.infer<ConfigSchema> | null = null;
-    private routes: {
+    private readonly routes: {
         path: string;
         fn: (app: Hono<HonoPluginEnv<ConfigSchema>>) => void;
     }[] = [];
 
-    public constructor(private configSchema: ConfigSchema) {}
+    public constructor(private readonly configSchema: ConfigSchema) {}
 
     public get middleware(): MiddlewareHandler<HonoPluginEnv<ConfigSchema>> {
         // Middleware that adds the plugin's configuration to the request object

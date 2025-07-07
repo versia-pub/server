@@ -125,6 +125,7 @@
                 "noGlobalDirnameFilename": "error",
                 "noProcessGlobal": "warn",
                 "noTsIgnore": "warn",
+                "useReadonlyClassProperties": "error",
                 "useConsistentObjectDefinition": {
                     "level": "warn",
                     "options": {

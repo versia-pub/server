@@ -74,7 +74,10 @@ export class StreamingTimeline {
         return `timeline:${this.timeline}`;
     }
 
-    private messageHandler = (channel: string, message: string): void => {
+    private readonly messageHandler = (
+        channel: string,
+        message: string,
+    ): void => {
         if (channel === this.channelName) {
             try {
                 const parsed = JSON.parse(message);

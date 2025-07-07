@@ -26,8 +26,9 @@ export enum SonicIndexType {
  * Class for managing Sonic search operations
  */
 export class SonicSearchManager {
-    private searchChannel: SonicChannelSearch;
-    private ingestChannel: SonicChannelIngest;
+    private readonly searchChannel: SonicChannelSearch;
+    private readonly ingestChannel: SonicChannelIngest;
+    // biome-ignore lint/nursery/useReadonlyClassProperties: biome is wrong lol
     private connected = false;
 
     /**

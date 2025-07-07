@@ -55,14 +55,14 @@ export class InboxProcessor {
      * @param requestIp Request IP address. Grabs it from the Hono context if not provided.
      */
     public constructor(
-        private request: Request,
-        private body: JSONObject,
-        private sender: {
+        private readonly request: Request,
+        private readonly body: JSONObject,
+        private readonly sender: {
             instance: Instance;
             key: CryptoKey;
         } | null,
-        private authorizationHeader?: string,
-        private requestIp: SocketAddress | null = null,
+        private readonly authorizationHeader?: string,
+        private readonly requestIp: SocketAddress | null = null,
     ) {}
 
     /**
@@ -208,7 +208,7 @@ export class InboxProcessor {
                     throw new ApiError(400, "Unknown entity type");
                 });
         } catch (e) {
-            return this.handleError(e as Error);
+            return InboxProcessor.handleError(e as Error);
         }
     }
 
@@ -589,7 +589,7 @@ export class InboxProcessor {
      * @returns {void}
      * @throws {ApiError} - The error response.
      */
-    private handleError(e: Error): void {
+    private static handleError(e: Error): void {
         if (isValidationError(e)) {
             throw new ApiError(400, "Failed to process request", e.message);
         }

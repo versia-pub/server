@@ -53,7 +53,7 @@ export class PluginLoader {
      * @returns {Promise<unknown>} - The parsed manifest content.
      * @throws Will throw an error if the manifest file cannot be parsed.
      */
-    private async parseManifestFile(
+    private static async parseManifestFile(
         manifestPath: string,
         manifestFile: string,
     ): Promise<unknown> {
@@ -118,7 +118,7 @@ export class PluginLoader {
         }
 
         const manifestPath = `${dir}/${plugin}/${manifestFile}`;
-        const manifest = await this.parseManifestFile(
+        const manifest = await PluginLoader.parseManifestFile(
             manifestPath,
             manifestFile,
         );
@@ -140,7 +140,7 @@ export class PluginLoader {
      * @returns {Promise<Plugin<ZodTypeAny>>} - The loaded Plugin instance.
      * @throws Will throw an error if the entrypoint's default export is not a Plugin.
      */
-    public async loadPlugin(
+    public static async loadPlugin(
         dir: string,
         entrypoint: string,
     ): Promise<Plugin<ZodTypeAny>> {
@@ -197,7 +197,7 @@ export class PluginLoader {
                     return null;
                 }
 
-                const pluginInstance = await this.loadPlugin(
+                const pluginInstance = await PluginLoader.loadPlugin(
                     dir,
                     `${plugin}/index`,
                 );
