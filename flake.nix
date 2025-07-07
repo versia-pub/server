@@ -2,7 +2,7 @@
   description = "Versia Server";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     flake-utils.url = "github:numtide/flake-utils";
   };
@@ -15,7 +15,9 @@
   }:
     {
       overlays.default = final: prev: rec {
-        versia-server = final.callPackage ./nix/package.nix {};
+        versia-server =
+          final.callPackage ./nix/package.nix {
+          };
         versia-server-worker = final.callPackage ./nix/package-worker.nix {
           inherit versia-server;
         };
@@ -54,7 +56,6 @@
           buildInputs = with pkgs; [
             bun
             vips
-            pnpm
             nodePackages.typescript
             nodePackages.typescript-language-server
             nix-ld

@@ -87,8 +87,8 @@ export class ResponseError<
 export class BaseClient {
     public constructor(
         protected baseUrl: URL,
-        private accessToken?: string,
-        private options: {
+        private readonly accessToken?: string,
+        private readonly options: {
             globalCatch?: (error: ResponseError) => void;
             throwOnError?: boolean;
         } = {},
@@ -103,6 +103,7 @@ export class BaseClient {
     }
 
     /** Overridable by testing */
+    // biome-ignore lint/nursery/useReadonlyClassProperties: Overridable by testing
     private fetch = (...args: Parameters<typeof fetch>) => fetch(...args);
 
     private async request<ReturnType>(

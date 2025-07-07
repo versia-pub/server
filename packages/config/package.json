@@ -1,0 +1,25 @@
+{
+    "name": "@versia-server/config",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "build": "bun run build.ts"
+    },
+    "exports": {
+        ".": {
+            "import": "./index.ts"
+        }
+    },
+    "dependencies": {
+        "chalk": "catalog:",
+        "zod": "catalog:",
+        "zod-validation-error": "catalog:",
+        "confbox": "catalog:",
+        "web-push": "catalog:",
+        "iso-639-1": "catalog:",
+        "mime-types": "catalog:",
+        "@versia/client": "workspace:*"
+    }
+}

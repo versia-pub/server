@@ -1,8 +1,7 @@
+import { Instance, User } from "@versia-server/kit/db";
+import { parseUserAddress } from "@versia-server/kit/parsers";
+import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { parseUserAddress } from "@/api";
-import { Instance } from "~/classes/database/instance";
-import { User } from "~/classes/database/user";
-import { Users } from "~/drizzle/schema";
 
 export const retrieveUser = async (
     usernameOrHandle: string,

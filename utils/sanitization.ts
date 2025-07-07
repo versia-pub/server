@@ -1,6 +1,6 @@
+import { ProxiableUrl } from "@versia-server/config";
 import { stringifyEntitiesLight } from "stringify-entities";
 import xss, { type IFilterXSSOptions } from "xss";
-import { ProxiableUrl } from "~/classes/media/url.ts";
 
 export const sanitizedHtmlStrip = (html: string): Promise<string> => {
     return sanitizeHtml(html, {

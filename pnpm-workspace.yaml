@@ -1,9 +1,0 @@
-packages:
-    - packages/*
-
-onlyBuiltDependencies:
-    - esbuild
-    - msgpackr-extract
-    - sharp
-
-shamefullyHoist: true

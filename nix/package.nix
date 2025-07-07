@@ -1,11 +1,12 @@
 {
   lib,
   stdenv,
-  pnpm,
   bun,
   nodejs,
   vips,
   makeWrapper,
+  stdenvNoCC,
+  writableTmpDirAsHomeHook,
   ...
 }: let
   packageJson = builtins.fromJSON (builtins.readFile ../package.json);
@@ -16,35 +17,70 @@ in
 
     src = ../.;
 
-    # Fixes the build script mv usage
-    pnpmInstallFlags = ["--shamefully-hoist"];
+    node_modules = stdenvNoCC.mkDerivation {
+      pname = "${finalAttrs.pname}-node_modules";
+      inherit (finalAttrs) version src;
 
-    pnpmDeps = pnpm.fetchDeps {
-      inherit (finalAttrs) pname version src pnpmInstallFlags;
-      hash = "sha256-/VCzDp8EfvQkaz/5W3rcoEyOlSB4zeW97qqOTJf6WvA=";
+      nativeBuildInputs = [
+        bun
+        nodejs
+        writableTmpDirAsHomeHook
+      ];
+
+      dontConfigure = true;
+
+      buildPhase = ''
+        runHook preBuild
+
+         export BUN_INSTALL_CACHE_DIR=$(mktemp -d)
+
+         bun install \
+           --force \
+           --frozen-lockfile \
+           --no-progress
+
+        runHook postBuild
+      '';
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/node_modules
+        cp -R ./node_modules $out
+
+        runHook postInstall
+      '';
+
+      # Required else we get errors that our fixed-output derivation references store paths
+      dontFixup = true;
+
+      outputHash = "sha256-/RQv87hjLdH6+41yR7+bGp3j200DVhIrKWoI1MKIqJs=";
+      outputHashAlgo = "sha256";
+      outputHashMode = "recursive";
     };
 
     nativeBuildInputs = [
-      pnpm
-      pnpm.configHook
       bun
-      nodejs
       makeWrapper
     ];
 
-    buildInputs = [
-      vips
-    ];
+    configurePhase = ''
+      runHook preConfigure
+
+      cp -R ${finalAttrs.node_modules}/node_modules .
+
+      runHook postConfigure
+    '';
 
     buildPhase = ''
       runHook preBuild
 
-      bun run build
+      bun run build ${finalAttrs.buildType}
 
       runHook postBuild
     '';
 
-    entrypointPath = "index.js";
+    buildType = "api";
 
     installPhase = let
       libPath = lib.makeLibraryPath [
@@ -62,7 +98,7 @@ in
       cp -r dist $out/${finalAttrs.pname}
 
       makeWrapper ${lib.getExe bun} $out/bin/${finalAttrs.pname} \
-        --add-flags "run $out/${finalAttrs.pname}/${finalAttrs.entrypointPath}" \
+        --add-flags "run $out/${finalAttrs.pname}/${finalAttrs.buildType}.js" \
         --set NODE_PATH $out/${finalAttrs.pname}/node_modules \
         --set MSGPACKR_NATIVE_ACCELERATION_DISABLED true \
         --prefix PATH : ${binPath} \

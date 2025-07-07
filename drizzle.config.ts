@@ -1,5 +1,5 @@
+import { config } from "@versia-server/config";
 import type { Config } from "drizzle-kit";
-import { config } from "~/config.ts";
 
 /**
  * Drizzle can't properly resolve imports with top-level await, so uncomment

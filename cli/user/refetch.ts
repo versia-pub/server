@@ -1,9 +1,9 @@
+import { User } from "@versia-server/kit/db";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import ora from "ora";
-import { User } from "~/classes/database/user.ts";
 import { retrieveUser } from "../utils.ts";
 
 export const refetchUserCommand = defineCommand(

@@ -1,0 +1,19 @@
+{
+    "name": "@versia-server/tests",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.0.1",
+    "private": true,
+    "exports": {
+        ".": {
+            "import": "./index.ts"
+        }
+    },
+    "dependencies": {
+        "@versia-server/config": "workspace:*",
+        "@versia-server/kit": "workspace:*",
+        "@versia/client": "workspace:*",
+        "altcha-lib": "catalog:",
+        "drizzle-orm": "catalog:"
+    }
+}

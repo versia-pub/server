@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.0.0-beta.5/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
     "assist": {
         "actions": {
             "source": {
@@ -49,7 +49,6 @@
                     }
                 },
                 "useLiteralEnumMembers": "error",
-                "noCommaOperator": "error",
                 "noNegationElse": "error",
                 "noYodaExpression": "error",
                 "useBlockStatements": "error",
@@ -89,7 +88,6 @@
                         "accessibility": "explicit"
                     }
                 },
-                "noArguments": "error",
                 "useImportType": "error",
                 "useExportType": "error",
                 "noUselessElse": "error",
@@ -99,7 +97,15 @@
                 "noCommonJs": "warn",
                 "noExportedImports": "warn",
                 "noSubstr": "warn",
-                "useTrimStartEnd": "warn"
+                "useTrimStartEnd": "warn",
+                "noRestrictedImports": {
+                    "options": {
+                        "paths": {
+                            "~/packages/": "Use the appropriate package instead of importing from the packages directory directly."
+                        }
+                    },
+                    "level": "error"
+                }
             },
             "performance": {
                 "noDynamicNamespaceImportAccess": "warn"
@@ -119,6 +125,7 @@
                 "noGlobalDirnameFilename": "error",
                 "noProcessGlobal": "warn",
                 "noTsIgnore": "warn",
+                "useReadonlyClassProperties": "error",
                 "useConsistentObjectDefinition": {
                     "level": "warn",
                     "options": {
@@ -135,7 +142,9 @@
                 "noUselessEscapeInRegex": "warn",
                 "useSimplifiedLogicExpression": "error",
                 "useWhile": "error",
-                "useNumericLiterals": "error"
+                "useNumericLiterals": "error",
+                "noArguments": "error",
+                "noCommaOperator": "error"
             },
             "suspicious": {
                 "noDuplicateTestHooks": "error",

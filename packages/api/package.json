@@ -1,0 +1,82 @@
+{
+    "name": "@versia-server/api",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.9.0-alpha.0",
+    "description": "Powerful, configurable and modular federated server using the Versia Protocol.",
+    "homepage": "https://versia.pub",
+    "author": {
+        "email": "contact@cpluspatch.com",
+        "name": "Jesse Wierzbinski",
+        "url": "https://cpluspatch.com"
+    },
+    "bugs": {
+        "url": "https://github.com/versia-pub/server/issues"
+    },
+    "icon": "https://cdn.versia.pub/branding/icon.svg",
+    "license": "AGPL-3.0-or-later",
+    "keywords": [
+        "federated",
+        "activitypub",
+        "bun"
+    ],
+    "maintainers": [
+        {
+            "email": "contact@cpluspatch.com",
+            "name": "Jesse Wierzbinski",
+            "url": "https://cpluspatch.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/versia-pub/server.git",
+        "directory": "packages/api"
+    },
+    "private": true,
+    "scripts": {
+        "dev": "bun run --hot index.ts",
+        "build": "bun run build.ts",
+        "schema:generate": "bun run classes/config/to-json-schema.ts > config/config.schema.json && bun run packages/kit/json-schema.ts > packages/kit/manifest.schema.json",
+        "docs:dev": "vitepress dev docs",
+        "docs:build": "vitepress build docs",
+        "docs:preview": "vitepress preview docs"
+    },
+    "exports": {
+        ".": {
+            "import": "./app.ts"
+        },
+        "./setup": {
+            "import": "./setup.ts"
+        }
+    },
+    "dependencies": {
+        "@versia-server/config": "workspace:*",
+        "@versia-server/tests": "workspace:*",
+        "@versia-server/kit": "workspace:*",
+        "@versia-server/logging": "workspace:*",
+        "@versia/client": "workspace:*",
+        "@versia/sdk": "workspace:*",
+        "youch": "catalog:",
+        "hono": "catalog:",
+        "hono-openapi": "catalog:",
+        "zod": "catalog:",
+        "drizzle-orm": "catalog:",
+        "string-comparison": "catalog:",
+        "bun-bagel": "catalog:",
+        "chalk": "catalog:",
+        "unicode-emoji-json": "catalog:",
+        "sharp": "catalog:",
+        "iso-639-1": "catalog:",
+        "jose": "catalog:",
+        "zod-openapi": "catalog:",
+        "@scalar/hono-api-reference": "catalog:",
+        "hono-rate-limiter": "catalog:",
+        "ip-matching": "catalog:",
+        "qs": "catalog:",
+        "altcha-lib": "catalog:",
+        "@hono/standard-validator": "catalog:",
+        "zod-validation-error": "catalog:",
+        "confbox": "catalog:",
+        "oauth4webapi": "catalog:"
+    }
+}

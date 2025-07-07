@@ -1,9 +1,9 @@
-import { db } from "@versia/kit/db";
-import { Challenges } from "@versia/kit/tables";
+import { config } from "@versia-server/config";
+import { db } from "@versia-server/kit/db";
+import { Challenges } from "@versia-server/kit/tables";
 import { createChallenge } from "altcha-lib";
 import type { Challenge } from "altcha-lib/types";
 import { randomUUIDv7 } from "bun";
-import { config } from "~/config.ts";
 
 export const generateChallenge = async (
     maxNumber?: number,

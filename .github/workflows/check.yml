@@ -24,4 +24,4 @@ jobs:
 
             - name: Run typechecks
               run: |
-                  bun run check
+                  bun run typecheck

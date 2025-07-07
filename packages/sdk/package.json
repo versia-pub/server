@@ -7,6 +7,9 @@
         "name": "Jesse Wierzbinski (CPlusPatch)",
         "url": "https://cpluspatch.com"
     },
+    "scripts": {
+        "build": "bun run build.ts"
+    },
     "readme": "README.md",
     "repository": {
         "type": "git",
@@ -41,24 +44,19 @@
     },
     "exports": {
         ".": {
-            "import": "./inbox-processor.ts",
-            "default": "./inbox-processor.ts"
+            "import": "./inbox-processor.ts"
         },
         "./http": {
-            "import": "./http.ts",
-            "default": "./http.ts"
+            "import": "./http.ts"
         },
         "./crypto": {
-            "import": "./crypto.ts",
-            "default": "./crypto.ts"
+            "import": "./crypto.ts"
         },
         "./entities": {
-            "import": "./entities/index.ts",
-            "default": "./entities/index.ts"
+            "import": "./entities/index.ts"
         },
         "./schemas": {
-            "import": "./schemas/index.ts",
-            "default": "./schemas/index.ts"
+            "import": "./schemas/index.ts"
         }
     },
     "funding": {
@@ -71,10 +69,9 @@
         "typescript",
         "sdk"
     ],
-    "packageManager": "bun@1.2.5",
     "dependencies": {
-        "magic-regexp": "^0.10.0",
-        "mime-types": "^3.0.1",
-        "zod": "^3.24.2"
+        "magic-regexp": "catalog:",
+        "mime-types": "catalog:",
+        "zod": "catalog:"
     }
 }

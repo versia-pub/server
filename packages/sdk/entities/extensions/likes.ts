@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { DislikeSchema, LikeSchema } from "../../schemas/extensions/likes.ts";
 import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";

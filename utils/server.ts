@@ -1,9 +1,9 @@
+import type { ConfigSchema } from "@versia-server/config";
+import { debugResponse } from "@versia-server/kit/api";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";
-import type { z } from "zod";
-import type { ConfigSchema } from "~/classes/config/schema.ts";
+import type { z } from "zod/v4";
 import type { HonoEnv } from "~/types/api";
-import { debugResponse } from "./api.ts";
 
 export const createServer = (
     config: z.infer<typeof ConfigSchema>,
@@ -24,9 +24,7 @@ export const createServer = (
         async fetch(req, server): Promise<Response> {
             const output = await app.fetch(req, { ip: server.requestIP(req) });
 
-            if (config.logging.types.responses) {
-                await debugResponse(output.clone());
-            }
+            await debugResponse(output.clone());
 
             return output;
         },

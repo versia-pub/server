@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
+import { mockModule } from "@versia-server/tests";
 import sharp from "sharp";
-import { mockModule } from "~/tests/utils.ts";
 import { calculateBlurhash } from "./blurhash.ts";
 
 describe("BlurhashPreprocessor", () => {

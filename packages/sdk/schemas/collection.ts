@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { u64, url } from "./common.ts";
 
 export const CollectionSchema = z.strictObject({

@@ -2,14 +2,8 @@
 {versia-server, ...}:
 versia-server.overrideAttrs (oldAttrs: {
   pname = "${oldAttrs.pname}-worker";
-  buildPhase = ''
-    runHook preBuild
 
-    bun run build:worker
-
-    runHook postBuild
-  '';
-  entrypointPath = "worker.js";
+  buildType = "worker";
 
   meta =
     oldAttrs.meta

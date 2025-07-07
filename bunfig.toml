@@ -2,4 +2,4 @@
 "@jsr" = "https://npm.jsr.io"
 
 [test]
-preload = ["./tests/setup.ts"]
+preload = ["./packages/tests/setup.ts"]

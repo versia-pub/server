@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { InstanceMetadataSchema } from "../schemas/instance.ts";
 import type { JSONObject } from "../types.ts";
 import { ImageContentFormat } from "./contentformat.ts";

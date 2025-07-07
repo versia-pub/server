@@ -1,0 +1,27 @@
+name: Check Circular Imports
+
+on:
+    workflow_call:
+
+jobs:
+    tests:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Install NPM packages
+              run: |
+                  bun install
+
+            - name: Run typechecks
+              run: |
+                  bun run detect-circular

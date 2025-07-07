@@ -1,0 +1,24 @@
+{
+    "name": "@versia-server/logging",
+    "module": "index.ts",
+    "type": "module",
+    "version": "0.0.1",
+    "private": true,
+    "scripts": {
+        "build": "bun run build.ts"
+    },
+    "exports": {
+        ".": {
+            "import": "./index.ts"
+        }
+    },
+    "dependencies": {
+        "@versia-server/config": "workspace:*",
+        "@logtape/logtape": "catalog:",
+        "@logtape/file": "catalog:",
+        "@logtape/sentry": "catalog:",
+        "@logtape/otel": "catalog:",
+        "@sentry/bun": "catalog:",
+        "chalk": "catalog:"
+    }
+}

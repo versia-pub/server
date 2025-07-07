@@ -1,12 +1,13 @@
+import { config } from "@versia-server/config";
+import { User } from "@versia-server/kit/db";
+import { searchManager } from "@versia-server/kit/search";
+import { Users } from "@versia-server/kit/tables";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import { and, eq, isNull } from "drizzle-orm";
 import { renderUnicodeCompact } from "uqr";
-import { User } from "~/classes/database/user";
-import { config } from "~/config";
-import { Users } from "~/drizzle/schema";
 
 export const createUserCommand = defineCommand(
     {
@@ -53,6 +54,9 @@ export const createUserCommand = defineCommand(
             password,
             isAdmin: admin,
         });
+
+        // Add to search index
+        await searchManager.addUser(user);
 
         if (!user) {
             throw new Error("Failed to create user.");

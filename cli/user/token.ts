@@ -1,10 +1,10 @@
+import { Token } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
 // biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
 import { defineCommand, type Root } from "clerc";
 import { randomString } from "@/math.ts";
-import { Token } from "~/classes/database/token.ts";
 import { retrieveUser } from "../utils.ts";
 
 export const generateTokenCommand = defineCommand(
