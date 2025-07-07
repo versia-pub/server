@@ -135,10 +135,6 @@ await configure({
             category: ["logtape", "meta"],
             lowestLevel: "error",
         },
-        {
-            category: "plugin",
-            sinks: getSinkNames(),
-        },
     ],
 });
 
@@ -151,4 +147,3 @@ export const federationMessagingLogger = getLogger(["federation", "messaging"]);
 export const databaseLogger = getLogger("database");
 export const webfingerLogger = getLogger("webfinger");
 export const sonicLogger = getLogger("sonic");
-export const pluginLogger = getLogger("plugin");

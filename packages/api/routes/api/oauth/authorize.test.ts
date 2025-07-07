@@ -8,16 +8,6 @@ import { SignJWT } from "jose";
 import { randomString } from "@/math";
 
 const { deleteUsers, tokens, users } = await getTestUsers(1);
-const privateKey = await crypto.subtle.importKey(
-    "pkcs8",
-    Buffer.from(
-        config.plugins?.config?.["@versia/openid"].keys.private,
-        "base64",
-    ),
-    "Ed25519",
-    false,
-    ["sign"],
-);
 
 const application = await Application.insert({
     id: randomUUIDv7(),
@@ -44,7 +34,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -115,7 +105,7 @@ describe("/oauth/authorize", () => {
             aud: application.data.clientId,
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -157,7 +147,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -197,7 +187,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response2 = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -242,7 +232,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -286,7 +276,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -328,7 +318,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",
@@ -370,7 +360,7 @@ describe("/oauth/authorize", () => {
             nbf: Math.floor(Date.now() / 1000),
         })
             .setProtectedHeader({ alg: "EdDSA" })
-            .sign(privateKey);
+            .sign(config.authentication.keys.private);
 
         const response = await fakeRequest("/oauth/authorize", {
             method: "POST",

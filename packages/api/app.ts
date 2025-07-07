@@ -1,9 +1,6 @@
-import { join } from "node:path";
 import { Scalar } from "@scalar/hono-api-reference";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
-import { serverLogger } from "@versia-server/logging";
-import chalk from "chalk";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
@@ -20,7 +17,6 @@ import { boundaryCheck } from "./middlewares/boundary-check.ts";
 import { ipBans } from "./middlewares/ip-bans.ts";
 import { logger } from "./middlewares/logger.ts";
 import { rateLimit } from "./middlewares/rate-limit.ts";
-import { PluginLoader } from "./plugin-loader.ts";
 import { routes } from "./routes.ts";
 
 export const appFactory = async (): Promise<Hono<HonoEnv>> => {
@@ -103,27 +99,6 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
 
         route.default(app);
     }
-
-    serverLogger.info`Loading plugins`;
-
-    const time1 = performance.now();
-
-    const loader = new PluginLoader();
-
-    const plugins = await loader.loadPlugins(
-        join(import.meta.dir, "plugins"),
-        config.plugins?.autoload ?? true,
-        config.plugins?.overrides.enabled,
-        config.plugins?.overrides.disabled,
-    );
-
-    await PluginLoader.addToApp(plugins, app);
-
-    const time2 = performance.now();
-
-    serverLogger.info`Plugins loaded in ${`${chalk.gray(
-        (time2 - time1).toFixed(2),
-    )}ms`}`;
 
     const openApiSpecs = await generateSpecs(app, {
         documentation: {

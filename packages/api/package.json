@@ -36,7 +36,6 @@
     "scripts": {
         "dev": "bun run --hot index.ts",
         "build": "bun run build.ts",
-        "schema:generate": "bun run classes/config/to-json-schema.ts > config/config.schema.json && bun run packages/kit/json-schema.ts > packages/kit/manifest.schema.json",
         "docs:dev": "vitepress dev docs",
         "docs:build": "vitepress build docs",
         "docs:preview": "vitepress preview docs"

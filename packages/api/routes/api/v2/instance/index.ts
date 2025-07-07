@@ -39,17 +39,6 @@ export default apiRoute((app) =>
                 30 * 24 * 60 * 60 * 1000,
             );
 
-            const oidcConfig = config.plugins?.config?.["@versia/openid"] as
-                | {
-                      forced?: boolean;
-                      providers?: {
-                          id: string;
-                          name: string;
-                          icon?: string;
-                      }[];
-                  }
-                | undefined;
-
             // TODO: fill in more values
             return context.json({
                 domain: config.http.base_url.hostname,
@@ -162,13 +151,14 @@ export default apiRoute((app) =>
                     hint: r.hint,
                 })),
                 sso: {
-                    forced: oidcConfig?.forced ?? false,
-                    providers:
-                        oidcConfig?.providers?.map((p) => ({
+                    forced: config.authentication.forced_openid,
+                    providers: config.authentication.openid_providers.map(
+                        (p) => ({
                             name: p.name,
-                            icon: p.icon,
+                            icon: p.icon?.href,
                             id: p.id,
-                        })) ?? [],
+                        }),
+                    ),
                 },
             });
         },

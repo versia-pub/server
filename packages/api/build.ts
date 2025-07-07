@@ -1,4 +1,3 @@
-import { readdir } from "node:fs/promises";
 import { $, build } from "bun";
 import manifest from "./package.json" with { type: "json" };
 import { routes } from "./routes.ts";
@@ -7,18 +6,11 @@ console.log("Building...");
 
 await $`rm -rf dist && mkdir dist`;
 
-// Get all directories under the plugins/ directory
-const pluginDirs = await readdir("plugins", { withFileTypes: true });
-
 await build({
     entrypoints: [
         ...Object.values(manifest.exports).map((entry) => entry.import),
         // Force Bun to include endpoints
         ...Object.values(routes),
-        // Include all plugins
-        ...pluginDirs
-            .filter((dir) => dir.isDirectory())
-            .map((dir) => `plugins/${dir.name}/index.ts`),
     ],
     outdir: "dist",
     target: "bun",
@@ -36,9 +28,6 @@ await build({
 });
 
 console.log("Copying files...");
-
-// Copy plugin manifests
-await $`cp plugins/openid/manifest.json dist/plugins/openid/manifest.json`;
 
 await $`mkdir -p dist/node_modules`;
 

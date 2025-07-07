@@ -6,7 +6,6 @@
         "cli",
         "federation",
         "config",
-        "plugin",
         "worker",
         "media",
         "packages/client",

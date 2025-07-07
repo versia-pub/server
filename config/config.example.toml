@@ -458,25 +458,15 @@ log_level = "info" # For console output
 # environment = "production"
 # log_level = "info"
 
-
-[plugins]
-# Whether to automatically load all plugins in the plugins directory
-autoload = true
-
-# Override for autoload
-[plugins.overrides]
-enabled = []
-disabled = []
-
-[plugins.config."@versia/openid"]
+[authentication]
 # If enabled, Versia will require users to log in with an OpenID provider
-forced = false
+forced_openid = false
 
 # Allow registration with OpenID providers
 # If signups.registration is false, it will only be possible to register with OpenID
-allow_registration = true
+openid_registration = true
 
-# [plugins.config."@versia/openid".keys]
+# [authentication.keys]
 # Run Versia Server with those values missing to generate a new key
 # public = ""
 # private = ""
@@ -488,7 +478,7 @@ allow_registration = true
 # The asterisk is important, as it allows for any query parameters to be passed
 # Authentik for example uses regex so it can be set to (regex):
 # <base_url>/oauth/sso/<provider_id>/callback.*
-# [[plugins.config."@versia/openid".providers]]
+# [[authentication.openid_providers]]
 # name = "CPlusPatch ID"
 # id = "cpluspatch-id"
 # This MUST match the provider's issuer URI, including the trailing slash (or lack thereof)

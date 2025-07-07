@@ -7,7 +7,6 @@ afterAll(async () => {
     await deleteUsers();
 });
 
-// /api/v1/sso/:id
 describe("/api/v1/sso/:id", () => {
     test("should not find unknown issuer", async () => {
         const response = await fakeRequest("/api/v1/sso/unknown", {

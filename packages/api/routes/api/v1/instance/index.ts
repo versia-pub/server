@@ -48,17 +48,6 @@ export default apiRoute((app) =>
 
             const knownDomainsCount = await Instance.getCount();
 
-            const oidcConfig = config.plugins?.config?.["@versia/openid"] as
-                | {
-                      forced?: boolean;
-                      providers?: {
-                          id: string;
-                          name: string;
-                          icon?: string;
-                      }[];
-                  }
-                | undefined;
-
             const content = await markdownToHtml(
                 config.instance.extended_description_path?.content ??
                     "This is a [Versia](https://versia.pub) server with the default extended description.",
@@ -121,15 +110,15 @@ export default apiRoute((app) =>
                 },
                 version: "4.3.0-alpha.3+glitch",
                 versia_version: version,
-                // TODO: Put into plugin directly
                 sso: {
-                    forced: oidcConfig?.forced ?? false,
-                    providers:
-                        oidcConfig?.providers?.map((p) => ({
+                    forced: config.authentication.forced_openid,
+                    providers: config.authentication.openid_providers.map(
+                        (p) => ({
                             name: p.name,
-                            icon: p.icon,
+                            icon: p.icon?.href,
                             id: p.id,
-                        })) ?? [],
+                        }),
+                    ),
                 },
                 contact_account: (contactAccount as User)?.toApi(),
             } satisfies z.infer<typeof InstanceV1Schema>);

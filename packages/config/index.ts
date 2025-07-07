@@ -792,20 +792,22 @@ export const ConfigSchema = z
                 federation: z.boolean().default(false),
             })
             .optional(),
-        plugins: z.strictObject({
-            autoload: z.boolean().default(true),
-            overrides: z
-                .strictObject({
-                    enabled: z.array(z.string()).default([]),
-                    disabled: z.array(z.string()).default([]),
-                })
-                .refine(
-                    // Only one of enabled or disabled can be set
-                    (arg) =>
-                        arg.enabled.length === 0 || arg.disabled.length === 0,
-                    "Only one of enabled or disabled can be set",
-                ),
-            config: z.record(z.string(), z.any()).optional(),
+        authentication: z.strictObject({
+            forced_openid: z.boolean().default(false),
+            openid_providers: z
+                .array(
+                    z.strictObject({
+                        name: z.string().min(1),
+                        id: z.string().min(1),
+                        url: z.string().min(1),
+                        client_id: z.string().min(1),
+                        client_secret: sensitiveString,
+                        icon: url.optional(),
+                    }),
+                )
+                .default([]),
+            openid_registration: z.boolean().default(true),
+            keys: keyPair,
         }),
     })
     .refine(

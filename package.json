@@ -123,6 +123,7 @@
         "build": "bun run --filter \"*\" build && bun run build.ts",
         "detect-circular": "bunx madge --circular --extensions ts ./",
         "update-nix-hashes": "bash scripts/update-nix.sh",
+        "schema:generate": "bun run packages/config/to-json-schema.ts > config/config.schema.json",
         "run-api": "bun run build api && cd dist && ln -s ../config config && bun run api.js",
         "run-worker": "bun run build worker && cd dist && ln -s ../config config && bun run worker.js",
         "dev": "bun run --hot api.ts",

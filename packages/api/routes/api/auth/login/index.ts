@@ -97,30 +97,7 @@ export default apiRoute((app) =>
             handleZodError,
         ),
         async (context) => {
-            const oidcConfig = config.plugins?.config?.["@versia/openid"] as
-                | {
-                      forced: boolean;
-                      providers: {
-                          id: string;
-                          name: string;
-                          icon: string;
-                      }[];
-                      keys: {
-                          private: string;
-                          public: string;
-                      };
-                  }
-                | undefined;
-
-            if (!oidcConfig) {
-                return returnError(
-                    context,
-                    "invalid_request",
-                    "The OpenID Connect plugin is not enabled on this instance. Cannot process login request.",
-                );
-            }
-
-            if (oidcConfig?.forced) {
+            if (config.authentication.forced_openid) {
                 return returnError(
                     context,
                     "invalid_request",
@@ -166,15 +143,6 @@ export default apiRoute((app) =>
                 );
             }
 
-            // Try and import the key
-            const privateKey = await crypto.subtle.importKey(
-                "pkcs8",
-                Buffer.from(oidcConfig?.keys?.private ?? "", "base64"),
-                "Ed25519",
-                false,
-                ["sign"],
-            );
-
             // Generate JWT
             const jwt = await new SignJWT({
                 sub: user.id,
@@ -185,7 +153,7 @@ export default apiRoute((app) =>
                 nbf: Math.floor(Date.now() / 1000),
             })
                 .setProtectedHeader({ alg: "EdDSA" })
-                .sign(privateKey);
+                .sign(config.authentication.keys.private);
 
             const application = await Application.fromClientId(client_id);
 
