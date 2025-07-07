@@ -2,7 +2,7 @@ import type { ApiError } from "@versia-server/kit";
 import { env } from "bun";
 import type { MiddlewareHandler } from "hono";
 import { rateLimiter } from "hono-rate-limiter";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import type { HonoEnv } from "~/types/api";
 
 // Not exported by hono-rate-limiter

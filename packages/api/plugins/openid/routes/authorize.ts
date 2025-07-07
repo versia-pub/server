@@ -2,11 +2,10 @@ import { RolePermission } from "@versia/client/schemas";
 import { auth, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Application, Token, User } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
+import { describeRoute, validator } from "hono-openapi";
 import { type JWTPayload, jwtVerify, SignJWT } from "jose";
 import { JOSEError } from "jose/errors";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { randomString } from "@/math";
 import { errorRedirect, errors } from "../errors.ts";
 import type { PluginType } from "../index.ts";
@@ -50,7 +49,6 @@ export default (plugin: PluginType): void =>
                     .object({
                         scope: z.string().optional(),
                         redirect_uri: z
-                            .string()
                             .url()
                             .optional()
                             .or(z.literal("urn:ietf:wg:oauth:2.0:oob")),
@@ -141,7 +139,7 @@ export default (plugin: PluginType): void =>
                     );
                 }
 
-                if (!z.string().uuid().safeParse(sub).success) {
+                if (!z.uuid().safeParse(sub).success) {
                     return errorRedirect(
                         context,
                         errors.InvalidSub,

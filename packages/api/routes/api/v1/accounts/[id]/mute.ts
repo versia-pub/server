@@ -14,9 +14,8 @@ import {
     RelationshipJobType,
     relationshipQueue,
 } from "@versia-server/kit/queues/relationships";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.post(
@@ -56,7 +55,7 @@ export default apiRoute((app) =>
         validator(
             "json",
             z.object({
-                notifications: z.boolean().default(true).openapi({
+                notifications: z.boolean().default(true).meta({
                     description: "Mute notifications in addition to statuses?",
                 }),
                 duration: z
@@ -65,7 +64,7 @@ export default apiRoute((app) =>
                     .min(0)
                     .max(60 * 60 * 24 * 365 * 5)
                     .default(0)
-                    .openapi({
+                    .meta({
                         description:
                             "How long the mute should last, in seconds. 0 means indefinite.",
                     }),

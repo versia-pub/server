@@ -16,7 +16,7 @@ import {
     isNull,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Emojis, type Instances, type Medias } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";
@@ -194,7 +194,7 @@ export class Emoji extends BaseInterface<typeof Emojis, EmojiType> {
             global: this.data.ownerId === null,
             description:
                 this.media.data.content[this.media.getPreferredMimeType()]
-                    .description ?? null,
+                    ?.description ?? null,
         };
     }
 

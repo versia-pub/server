@@ -4,8 +4,7 @@ import { apiRoute } from "@versia-server/kit/api";
 import { User } from "@versia-server/kit/db";
 import { Users } from "@versia-server/kit/tables";
 import { asc } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
+import { describeRoute, resolver } from "hono-openapi";
 import { urlToContentFormat } from "@/content_types";
 import pkg from "../../../../package.json" with { type: "json" };
 

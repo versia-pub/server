@@ -5,9 +5,8 @@ import {
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Notification } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.post(

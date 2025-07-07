@@ -11,9 +11,8 @@ import {
     withUserParam,
 } from "@versia-server/kit/api";
 import { Role } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) => {
     app.post(

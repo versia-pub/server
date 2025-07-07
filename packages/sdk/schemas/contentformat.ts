@@ -1,5 +1,5 @@
 import { types } from "mime-types";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { f64, u64 } from "./common.ts";
 
 const hashSizes = {
@@ -39,10 +39,10 @@ const audioMimeTypes = Object.values(types).filter((v) =>
     v.startsWith("audio/"),
 ) as [string, ...string[]];
 
-export const ContentFormatSchema = z.record(
+export const ContentFormatSchema = z.partialRecord(
     z.enum(allMimeTypes),
     z.strictObject({
-        content: z.string().or(z.string().url()),
+        content: z.string().or(z.url()),
         remote: z.boolean(),
         description: z.string().nullish(),
         size: u64.nullish(),
@@ -64,9 +64,9 @@ export const ContentFormatSchema = z.record(
     }),
 );
 
-export const TextContentFormatSchema = z.record(
+export const TextContentFormatSchema = z.partialRecord(
     z.enum(textMimeTypes),
-    ContentFormatSchema.valueSchema
+    ContentFormatSchema.valueType
         .pick({
             content: true,
             remote: true,
@@ -77,9 +77,9 @@ export const TextContentFormatSchema = z.record(
         }),
 );
 
-export const NonTextContentFormatSchema = z.record(
+export const NonTextContentFormatSchema = z.partialRecord(
     z.enum(nonTextMimeTypes),
-    ContentFormatSchema.valueSchema
+    ContentFormatSchema.valueType
         .pick({
             content: true,
             remote: true,
@@ -91,27 +91,27 @@ export const NonTextContentFormatSchema = z.record(
             height: true,
         })
         .extend({
-            content: z.string().url(),
+            content: z.url(),
             remote: z.literal(true),
         }),
 );
 
-export const ImageContentFormatSchema = z.record(
+export const ImageContentFormatSchema = z.partialRecord(
     z.enum(imageMimeTypes),
-    NonTextContentFormatSchema.valueSchema,
+    NonTextContentFormatSchema.valueType,
 );
 
-export const VideoContentFormatSchema = z.record(
+export const VideoContentFormatSchema = z.partialRecord(
     z.enum(videoMimeTypes),
-    NonTextContentFormatSchema.valueSchema.extend({
-        duration: ContentFormatSchema.valueSchema.shape.duration,
-        fps: ContentFormatSchema.valueSchema.shape.fps,
+    NonTextContentFormatSchema.valueType.extend({
+        duration: ContentFormatSchema.valueType.shape.duration,
+        fps: ContentFormatSchema.valueType.shape.fps,
     }),
 );
 
-export const AudioContentFormatSchema = z.record(
+export const AudioContentFormatSchema = z.partialRecord(
     z.enum(audioMimeTypes),
-    NonTextContentFormatSchema.valueSchema.extend({
-        duration: ContentFormatSchema.valueSchema.shape.duration,
+    NonTextContentFormatSchema.valueType.extend({
+        duration: ContentFormatSchema.valueType.shape.duration,
     }),
 );

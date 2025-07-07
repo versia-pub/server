@@ -12,9 +12,8 @@ import {
     qsQuery,
 } from "@versia-server/kit/api";
 import { Relationship } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
@@ -55,8 +54,8 @@ export default apiRoute((app) =>
                     .array(AccountSchema.shape.id)
                     .min(1)
                     .max(10)
-                    .or(AccountSchema.shape.id.transform((v) => [v]))
-                    .openapi({
+                    .or(AccountSchema.shape.id)
+                    .meta({
                         description:
                             "Check relationships for the provided account IDs.",
                         example: [
@@ -64,7 +63,7 @@ export default apiRoute((app) =>
                             "8424c654-5d03-4a1b-bec8-4e87db811b5d",
                         ],
                     }),
-                with_suspended: zBoolean.default(false).openapi({
+                with_suspended: zBoolean.default(false).meta({
                     description:
                         "Whether relationships should be returned for suspended users",
                     example: false,
@@ -76,17 +75,16 @@ export default apiRoute((app) =>
             const { user } = context.get("auth");
 
             // TODO: Implement with_suspended
-            const { id: ids } = context.req.valid("query");
+            const { id } = context.req.valid("query");
 
             const relationships = await Relationship.fromOwnerAndSubjects(
                 user,
-                ids,
+                Array.isArray(id) ? id : [id],
             );
 
             relationships.sort(
                 (a, b) =>
-                    ids.indexOf(a.data.subjectId) -
-                    ids.indexOf(b.data.subjectId),
+                    id.indexOf(a.data.subjectId) - id.indexOf(b.data.subjectId),
             );
 
             return context.json(

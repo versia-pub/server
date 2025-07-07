@@ -7,9 +7,8 @@ import { apiRoute, auth } from "@versia-server/kit/api";
 import { Emoji } from "@versia-server/kit/db";
 import { Emojis } from "@versia-server/kit/tables";
 import { and, eq, isNull, or } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(

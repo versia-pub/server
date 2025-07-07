@@ -2,9 +2,8 @@ import { UserSchema } from "@versia/sdk/schemas";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { User } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -39,7 +38,7 @@ export default apiRoute((app) =>
         validator(
             "param",
             z.object({
-                uuid: z.string().uuid(),
+                uuid: z.uuid(),
             }),
             handleZodError,
         ),

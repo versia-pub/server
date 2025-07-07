@@ -12,38 +12,37 @@ import { User } from "@versia-server/kit/db";
 import { searchManager } from "@versia-server/kit/search";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
 import ISO6391 from "iso-639-1";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { tempmailDomains } from "@/tempmail";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 
 const schema = z.object({
-    username: z.string().openapi({
+    username: z.string().meta({
         description: "The desired username for the account",
         example: "alice",
     }),
-    email: z.string().toLowerCase().openapi({
+    email: z.string().toLowerCase().meta({
         description:
             "The email address to be used for login. Transformed to lowercase.",
         example: "alice@gmail.com",
     }),
-    password: z.string().openapi({
+    password: z.string().meta({
         description: "The password to be used for login",
         example: "hunter2",
     }),
-    agreement: zBoolean.openapi({
+    agreement: zBoolean.meta({
         description:
             "Whether the user agrees to the local rules, terms, and policies. These should be presented to the user in order to allow them to consent before setting this parameter to TRUE.",
         example: true,
     }),
-    locale: z.string().openapi({
+    locale: z.string().meta({
         description:
             "The language of the confirmation email that will be sent. ISO 639-1 code.",
         example: "en",
     }),
-    reason: z.string().optional().openapi({
+    reason: z.string().optional().meta({
         description:
             "If registrations require manual approval, this text will be reviewed by moderators.",
     }),
@@ -86,8 +85,8 @@ export default apiRoute((app) => {
                     .array(AccountSchema.shape.id)
                     .min(1)
                     .max(40)
-                    .or(AccountSchema.shape.id.transform((v) => [v]))
-                    .openapi({
+                    .or(AccountSchema.shape.id)
+                    .meta({
                         description: "The IDs of the Accounts in the database.",
                         example: [
                             "f137ce6f-ff5e-4998-b20f-0361ba9be007",
@@ -98,10 +97,10 @@ export default apiRoute((app) => {
             handleZodError,
         ),
         async (context) => {
-            const { id: ids } = context.req.valid("query");
+            const { id } = context.req.valid("query");
 
             // Find accounts by IDs
-            const accounts = await User.fromIds(ids);
+            const accounts = await User.fromIds(Array.isArray(id) ? id : [id]);
 
             return context.json(
                 accounts.map((account) => account.toApi()),

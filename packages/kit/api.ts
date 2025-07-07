@@ -1,4 +1,4 @@
-import type { Hook } from "@hono/zod-validator";
+import type { Hook } from "@hono/standard-validator";
 import type { RolePermission } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
 import { serverLogger } from "@versia-server/logging";
@@ -8,9 +8,9 @@ import { eq, type SQL } from "drizzle-orm";
 import type { Context, Hono, MiddlewareHandler, ValidationTargets } from "hono";
 import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
-import { validator } from "hono-openapi/zod";
+import { validator } from "hono-openapi";
 import { type ParsedQs, parse } from "qs";
-import { type ZodAny, type ZodError, z } from "zod";
+import { type ZodAny, ZodError, z } from "zod/v4";
 import { fromZodError } from "zod-validation-error";
 import type { AuthData, HonoEnv } from "~/types/api";
 import { ApiError } from "./api-error.ts";
@@ -31,9 +31,11 @@ export const handleZodError: Hook<
     keyof ValidationTargets
 > = (result, context): Response | undefined => {
     if (!result.success) {
+        const issues = result.error as z.core.$ZodIssue[];
+
         return context.json(
             {
-                error: fromZodError(result.error as ZodError).message,
+                error: fromZodError(new ZodError(issues)).message,
             },
             422,
         );
@@ -204,7 +206,7 @@ type WithIdParam = {
  * @returns MiddlewareHandler
  */
 export const withNoteParam = every(
-    validator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    validator("param", z.object({ id: z.uuid() }), handleZodError),
     createMiddleware<
         HonoEnv & {
             Variables: {
@@ -242,7 +244,7 @@ export const withNoteParam = every(
  * @returns MiddlewareHandler
  */
 export const withUserParam = every(
-    validator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    validator("param", z.object({ id: z.uuid() }), handleZodError),
     createMiddleware<
         HonoEnv & {
             Variables: {
@@ -278,7 +280,7 @@ export const withUserParam = every(
  * @returns
  */
 export const withEmojiParam = every(
-    validator("param", z.object({ id: z.string().uuid() }), handleZodError),
+    validator("param", z.object({ id: z.uuid() }), handleZodError),
     createMiddleware<
         HonoEnv & {
             Variables: {

@@ -5,7 +5,7 @@ import { User } from "@versia-server/kit/db";
 import { getCookie } from "hono/cookie";
 import { jwtVerify } from "jose";
 import { JOSEError, JWTExpired } from "jose/errors";
-import { z } from "zod";
+import { z } from "zod/v4";
 import authorizeRoute from "./routes/authorize.ts";
 import jwksRoute from "./routes/jwks.ts";
 import ssoLoginCallbackRoute from "./routes/oauth/callback.ts";

@@ -6,7 +6,7 @@ import { file, sleep } from "bun";
 import chalk from "chalk";
 import { parseJSON5, parseJSONC } from "confbox";
 import type { Hono } from "hono";
-import type { ZodTypeAny } from "zod";
+import type { ZodTypeAny } from "zod/v4";
 import { fromZodError, type ValidationError } from "zod-validation-error";
 import type { HonoEnv } from "~/types/api";
 

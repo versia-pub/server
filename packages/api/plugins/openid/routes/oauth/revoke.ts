@@ -2,9 +2,8 @@ import { handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { db, Token } from "@versia-server/kit/db";
 import { Tokens } from "@versia-server/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import type { PluginType } from "../../index.ts";
 
 export default (plugin: PluginType): void => {

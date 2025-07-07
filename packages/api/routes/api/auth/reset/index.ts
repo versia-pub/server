@@ -5,9 +5,8 @@ import { Users } from "@versia-server/kit/tables";
 import { password as bunPassword } from "bun";
 import { eq } from "drizzle-orm";
 import type { Context } from "hono";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 const returnError = (
     context: Context,

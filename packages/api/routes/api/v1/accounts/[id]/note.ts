@@ -10,9 +10,8 @@ import {
     withUserParam,
 } from "@versia-server/kit/api";
 import { Relationship } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.post(
@@ -50,7 +49,7 @@ export default apiRoute((app) =>
         validator(
             "json",
             z.object({
-                comment: RelationshipSchema.shape.note.optional().openapi({
+                comment: RelationshipSchema.shape.note.optional().meta({
                     description:
                         "The comment to be set on that user. Provide an empty string or leave out this parameter to clear the currently set note.",
                 }),

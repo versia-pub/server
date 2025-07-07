@@ -13,9 +13,8 @@ import {
 import { db, User } from "@versia-server/kit/db";
 import type { Users } from "@versia-server/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
@@ -56,8 +55,8 @@ export default apiRoute((app) =>
                     .array(AccountSchema.shape.id)
                     .min(1)
                     .max(10)
-                    .or(AccountSchema.shape.id.transform((v) => [v]))
-                    .openapi({
+                    .or(AccountSchema.shape.id)
+                    .meta({
                         description:
                             "Find familiar followers for the provided account IDs.",
                         example: [
@@ -70,11 +69,11 @@ export default apiRoute((app) =>
         ),
         async (context) => {
             const { user } = context.get("auth");
-            const { id: ids } = context.req.valid("query");
+            const { id } = context.req.valid("query");
 
             // Find followers of the accounts in "ids", that you also follow
             const finalUsers = await Promise.all(
-                ids.map(async (id) => ({
+                (Array.isArray(id) ? id : [id]).map(async (id) => ({
                     id,
                     accounts: await User.fromIds(
                         (

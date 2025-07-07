@@ -9,10 +9,9 @@ import { User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
 import { Users } from "@versia-server/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
 import stringComparison from "string-comparison";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
@@ -48,30 +47,24 @@ export default apiRoute((app) =>
             z.object({
                 q: AccountSchema.shape.username
                     .or(AccountSchema.shape.acct)
-                    .openapi({
+                    .meta({
                         description: "Search query for accounts.",
                         example: "username",
                     }),
-                limit: z.coerce
-                    .number()
-                    .int()
-                    .min(1)
-                    .max(80)
-                    .default(40)
-                    .openapi({
-                        description: "Maximum number of results.",
-                        example: 40,
-                    }),
-                offset: z.coerce.number().int().default(0).openapi({
+                limit: z.coerce.number().int().min(1).max(80).default(40).meta({
+                    description: "Maximum number of results.",
+                    example: 40,
+                }),
+                offset: z.coerce.number().int().default(0).meta({
                     description: "Skip the first n results.",
                     example: 0,
                 }),
-                resolve: zBoolean.default(false).openapi({
+                resolve: zBoolean.default(false).meta({
                     description:
                         "Attempt WebFinger lookup. Use this when q is an exact address.",
                     example: false,
                 }),
-                following: zBoolean.default(false).openapi({
+                following: zBoolean.default(false).meta({
                     description: "Limit the search to users you are following.",
                     example: false,
                 }),

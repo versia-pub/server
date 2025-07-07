@@ -25,7 +25,7 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 
 const createdAt = () =>
     timestamp("created_at", { precision: 3, mode: "string" })

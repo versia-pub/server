@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { extensionRegex, semverRegex } from "../regex.ts";
 import { url } from "./common.ts";
 import { ImageContentFormatSchema } from "./contentformat.ts";

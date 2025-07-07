@@ -5,7 +5,7 @@ import {
     getTestUsers,
 } from "@versia-server/tests";
 import { bench, run } from "mitata";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 
 const { users, tokens, deleteUsers } = await getTestUsers(5);
 await getTestStatuses(40, users[0]);

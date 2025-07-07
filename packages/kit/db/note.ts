@@ -20,7 +20,7 @@ import {
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
 import { createRegExp, exactly, global } from "magic-regexp";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { versiaTextToHtml } from "../parsers.ts";

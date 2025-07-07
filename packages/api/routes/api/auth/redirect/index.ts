@@ -3,9 +3,8 @@ import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { db } from "@versia-server/kit/db";
 import { Applications, Tokens } from "@versia-server/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 /**
  * OAuth Code flow
@@ -28,7 +27,7 @@ export default apiRoute((app) =>
         validator(
             "query",
             z.object({
-                redirect_uri: z.string().url(),
+                redirect_uri: z.url(),
                 client_id: z.string(),
                 code: z.string(),
             }),

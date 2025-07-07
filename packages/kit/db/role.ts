@@ -12,7 +12,7 @@ import {
     inArray,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Roles, RoleToUsers } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";

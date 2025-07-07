@@ -6,9 +6,8 @@ import {
     handleZodError,
     qsQuery,
 } from "@versia-server/kit/api";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.delete(
@@ -32,7 +31,7 @@ export default apiRoute((app) =>
         validator(
             "query",
             z.object({
-                ids: z.array(z.string().uuid()),
+                ids: z.array(z.uuid()),
             }),
             handleZodError,
         ),

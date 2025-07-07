@@ -1,8 +1,8 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { JSONObject } from "hono/utils/types";
 import type { DescribeRouteOptions } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
-import { z } from "zod";
+import { resolver } from "hono-openapi";
+import { z } from "zod/v4";
 
 /**
  * API Error

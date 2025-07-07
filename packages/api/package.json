@@ -74,7 +74,7 @@
         "ip-matching": "catalog:",
         "qs": "catalog:",
         "altcha-lib": "catalog:",
-        "@hono/zod-validator": "catalog:",
+        "@hono/standard-validator": "catalog:",
         "zod-validation-error": "catalog:",
         "confbox": "catalog:",
         "oauth4webapi": "catalog:"

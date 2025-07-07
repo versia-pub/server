@@ -4,7 +4,7 @@
  * @see module:federation/schemas/base
  * @see https://versia.pub/extensions/custom-emojis
  */
-import { z } from "zod";
+import { z } from "zod/v4";
 import { emojiRegex } from "../../regex.ts";
 import { ImageContentFormatSchema } from "../contentformat.ts";
 

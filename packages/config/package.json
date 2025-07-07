@@ -20,7 +20,6 @@
         "web-push": "catalog:",
         "iso-639-1": "catalog:",
         "mime-types": "catalog:",
-        "@versia/client": "workspace:*",
-        "zod-to-json-schema": "catalog:"
+        "@versia/client": "workspace:*"
     }
 }

@@ -7,7 +7,7 @@ import {
     inArray,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Notifications } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";
@@ -189,6 +189,7 @@ export class Notification extends BaseInterface<
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.data.id,
             type: this.data.type,
+            event: undefined,
             status: this.data.status
                 ? await new Note(this.data.status).toApi(account)
                 : undefined,

@@ -12,9 +12,8 @@ import {
 import { Timeline } from "@versia-server/kit/db";
 import { Users } from "@versia-server/kit/tables";
 import { and, gt, gte, lt, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -40,7 +39,7 @@ export default apiRoute((app) =>
                         link: z
                             .string()
                             .optional()
-                            .openapi({
+                            .meta({
                                 description:
                                     "Links to the next and previous pages",
                                 example:
@@ -67,22 +66,22 @@ export default apiRoute((app) =>
         validator(
             "query",
             z.object({
-                max_id: AccountSchema.shape.id.optional().openapi({
+                max_id: AccountSchema.shape.id.optional().meta({
                     description:
                         "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
                     example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
                 }),
-                since_id: AccountSchema.shape.id.optional().openapi({
+                since_id: AccountSchema.shape.id.optional().meta({
                     description:
                         "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
                     example: undefined,
                 }),
-                min_id: AccountSchema.shape.id.optional().openapi({
+                min_id: AccountSchema.shape.id.optional().meta({
                     description:
                         "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
                     example: undefined,
                 }),
-                limit: z.number().int().min(1).max(40).default(20).openapi({
+                limit: z.number().int().min(1).max(40).default(20).meta({
                     description: "Maximum number of results to return.",
                 }),
             }),

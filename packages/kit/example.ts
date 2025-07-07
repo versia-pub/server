@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { Hooks } from "./hooks.ts";
 import { Plugin } from "./plugin.ts";
 

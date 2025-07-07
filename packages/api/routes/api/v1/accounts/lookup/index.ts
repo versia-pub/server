@@ -9,9 +9,8 @@ import { Instance, User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
@@ -43,7 +42,7 @@ export default apiRoute((app) =>
         validator(
             "query",
             z.object({
-                acct: AccountSchema.shape.acct.openapi({
+                acct: AccountSchema.shape.acct.meta({
                     description: "The username or Webfinger address to lookup.",
                     example: "lexi@beta.versia.social",
                 }),

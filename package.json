@@ -42,7 +42,6 @@
             "vitepress-plugin-tabs": "^0.7.1",
             "vitepress-sidebar": "^1.32.1",
             "vue": "^3.5.17",
-            "zod-to-json-schema": "^3.24.6",
             "@bull-board/api": "^6.11.0",
             "@bull-board/hono": "^6.11.0",
             "@clerc/plugin-completions": "^0.44.0",
@@ -51,7 +50,7 @@
             "@clerc/plugin-not-found": "^0.44.0",
             "@clerc/plugin-version": "^0.44.0",
             "@hackmd/markdown-it-task-lists": "^2.1.4",
-            "@hono/zod-validator": "^0.7.0",
+            "@hono/standard-validator": "^0.1.2",
             "@inquirer/confirm": "^5.1.13",
             "@logtape/file": "^1.0.0",
             "@logtape/logtape": "^1.0.0",
@@ -68,7 +67,7 @@
             "drizzle-orm": "^0.44.2",
             "feed": "^5.1.0",
             "hono": "^4.8.4",
-            "hono-openapi": "^0.4.8",
+            "hono-openapi": "npm:@cpluspatch/hono-openapi@0.5.1",
             "hono-rate-limiter": "^0.4.2",
             "html-to-text": "^9.0.5",
             "ioredis": "^5.6.1",
@@ -99,8 +98,8 @@
             "xss": "^1.0.15",
             "youch": "^4.1.0-beta.7",
             "zod": "^3.25.74",
-            "zod-openapi": "^4.2.4",
-            "zod-validation-error": "^3.5.2"
+            "zod-openapi": "^5.0.0",
+            "zod-validation-error": "^4.0.0-beta.1"
         }
     },
     "maintainers": [
@@ -153,8 +152,7 @@
         "vitepress": "catalog:",
         "vitepress-plugin-tabs": "catalog:",
         "vitepress-sidebar": "catalog:",
-        "vue": "catalog:",
-        "zod-to-json-schema": "catalog:"
+        "vue": "catalog:"
     },
     "dependencies": {
         "@bull-board/api": "catalog:",
@@ -165,15 +163,15 @@
         "@clerc/plugin-not-found": "catalog:",
         "@clerc/plugin-version": "catalog:",
         "@hackmd/markdown-it-task-lists": "catalog:",
-        "@hono/zod-validator": "catalog:",
+        "@hono/standard-validator": "catalog:",
         "@inquirer/confirm": "catalog:",
         "@scalar/hono-api-reference": "catalog:",
         "@sentry/bun": "catalog:",
+        "@versia-server/api": "workspace:*",
         "@versia-server/config": "workspace:*",
         "@versia-server/kit": "workspace:*",
-        "@versia-server/tests": "workspace:*",
         "@versia-server/logging": "workspace:*",
-        "@versia-server/api": "workspace:*",
+        "@versia-server/tests": "workspace:*",
         "@versia-server/worker": "workspace:*",
         "@versia/client": "workspace:*",
         "@versia/sdk": "workspace:*",

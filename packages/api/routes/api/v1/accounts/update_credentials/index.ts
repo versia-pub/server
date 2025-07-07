@@ -16,9 +16,8 @@ import { Emoji, Media, User } from "@versia-server/kit/db";
 import { versiaTextToHtml } from "@versia-server/kit/parsers";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { mergeAndDeduplicate } from "@/lib";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
@@ -58,7 +57,7 @@ export default apiRoute((app) =>
             z
                 .object({
                     display_name: AccountSchema.shape.display_name
-                        .openapi({
+                        .meta({
                             description:
                                 "The display name to use for the profile.",
                             example: "Lexi",
@@ -75,7 +74,7 @@ export default apiRoute((app) =>
                             "Display name contains blocked words",
                         ),
                     username: AccountSchema.shape.username
-                        .openapi({
+                        .meta({
                             description: "The username to use for the profile.",
                             example: "lexi",
                         })
@@ -95,7 +94,7 @@ export default apiRoute((app) =>
                             "Username is disallowed",
                         ),
                     note: AccountSchema.shape.note
-                        .openapi({
+                        .meta({
                             description:
                                 "The account bio. Markdown is supported.",
                         })
@@ -108,72 +107,60 @@ export default apiRoute((app) =>
                             "Bio contains blocked words",
                         ),
                     avatar: z
-                        .string()
                         .url()
-                        .transform((a) => new URL(a))
-                        .openapi({
+                        .meta({
                             description: "Avatar image URL",
                         })
                         .or(
                             z
-                                .instanceof(File)
-                                .refine(
-                                    (v) =>
-                                        v.size <=
-                                        config.validation.accounts
-                                            .max_avatar_bytes,
-                                    `Avatar must be less than ${config.validation.accounts.max_avatar_bytes} bytes`,
+                                .file()
+                                .max(
+                                    config.validation.accounts.max_avatar_bytes,
                                 )
-                                .openapi({
+                                .meta({
                                     description:
                                         "Avatar image encoded using multipart/form-data",
                                 }),
                         ),
                     header: z
-                        .string()
                         .url()
-                        .transform((v) => new URL(v))
-                        .openapi({
+                        .meta({
                             description: "Header image URL",
                         })
                         .or(
                             z
-                                .instanceof(File)
-                                .refine(
-                                    (v) =>
-                                        v.size <=
-                                        config.validation.accounts
-                                            .max_header_bytes,
-                                    `Header must be less than ${config.validation.accounts.max_header_bytes} bytes`,
+                                .file()
+                                .max(
+                                    config.validation.accounts.max_header_bytes,
                                 )
-                                .openapi({
+                                .meta({
                                     description:
                                         "Header image encoded using multipart/form-data",
                                 }),
                         ),
-                    locked: AccountSchema.shape.locked.openapi({
+                    locked: AccountSchema.shape.locked.meta({
                         description:
                             "Whether manual approval of follow requests is required.",
                     }),
-                    bot: AccountSchema.shape.bot.openapi({
+                    bot: AccountSchema.shape.bot.meta({
                         description: "Whether the account has a bot flag.",
                     }),
                     discoverable: AccountSchema.shape.discoverable
                         .unwrap()
-                        .openapi({
+                        .meta({
                             description:
                                 "Whether the account should be shown in the profile directory.",
                         }),
-                    hide_collections: zBoolean.openapi({
+                    hide_collections: zBoolean.meta({
                         description:
                             "Whether to hide followers and followed accounts.",
                     }),
-                    indexable: zBoolean.openapi({
+                    indexable: zBoolean.meta({
                         description:
                             "Whether public posts should be searchable to anyone.",
                     }),
                     // TODO: Implement :(
-                    attribution_domains: z.array(z.string()).openapi({
+                    attribution_domains: z.array(z.string()).meta({
                         description:
                             "Domains of websites allowed to credit the account.",
                         example: ["cnn.com", "myblog.com"],
@@ -287,9 +274,9 @@ export default apiRoute((app) =>
                         user.avatar = await Media.fromFile(avatar);
                     }
                 } else if (user.avatar) {
-                    await user.avatar.updateFromUrl(avatar);
+                    await user.avatar.updateFromUrl(new URL(avatar));
                 } else {
-                    user.avatar = await Media.fromUrl(avatar);
+                    user.avatar = await Media.fromUrl(new URL(avatar));
                 }
             }
 
@@ -301,9 +288,9 @@ export default apiRoute((app) =>
                         user.header = await Media.fromFile(header);
                     }
                 } else if (user.header) {
-                    await user.header.updateFromUrl(header);
+                    await user.header.updateFromUrl(new URL(header));
                 } else {
-                    user.header = await Media.fromUrl(header);
+                    user.header = await Media.fromUrl(new URL(header));
                 }
             }
 

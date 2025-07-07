@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const Tag = z
     .object({
@@ -6,27 +6,24 @@ export const Tag = z
             .string()
             .min(1)
             .max(128)
-            .openapi({
+            .meta({
                 description: "The value of the hashtag after the # sign.",
                 example: "versia",
                 externalDocs: {
                     url: "https://docs.joinmastodon.org/entities/Status/#Tag-name",
                 },
             }),
-        url: z
-            .string()
-            .url()
-            .openapi({
-                description: "A link to the hashtag on the instance.",
-                example: "https://beta.versia.social/tags/versia",
-                externalDocs: {
-                    url: "https://docs.joinmastodon.org/entities/Status/#Tag-url",
-                },
-            }),
+        url: z.url().meta({
+            description: "A link to the hashtag on the instance.",
+            example: "https://beta.versia.social/tags/versia",
+            externalDocs: {
+                url: "https://docs.joinmastodon.org/entities/Status/#Tag-url",
+            },
+        }),
     })
-    .openapi({
+    .meta({
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Status/#Tag",
         },
-        ref: "Tag",
+        id: "Tag",
     });

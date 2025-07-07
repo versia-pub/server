@@ -21,9 +21,8 @@ import {
     versiaTextToHtml,
 } from "@versia-server/kit/parsers";
 import { randomUUIDv7 } from "bun";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { sanitizedHtmlStrip } from "@/sanitization";
 
 const schema = z
@@ -38,7 +37,7 @@ const schema = z
                 "Status contains blocked words",
             )
             .optional()
-            .openapi({
+            .meta({
                 description:
                     "The text content of the status. If media_ids is provided, this becomes optional. Attaching a poll is optional while status is provided.",
             }),
@@ -46,7 +45,7 @@ const schema = z
         content_type: z
             .enum(["text/plain", "text/html", "text/markdown"])
             .default("text/plain")
-            .openapi({
+            .meta({
                 description: "Content-Type of the status text.",
                 example: "text/markdown",
             }),
@@ -54,15 +53,15 @@ const schema = z
             .array(AttachmentSchema.shape.id)
             .max(config.validation.notes.max_attachments)
             .default([])
-            .openapi({
+            .meta({
                 description:
                     "Include Attachment IDs to be attached as media. If provided, status becomes optional, and poll cannot be used.",
             }),
-        spoiler_text: StatusSourceSchema.shape.spoiler_text.optional().openapi({
+        spoiler_text: StatusSourceSchema.shape.spoiler_text.optional().meta({
             description:
                 "Text to be shown as a warning or subject before the actual content. Statuses are generally collapsed behind this field.",
         }),
-        sensitive: zBoolean.default(false).openapi({
+        sensitive: zBoolean.default(false).meta({
             description: "Mark status and attached media as sensitive?",
         }),
         language: StatusSchema.shape.language.optional(),
@@ -74,7 +73,7 @@ const schema = z
             )
             .max(config.validation.polls.max_options)
             .optional()
-            .openapi({
+            .meta({
                 description:
                     "Possible answers to the poll. If provided, media_ids cannot be used, and poll[expires_in] must be provided.",
             }),
@@ -84,39 +83,43 @@ const schema = z
             .min(config.validation.polls.min_duration_seconds)
             .max(config.validation.polls.max_duration_seconds)
             .optional()
-            .openapi({
+            .meta({
                 description:
                     "Duration that the poll should be open, in seconds. If provided, media_ids cannot be used, and poll[options] must be provided.",
             }),
-        "poll[multiple]": zBoolean.optional().openapi({
+        "poll[multiple]": zBoolean.optional().meta({
             description: "Allow multiple choices?",
         }),
-        "poll[hide_totals]": zBoolean.optional().openapi({
+        "poll[hide_totals]": zBoolean.optional().meta({
             description: "Hide vote counts until the poll ends?",
         }),
-        in_reply_to_id: StatusSchema.shape.id.optional().nullable().openapi({
+        in_reply_to_id: StatusSchema.shape.id.optional().nullable().meta({
             description:
                 "ID of the status being replied to, if status is a reply.",
         }),
         /* Versia Server API Extension */
-        quote_id: StatusSchema.shape.id.optional().nullable().openapi({
+        quote_id: StatusSchema.shape.id.optional().nullable().meta({
             description: "ID of the status being quoted, if status is a quote.",
         }),
         visibility: StatusSchema.shape.visibility.default("public"),
-        scheduled_at: z.coerce
-            .date()
-            .min(
-                new Date(Date.now() + 5 * 60 * 1000),
-                "must be at least 5 minutes in the future.",
+        scheduled_at: z.iso
+            .datetime()
+            .refine(
+                (date) =>
+                    new Date(date).getTime() >=
+                    new Date(Date.now() + 5 * 60 * 1000).getTime(),
+                {
+                    message: "must be at least 5 minutes in the future.",
+                },
             )
             .optional()
             .nullable()
-            .openapi({
+            .meta({
                 description:
                     "Datetime at which to schedule a status. Providing this parameter will cause ScheduledStatus to be returned instead of Status. Must be at least 5 minutes in the future.",
             }),
         /* Versia Server API Extension */
-        local_only: zBoolean.default(false).openapi({
+        local_only: zBoolean.default(false).meta({
             description: "If true, this status will not be federated.",
         }),
     })

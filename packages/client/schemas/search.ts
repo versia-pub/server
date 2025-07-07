@@ -1,24 +1,24 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { Account } from "./account.ts";
 import { Status } from "./status.ts";
 import { Tag } from "./tag.ts";
 
 export const Search = z
     .object({
-        accounts: z.array(Account).openapi({
+        accounts: z.array(Account).meta({
             description: "Accounts which match the given query",
         }),
-        statuses: z.array(Status).openapi({
+        statuses: z.array(Status).meta({
             description: "Statuses which match the given query",
         }),
-        hashtags: z.array(Tag).openapi({
+        hashtags: z.array(Tag).meta({
             description: "Hashtags which match the given query",
         }),
     })
-    .openapi({
+    .meta({
         description: "Represents the results of a search.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Search",
         },
-        ref: "Search",
+        id: "Search",
     });

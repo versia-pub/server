@@ -14,9 +14,8 @@ import { Emoji, Media } from "@versia-server/kit/db";
 import { Emojis } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, or } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { mimeLookup } from "@/content_types";
 
 export default apiRoute((app) =>
@@ -60,25 +59,15 @@ export default apiRoute((app) =>
                         "Shortcode contains blocked words",
                     ),
                 element: z
-                    .string()
                     .url()
-                    .transform((a) => new URL(a))
-                    .openapi({
+                    .meta({
                         description: "Emoji image URL",
                     })
                     .or(
-                        z
-                            .instanceof(File)
-                            .openapi({
-                                description:
-                                    "Emoji image encoded using multipart/form-data",
-                            })
-                            .refine(
-                                (v) =>
-                                    v.size <=
-                                    config.validation.emojis.max_bytes,
-                                `Emoji must be less than ${config.validation.emojis.max_bytes} bytes`,
-                            ),
+                        z.file().max(config.validation.emojis.max_bytes).meta({
+                            description:
+                                "Emoji image encoded using multipart/form-data",
+                        }),
                     ),
                 category: CustomEmojiSchema.shape.category.optional(),
                 alt: CustomEmojiSchema.shape.description
@@ -123,7 +112,7 @@ export default apiRoute((app) =>
             const contentType =
                 element instanceof File
                     ? element.type
-                    : await mimeLookup(element);
+                    : await mimeLookup(new URL(element));
 
             if (!contentType.startsWith("image/")) {
                 throw new ApiError(
@@ -138,7 +127,7 @@ export default apiRoute((app) =>
                     ? await Media.fromFile(element, {
                           description: alt ?? undefined,
                       })
-                    : await Media.fromUrl(element, {
+                    : await Media.fromUrl(new URL(element), {
                           description: alt ?? undefined,
                       });
 

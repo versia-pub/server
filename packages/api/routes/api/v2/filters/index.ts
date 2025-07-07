@@ -14,9 +14,8 @@ import { db } from "@versia-server/kit/db";
 import { FilterKeywords, Filters } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { eq, type SQL } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) => {
     app.get(
@@ -115,7 +114,7 @@ export default apiRoute((app) => {
                     .min(60)
                     .max(60 * 60 * 24 * 365 * 5)
                     .optional()
-                    .openapi({
+                    .meta({
                         description:
                             "How many seconds from now should the filter expire?",
                     }),

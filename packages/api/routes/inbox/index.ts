@@ -1,8 +1,7 @@
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { InboxJobType, inboxQueue } from "@versia-server/kit/queues/inbox";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.post(
@@ -22,7 +21,6 @@ export default apiRoute((app) =>
                 "versia-signature": z.string().optional(),
                 "versia-signed-at": z.coerce.number().optional(),
                 "versia-signed-by": z
-                    .string()
                     .url()
                     .or(z.string().startsWith("instance "))
                     .optional(),

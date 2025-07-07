@@ -6,9 +6,8 @@ import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Media } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) => {
     app.get(
@@ -106,7 +105,7 @@ export default apiRoute((app) => {
             "form",
             z
                 .object({
-                    thumbnail: z.instanceof(File).openapi({
+                    thumbnail: z.file().meta({
                         description:
                             "The custom thumbnail of the media to be attached, encoded using multipart form data.",
                     }),
@@ -114,7 +113,7 @@ export default apiRoute((app) => {
                         .unwrap()
                         .max(config.validation.media.max_description_characters)
                         .optional(),
-                    focus: z.string().openapi({
+                    focus: z.string().meta({
                         description:
                             "Two floating points (x,y), comma-delimited, ranging from -1.0 to 1.0. Used for media cropping on clients.",
                         externalDocs: {

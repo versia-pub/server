@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const manifestSchema = z.object({
     // biome-ignore lint/style/useNamingConvention: JSON schema requires this to be $schema
@@ -15,8 +15,8 @@ export const manifestSchema = z.object({
         .array(
             z.object({
                 name: z.string().min(1).max(100),
-                email: z.string().email().optional(),
-                url: z.string().url().optional(),
+                email: z.email().optional(),
+                url: z.url().optional(),
             }),
         )
         .optional(),
@@ -47,7 +47,7 @@ export const manifestSchema = z.object({
                     "other",
                 ])
                 .optional(),
-            url: z.string().url().optional(),
+            url: z.url().optional(),
         })
         .optional(),
 });

@@ -5,8 +5,7 @@ import {
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, withUserParam } from "@versia-server/kit/api";
 import { User } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver } from "hono-openapi/zod";
+import { describeRoute, resolver } from "hono-openapi";
 
 export default apiRoute((app) =>
     app.post(

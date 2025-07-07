@@ -6,9 +6,8 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Application } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { randomString } from "@/math";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 
@@ -43,22 +42,20 @@ export default apiRoute((app) =>
             z.object({
                 client_name: ApplicationSchema.shape.name,
                 redirect_uris: ApplicationSchema.shape.redirect_uris.or(
-                    ApplicationSchema.shape.redirect_uri.transform((u) =>
-                        u.split("\n"),
-                    ),
+                    ApplicationSchema.shape.redirect_uri,
                 ),
-                scopes: z
-                    .string()
-                    .default("read")
-                    .transform((s) => s.split(" "))
-                    .openapi({
-                        description: "Space separated list of scopes.",
-                    }),
+                scopes: z.string().default("read").meta({
+                    description: "Space separated list of scopes.",
+                    type: "string",
+                }),
                 // Allow empty websites because Traewelling decides to give an empty
                 // value instead of not providing anything at all
                 website: ApplicationSchema.shape.website
                     .optional()
-                    .or(z.literal("").transform(() => undefined)),
+                    .or(z.literal(""))
+                    .meta({
+                        type: "string",
+                    }),
             }),
             handleZodError,
         ),
@@ -69,9 +66,11 @@ export default apiRoute((app) =>
             const app = await Application.insert({
                 id: randomUUIDv7(),
                 name: client_name,
-                redirectUri: redirect_uris.join("\n"),
-                scopes: scopes.join(" "),
-                website,
+                redirectUri: Array.isArray(redirect_uris)
+                    ? redirect_uris.join("\n")
+                    : redirect_uris,
+                scopes,
+                website: website || undefined,
                 clientId: randomString(32, "base64url"),
                 secret: randomString(64, "base64url"),
             });

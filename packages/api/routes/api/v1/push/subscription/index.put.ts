@@ -11,8 +11,7 @@ import {
     jsonOrForm,
 } from "@versia-server/kit/api";
 import { PushSubscription } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
 
 export default apiRoute((app) =>
     app.put(

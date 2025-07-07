@@ -1,6 +1,7 @@
 import {
     Account as AccountSchema,
     RolePermission,
+    zBoolean,
 } from "@versia/client/schemas";
 import { ApiError } from "@versia-server/kit";
 import { handleZodError } from "@versia-server/kit/api";
@@ -10,10 +11,9 @@ import { OpenIdAccounts, Users } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
+import { describeRoute, validator } from "hono-openapi";
 import { SignJWT } from "jose";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { randomString } from "@/math.ts";
 import type { PluginType } from "../../index.ts";
 import { automaticOidcFlow } from "../../utils.ts";
@@ -47,13 +47,8 @@ export default (plugin: PluginType): void => {
                 z.object({
                     client_id: z.string().optional(),
                     flow: z.string(),
-                    link: z
-                        .string()
-                        .transform((v) =>
-                            ["true", "1", "on"].includes(v.toLowerCase()),
-                        )
-                        .optional(),
-                    user_id: z.string().uuid().optional(),
+                    link: zBoolean.optional(),
+                    user_id: z.uuid().optional(),
                 }),
                 handleZodError,
             ),

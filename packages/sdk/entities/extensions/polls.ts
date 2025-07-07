@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { VoteSchema } from "../../schemas/extensions/polls.ts";
 import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";

@@ -6,7 +6,7 @@ import { Emojis } from "@versia-server/kit/tables";
 import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 import { eq } from "drizzle-orm";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 
 const { users, deleteUsers } = await getTestUsers(5);
 let media: Media;
@@ -87,7 +87,7 @@ describe("/api/v1/statuses", () => {
         expect(raw.status).toBe(422);
         expect(data).toMatchObject({
             error: expect.stringContaining(
-                "must be at least 5 minutes in the future",
+                "Must be at least 5 minutes in the future",
             ),
         });
     });

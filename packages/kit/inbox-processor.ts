@@ -245,7 +245,8 @@ export class InboxProcessor {
         // If note has a blocked word
         if (
             Object.values(note.content?.data ?? {})
-                .flatMap((c) => c.content)
+                .flatMap((c) => c?.content)
+                .filter((content) => content !== undefined)
                 .some((content) =>
                     config.validation.filters.note_content.some((filter) =>
                         filter.test(content),
@@ -281,7 +282,8 @@ export class InboxProcessor {
 
         if (
             Object.values(user.bio?.data ?? {})
-                .flatMap((c) => c.content)
+                .flatMap((c) => c?.content)
+                .filter((content) => content !== undefined)
                 .some((content) =>
                     config.validation.filters.bio.some((filter) =>
                         filter.test(content),

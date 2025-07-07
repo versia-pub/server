@@ -5,7 +5,7 @@ import { parseTOML } from "confbox";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { fromZodError } from "zod-validation-error";
 
 export class ProxiableUrl extends URL {
@@ -133,11 +133,7 @@ export const sensitiveString = z
     .refine(
         (text) =>
             text.startsWith("PATH:") ? fileFromPathString(text).exists() : true,
-        (text) => ({
-            message: `Path ${
-                fileFromPathString(text).name
-            } does not exist, is a directory or is not accessible`,
-        }),
+        "Path does not exist, is a directory or is not accessible",
     )
     .transform((text) =>
         text.startsWith("PATH:") ? fileFromPathString(text).text() : text,
@@ -149,9 +145,7 @@ export const filePathString = z
     .transform((s) => file(s))
     .refine(
         (file) => file.exists(),
-        (file) => ({
-            message: `Path ${file.name} does not exist, is a directory or is not accessible`,
-        }),
+        "Path does not exist, is a directory or is not accessible",
     )
     .transform(async (file) => ({
         content: await file.text(),
@@ -181,8 +175,8 @@ export const keyPair = z
             ).toString("base64");
 
             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `Public and private keys are not set. Here are generated keys for you to copy.\n\nPublic: ${publicKey}\nPrivate: ${privateKey}`,
+                code: "custom",
+                error: `Public and private keys are not set. Here are generated keys for you to copy.\n\nPublic: ${publicKey}\nPrivate: ${privateKey}`,
             });
 
             return z.NEVER;
@@ -201,8 +195,8 @@ export const keyPair = z
             );
         } catch {
             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Public key is invalid",
+                code: "custom",
+                error: "Public key is invalid",
             });
 
             return z.NEVER;
@@ -218,8 +212,8 @@ export const keyPair = z
             );
         } catch {
             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: "Private key is invalid",
+                code: "custom",
+                error: "Private key is invalid",
             });
 
             return z.NEVER;
@@ -242,8 +236,8 @@ export const vapidKeyPair = z
             const keys = generateVAPIDKeys();
 
             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                message: `VAPID keys are not set. Here are generated keys for you to copy.\n\nPublic: ${keys.publicKey}\nPrivate: ${keys.privateKey}`,
+                code: "custom",
+                error: `VAPID keys are not set. Here are generated keys for you to copy.\n\nPublic: ${keys.publicKey}\nPrivate: ${keys.privateKey}`,
             });
 
             return z.NEVER;
@@ -268,8 +262,8 @@ export const hmacKey = sensitiveString.transform(async (text, ctx) => {
         const base64 = Buffer.from(exported).toString("base64");
 
         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `HMAC key is not set. Here is a generated key for you to copy: ${base64}`,
+            code: "custom",
+            error: `HMAC key is not set. Here is a generated key for you to copy: ${base64}`,
         });
 
         return z.NEVER;
@@ -288,8 +282,8 @@ export const hmacKey = sensitiveString.transform(async (text, ctx) => {
         );
     } catch {
         ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "HMAC key is invalid",
+            code: "custom",
+            error: "HMAC key is invalid",
         });
 
         return z.NEVER;
@@ -445,9 +439,7 @@ export const ConfigSchema = z
                 "When send_emails is enabled, SMTP configuration must be set",
             ),
         media: z.strictObject({
-            backend: z
-                .nativeEnum(MediaBackendType)
-                .default(MediaBackendType.Local),
+            backend: z.enum(MediaBackendType).default(MediaBackendType.Local),
             uploads_path: z.string().min(1).default("uploads"),
             conversion: z.strictObject({
                 convert_images: z.boolean().default(false),
@@ -498,33 +490,35 @@ export const ConfigSchema = z
                     .default(5_000_000),
                 disallowed_usernames: z
                     .array(regex)
-                    .default([
-                        "well-known",
-                        "about",
-                        "activities",
-                        "api",
-                        "auth",
-                        "dev",
-                        "inbox",
-                        "internal",
-                        "main",
-                        "media",
-                        "nodeinfo",
-                        "notice",
-                        "oauth",
-                        "objects",
-                        "proxy",
-                        "push",
-                        "registration",
-                        "relay",
-                        "settings",
-                        "status",
-                        "tag",
-                        "users",
-                        "web",
-                        "search",
-                        "mfa",
-                    ]),
+                    .default(
+                        [
+                            "well-known",
+                            "about",
+                            "activities",
+                            "api",
+                            "auth",
+                            "dev",
+                            "inbox",
+                            "internal",
+                            "main",
+                            "media",
+                            "nodeinfo",
+                            "notice",
+                            "oauth",
+                            "objects",
+                            "proxy",
+                            "push",
+                            "registration",
+                            "relay",
+                            "settings",
+                            "status",
+                            "tag",
+                            "users",
+                            "web",
+                            "search",
+                            "mfa",
+                        ].map((s) => new RegExp(`^${s}$`, "i")),
+                    ),
                 max_field_count: z.number().int().default(10),
                 max_field_name_characters: z.number().int().default(1000),
                 max_field_value_characters: z.number().int().default(1000),
@@ -709,7 +703,6 @@ export const ConfigSchema = z
                 .describe("Primary instance languages. ISO 639-1 codes."),
             contact: z.strictObject({
                 email: z
-                    .string()
                     .email()
                     .describe("Email to contact the instance administration"),
             }),
@@ -735,13 +728,9 @@ export const ConfigSchema = z
             keys: keyPair,
         }),
         permissions: z.strictObject({
-            anonymous: z
-                .array(z.nativeEnum(RolePermission))
-                .default(DEFAULT_ROLES),
-            default: z
-                .array(z.nativeEnum(RolePermission))
-                .default(DEFAULT_ROLES),
-            admin: z.array(z.nativeEnum(RolePermission)).default(ADMIN_ROLES),
+            anonymous: z.array(z.enum(RolePermission)).default(DEFAULT_ROLES),
+            default: z.array(z.enum(RolePermission)).default(DEFAULT_ROLES),
+            admin: z.array(z.enum(RolePermission)).default(ADMIN_ROLES),
         }),
         logging: z.strictObject({
             file: z

@@ -1,24 +1,24 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const Rule = z
     .object({
-        id: z.string().openapi({
+        id: z.string().meta({
             description: "The identifier for the rule.",
             example: "1",
         }),
-        text: z.string().openapi({
+        text: z.string().meta({
             description: "The rule to be followed.",
             example: "Do not spam pictures of skibidi toilet.",
         }),
-        hint: z.string().optional().openapi({
+        hint: z.string().optional().meta({
             description: "Longer-form description of the rule.",
             example: "Please, we beg you.",
         }),
     })
-    .openapi({
+    .meta({
         description: "Represents a rule that server users should follow.",
         externalDocs: {
             url: "https://docs.joinmastodon.org/entities/Rule",
         },
-        ref: "Rule",
+        id: "Rule",
     });

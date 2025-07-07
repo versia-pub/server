@@ -6,9 +6,8 @@ import {
     handleZodError,
     withUserParam,
 } from "@versia-server/kit/api";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import { getFeed } from "@/rss";
 
 export default apiRoute((app) =>
@@ -39,12 +38,13 @@ export default apiRoute((app) =>
                 RolePermission.ViewNotes,
                 RolePermission.ViewAccounts,
             ],
+
             scopes: ["read:statuses"],
         }),
         validator(
             "query",
             z.object({
-                page: z.coerce.number().default(0).openapi({
+                page: z.coerce.number().default(0).meta({
                     description: "Page number to fetch. Defaults to 0.",
                     example: 2,
                 }),

@@ -4,13 +4,12 @@ import { auth, handleZodError } from "@versia-server/kit/api";
 import { Application, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
 import {
     calculatePKCECodeChallenge,
     generateRandomCodeVerifier,
 } from "oauth4webapi";
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { PluginType } from "../../index.ts";
 import { oauthDiscoveryRequest, oauthRedirectUri } from "../../utils.ts";
 

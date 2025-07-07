@@ -13,9 +13,8 @@ import {
 import { Timeline } from "@versia-server/kit/db";
 import { Notes } from "@versia-server/kit/tables";
 import { and, eq, gt, gte, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -47,50 +46,45 @@ export default apiRoute((app) =>
                 RolePermission.ViewNotes,
                 RolePermission.ViewAccounts,
             ],
+
             scopes: ["read:statuses"],
         }),
         validator(
             "query",
             z.object({
-                max_id: StatusSchema.shape.id.optional().openapi({
+                max_id: StatusSchema.shape.id.optional().meta({
                     description:
                         "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
                     example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
                 }),
-                since_id: StatusSchema.shape.id.optional().openapi({
+                since_id: StatusSchema.shape.id.optional().meta({
                     description:
                         "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
                     example: undefined,
                 }),
-                min_id: StatusSchema.shape.id.optional().openapi({
+                min_id: StatusSchema.shape.id.optional().meta({
                     description:
                         "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
                     example: undefined,
                 }),
-                limit: z.coerce
-                    .number()
-                    .int()
-                    .min(1)
-                    .max(40)
-                    .default(20)
-                    .openapi({
-                        description: "Maximum number of results to return.",
-                    }),
-                only_media: zBoolean.default(false).openapi({
+                limit: z.coerce.number().int().min(1).max(40).default(20).meta({
+                    description: "Maximum number of results to return.",
+                }),
+                only_media: zBoolean.default(false).meta({
                     description: "Filter out statuses without attachments.",
                 }),
-                exclude_replies: zBoolean.default(false).openapi({
+                exclude_replies: zBoolean.default(false).meta({
                     description:
                         "Filter out statuses in reply to a different account.",
                 }),
-                exclude_reblogs: zBoolean.default(false).openapi({
+                exclude_reblogs: zBoolean.default(false).meta({
                     description: "Filter out boosts from the response.",
                 }),
-                pinned: zBoolean.default(false).openapi({
+                pinned: zBoolean.default(false).meta({
                     description:
                         "Filter for pinned statuses only. Pinned statuses do not receive special priority in the order of the returned results.",
                 }),
-                tagged: z.string().optional().openapi({
+                tagged: z.string().optional().meta({
                     description:
                         "Filter for statuses using a specific hashtag.",
                 }),

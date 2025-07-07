@@ -2,9 +2,8 @@ import { RolePermission, Role as RoleSchema } from "@versia/client/schemas";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Role } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) => {
     app.get(
@@ -28,7 +27,7 @@ export default apiRoute((app) => {
         auth({
             auth: true,
         }),
-        validator("param", z.object({ id: z.string().uuid() }), handleZodError),
+        validator("param", z.object({ id: z.uuid() }), handleZodError),
         async (context) => {
             const { id } = context.req.valid("param");
 
@@ -62,7 +61,7 @@ export default apiRoute((app) => {
         validator(
             "param",
             z.object({
-                id: z.string().uuid(),
+                id: z.uuid(),
             }),
             handleZodError,
         ),
@@ -118,7 +117,7 @@ export default apiRoute((app) => {
             }
 
             await role.update({
-                permissions: permissions as unknown as RolePermission[],
+                permissions,
                 priority,
                 description,
                 icon,
@@ -150,7 +149,7 @@ export default apiRoute((app) => {
         validator(
             "param",
             z.object({
-                id: z.string().uuid(),
+                id: z.uuid(),
             }),
             handleZodError,
         ),

@@ -7,10 +7,9 @@ import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
+import { describeRoute, validator } from "hono-openapi";
 import { SignJWT } from "jose";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 const returnError = (
     context: Context,
@@ -59,7 +58,7 @@ export default apiRoute((app) =>
             "query",
             z.object({
                 scope: z.string().optional(),
-                redirect_uri: z.string().url().optional(),
+                redirect_uri: z.url().optional(),
                 response_type: z.enum([
                     "code",
                     "token",
@@ -90,7 +89,6 @@ export default apiRoute((app) =>
             "form",
             z.object({
                 identifier: z
-                    .string()
                     .email()
                     .toLowerCase()
                     .or(z.string().toLowerCase()),

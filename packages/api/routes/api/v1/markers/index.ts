@@ -10,9 +10,8 @@ import { db } from "@versia-server/kit/db";
 import { Markers } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, type SQL } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 const MarkerResponseSchema = z.object({
     notifications: MarkerSchema.optional(),
@@ -52,9 +51,9 @@ export default apiRoute((app) => {
                 "timeline[]": z
                     .array(z.enum(["home", "notifications"]))
                     .max(2)
-                    .or(z.enum(["home", "notifications"]).transform((t) => [t]))
+                    .or(z.enum(["home", "notifications"]))
                     .optional()
-                    .openapi({
+                    .meta({
                         description:
                             "Specify the timeline(s) for which markers should be fetched. Possible values: home, notifications. If not provided, an empty object will be returned.",
                     }),
@@ -62,12 +61,16 @@ export default apiRoute((app) => {
             handleZodError,
         ),
         async (context) => {
-            const { "timeline[]": timeline } = context.req.valid("query");
+            const { "timeline[]": queryTimeline } = context.req.valid("query");
             const { user } = context.get("auth");
 
-            if (!timeline) {
+            if (!queryTimeline) {
                 return context.json({}, 200);
             }
+
+            const timeline = Array.isArray(queryTimeline)
+                ? queryTimeline
+                : [queryTimeline];
 
             const markers: z.infer<typeof MarkerResponseSchema> = {
                 home: undefined,
@@ -160,13 +163,13 @@ export default apiRoute((app) => {
             "query",
             z
                 .object({
-                    "home[last_read_id]": StatusSchema.shape.id.openapi({
+                    "home[last_read_id]": StatusSchema.shape.id.meta({
                         description:
                             "ID of the last status read in the home timeline.",
                         example: "c62aa212-8198-4ce5-a388-2cc8344a84ef",
                     }),
                     "notifications[last_read_id]":
-                        NotificationSchema.shape.id.openapi({
+                        NotificationSchema.shape.id.meta({
                             description: "ID of the last notification read.",
                         }),
                 })

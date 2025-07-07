@@ -8,9 +8,8 @@ import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Timeline } from "@versia-server/kit/db";
 import { Notes } from "@versia-server/kit/tables";
 import { and, eq, gt, gte, inArray, lt, or, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -34,7 +33,7 @@ export default apiRoute((app) =>
                         link: z
                             .string()
                             .optional()
-                            .openapi({
+                            .meta({
                                 description:
                                     "Links to the next and previous pages",
                                 example:
@@ -60,28 +59,28 @@ export default apiRoute((app) =>
             "query",
             z
                 .object({
-                    max_id: StatusSchema.shape.id.optional().openapi({
+                    max_id: StatusSchema.shape.id.optional().meta({
                         description:
                             "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
                         example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
                     }),
-                    since_id: StatusSchema.shape.id.optional().openapi({
+                    since_id: StatusSchema.shape.id.optional().meta({
                         description:
                             "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
                         example: undefined,
                     }),
-                    min_id: StatusSchema.shape.id.optional().openapi({
+                    min_id: StatusSchema.shape.id.optional().meta({
                         description:
                             "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
                         example: undefined,
                     }),
-                    local: zBoolean.default(false).openapi({
+                    local: zBoolean.default(false).meta({
                         description: "Show only local statuses?",
                     }),
-                    remote: zBoolean.default(false).openapi({
+                    remote: zBoolean.default(false).meta({
                         description: "Show only remote statuses?",
                     }),
-                    only_media: zBoolean.default(false).openapi({
+                    only_media: zBoolean.default(false).meta({
                         description: "Show only statuses with media attached?",
                     }),
                     limit: z.coerce
@@ -90,7 +89,7 @@ export default apiRoute((app) =>
                         .min(1)
                         .max(40)
                         .default(20)
-                        .openapi({
+                        .meta({
                             description: "Maximum number of results to return.",
                         }),
                 })

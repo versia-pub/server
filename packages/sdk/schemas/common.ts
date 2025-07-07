@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const f64 = z
     .number()
@@ -11,4 +11,4 @@ export const u64 = z
     .nonnegative()
     .max(2 ** 64 - 1);
 
-export const url = z.string().url();
+export const url = z.url();

@@ -11,9 +11,8 @@ import {
     withUserParam,
 } from "@versia-server/kit/api";
 import { Relationship } from "@versia-server/kit/db";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.post(
@@ -62,12 +61,12 @@ export default apiRoute((app) =>
         validator(
             "json",
             z.object({
-                reblogs: z.boolean().default(true).openapi({
+                reblogs: z.boolean().default(true).meta({
                     description:
                         "Receive this account’s reblogs in home timeline?",
                     example: true,
                 }),
-                notify: z.boolean().default(false).openapi({
+                notify: z.boolean().default(false).meta({
                     description:
                         "Receive notifications when this account posts a status?",
                     example: false,
@@ -75,7 +74,7 @@ export default apiRoute((app) =>
                 languages: z
                     .array(iso631)
                     .default([])
-                    .openapi({
+                    .meta({
                         description:
                             "Array of String (ISO 639-1 language two-letter code). Filter received statuses for these languages. If not provided, you will receive this account’s posts in all languages.",
                         example: ["en", "fr"],

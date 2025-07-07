@@ -70,11 +70,11 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
                       url: image.getUrl().href,
                       title:
                           image.data.content[image.getPreferredMimeType()]
-                              .description ?? undefined,
+                              ?.description ?? undefined,
                       type: image.getPreferredMimeType(),
                       length:
                           image.data.content[image.getPreferredMimeType()]
-                              .size ?? undefined,
+                              ?.size ?? undefined,
                   }
                 : undefined,
             video: video
@@ -82,14 +82,14 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
                       url: video.getUrl().href,
                       title:
                           video.data.content[video.getPreferredMimeType()]
-                              .description ?? undefined,
+                              ?.description ?? undefined,
                       type: video.getPreferredMimeType(),
                       duration:
                           video.data.content[video.getPreferredMimeType()]
-                              .duration ?? undefined,
+                              ?.duration ?? undefined,
                       length:
                           video.data.content[video.getPreferredMimeType()]
-                              .size ?? undefined,
+                              ?.size ?? undefined,
                   }
                 : undefined,
             audio: audio
@@ -97,14 +97,14 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
                       url: audio.getUrl().href,
                       title:
                           audio.data.content[audio.getPreferredMimeType()]
-                              .description ?? undefined,
+                              ?.description ?? undefined,
                       type: audio.getPreferredMimeType(),
                       duration:
                           audio.data.content[audio.getPreferredMimeType()]
-                              .duration ?? undefined,
+                              ?.duration ?? undefined,
                       length:
                           audio.data.content[audio.getPreferredMimeType()]
-                              .size ?? undefined,
+                              ?.size ?? undefined,
                   }
                 : undefined,
         });

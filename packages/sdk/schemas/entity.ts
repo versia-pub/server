@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { isISOString } from "../regex.ts";
 import { url } from "./common.ts";
 import { CustomEmojiExtensionSchema } from "./extensions/emojis.ts";
@@ -12,7 +12,7 @@ export const ExtensionPropertySchema = z
 
 export const EntitySchema = z.strictObject({
     // biome-ignore lint/style/useNamingConvention: required for JSON schema
-    $schema: z.string().url().nullish(),
+    $schema: z.url().nullish(),
     id: z.string().max(512),
     created_at: z
         .string()

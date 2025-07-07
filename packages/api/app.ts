@@ -10,7 +10,7 @@ import { cors } from "hono/cors";
 import { createMiddleware } from "hono/factory";
 import { prettyJSON } from "hono/pretty-json";
 import { secureHeaders } from "hono/secure-headers";
-import { openAPISpecs } from "hono-openapi";
+import { generateSpecs } from "hono-openapi";
 import { Youch } from "youch";
 import { applyToHono } from "@/bull-board.ts";
 import pkg from "../../package.json" with { type: "application/json" };
@@ -22,8 +22,6 @@ import { logger } from "./middlewares/logger.ts";
 import { rateLimit } from "./middlewares/rate-limit.ts";
 import { PluginLoader } from "./plugin-loader.ts";
 import { routes } from "./routes.ts";
-// Extends Zod with OpenAPI schema generation
-import "zod-openapi/extend";
 
 export const appFactory = async (): Promise<Hono<HonoEnv>> => {
     const app = new Hono<HonoEnv>({
@@ -127,22 +125,23 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
         (time2 - time1).toFixed(2),
     )}ms`}`;
 
-    app.get(
-        "/openapi.json",
-        openAPISpecs(app, {
-            documentation: {
-                info: {
-                    title: "Versia Server API",
-                    version: pkg.version,
-                    license: {
-                        name: "AGPL-3.0",
-                        url: "https://www.gnu.org/licenses/agpl-3.0.html",
-                    },
-                    contact: pkg.author,
+    const openApiSpecs = await generateSpecs(app, {
+        documentation: {
+            info: {
+                title: "Versia Server API",
+                version: pkg.version,
+                license: {
+                    name: "AGPL-3.0",
+                    url: "https://www.gnu.org/licenses/agpl-3.0.html",
                 },
+                contact: pkg.author,
             },
-        }),
-    );
+        },
+    });
+
+    app.get("/openapi.json", (context) => {
+        return context.json(openApiSpecs, 200);
+    });
 
     app.get(
         "/docs",

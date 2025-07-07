@@ -5,7 +5,7 @@ import {
     generateClient,
     getTestUsers,
 } from "@versia-server/tests";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 
 let clientId: string;
 let clientSecret: string;

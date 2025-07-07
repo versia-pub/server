@@ -30,7 +30,7 @@ import {
     sql,
 } from "drizzle-orm";
 import { htmlToText } from "html-to-text";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
 import type { HttpVerb, KnownEntity } from "~/types/api.ts";

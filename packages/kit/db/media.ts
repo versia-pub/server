@@ -16,7 +16,7 @@ import {
     type SQL,
 } from "drizzle-orm";
 import sharp from "sharp";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { mimeLookup } from "@/content_types.ts";
 import { getMediaHash } from "../../../classes/media/media-hasher.ts";
 import { ApiError } from "../api-error.ts";
@@ -297,7 +297,7 @@ export class Media extends BaseInterface<typeof Medias> {
         const content = await Media.fileToContentFormat(file, url, {
             description:
                 this.data.content[Object.keys(this.data.content)[0]]
-                    .description || undefined,
+                    ?.description || undefined,
         });
 
         await this.update({
@@ -319,7 +319,7 @@ export class Media extends BaseInterface<typeof Medias> {
                 remote: true,
                 description:
                     this.data.content[Object.keys(this.data.content)[0]]
-                        .description || undefined,
+                        ?.description || undefined,
             },
         };
 
@@ -363,7 +363,7 @@ export class Media extends BaseInterface<typeof Medias> {
             content[type] = {
                 ...content[type],
                 ...metadata,
-            };
+            } as (typeof content)[keyof typeof content];
         }
 
         await this.update({
@@ -490,6 +490,14 @@ export class Media extends BaseInterface<typeof Medias> {
     public toApiMeta(): z.infer<typeof AttachmentSchema.shape.meta> {
         const type = this.getPreferredMimeType();
         const data = this.data.content[type];
+
+        if (!data) {
+            throw new ApiError(
+                500,
+                `No content for type ${type} in attachment ${this.id}`,
+            );
+        }
+
         const size =
             data.width && data.height
                 ? `${data.width}x${data.height}`
@@ -533,7 +541,7 @@ export class Media extends BaseInterface<typeof Medias> {
                 ? new ProxiableUrl(thumbnailData.content).proxied
                 : null,
             meta: this.toApiMeta(),
-            description: data.description || null,
+            description: data?.description || null,
             blurhash: this.data.blurhash,
         };
     }

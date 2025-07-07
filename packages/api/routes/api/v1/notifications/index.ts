@@ -9,9 +9,8 @@ import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Timeline } from "@versia-server/kit/db";
 import { Notifications } from "@versia-server/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -47,17 +46,17 @@ export default apiRoute((app) =>
             "query",
             z
                 .object({
-                    max_id: NotificationSchema.shape.id.optional().openapi({
+                    max_id: NotificationSchema.shape.id.optional().meta({
                         description:
                             "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
                         example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
                     }),
-                    since_id: NotificationSchema.shape.id.optional().openapi({
+                    since_id: NotificationSchema.shape.id.optional().meta({
                         description:
                             "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
                         example: undefined,
                     }),
-                    min_id: NotificationSchema.shape.id.optional().openapi({
+                    min_id: NotificationSchema.shape.id.optional().meta({
                         description:
                             "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
                         example: undefined,
@@ -68,27 +67,27 @@ export default apiRoute((app) =>
                         .min(1)
                         .max(80)
                         .default(40)
-                        .openapi({
+                        .meta({
                             description: "Maximum number of results to return.",
                         }),
                     types: z
                         .array(NotificationSchema.shape.type)
                         .optional()
-                        .openapi({
+                        .meta({
                             description: "Types to include in the result.",
                         }),
                     exclude_types: z
                         .array(NotificationSchema.shape.type)
                         .optional()
-                        .openapi({
+                        .meta({
                             description: "Types to exclude from the results.",
                         }),
-                    account_id: AccountSchema.shape.id.optional().openapi({
+                    account_id: AccountSchema.shape.id.optional().meta({
                         description:
                             "Return only notifications received from the specified account.",
                     }),
                     // TODO: Implement
-                    include_filtered: zBoolean.default(false).openapi({
+                    include_filtered: zBoolean.default(false).meta({
                         description:
                             "Whether to include notifications filtered by the user's NotificationPolicy.",
                     }),

@@ -7,7 +7,7 @@ import {
     inArray,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Tokens } from "../tables/schema.ts";
 import type { Application } from "./application.ts";

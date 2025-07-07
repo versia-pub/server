@@ -2,15 +2,14 @@ import { handleZodError } from "@versia-server/kit/api";
 import { Application, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
-import { describeRoute } from "hono-openapi";
-import { validator } from "hono-openapi/zod";
+import { describeRoute, validator } from "hono-openapi";
 import {
     calculatePKCECodeChallenge,
     discoveryRequest,
     generateRandomCodeVerifier,
     processDiscoveryResponse,
 } from "oauth4webapi";
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { PluginType } from "../../index.ts";
 import { oauthRedirectUri } from "../../utils.ts";
 
@@ -34,7 +33,7 @@ export default (plugin: PluginType): void => {
                 z.object({
                     issuer: z.string(),
                     client_id: z.string().optional(),
-                    redirect_uri: z.string().url().optional(),
+                    redirect_uri: z.url().optional(),
                     scope: z.string().optional(),
                     response_type: z.enum(["code"]).optional(),
                 }),

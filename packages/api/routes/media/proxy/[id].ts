@@ -3,9 +3,8 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { proxy } from "hono/proxy";
 import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -34,19 +33,19 @@ export default apiRoute((app) =>
         validator(
             "param",
             z.object({
-                id: z
-                    .string()
-                    .transform((val) =>
-                        Buffer.from(val, "base64url").toString(),
-                    ),
+                id: z.base64url().meta({
+                    description: "Base64url encoded URL to proxy",
+                    type: "string",
+                }),
             }),
             handleZodError,
         ),
         async (context) => {
             const { id } = context.req.valid("param");
+            const url = Buffer.from(id, "base64url").toString();
 
             // Check if URL is valid
-            if (!URL.canParse(id)) {
+            if (!URL.canParse(url)) {
                 throw new ApiError(
                     400,
                     "Invalid URL",
@@ -54,7 +53,7 @@ export default apiRoute((app) =>
                 );
             }
 
-            const media = await proxy(id, {
+            const media = await proxy(url, {
                 // @ts-expect-error Proxy is a Bun-specific feature
                 proxy: config.http.proxy_address,
             });
@@ -63,7 +62,7 @@ export default apiRoute((app) =>
             // Cloudflare R2 serves those as application/xml
             if (
                 media.headers.get("Content-Type") === "application/xml" &&
-                id.endsWith(".svg")
+                url.endsWith(".svg")
             ) {
                 media.headers.set("Content-Type", "image/svg+xml");
             }
@@ -71,7 +70,7 @@ export default apiRoute((app) =>
             const realFilename =
                 media.headers
                     .get("Content-Disposition")
-                    ?.match(/filename="(.+)"/)?.[1] || id.split("/").pop();
+                    ?.match(/filename="(.+)"/)?.[1] || url.split("/").pop();
 
             if (!media.body) {
                 return context.body(null, media.status as StatusCode);

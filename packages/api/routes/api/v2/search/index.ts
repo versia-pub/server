@@ -14,9 +14,8 @@ import { parseUserAddress } from "@versia-server/kit/parsers";
 import { searchManager } from "@versia-server/kit/search";
 import { Instances, Notes, Users } from "@versia-server/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) =>
     app.get(
@@ -59,59 +58,53 @@ export default apiRoute((app) =>
         validator(
             "query",
             z.object({
-                q: z.string().trim().openapi({
+                q: z.string().trim().meta({
                     description: "The search query.",
                     example: "versia",
                 }),
                 type: z
                     .enum(["accounts", "hashtags", "statuses"])
                     .optional()
-                    .openapi({
+                    .meta({
                         description:
                             "Specify whether to search for only accounts, hashtags, statuses",
                         example: "accounts",
                     }),
-                resolve: zBoolean.default(false).openapi({
+                resolve: zBoolean.default(false).meta({
                     description:
                         "Only relevant if type includes accounts. If true and (a) the search query is for a remote account (e.g., someaccount@someother.server) and (b) the local server does not know about the account, WebFinger is used to try and resolve the account at someother.server. This provides the best recall at higher latency. If false only accounts the server knows about are returned.",
                 }),
-                following: zBoolean.default(false).openapi({
+                following: zBoolean.default(false).meta({
                     description:
                         "Only include accounts that the user is following?",
                 }),
-                account_id: AccountSchema.shape.id.optional().openapi({
+                account_id: AccountSchema.shape.id.optional().meta({
                     description:
                         " If provided, will only return statuses authored by this account.",
                 }),
-                exclude_unreviewed: zBoolean.default(false).openapi({
+                exclude_unreviewed: zBoolean.default(false).meta({
                     description:
                         "Filter out unreviewed tags? Use true when trying to find trending tags.",
                 }),
-                max_id: Id.optional().openapi({
+                max_id: Id.optional().meta({
                     description:
                         "All results returned will be lesser than this ID. In effect, sets an upper bound on results.",
                     example: "8d35243d-b959-43e2-8bac-1a9d4eaea2aa",
                 }),
-                since_id: Id.optional().openapi({
+                since_id: Id.optional().meta({
                     description:
                         "All results returned will be greater than this ID. In effect, sets a lower bound on results.",
                     example: undefined,
                 }),
-                min_id: Id.optional().openapi({
+                min_id: Id.optional().meta({
                     description:
                         "Returns results immediately newer than this ID. In effect, sets a cursor at this ID and paginates forward.",
                     example: undefined,
                 }),
-                limit: z.coerce
-                    .number()
-                    .int()
-                    .min(1)
-                    .max(40)
-                    .default(20)
-                    .openapi({
-                        description: "Maximum number of results to return.",
-                    }),
-                offset: z.coerce.number().int().min(0).default(0).openapi({
+                limit: z.coerce.number().int().min(1).max(40).default(20).meta({
+                    description: "Maximum number of results to return.",
+                }),
+                offset: z.coerce.number().int().min(0).default(0).meta({
                     description: "Skip the first n results.",
                 }),
             }),

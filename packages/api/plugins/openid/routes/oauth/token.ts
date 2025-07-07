@@ -2,9 +2,8 @@ import { handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Application, Token } from "@versia-server/kit/db";
 import { Tokens } from "@versia-server/kit/tables";
 import { and, eq } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 import type { PluginType } from "../../index.ts";
 
 export default (plugin: PluginType): void => {
@@ -80,7 +79,7 @@ export default (plugin: PluginType): void => {
                     client_secret: z.string().optional(),
                     username: z.string().trim().optional(),
                     password: z.string().trim().optional(),
-                    redirect_uri: z.string().url().optional(),
+                    redirect_uri: z.url().optional(),
                     refresh_token: z.string().optional(),
                     scope: z.string().optional(),
                     assertion: z.string().optional(),

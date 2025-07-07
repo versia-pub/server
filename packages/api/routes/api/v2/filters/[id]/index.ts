@@ -14,9 +14,8 @@ import {
 import { db } from "@versia-server/kit/db";
 import { FilterKeywords, Filters } from "@versia-server/kit/tables";
 import { and, eq, inArray, type SQL } from "drizzle-orm";
-import { describeRoute } from "hono-openapi";
-import { resolver, validator } from "hono-openapi/zod";
-import { z } from "zod";
+import { describeRoute, resolver, validator } from "hono-openapi";
+import { z } from "zod/v4";
 
 export default apiRoute((app) => {
     app.get(
@@ -145,7 +144,7 @@ export default apiRoute((app) => {
                         .int()
                         .min(60)
                         .max(60 * 60 * 24 * 365 * 5)
-                        .openapi({
+                        .meta({
                             description:
                                 "How many seconds from now should the filter expire?",
                         }),
@@ -157,7 +156,7 @@ export default apiRoute((app) => {
                         })
                             .extend({
                                 // biome-ignore lint/style/useNamingConvention: _destroy is a Mastodon API imposed variable name
-                                _destroy: zBoolean.default(false).openapi({
+                                _destroy: zBoolean.default(false).meta({
                                     description:
                                         "If true, will remove the keyword with the given ID.",
                                 }),

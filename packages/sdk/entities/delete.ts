@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import { DeleteSchema } from "../schemas/delete.ts";
 import type { JSONObject } from "../types.ts";
 import { Entity } from "./entity.ts";

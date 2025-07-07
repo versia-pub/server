@@ -1,6 +1,6 @@
-import { zodToJsonSchema } from "zod-to-json-schema";
+import * as z from "zod/v4";
 import { manifestSchema } from "./schema.ts";
 
-const jsonSchema = zodToJsonSchema(manifestSchema);
+const jsonSchema = z.toJSONSchema(manifestSchema);
 
 console.write(`${JSON.stringify(jsonSchema, null, 4)}\n`);
