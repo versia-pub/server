@@ -165,7 +165,7 @@ export const automaticOidcFlow = async (
 
         const authServer = await getAuthServer(issuerUrl);
 
-        const parameters = await getParameters(
+        const parameters = getParameters(
             authServer,
             issuer.client_id,
             currentUrl,

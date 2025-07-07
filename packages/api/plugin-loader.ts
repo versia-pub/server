@@ -108,7 +108,10 @@ export class PluginLoader {
      * @returns {Promise<Manifest>} - The parsed manifest object.
      * @throws Will throw an error if the manifest file is missing or invalid.
      */
-    public async parseManifest(dir: string, plugin: string): Promise<Manifest> {
+    public static async parseManifest(
+        dir: string,
+        plugin: string,
+    ): Promise<Manifest> {
         const manifestFile = await PluginLoader.findManifestFile(
             `${dir}/${plugin}`,
         );
@@ -178,7 +181,7 @@ export class PluginLoader {
 
         return Promise.all(
             plugins.map(async (plugin) => {
-                const manifest = await this.parseManifest(dir, plugin);
+                const manifest = await PluginLoader.parseManifest(dir, plugin);
 
                 // If autoload is disabled, only load plugins explicitly enabled
                 if (
