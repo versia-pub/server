@@ -10,12 +10,12 @@ import {
 import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Tokens } from "../tables/schema.ts";
-import type { Application } from "./application.ts";
+import type { Client } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 
 type TokenType = InferSelectModel<typeof Tokens> & {
-    client: typeof Application.$type;
+    client: typeof Client.$type;
 };
 
 export class Token extends BaseInterface<typeof Tokens, TokenType> {

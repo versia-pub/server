@@ -1,11 +1,11 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Application, Token } from "@versia-server/kit/db";
+import { Client, Token } from "@versia-server/kit/db";
 import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 
 const { deleteUsers, users } = await getTestUsers(1);
 
-const application = await Application.insert({
+const application = await Client.insert({
     id: randomUUIDv7(),
     redirectUris: ["https://example.com/callback"],
     scopes: ["openid", "profile", "email"],

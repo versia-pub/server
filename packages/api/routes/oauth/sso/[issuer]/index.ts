@@ -1,7 +1,7 @@
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
-import { Application, db } from "@versia-server/kit/db";
+import { Client, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { describeRoute, validator } from "hono-openapi";
@@ -54,7 +54,7 @@ export default apiRoute((app) => {
                 throw new ApiError(422, "Unknown or invalid issuer");
             }
 
-            const application = await Application.fromClientId(client_id);
+            const application = await Client.fromClientId(client_id);
 
             if (!application) {
                 throw new ApiError(422, "Unknown or invalid client_id");
@@ -98,7 +98,7 @@ export default apiRoute((app) => {
                         clientState: state,
                         clientRedirectUri: redirect_uri,
                         clientScopes: scopes,
-                        applicationId: application.id,
+                        clientId: application.id,
                         issuerId,
                     })
                     .returning()

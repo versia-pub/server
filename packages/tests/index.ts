@@ -2,7 +2,7 @@ import { mock } from "bun:test";
 import { Client as VersiaClient } from "@versia/client";
 import { config } from "@versia-server/config";
 import {
-    Application,
+    Client,
     db,
     Note,
     setupDatabase,
@@ -50,7 +50,7 @@ export const generateClient = async (
         dbToken: Token;
     }
 > => {
-    const application = await Application.insert({
+    const application = await Client.insert({
         id: randomUUIDv7(),
         name: "Versia",
         redirectUris: [],
@@ -111,7 +111,7 @@ export const getTestUsers = async (
     const users: User[] = [];
     const passwords: string[] = [];
 
-    const application = await Application.insert({
+    const application = await Client.insert({
         id: randomUUIDv7(),
         name: "Versia",
         redirectUris: [],
@@ -182,7 +182,7 @@ export const getTestStatuses = async (
             sensitive: false,
             updatedAt: new Date().toISOString(),
             visibility: "public",
-            applicationId: null,
+            clientId: null,
             ...partial,
         });
 

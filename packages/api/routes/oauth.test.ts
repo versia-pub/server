@@ -13,10 +13,10 @@ afterAll(async () => {
 });
 
 describe("Login flow", () => {
-    test("should create an application", async () => {
+    test("should create a client", async () => {
         const client = await generateClient(users[0]);
 
-        const { ok, data } = await client.createApp("Test Application", {
+        const { ok, data } = await client.createApp("Test Client", {
             redirect_uris: "https://example.com",
             website: "https://example.com",
             scopes: ["read", "write"],
@@ -24,7 +24,7 @@ describe("Login flow", () => {
 
         expect(ok).toBe(true);
         expect(data).toEqual({
-            name: "Test Application",
+            name: "Test Client",
             website: "https://example.com",
             client_id: expect.any(String),
             client_secret: expect.any(String),

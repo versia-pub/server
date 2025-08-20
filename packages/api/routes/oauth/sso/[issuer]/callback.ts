@@ -69,7 +69,7 @@ export default apiRoute((app) => {
             const flow = await db.query.OpenIdLoginFlows.findFirst({
                 where: (flow): SQL | undefined => eq(flow.id, flowId),
                 with: {
-                    application: true,
+                    client: true,
                 },
             });
 
@@ -129,11 +129,11 @@ export default apiRoute((app) => {
             // If linking account
             if (link && user_id) {
                 // Check if userId is equal to application.clientId
-                if (!flow.application?.id.startsWith(user_id)) {
+                if (!flow.client?.id.startsWith(user_id)) {
                     return redirectWithMessage(
                         {
                             oidc_account_linking_error: "Account linking error",
-                            oidc_account_linking_error_message: `User ID does not match application client ID (${user_id} != ${flow.application?.id})`,
+                            oidc_account_linking_error_message: `User ID does not match application client ID (${user_id} != ${flow.client?.id})`,
                         },
                         config.frontend.routes.home,
                     );
@@ -262,14 +262,14 @@ export default apiRoute((app) => {
                 });
             }
 
-            if (!flow.application) {
+            if (!flow.client) {
                 throw new ApiError(500, "Application not found");
             }
 
             const code = randomString(32, "hex");
 
             await db.insert(AuthorizationCodes).values({
-                clientId: flow.application.id,
+                clientId: flow.client.id,
                 code,
                 expiresAt: new Date(Date.now() + 60 * 1000).toISOString(), // 1 minute
                 redirectUri: flow.clientRedirectUri ?? undefined,
@@ -281,7 +281,7 @@ export default apiRoute((app) => {
                 {
                     sub: user.id,
                     iss: new URL(context.get("config").http.base_url).origin,
-                    aud: flow.application.id,
+                    aud: flow.client.id,
                     exp: Math.floor(Date.now() / 1000) + 60 * 60,
                     iat: Math.floor(Date.now() / 1000),
                     nbf: Math.floor(Date.now() / 1000),
@@ -303,9 +303,9 @@ export default apiRoute((app) => {
                 {
                     redirect_uri: flow.clientRedirectUri ?? undefined,
                     code,
-                    client_id: flow.application.id,
-                    application: flow.application.name,
-                    website: flow.application.website ?? "",
+                    client_id: flow.client.id,
+                    application: flow.client.name,
+                    website: flow.client.website ?? "",
                     scope: flow.clientScopes?.join(" "),
                     state: flow.clientState ?? undefined,
                 },

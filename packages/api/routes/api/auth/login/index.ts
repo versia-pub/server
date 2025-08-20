@@ -1,7 +1,7 @@
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
-import { Application, User } from "@versia-server/kit/db";
+import { Client, User } from "@versia-server/kit/db";
 import { Users } from "@versia-server/kit/tables";
 import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
@@ -156,7 +156,7 @@ export default apiRoute((app) =>
                 config.authentication.key,
             );
 
-            const application = await Application.fromClientId(client_id);
+            const application = await Client.fromClientId(client_id);
 
             if (!application) {
                 throw new ApiError(400, "Invalid application");

@@ -1,4 +1,4 @@
-import { Application, Token } from "@versia-server/kit/db";
+import { Client, Token } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
@@ -22,7 +22,7 @@ export const generateTokenCommand = defineCommand(
             throw new Error(`User ${chalk.gray(username)} not found.`);
         }
 
-        const application = await Application.insert({
+        const application = await Client.insert({
             id:
                 user.id +
                 Buffer.from(

@@ -4,7 +4,7 @@ import {
 } from "@versia/client/schemas";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth } from "@versia-server/kit/api";
-import { Application } from "@versia-server/kit/db";
+import { Client } from "@versia-server/kit/db";
 import { describeRoute, resolver } from "hono-openapi";
 
 export default apiRoute((app) =>
@@ -38,7 +38,7 @@ export default apiRoute((app) =>
         async (context) => {
             const { token } = context.get("auth");
 
-            const application = await Application.getFromToken(
+            const application = await Client.getFromToken(
                 token.data.accessToken,
             );
 

@@ -1,6 +1,6 @@
 import { Token as TokenSchema } from "@versia/client/schemas";
 import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
-import { Application, db, Token } from "@versia-server/kit/db";
+import { Client, db, Token } from "@versia-server/kit/db";
 import { AuthorizationCodes } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq } from "drizzle-orm";
@@ -77,7 +77,7 @@ export default apiRoute((app) => {
             }
 
             // Verify the client_secret
-            const client = await Application.fromClientId(client_id);
+            const client = await Client.fromClientId(client_id);
 
             if (!client || client.data.secret !== client_secret) {
                 return context.json(

@@ -1,5 +1,5 @@
 export { db, setupDatabase } from "../tables/db.ts";
-export { Application } from "./application.ts";
+export { Client } from "./application.ts";
 export { Emoji } from "./emoji.ts";
 export { Instance } from "./instance.ts";
 export { Like } from "./like.ts";
