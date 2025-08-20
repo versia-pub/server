@@ -1,15 +1,15 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "@versia-server/config";
-import { Application } from "@versia-server/kit/db";
+import { Client } from "@versia-server/kit/db";
 import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomString } from "@/math";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 
 // Create application
-const application = await Application.insert({
+const application = await Client.insert({
     id: randomString(32, "hex"),
-    name: "Test Application",
+    name: "Test Client",
     secret: "test",
     redirectUris: ["https://example.com"],
     scopes: ["read", "write"],

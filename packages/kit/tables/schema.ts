@@ -309,7 +309,7 @@ export const RelationshipsRelations = relations(Relationships, ({ one }) => ({
     }),
 }));
 
-export const Clients = pgTable("Applications", {
+export const Clients = pgTable("Clients", {
     id: text("client_id").primaryKey(),
     secret: text("secret").notNull(),
     redirectUris: text("redirect_uris")
@@ -494,7 +494,7 @@ export const Notes = pgTable("Notes", {
     }),
     sensitive: boolean("sensitive").notNull().default(false),
     spoilerText: text("spoiler_text").default("").notNull(),
-    applicationId: text("applicationId").references(() => Clients.id, {
+    clientId: text("clientId").references(() => Clients.id, {
         onDelete: "set null",
         onUpdate: "cascade",
     }),
@@ -528,8 +528,8 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
         references: [Notes.id],
         relationName: "NoteToQuotes",
     }),
-    application: one(Clients, {
-        fields: [Notes.applicationId],
+    client: one(Clients, {
+        fields: [Notes.clientId],
         references: [Clients.id],
     }),
     quotes: many(Notes, {
@@ -703,7 +703,7 @@ export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
     clientState: text("client_state"),
     clientRedirectUri: text("client_redirect_uri"),
     clientScopes: text("client_scopes").array(),
-    applicationId: text("applicationId").references(() => Clients.id, {
+    clientId: text("clientId").references(() => Clients.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
@@ -713,8 +713,8 @@ export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
 export const OpenIdLoginFlowsRelations = relations(
     OpenIdLoginFlows,
     ({ one }) => ({
-        application: one(Clients, {
-            fields: [OpenIdLoginFlows.applicationId],
+        client: one(Clients, {
+            fields: [OpenIdLoginFlows.clientId],
             references: [Clients.id],
         }),
     }),

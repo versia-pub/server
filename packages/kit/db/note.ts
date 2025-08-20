@@ -36,7 +36,7 @@ import {
     Notifications,
     Users,
 } from "../tables/schema.ts";
-import { Application } from "./application.ts";
+import { Client } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
@@ -129,7 +129,7 @@ const findManyNotes = async (
                         },
                     },
                     likes: true,
-                    application: true,
+                    client: true,
                     mentions: {
                         with: {
                             user: {
@@ -238,7 +238,7 @@ type NoteTypeWithRelations = NoteType & {
     emojis: (typeof Emoji.$type)[];
     reply: NoteType | null;
     quote: NoteType | null;
-    application: typeof Application.$type | null;
+    client: typeof Client.$type | null;
     pinned: boolean;
     reblogged: boolean;
     muted: boolean;
@@ -514,7 +514,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             visibility,
             sensitive: false,
             updatedAt: new Date().toISOString(),
-            applicationId: null,
+            clientId: null,
             uri: uri?.href,
         });
 
@@ -1162,8 +1162,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             in_reply_to_account_id: data.reply?.authorId || null,
             account: this.author.toApi(userFetching?.id === data.authorId),
             created_at: new Date(data.createdAt).toISOString(),
-            application: data.application
-                ? new Application(data.application).toApi()
+            application: data.client
+                ? new Client(data.client).toApi()
                 : undefined,
             card: null,
             content: replacedContent,

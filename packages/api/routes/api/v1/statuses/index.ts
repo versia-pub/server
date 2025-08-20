@@ -249,7 +249,7 @@ export default apiRoute((app) =>
                 spoilerText: sanitizedSpoilerText,
                 replyId: in_reply_to_id ?? undefined,
                 quotingId: quote_id ?? undefined,
-                applicationId: application?.id,
+                clientId: application?.id,
                 contentSource: status,
                 contentType: content_type,
             });

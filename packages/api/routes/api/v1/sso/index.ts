@@ -2,7 +2,7 @@ import { RolePermission } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
-import { Application, db } from "@versia-server/kit/db";
+import { Client, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { describeRoute, resolver, validator } from "hono-openapi";
@@ -123,7 +123,7 @@ export default apiRoute((app) => {
                 issuerId,
             );
 
-            const application = await Application.insert({
+            const application = await Client.insert({
                 id:
                     user.id +
                     Buffer.from(
@@ -144,7 +144,7 @@ export default apiRoute((app) => {
                         codeVerifier,
                         state: parameters.state,
                         issuerId,
-                        applicationId: application.id,
+                        clientId: application.id,
                     })
                     .returning()
             )[0];
