@@ -169,8 +169,8 @@ export const auth = <AuthRequired extends boolean>(options: {
 
         const auth: AuthData = {
             token,
-            application: token?.data.application
-                ? new Application(token?.data.application)
+            application: token?.data.client
+                ? new Application(token?.data.client)
                 : null,
             user: (await token?.getUser()) ?? null,
         };

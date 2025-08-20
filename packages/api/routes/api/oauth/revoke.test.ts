@@ -7,25 +7,20 @@ const { deleteUsers, users } = await getTestUsers(1);
 
 const application = await Application.insert({
     id: randomUUIDv7(),
-    clientId: "test-client-id",
-    redirectUri: "https://example.com/callback",
-    scopes: "openid profile email",
+    redirectUris: ["https://example.com/callback"],
+    scopes: ["openid", "profile", "email"],
     secret: "test-secret",
     name: "Test Application",
 });
 
 const token = await Token.insert({
     id: randomUUIDv7(),
-    code: "test-code",
-    redirectUri: application.data.redirectUri,
-    clientId: application.data.clientId,
+    clientId: application.id,
     accessToken: "test-access-token",
     expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
     createdAt: new Date().toISOString(),
-    tokenType: "Bearer",
-    scope: application.data.scopes,
+    scopes: application.data.scopes,
     userId: users[0].id,
-    applicationId: application.id,
 });
 
 afterAll(async () => {
@@ -42,7 +37,7 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: application.data.clientId,
+                client_id: application.data.id,
                 client_secret: application.data.secret,
                 token: "test-access-token",
             }),
@@ -60,7 +55,7 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: application.data.clientId,
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
@@ -80,7 +75,7 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: application.data.clientId,
+                client_id: application.data.id,
                 client_secret: "invalid-secret",
                 token: "test-access-token",
             }),
@@ -101,7 +96,7 @@ describe("/oauth/revoke", () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                client_id: application.data.clientId,
+                client_id: application.data.id,
                 client_secret: application.data.secret,
                 token: "invalid-token",
             }),

@@ -7,8 +7,8 @@ import { password as bunPassword } from "bun";
 import { eq, or } from "drizzle-orm";
 import type { Context } from "hono";
 import { setCookie } from "hono/cookie";
+import { sign } from "hono/jwt";
 import { describeRoute, validator } from "hono-openapi";
-import { SignJWT } from "jose";
 import { z } from "zod/v4";
 
 const returnError = (
@@ -144,16 +144,17 @@ export default apiRoute((app) =>
             }
 
             // Generate JWT
-            const jwt = await new SignJWT({
-                sub: user.id,
-                iss: config.http.base_url.origin,
-                aud: client_id,
-                exp: Math.floor(Date.now() / 1000) + 60 * 60,
-                iat: Math.floor(Date.now() / 1000),
-                nbf: Math.floor(Date.now() / 1000),
-            })
-                .setProtectedHeader({ alg: "EdDSA" })
-                .sign(config.authentication.keys.private);
+            const jwt = await sign(
+                {
+                    sub: user.id,
+                    iss: config.http.base_url.origin,
+                    aud: client_id,
+                    exp: Math.floor(Date.now() / 1000) + 60 * 60,
+                    iat: Math.floor(Date.now() / 1000),
+                    nbf: Math.floor(Date.now() / 1000),
+                },
+                config.authentication.keys.private,
+            );
 
             const application = await Application.fromClientId(client_id);
 

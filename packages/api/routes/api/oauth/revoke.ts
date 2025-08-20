@@ -68,7 +68,7 @@ export default apiRoute((app) => {
             }
 
             // Check if the client secret is correct
-            if (foundToken.data.application?.secret !== client_secret) {
+            if (foundToken.data.client?.secret !== client_secret) {
                 return context.json(
                     {
                         error: "unauthorized_client",

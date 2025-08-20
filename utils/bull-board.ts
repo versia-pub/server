@@ -14,8 +14,7 @@ import { relationshipQueue } from "@versia-server/kit/queues/relationships";
 import type { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { getCookie } from "hono/cookie";
-import { jwtVerify } from "jose";
-import { JOSEError, JWTExpired } from "jose/errors";
+import { verify } from "hono/jwt";
 import type { HonoEnv } from "~/types/api";
 import pkg from "../package.json" with { type: "json" };
 
@@ -58,38 +57,18 @@ export const applyToHono = (app: Hono<HonoEnv>): void => {
             throw new ApiError(401, "Missing JWT cookie");
         }
 
-        const result = await jwtVerify(
+        const result = await verify(
             jwtCookie,
             config.authentication.keys.public,
-            {
-                algorithms: ["EdDSA"],
-                issuer: new URL(context.get("config").http.base_url).origin,
-            },
-        ).catch((error) => {
-            if (error instanceof JOSEError) {
-                return error;
-            }
+        );
 
-            throw error;
-        });
-
-        if (result instanceof JOSEError) {
-            if (result instanceof JWTExpired) {
-                throw new ApiError(401, "JWT has expired");
-            }
-
-            throw new ApiError(401, "Invalid JWT");
-        }
-
-        const {
-            payload: { sub },
-        } = result;
+        const { sub } = result;
 
         if (!sub) {
             throw new ApiError(401, "Invalid JWT (no sub)");
         }
 
-        const user = await User.fromId(sub);
+        const user = await User.fromId(sub as string);
 
         if (!user?.hasPermission(RolePermission.ManageInstanceFederation)) {
             throw new ApiError(

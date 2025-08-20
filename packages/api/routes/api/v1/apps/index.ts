@@ -5,7 +5,6 @@ import {
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Application } from "@versia-server/kit/db";
-import { randomUUIDv7 } from "bun";
 import { describeRoute, resolver, validator } from "hono-openapi";
 import { z } from "zod/v4";
 import { randomString } from "@/math";
@@ -64,14 +63,13 @@ export default apiRoute((app) =>
                 context.req.valid("json");
 
             const app = await Application.insert({
-                id: randomUUIDv7(),
+                id: randomString(32, "base64url"),
                 name: client_name,
-                redirectUri: Array.isArray(redirect_uris)
-                    ? redirect_uris.join("\n")
-                    : redirect_uris,
-                scopes,
+                redirectUris: Array.isArray(redirect_uris)
+                    ? redirect_uris
+                    : [redirect_uris],
+                scopes: scopes.split(" "),
                 website: website || undefined,
-                clientId: randomString(32, "base64url"),
                 secret: randomString(64, "base64url"),
             });
 

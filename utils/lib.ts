@@ -9,3 +9,6 @@ export const mergeAndDeduplicate = <T extends ElementWithId>(
             (element, index, self) =>
                 index === self.findIndex((t) => t.id === element.id),
         );
+
+export const oauthRedirectUri = (baseUrl: URL, issuer: string): URL =>
+    new URL(`/oauth/sso/${issuer}/callback`, baseUrl);
