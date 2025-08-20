@@ -466,10 +466,8 @@ forced_openid = false
 # If signups.registration is false, it will only be possible to register with OpenID
 openid_registration = true
 
-# [authentication.keys]
-# Run Versia Server with those values missing to generate a new key
-# public = ""
-# private = ""
+# Run Versia Server with this value missing to generate a new key
+# key = ""
 
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this

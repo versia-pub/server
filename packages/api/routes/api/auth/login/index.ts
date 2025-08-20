@@ -153,7 +153,7 @@ export default apiRoute((app) =>
                     iat: Math.floor(Date.now() / 1000),
                     nbf: Math.floor(Date.now() / 1000),
                 },
-                config.authentication.keys.private,
+                config.authentication.key,
             );
 
             const application = await Application.fromClientId(client_id);
