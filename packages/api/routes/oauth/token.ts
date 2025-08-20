@@ -63,8 +63,18 @@ export default apiRoute((app) => {
             handleZodError,
         ),
         async (context) => {
-            const { code, client_id, client_secret, redirect_uri } =
+            const { code, client_id, client_secret, redirect_uri, grant_type } =
                 context.req.valid("json");
+
+            if (grant_type !== "authorization_code") {
+                return context.json(
+                    {
+                        error: "unsupported_grant_type",
+                        error_description: "Unsupported grant type",
+                    },
+                    401,
+                );
+            }
 
             // Verify the client_secret
             const client = await Application.fromClientId(client_id);
@@ -108,6 +118,7 @@ export default apiRoute((app) => {
                 clientId: client.id,
                 id: randomUUIDv7(),
                 userId: authorizationCode.userId,
+                expiresAt: null,
             });
 
             // Invalidate the code

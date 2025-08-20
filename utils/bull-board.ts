@@ -57,10 +57,7 @@ export const applyToHono = (app: Hono<HonoEnv>): void => {
             throw new ApiError(401, "Missing JWT cookie");
         }
 
-        const result = await verify(
-            jwtCookie,
-            config.authentication.keys.public,
-        );
+        const result = await verify(jwtCookie, config.authentication.key);
 
         const { sub } = result;
 
