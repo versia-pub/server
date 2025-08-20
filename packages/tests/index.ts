@@ -1,7 +1,14 @@
 import { mock } from "bun:test";
 import { Client as VersiaClient } from "@versia/client";
 import { config } from "@versia-server/config";
-import { db, Note, setupDatabase, Token, User } from "@versia-server/kit/db";
+import {
+    Application,
+    db,
+    Note,
+    setupDatabase,
+    Token,
+    User,
+} from "@versia-server/kit/db";
 import { searchManager } from "@versia-server/kit/search";
 import { Notes, Users } from "@versia-server/kit/tables";
 import { solveChallenge } from "altcha-lib";
@@ -43,15 +50,21 @@ export const generateClient = async (
         dbToken: Token;
     }
 > => {
+    const application = await Application.insert({
+        id: randomUUIDv7(),
+        name: "Versia",
+        redirectUris: [],
+        scopes: ["openid", "profile", "email"],
+        secret: "",
+    });
+
     const token = user
         ? await Token.insert({
               id: randomUUIDv7(),
               accessToken: randomString(32, "hex"),
-              tokenType: "bearer",
               userId: user.id,
-              applicationId: null,
-              code: randomString(32, "hex"),
-              scope: "read write follow push",
+              clientId: application.id,
+              scopes: ["read", "write", "follow", "push"],
           })
         : null;
 
@@ -71,6 +84,7 @@ export const generateClient = async (
     // @ts-expect-error This is REAL monkeypatching done by REAL programmers, BITCH!
     client[Symbol.asyncDispose] = async (): Promise<void> => {
         await token?.delete();
+        await application.delete();
     };
 
     // @ts-expect-error More monkeypatching
@@ -97,6 +111,14 @@ export const getTestUsers = async (
     const users: User[] = [];
     const passwords: string[] = [];
 
+    const application = await Application.insert({
+        id: randomUUIDv7(),
+        name: "Versia",
+        redirectUris: [],
+        scopes: ["openid", "profile", "email"],
+        secret: "",
+    });
+
     for (let i = 0; i < count; i++) {
         const password = randomString(32, "hex");
 
@@ -119,9 +141,9 @@ export const getTestUsers = async (
             accessToken: randomString(32, "hex"),
             tokenType: "bearer",
             userId: u.id,
-            applicationId: null,
+            clientId: application.id,
             code: randomString(32, "hex"),
-            scope: "read write follow push",
+            scopes: ["read", "write", "follow", "push"],
         })),
     );
 
@@ -140,6 +162,7 @@ export const getTestUsers = async (
                     users.map((u) => u.id),
                 ),
             );
+            await application.delete();
         },
     };
 };

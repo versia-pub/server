@@ -1,4 +1,4 @@
-import { config } from "@versia-server/config";
+//import { config } from "@versia-server/config";
 import type { Config } from "drizzle-kit";
 
 /**
@@ -7,19 +7,19 @@ import type { Config } from "drizzle-kit";
  */
 export default {
     dialect: "postgresql",
-    out: "./drizzle/migrations",
-    schema: "./drizzle/schema.ts",
+    out: "./packages/kit/tables/migrations",
+    schema: "./packages/kit/tables/schema.ts",
     dbCredentials: {
-        /* host: "localhost",
+        host: "localhost",
         port: 40000,
         user: "lysand",
         password: "lysand",
-        database: "lysand", */
-        host: config.postgres.host,
+        database: "lysand",
+        /* host: config.postgres.host,
         port: config.postgres.port,
         user: config.postgres.username,
         password: config.postgres.password,
-        database: config.postgres.database,
+        database: config.postgres.database, */
     },
     // Print all statements
     verbose: true,

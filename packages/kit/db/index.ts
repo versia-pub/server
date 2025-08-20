@@ -12,4 +12,4 @@ export { Relationship } from "./relationship.ts";
 export { Role } from "./role.ts";
 export { Timeline } from "./timeline.ts";
 export { Token } from "./token.ts";
-export { User } from "./user.ts";
+export { transformOutputToUserWithRelations, User } from "./user.ts";

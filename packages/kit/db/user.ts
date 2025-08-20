@@ -77,6 +77,7 @@ export const userRelations = {
     },
 } as const;
 
+// TODO: Remove this function and use what drizzle outputs directly instead of transforming it
 export const transformOutputToUserWithRelations = (
     user: Omit<InferSelectModel<typeof Users>, "endpoints"> & {
         followerCount: unknown;
@@ -525,15 +526,15 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         providers: {
             id: string;
             name: string;
-            url: string;
+            url: ProxiableUrl;
             icon?: ProxiableUrl;
         }[],
     ): Promise<
         {
             id: string;
             name: string;
-            url: string;
-            icon?: string | undefined;
+            url: ProxiableUrl;
+            icon?: ProxiableUrl;
             server_id: string;
         }[]
     > {
@@ -556,7 +557,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     id: issuer.id,
                     name: issuer.name,
                     url: issuer.url,
-                    icon: issuer.icon?.proxied,
+                    icon: issuer.icon,
                     server_id: account.serverId,
                 };
             })

@@ -6,17 +6,21 @@ import {
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
-import { db, Media, Token, User } from "@versia-server/kit/db";
+import { db, Media, User } from "@versia-server/kit/db";
 import { searchManager } from "@versia-server/kit/search";
-import { OpenIdAccounts, Users } from "@versia-server/kit/tables";
+import {
+    AuthorizationCodes,
+    OpenIdAccounts,
+    Users,
+} from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
+import { sign } from "hono/jwt";
 import { describeRoute, validator } from "hono-openapi";
-import { SignJWT } from "jose";
+import * as client from "openid-client";
 import { z } from "zod/v4";
 import { randomString } from "@/math.ts";
-import { automaticOidcFlow } from "../../../../../plugins/openid/utils.ts";
 
 export default apiRoute((app) => {
     app.get(
@@ -31,6 +35,7 @@ export default apiRoute((app) => {
                     description:
                         "Redirect to frontend's consent route, or redirect to login page with error",
                 },
+                422: ApiError.validationFailed().schema,
             },
         }),
         validator(
@@ -43,103 +48,94 @@ export default apiRoute((app) => {
         validator(
             "query",
             z.object({
-                client_id: z.string().optional(),
                 flow: z.string(),
-                link: zBoolean.optional(),
+                link: zBoolean.default(false),
                 user_id: z.uuid().optional(),
             }),
             handleZodError,
         ),
         async (context) => {
-            const currentUrl = new URL(context.req.url);
-            const redirectUrl = new URL(context.req.url);
-
-            // Correct some reverse proxies incorrectly setting the protocol as http, even if the original request was https
-            // Looking at you, Traefik
-            if (
-                new URL(context.get("config").http.base_url).protocol ===
-                    "https:" &&
-                currentUrl.protocol === "http:"
-            ) {
-                currentUrl.protocol = "https:";
-                redirectUrl.protocol = "https:";
-            }
-
-            // Remove state query parameter from URL
-            currentUrl.searchParams.delete("state");
-            redirectUrl.searchParams.delete("state");
-            // Remove issuer query parameter from URL (can cause redirect URI mismatches)
-            redirectUrl.searchParams.delete("iss");
-            redirectUrl.searchParams.delete("code");
-            const { issuer: issuerParam } = context.req.valid("param");
+            const { issuer: issuerId } = context.req.valid("param");
             const { flow: flowId, user_id, link } = context.req.valid("query");
 
             const issuer = config.authentication.openid_providers.find(
-                (provider) => provider.id === issuerParam,
+                (provider) => provider.id === issuerId,
             );
 
             if (!issuer) {
-                throw new ApiError(404, "Issuer not found");
+                throw new ApiError(422, "Unknown or invalid issuer");
             }
 
-            const userInfo = await automaticOidcFlow(
-                issuer,
-                flowId,
-                currentUrl,
-                redirectUrl,
-                (error, message, flow) => {
-                    const errorSearchParams = new URLSearchParams(
-                        Object.entries({
-                            redirect_uri: flow?.application?.redirectUri,
-                            client_id: flow?.application?.clientId,
-                            response_type: "code",
-                            scope: flow?.application?.scopes,
-                        }).filter(([_, value]) => value !== undefined) as [
-                            string,
-                            string,
-                        ][],
-                    );
+            const flow = await db.query.OpenIdLoginFlows.findFirst({
+                where: (flow): SQL | undefined => eq(flow.id, flowId),
+                with: {
+                    application: true,
+                },
+            });
 
-                    errorSearchParams.append("error", error);
-                    errorSearchParams.append("error_description", message);
+            const redirectWithMessage = (
+                parameters: Record<string, string | undefined>,
+                route = config.frontend.routes.login,
+            ) => {
+                const searchParams = new URLSearchParams(
+                    Object.entries(parameters).filter(
+                        ([_, value]) => value !== undefined,
+                    ) as [string, string][],
+                );
 
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
-                    );
+                return context.redirect(`${route}?${searchParams.toString()}`);
+            };
+
+            if (!flow) {
+                return redirectWithMessage({
+                    error: "invalid_request",
+                    error_description: "Invalid flow",
+                });
+            }
+
+            const oidcConfig = await client.discovery(
+                issuer.url,
+                issuer.client_id,
+                issuer.client_secret,
+            );
+
+            const tokens = await client.authorizationCodeGrant(
+                oidcConfig,
+                context.req.raw,
+                {
+                    pkceCodeVerifier: flow.codeVerifier,
+                    expectedState: flow.state ?? undefined,
+                    idTokenExpected: true,
                 },
             );
 
-            if (userInfo instanceof Response) {
-                return userInfo;
+            const claims = tokens.claims();
+
+            if (!claims) {
+                return redirectWithMessage({
+                    error: "invalid_request",
+                    error_description: "Missing or invalid ID token",
+                });
             }
 
-            const { sub, email, preferred_username, picture } =
-                userInfo.userInfo;
-            const flow = userInfo.flow;
-
-            const errorSearchParams = new URLSearchParams(
-                Object.entries({
-                    redirect_uri: flow.application?.redirectUri,
-                    client_id: flow.application?.clientId,
-                    response_type: "code",
-                    scope: flow.application?.scopes,
-                }).filter(([_, value]) => value !== undefined) as [
-                    string,
-                    string,
-                ][],
+            const userInfo = await client.fetchUserInfo(
+                oidcConfig,
+                tokens.access_token,
+                claims.sub,
             );
+
+            const { sub, email, preferred_username, picture } = userInfo;
 
             // If linking account
             if (link && user_id) {
                 // Check if userId is equal to application.clientId
-                if (!flow.application?.clientId.startsWith(user_id)) {
-                    return context.redirect(
-                        `${context.get("config").http.base_url}${
-                            context.get("config").frontend.routes.home
-                        }?${new URLSearchParams({
+                if (!flow.application?.id.startsWith(user_id)) {
+                    return redirectWithMessage(
+                        {
                             oidc_account_linking_error: "Account linking error",
-                            oidc_account_linking_error_message: `User ID does not match application client ID (${user_id} != ${flow.application?.clientId})`,
-                        })}`,
+                            oidc_account_linking_error_message: `User ID does not match application client ID (${user_id} != ${flow.application?.id})`,
+                        },
+                        config.frontend.routes.home,
                     );
                 }
 
@@ -153,15 +149,14 @@ export default apiRoute((app) => {
                 });
 
                 if (account) {
-                    return context.redirect(
-                        `${context.get("config").http.base_url}${
-                            context.get("config").frontend.routes.home
-                        }?${new URLSearchParams({
+                    return redirectWithMessage(
+                        {
                             oidc_account_linking_error:
                                 "Account already linked",
                             oidc_account_linking_error_message:
                                 "This account has already been linked to this OpenID Connect provider.",
-                        })}`,
+                        },
+                        config.frontend.routes.home,
                     );
                 }
 
@@ -244,42 +239,27 @@ export default apiRoute((app) => {
 
                     userId = user.id;
                 } else {
-                    errorSearchParams.append("error", "invalid_request");
-                    errorSearchParams.append(
-                        "error_description",
-                        "No user found with that account",
-                    );
-
-                    return context.redirect(
-                        `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
-                    );
+                    return redirectWithMessage({
+                        error: "invalid_request",
+                        error_description: "No user found with that account",
+                    });
                 }
             }
 
             const user = await User.fromId(userId);
 
             if (!user) {
-                errorSearchParams.append("error", "invalid_request");
-                errorSearchParams.append(
-                    "error_description",
-                    "No user found with that account",
-                );
-
-                return context.redirect(
-                    `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
-                );
+                return redirectWithMessage({
+                    error: "invalid_request",
+                    error_description: "No user found with that account",
+                });
             }
 
             if (!user.hasPermission(RolePermission.OAuth)) {
-                errorSearchParams.append("error", "invalid_request");
-                errorSearchParams.append(
-                    "error_description",
-                    `User does not have the '${RolePermission.OAuth}' permission`,
-                );
-
-                return context.redirect(
-                    `${context.get("config").frontend.routes.login}?${errorSearchParams.toString()}`,
-                );
+                return redirectWithMessage({
+                    error: "invalid_request",
+                    error_description: `User does not have the '${RolePermission.OAuth}' permission`,
+                });
             }
 
             if (!flow.application) {
@@ -288,27 +268,26 @@ export default apiRoute((app) => {
 
             const code = randomString(32, "hex");
 
-            await Token.insert({
-                id: randomUUIDv7(),
-                accessToken: randomString(64, "base64url"),
+            await db.insert(AuthorizationCodes).values({
+                clientId: flow.application.id,
                 code,
-                scope: flow.application.scopes,
-                tokenType: "Bearer",
+                expiresAt: new Date(Date.now() + 60 * 1000).toISOString(), // 1 minute
+                redirectUri: flow.clientRedirectUri ?? undefined,
                 userId: user.id,
-                applicationId: flow.application.id,
+                scopes: flow.clientScopes ?? [],
             });
 
-            // Generate JWT
-            const jwt = await new SignJWT({
-                sub: user.id,
-                iss: new URL(context.get("config").http.base_url).origin,
-                aud: flow.application.clientId,
-                exp: Math.floor(Date.now() / 1000) + 60 * 60,
-                iat: Math.floor(Date.now() / 1000),
-                nbf: Math.floor(Date.now() / 1000),
-            })
-                .setProtectedHeader({ alg: "EdDSA" })
-                .sign(config.authentication.keys.private);
+            const jwt = await sign(
+                {
+                    sub: user.id,
+                    iss: new URL(context.get("config").http.base_url).origin,
+                    aud: flow.application.id,
+                    exp: Math.floor(Date.now() / 1000) + 60 * 60,
+                    iat: Math.floor(Date.now() / 1000),
+                    nbf: Math.floor(Date.now() / 1000),
+                },
+                config.authentication.keys.private,
+            );
 
             // Redirect back to application
             setCookie(context, "jwt", jwt, {
@@ -320,21 +299,17 @@ export default apiRoute((app) => {
                 maxAge: 60 * 60 * 24 * 14,
             });
 
-            return context.redirect(
-                new URL(
-                    `${context.get("config").frontend.routes.consent}?${new URLSearchParams(
-                        {
-                            redirect_uri: flow.application.redirectUri,
-                            code,
-                            client_id: flow.application.clientId,
-                            application: flow.application.name,
-                            website: flow.application.website ?? "",
-                            scope: flow.application.scopes,
-                            response_type: "code",
-                        },
-                    ).toString()}`,
-                    context.get("config").http.base_url,
-                ).toString(),
+            return redirectWithMessage(
+                {
+                    redirect_uri: flow.clientRedirectUri ?? undefined,
+                    code,
+                    client_id: flow.application.id,
+                    application: flow.application.name,
+                    website: flow.application.website ?? "",
+                    scope: flow.clientScopes?.join(" "),
+                    state: flow.clientState ?? undefined,
+                },
+                config.frontend.routes.consent,
             );
         },
     );

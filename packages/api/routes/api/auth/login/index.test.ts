@@ -2,19 +2,17 @@ import { afterAll, describe, expect, test } from "bun:test";
 import { config } from "@versia-server/config";
 import { Application } from "@versia-server/kit/db";
 import { fakeRequest, getTestUsers } from "@versia-server/tests";
-import { randomUUIDv7 } from "bun";
 import { randomString } from "@/math";
 
 const { users, deleteUsers, passwords } = await getTestUsers(1);
 
 // Create application
 const application = await Application.insert({
-    id: randomUUIDv7(),
+    id: randomString(32, "hex"),
     name: "Test Application",
-    clientId: randomString(32, "hex"),
     secret: "test",
-    redirectUri: "https://example.com",
-    scopes: "read write",
+    redirectUris: ["https://example.com"],
+    scopes: ["read", "write"],
 });
 
 afterAll(async () => {
@@ -31,7 +29,7 @@ describe("/api/auth/login", () => {
         formData.append("password", passwords[0]);
 
         const response = await fakeRequest(
-            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
             {
                 method: "POST",
                 body: formData,
@@ -47,7 +45,7 @@ describe("/api/auth/login", () => {
 
         expect(locationHeader.pathname).toBe("/oauth/consent");
         expect(locationHeader.searchParams.get("client_id")).toBe(
-            application.data.clientId,
+            application.data.id,
         );
         expect(locationHeader.searchParams.get("redirect_uri")).toBe(
             "https://example.com",
@@ -65,7 +63,7 @@ describe("/api/auth/login", () => {
         formData.append("password", passwords[0]);
 
         const response = await fakeRequest(
-            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+            `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
             {
                 method: "POST",
                 body: formData,
@@ -81,7 +79,7 @@ describe("/api/auth/login", () => {
 
         expect(locationHeader.pathname).toBe("/oauth/consent");
         expect(locationHeader.searchParams.get("client_id")).toBe(
-            application.data.clientId,
+            application.data.id,
         );
         expect(locationHeader.searchParams.get("redirect_uri")).toBe(
             "https://example.com",
@@ -99,7 +97,7 @@ describe("/api/auth/login", () => {
         formData.append("password", passwords[0]);
 
         const response = await fakeRequest(
-            `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write&state=abc`,
+            `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write&state=abc`,
             {
                 method: "POST",
                 body: formData,
@@ -115,7 +113,7 @@ describe("/api/auth/login", () => {
 
         expect(locationHeader.pathname).toBe("/oauth/consent");
         expect(locationHeader.searchParams.get("client_id")).toBe(
-            application.data.clientId,
+            application.data.id,
         );
         expect(locationHeader.searchParams.get("redirect_uri")).toBe(
             "https://example.com",
@@ -136,7 +134,7 @@ describe("/api/auth/login", () => {
             formData.append("password", "password");
 
             const response = await fakeRequest(
-                `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
 
                 {
                     method: "POST",
@@ -169,7 +167,7 @@ describe("/api/auth/login", () => {
             formData.append("password", "password");
 
             const response = await fakeRequest(
-                `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
                 {
                     method: "POST",
                     body: formData,
@@ -201,7 +199,7 @@ describe("/api/auth/login", () => {
             formData.append("password", "password");
 
             const response = await fakeRequest(
-                `/api/auth/login?client_id=${application.data.clientId}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
+                `/api/auth/login?client_id=${application.data.id}&redirect_uri=https://example.com&response_type=code&scope=read+write`,
                 {
                     method: "POST",
                     body: formData,

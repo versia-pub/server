@@ -799,7 +799,7 @@ export const ConfigSchema = z
                     z.strictObject({
                         name: z.string().min(1),
                         id: z.string().min(1),
-                        url: z.string().min(1),
+                        url,
                         client_id: z.string().min(1),
                         client_secret: sensitiveString,
                         icon: url.optional(),

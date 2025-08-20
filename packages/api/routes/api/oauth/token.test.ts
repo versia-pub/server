@@ -7,23 +7,18 @@ const { deleteUsers, users } = await getTestUsers(1);
 
 const application = await Application.insert({
     id: randomUUIDv7(),
-    clientId: "test-client-id",
-    redirectUri: "https://example.com/callback",
-    scopes: "openid profile email",
+    redirectUris: ["https://example.com/callback"],
+    scopes: ["openid", "profile", "email"],
     secret: "test-secret",
     name: "Test Application",
 });
 
 const token = await Token.insert({
     id: randomUUIDv7(),
-    code: "test-code",
-    redirectUri: application.data.redirectUri,
-    clientId: application.data.clientId,
+    clientId: application.data.id,
     accessToken: "test-access-token",
     expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
     createdAt: new Date().toISOString(),
-    tokenType: "Bearer",
-    scope: application.data.scopes,
     userId: users[0].id,
 });
 
@@ -43,8 +38,8 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
@@ -64,8 +59,8 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
@@ -85,7 +80,7 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "test-code",
-                client_id: application.data.clientId,
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
@@ -105,7 +100,7 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "test-code",
-                redirect_uri: application.data.redirectUri,
+                redirect_uri: application.data.redirectUris[0],
                 client_secret: application.data.secret,
             }),
         });
@@ -125,8 +120,8 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: "invalid-secret",
             }),
         });
@@ -146,8 +141,8 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "invalid-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
@@ -167,8 +162,8 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "refresh_token",
                 code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
