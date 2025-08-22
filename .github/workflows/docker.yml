@@ -23,7 +23,7 @@ jobs:
 
     build:
         if: ${{ success() }}
-        needs: [lint, check, tests]
+        needs: [lint, check, tests, detect-circular]
         runs-on: ubuntu-latest
         permissions:
             contents: read
