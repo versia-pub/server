@@ -35,12 +35,12 @@ jobs:
               run: bun install
 
             - name: Build with VitePress
-              run: bun run docs:build
+              run: bun run --filter="@versia-server/api" docs:build
 
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
-                  path: docs/.vitepress/dist
+                  path: packages/api/docs/.vitepress/dist
 
     # Deployment job
     deploy:
