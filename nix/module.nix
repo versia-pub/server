@@ -123,6 +123,28 @@ in {
             StandardError = "journal";
             SyslogIdentifier = "${name}";
 
+            # Hardening
+            CapabilityBoundingSet = [""];
+            LockPersonality = true;
+            PrivateMounts = true;
+            PrivateTmp = true;
+            ProcSubset = "pid";
+            ProtectClock = true;
+            ProtectControlGroups = true;
+            ProtectHome = true;
+            ProtectHostname = true;
+            ProtectKernelLogs = true;
+            ProtectKernelModules = true;
+            ProtectKernelTunables = true;
+            ProtectProc = "invisible";
+            ProtectSystem = "strict";
+            RestrictNamespaces = true;
+            RestrictRealtime = true;
+            RestrictSUIDSGID = true;
+            SystemCallArchitectures = "native";
+            RemoveIPC = true;
+            NoNewPrivileges = true;
+
             Environment = [
               "CONFIG_LOCATION=${configFile}"
             ];
