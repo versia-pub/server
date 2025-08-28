@@ -3213,19 +3213,17 @@ export class Client extends BaseClient {
      * PUT /api/v1/media/:id
      *
      * @param id Target media ID.
-     * @param options.file The file to be attached, using multipart form data.
+     * @param options.thumbnail The media's thumbnail.
      * @param options.description A plain-text description of the media.
      * @param options.focus Two floating points (x,y), comma-delimited, ranging from -1.0 to 1.0.
-     * @param options.is_sensitive Whether the media is sensitive.
      * @return Attachment
      */
     public updateMedia(
         id: string,
         options?: Partial<{
             description: string;
-            file: File;
+            thumbnail: File;
             focus: string;
-            is_sensitive: boolean;
         }>,
         extra?: RequestInit,
     ): Promise<Output<z.infer<typeof Attachment>>> {
