@@ -18,7 +18,7 @@ ALTER TABLE "Tokens" RENAME COLUMN "applicationId" TO "clientId";--> statement-b
 --ALTER TABLE "Tokens" DROP CONSTRAINT "Tokens_applicationId_Applications_id_fk";
 --> statement-breakpoint
 DROP INDEX "Applications_client_id_index";--> statement-breakpoint
-ALTER TABLE "Applications" DROP COLUMN "id";--> statement-breakpoint
+ALTER TABLE "Applications" DROP COLUMN "id" CASCADE;--> statement-breakpoint
 ALTER TABLE "Applications" ADD PRIMARY KEY ("client_id");--> statement-breakpoint
 ALTER TABLE "Applications" ALTER COLUMN "scopes" SET DATA TYPE text[] USING (string_to_array("scopes", ' ')::text[]);--> statement-breakpoint
 ALTER TABLE "Applications" ALTER COLUMN "scopes" SET DEFAULT ARRAY[]::text[];--> statement-breakpoint
