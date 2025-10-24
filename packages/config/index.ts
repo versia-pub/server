@@ -800,7 +800,6 @@ export const ConfigSchema = z
             })
             .optional(),
         authentication: z.strictObject({
-            forced_openid: z.boolean().default(false),
             openid_providers: z
                 .array(
                     z.strictObject({

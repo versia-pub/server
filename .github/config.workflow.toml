@@ -452,14 +452,6 @@ log_level = "info" # For console output
 # environment = "production"
 # log_level = "info"
 
-[authentication]
-# If enabled, Versia will require users to log in with an OpenID provider
-forced_openid = false
-
-# Allow registration with OpenID providers
-# If signups.registration is false, it will only be possible to register with OpenID
-openid_registration = true
-
 [authentication.keys]
 # Run Versia Server with those values missing to generate a new key
 public = "MCowBQYDK2VwAyEAfyZx8r98gVHtdH5EF1NYrBeChOXkt50mqiwKO2TX0f8="

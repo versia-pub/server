@@ -151,7 +151,6 @@ export default apiRoute((app) =>
                     hint: r.hint,
                 })),
                 sso: {
-                    forced: config.authentication.forced_openid,
                     providers: config.authentication.openid_providers.map(
                         (p) => ({
                             name: p.name,
