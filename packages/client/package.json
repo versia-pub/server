@@ -1,7 +1,7 @@
 {
     "name": "@versia/client",
     "displayName": "Versia Client",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "author": {
         "email": "jesse.wierzbinski@lysand.org",
         "name": "Jesse Wierzbinski (CPlusPatch)",
