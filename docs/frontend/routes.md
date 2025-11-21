@@ -12,7 +12,7 @@ GET /oauth/authorize
 
 This route should display a login form for the user to enter their username and password, as well as a list of OpenID providers to use if available.
 
-The form should submit to [`POST /api/auth/login`](./auth.md#sign-in), or to the OpenID Connect flow.
+The form should submit to the OpenID Connect flow.
 
 Configurable in the Versia Server configuration at `frontend.routes.login`.
 
