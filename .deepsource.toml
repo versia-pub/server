@@ -1,16 +1,18 @@
 version = 1
 
+test_patterns = ["**/*.test.ts"]
+
 [[analyzers]]
 name = "shell"
 
 [[analyzers]]
 name = "javascript"
 
-  [analyzers.meta]
-  environment = ["nodejs"]
+[analyzers.meta]
+environment = ["nodejs"]
 
 [[analyzers]]
 name = "docker"
 
-  [analyzers.meta]
-  dockerfile_paths = ["Dockerfile"]
+[analyzers.meta]
+dockerfile_paths = ["Dockerfile"]
