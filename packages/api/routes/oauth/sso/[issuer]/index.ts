@@ -1,6 +1,6 @@
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
-import { apiRoute, handleZodError } from "@versia-server/kit/api";
+import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Client, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
@@ -23,6 +23,7 @@ export default apiRoute((app) => {
                 422: ApiError.validationFailed().schema,
             },
         }),
+        jsonOrForm(),
         validator(
             "param",
             z.object({
