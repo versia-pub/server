@@ -2,7 +2,7 @@ import process from "node:process";
 import { appFactory } from "@versia-server/api";
 import { config } from "@versia-server/config";
 import { Youch } from "youch";
-import { createServer } from "@/server";
+import { createServer } from "@/server.ts";
 
 process.on("SIGINT", () => {
     process.exit();

@@ -46,6 +46,7 @@ const getSinks = (): Record<"file" | "console" | "sentry", Sink> => {
     if (config.logging.sentry) {
         sinks.sentry = withFilter(
             getSentrySink(
+                // @ts-expect-error LogTape hasn't been updated for Sentry v10
                 Sentry.init({
                     dsn: config.logging.sentry.dsn.origin,
                     debug: config.logging.sentry.debug,

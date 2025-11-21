@@ -11,7 +11,7 @@ import { Markers } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const MarkerResponseSchema = z.object({
     notifications: MarkerSchema.optional(),

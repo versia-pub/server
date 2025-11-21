@@ -14,7 +14,7 @@ import { db, User } from "@versia-server/kit/db";
 import type { Users } from "@versia-server/kit/tables";
 import { type InferSelectModel, sql } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>

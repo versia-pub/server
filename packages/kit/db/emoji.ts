@@ -16,7 +16,7 @@ import {
     isNull,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { db } from "../tables/db.ts";
 import { Emojis, type Instances, type Medias } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";

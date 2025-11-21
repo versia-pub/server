@@ -15,7 +15,7 @@ import { searchManager } from "@versia-server/kit/search";
 import { Instances, Notes, Users } from "@versia-server/kit/tables";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.get(

@@ -1,5 +1,5 @@
 import { types } from "mime-types";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { f64, u64 } from "./common.ts";
 
 const hashSizes = {

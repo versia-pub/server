@@ -1,4 +1,4 @@
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { NoteSchema } from "../schemas/note.ts";
 import type { JSONObject } from "../types.ts";
 import { NonTextContentFormat, TextContentFormat } from "./contentformat.ts";

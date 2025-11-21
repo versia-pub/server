@@ -10,7 +10,7 @@ import {
     inArray,
     type SQL,
 } from "drizzle-orm";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { db } from "../tables/db.ts";
 import { Clients } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";

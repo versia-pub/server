@@ -32,7 +32,7 @@ const createImage = async (name: string): Promise<File> => {
         .png()
         .toBuffer();
 
-    return new File([inputBuffer], name, {
+    return new File([inputBuffer as BlobPart], name, {
         type: "image/png",
     });
 };

@@ -15,7 +15,7 @@ import { Emojis } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { mimeLookup } from "@/content_types";
 
 export default apiRoute((app) =>

@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { isISOString } from "../../regex.ts";
 import { u64, url } from "../common.ts";
 import { TextContentFormatSchema } from "../contentformat.ts";

@@ -6,7 +6,7 @@ import { Emojis } from "@versia-server/kit/tables";
 import { generateClient, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
 import { eq } from "drizzle-orm";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 
 const { users, deleteUsers } = await getTestUsers(5);
 let media: Media;

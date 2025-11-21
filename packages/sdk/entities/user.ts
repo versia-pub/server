@@ -1,4 +1,4 @@
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { UserSchema } from "../schemas/user.ts";
 import type { JSONObject } from "../types.ts";
 import { ImageContentFormat, TextContentFormat } from "./contentformat.ts";

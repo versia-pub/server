@@ -6,7 +6,7 @@ import { db } from "@versia-server/kit/db";
 import { OpenIdAccounts } from "@versia-server/kit/tables";
 import { and, eq, type SQL } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) => {
     app.get(

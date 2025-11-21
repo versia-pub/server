@@ -7,7 +7,7 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Media } from "@versia-server/kit/db";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.post(

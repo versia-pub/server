@@ -5,7 +5,7 @@ import { AuthorizationCodes } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { and, eq } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { randomString } from "@/math";
 
 export default apiRoute((app) => {

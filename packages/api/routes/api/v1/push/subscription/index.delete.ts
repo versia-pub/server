@@ -3,7 +3,7 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth } from "@versia-server/kit/api";
 import { PushSubscription } from "@versia-server/kit/db";
 import { describeRoute, resolver } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.delete(

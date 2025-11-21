@@ -6,7 +6,7 @@ import { markdownToHtml } from "@versia-server/kit/markdown";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute, resolver } from "hono-openapi";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import manifest from "../../../../../../package.json" with { type: "json" };
 
 export default apiRoute((app) =>

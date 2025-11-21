@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { emojiRegex } from "../regex.ts";
 import { Id, zBoolean } from "./common.ts";
 

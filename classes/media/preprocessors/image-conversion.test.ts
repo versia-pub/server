@@ -15,7 +15,7 @@ describe("ImageConversionPreprocessor", () => {
             .jpeg()
             .toBuffer();
 
-        const inputFile = new File([inputBuffer], "test.jpg", {
+        const inputFile = new File([inputBuffer as BlobPart], "test.jpg", {
             type: "image/jpeg",
         });
         const result = await convertImage(inputFile, "image/webp");
@@ -74,7 +74,7 @@ describe("ImageConversionPreprocessor", () => {
             .png()
             .toBuffer();
 
-        const inputFile = new File([inputBuffer], "test.png", {
+        const inputFile = new File([inputBuffer as BlobPart], "test.png", {
             type: "image/png",
         });
 
@@ -96,7 +96,7 @@ describe("ImageConversionPreprocessor", () => {
             .gif()
             .toBuffer();
 
-        const inputFile = new File([inputBuffer], "animated.gif", {
+        const inputFile = new File([inputBuffer as BlobPart], "animated.gif", {
             type: "image/gif",
         });
         const result = await convertImage(inputFile, "image/webp");
@@ -122,7 +122,7 @@ describe("ImageConversionPreprocessor", () => {
             .toBuffer();
 
         const inputFile = new File(
-            [inputBuffer],
+            [inputBuffer as BlobPart],
             "test image with spaces.png",
             { type: "image/png" },
         );

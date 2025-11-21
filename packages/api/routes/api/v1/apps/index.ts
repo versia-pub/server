@@ -6,7 +6,7 @@ import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Client } from "@versia-server/kit/db";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { randomString } from "@/math";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 

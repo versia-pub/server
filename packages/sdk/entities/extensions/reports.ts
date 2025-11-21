@@ -1,4 +1,4 @@
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { ReportSchema } from "../../schemas/extensions/reports.ts";
 import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";

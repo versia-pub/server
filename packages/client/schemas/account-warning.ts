@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Appeal } from "./appeal.ts";
 import { Id } from "./common.ts";

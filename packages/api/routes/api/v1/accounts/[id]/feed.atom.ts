@@ -7,7 +7,7 @@ import {
     withUserParam,
 } from "@versia-server/kit/api";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { getFeed } from "@/rss";
 
 export default apiRoute((app) =>

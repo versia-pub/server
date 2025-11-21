@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Id } from "./common.ts";
 import { CustomEmoji } from "./emoji.ts";
 

@@ -10,7 +10,7 @@ import {
     type SQL,
     sql,
 } from "drizzle-orm";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { db } from "../tables/db.ts";
 import { Relationships, Users } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";

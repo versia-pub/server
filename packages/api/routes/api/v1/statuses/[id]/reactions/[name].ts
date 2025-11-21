@@ -13,7 +13,7 @@ import { describeRoute, resolver, validator } from "hono-openapi";
 import emojis from "unicode-emoji-json/data-ordered-emoji.json" with {
     type: "json",
 };
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) => {
     app.put(

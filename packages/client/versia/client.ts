@@ -1,5 +1,5 @@
 import { OAuth2Client } from "@badgateway/oauth2-client";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import type { Account } from "../schemas/account.ts";
 import type { CredentialApplication } from "../schemas/application.ts";
 import type { Attachment } from "../schemas/attachment.ts";

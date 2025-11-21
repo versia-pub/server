@@ -2,7 +2,7 @@ import type { ContentFormatSchema } from "@versia/sdk/schemas";
 import { config } from "@versia-server/config";
 import { htmlToText as htmlToTextLib } from "html-to-text";
 import { lookup } from "mime-types";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 
 export const getBestContentType = (
     content?: z.infer<typeof ContentFormatSchema> | null,

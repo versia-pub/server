@@ -76,7 +76,9 @@ describe("/oauth/token", () => {
 
         expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toInclude(`Expected string at "code"`);
+        expect(body.error).toInclude(
+            `expected string, received undefined at "code"`,
+        );
     });
 
     test("should return error for missing redirect_uri", async () => {
@@ -95,7 +97,9 @@ describe("/oauth/token", () => {
 
         expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toInclude(`Expected string at "redirect_uri"`);
+        expect(body.error).toInclude(
+            `expected string, received undefined at "redirect_uri"`,
+        );
     });
 
     test("should return error for missing client_id", async () => {
@@ -114,7 +118,9 @@ describe("/oauth/token", () => {
 
         expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toInclude(`Expected string at "client_id"`);
+        expect(body.error).toInclude(
+            `expected string, received undefined at "client_id"`,
+        );
     });
 
     test("should return error for invalid client credentials", async () => {

@@ -12,7 +12,7 @@ import {
     withEmojiParam,
 } from "@versia-server/kit/api";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { mimeLookup } from "@/content_types";
 
 export default apiRoute((app) => {

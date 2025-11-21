@@ -1,7 +1,7 @@
 import { config } from "@versia-server/config";
 import { apiRoute } from "@versia-server/kit/api";
 import { describeRoute, resolver } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.get(

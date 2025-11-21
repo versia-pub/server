@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Id, iso631 } from "./common.ts";
 
 export const Relationship = z

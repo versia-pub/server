@@ -1,4 +1,4 @@
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { ShareSchema } from "../../schemas/extensions/share.ts";
 import type { JSONObject } from "../../types.ts";
 import { Entity } from "../entity.ts";

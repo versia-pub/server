@@ -25,7 +25,7 @@ import {
     uniqueIndex,
     uuid,
 } from "drizzle-orm/pg-core";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 
 const createdAt = () =>
     // TODO: Change mode to Date

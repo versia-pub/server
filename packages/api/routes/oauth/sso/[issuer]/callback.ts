@@ -19,7 +19,7 @@ import { setCookie } from "hono/cookie";
 import { sign } from "hono/jwt";
 import { describeRoute, validator } from "hono-openapi";
 import * as client from "openid-client";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { randomString } from "@/math.ts";
 
 export default apiRoute((app) => {

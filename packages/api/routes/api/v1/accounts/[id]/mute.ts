@@ -15,7 +15,7 @@ import {
     relationshipQueue,
 } from "@versia-server/kit/queues/relationships";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.post(

@@ -8,7 +8,7 @@ import { db, Note } from "@versia-server/kit/db";
 import { Notes } from "@versia-server/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.get(

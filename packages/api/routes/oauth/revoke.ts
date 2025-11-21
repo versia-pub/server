@@ -3,7 +3,7 @@ import { db, Token } from "@versia-server/kit/db";
 import { Tokens } from "@versia-server/kit/tables";
 import { and, eq } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) => {
     app.post(

@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { iso631 } from "./common.ts";
 import { Rule } from "./rule.ts";

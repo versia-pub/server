@@ -16,7 +16,7 @@ describe("BlurhashPreprocessor", () => {
             .png()
             .toBuffer();
 
-        const inputFile = new File([inputBuffer], "test.png", {
+        const inputFile = new File([inputBuffer as BlobPart], "test.png", {
             type: "image/png",
         });
         const result = await calculateBlurhash(inputFile);
@@ -46,7 +46,7 @@ describe("BlurhashPreprocessor", () => {
             .png()
             .toBuffer();
 
-        const inputFile = new File([inputBuffer], "test.png", {
+        const inputFile = new File([inputBuffer as BlobPart], "test.png", {
             type: "image/png",
         });
 

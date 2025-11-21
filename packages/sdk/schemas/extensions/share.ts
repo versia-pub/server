@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { url } from "../common.ts";
 import { EntitySchema } from "../entity.ts";
 

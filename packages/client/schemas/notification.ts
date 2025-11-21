@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { AccountWarning } from "./account-warning.ts";
 import { Id } from "./common.ts";
@@ -52,10 +52,6 @@ export const Notification = z
         report: Report.optional().meta({
             description:
                 "Report that was the object of the notification. Attached when type of the notification is admin.report.",
-        }),
-        event: z.undefined().meta({
-            description:
-                "Versia Server does not sever relationships, so this field is always empty.",
         }),
         moderation_warning: AccountWarning.optional().meta({
             description:

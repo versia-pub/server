@@ -1,5 +1,5 @@
 import ISO6391 from "iso-639-1";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const Id = z.uuid();
 

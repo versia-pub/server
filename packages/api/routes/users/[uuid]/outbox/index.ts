@@ -7,7 +7,7 @@ import { db, Note, User } from "@versia-server/kit/db";
 import { Notes } from "@versia-server/kit/tables";
 import { and, eq, inArray } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 const NOTES_PER_PAGE = 20;
 

@@ -22,7 +22,7 @@ import {
     versiaTextToHtml,
 } from "@versia-server/kit/parsers";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { sanitizedHtmlStrip } from "@/sanitization";
 
 const schema = z

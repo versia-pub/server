@@ -7,7 +7,7 @@ import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { describeRoute, resolver, validator } from "hono-openapi";
 import * as client from "openid-client";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { oauthRedirectUri } from "@/lib";
 
 export default apiRoute((app) => {

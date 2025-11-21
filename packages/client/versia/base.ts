@@ -103,7 +103,6 @@ export class BaseClient {
     }
 
     /** Overridable by testing */
-    // biome-ignore lint/nursery/useReadonlyClassProperties: Overridable by testing
     private fetch = (...args: Parameters<typeof fetch>) => fetch(...args);
 
     private async request<ReturnType>(

@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.3.4/schema.json",
     "assist": {
         "actions": {
             "source": {
@@ -119,23 +119,11 @@
                 "noUnusedPrivateClassMembers": "error"
             },
             "nursery": {
-                "noBitwiseOperators": "error",
-                "noConstantBinaryExpression": "error",
-                "noFloatingPromises": "error",
-                "noGlobalDirnameFilename": "error",
-                "noProcessGlobal": "warn",
-                "noTsIgnore": "warn",
-                "useReadonlyClassProperties": "error",
-                "useConsistentObjectDefinition": {
-                    "level": "warn",
-                    "options": {
-                        "syntax": "shorthand"
-                    }
-                },
-                "useParseIntRadix": "warn"
+                "noFloatingPromises": "error"
             },
             "complexity": {
                 "noForEach": "error",
+                "noImportantStyles": "off",
                 "noUselessStringConcat": "error",
                 "useDateNow": "error",
                 "noUselessStringRaw": "warn",

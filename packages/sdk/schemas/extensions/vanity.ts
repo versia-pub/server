@@ -5,7 +5,7 @@
  * @see https://versia.pub/extensions/vanity
  */
 
-import { z } from "zod/v4";
+import { z } from "zod";
 import { ianaTimezoneRegex, isISOString } from "../../regex.ts";
 import { url } from "../common.ts";
 import {

@@ -5,7 +5,7 @@ import { parseTOML } from "confbox";
 import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export class ProxiableUrl extends URL {
     private isAllowedOrigin(): boolean {

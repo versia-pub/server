@@ -10,7 +10,7 @@ import { Timeline } from "@versia-server/kit/db";
 import { Notifications } from "@versia-server/kit/tables";
 import { and, eq, gt, gte, inArray, lt, not, sql } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.get(

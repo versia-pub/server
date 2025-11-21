@@ -10,7 +10,7 @@ import { Users } from "@versia-server/kit/tables";
 import { federationBridgeLogger } from "@versia-server/logging";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) =>
     app.get(

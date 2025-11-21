@@ -4,7 +4,7 @@ import type { Client, Token, User } from "@versia-server/kit/db";
 import type { SocketAddress } from "bun";
 import type { Hono } from "hono";
 import type { RouterRoute } from "hono/types";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 
 export type HttpVerb = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS";
 

@@ -14,7 +14,7 @@ import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
 import ISO6391 from "iso-639-1";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { tempmailDomains } from "@/tempmail";
 import { rateLimit } from "../../../../middlewares/rate-limit.ts";
 

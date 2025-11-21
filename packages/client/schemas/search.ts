@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Status } from "./status.ts";
 import { Tag } from "./tag.ts";

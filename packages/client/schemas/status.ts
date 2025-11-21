@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Account } from "./account.ts";
 import { Attachment } from "./attachment.ts";
 import { PreviewCard } from "./card.ts";

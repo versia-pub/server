@@ -13,7 +13,7 @@ import {
 } from "@versia-server/kit/api";
 import { Relationship } from "@versia-server/kit/db";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>

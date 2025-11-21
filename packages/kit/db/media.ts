@@ -16,7 +16,7 @@ import {
     type SQL,
 } from "drizzle-orm";
 import sharp from "sharp";
-import type { z } from "zod/v4";
+import type { z } from "zod";
 import { mimeLookup } from "@/content_types.ts";
 import { getMediaHash } from "../../../classes/media/media-hasher.ts";
 import { ApiError } from "../api-error.ts";

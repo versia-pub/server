@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Source } from "./account.ts";
 
 export const Preferences = z

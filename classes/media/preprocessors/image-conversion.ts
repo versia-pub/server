@@ -99,7 +99,7 @@ export const convertImage = async (
     const convertedBuffer = await sharpCommand[commandName]().toBuffer();
 
     return new File(
-        [convertedBuffer],
+        [convertedBuffer as BlobPart],
         getReplacedFileName(file.name, commandName),
         {
             type: targetFormat,

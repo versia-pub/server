@@ -10,7 +10,7 @@ import { every } from "hono/combine";
 import { createMiddleware } from "hono/factory";
 import { validator } from "hono-openapi";
 import { type ParsedQs, parse } from "qs";
-import { type ZodAny, ZodError, z } from "zod/v4";
+import { type ZodAny, ZodError, z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import type { AuthData, HonoEnv } from "~/types/api";
 import { ApiError } from "./api-error.ts";

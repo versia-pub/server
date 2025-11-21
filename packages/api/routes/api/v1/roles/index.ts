@@ -4,7 +4,7 @@ import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
 import { Role } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export default apiRoute((app) => {
     app.get(

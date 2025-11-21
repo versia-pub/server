@@ -15,7 +15,7 @@ import type { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { getCookie } from "hono/cookie";
 import { verify } from "hono/jwt";
-import type { HonoEnv } from "~/types/api";
+import type { HonoEnv } from "~/types/api.ts";
 import pkg from "../package.json" with { type: "json" };
 
 export const applyToHono = (app: Hono<HonoEnv>): void => {

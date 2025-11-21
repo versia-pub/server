@@ -10,7 +10,7 @@ import { parseUserAddress } from "@versia-server/kit/parsers";
 import { Users } from "@versia-server/kit/tables";
 import { and, eq, isNull } from "drizzle-orm";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { rateLimit } from "../../../../../middlewares/rate-limit.ts";
 
 export default apiRoute((app) =>
