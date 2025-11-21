@@ -2814,44 +2814,6 @@ export class Client extends BaseClient {
         );
     }
 
-    public startSsoLogin(
-        issuer: string,
-        client_id: string,
-        redirect_uri: URL,
-        options?: Partial<{
-            scopes: string[];
-            state: string;
-        }>,
-        extra?: RequestInit,
-    ): Promise<URL> {
-        return this.post(
-            `/oauth/sso/${issuer}`,
-            {
-                client_id,
-                redirect_uri: redirect_uri.toString(),
-                scopes: options?.scopes,
-                state: options?.state,
-            },
-            extra,
-        ).then((output) => {
-            const isRedirect = output.raw.status === 302;
-
-            if (!isRedirect) {
-                throw new Error(
-                    `Expected redirect response but got status ${output.raw.status}`,
-                );
-            }
-
-            const location = output.raw.headers.get("Location");
-
-            if (!location) {
-                throw new Error("Redirect response missing Location header");
-            }
-
-            return new URL(location);
-        });
-    }
-
     // TODO: streamingURL
 
     /**
