@@ -452,10 +452,9 @@ log_level = "info" # For console output
 # environment = "production"
 # log_level = "info"
 
-[authentication.keys]
-# Run Versia Server with those values missing to generate a new key
-public = "MCowBQYDK2VwAyEAfyZx8r98gVHtdH5EF1NYrBeChOXkt50mqiwKO2TX0f8="
-private = "MC4CAQAwBQYDK2VwBCIEILDi1g7+bwNjBBvL4CRWHZpCFBR2m2OPCot62Wr+TCbq"
+[authentication]
+# Run Versia Server with this value missing to generate a new key
+key = "ZWcwanRaQAqY3ChUro/Jey9XGQjzsxEed5iqTp4yFr8W6vEnXdz91F/Pu/uf7HBMbNeIK7V6aHsM0lq9onrO8Q=="
 
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this
