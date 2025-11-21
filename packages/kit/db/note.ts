@@ -933,22 +933,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     /**
-     * Tries to fetch a Versia Note from the given URL.
-     *
-     * @param url The URL to fetch the note from
-     */
-    public static async fromVersia(url: URL): Promise<Note>;
-
-    /**
      * Takes a Versia Note representation, and serializes it to the database.
      *
      * If the note already exists, it will update it.
-     * @param versiaNote
+     * @param versiaNote - URL or Versia Note representation
      */
-    public static async fromVersia(
-        versiaNote: VersiaEntities.Note,
-    ): Promise<Note>;
-
     public static async fromVersia(
         versiaNote: VersiaEntities.Note | URL,
     ): Promise<Note> {

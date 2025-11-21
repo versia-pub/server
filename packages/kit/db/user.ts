@@ -705,22 +705,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     /**
-     * Tries to fetch a Versia user from the given URL.
-     *
-     * @param url The URL to fetch the user from
-     */
-    public static async fromVersia(url: URL): Promise<User>;
-
-    /**
      * Takes a Versia User representation, and serializes it to the database.
      *
      * If the user already exists, it will update it.
-     * @param versiaUser
+     * @param versiaUser URL or Versia User representation
      */
-    public static async fromVersia(
-        versiaUser: VersiaEntities.User,
-    ): Promise<User>;
-
     public static async fromVersia(
         versiaUser: VersiaEntities.User | URL,
     ): Promise<User> {
