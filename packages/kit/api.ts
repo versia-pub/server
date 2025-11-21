@@ -14,7 +14,7 @@ import { type ZodAny, ZodError, z } from "zod/v4";
 import { fromZodError } from "zod-validation-error";
 import type { AuthData, HonoEnv } from "~/types/api";
 import { ApiError } from "./api-error.ts";
-import { Application } from "./db/application.ts";
+import { Client } from "./db/application.ts";
 import { Emoji } from "./db/emoji.ts";
 import { Note } from "./db/note.ts";
 import { Token } from "./db/token.ts";
@@ -169,8 +169,8 @@ export const auth = <AuthRequired extends boolean>(options: {
 
         const auth: AuthData = {
             token,
-            application: token?.data.application
-                ? new Application(token?.data.application)
+            application: token?.data.client
+                ? new Client(token?.data.client)
                 : null,
             user: (await token?.getUser()) ?? null,
         };

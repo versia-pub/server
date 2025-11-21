@@ -453,17 +453,8 @@ log_level = "info" # For console output
 # log_level = "info"
 
 [authentication]
-# If enabled, Versia will require users to log in with an OpenID provider
-forced_openid = false
-
-# Allow registration with OpenID providers
-# If signups.registration is false, it will only be possible to register with OpenID
-openid_registration = true
-
-[authentication.keys]
-# Run Versia Server with those values missing to generate a new key
-public = "MCowBQYDK2VwAyEAfyZx8r98gVHtdH5EF1NYrBeChOXkt50mqiwKO2TX0f8="
-private = "MC4CAQAwBQYDK2VwBCIEILDi1g7+bwNjBBvL4CRWHZpCFBR2m2OPCot62Wr+TCbq"
+# Run Versia Server with this value missing to generate a new key
+key = "ZWcwanRaQAqY3ChUro/Jey9XGQjzsxEed5iqTp4yFr8W6vEnXdz91F/Pu/uf7HBMbNeIK7V6aHsM0lq9onrO8Q=="
 
 # The provider MUST support OpenID Connect with .well-known discovery
 # Most notably, GitHub does not support this

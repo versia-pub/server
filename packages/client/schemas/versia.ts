@@ -87,11 +87,6 @@ export const NoteReactionWithAccounts = NoteReaction.extend({
 
 /* Versia Server API extension */
 export const SSOConfig = z.object({
-    forced: z.boolean().meta({
-        description:
-            "If this is enabled, normal identifier/password login is disabled and login must be done through SSO.",
-        example: false,
-    }),
     providers: z
         .array(
             z.object({

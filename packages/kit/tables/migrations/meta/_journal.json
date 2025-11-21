@@ -358,6 +358,20 @@
             "when": 1746368175263,
             "tag": "0050_thick_lester",
             "breakpoints": true
+        },
+        {
+            "idx": 51,
+            "version": "7",
+            "when": 1755729662013,
+            "tag": "0051_stiff_morbius",
+            "breakpoints": true
+        },
+        {
+            "idx": 52,
+            "version": "7",
+            "when": 1755732000165,
+            "tag": "0052_complete_hellfire_club",
+            "breakpoints": true
         }
     ]
 }

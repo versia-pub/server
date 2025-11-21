@@ -7,8 +7,8 @@ import type { Config } from "drizzle-kit";
  */
 export default {
     dialect: "postgresql",
-    out: "./drizzle/migrations",
-    schema: "./drizzle/schema.ts",
+    out: "./packages/kit/tables/migrations",
+    schema: "./packages/kit/tables/schema.ts",
     dbCredentials: {
         /* host: "localhost",
         port: 40000,

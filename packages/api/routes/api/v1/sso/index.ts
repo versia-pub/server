@@ -2,19 +2,13 @@ import { RolePermission } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
-import { Application, db } from "@versia-server/kit/db";
+import { Client, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
 import { describeRoute, resolver, validator } from "hono-openapi";
-import {
-    calculatePKCECodeChallenge,
-    generateRandomCodeVerifier,
-} from "oauth4webapi";
+import * as client from "openid-client";
 import { z } from "zod/v4";
-import {
-    oauthDiscoveryRequest,
-    oauthRedirectUri,
-} from "../../../../plugins/openid/utils.ts";
+import { oauthRedirectUri } from "@/lib";
 
 export default apiRoute((app) => {
     app.get(
@@ -105,25 +99,39 @@ export default apiRoute((app) => {
                 );
             }
 
-            const authServer = await oauthDiscoveryRequest(new URL(issuer.url));
+            const oidcConfig = await client.discovery(
+                issuer.url,
+                issuer.client_id,
+                issuer.client_secret,
+            );
+            const codeVerifier = client.randomPKCECodeVerifier();
+            const codeChallenge =
+                await client.calculatePKCECodeChallenge(codeVerifier);
 
-            const codeVerifier = generateRandomCodeVerifier();
+            const parameters: Record<string, string> = {
+                scope: "openid profile email",
+                code_challenge: codeChallenge,
+                code_challenge_method: "S256",
+            };
+
+            if (!oidcConfig.serverMetadata().supportsPKCE()) {
+                parameters.state = client.randomState();
+            }
 
             const redirectUri = oauthRedirectUri(
                 context.get("config").http.base_url,
                 issuerId,
             );
 
-            const application = await Application.insert({
-                id: randomUUIDv7(),
-                clientId:
+            const application = await Client.insert({
+                id:
                     user.id +
                     Buffer.from(
                         crypto.getRandomValues(new Uint8Array(32)),
                     ).toString("base64"),
                 name: "Versia",
-                redirectUri: redirectUri.toString(),
-                scopes: "openid profile email",
+                redirectUris: [redirectUri.href],
+                scopes: ["openid", "profile", "email"],
                 secret: "",
             });
 
@@ -134,30 +142,28 @@ export default apiRoute((app) => {
                     .values({
                         id: randomUUIDv7(),
                         codeVerifier,
+                        state: parameters.state,
                         issuerId,
-                        applicationId: application.id,
+                        clientId: application.id,
                     })
                     .returning()
             )[0];
 
-            const codeChallenge =
-                await calculatePKCECodeChallenge(codeVerifier);
+            parameters.redirect_uri = `${oauthRedirectUri(
+                config.http.base_url,
+                issuerId,
+            )}?${new URLSearchParams({
+                flow: newFlow.id,
+                link: "true",
+                user_id: user.id,
+            })}`;
 
-            return context.redirect(
-                `${authServer.authorization_endpoint}?${new URLSearchParams({
-                    client_id: issuer.client_id,
-                    redirect_uri: `${redirectUri}?${new URLSearchParams({
-                        flow: newFlow.id,
-                        link: "true",
-                        user_id: user.id,
-                    })}`,
-                    response_type: "code",
-                    scope: "openid profile email",
-                    // PKCE
-                    code_challenge_method: "S256",
-                    code_challenge: codeChallenge,
-                }).toString()}`,
+            const redirectTo = client.buildAuthorizationUrl(
+                oidcConfig,
+                parameters,
             );
+
+            return context.redirect(redirectTo);
         },
     );
 });

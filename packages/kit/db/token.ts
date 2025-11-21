@@ -10,12 +10,12 @@ import {
 import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
 import { Tokens } from "../tables/schema.ts";
-import type { Application } from "./application.ts";
+import type { Client } from "./application.ts";
 import { BaseInterface } from "./base.ts";
 import { User } from "./user.ts";
 
 type TokenType = InferSelectModel<typeof Tokens> & {
-    application: typeof Application.$type | null;
+    client: typeof Client.$type;
 };
 
 export class Token extends BaseInterface<typeof Tokens, TokenType> {
@@ -51,7 +51,7 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
             where: sql,
             orderBy,
             with: {
-                application: true,
+                client: true,
             },
         });
 
@@ -74,7 +74,7 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
             limit,
             offset,
             with: {
-                application: true,
+                client: true,
                 ...extra?.with,
             },
         });
@@ -159,7 +159,7 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
         return {
             access_token: this.data.accessToken,
             token_type: "Bearer",
-            scope: this.data.scope,
+            scope: this.data.scopes.join(" "),
             created_at: Math.floor(
                 new Date(this.data.createdAt).getTime() / 1000,
             ),

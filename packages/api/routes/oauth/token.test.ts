@@ -1,36 +1,40 @@
 import { afterAll, describe, expect, test } from "bun:test";
-import { Application, Token } from "@versia-server/kit/db";
+import { Client, db } from "@versia-server/kit/db";
 import { fakeRequest, getTestUsers } from "@versia-server/tests";
 import { randomUUIDv7 } from "bun";
+import { eq } from "drizzle-orm";
+import { randomString } from "@/math";
+import { AuthorizationCodes } from "~/packages/kit/tables/schema";
 
 const { deleteUsers, users } = await getTestUsers(1);
 
-const application = await Application.insert({
+const application = await Client.insert({
     id: randomUUIDv7(),
-    clientId: "test-client-id",
-    redirectUri: "https://example.com/callback",
-    scopes: "openid profile email",
+    redirectUris: ["https://example.com/callback"],
+    scopes: ["openid", "profile", "email"],
     secret: "test-secret",
     name: "Test Application",
 });
 
-const token = await Token.insert({
-    id: randomUUIDv7(),
-    code: "test-code",
-    redirectUri: application.data.redirectUri,
-    clientId: application.data.clientId,
-    accessToken: "test-access-token",
-    expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
-    tokenType: "Bearer",
-    scope: application.data.scopes,
-    userId: users[0].id,
-});
+const authorizationCode = (
+    await db
+        .insert(AuthorizationCodes)
+        .values({
+            clientId: application.id,
+            code: randomString(10),
+            redirectUri: application.data.redirectUris[0],
+            userId: users[0].id,
+            expiresAt: new Date(Date.now() + 300 * 1000).toISOString(),
+        })
+        .returning()
+)[0];
 
 afterAll(async () => {
     await deleteUsers();
     await application.delete();
-    await token.delete();
+    await db
+        .delete(AuthorizationCodes)
+        .where(eq(AuthorizationCodes.code, authorizationCode.code));
 });
 
 describe("/oauth/token", () => {
@@ -42,18 +46,18 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                code: authorizationCode.code,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
 
         expect(response.status).toBe(200);
         const body = await response.json();
-        expect(body.access_token).toBe("test-access-token");
+        expect(body.access_token).toBeString();
         expect(body.token_type).toBe("Bearer");
-        expect(body.expires_in).toBeGreaterThan(0);
+        expect(body.expires_in).toBeNull();
     });
 
     test("should return error for missing code", async () => {
@@ -64,16 +68,15 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toBe("invalid_request");
-        expect(body.error_description).toBe("Code is required");
+        expect(body.error).toInclude(`Expected string at "code"`);
     });
 
     test("should return error for missing redirect_uri", async () => {
@@ -84,16 +87,15 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                code: "test-code",
-                client_id: application.data.clientId,
+                code: authorizationCode.code,
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toBe("invalid_request");
-        expect(body.error_description).toBe("Redirect URI is required");
+        expect(body.error).toInclude(`Expected string at "redirect_uri"`);
     });
 
     test("should return error for missing client_id", async () => {
@@ -104,16 +106,15 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                code: "test-code",
-                redirect_uri: application.data.redirectUri,
+                code: authorizationCode.code,
+                redirect_uri: application.data.redirectUris[0],
                 client_secret: application.data.secret,
             }),
         });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(422);
         const body = await response.json();
-        expect(body.error).toBe("invalid_request");
-        expect(body.error_description).toBe("Client ID is required");
+        expect(body.error).toInclude(`Expected string at "client_id"`);
     });
 
     test("should return error for invalid client credentials", async () => {
@@ -124,9 +125,9 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "authorization_code",
-                code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                code: authorizationCode.code,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: "invalid-secret",
             }),
         });
@@ -146,16 +147,18 @@ describe("/oauth/token", () => {
             body: JSON.stringify({
                 grant_type: "authorization_code",
                 code: "invalid-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(404);
         const body = await response.json();
         expect(body.error).toBe("invalid_grant");
-        expect(body.error_description).toBe("Code not found");
+        expect(body.error_description).toBe(
+            "Authorization code not found or expired",
+        );
     });
 
     test("should return error for unsupported grant type", async () => {
@@ -166,9 +169,9 @@ describe("/oauth/token", () => {
             },
             body: JSON.stringify({
                 grant_type: "refresh_token",
-                code: "test-code",
-                redirect_uri: application.data.redirectUri,
-                client_id: application.data.clientId,
+                code: authorizationCode.code,
+                redirect_uri: application.data.redirectUris[0],
+                client_id: application.data.id,
                 client_secret: application.data.secret,
             }),
         });

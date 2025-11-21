@@ -6,7 +6,6 @@ import ISO6391 from "iso-639-1";
 import { types as mimeTypes } from "mime-types";
 import { generateVAPIDKeys } from "web-push";
 import { z } from "zod/v4";
-import { fromZodError } from "zod-validation-error";
 
 export class ProxiableUrl extends URL {
     private isAllowedOrigin(): boolean {
@@ -174,9 +173,10 @@ export const keyPair = z
                 await crypto.subtle.exportKey("spki", keys.publicKey),
             ).toString("base64");
 
-            ctx.addIssue({
+            ctx.issues.push({
                 code: "custom",
-                error: `Public and private keys are not set. Here are generated keys for you to copy.\n\nPublic: ${publicKey}\nPrivate: ${privateKey}`,
+                message: `Public and private keys are not set. Here are generated keys for you to copy.\n\nPublic: ${publicKey}\nPrivate: ${privateKey}`,
+                input: k,
             });
 
             return z.NEVER;
@@ -194,9 +194,10 @@ export const keyPair = z
                 ["verify"],
             );
         } catch {
-            ctx.addIssue({
+            ctx.issues.push({
                 code: "custom",
-                error: "Public key is invalid",
+                message: "Public key is invalid",
+                input: k,
             });
 
             return z.NEVER;
@@ -211,9 +212,10 @@ export const keyPair = z
                 ["sign"],
             );
         } catch {
-            ctx.addIssue({
+            ctx.issues.push({
                 code: "custom",
-                error: "Private key is invalid",
+                message: "Private key is invalid",
+                input: k,
             });
 
             return z.NEVER;
@@ -235,9 +237,10 @@ export const vapidKeyPair = z
         if (!(k?.public && k?.private)) {
             const keys = generateVAPIDKeys();
 
-            ctx.addIssue({
+            ctx.issues.push({
                 code: "custom",
-                error: `VAPID keys are not set. Here are generated keys for you to copy.\n\nPublic: ${keys.publicKey}\nPrivate: ${keys.privateKey}`,
+                message: `VAPID keys are not set. Here are generated keys for you to copy.\n\nPublic: ${keys.publicKey}\nPrivate: ${keys.privateKey}`,
+                input: k,
             });
 
             return z.NEVER;
@@ -246,51 +249,55 @@ export const vapidKeyPair = z
         return k;
     });
 
-export const hmacKey = sensitiveString.transform(async (text, ctx) => {
-    if (!text) {
-        const key = await crypto.subtle.generateKey(
-            {
-                name: "HMAC",
-                hash: "SHA-256",
-            },
-            true,
-            ["sign"],
-        );
+export const hmacKey = sensitiveString
+    .optional()
+    .transform(async (text, ctx) => {
+        if (!text) {
+            const key = await crypto.subtle.generateKey(
+                {
+                    name: "HMAC",
+                    hash: "SHA-256",
+                },
+                true,
+                ["sign"],
+            );
 
-        const exported = await crypto.subtle.exportKey("raw", key);
+            const exported = await crypto.subtle.exportKey("raw", key);
 
-        const base64 = Buffer.from(exported).toString("base64");
+            const base64 = Buffer.from(exported).toString("base64");
 
-        ctx.addIssue({
-            code: "custom",
-            error: `HMAC key is not set. Here is a generated key for you to copy: ${base64}`,
-        });
+            ctx.issues.push({
+                code: "custom",
+                message: `HMAC key is not set. Here is a generated key for you to copy: ${base64}`,
+                input: text,
+            });
 
-        return z.NEVER;
-    }
+            return z.NEVER;
+        }
 
-    try {
-        await crypto.subtle.importKey(
-            "raw",
-            Buffer.from(text, "base64"),
-            {
-                name: "HMAC",
-                hash: "SHA-256",
-            },
-            true,
-            ["sign"],
-        );
-    } catch {
-        ctx.addIssue({
-            code: "custom",
-            error: "HMAC key is invalid",
-        });
+        try {
+            await crypto.subtle.importKey(
+                "raw",
+                Buffer.from(text, "base64"),
+                {
+                    name: "HMAC",
+                    hash: "SHA-256",
+                },
+                true,
+                ["sign"],
+            );
+        } catch {
+            ctx.issues.push({
+                code: "custom",
+                message: "HMAC key is invalid",
+                input: text,
+            });
 
-        return z.NEVER;
-    }
+            return z.NEVER;
+        }
 
-    return text;
-});
+        return text;
+    });
 
 export const ConfigSchema = z
     .strictObject({
@@ -793,13 +800,12 @@ export const ConfigSchema = z
             })
             .optional(),
         authentication: z.strictObject({
-            forced_openid: z.boolean().default(false),
             openid_providers: z
                 .array(
                     z.strictObject({
                         name: z.string().min(1),
                         id: z.string().min(1),
-                        url: z.string().min(1),
+                        url,
                         client_id: z.string().min(1),
                         client_secret: sensitiveString,
                         icon: url.optional(),
@@ -807,7 +813,7 @@ export const ConfigSchema = z
                 )
                 .default([]),
             openid_registration: z.boolean().default(true),
-            keys: keyPair,
+            key: hmacKey,
         }),
     })
     .refine(
@@ -840,9 +846,8 @@ if (!parsed.success) {
     console.error(
         "⚠ Here is the error message, please fix the configuration file accordingly:",
     );
-    const errorMessage = fromZodError(parsed.error).message;
 
-    console.info(errorMessage);
+    console.info(z.prettifyError(parsed.error));
 
     throw new Error("Configuration file is invalid.");
 }

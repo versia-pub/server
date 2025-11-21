@@ -1,4 +1,4 @@
-import { Token } from "@versia-server/kit/db";
+import { Client, Token } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
 // @ts-expect-error - Root import is required or the Clec type definitions won't work
@@ -22,13 +22,24 @@ export const generateTokenCommand = defineCommand(
             throw new Error(`User ${chalk.gray(username)} not found.`);
         }
 
+        const application = await Client.insert({
+            id:
+                user.id +
+                Buffer.from(
+                    crypto.getRandomValues(new Uint8Array(32)),
+                ).toString("base64"),
+            name: "Versia",
+            redirectUris: [],
+            scopes: ["openid", "profile", "email"],
+            secret: "",
+        });
+
         const token = await Token.insert({
             id: randomUUIDv7(),
             accessToken: randomString(64, "base64url"),
-            code: null,
-            scope: "read write follow",
-            tokenType: "Bearer",
+            scopes: ["read", "write", "follow"],
             userId: user.id,
+            clientId: application.id,
         });
 
         console.info(

@@ -12,42 +12,42 @@ import {
 } from "drizzle-orm";
 import type { z } from "zod/v4";
 import { db } from "../tables/db.ts";
-import { Applications } from "../tables/schema.ts";
+import { Clients } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";
 import { Token } from "./token.ts";
 
-type ApplicationType = InferSelectModel<typeof Applications>;
+type ClientType = InferSelectModel<typeof Clients>;
 
-export class Application extends BaseInterface<typeof Applications> {
-    public static $type: ApplicationType;
+export class Client extends BaseInterface<typeof Clients> {
+    public static $type: ClientType;
 
     public async reload(): Promise<void> {
-        const reloaded = await Application.fromId(this.data.id);
+        const reloaded = await Client.fromId(this.data.id);
 
         if (!reloaded) {
-            throw new Error("Failed to reload application");
+            throw new Error("Failed to reload client");
         }
 
         this.data = reloaded.data;
     }
 
-    public static async fromId(id: string | null): Promise<Application | null> {
+    public static async fromId(id: string | null): Promise<Client | null> {
         if (!id) {
             return null;
         }
 
-        return await Application.fromSql(eq(Applications.id, id));
+        return await Client.fromSql(eq(Clients.id, id));
     }
 
-    public static async fromIds(ids: string[]): Promise<Application[]> {
-        return await Application.manyFromSql(inArray(Applications.id, ids));
+    public static async fromIds(ids: string[]): Promise<Client[]> {
+        return await Client.manyFromSql(inArray(Clients.id, ids));
     }
 
     public static async fromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(Applications.id),
-    ): Promise<Application | null> {
-        const found = await db.query.Applications.findFirst({
+        orderBy: SQL<unknown> | undefined = desc(Clients.id),
+    ): Promise<Client | null> {
+        const found = await db.query.Clients.findFirst({
             where: sql,
             orderBy,
         });
@@ -55,17 +55,17 @@ export class Application extends BaseInterface<typeof Applications> {
         if (!found) {
             return null;
         }
-        return new Application(found);
+        return new Client(found);
     }
 
     public static async manyFromSql(
         sql: SQL<unknown> | undefined,
-        orderBy: SQL<unknown> | undefined = desc(Applications.id),
+        orderBy: SQL<unknown> | undefined = desc(Clients.id),
         limit?: number,
         offset?: number,
-        extra?: Parameters<typeof db.query.Applications.findMany>[0],
-    ): Promise<Application[]> {
-        const found = await db.query.Applications.findMany({
+        extra?: Parameters<typeof db.query.Clients.findMany>[0],
+    ): Promise<Client[]> {
+        const found = await db.query.Clients.findMany({
             where: sql,
             orderBy,
             limit,
@@ -73,32 +73,28 @@ export class Application extends BaseInterface<typeof Applications> {
             with: extra?.with,
         });
 
-        return found.map((s) => new Application(s));
+        return found.map((s) => new Client(s));
     }
 
-    public static async getFromToken(
-        token: string,
-    ): Promise<Application | null> {
+    public static async getFromToken(token: string): Promise<Client | null> {
         const result = await Token.fromAccessToken(token);
 
-        return result?.data.application
-            ? new Application(result.data.application)
-            : null;
+        return result?.data.client ? new Client(result.data.client) : null;
     }
 
-    public static fromClientId(clientId: string): Promise<Application | null> {
-        return Application.fromSql(eq(Applications.clientId, clientId));
+    public static fromClientId(clientId: string): Promise<Client | null> {
+        return Client.fromSql(eq(Clients.id, clientId));
     }
 
     public async update(
-        newApplication: Partial<ApplicationType>,
-    ): Promise<ApplicationType> {
+        newApplication: Partial<ClientType>,
+    ): Promise<ClientType> {
         await db
-            .update(Applications)
+            .update(Clients)
             .set(newApplication)
-            .where(eq(Applications.id, this.id));
+            .where(eq(Clients.id, this.id));
 
-        const updated = await Application.fromId(this.data.id);
+        const updated = await Client.fromId(this.data.id);
 
         if (!updated) {
             throw new Error("Failed to update application");
@@ -108,26 +104,24 @@ export class Application extends BaseInterface<typeof Applications> {
         return updated.data;
     }
 
-    public save(): Promise<ApplicationType> {
+    public save(): Promise<ClientType> {
         return this.update(this.data);
     }
 
     public async delete(ids?: string[]): Promise<void> {
         if (Array.isArray(ids)) {
-            await db.delete(Applications).where(inArray(Applications.id, ids));
+            await db.delete(Clients).where(inArray(Clients.id, ids));
         } else {
-            await db.delete(Applications).where(eq(Applications.id, this.id));
+            await db.delete(Clients).where(eq(Clients.id, this.id));
         }
     }
 
     public static async insert(
-        data: InferInsertModel<typeof Applications>,
-    ): Promise<Application> {
-        const inserted = (
-            await db.insert(Applications).values(data).returning()
-        )[0];
+        data: InferInsertModel<typeof Clients>,
+    ): Promise<Client> {
+        const inserted = (await db.insert(Clients).values(data).returning())[0];
 
-        const application = await Application.fromId(inserted.id);
+        const application = await Client.fromId(inserted.id);
 
         if (!application) {
             throw new Error("Failed to insert application");
@@ -144,9 +138,9 @@ export class Application extends BaseInterface<typeof Applications> {
         return {
             name: this.data.name,
             website: this.data.website,
-            scopes: this.data.scopes.split(" "),
-            redirect_uri: this.data.redirectUri,
-            redirect_uris: this.data.redirectUri.split("\n"),
+            scopes: this.data.scopes,
+            redirect_uri: this.data.redirectUris.join(" "),
+            redirect_uris: this.data.redirectUris,
         };
     }
 
@@ -154,12 +148,12 @@ export class Application extends BaseInterface<typeof Applications> {
         return {
             name: this.data.name,
             website: this.data.website,
-            client_id: this.data.clientId,
+            client_id: this.data.id,
             client_secret: this.data.secret,
             client_secret_expires_at: "0",
-            scopes: this.data.scopes.split(" "),
-            redirect_uri: this.data.redirectUri,
-            redirect_uris: this.data.redirectUri.split("\n"),
+            scopes: this.data.scopes,
+            redirect_uri: this.data.redirectUris.join(" "),
+            redirect_uris: this.data.redirectUris,
         };
     }
 }

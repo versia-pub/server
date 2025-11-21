@@ -28,6 +28,7 @@ import {
 import type { z } from "zod/v4";
 
 const createdAt = () =>
+    // TODO: Change mode to Date
     timestamp("created_at", { precision: 3, mode: "string" })
         .defaultNow()
         .notNull();
@@ -39,7 +40,7 @@ const updatedAt = () =>
 
 const uri = () => text("uri").unique();
 
-const id = () => uuid("id").primaryKey().notNull();
+const id = () => uuid("id").primaryKey();
 
 export const Challenges = pgTable("Challenges", {
     id: id(),
@@ -308,47 +309,41 @@ export const RelationshipsRelations = relations(Relationships, ({ one }) => ({
     }),
 }));
 
-export const Applications = pgTable(
-    "Applications",
-    {
-        id: id(),
-        name: text("name").notNull(),
-        website: text("website"),
-        vapidKey: text("vapid_key"),
-        clientId: text("client_id").notNull(),
-        secret: text("secret").notNull(),
-        scopes: text("scopes").notNull(),
-        redirectUri: text("redirect_uri").notNull(),
-    },
-    (table) => [uniqueIndex().on(table.clientId)],
-);
+export const Clients = pgTable("Clients", {
+    id: text("client_id").primaryKey(),
+    secret: text("secret").notNull(),
+    redirectUris: text("redirect_uris")
+        .array()
+        .notNull()
+        .default(sql`ARRAY[]::text[]`),
+    scopes: text("scopes").array().notNull().default(sql`ARRAY[]::text[]`),
+    name: text("name").notNull(),
+    website: text("website"),
+});
 
-export const ApplicationsRelations = relations(Applications, ({ many }) => ({
+export const ClientsRelations = relations(Clients, ({ many }) => ({
     tokens: many(Tokens),
     loginFlows: many(OpenIdLoginFlows),
 }));
 
 export const Tokens = pgTable("Tokens", {
     id: id(),
-    tokenType: text("token_type").notNull(),
-    scope: text("scope").notNull(),
+    scopes: text("scopes").array().notNull().default(sql`ARRAY[]::text[]`),
     accessToken: text("access_token").notNull(),
-    code: text("code"),
     expiresAt: timestamp("expires_at", { precision: 3, mode: "string" }),
     createdAt: createdAt(),
-    clientId: text("client_id").notNull().default(""),
-    redirectUri: text("redirect_uri").notNull().default(""),
-    idToken: text("id_token"),
     userId: uuid("userId")
         .references(() => Users.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
         })
         .notNull(),
-    applicationId: uuid("applicationId").references(() => Applications.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-    }),
+    clientId: text("clientId")
+        .references(() => Clients.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
 });
 
 export const TokensRelations = relations(Tokens, ({ one }) => ({
@@ -356,11 +351,50 @@ export const TokensRelations = relations(Tokens, ({ one }) => ({
         fields: [Tokens.userId],
         references: [Users.id],
     }),
-    application: one(Applications, {
-        fields: [Tokens.applicationId],
-        references: [Applications.id],
+    client: one(Clients, {
+        fields: [Tokens.clientId],
+        references: [Clients.id],
     }),
 }));
+
+export const AuthorizationCodes = pgTable("AuthorizationCodes", {
+    code: text("code").primaryKey(),
+    scopes: text("scopes").array().notNull().default(sql`ARRAY[]::text[]`),
+    redirectUri: text("redirect_uri"),
+    expiresAt: timestamp("expires_at", {
+        precision: 3,
+        mode: "string",
+    }).notNull(),
+    createdAt: createdAt(),
+    codeChallenge: text("code_challenge"),
+    codeChallengeMethod: text("code_challenge_method"),
+    userId: uuid("userId")
+        .references(() => Users.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
+    clientId: text("clientId")
+        .references(() => Clients.id, {
+            onDelete: "cascade",
+            onUpdate: "cascade",
+        })
+        .notNull(),
+});
+
+export const AuthorizationCodesRelations = relations(
+    AuthorizationCodes,
+    ({ one }) => ({
+        user: one(Users, {
+            fields: [AuthorizationCodes.userId],
+            references: [Users.id],
+        }),
+        client: one(Clients, {
+            fields: [AuthorizationCodes.clientId],
+            references: [Clients.id],
+        }),
+    }),
+);
 
 export const Medias = pgTable("Medias", {
     id: id(),
@@ -460,7 +494,7 @@ export const Notes = pgTable("Notes", {
     }),
     sensitive: boolean("sensitive").notNull().default(false),
     spoilerText: text("spoiler_text").default("").notNull(),
-    applicationId: uuid("applicationId").references(() => Applications.id, {
+    clientId: text("clientId").references(() => Clients.id, {
         onDelete: "set null",
         onUpdate: "cascade",
     }),
@@ -494,9 +528,9 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
         references: [Notes.id],
         relationName: "NoteToQuotes",
     }),
-    application: one(Applications, {
-        fields: [Notes.applicationId],
-        references: [Applications.id],
+    client: one(Clients, {
+        fields: [Notes.clientId],
+        references: [Clients.id],
     }),
     quotes: many(Notes, {
         relationName: "NoteToQuotes",
@@ -665,7 +699,11 @@ export const UsersRelations = relations(Users, ({ many, one }) => ({
 export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
     id: id(),
     codeVerifier: text("code_verifier").notNull(),
-    applicationId: uuid("applicationId").references(() => Applications.id, {
+    state: text("state"),
+    clientState: text("client_state"),
+    clientRedirectUri: text("client_redirect_uri"),
+    clientScopes: text("client_scopes").array(),
+    clientId: text("clientId").references(() => Clients.id, {
         onDelete: "cascade",
         onUpdate: "cascade",
     }),
@@ -675,9 +713,9 @@ export const OpenIdLoginFlows = pgTable("OpenIdLoginFlows", {
 export const OpenIdLoginFlowsRelations = relations(
     OpenIdLoginFlows,
     ({ one }) => ({
-        application: one(Applications, {
-            fields: [OpenIdLoginFlows.applicationId],
-            references: [Applications.id],
+        client: one(Clients, {
+            fields: [OpenIdLoginFlows.clientId],
+            references: [Clients.id],
         }),
     }),
 );
