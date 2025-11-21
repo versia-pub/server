@@ -189,7 +189,6 @@ export class Notification extends BaseInterface<
             created_at: new Date(this.data.createdAt).toISOString(),
             id: this.data.id,
             type: this.data.type,
-            event: undefined,
             status: this.data.status
                 ? await new Note(this.data.status).toApi(account)
                 : undefined,

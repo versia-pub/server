@@ -8,7 +8,7 @@ import type { HonoEnv } from "~/types/api.ts";
 export const createServer = (
     config: z.infer<typeof ConfigSchema>,
     app: Hono<HonoEnv>,
-): Server =>
+): Server<undefined> =>
     serve({
         port: config.http.bind_port,
         reusePort: true,

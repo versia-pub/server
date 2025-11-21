@@ -24,7 +24,7 @@ RUN bun run build worker
 WORKDIR /temp/dist
 
 # Copy production dependencies and source code into final image
-FROM oven/bun:1.2.18-alpine
+FROM oven/bun:1.3.2-alpine
 
 # Install libstdc++ for Bun and create app directory
 RUN mkdir -p /app

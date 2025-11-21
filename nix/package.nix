@@ -54,7 +54,7 @@ in
       # Required else we get errors that our fixed-output derivation references store paths
       dontFixup = true;
 
-      outputHash = "sha256-U1bCDAFWmA4kJw9LODdhP0bKIZ4pxAscS6aVLNV9lkI=";
+      outputHash = "sha256-2ytoiv8+0XTcGhxb/f/xmFk8xWpfotFD0Z+ZIfG9j/I=";
       outputHashAlgo = "sha256";
       outputHashMode = "recursive";
     };
