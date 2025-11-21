@@ -2824,7 +2824,7 @@ export class Client extends BaseClient {
         }>,
         extra?: RequestInit,
     ): Promise<URL> {
-        return this.post<void>(
+        return this.post(
             `/oauth/sso/${issuer}`,
             {
                 client_id,
