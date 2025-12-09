@@ -215,5 +215,8 @@
         "zod": "catalog:",
         "zod-openapi": "catalog:",
         "zod-validation-error": "catalog:"
+    },
+    "patchedDependencies": {
+        "openid-client@6.8.1": "patches/openid-client@6.8.1.patch"
     }
 }
