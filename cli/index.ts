@@ -1,3 +1,4 @@
+import { Clerc } from "@clerc/core";
 import { completionsPlugin } from "@clerc/plugin-completions";
 import { friendlyErrorPlugin } from "@clerc/plugin-friendly-error";
 import { helpPlugin } from "@clerc/plugin-help";
@@ -5,7 +6,6 @@ import { notFoundPlugin } from "@clerc/plugin-not-found";
 import { versionPlugin } from "@clerc/plugin-version";
 import { setupDatabase } from "@versia-server/kit/db";
 import { searchManager } from "@versia-server/kit/search";
-import { Clerc } from "clerc";
 import pkg from "../package.json" with { type: "json" };
 import { rebuildIndexCommand } from "./index/rebuild.ts";
 import { refetchInstanceCommand } from "./instance/refetch.ts";

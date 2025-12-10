@@ -1,18 +1,14 @@
+import { defineCommand } from "@clerc/core";
 import { User } from "@versia-server/kit/db";
 import chalk from "chalk";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import ora from "ora";
 import { retrieveUser } from "../utils.ts";
 
-export const refetchUserCommand = defineCommand(
-    {
-        name: "user refetch",
-        description: "Refetches user data from their remote instance.",
-        parameters: ["<handle>"],
-    },
-    async (context) => {
+export const refetchUserCommand = defineCommand({
+    name: "user refetch",
+    description: "Refetches user data from their remote instance.",
+    parameters: ["<handle>"],
+    handler: async (context) => {
         const { handle } = context.parameters;
 
         const user = await retrieveUser(handle);
@@ -40,4 +36,4 @@ export const refetchUserCommand = defineCommand(
 
         spinner.succeed(`User ${chalk.gray(user.data.username)} refetched.`);
     },
-);
+});

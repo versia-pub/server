@@ -1,19 +1,15 @@
+import { defineCommand } from "@clerc/core";
 import { Client, Token } from "@versia-server/kit/db";
 import { randomUUIDv7 } from "bun";
 import chalk from "chalk";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import { randomString } from "@/math.ts";
 import { retrieveUser } from "../utils.ts";
 
-export const generateTokenCommand = defineCommand(
-    {
-        name: "user token",
-        description: "Generates a new access token for a user.",
-        parameters: ["<username>"],
-    },
-    async (context) => {
+export const generateTokenCommand = defineCommand({
+    name: "user token",
+    description: "Generates a new access token for a user.",
+    parameters: ["<username>"],
+    handler: async (context) => {
         const { username } = context.parameters;
 
         const user = await retrieveUser(username);
@@ -47,4 +43,4 @@ export const generateTokenCommand = defineCommand(
         );
         console.info(`Access Token: ${chalk.blue(token.data.accessToken)}`);
     },
-);
+});

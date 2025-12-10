@@ -1,25 +1,21 @@
+import { defineCommand } from "@clerc/core";
 import { config } from "@versia-server/config";
 import { SonicIndexType, searchManager } from "@versia-server/kit/search";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import ora from "ora";
 
-export const rebuildIndexCommand = defineCommand(
-    {
-        name: "index rebuild",
-        description: "Rebuild the search index.",
-        parameters: ["<type>"],
-        flags: {
-            "batch-size": {
-                description: "Number of records to process at once",
-                type: Number,
-                alias: "b",
-                default: 100,
-            },
+export const rebuildIndexCommand = defineCommand({
+    name: "index rebuild",
+    description: "Rebuild the search index.",
+    parameters: ["<type>"],
+    flags: {
+        "batch-size": {
+            description: "Number of records to process at once",
+            type: Number,
+            alias: "b",
+            default: 100,
         },
     },
-    async (context) => {
+    handler: async (context) => {
         const { "batch-size": batchSize } = context.flags;
         const { type } = context.parameters;
 
@@ -59,4 +55,4 @@ export const rebuildIndexCommand = defineCommand(
 
         spinner.succeed("Search indexes rebuilt");
     },
-);
+});

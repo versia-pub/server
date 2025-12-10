@@ -1,24 +1,20 @@
+import { defineCommand } from "@clerc/core";
 import { Instance } from "@versia-server/kit/db";
 import { FetchJobType, fetchQueue } from "@versia-server/kit/queues/fetch";
 import { Instances } from "@versia-server/kit/tables";
 import chalk from "chalk";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import { eq } from "drizzle-orm";
 
-export const refetchInstanceCommand = defineCommand(
-    {
-        name: "instance refetch",
-        description: "Refetches metadata from remote instances.",
-        parameters: ["<url_or_host>"],
-    },
-    async (context) => {
-        const { urlOrHost } = context.parameters;
+export const refetchInstanceCommand = defineCommand({
+    name: "instance refetch",
+    description: "Refetches metadata from remote instances.",
+    parameters: ["<url_or_host>"],
+    handler: async (context) => {
+        const { url_or_host } = context.parameters;
 
-        const host = URL.canParse(urlOrHost)
-            ? new URL(urlOrHost).host
-            : urlOrHost;
+        const host = URL.canParse(url_or_host)
+            ? new URL(url_or_host).host
+            : url_or_host;
 
         const instance = await Instance.fromSql(eq(Instances.baseUrl, host));
 
@@ -34,4 +30,4 @@ export const refetchInstanceCommand = defineCommand(
             `Refresh job enqueued for ${chalk.gray(instance.data.baseUrl)}.`,
         );
     },
-);
+});

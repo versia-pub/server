@@ -1,38 +1,34 @@
+import { defineCommand } from "@clerc/core";
 import { config } from "@versia-server/config";
 import { User } from "@versia-server/kit/db";
 import { searchManager } from "@versia-server/kit/search";
 import { Users } from "@versia-server/kit/tables";
 import chalk from "chalk";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import { and, eq, isNull } from "drizzle-orm";
 import { renderUnicodeCompact } from "uqr";
 
-export const createUserCommand = defineCommand(
-    {
-        name: "user create",
-        description: "Create a new user.",
-        parameters: ["<username>"],
-        flags: {
-            password: {
-                description: "Password for the new user",
-                type: String,
-                alias: "p",
-            },
-            email: {
-                description: "Email for the new user",
-                type: String,
-                alias: "e",
-            },
-            admin: {
-                description: "Make the new user an admin",
-                type: Boolean,
-                alias: "a",
-            },
+export const createUserCommand = defineCommand({
+    name: "user create",
+    description: "Create a new user.",
+    parameters: ["<username>"],
+    flags: {
+        password: {
+            description: "Password for the new user",
+            type: String,
+            alias: "p",
+        },
+        email: {
+            description: "Email for the new user",
+            type: String,
+            alias: "e",
+        },
+        admin: {
+            description: "Make the new user an admin",
+            type: Boolean,
+            alias: "a",
         },
     },
-    async (context) => {
+    handler: async (context) => {
         const { admin, email, password } = context.flags;
         const { username } = context.parameters;
 
@@ -87,4 +83,4 @@ export const createUserCommand = defineCommand(
             console.info(`\n  ${qrcode.replaceAll("\n", "\n  ")}`);
         }
     },
-);
+});

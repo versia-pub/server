@@ -1,34 +1,31 @@
+import { defineCommand } from "@clerc/core";
 import confirm from "@inquirer/confirm";
 import chalk from "chalk";
-// @ts-expect-error - Root import is required or the Clec type definitions won't work
-// biome-ignore lint/correctness/noUnusedImports: Root import is required or the Clec type definitions won't work
-import { defineCommand, type Root } from "clerc";
 import { retrieveUser } from "../utils.ts";
 
-export const deleteUserCommand = defineCommand(
-    {
-        name: "user delete",
-        alias: "user rm",
-        description:
-            "Delete a user from the database. Can use username or handle.",
-        parameters: ["<username_or_handle>"],
-        flags: {
-            confirm: {
-                description: "Ask for confirmation before deleting the user",
-                type: Boolean,
-                alias: "c",
-                default: true,
-            },
+export const deleteUserCommand = defineCommand({
+    name: "user delete",
+    alias: "user rm",
+    description: "Delete a user from the database. Can use username or handle.",
+    parameters: ["<username_or_handle>"],
+    flags: {
+        confirm: {
+            description: "Ask for confirmation before deleting the user",
+            type: Boolean,
+            alias: "c",
+            default: true,
         },
     },
-    async (context) => {
+    handler: async (context) => {
         const { confirm: confirmFlag } = context.flags;
-        const { usernameOrHandle } = context.parameters;
+        const { username_or_handle } = context.parameters;
 
-        const user = await retrieveUser(usernameOrHandle);
+        const user = await retrieveUser(username_or_handle);
 
         if (!user) {
-            throw new Error(`User ${chalk.gray(usernameOrHandle)} not found.`);
+            throw new Error(
+                `User ${chalk.gray(username_or_handle)} not found.`,
+            );
         }
 
         console.info(`About to delete user ${chalk.gray(user.data.username)}!`);
@@ -57,4 +54,4 @@ export const deleteUserCommand = defineCommand(
             `User ${chalk.gray(user.data.username)} has been deleted.`,
         );
     },
-);
+});
