@@ -4,6 +4,7 @@ import { apiRoute, handleZodError, jsonOrForm } from "@versia-server/kit/api";
 import { Client, db } from "@versia-server/kit/db";
 import { OpenIdLoginFlows } from "@versia-server/kit/tables";
 import { randomUUIDv7 } from "bun";
+import { sign } from "hono/jwt";
 import { describeRoute, validator } from "hono-openapi";
 import * as client from "openid-client";
 import { z } from "zod";
@@ -43,8 +44,12 @@ export default apiRoute((app) => {
         ),
         async (context) => {
             // This is the Versia client's client_id, not the external OAuth provider's client_id
-            const { client_id, redirect_uri, scopes, state } =
-                context.req.valid("json");
+            const {
+                client_id,
+                redirect_uri,
+                scopes,
+                state: clientState,
+            } = context.req.valid("json");
             const { issuer: issuerId } = context.req.valid("param");
 
             const issuer = config.authentication.openid_providers.find(
@@ -84,10 +89,6 @@ export default apiRoute((app) => {
                 code_challenge_method: "S256",
             };
 
-            if (!oidcConfig.serverMetadata().supportsPKCE()) {
-                parameters.state = client.randomState();
-            }
-
             // Store into database
             const newFlow = (
                 await db
@@ -96,7 +97,7 @@ export default apiRoute((app) => {
                         id: randomUUIDv7(),
                         codeVerifier,
                         state: parameters.state,
-                        clientState: state,
+                        clientState,
                         clientRedirectUri: redirect_uri,
                         clientScopes: scopes,
                         clientId: application.id,
@@ -105,12 +106,22 @@ export default apiRoute((app) => {
                     .returning()
             )[0];
 
+            const jwt = await sign(
+                {
+                    flow: newFlow.id,
+                    exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes expiration
+                    iss: config.http.base_url.toString(),
+                    iat: Math.floor(Date.now() / 1000),
+                },
+                config.authentication.key,
+            );
+
+            parameters.state = jwt;
+
             parameters.redirect_uri = `${oauthRedirectUri(
                 context.get("config").http.base_url,
                 issuerId,
-            )}?${new URLSearchParams({
-                flow: newFlow.id,
-            })}`;
+            )}`;
 
             const redirectTo = client.buildAuthorizationUrl(
                 oidcConfig,

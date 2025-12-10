@@ -1,7 +1,6 @@
 import {
     Account as AccountSchema,
     RolePermission,
-    zBoolean,
 } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
@@ -16,7 +15,7 @@ import {
 import { randomUUIDv7 } from "bun";
 import { and, eq, isNull, type SQL } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
-import { sign } from "hono/jwt";
+import { sign, verify } from "hono/jwt";
 import { describeRoute, validator } from "hono-openapi";
 import * as client from "openid-client";
 import { z } from "zod";
@@ -48,15 +47,13 @@ export default apiRoute((app) => {
         validator(
             "query",
             z.object({
-                flow: z.string(),
-                link: zBoolean.default(false),
-                user_id: z.uuid().optional(),
+                state: z.string(),
             }),
             handleZodError,
         ),
         async (context) => {
             const { issuer: issuerId } = context.req.valid("param");
-            const { flow: flowId, user_id, link } = context.req.valid("query");
+            const { state } = context.req.valid("query");
 
             const issuer = config.authentication.openid_providers.find(
                 (provider) => provider.id === issuerId,
@@ -65,6 +62,16 @@ export default apiRoute((app) => {
             if (!issuer) {
                 throw new ApiError(422, "Unknown or invalid issuer");
             }
+
+            const jwtPayload = (await verify(state, config.authentication.key, {
+                iss: config.http.base_url.toString(),
+            })) as {
+                flow: string;
+                link?: boolean;
+                user_id?: string;
+            };
+
+            const { flow: flowId, link, user_id } = jwtPayload;
 
             const flow = await db.query.OpenIdLoginFlows.findFirst({
                 where: (flow): SQL | undefined => eq(flow.id, flowId),
@@ -104,7 +111,7 @@ export default apiRoute((app) => {
                 context.req.raw,
                 {
                     pkceCodeVerifier: flow.codeVerifier,
-                    expectedState: flow.state ?? undefined,
+                    expectedState: state,
                     idTokenExpected: true,
                 },
             );
