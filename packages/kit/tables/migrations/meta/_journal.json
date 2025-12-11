@@ -372,6 +372,13 @@
             "when": 1755732000165,
             "tag": "0052_complete_hellfire_club",
             "breakpoints": true
+        },
+        {
+            "idx": 53,
+            "version": "7",
+            "when": 1765422160004,
+            "tag": "0053_lively_hellfire_club",
+            "breakpoints": true
         }
     ]
 }

@@ -475,7 +475,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                         isNull(Users.instanceId),
                         gte(
                             Notes.createdAt,
-                            new Date(Date.now() - milliseconds).toISOString(),
+                            new Date(Date.now() - milliseconds),
                         ),
                     ),
                 )
@@ -803,7 +803,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         await user.update({
-            createdAt: new Date(created_at).toISOString(),
+            createdAt: new Date(created_at),
             endpoints: {
                 inbox,
                 outbox: collections.outbox,
@@ -940,7 +940,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             publicKey: keys.public_key,
             fields: [],
             privateKey: keys.private_key,
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date(),
             source: {
                 language: "en",
                 note: "",
@@ -1116,7 +1116,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             avatar: this.getAvatarUrl().proxied,
             header: this.getHeaderUrl()?.proxied ?? "",
             locked: user.isLocked,
-            created_at: new Date(user.createdAt).toISOString(),
+            created_at: user.createdAt.toISOString(),
             followers_count:
                 user.isHidingCollections && !isOwnAccount
                     ? 0
@@ -1177,7 +1177,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                     remote: false,
                 },
             },
-            created_at: new Date(user.createdAt).toISOString(),
+            created_at: user.createdAt.toISOString(),
             collections: {
                 featured: new URL(
                     `/users/${user.id}/featured`,

@@ -98,7 +98,7 @@ export default apiRoute((app) => {
                     markers.home = {
                         last_read_id: found.noteId,
                         version: totalCount,
-                        updated_at: new Date(found.createdAt).toISOString(),
+                        updated_at: found.createdAt.toISOString(),
                     };
                 }
             }
@@ -124,7 +124,7 @@ export default apiRoute((app) => {
                     markers.notifications = {
                         last_read_id: found.notificationId,
                         version: totalCount,
-                        updated_at: new Date(found.createdAt).toISOString(),
+                        updated_at: found.createdAt.toISOString(),
                     };
                 }
             }
@@ -212,9 +212,7 @@ export default apiRoute((app) => {
                 markers.home = {
                     last_read_id: homeId,
                     version: totalCount,
-                    updated_at: new Date(
-                        insertedMarker.createdAt,
-                    ).toISOString(),
+                    updated_at: insertedMarker.createdAt.toISOString(),
                 };
             }
 
@@ -242,9 +240,7 @@ export default apiRoute((app) => {
                 markers.notifications = {
                     last_read_id: notificationsId,
                     version: totalCount,
-                    updated_at: new Date(
-                        insertedMarker.createdAt,
-                    ).toISOString(),
+                    updated_at: insertedMarker.createdAt.toISOString(),
                 };
             }
 

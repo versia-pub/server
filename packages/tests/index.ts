@@ -180,7 +180,7 @@ export const getTestStatuses = async (
             content: `${i} ${randomString(32, "hex")}`,
             authorId: user.id,
             sensitive: false,
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date(),
             visibility: "public",
             clientId: null,
             ...partial,

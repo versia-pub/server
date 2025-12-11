@@ -10,8 +10,8 @@ export const generateChallenge = async (
 ): Promise<{
     id: string;
     challenge: Challenge;
-    expiresAt: string;
-    createdAt: string;
+    expiresAt: Date;
+    createdAt: Date;
 }> => {
     if (!config.validation.challenges) {
         throw new Error("Challenges are not enabled");
@@ -39,7 +39,7 @@ export const generateChallenge = async (
             .values({
                 id: uuid,
                 challenge,
-                expiresAt: expirationDate.toISOString(),
+                expiresAt: expirationDate,
             })
             .returning()
     )[0];

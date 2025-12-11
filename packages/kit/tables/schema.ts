@@ -28,13 +28,12 @@ import {
 import type { z } from "zod";
 
 const createdAt = () =>
-    // TODO: Change mode to Date
-    timestamp("created_at", { precision: 3, mode: "string" })
+    timestamp("created_at", { precision: 3, mode: "date", withTimezone: true })
         .defaultNow()
         .notNull();
 
 const updatedAt = () =>
-    timestamp("updated_at", { precision: 3, mode: "string" })
+    timestamp("updated_at", { precision: 3, mode: "date", withTimezone: true })
         .defaultNow()
         .notNull();
 
@@ -47,7 +46,8 @@ export const Challenges = pgTable("Challenges", {
     challenge: jsonb("challenge").notNull().$type<Challenge>(),
     expiresAt: timestamp("expires_at", {
         precision: 3,
-        mode: "string",
+        mode: "date",
+        withTimezone: true,
     })
         .default(
             // 5 minutes
@@ -191,7 +191,11 @@ export const Filters = pgTable("Filters", {
         >(),
     title: text("title").notNull(),
     filterAction: text("filter_action").notNull().$type<"warn" | "hide">(),
-    expireAt: timestamp("expires_at", { precision: 3, mode: "string" }),
+    expireAt: timestamp("expires_at", {
+        precision: 3,
+        mode: "date",
+        withTimezone: true,
+    }),
     createdAt: createdAt(),
 });
 
@@ -330,7 +334,11 @@ export const Tokens = pgTable("Tokens", {
     id: id(),
     scopes: text("scopes").array().notNull().default(sql`ARRAY[]::text[]`),
     accessToken: text("access_token").notNull(),
-    expiresAt: timestamp("expires_at", { precision: 3, mode: "string" }),
+    expiresAt: timestamp("expires_at", {
+        precision: 3,
+        mode: "date",
+        withTimezone: true,
+    }),
     createdAt: createdAt(),
     userId: uuid("userId")
         .references(() => Users.id, {
@@ -363,7 +371,8 @@ export const AuthorizationCodes = pgTable("AuthorizationCodes", {
     redirectUri: text("redirect_uri"),
     expiresAt: timestamp("expires_at", {
         precision: 3,
-        mode: "string",
+        mode: "date",
+        withTimezone: true,
     }).notNull(),
     createdAt: createdAt(),
     codeChallenge: text("code_challenge"),

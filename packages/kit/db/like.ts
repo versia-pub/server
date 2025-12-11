@@ -153,7 +153,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                 this.data.liker.uri ? new URL(this.data.liker.uri) : null,
             ).href,
             type: "pub.versia:likes/Like",
-            created_at: new Date(this.data.createdAt).toISOString(),
+            created_at: this.data.createdAt.toISOString(),
             liked: this.data.liked.uri
                 ? new URL(this.data.liked.uri).href
                 : new URL(`/notes/${this.data.liked.id}`, config.http.base_url)

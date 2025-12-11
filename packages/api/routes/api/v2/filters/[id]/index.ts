@@ -184,9 +184,7 @@ export default apiRoute((app) => {
                     title,
                     context: ctx ?? [],
                     filterAction: filter_action,
-                    expireAt: new Date(
-                        Date.now() + (expires_in ?? 0),
-                    ).toISOString(),
+                    expireAt: new Date(Date.now() + (expires_in ?? 0)),
                 })
                 .where(and(eq(Filters.userId, user.id), eq(Filters.id, id)));
 
@@ -244,9 +242,7 @@ export default apiRoute((app) => {
                     id: updatedFilter.id,
                     title: updatedFilter.title,
                     context: updatedFilter.context,
-                    expires_at: updatedFilter.expireAt
-                        ? new Date(updatedFilter.expireAt).toISOString()
-                        : null,
+                    expires_at: updatedFilter.expireAt?.toISOString() || null,
                     filter_action: updatedFilter.filterAction,
                     keywords: updatedFilter.keywords.map((keyword) => ({
                         id: keyword.id,

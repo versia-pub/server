@@ -513,7 +513,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             reblogId: this.id,
             visibility,
             sensitive: false,
-            updatedAt: new Date().toISOString(),
+            updatedAt: new Date(),
             clientId: null,
             uri: uri?.href,
         });
@@ -979,7 +979,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 authorId: author.id,
                 visibility: "public",
                 uri,
-                createdAt: new Date(created_at).toISOString(),
+                createdAt: new Date(created_at),
             }));
 
         const attachments = await Promise.all(
@@ -1150,7 +1150,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             in_reply_to_id: data.replyId || null,
             in_reply_to_account_id: data.reply?.authorId || null,
             account: this.author.toApi(userFetching?.id === data.authorId),
-            created_at: new Date(data.createdAt).toISOString(),
+            created_at: data.createdAt.toISOString(),
             application: data.client
                 ? new Client(data.client).toApi()
                 : undefined,
@@ -1200,9 +1200,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                       (n) => n?.toApi(userFetching),
                   )) ?? null)
                 : null,
-            edited_at: data.updatedAt
-                ? new Date(data.updatedAt).toISOString()
-                : null,
+            edited_at: data.updatedAt.toISOString(),
             reactions,
             text: data.contentSource,
         };
@@ -1246,7 +1244,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         const status = this.data;
         return new VersiaEntities.Note({
             type: "Note",
-            created_at: new Date(status.createdAt).toISOString(),
+            created_at: status.createdAt.toISOString(),
             id: status.id,
             author: this.author.uri.href,
             uri: this.getUri().href,

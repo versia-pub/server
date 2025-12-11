@@ -217,7 +217,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                 this.data.authorId,
                 this.data.author.uri ? new URL(this.data.author.uri) : null,
             ).href,
-            created_at: new Date(this.data.createdAt).toISOString(),
+            created_at: this.data.createdAt.toISOString(),
             id: this.id,
             object: this.data.note.uri
                 ? new URL(this.data.note.uri).href

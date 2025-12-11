@@ -48,9 +48,7 @@ describe("/api/v1/accounts/verify_credentials", () => {
             expect(data.moved).toBeNull();
             expect(data.suspended).toBe(false);
             expect(data.limited).toBe(false);
-            expect(data.created_at).toBe(
-                new Date(users[0].data.createdAt).toISOString(),
-            );
+            expect(data.created_at).toBe(users[0].data.createdAt.toISOString());
             expect(data.last_status_at).toBeNull();
             expect(data.statuses_count).toBe(0);
             expect(data.followers_count).toBe(0);

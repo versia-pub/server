@@ -137,7 +137,7 @@ export const checkRouteNeedsChallenge = async (
     // Expire the challenge
     await db
         .update(Challenges)
-        .set({ expiresAt: new Date().toISOString() })
+        .set({ expiresAt: new Date() })
         .where(eq(Challenges.id, challenge_id));
 };
 

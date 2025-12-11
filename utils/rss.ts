@@ -58,12 +58,12 @@ export const getFeed = async (user: User, page = 0): Promise<Feed> => {
                 config.http.base_url,
             ).href,
             content: note.data.content,
-            date: new Date(note.data.createdAt),
+            date: note.data.createdAt,
             id: new URL(
                 `/@${user.data.username}/${note.id}`,
                 config.http.base_url,
             ).href,
-            published: new Date(note.data.createdAt),
+            published: note.data.createdAt,
             title: "",
             image: image
                 ? {

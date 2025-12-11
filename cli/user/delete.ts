@@ -31,7 +31,9 @@ export const deleteUserCommand = defineCommand({
         console.info(`About to delete user ${chalk.gray(user.data.username)}!`);
         console.info(`Username: ${chalk.blue(user.data.username)}`);
         console.info(`Display Name: ${chalk.blue(user.data.displayName)}`);
-        console.info(`Created At: ${chalk.blue(user.data.createdAt)}`);
+        console.info(
+            `Created At: ${chalk.blue(user.data.createdAt.toISOString())}`,
+        );
         console.info(
             `Instance: ${chalk.blue(user.data.instance?.baseUrl || "Local")}`,
         );

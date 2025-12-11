@@ -59,9 +59,7 @@ export default apiRoute((app) => {
                     id: filter.id,
                     title: filter.title,
                     context: filter.context,
-                    expires_at: filter.expireAt
-                        ? new Date(Date.now() + filter.expireAt).toISOString()
-                        : null,
+                    expires_at: filter.expireAt?.toISOString() || null,
                     filter_action: filter.filterAction,
                     keywords: filter.keywords.map((keyword) => ({
                         id: keyword.id,
@@ -147,9 +145,7 @@ export default apiRoute((app) => {
                         title,
                         context: ctx,
                         filterAction: filter_action,
-                        expireAt: new Date(
-                            Date.now() + (expires_in ?? 0),
-                        ).toISOString(),
+                        expireAt: new Date(Date.now() + (expires_in ?? 0)),
                         userId: user.id,
                     })
                     .returning()

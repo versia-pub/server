@@ -44,7 +44,7 @@ describe("/api/v1/accounts/:id", () => {
             avatar: expect.any(String),
             header: expect.any(String),
             locked: users[0].data.isLocked,
-            created_at: new Date(users[0].data.createdAt).toISOString(),
+            created_at: users[0].data.createdAt.toISOString(),
             followers_count: 0,
             following_count: 0,
             statuses_count: 5,

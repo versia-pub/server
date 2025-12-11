@@ -17,8 +17,8 @@ const token = await Token.insert({
     id: randomUUIDv7(),
     clientId: application.id,
     accessToken: "test-access-token",
-    expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 3600 * 1000),
+    createdAt: new Date(),
     scopes: application.data.scopes,
     userId: users[0].id,
 });

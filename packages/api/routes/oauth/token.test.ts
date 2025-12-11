@@ -24,7 +24,7 @@ const authorizationCode = (
             code: randomString(10),
             redirectUri: application.data.redirectUris[0],
             userId: users[0].id,
-            expiresAt: new Date(Date.now() + 300 * 1000).toISOString(),
+            expiresAt: new Date(Date.now() + 300 * 1000),
         })
         .returning()
 )[0];

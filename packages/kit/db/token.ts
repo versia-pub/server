@@ -160,9 +160,7 @@ export class Token extends BaseInterface<typeof Tokens, TokenType> {
             access_token: this.data.accessToken,
             token_type: "Bearer",
             scope: this.data.scopes.join(" "),
-            created_at: Math.floor(
-                new Date(this.data.createdAt).getTime() / 1000,
-            ),
+            created_at: Math.floor(this.data.createdAt.getTime() / 1000),
         };
     }
 }

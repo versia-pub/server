@@ -101,7 +101,7 @@ export default apiRoute((app) => {
 
             if (
                 !authorizationCode ||
-                new Date(authorizationCode.expiresAt).getTime() < Date.now()
+                authorizationCode.expiresAt.getTime() < Date.now()
             ) {
                 return context.json(
                     {
@@ -131,8 +131,7 @@ export default apiRoute((app) => {
                     ...token.toApi(),
                     expires_in: token.data.expiresAt
                         ? Math.floor(
-                              (new Date(token.data.expiresAt).getTime() -
-                                  Date.now()) /
+                              (token.data.expiresAt.getTime() - Date.now()) /
                                   1000,
                           )
                         : null,

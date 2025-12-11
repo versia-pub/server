@@ -73,9 +73,7 @@ export default apiRoute((app) =>
                         "/inbox",
                         config.http.base_url,
                     ).toString(),
-                    created_at: new Date(
-                        firstUser?.data.createdAt ?? 0,
-                    ).toISOString(),
+                    created_at: firstUser?.data.createdAt.toISOString(),
                     extensions: {
                         "pub.versia:instance_messaging": {
                             endpoint: new URL(

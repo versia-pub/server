@@ -186,7 +186,7 @@ export class Notification extends BaseInterface<
 
         return {
             account: account.toApi(),
-            created_at: new Date(this.data.createdAt).toISOString(),
+            created_at: this.data.createdAt.toISOString(),
             id: this.data.id,
             type: this.data.type,
             status: this.data.status
