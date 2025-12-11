@@ -65,6 +65,11 @@ base_url = "https://example.com"
 bind = "0.0.0.0"
 bind_port = 8080
 
+# IPs of trusted proxies (for X-Forwarded-For and X-Forwarded-Proto headers)
+# v4, v6, ranges and wildcards are supported
+# Your proxy must set these headers correctly for versia-server to work
+proxy_ips = []
+
 # Bans IPv4 or IPv6 IPs (wildcards, networks and ranges are supported)
 banned_ips = []
 # Banned user agents, regex format

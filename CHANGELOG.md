@@ -6,6 +6,7 @@
 
 -  [x] 🥺 Emoji Reactions are now available! You can react to any note with custom emojis.
 -  [x] 🔎 Added support for [batch account data API](https://docs.joinmastodon.org/methods/accounts/#index).
+-  [x] 🛡️ Added support for `X-Forwarded-For` and `X-Forwarded-Proto` headers from trusted proxies.
 
 ### Backend
 

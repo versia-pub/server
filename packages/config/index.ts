@@ -384,6 +384,7 @@ export const ConfigSchema = z
             ),
             bind: z.string().min(1).default("0.0.0.0"),
             bind_port: unixPort.default(8080),
+            proxy_ips: z.array(ip).default([]),
             banned_ips: z.array(ip).default([]),
             banned_user_agents: z.array(regex).default([]),
             proxy_address: url
