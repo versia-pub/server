@@ -278,7 +278,7 @@ export default apiRoute((app) => {
             await db.insert(AuthorizationCodes).values({
                 clientId: flow.client.id,
                 code,
-                expiresAt: new Date(Date.now() + 60 * 1000).toISOString(), // 1 minute
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(), // 10 minutes
                 redirectUri: flow.clientRedirectUri ?? undefined,
                 userId: user.id,
                 scopes: flow.clientScopes ?? [],
