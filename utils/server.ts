@@ -50,7 +50,7 @@ export const createServer = (
                 }
             }
 
-            const output = await app.fetch(req, { ip });
+            const output = await app.fetch(new Request(url, req), { ip });
 
             await debugResponse(output.clone());
 
