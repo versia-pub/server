@@ -1,6 +1,7 @@
 import { Scalar } from "@scalar/hono-api-reference";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
+import { honoLogger } from "@versia-server/logging";
 import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
@@ -15,7 +16,6 @@ import type { ApiRouteExports, HonoEnv } from "../../types/api.ts";
 import { agentBans } from "./middlewares/agent-bans.ts";
 import { boundaryCheck } from "./middlewares/boundary-check.ts";
 import { ipBans } from "./middlewares/ip-bans.ts";
-import { logger } from "./middlewares/logger.ts";
 import { rateLimit } from "./middlewares/rate-limit.ts";
 import { routes } from "./routes.ts";
 
@@ -26,7 +26,7 @@ export const appFactory = async (): Promise<Hono<HonoEnv>> => {
 
     app.use(ipBans);
     app.use(agentBans);
-    app.use(logger);
+    app.use(honoLogger);
     app.use(boundaryCheck);
     app.use(
         "/api/*",

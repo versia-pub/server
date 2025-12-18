@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { getFileSink, getRotatingFileSink } from "@logtape/file";
+import { honoLogger as logtapeHonoLogger } from "@logtape/hono";
 import {
     configure,
     getConsoleSink,
@@ -100,6 +101,7 @@ await configure({
             category: "server",
             sinks: getSinkNames(),
         },
+        { category: ["http"], sinks: getSinkNames() },
         {
             category: ["federation", "inbox"],
             sinks: getSinkNames(),
@@ -148,3 +150,7 @@ export const federationMessagingLogger = getLogger(["federation", "messaging"]);
 export const databaseLogger = getLogger("database");
 export const webfingerLogger = getLogger("webfinger");
 export const sonicLogger = getLogger("sonic");
+export const honoLogger = logtapeHonoLogger({
+    category: "http",
+    level: "debug",
+});

@@ -1,5 +1,4 @@
 import type { ConfigSchema } from "@versia-server/config";
-import { debugResponse } from "@versia-server/kit/api";
 import { type Server, serve } from "bun";
 import type { Hono } from "hono";
 import { matches } from "ip-matching";
@@ -51,8 +50,6 @@ export const createServer = (
             }
 
             const output = await app.fetch(new Request(url, req), { ip });
-
-            await debugResponse(output.clone());
 
             return output;
         },

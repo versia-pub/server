@@ -1,9 +1,7 @@
 import type { Hook } from "@hono/standard-validator";
 import type { RolePermission } from "@versia/client/schemas";
 import { config } from "@versia-server/config";
-import { serverLogger } from "@versia-server/logging";
 import { extractParams, verifySolution } from "altcha-lib";
-import chalk from "chalk";
 import { eq, type SQL } from "drizzle-orm";
 import type { Context, Hono, MiddlewareHandler, ValidationTargets } from "hono";
 import { every } from "hono/combine";
@@ -416,20 +414,4 @@ export const jsonOrForm = (): MiddlewareHandler<HonoEnv> => {
 
         await next();
     });
-};
-
-export const debugResponse = async (res: Response): Promise<void> => {
-    const body = await res.clone().text();
-
-    const status = `${chalk.bold("Status")}: ${chalk.green(res.status)}`;
-
-    const headers = `${chalk.bold("Headers")}:\n${Array.from(
-        res.headers.entries(),
-    )
-        .map(([key, value]) => ` - ${chalk.cyan(key)}: ${chalk.white(value)}`)
-        .join("\n")}`;
-
-    const bodyLog = `${chalk.bold("Body")}: ${chalk.gray(body)}`;
-
-    serverLogger.debug`${status}\n${headers}\n${bodyLog}`;
 };

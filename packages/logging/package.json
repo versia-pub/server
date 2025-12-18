@@ -18,6 +18,7 @@
         "@logtape/file": "catalog:",
         "@logtape/sentry": "catalog:",
         "@logtape/otel": "catalog:",
+        "@logtape/hono": "catalog:",
         "@sentry/bun": "catalog:",
         "chalk": "catalog:"
     }
