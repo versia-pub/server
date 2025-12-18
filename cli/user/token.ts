@@ -5,11 +5,13 @@ import chalk from "chalk";
 import { randomString } from "@/math.ts";
 import { retrieveUser } from "../utils.ts";
 
-export const generateTokenCommand = defineCommand({
-    name: "user token",
-    description: "Generates a new access token for a user.",
-    parameters: ["<username>"],
-    handler: async (context) => {
+export const generateTokenCommand = defineCommand(
+    {
+        name: "user token",
+        description: "Generates a new access token for a user.",
+        parameters: ["<username>"],
+    },
+    async (context) => {
         const { username } = context.parameters;
 
         const user = await retrieveUser(username);
@@ -43,4 +45,4 @@ export const generateTokenCommand = defineCommand({
         );
         console.info(`Access Token: ${chalk.blue(token.data.accessToken)}`);
     },
-});
+);

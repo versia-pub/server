@@ -7,28 +7,30 @@ import chalk from "chalk";
 import { and, eq, isNull } from "drizzle-orm";
 import { renderUnicodeCompact } from "uqr";
 
-export const createUserCommand = defineCommand({
-    name: "user create",
-    description: "Create a new user.",
-    parameters: ["<username>"],
-    flags: {
-        password: {
-            description: "Password for the new user",
-            type: String,
-            alias: "p",
-        },
-        email: {
-            description: "Email for the new user",
-            type: String,
-            alias: "e",
-        },
-        admin: {
-            description: "Make the new user an admin",
-            type: Boolean,
-            alias: "a",
+export const createUserCommand = defineCommand(
+    {
+        name: "user create",
+        description: "Create a new user.",
+        parameters: ["<username>"],
+        flags: {
+            password: {
+                description: "Password for the new user",
+                type: String,
+                alias: "p",
+            },
+            email: {
+                description: "Email for the new user",
+                type: String,
+                alias: "e",
+            },
+            admin: {
+                description: "Make the new user an admin",
+                type: Boolean,
+                alias: "a",
+            },
         },
     },
-    handler: async (context) => {
+    async (context) => {
         const { admin, email, password } = context.flags;
         const { username } = context.parameters;
 
@@ -83,4 +85,4 @@ export const createUserCommand = defineCommand({
             console.info(`\n  ${qrcode.replaceAll("\n", "\n  ")}`);
         }
     },
-});
+);

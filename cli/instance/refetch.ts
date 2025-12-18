@@ -5,11 +5,13 @@ import { Instances } from "@versia-server/kit/tables";
 import chalk from "chalk";
 import { eq } from "drizzle-orm";
 
-export const refetchInstanceCommand = defineCommand({
-    name: "instance refetch",
-    description: "Refetches metadata from remote instances.",
-    parameters: ["<url_or_host>"],
-    handler: async (context) => {
+export const refetchInstanceCommand = defineCommand(
+    {
+        name: "instance refetch",
+        description: "Refetches metadata from remote instances.",
+        parameters: ["<url_or_host>"],
+    },
+    async (context) => {
         const { url_or_host } = context.parameters;
 
         const host = URL.canParse(url_or_host)
@@ -30,4 +32,4 @@ export const refetchInstanceCommand = defineCommand({
             `Refresh job enqueued for ${chalk.gray(instance.data.baseUrl)}.`,
         );
     },
-});
+);

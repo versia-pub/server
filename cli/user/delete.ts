@@ -3,20 +3,23 @@ import confirm from "@inquirer/confirm";
 import chalk from "chalk";
 import { retrieveUser } from "../utils.ts";
 
-export const deleteUserCommand = defineCommand({
-    name: "user delete",
-    alias: "user rm",
-    description: "Delete a user from the database. Can use username or handle.",
-    parameters: ["<username_or_handle>"],
-    flags: {
-        confirm: {
-            description: "Ask for confirmation before deleting the user",
-            type: Boolean,
-            alias: "c",
-            default: true,
+export const deleteUserCommand = defineCommand(
+    {
+        name: "user delete",
+        alias: "user rm",
+        description:
+            "Delete a user from the database. Can use username or handle.",
+        parameters: ["<username_or_handle>"],
+        flags: {
+            confirm: {
+                description: "Ask for confirmation before deleting the user",
+                type: Boolean,
+                alias: "c",
+                default: true,
+            },
         },
     },
-    handler: async (context) => {
+    async (context) => {
         const { confirm: confirmFlag } = context.flags;
         const { username_or_handle } = context.parameters;
 
@@ -56,4 +59,4 @@ export const deleteUserCommand = defineCommand({
             `User ${chalk.gray(user.data.username)} has been deleted.`,
         );
     },
-});
+);
