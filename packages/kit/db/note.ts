@@ -3,7 +3,6 @@ import type {
     Status as StatusSchema,
 } from "@versia/client/schemas";
 import * as VersiaEntities from "@versia/sdk/entities";
-import { FederationRequester } from "@versia/sdk/http";
 import type { NonTextContentFormatSchema } from "@versia/sdk/schemas";
 import { config } from "@versia-server/config";
 import { randomUUIDv7 } from "bun";
@@ -25,7 +24,6 @@ import { mergeAndDeduplicate } from "@/lib.ts";
 import { sanitizedHtmlStrip } from "@/sanitization";
 import { versiaTextToHtml } from "../parsers.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery/queue.ts";
-import { uuid } from "../regex.ts";
 import { db } from "../tables/db.ts";
 import {
     EmojiToNote,
@@ -166,8 +164,24 @@ const findManyNotes = async (
                         : sql`false`.as("liked"),
                 },
             },
-            reply: true,
-            quote: true,
+            reply: {
+                with: {
+                    author: {
+                        with: {
+                            instance: true,
+                        },
+                    },
+                },
+            },
+            quote: {
+                with: {
+                    author: {
+                        with: {
+                            instance: true,
+                        },
+                    },
+                },
+            },
         },
         extras: {
             pinned: userId
@@ -197,19 +211,13 @@ const findManyNotes = async (
     return output.map((post) => ({
         ...post,
         author: transformOutputToUserWithRelations(post.author),
-        mentions: post.mentions.map((mention) => ({
-            ...mention.user,
-            endpoints: mention.user.endpoints,
-        })),
+        mentions: post.mentions.map((mention) => mention.user),
         attachments: post.attachments.map((attachment) => attachment.media),
         emojis: (post.emojis ?? []).map((emoji) => emoji.emoji),
         reblog: post.reblog && {
             ...post.reblog,
             author: transformOutputToUserWithRelations(post.reblog.author),
-            mentions: post.reblog.mentions.map((mention) => ({
-                ...mention.user,
-                endpoints: mention.user.endpoints,
-            })),
+            mentions: post.reblog.mentions.map((mention) => mention.user),
             attachments: post.reblog.attachments.map(
                 (attachment) => attachment.media,
             ),
@@ -236,8 +244,20 @@ type NoteTypeWithRelations = NoteType & {
     attachments: (typeof Media.$type)[];
     reblog: NoteTypeWithoutRecursiveRelations | null;
     emojis: (typeof Emoji.$type)[];
-    reply: NoteType | null;
-    quote: NoteType | null;
+    reply:
+        | (NoteType & {
+              author: InferSelectModel<typeof Users> & {
+                  instance: typeof Instance.$type | null;
+              };
+          })
+        | null;
+    quote:
+        | (NoteType & {
+              author: InferSelectModel<typeof Users> & {
+                  instance: typeof Instance.$type | null;
+              };
+          })
+        | null;
     client: typeof Client.$type | null;
     pinned: boolean;
     reblogged: boolean;
@@ -404,6 +424,17 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         return this.data.id;
     }
 
+    public get reference(): VersiaEntities.Reference {
+        if (this.remote) {
+            const instanceUrl = new URL(
+                this.author.data.instance?.baseUrl || "",
+            );
+            return new VersiaEntities.Reference(this.id, instanceUrl.hostname);
+        }
+
+        return new VersiaEntities.Reference(this.id);
+    }
+
     public async federateToUsers(): Promise<void> {
         const users = await this.getUsersToFederateTo();
 
@@ -489,13 +520,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * If the note is already reblogged, it will return the existing reblog. Also creates a notification for the author of the note.
      * @param reblogger The user reblogging the note
      * @param visibility The visibility of the reblog
-     * @param uri The URI of the reblog, if it is remote
+     * @param remoteId The remote ID of the reblog, if it is from a remote user
      * @returns The reblog object created or the existing reblog
      */
     public async reblog(
         reblogger: User,
         visibility: z.infer<typeof StatusSchema.shape.visibility>,
-        uri?: URL,
+        remoteId?: string,
     ): Promise<Note> {
         const existingReblog = await Note.fromSql(
             and(eq(Notes.authorId, reblogger.id), eq(Notes.reblogId, this.id)),
@@ -515,7 +546,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             sensitive: false,
             updatedAt: new Date(),
             clientId: null,
-            uri: uri?.href,
+            remoteId,
         });
 
         await this.recalculateReblogCount();
@@ -612,10 +643,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      *
      * If the note is already liked, it will return the existing like. Also creates a notification for the author of the note.
      * @param liker The user liking the note
-     * @param uri The URI of the like, if it is remote
+     * @param remoteId The id of the like, if it is remote
      * @returns The like object created or the existing like
      */
-    public async like(liker: User, uri?: URL): Promise<Like> {
+    public async like(liker: User, remoteId?: string): Promise<Like> {
         // Check if the user has already liked the note
         const existingLike = await Like.fromSql(
             and(eq(Likes.likerId, liker.id), eq(Likes.likedId, this.id)),
@@ -629,7 +660,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             id: randomUUIDv7(),
             likerId: liker.id,
             likedId: this.id,
-            uri: uri?.href,
+            remoteId,
         });
 
         await this.recalculateLikeCount();
@@ -904,73 +935,84 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     /**
-     * Resolve a note from a URI
-     * @param uri - The URI of the note to resolve
+     * Resolve a note from a reference
+     * @param reference - The URI of the note to resolve
      * @returns The resolved note
      */
-    public static async resolve(uri: URL): Promise<Note | null> {
+    public static async resolve(
+        reference: VersiaEntities.Reference,
+    ): Promise<Note | null> {
         // Check if note not already in database
-        const foundNote = await Note.fromSql(eq(Notes.uri, uri.href));
+        if (
+            !reference.domain ||
+            reference.domain === config.http.base_url.hostname
+        ) {
+            return await Note.fromId(reference.id);
+        }
+
+        const instance = await Instance.resolve(reference.domain);
+
+        if (!instance) {
+            return null;
+        }
+
+        const foundNote = await Note.fromSql(
+            and(
+                eq(Notes.remoteId, reference.id),
+                eq(
+                    Notes.authorId,
+                    sql`(
+                    SELECT "Users".id FROM "Users"
+                    WHERE "Users".instanceId = ${instance.id}
+                    LIMIT 1
+                )`,
+                ),
+            ),
+        );
 
         if (foundNote) {
             return foundNote;
         }
 
-        // Check if URI is of a local note
-        if (uri.origin === config.http.base_url.origin) {
-            const noteUuid = uri.pathname.match(uuid);
-
-            if (!noteUuid?.[0]) {
-                throw new Error(
-                    `URI ${uri} is of a local note, but it could not be parsed`,
-                );
-            }
-
-            return await Note.fromId(noteUuid[0]);
-        }
-
-        return Note.fromVersia(uri);
+        return Note.fromVersia(reference);
     }
 
     /**
      * Takes a Versia Note representation, and serializes it to the database.
      *
      * If the note already exists, it will update it.
-     * @param versiaNote - URL or Versia Note representation
+     * @param versiaNote - Reference or Versia Note representation
      */
     public static async fromVersia(
-        versiaNote: VersiaEntities.Note | URL,
+        versiaNote: VersiaEntities.Note | VersiaEntities.Reference,
     ): Promise<Note> {
-        if (versiaNote instanceof URL) {
+        if (versiaNote instanceof VersiaEntities.Reference) {
             // No bridge support for notes yet
-            const note = await new FederationRequester(
-                config.instance.keys.private,
-                config.http.base_url,
-            ).fetchEntity(versiaNote, VersiaEntities.Note);
+            const note = await Instance.federationRequester.fetchEntity(
+                versiaNote,
+                VersiaEntities.Note,
+            );
 
             return Note.fromVersia(note);
         }
 
-        const {
-            author: authorUrl,
-            created_at,
-            uri,
-            extensions,
-            group,
-            is_sensitive,
-            mentions: noteMentions,
-            quotes,
-            replies_to,
-            subject,
-        } = versiaNote.data;
-        const instance = await Instance.resolve(new URL(authorUrl));
-        const author = await User.resolve(new URL(authorUrl));
+        const { created_at, extensions, group, id, is_sensitive, subject } =
+            versiaNote.data;
+
+        if (!versiaNote.author.domain) {
+            throw new Error("Entity author domain is missing");
+        }
+
+        const instance = await Instance.resolve(versiaNote.author.domain);
+        const author = await User.resolve(versiaNote.author);
 
         if (!author) {
             throw new Error("Entity author could not be resolved");
         }
 
-        const existingNote = await Note.fromSql(eq(Notes.uri, uri));
+        const existingNote = await Note.fromSql(
+            and(eq(Notes.remoteId, id), eq(Notes.authorId, author.id)),
+        );
 
         const note =
             existingNote ??
@@ -978,7 +1020,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 id: randomUUIDv7(),
                 authorId: author.id,
                 visibility: "public",
-                uri,
+                remoteId: id,
                 createdAt: new Date(created_at),
             }));
 
@@ -999,9 +1041,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const mentions = (
             await Promise.all(
-                noteMentions?.map((mention) =>
-                    User.resolve(new URL(mention)),
-                ) ?? [],
+                versiaNote.mentions.map((m) => User.resolve(m)) ?? [],
             )
         ).filter((m) => m !== null);
 
@@ -1011,10 +1051,12 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 ? "direct"
                 : (group as "public" | "followers" | "unlisted");
 
-        const reply = replies_to
-            ? await Note.resolve(new URL(replies_to))
+        const reply = versiaNote.repliesTo
+            ? await Note.resolve(versiaNote.repliesTo)
             : null;
-        const quote = quotes ? await Note.resolve(new URL(quotes)) : null;
+        const quote = versiaNote.quotes
+            ? await Note.resolve(versiaNote.quotes)
+            : null;
         const spoiler = subject ? await sanitizedHtmlStrip(subject) : undefined;
 
         await note.update({
@@ -1169,9 +1211,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     mention.username,
                     mention.instance?.baseUrl,
                 ),
-                url: User.getUri(
-                    mention.id,
-                    mention.uri ? new URL(mention.uri) : null,
+                url: new URL(
+                    `/@${mention.username}${
+                        mention.instance ? `@${mention.instance.baseUrl}` : ""
+                    }`,
+                    config.http.base_url,
                 ).toString(),
                 username: mention.username,
             })),
@@ -1191,9 +1235,9 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             sensitive: data.sensitive,
             spoiler_text: data.spoilerText,
             tags: [],
-            uri: data.uri || this.getUri().toString(),
+            uri: this.getUri().toString(),
             visibility: data.visibility,
-            url: data.uri || this.getMastoUri().toString(),
+            url: this.getMastoUri().toString(),
             bookmarked: false,
             quote: data.quotingId
                 ? ((await Note.fromId(data.quotingId, userFetching?.id).then(
@@ -1207,9 +1251,14 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     public getUri(): URL {
-        return this.data.uri
-            ? new URL(this.data.uri)
-            : new URL(`/notes/${this.id}`, config.http.base_url);
+        const domain = this.author.data.instance?.baseUrl
+            ? new URL(`https://${this.author.data.instance.baseUrl}`)
+            : config.http.base_url;
+
+        return new URL(
+            `/.versia/v0.6/entities/Note/${this.id}`,
+            `https://${domain}`,
+        );
     }
 
     /**
@@ -1224,14 +1273,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     public deleteToVersia(): VersiaEntities.Delete {
-        const id = crypto.randomUUID();
-
         return new VersiaEntities.Delete({
             type: "Delete",
-            id,
-            author: this.author.uri.href,
+            author: this.author.id,
             deleted_type: "Note",
-            deleted: this.getUri().href,
+            deleted: this.id,
             created_at: new Date().toISOString(),
         });
     }
@@ -1242,12 +1288,24 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      */
     public toVersia(): VersiaEntities.Note {
         const status = this.data;
+
+        let quoteReference = status.quote?.id ?? null;
+
+        if (quoteReference && status.quote?.author.instance) {
+            quoteReference = `${status.quote.author.instance.baseUrl}:${status.quote.remoteId}`;
+        }
+
+        let replyReference = status.reply?.id ?? null;
+
+        if (replyReference && status.reply?.author.instance) {
+            replyReference = `${status.reply.author.instance.baseUrl}:${status.reply.remoteId}`;
+        }
+
         return new VersiaEntities.Note({
             type: "Note",
             created_at: status.createdAt.toISOString(),
             id: status.id,
-            author: this.author.uri.href,
-            uri: this.getUri().href,
+            author: this.author.id,
             content: {
                 "text/html": {
                     content: status.content,
@@ -1258,20 +1316,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     remote: false,
                 },
             },
-            collections: {
-                replies: new URL(
-                    `/notes/${status.id}/replies`,
-                    config.http.base_url,
-                ).href,
-                quotes: new URL(
-                    `/notes/${status.id}/quotes`,
-                    config.http.base_url,
-                ).href,
-                "pub.versia:share/Shares": new URL(
-                    `/notes/${status.id}/shares`,
-                    config.http.base_url,
-                ).href,
-            },
+            previews: [],
             attachments: status.attachments.map(
                 (attachment) =>
                     new Media(attachment).toVersia().data as z.infer<
@@ -1279,25 +1324,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     >,
             ),
             is_sensitive: status.sensitive,
-            mentions: status.mentions.map(
-                (mention) =>
-                    User.getUri(
-                        mention.id,
-                        mention.uri ? new URL(mention.uri) : null,
-                    ).href,
+            mentions: status.mentions.map((mention) =>
+                mention.instance
+                    ? `${mention.instance.baseUrl}:${mention.id}`
+                    : mention.id,
             ),
-            quotes: status.quote
-                ? status.quote.uri
-                    ? new URL(status.quote.uri).href
-                    : new URL(`/notes/${status.quote.id}`, config.http.base_url)
-                          .href
-                : null,
-            replies_to: status.reply
-                ? status.reply.uri
-                    ? new URL(status.reply.uri).href
-                    : new URL(`/notes/${status.reply.id}`, config.http.base_url)
-                          .href
-                : null,
+            quotes: quoteReference,
+            replies_to: replyReference,
             subject: status.spoilerText,
             // TODO: Refactor as part of groups
             group: status.visibility === "public" ? "public" : "followers",
@@ -1319,26 +1352,22 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         return new VersiaEntities.Share({
             type: "pub.versia:share/Share",
-            id: crypto.randomUUID(),
-            author: this.author.uri.href,
-            uri: new URL(`/shares/${this.id}`, config.http.base_url).href,
+            author: this.author.id,
+            id: this.id,
             created_at: new Date().toISOString(),
-            shared: new Note(this.data.reblog as NoteTypeWithRelations).getUri()
-                .href,
+            shared: this.data.reblog.author.instance
+                ? `${this.data.reblog.author.instance.baseUrl}:${this.data.reblog.id}`
+                : this.data.reblog.id,
         });
     }
 
     public toVersiaUnshare(): VersiaEntities.Delete {
         return new VersiaEntities.Delete({
             type: "Delete",
-            id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
-            author: User.getUri(
-                this.data.authorId,
-                this.data.author.uri ? new URL(this.data.author.uri) : null,
-            ).href,
+            author: this.author.id,
             deleted_type: "pub.versia:share/Share",
-            deleted: new URL(`/shares/${this.id}`, config.http.base_url).href,
+            deleted: this.id,
         });
     }
 

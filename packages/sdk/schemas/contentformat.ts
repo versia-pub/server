@@ -2,26 +2,6 @@ import { types } from "mime-types";
 import { z } from "zod";
 import { f64, u64 } from "./common.ts";
 
-const hashSizes = {
-    sha256: 64,
-    sha512: 128,
-    "sha3-256": 64,
-    "sha3-512": 128,
-    "blake2b-256": 64,
-    "blake2b-512": 128,
-    "blake3-256": 64,
-    "blake3-512": 128,
-    md5: 32,
-    sha1: 40,
-    sha224: 56,
-    sha384: 96,
-    "sha3-224": 56,
-    "sha3-384": 96,
-    "blake2s-256": 64,
-    "blake2s-512": 128,
-    "blake3-224": 56,
-    "blake3-384": 96,
-};
 const allMimeTypes = Object.values(types) as [string, ...string[]];
 const textMimeTypes = Object.values(types).filter((v) =>
     v.startsWith("text/"),
@@ -46,16 +26,7 @@ export const ContentFormatSchema = z.partialRecord(
         remote: z.boolean(),
         description: z.string().nullish(),
         size: u64.nullish(),
-        hash: z
-            .strictObject(
-                Object.fromEntries(
-                    Object.entries(hashSizes).map(([k, v]) => [
-                        k,
-                        z.string().length(v).nullish(),
-                    ]),
-                ),
-            )
-            .nullish(),
+        hash: z.hash("sha256").nullish(),
         thumbhash: z.string().nullish(),
         width: u64.nullish(),
         height: u64.nullish(),

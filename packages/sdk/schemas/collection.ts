@@ -1,16 +1,13 @@
 import { z } from "zod";
-import { u64, url } from "./common.ts";
+import { u64 } from "./common.ts";
+import { ReferenceSchema } from "./entity.ts";
 
 export const CollectionSchema = z.strictObject({
-    author: url.nullable(),
-    first: url,
-    last: url,
+    author: ReferenceSchema.nullable(),
     total: u64,
-    next: url.nullable(),
-    previous: url.nullable(),
     items: z.array(z.any()),
 });
 
 export const URICollectionSchema = CollectionSchema.extend({
-    items: z.array(url),
+    items: z.array(ReferenceSchema),
 });

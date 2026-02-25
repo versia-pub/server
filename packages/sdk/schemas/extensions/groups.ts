@@ -1,41 +1,38 @@
 import { z } from "zod";
-import { url } from "../common.ts";
 import { TextContentFormatSchema } from "../contentformat.ts";
-import { EntitySchema } from "../entity.ts";
+import {
+    EntitySchema,
+    ReferenceSchema,
+    TransientEntitySchema,
+} from "../entity.ts";
 
 export const GroupSchema = EntitySchema.extend({
     type: z.literal("pub.versia:groups/Group"),
     name: TextContentFormatSchema.nullish(),
     description: TextContentFormatSchema.nullish(),
-    open: z.boolean().nullish(),
-    members: url,
-    notes: url.nullish(),
+    open: z.boolean(),
 });
 
-export const GroupSubscribeSchema = EntitySchema.extend({
+export const GroupSubscribeSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:groups/Subscribe"),
-    uri: z.null().optional(),
-    subscriber: url,
-    group: url,
+    subscriber: ReferenceSchema,
+    group: ReferenceSchema,
 });
 
-export const GroupUnsubscribeSchema = EntitySchema.extend({
+export const GroupUnsubscribeSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:groups/Unsubscribe"),
-    uri: z.null().optional(),
-    subscriber: url,
-    group: url,
+    subscriber: ReferenceSchema,
+    group: ReferenceSchema,
 });
 
-export const GroupSubscribeAcceptSchema = EntitySchema.extend({
+export const GroupSubscribeAcceptSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:groups/SubscribeAccept"),
-    uri: z.null().optional(),
-    subscriber: url,
-    group: url,
+    subscriber: ReferenceSchema,
+    group: ReferenceSchema,
 });
 
-export const GroupSubscribeRejectSchema = EntitySchema.extend({
+export const GroupSubscribeRejectSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:groups/SubscribeReject"),
-    uri: z.null().optional(),
-    subscriber: url,
-    group: url,
+    subscriber: ReferenceSchema,
+    group: ReferenceSchema,
 });

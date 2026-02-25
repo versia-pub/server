@@ -29,6 +29,7 @@ export interface ApiRouteExports {
 }
 
 export type KnownEntity =
+    | VersiaEntities.Entity
     | VersiaEntities.Note
     | VersiaEntities.InstanceMetadata
     | VersiaEntities.User

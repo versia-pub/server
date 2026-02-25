@@ -1,31 +1,26 @@
 import { z } from "zod";
-import { url } from "./common.ts";
-import { EntitySchema } from "./entity.ts";
+import { ReferenceSchema, TransientEntitySchema } from "./entity.ts";
 
-export const FollowSchema = EntitySchema.extend({
+export const FollowSchema = TransientEntitySchema.extend({
     type: z.literal("Follow"),
-    uri: z.null().optional(),
-    author: url,
-    followee: url,
+    author: ReferenceSchema,
+    followee: ReferenceSchema,
 });
 
-export const FollowAcceptSchema = EntitySchema.extend({
+export const FollowAcceptSchema = TransientEntitySchema.extend({
     type: z.literal("FollowAccept"),
-    uri: z.null().optional(),
-    author: url,
-    follower: url,
+    author: ReferenceSchema,
+    follower: ReferenceSchema,
 });
 
-export const FollowRejectSchema = EntitySchema.extend({
+export const FollowRejectSchema = TransientEntitySchema.extend({
     type: z.literal("FollowReject"),
-    uri: z.null().optional(),
-    author: url,
-    follower: url,
+    author: ReferenceSchema,
+    follower: ReferenceSchema,
 });
 
-export const UnfollowSchema = EntitySchema.extend({
+export const UnfollowSchema = TransientEntitySchema.extend({
     type: z.literal("Unfollow"),
-    uri: z.null().optional(),
-    author: url,
-    followee: url,
+    author: ReferenceSchema,
+    followee: ReferenceSchema,
 });

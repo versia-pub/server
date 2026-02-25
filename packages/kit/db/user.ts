@@ -4,15 +4,11 @@ import type {
     RolePermission,
     Source,
 } from "@versia/client/schemas";
-import { sign } from "@versia/sdk/crypto";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { FederationRequester } from "@versia/sdk/http";
 import type { ImageContentFormatSchema } from "@versia/sdk/schemas";
 import { config, ProxiableUrl } from "@versia-server/config";
-import {
-    federationDeliveryLogger,
-    federationResolversLogger,
-} from "@versia-server/logging";
+import { federationDeliveryLogger } from "@versia-server/logging";
 import { password as bunPassword, randomUUIDv7 } from "bun";
 import chalk from "chalk";
 import {
@@ -33,10 +29,9 @@ import { htmlToText } from "html-to-text";
 import type { z } from "zod";
 import { getBestContentType } from "@/content_types";
 import { randomString } from "@/math";
-import type { HttpVerb, KnownEntity } from "~/types/api.ts";
+import type { KnownEntity } from "~/types/api.ts";
 import { DeliveryJobType, deliveryQueue } from "../queues/delivery/queue.ts";
 import { PushJobType, pushQueue } from "../queues/push/queue.ts";
-import { uuid } from "../regex.ts";
 import { db } from "../tables/db.ts";
 import {
     EmojiToUser,
@@ -79,7 +74,7 @@ export const userRelations = {
 
 // TODO: Remove this function and use what drizzle outputs directly instead of transforming it
 export const transformOutputToUserWithRelations = (
-    user: Omit<InferSelectModel<typeof Users>, "endpoints"> & {
+    user: InferSelectModel<typeof Users> & {
         followerCount: unknown;
         followingCount: unknown;
         statusCount: unknown;
@@ -96,7 +91,6 @@ export const transformOutputToUserWithRelations = (
             roleId: string;
             role?: typeof Role.$type;
         }[];
-        endpoints: unknown;
     },
 ): typeof User.$type => {
     return {
@@ -104,17 +98,6 @@ export const transformOutputToUserWithRelations = (
         followerCount: Number(user.followerCount),
         followingCount: Number(user.followingCount),
         statusCount: Number(user.statusCount),
-        endpoints:
-            user.endpoints ??
-            ({} as Partial<{
-                dislikes: string;
-                featured: string;
-                likes: string;
-                followers: string;
-                following: string;
-                inbox: string;
-                outbox: string;
-            }>),
         emojis: user.emojis.map(
             (emoji) =>
                 (emoji as unknown as Record<string, object>)
@@ -239,14 +222,26 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return !this.local;
     }
 
-    public get uri(): URL {
-        return this.data.uri
-            ? new URL(this.data.uri)
-            : new URL(`/users/${this.data.id}`, config.http.base_url);
+    public get reference(): VersiaEntities.Reference {
+        if (this.local) {
+            return new VersiaEntities.Reference(this.id);
+        }
+
+        return new VersiaEntities.Reference(
+            this.data.remoteId as string,
+            (this.data.instance as typeof Instance.$type).baseUrl,
+        );
     }
 
-    public static getUri(id: string, uri: URL | null): URL {
-        return uri ? uri : new URL(`/users/${id}`, config.http.base_url);
+    public get uri(): URL {
+        const domain = this.data.instance?.baseUrl
+            ? new URL(`https://${this.data.instance.baseUrl}`)
+            : config.http.base_url;
+
+        return new URL(
+            `/.versia/v0.6/entities/User/${this.id}`,
+            `https://${domain}`,
+        );
     }
 
     public hasPermission(permission: RolePermission): boolean {
@@ -335,13 +330,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     private unfollowToVersia(followee: User): VersiaEntities.Unfollow {
-        const id = crypto.randomUUID();
         return new VersiaEntities.Unfollow({
             type: "Unfollow",
-            id,
-            author: this.uri.href,
+            author: this.id,
             created_at: new Date().toISOString(),
-            followee: followee.uri.href,
+            followee: followee.data.instance
+                ? `${followee.data.instance.baseUrl}:${followee.id}`
+                : followee.id,
         });
     }
 
@@ -359,10 +354,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const entity = new VersiaEntities.FollowAccept({
             type: "FollowAccept",
-            id: crypto.randomUUID(),
-            author: this.uri.href,
+            author: this.id,
             created_at: new Date().toISOString(),
-            follower: follower.uri.href,
+            follower: follower.data.instance
+                ? `${follower.data.instance.baseUrl}:${follower.id}`
+                : follower.id,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -383,10 +379,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const entity = new VersiaEntities.FollowReject({
             type: "FollowReject",
-            id: crypto.randomUUID(),
-            author: this.uri.href,
+            author: this.id,
             created_at: new Date().toISOString(),
-            follower: follower.uri.href,
+            follower: follower.data.instance
+                ? `${follower.data.instance.baseUrl}:${follower.id}`
+                : follower.id,
         });
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
@@ -394,41 +391,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             recipientId: follower.id,
             senderId: this.id,
         });
-    }
-
-    /**
-     * Signs a Versia entity with that user's private key
-     *
-     * @param entity Entity to sign
-     * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
-     * @param signatureMethod HTTP method to embed in signature (default: POST)
-     * @returns The signed string and headers to send with the request
-     */
-    public async sign(
-        entity: KnownEntity | VersiaEntities.Collection,
-        signatureUrl: URL,
-        signatureMethod: HttpVerb = "POST",
-    ): Promise<{
-        headers: Headers;
-    }> {
-        const privateKey = await crypto.subtle.importKey(
-            "pkcs8",
-            Buffer.from(this.data.privateKey ?? "", "base64"),
-            "Ed25519",
-            false,
-            ["sign"],
-        );
-
-        const { headers } = await sign(
-            privateKey,
-            this.uri,
-            new Request(signatureUrl, {
-                method: signatureMethod,
-                body: JSON.stringify(entity),
-            }),
-        );
-
-        return { headers };
     }
 
     /**
@@ -708,54 +670,41 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * Takes a Versia User representation, and serializes it to the database.
      *
      * If the user already exists, it will update it.
-     * @param versiaUser URL or Versia User representation
+     * @param versiaUser Reference or Versia User representation
      */
     public static async fromVersia(
-        versiaUser: VersiaEntities.User | URL,
+        versiaUser: VersiaEntities.User | VersiaEntities.Reference,
+        domain: string,
     ): Promise<User> {
-        if (versiaUser instanceof URL) {
-            let uri = versiaUser;
-            const instance = await Instance.resolve(uri);
-
-            if (instance.data.protocol === "activitypub") {
-                if (!config.federation.bridge) {
-                    throw new Error("ActivityPub bridge is not enabled");
-                }
-
-                uri = new URL(
-                    `/apbridge/versia/query?${new URLSearchParams({
-                        user_url: uri.href,
-                    })}`,
-                    config.federation.bridge.url,
+        if (versiaUser instanceof VersiaEntities.Reference) {
+            if (!versiaUser.domain) {
+                throw new Error(
+                    "Cannot fetch Versia user from reference without domain",
                 );
             }
 
-            const user = await new FederationRequester(
-                config.instance.keys.private,
-                config.http.base_url,
-            ).fetchEntity(uri, VersiaEntities.User);
+            const user = await Instance.federationRequester.fetchEntity(
+                versiaUser,
+                VersiaEntities.User,
+            );
 
-            return User.fromVersia(user);
+            return User.fromVersia(user, versiaUser.domain);
         }
 
         const {
             username,
-            inbox,
-            avatar,
-            header,
             display_name,
+            id,
             fields,
-            collections,
             created_at,
             manually_approves_followers,
             bio,
-            public_key,
-            uri,
             extensions,
         } = versiaUser.data;
-        const instance = await Instance.resolve(new URL(versiaUser.data.uri));
+
+        const instance = await Instance.resolve(domain);
         const existingUser = await User.fromSql(
-            eq(Users.uri, versiaUser.data.uri),
+            and(eq(Users.instanceId, instance.id), eq(Users.remoteId, id)),
         );
 
         const user =
@@ -763,60 +712,50 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             (await User.insert({
                 username,
                 id: randomUUIDv7(),
-                publicKey: public_key.key,
-                uri,
                 instanceId: instance.id,
+                remoteId: id,
             }));
 
         // Avatars and headers are stored in a separate table, so we need to update them separately
         let userAvatar: Media | null = null;
         let userHeader: Media | null = null;
 
-        if (avatar) {
+        if (versiaUser.avatar) {
             if (user.avatar) {
                 userAvatar = new Media(
                     await user.avatar.update({
-                        content: avatar,
+                        content: versiaUser.avatar.data,
                     }),
                 );
             } else {
                 userAvatar = await Media.insert({
                     id: randomUUIDv7(),
-                    content: avatar,
+                    content: versiaUser.avatar.data,
                 });
             }
         }
 
-        if (header) {
+        if (versiaUser.header) {
             if (user.header) {
                 userHeader = new Media(
                     await user.header.update({
-                        content: header,
+                        content: versiaUser.header.data,
                     }),
                 );
             } else {
                 userHeader = await Media.insert({
                     id: randomUUIDv7(),
-                    content: header,
+                    content: versiaUser.header.data,
                 });
             }
         }
 
         await user.update({
             createdAt: new Date(created_at),
-            endpoints: {
-                inbox,
-                outbox: collections.outbox,
-                followers: collections.followers,
-                following: collections.following,
-                featured: collections.featured,
-                likes: collections["pub.versia:likes/Likes"] ?? undefined,
-                dislikes: collections["pub.versia:likes/Dislikes"] ?? undefined,
-            },
-            isLocked: manually_approves_followers ?? false,
+            isLocked: manually_approves_followers,
             avatarId: userAvatar?.id,
             headerId: userHeader?.id,
-            fields: fields ?? [],
+            fields,
             displayName: display_name,
             note: getBestContentType(bio).content,
         });
@@ -847,31 +786,39 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return user;
     }
 
-    public static async resolve(uri: URL): Promise<User | null> {
-        federationResolversLogger.debug`Resolving user ${chalk.gray(uri)}`;
+    public static async resolve(
+        reference: VersiaEntities.Reference,
+    ): Promise<User> {
         // Check if user not already in database
-        const foundUser = await User.fromSql(eq(Users.uri, uri.href));
+        if (
+            !reference.domain ||
+            reference.domain === config.http.base_url.hostname
+        ) {
+            const user = await User.fromId(reference.id);
+
+            if (!user) {
+                throw new Error(
+                    "Failed to resolve user reference: User not found",
+                );
+            }
+
+            return user;
+        }
+
+        const instance = await Instance.resolve(reference.domain);
+
+        const foundUser = await User.fromSql(
+            and(
+                eq(Users.instanceId, instance.id),
+                eq(Users.remoteId, reference.id),
+            ),
+        );
 
         if (foundUser) {
             return foundUser;
         }
 
-        // Check if URI is of a local user
-        if (uri.origin === config.http.base_url.origin) {
-            const userUuid = uri.href.match(uuid);
-
-            if (!userUuid?.[0]) {
-                throw new Error(
-                    `URI ${uri} is of a local user, but it could not be parsed`,
-                );
-            }
-
-            return await User.fromId(userUuid[0]);
-        }
-
-        federationResolversLogger.debug`User not found in database, fetching from remote`;
-
-        return User.fromVersia(uri);
+        return User.fromVersia(reference, reference.domain);
     }
 
     /**
@@ -890,31 +837,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return this.avatar?.getUrl();
     }
 
-    public static async generateKeys(): Promise<{
-        private_key: string;
-        public_key: string;
-    }> {
-        const keys = await crypto.subtle.generateKey("Ed25519", true, [
-            "sign",
-            "verify",
-        ]);
-
-        const privateKey = Buffer.from(
-            await crypto.subtle.exportKey("pkcs8", keys.privateKey),
-        ).toString("base64");
-
-        const publicKey = Buffer.from(
-            await crypto.subtle.exportKey("spki", keys.publicKey),
-        ).toString("base64");
-
-        // Add header, footer and newlines later on
-        // These keys are base64 encrypted
-        return {
-            private_key: privateKey,
-            public_key: publicKey,
-        };
-    }
-
     public static async register(
         username: string,
         options?: Partial<{
@@ -924,8 +846,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             isAdmin: boolean;
         }>,
     ): Promise<User> {
-        const keys = await User.generateKeys();
-
         const user = await User.insert({
             id: randomUUIDv7(),
             username,
@@ -937,9 +857,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             note: "",
             avatarId: options?.avatar?.id,
             isAdmin: options?.isAdmin,
-            publicKey: keys.public_key,
             fields: [],
-            privateKey: keys.private_key,
             updatedAt: new Date(),
             source: {
                 language: "en",
@@ -999,11 +917,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 newUser.avatar ||
                 newUser.header ||
                 newUser.fields ||
-                newUser.publicKey ||
                 newUser.isAdmin ||
                 newUser.isBot ||
                 newUser.isLocked ||
-                newUser.endpoints ||
                 newUser.isDiscoverable ||
                 newUser.isIndexable)
         ) {
@@ -1011,20 +927,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         return updated.data;
-    }
-
-    public get federationRequester(): Promise<FederationRequester> {
-        return crypto.subtle
-            .importKey(
-                "pkcs8",
-                Buffer.from(this.data.privateKey ?? "", "base64"),
-                "Ed25519",
-                false,
-                ["sign"],
-            )
-            .then((k) => {
-                return new FederationRequester(k, this.uri);
-            });
     }
 
     /**
@@ -1076,17 +978,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         entity: KnownEntity,
         user: User,
     ): Promise<{ ok: boolean }> {
-        const inbox = user.data.instance?.inbox || user.data.endpoints?.inbox;
-
-        if (!inbox) {
-            throw new Error(
-                `User ${chalk.gray(user.uri)} does not have an inbox endpoint`,
-            );
+        if (!user.data.instance) {
+            throw new Error("Cannot federate to a local user");
         }
 
         try {
-            await (await this.federationRequester).postEntity(
-                new URL(inbox),
+            await Instance.federationRequester.postEntity(
+                user.data.instance.baseUrl,
                 entity,
             );
         } catch (e) {
@@ -1110,9 +1008,12 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             display_name: user.displayName || user.username,
             note: user.note,
             uri: this.uri.href,
-            url:
-                user.uri ||
-                new URL(`/@${user.username}`, config.http.base_url).href,
+            url: new URL(
+                `/@${user.username}${
+                    user.instanceId ? `@${user.instance?.baseUrl}` : ""
+                }`,
+                config.http.base_url,
+            ).href,
             avatar: this.getAvatarUrl().proxied,
             header: this.getHeaderUrl()?.proxied ?? "",
             locked: user.isLocked,
@@ -1166,7 +1067,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         return new VersiaEntities.User({
             id: user.id,
             type: "User",
-            uri: this.uri.href,
             bio: {
                 "text/html": {
                     content: user.note,
@@ -1178,34 +1078,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 },
             },
             created_at: user.createdAt.toISOString(),
-            collections: {
-                featured: new URL(
-                    `/users/${user.id}/featured`,
-                    config.http.base_url,
-                ).href,
-                "pub.versia:likes/Likes": new URL(
-                    `/users/${user.id}/likes`,
-                    config.http.base_url,
-                ).href,
-                "pub.versia:likes/Dislikes": new URL(
-                    `/users/${user.id}/dislikes`,
-                    config.http.base_url,
-                ).href,
-                followers: new URL(
-                    `/users/${user.id}/followers`,
-                    config.http.base_url,
-                ).href,
-                following: new URL(
-                    `/users/${user.id}/following`,
-                    config.http.base_url,
-                ).href,
-                outbox: new URL(
-                    `/users/${user.id}/outbox`,
-                    config.http.base_url,
-                ).href,
-            },
-            inbox: new URL(`/users/${user.id}/inbox`, config.http.base_url)
-                .href,
             indexable: this.data.isIndexable,
             username: user.username,
             manually_approves_followers: this.data.isLocked,
@@ -1217,11 +1089,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             >,
             display_name: user.displayName,
             fields: user.fields,
-            public_key: {
-                actor: new URL(`/users/${user.id}`, config.http.base_url).href,
-                key: user.publicKey,
-                algorithm: "ed25519",
-            },
             extensions: {
                 "pub.versia:custom_emojis": {
                     emojis: user.emojis.map((emoji) =>

@@ -199,7 +199,12 @@ export class InboxProcessor {
                 .on(VersiaEntities.Delete, (d) =>
                     InboxProcessor.processDelete(d),
                 )
-                .on(VersiaEntities.User, (u) => InboxProcessor.processUser(u))
+                .on(VersiaEntities.User, (u) =>
+                    InboxProcessor.processUser(
+                        u,
+                        this.sender?.instance.data.baseUrl ?? "",
+                    ),
+                )
                 .on(VersiaEntities.Share, (s) => InboxProcessor.processShare(s))
                 .on(VersiaEntities.Reaction, (r) =>
                     InboxProcessor.processReaction(r),
@@ -221,8 +226,8 @@ export class InboxProcessor {
     private static async processReaction(
         reaction: VersiaEntities.Reaction,
     ): Promise<void> {
-        const author = await User.resolve(new URL(reaction.data.author));
-        const note = await Note.resolve(new URL(reaction.data.object));
+        const author = await User.resolve(reaction.author);
+        const note = await Note.resolve(reaction.object);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -264,9 +269,13 @@ export class InboxProcessor {
      * Handles User entity processing.
      *
      * @param {VersiaUser} user - The User entity to process.
+     * @param {string} domain - The domain of the user.
      * @returns {Promise<void>}
      */
-    private static async processUser(user: VersiaEntities.User): Promise<void> {
+    private static async processUser(
+        user: VersiaEntities.User,
+        domain: string,
+    ): Promise<void> {
         if (
             config.validation.filters.username.some((filter) =>
                 filter.test(user.data.username),
@@ -294,7 +303,7 @@ export class InboxProcessor {
             return;
         }
 
-        await User.fromVersia(user);
+        await User.fromVersia(user, domain);
     }
 
     /**
@@ -306,8 +315,8 @@ export class InboxProcessor {
     private static async processFollowRequest(
         follow: VersiaEntities.Follow,
     ): Promise<void> {
-        const author = await User.resolve(new URL(follow.data.author));
-        const followee = await User.resolve(new URL(follow.data.followee));
+        const author = await User.resolve(follow.author);
+        const followee = await User.resolve(follow.followee);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -354,10 +363,8 @@ export class InboxProcessor {
     private static async processFollowAccept(
         followAccept: VersiaEntities.FollowAccept,
     ): Promise<void> {
-        const author = await User.resolve(new URL(followAccept.data.author));
-        const follower = await User.resolve(
-            new URL(followAccept.data.follower),
-        );
+        const author = await User.resolve(followAccept.author);
+        const follower = await User.resolve(followAccept.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -391,10 +398,8 @@ export class InboxProcessor {
     private static async processFollowReject(
         followReject: VersiaEntities.FollowReject,
     ): Promise<void> {
-        const author = await User.resolve(new URL(followReject.data.author));
-        const follower = await User.resolve(
-            new URL(followReject.data.follower),
-        );
+        const author = await User.resolve(followReject.author);
+        const follower = await User.resolve(followReject.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -428,8 +433,8 @@ export class InboxProcessor {
     private static async processShare(
         share: VersiaEntities.Share,
     ): Promise<void> {
-        const author = await User.resolve(new URL(share.data.author));
-        const sharedNote = await Note.resolve(new URL(share.data.shared));
+        const author = await User.resolve(share.author);
+        const sharedNote = await Note.resolve(share.shared);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -439,7 +444,7 @@ export class InboxProcessor {
             throw new ApiError(404, "Shared Note not found");
         }
 
-        await sharedNote.reblog(author, "public", new URL(share.data.uri));
+        await sharedNote.reblog(author, "public", share.data.id);
     }
 
     /**
@@ -451,17 +456,15 @@ export class InboxProcessor {
     public static async processDelete(
         delete_: VersiaEntities.Delete,
     ): Promise<void> {
-        const toDelete = delete_.data.deleted;
+        const toDelete = delete_.deleted;
 
-        const author = delete_.data.author
-            ? await User.resolve(new URL(delete_.data.author))
-            : null;
+        const author = await User.resolve(delete_.author);
 
         switch (delete_.data.deleted_type) {
             case "Note": {
                 const note = await Note.fromSql(
-                    eq(Notes.uri, toDelete),
-                    author ? eq(Notes.authorId, author.id) : undefined,
+                    eq(Notes.remoteId, toDelete.id),
+                    eq(Notes.authorId, author.id),
                 );
 
                 if (!note) {
@@ -475,7 +478,7 @@ export class InboxProcessor {
                 return;
             }
             case "User": {
-                const userToDelete = await User.resolve(new URL(toDelete));
+                const userToDelete = await User.resolve(toDelete);
 
                 if (!userToDelete) {
                     throw new ApiError(404, "User to delete not found");
@@ -490,8 +493,8 @@ export class InboxProcessor {
             }
             case "pub.versia:likes/Like": {
                 const like = await Like.fromSql(
-                    eq(Likes.uri, toDelete),
-                    author ? eq(Likes.likerId, author.id) : undefined,
+                    eq(Likes.remoteId, toDelete.id),
+                    eq(Likes.likerId, author.id),
                 );
 
                 if (!like) {
@@ -525,7 +528,10 @@ export class InboxProcessor {
                 }
 
                 const reblog = await Note.fromSql(
-                    and(eq(Notes.uri, toDelete), eq(Notes.authorId, author.id)),
+                    and(
+                        eq(Notes.remoteId, toDelete.id),
+                        eq(Notes.authorId, author.id),
+                    ),
                 );
 
                 if (!reblog) {
@@ -568,8 +574,8 @@ export class InboxProcessor {
     private static async processLikeRequest(
         like: VersiaEntities.Like,
     ): Promise<void> {
-        const author = await User.resolve(new URL(like.data.author));
-        const likedNote = await Note.resolve(new URL(like.data.liked));
+        const author = await User.resolve(like.author);
+        const likedNote = await Note.resolve(like.liked);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -579,7 +585,7 @@ export class InboxProcessor {
             throw new ApiError(404, "Liked Note not found");
         }
 
-        await likedNote.like(author, new URL(like.data.uri));
+        await likedNote.like(author, like.data.id);
     }
 
     /**

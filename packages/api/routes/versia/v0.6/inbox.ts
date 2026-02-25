@@ -1,13 +1,13 @@
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
-import { InboxJobType, inboxQueue } from "@versia-server/kit/queues/inbox";
 import { describeRoute, validator } from "hono-openapi";
-import { z } from "zod";
+import z from "zod";
+import { InboxJobType, inboxQueue } from "~/packages/kit/queues/inbox/queue";
 
 export default apiRoute((app) =>
-    app.post(
-        "/inbox",
+    app.get(
+        "/.versia/v0.6/inbox",
         describeRoute({
-            summary: "Instance federation inbox",
+            summary: "Instance inbox endpoint",
             tags: ["Federation"],
             responses: {
                 200: {
@@ -18,12 +18,9 @@ export default apiRoute((app) =>
         validator(
             "header",
             z.object({
-                "versia-signature": z.string().optional(),
-                "versia-signed-at": z.coerce.number().optional(),
-                "versia-signed-by": z
-                    .url()
-                    .or(z.string().startsWith("instance "))
-                    .optional(),
+                "versia-signature": z.string(),
+                "versia-signed-at": z.coerce.number(),
+                "versia-signed-by": z.string(),
                 authorization: z.string().optional(),
             }),
             handleZodError,

@@ -11,17 +11,22 @@ import {
 } from "drizzle-orm";
 import { db } from "../tables/db.ts";
 import {
+    type Instances,
     Likes,
     type Notes,
     Notifications,
     type Users,
 } from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";
-import { User } from "./user.ts";
+import type { User } from "./user.ts";
 
 type LikeType = InferSelectModel<typeof Likes> & {
     liker: InferSelectModel<typeof Users>;
-    liked: InferSelectModel<typeof Notes>;
+    liked: InferSelectModel<typeof Notes> & {
+        author: InferSelectModel<typeof Users> & {
+            instance: InferSelectModel<typeof Instances> | null;
+        };
+    };
 };
 
 export class Like extends BaseInterface<typeof Likes, LikeType> {
@@ -57,7 +62,15 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             where: sql,
             orderBy,
             with: {
-                liked: true,
+                liked: {
+                    with: {
+                        author: {
+                            with: {
+                                instance: true,
+                            },
+                        },
+                    },
+                },
                 liker: true,
             },
         });
@@ -65,6 +78,7 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         if (!found) {
             return null;
         }
+
         return new Like(found);
     }
 
@@ -73,7 +87,6 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
         orderBy: SQL<unknown> | undefined = desc(Likes.id),
         limit?: number,
         offset?: number,
-        extra?: Parameters<typeof db.query.Likes.findMany>[0],
     ): Promise<Like[]> {
         const found = await db.query.Likes.findMany({
             where: sql,
@@ -81,9 +94,16 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             limit,
             offset,
             with: {
-                liked: true,
+                liked: {
+                    with: {
+                        author: {
+                            with: {
+                                instance: true,
+                            },
+                        },
+                    },
+                },
                 liker: true,
-                ...extra?.with,
             },
         });
 
@@ -146,37 +166,28 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
     }
 
     public toVersia(): VersiaEntities.Like {
+        let likedReference = this.data.liked.id;
+
+        if (this.data.liked.author.instance) {
+            likedReference = `${this.data.liked.author.instance.baseUrl}:${this.data.liked.remoteId}`;
+        }
+
         return new VersiaEntities.Like({
-            id: this.data.id,
-            author: User.getUri(
-                this.data.liker.id,
-                this.data.liker.uri ? new URL(this.data.liker.uri) : null,
-            ).href,
+            id: this.id,
+            author: this.data.liker.id,
             type: "pub.versia:likes/Like",
             created_at: this.data.createdAt.toISOString(),
-            liked: this.data.liked.uri
-                ? new URL(this.data.liked.uri).href
-                : new URL(`/notes/${this.data.liked.id}`, config.http.base_url)
-                      .href,
-            uri: this.getUri().href,
+            liked: likedReference,
         });
     }
 
     public unlikeToVersia(unliker?: User): VersiaEntities.Delete {
         return new VersiaEntities.Delete({
             type: "Delete",
-            id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
-            author: User.getUri(
-                unliker?.id ?? this.data.liker.id,
-                unliker?.data.uri
-                    ? new URL(unliker.data.uri)
-                    : this.data.liker.uri
-                      ? new URL(this.data.liker.uri)
-                      : null,
-            ).href,
+            author: unliker ? unliker.id : this.data.liker.id,
             deleted_type: "pub.versia:likes/Like",
-            deleted: this.getUri().href,
+            deleted: this.id,
         });
     }
 }

@@ -17,7 +17,7 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
                     await job.log(`Fetching instance metadata from [${uri}]`);
 
                     // Check if exists
-                    const host = new URL(uri).host;
+                    const host = new URL(uri).hostname;
 
                     const existingInstance = await Instance.fromSql(
                         eq(Instances.baseUrl, host),
@@ -37,7 +37,7 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
                         return;
                     }
 
-                    await Instance.resolve(new URL(uri));
+                    await Instance.resolve(host);
 
                     await job.log(
                         `✔ Finished fetching instance metadata from [${uri}]`,

@@ -8,7 +8,7 @@ export const retrieveUser = async (
 ): Promise<User | null> => {
     const { username, domain } = parseUserAddress(usernameOrHandle);
 
-    const instance = domain ? await Instance.resolveFromHost(domain) : null;
+    const instance = domain ? await Instance.resolve(domain) : null;
 
     const user = await User.fromSql(
         and(
