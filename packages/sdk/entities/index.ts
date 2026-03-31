@@ -8,7 +8,7 @@ export {
     VideoContentFormat,
 } from "./contentformat.ts";
 export { Delete } from "./delete.ts";
-export { Entity } from "./entity.ts";
+export { Entity, Reference } from "./entity.ts";
 export { Dislike, Like } from "./extensions/likes.ts";
 export { Vote } from "./extensions/polls.ts";
 export { Reaction } from "./extensions/reactions.ts";

@@ -137,6 +137,7 @@ export const PushSubscriptionsRelations = relations(
 export const Reactions = pgTable("Reaction", {
     id: id(),
     uri: uri(),
+    remoteId: text("remote_id"),
     // Emoji ID is nullable, in which case it is a text emoji, and the emojiText field is used
     emojiId: uuid("emojiId").references(() => Emojis.id, {
         onDelete: "cascade",
@@ -244,7 +245,7 @@ export const Markers = pgTable("Markers", {
 
 export const Likes = pgTable("Likes", {
     id: id(),
-    uri: uri(),
+    remoteId: text("remote_id"),
     likerId: uuid("likerId")
         .notNull()
         .references(() => Users.id, {
@@ -472,7 +473,7 @@ export const NotificationsRelations = relations(Notifications, ({ one }) => ({
 
 export const Notes = pgTable("Notes", {
     id: id(),
-    uri: uri(),
+    remoteId: text("remote_id"),
     authorId: uuid("authorId")
         .notNull()
         .references(() => Users.id, {
@@ -600,7 +601,7 @@ export const Users = pgTable(
     "Users",
     {
         id: id(),
-        uri: uri(),
+        remoteId: text("remote_id"),
         username: text("username").notNull(),
         displayName: text("display_name"),
         password: text("password"),
@@ -615,15 +616,6 @@ export const Users = pgTable(
                 value: z.infer<typeof TextContentFormatSchema>;
             }[]
         >(),
-        endpoints: jsonb("endpoints").$type<Partial<{
-            dislikes?: string;
-            featured: string;
-            likes?: string;
-            followers: string;
-            following: string;
-            inbox: string;
-            outbox: string;
-        }> | null>(),
         source: jsonb("source").$type<z.infer<typeof Source>>(),
         avatarId: uuid("avatarId").references(() => Medias.id, {
             onDelete: "set null",
@@ -646,8 +638,6 @@ export const Users = pgTable(
             .notNull(),
         isIndexable: boolean("is_indexable").default(true).notNull(),
         sanctions: text("sanctions").array(),
-        publicKey: text("public_key").notNull(),
-        privateKey: text("private_key"),
         instanceId: uuid("instanceId").references(() => Instances.id, {
             onDelete: "cascade",
             onUpdate: "cascade",
@@ -656,11 +646,7 @@ export const Users = pgTable(
             .default(false)
             .notNull(),
     },
-    (table) => [
-        uniqueIndex().on(table.uri),
-        index().on(table.username),
-        uniqueIndex().on(table.email),
-    ],
+    (table) => [index().on(table.username), uniqueIndex().on(table.email)],
 );
 
 export const UsersRelations = relations(Users, ({ many, one }) => ({

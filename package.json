@@ -87,7 +87,7 @@
             "hono-openapi": "~1.1.2",
             "hono-rate-limiter": "~0.5.1",
             "html-to-text": "~9.0.5",
-            "ioredis": "~5.8.2",
+            "ioredis": "5.9.2",
             "ip-matching": "~2.1.2",
             "iso-639-1": "~3.1.5",
             "linkify-html": "~4.3.2",
@@ -158,6 +158,7 @@
     "dependencies": {
         "@bull-board/api": "catalog:",
         "@bull-board/hono": "catalog:",
+        "@clerc/core": "catalog:",
         "@clerc/plugin-completions": "catalog:",
         "@clerc/plugin-friendly-error": "catalog:",
         "@clerc/plugin-help": "catalog:",
@@ -180,7 +181,6 @@
         "blurhash": "catalog:",
         "bullmq": "catalog:",
         "chalk": "catalog:",
-        "@clerc/core": "catalog:",
         "confbox": "catalog:",
         "drizzle-orm": "catalog:",
         "feed": "catalog:",
@@ -216,5 +216,8 @@
         "zod": "catalog:",
         "zod-openapi": "catalog:",
         "zod-validation-error": "catalog:"
+    },
+    "patchedDependencies": {
+        "bun-bagel@1.2.0": "patches/bun-bagel@1.2.0.patch"
     }
 }

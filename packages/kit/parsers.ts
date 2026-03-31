@@ -1,4 +1,4 @@
-import type * as VersiaEntities from "@versia/sdk/entities";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { FederationRequester } from "@versia/sdk/http";
 import { config } from "@versia-server/config";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
@@ -13,6 +13,7 @@ import {
     letter,
 } from "magic-regexp";
 import { sanitizeHtml, sanitizeHtmlInline } from "@/sanitization";
+import { Instance } from "./db/instance.ts";
 import { User } from "./db/user.ts";
 import { markdownToHtml } from "./markdown.ts";
 import { mention } from "./regex.ts";
@@ -81,7 +82,14 @@ export const parseMentionsFromText = async (text: string): Promise<User[]> => {
         );
 
         if (url) {
-            const user = await User.resolve(url);
+            const userEntity = await Instance.federationRequester.fetchSigned(
+                url,
+                VersiaEntities.User,
+            );
+
+            const instance = await Instance.resolve(url.hostname);
+
+            const user = await User.fromVersia(userEntity, instance);
 
             if (user) {
                 finalList.push(user);

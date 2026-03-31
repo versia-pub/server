@@ -50,7 +50,7 @@ export default apiRoute((app) =>
                 throw new ApiError(400, "Cannot refetch a local user");
             }
 
-            const newUser = await User.fromVersia(otherUser.uri);
+            const newUser = await User.fromVersia(otherUser.reference);
 
             return context.json(newUser.toApi(false), 200);
         },

@@ -6,10 +6,11 @@ import {
     userAddressRegex,
     zBoolean,
 } from "@versia/client/schemas";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
-import { db, Note, User } from "@versia-server/kit/db";
+import { db, Instance, Note, User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
 import { searchManager } from "@versia-server/kit/search";
 import { Instances, Notes, Users } from "@versia-server/kit/tables";
@@ -187,21 +188,29 @@ export default apiRoute((app) =>
                     }
 
                     if (resolve && domain) {
+                        const instance = await Instance.resolve(domain);
                         const uri = await User.webFinger(username, domain);
 
                         if (uri) {
-                            const newUser = await User.resolve(uri);
-
-                            if (newUser) {
-                                return context.json(
-                                    {
-                                        accounts: [newUser.toApi()],
-                                        statuses: [],
-                                        hashtags: [],
-                                    },
-                                    200,
+                            const accountData =
+                                await Instance.federationRequester.fetchSigned(
+                                    uri,
+                                    VersiaEntities.User,
                                 );
-                            }
+
+                            const newUser = await User.fromVersia(
+                                accountData,
+                                instance,
+                            );
+
+                            return context.json(
+                                {
+                                    accounts: [newUser.toApi()],
+                                    statuses: [],
+                                    hashtags: [],
+                                },
+                                200,
+                            );
                         }
                     }
                 }

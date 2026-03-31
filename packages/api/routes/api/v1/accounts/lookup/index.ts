@@ -2,6 +2,7 @@ import {
     Account as AccountSchema,
     RolePermission,
 } from "@versia/client/schemas";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
@@ -73,7 +74,7 @@ export default apiRoute((app) =>
 
             // User is remote
             // Try to fetch it from database
-            const instance = await Instance.resolveFromHost(domain);
+            const instance = await Instance.resolve(domain);
 
             if (!instance) {
                 return context.json(
@@ -100,13 +101,14 @@ export default apiRoute((app) =>
                 throw ApiError.accountNotFound();
             }
 
-            const foundAccount = await User.resolve(uri);
+            const accountData = await Instance.federationRequester.fetchSigned(
+                uri,
+                VersiaEntities.User,
+            );
 
-            if (foundAccount) {
-                return context.json(foundAccount.toApi(), 200);
-            }
+            const foundAccount = await User.fromVersia(accountData, instance);
 
-            throw ApiError.accountNotFound();
+            return context.json(foundAccount.toApi(), 200);
         },
     ),
 );

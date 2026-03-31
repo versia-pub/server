@@ -65,6 +65,7 @@ export default apiRoute((app) => {
 
             const jwtPayload = (await verify(state, config.authentication.key, {
                 iss: config.http.base_url.toString(),
+                alg: "HS256",
             })) as {
                 flow: string;
                 link?: boolean;

@@ -476,9 +476,7 @@ export class Media extends BaseInterface<typeof Medias> {
             [file.type]: {
                 content: uri.toString(),
                 remote: true,
-                hash: {
-                    sha256: hash,
-                },
+                hash,
                 width,
                 height,
                 description: options?.description,

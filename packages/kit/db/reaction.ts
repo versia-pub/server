@@ -1,5 +1,4 @@
 import * as VersiaEntities from "@versia/sdk/entities";
-import { config } from "@versia-server/config";
 import { randomUUIDv7 } from "bun";
 import {
     and,
@@ -12,17 +11,26 @@ import {
     type SQL,
 } from "drizzle-orm";
 import { db } from "../tables/db.ts";
-import { type Notes, Reactions, type Users } from "../tables/schema.ts";
+import {
+    type Instances,
+    type Notes,
+    Reactions,
+    type Users,
+} from "../tables/schema.ts";
 import { BaseInterface } from "./base.ts";
 import { Emoji } from "./emoji.ts";
 import { Instance } from "./instance.ts";
 import type { Note } from "./note.ts";
-import { User } from "./user.ts";
+import type { User } from "./user.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {
     emoji: typeof Emoji.$type | null;
     author: InferSelectModel<typeof Users>;
-    note: InferSelectModel<typeof Notes>;
+    note: InferSelectModel<typeof Notes> & {
+        author: InferSelectModel<typeof Users> & {
+            instance: InferSelectModel<typeof Instances> | null;
+        };
+    };
 };
 
 export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
@@ -64,7 +72,15 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                     },
                 },
                 author: true,
-                note: true,
+                note: {
+                    with: {
+                        author: {
+                            with: {
+                                instance: true,
+                            },
+                        },
+                    },
+                },
             },
             orderBy,
         });
@@ -96,7 +112,15 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                     },
                 },
                 author: true,
-                note: true,
+                note: {
+                    with: {
+                        author: {
+                            with: {
+                                instance: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -210,19 +234,18 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
             throw new Error("Cannot convert a non-local reaction to Versia");
         }
 
+        let noteReference = this.data.note.id;
+
+        if (this.data.note.author.instance) {
+            noteReference = `${this.data.note.author.instance.baseUrl}:${this.data.note.remoteId}`;
+        }
+
         return new VersiaEntities.Reaction({
-            uri: this.getUri(config.http.base_url).href,
             type: "pub.versia:reactions/Reaction",
-            author: User.getUri(
-                this.data.authorId,
-                this.data.author.uri ? new URL(this.data.author.uri) : null,
-            ).href,
+            author: this.data.author.id,
             created_at: this.data.createdAt.toISOString(),
             id: this.id,
-            object: this.data.note.uri
-                ? new URL(this.data.note.uri).href
-                : new URL(`/notes/${this.data.noteId}`, config.http.base_url)
-                      .href,
+            object: noteReference,
             content: this.hasCustomEmoji()
                 ? `:${this.data.emoji?.shortcode}:`
                 : this.data.emojiText || "",
@@ -243,14 +266,10 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
     public toVersiaUnreact(): VersiaEntities.Delete {
         return new VersiaEntities.Delete({
             type: "Delete",
-            id: crypto.randomUUID(),
             created_at: new Date().toISOString(),
-            author: User.getUri(
-                this.data.authorId,
-                this.data.author.uri ? new URL(this.data.author.uri) : null,
-            ).href,
+            author: this.data.authorId,
             deleted_type: "pub.versia:reactions/Reaction",
-            deleted: this.getUri(config.http.base_url).href,
+            deleted: this.id,
         });
     }
 
@@ -279,7 +298,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
 
         return Reaction.insert({
             id: randomUUIDv7(),
-            uri: reactionToConvert.data.uri,
+            remoteId: reactionToConvert.data.id,
             authorId: author.id,
             noteId: note.id,
             emojiId: emoji ? emoji.id : null,

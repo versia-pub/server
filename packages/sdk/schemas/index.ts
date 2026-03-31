@@ -8,7 +8,11 @@ export {
     VideoContentFormatSchema,
 } from "./contentformat.ts";
 export { DeleteSchema } from "./delete.ts";
-export { EntitySchema } from "./entity.ts";
+export {
+    EntitySchema,
+    ReferenceSchema,
+    TransientEntitySchema,
+} from "./entity.ts";
 export { DislikeSchema, LikeSchema } from "./extensions/likes.ts";
 export { VoteSchema } from "./extensions/polls.ts";
 export { ReactionSchema } from "./extensions/reactions.ts";

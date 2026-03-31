@@ -28,7 +28,7 @@ export const refetchUserCommand = defineCommand(
         const spinner = ora("Refetching user").start();
 
         try {
-            await User.fromVersia(user.uri);
+            await User.fromVersia(user.reference);
         } catch (error) {
             spinner.fail(
                 `Failed to refetch user ${chalk.gray(user.data.username)}`,

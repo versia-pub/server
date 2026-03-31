@@ -379,6 +379,13 @@
             "when": 1765422160004,
             "tag": "0053_lively_hellfire_club",
             "breakpoints": true
+        },
+        {
+            "idx": 54,
+            "version": "7",
+            "when": 1771983340896,
+            "tag": "0054_good_madelyne_pryor",
+            "breakpoints": true
         }
     ]
 }

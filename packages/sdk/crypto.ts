@@ -13,15 +13,15 @@ const base64ToArrayBuffer = (base64: string): ArrayBuffer =>
  * Signs a request using the Ed25519 algorithm, according to the [**Versia**](https://versia.pub/signatures) specification.
  *
  * @see https://versia.pub/signatures
- * @param privateKey - Private key of the User that is signing the request.
- * @param authorUrl - URL of the User that is signing the request.
+ * @param privateKey - Private key of the instance that is signing the request.
+ * @param instance - URL of the instance that is signing the request.
  * @param req - Request to sign.
  * @param timestamp - (optional) Timestamp of the request.
  * @returns The signed request.
  */
 export const sign = async (
     privateKey: CryptoKey,
-    authorUrl: URL,
+    instance: URL,
     req: Request,
     timestamp = new Date(),
 ): Promise<Request> => {
@@ -48,7 +48,7 @@ export const sign = async (
             ...req.headers,
             "Versia-Signature": signatureBase64,
             "Versia-Signed-At": String(timestampSecs),
-            "Versia-Signed-By": authorUrl.href,
+            "Versia-Signed-By": instance.hostname,
         },
     });
 

@@ -1,13 +1,10 @@
 import { z } from "zod";
 import { extensionRegex, semverRegex } from "../regex.ts";
-import { url } from "./common.ts";
 import { ImageContentFormatSchema } from "./contentformat.ts";
-import { EntitySchema } from "./entity.ts";
+import { TransientEntitySchema } from "./entity.ts";
 
-export const InstanceMetadataSchema = EntitySchema.extend({
+export const InstanceMetadataSchema = TransientEntitySchema.extend({
     type: z.literal("InstanceMetadata"),
-    id: z.null().optional(),
-    uri: z.null().optional(),
     name: z.string().min(1),
     software: z.strictObject({
         name: z.string().min(1),
@@ -28,14 +25,11 @@ export const InstanceMetadataSchema = EntitySchema.extend({
         ),
     }),
     description: z.string().nullish(),
-    host: z.string(),
-    shared_inbox: url.nullish(),
+    domain: z.string(),
     public_key: z.strictObject({
         key: z.string().min(1),
         algorithm: z.literal("ed25519"),
     }),
-    moderators: url.nullish(),
-    admins: url.nullish(),
     logo: ImageContentFormatSchema.nullish(),
     banner: ImageContentFormatSchema.nullish(),
 });

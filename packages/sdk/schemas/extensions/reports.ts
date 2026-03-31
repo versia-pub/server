@@ -1,12 +1,10 @@
 import { z } from "zod";
-import { url } from "../common.ts";
-import { EntitySchema } from "../entity.ts";
+import { ReferenceSchema, TransientEntitySchema } from "../entity.ts";
 
-export const ReportSchema = EntitySchema.extend({
+export const ReportSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:reports/Report"),
-    uri: z.null().optional(),
-    author: url.nullish(),
-    reported: z.array(url),
+    author: ReferenceSchema.nullish(),
+    reported: z.array(ReferenceSchema),
     tags: z.array(z.string()),
     comment: z
         .string()

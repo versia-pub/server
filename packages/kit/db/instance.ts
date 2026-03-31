@@ -1,3 +1,4 @@
+import { sign } from "@versia/sdk/crypto";
 import * as VersiaEntities from "@versia/sdk/entities";
 import { FederationRequester } from "@versia/sdk/http";
 import { config } from "@versia-server/config";
@@ -15,6 +16,7 @@ import {
     inArray,
     type SQL,
 } from "drizzle-orm";
+import type { HttpVerb, KnownEntity } from "~/types/api.ts";
 import { ApiError } from "../api-error.ts";
 import { db } from "../tables/db.ts";
 import { Instances } from "../tables/schema.ts";
@@ -111,6 +113,13 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
+    public static get federationRequester(): FederationRequester {
+        return new FederationRequester(
+            config.instance.keys.private,
+            config.http.base_url,
+        );
+    }
+
     public static async fromUser(user: User): Promise<Instance | null> {
         if (!user.data.instanceId) {
             return null;
@@ -139,29 +148,24 @@ export class Instance extends BaseInterface<typeof Instances> {
         return this.data.id;
     }
 
-    public static async fetchMetadata(url: URL): Promise<{
+    public static async fetchMetadata(domain: string): Promise<{
         metadata: VersiaEntities.InstanceMetadata;
         protocol: "versia" | "activitypub";
     }> {
-        const origin = new URL(url).origin;
-        const wellKnownUrl = new URL("/.well-known/versia", origin);
-
         try {
-            const metadata = await new FederationRequester(
-                config.instance.keys.private,
-                config.http.base_url,
-            ).fetchEntity(wellKnownUrl, VersiaEntities.InstanceMetadata);
+            const metadata =
+                await Instance.federationRequester.resolveInstance(domain);
 
             return { metadata, protocol: "versia" };
         } catch {
             // If the server doesn't have a Versia well-known endpoint, it's not a Versia instance
             // Try to resolve ActivityPub metadata instead
-            const data = await Instance.fetchActivityPubMetadata(url);
+            const data = await Instance.fetchActivityPubMetadata(domain);
 
             if (!data) {
                 throw new ApiError(
                     404,
-                    `Instance at ${origin} is not reachable or does not exist`,
+                    `Instance at ${domain} is not reachable or does not exist`,
                 );
             }
 
@@ -173,9 +177,9 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     private static async fetchActivityPubMetadata(
-        url: URL,
+        domain: string,
     ): Promise<VersiaEntities.InstanceMetadata | null> {
-        const origin = new URL(url).origin;
+        const origin = new URL(`https://${domain}`);
         const wellKnownUrl = new URL("/.well-known/nodeinfo", origin);
 
         // Go to endpoint, then follow the links to the actual metadata
@@ -254,7 +258,7 @@ export class Instance extends BaseInterface<typeof Instances> {
                     key: "",
                     algorithm: "ed25519",
                 },
-                host: new URL(url).host,
+                domain: origin.hostname,
                 compatibility: {
                     extensions: [],
                     versions: [],
@@ -268,50 +272,33 @@ export class Instance extends BaseInterface<typeof Instances> {
         }
     }
 
-    public static resolveFromHost(host: string): Promise<Instance> {
-        if (host.startsWith("http")) {
-            const url = new URL(host);
-
-            return Instance.resolve(url);
-        }
-
-        const url = new URL(`https://${host}`);
-
-        return Instance.resolve(url);
-    }
-
-    public static async resolve(url: URL): Promise<Instance> {
-        const host = url.host;
-
+    public static async resolve(domain: string): Promise<Instance> {
         const existingInstance = await Instance.fromSql(
-            eq(Instances.baseUrl, host),
+            eq(Instances.baseUrl, domain),
         );
 
         if (existingInstance) {
             return existingInstance;
         }
 
-        const output = await Instance.fetchMetadata(url);
+        const output = await Instance.fetchMetadata(domain);
 
         const { metadata, protocol } = output;
 
         return Instance.insert({
             id: randomUUIDv7(),
-            baseUrl: host,
+            baseUrl: domain,
             name: metadata.data.name,
             version: metadata.data.software.version,
             logo: metadata.data.logo,
             protocol,
             publicKey: metadata.data.public_key,
-            inbox: metadata.data.shared_inbox ?? null,
             extensions: metadata.data.extensions ?? null,
         });
     }
 
     public async updateFromRemote(): Promise<Instance> {
-        const output = await Instance.fetchMetadata(
-            new URL(`https://${this.data.baseUrl}`),
-        );
+        const output = await Instance.fetchMetadata(this.data.baseUrl);
 
         if (!output) {
             federationResolversLogger.error`Failed to update instance ${chalk.bold(
@@ -328,11 +315,37 @@ export class Instance extends BaseInterface<typeof Instances> {
             logo: metadata.data.logo,
             protocol,
             publicKey: metadata.data.public_key,
-            inbox: metadata.data.shared_inbox ?? null,
             extensions: metadata.data.extensions ?? null,
         });
 
         return this;
+    }
+
+    /**
+     * Signs a Versia entity with this instance's private key
+     *
+     * @param entity Entity to sign
+     * @param signatureUrl URL to embed in signature (must be the same URI of queries made with this signature)
+     * @param signatureMethod HTTP method to embed in signature (default: POST)
+     * @returns The signed string and headers to send with the request
+     */
+    public static async sign(
+        entity: KnownEntity | VersiaEntities.Collection,
+        signatureUrl: URL,
+        signatureMethod: HttpVerb = "POST",
+    ): Promise<{
+        headers: Headers;
+    }> {
+        const { headers } = await sign(
+            config.instance.keys.private,
+            config.http.base_url,
+            new Request(signatureUrl, {
+                method: signatureMethod,
+                body: JSON.stringify(entity),
+            }),
+        );
+
+        return { headers };
     }
 
     public async sendMessage(content: string): Promise<void> {

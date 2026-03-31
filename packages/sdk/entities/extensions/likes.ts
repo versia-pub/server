@@ -1,13 +1,21 @@
 import type { z } from "zod";
 import { DislikeSchema, LikeSchema } from "../../schemas/extensions/likes.ts";
 import type { JSONObject } from "../../types.ts";
-import { Entity } from "../entity.ts";
+import { Entity, Reference } from "../entity.ts";
 
 export class Like extends Entity {
     public static override name = "pub.versia:likes/Like";
 
     public constructor(public override data: z.infer<typeof LikeSchema>) {
         super(data);
+    }
+
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get liked(): Reference {
+        return Reference.fromString(this.data.liked);
     }
 
     public static override fromJSON(json: JSONObject): Promise<Like> {
@@ -20,6 +28,14 @@ export class Dislike extends Entity {
 
     public constructor(public override data: z.infer<typeof DislikeSchema>) {
         super(data);
+    }
+
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get disliked(): Reference {
+        return Reference.fromString(this.data.disliked);
     }
 
     public static override fromJSON(json: JSONObject): Promise<Dislike> {

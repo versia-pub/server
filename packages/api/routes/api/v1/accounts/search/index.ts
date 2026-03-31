@@ -3,9 +3,10 @@ import {
     RolePermission,
     zBoolean,
 } from "@versia/client/schemas";
+import * as VersiaEntities from "@versia/sdk/entities";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, auth, handleZodError } from "@versia-server/kit/api";
-import { User } from "@versia-server/kit/db";
+import { Instance, User } from "@versia-server/kit/db";
 import { parseUserAddress } from "@versia-server/kit/parsers";
 import { Users } from "@versia-server/kit/tables";
 import { eq, ilike, not, or, sql } from "drizzle-orm";
@@ -88,14 +89,22 @@ export default apiRoute((app) =>
             const accounts: User[] = [];
 
             if (resolve && domain) {
+                const instance = await Instance.resolve(domain);
                 const uri = await User.webFinger(username, domain);
 
                 if (uri) {
-                    const resolvedUser = await User.resolve(uri);
+                    const accountData =
+                        await Instance.federationRequester.fetchSigned(
+                            uri,
+                            VersiaEntities.User,
+                        );
 
-                    if (resolvedUser) {
-                        accounts.push(resolvedUser);
-                    }
+                    const foundAccount = await User.fromVersia(
+                        accountData,
+                        instance,
+                    );
+
+                    accounts.push(foundAccount);
                 }
             } else {
                 accounts.push(

@@ -1,15 +1,13 @@
 import { z } from "zod";
-import { url } from "../common.ts";
-import { EntitySchema } from "../entity.ts";
+import { ReferenceSchema, TransientEntitySchema } from "../entity.ts";
 
-export const MigrationSchema = EntitySchema.extend({
+export const MigrationSchema = TransientEntitySchema.extend({
     type: z.literal("pub.versia:migration/Migration"),
-    uri: z.null().optional(),
-    author: url,
-    destination: url,
+    author: ReferenceSchema,
+    destination: ReferenceSchema,
 });
 
 export const MigrationExtensionSchema = z.strictObject({
-    previous: url,
-    new: url.nullish(),
+    previous: ReferenceSchema,
+    new: ReferenceSchema.nullish(),
 });

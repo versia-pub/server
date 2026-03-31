@@ -4,13 +4,13 @@ import {
     NonTextContentFormatSchema,
     TextContentFormatSchema,
 } from "./contentformat.ts";
-import { EntitySchema } from "./entity.ts";
+import { EntitySchema, ReferenceSchema } from "./entity.ts";
 import { PollExtensionSchema } from "./extensions/polls.ts";
 
 export const NoteSchema = EntitySchema.extend({
     type: z.literal("Note"),
-    attachments: z.array(NonTextContentFormatSchema).nullish(),
-    author: url,
+    attachments: z.array(NonTextContentFormatSchema),
+    author: ReferenceSchema,
     category: z
         .enum([
             "microblog",
@@ -23,16 +23,6 @@ export const NoteSchema = EntitySchema.extend({
         ])
         .nullish(),
     content: TextContentFormatSchema.nullish(),
-    collections: z
-        .strictObject({
-            replies: url,
-            quotes: url,
-            "pub.versia:reactions/Reactions": url.nullish(),
-            "pub.versia:share/Shares": url.nullish(),
-            "pub.versia:likes/Likes": url.nullish(),
-            "pub.versia:likes/Dislikes": url.nullish(),
-        })
-        .catchall(url),
     device: z
         .strictObject({
             name: z.string(),
@@ -40,22 +30,20 @@ export const NoteSchema = EntitySchema.extend({
             url: url.nullish(),
         })
         .nullish(),
-    group: url.or(z.enum(["public", "followers"])).nullish(),
-    is_sensitive: z.boolean().nullish(),
-    mentions: z.array(url).nullish(),
-    previews: z
-        .array(
-            z.strictObject({
-                link: url,
-                title: z.string(),
-                description: z.string().nullish(),
-                image: url.nullish(),
-                icon: url.nullish(),
-            }),
-        )
-        .nullish(),
-    quotes: url.nullish(),
-    replies_to: url.nullish(),
+    group: ReferenceSchema.or(z.enum(["public", "followers"])).nullish(),
+    is_sensitive: z.boolean(),
+    mentions: z.array(ReferenceSchema),
+    previews: z.array(
+        z.strictObject({
+            link: url,
+            title: z.string(),
+            description: z.string().nullish(),
+            image: url.nullish(),
+            icon: url.nullish(),
+        }),
+    ),
+    quotes: ReferenceSchema.nullish(),
+    replies_to: ReferenceSchema.nullish(),
     subject: z.string().nullish(),
     extensions: EntitySchema.shape.extensions
         .unwrap()

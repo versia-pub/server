@@ -1,11 +1,9 @@
 import { z } from "zod";
-import { url } from "./common.ts";
-import { EntitySchema } from "./entity.ts";
+import { ReferenceSchema, TransientEntitySchema } from "./entity.ts";
 
-export const DeleteSchema = EntitySchema.extend({
-    uri: z.null().optional(),
+export const DeleteSchema = TransientEntitySchema.extend({
     type: z.literal("Delete"),
-    author: url.nullable(),
+    author: ReferenceSchema,
     deleted_type: z.string(),
-    deleted: url,
+    deleted: ReferenceSchema,
 });

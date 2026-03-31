@@ -6,13 +6,21 @@ import {
     UnfollowSchema,
 } from "../schemas/follow.ts";
 import type { JSONObject } from "../types.ts";
-import { Entity } from "./entity.ts";
+import { Entity, Reference } from "./entity.ts";
 
 export class Follow extends Entity {
     public static override name = "Follow";
 
     public constructor(public override data: z.infer<typeof FollowSchema>) {
         super(data);
+    }
+
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get followee(): Reference {
+        return Reference.fromString(this.data.followee);
     }
 
     public static override fromJSON(json: JSONObject): Promise<Follow> {
@@ -27,6 +35,14 @@ export class FollowAccept extends Entity {
         public override data: z.infer<typeof FollowAcceptSchema>,
     ) {
         super(data);
+    }
+
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get follower(): Reference {
+        return Reference.fromString(this.data.follower);
     }
 
     public static override fromJSON(json: JSONObject): Promise<FollowAccept> {
@@ -45,6 +61,14 @@ export class FollowReject extends Entity {
         super(data);
     }
 
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get follower(): Reference {
+        return Reference.fromString(this.data.follower);
+    }
+
     public static override fromJSON(json: JSONObject): Promise<FollowReject> {
         return FollowRejectSchema.parseAsync(json).then(
             (u) => new FollowReject(u),
@@ -57,6 +81,14 @@ export class Unfollow extends Entity {
 
     public constructor(public override data: z.infer<typeof UnfollowSchema>) {
         super(data);
+    }
+
+    public get author(): Reference {
+        return Reference.fromString(this.data.author);
+    }
+
+    public get followee(): Reference {
+        return Reference.fromString(this.data.followee);
     }
 
     public static override fromJSON(json: JSONObject): Promise<Unfollow> {

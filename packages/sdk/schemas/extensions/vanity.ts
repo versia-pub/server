@@ -7,11 +7,11 @@
 
 import { z } from "zod";
 import { ianaTimezoneRegex, isISOString } from "../../regex.ts";
-import { url } from "../common.ts";
 import {
     AudioContentFormatSchema,
     ImageContentFormatSchema,
 } from "../contentformat.ts";
+import { ReferenceSchema } from "../entity.ts";
 
 export const VanityExtensionSchema = z.strictObject({
     avatar_overlays: z.array(ImageContentFormatSchema).nullish(),
@@ -21,24 +21,21 @@ export const VanityExtensionSchema = z.strictObject({
     pronouns: z.record(
         z.string(),
         z.array(
-            z.union([
-                z.strictObject({
-                    subject: z.string(),
-                    object: z.string(),
-                    dependent_possessive: z.string(),
-                    independent_possessive: z.string(),
-                    reflexive: z.string(),
-                }),
-                z.string(),
-            ]),
+            z.strictObject({
+                subject: z.string(),
+                object: z.string(),
+                dependent_possessive: z.string(),
+                independent_possessive: z.string(),
+                reflexive: z.string(),
+            }),
         ),
     ),
     birthday: z
         .string()
-        .refine((v) => isISOString(v), "must be a valid ISO8601 datetime")
+        .refine((v) => isISOString(v), "must be a valid RFC 3339 datetime")
         .nullish(),
     location: z.string().nullish(),
-    aliases: z.array(url).nullish(),
+    aliases: z.array(ReferenceSchema).nullish(),
     timezone: z
         .string()
         .regex(ianaTimezoneRegex, "must be a valid IANA timezone")
