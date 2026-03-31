@@ -4,7 +4,7 @@ import z from "zod";
 import { InboxJobType, inboxQueue } from "~/packages/kit/queues/inbox/queue";
 
 export default apiRoute((app) =>
-    app.get(
+    app.post(
         "/.versia/v0.6/inbox",
         describeRoute({
             summary: "Instance inbox endpoint",

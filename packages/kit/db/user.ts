@@ -673,8 +673,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
      * @param versiaUser Reference or Versia User representation
      */
     public static async fromVersia(
+        versiaUser: VersiaEntities.User,
+        instance: Instance,
+    ): Promise<User>;
+
+    public static async fromVersia(
+        versiaUser: VersiaEntities.Reference,
+    ): Promise<User>;
+
+    public static async fromVersia(
         versiaUser: VersiaEntities.User | VersiaEntities.Reference,
-        domain: string,
+        instance?: Instance,
     ): Promise<User> {
         if (versiaUser instanceof VersiaEntities.Reference) {
             if (!versiaUser.domain) {
@@ -688,7 +697,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 VersiaEntities.User,
             );
 
-            return User.fromVersia(user, versiaUser.domain);
+            const instance = await Instance.resolve(versiaUser.domain);
+
+            return User.fromVersia(user, instance);
+        }
+
+        if (!instance) {
+            throw new Error("Instance must be provided when fetching user");
         }
 
         const {
@@ -702,7 +717,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             extensions,
         } = versiaUser.data;
 
-        const instance = await Instance.resolve(domain);
         const existingUser = await User.fromSql(
             and(eq(Users.instanceId, instance.id), eq(Users.remoteId, id)),
         );
@@ -788,10 +802,11 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public static async resolve(
         reference: VersiaEntities.Reference,
+        defaultInstance?: Instance,
     ): Promise<User> {
         // Check if user not already in database
         if (
-            !reference.domain ||
+            !(reference.domain || defaultInstance) ||
             reference.domain === config.http.base_url.hostname
         ) {
             const user = await User.fromId(reference.id);
@@ -805,7 +820,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             return user;
         }
 
-        const instance = await Instance.resolve(reference.domain);
+        const instance = reference.domain
+            ? await Instance.resolve(reference.domain)
+            : (defaultInstance as Instance);
 
         const foundUser = await User.fromSql(
             and(
@@ -818,7 +835,14 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             return foundUser;
         }
 
-        return User.fromVersia(reference, reference.domain);
+        return User.fromVersia(
+            reference.domain
+                ? reference
+                : new VersiaEntities.Reference(
+                      reference.id,
+                      instance.data.baseUrl,
+                  ),
+        );
     }
 
     /**

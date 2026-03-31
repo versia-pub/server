@@ -106,10 +106,7 @@ export default apiRoute((app) =>
                 VersiaEntities.User,
             );
 
-            const foundAccount = await User.fromVersia(
-                accountData,
-                instance.data.baseUrl,
-            );
+            const foundAccount = await User.fromVersia(accountData, instance);
 
             return context.json(foundAccount.toApi(), 200);
         },

@@ -200,7 +200,7 @@ export default apiRoute((app) =>
 
                             const newUser = await User.fromVersia(
                                 accountData,
-                                instance.data.baseUrl,
+                                instance,
                             );
 
                             return context.json(

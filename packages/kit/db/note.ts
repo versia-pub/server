@@ -941,20 +941,19 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      */
     public static async resolve(
         reference: VersiaEntities.Reference,
+        defaultInstance?: Instance,
     ): Promise<Note | null> {
         // Check if note not already in database
         if (
-            !reference.domain ||
+            !(reference.domain || defaultInstance) ||
             reference.domain === config.http.base_url.hostname
         ) {
             return await Note.fromId(reference.id);
         }
 
-        const instance = await Instance.resolve(reference.domain);
-
-        if (!instance) {
-            return null;
-        }
+        const instance = reference.domain
+            ? await Instance.resolve(reference.domain)
+            : (defaultInstance as Instance);
 
         const foundNote = await Note.fromSql(
             and(
@@ -963,7 +962,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                     Notes.authorId,
                     sql`(
                     SELECT "Users".id FROM "Users"
-                    WHERE "Users".instanceId = ${instance.id}
+                    WHERE "Users"."instanceId" = ${instance.id}
                     LIMIT 1
                 )`,
                 ),
@@ -974,7 +973,14 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             return foundNote;
         }
 
-        return Note.fromVersia(reference);
+        return Note.fromVersia(
+            reference.domain
+                ? reference
+                : new VersiaEntities.Reference(
+                      reference.id,
+                      instance.data.baseUrl,
+                  ),
+        );
     }
 
     /**
@@ -984,27 +990,44 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      * @param versiaNote - Reference or Versia Note representation
      */
     public static async fromVersia(
+        versiaNote: VersiaEntities.Note,
+        instance: Instance,
+    ): Promise<Note>;
+
+    public static async fromVersia(
+        reference: VersiaEntities.Reference,
+    ): Promise<Note>;
+
+    public static async fromVersia(
         versiaNote: VersiaEntities.Note | VersiaEntities.Reference,
+        instance?: Instance,
     ): Promise<Note> {
         if (versiaNote instanceof VersiaEntities.Reference) {
+            if (!versiaNote.domain) {
+                throw new Error(
+                    "Cannot fetch Versia note from reference without domain",
+                );
+            }
+
             // No bridge support for notes yet
             const note = await Instance.federationRequester.fetchEntity(
                 versiaNote,
                 VersiaEntities.Note,
             );
 
-            return Note.fromVersia(note);
+            const instance = await Instance.resolve(versiaNote.domain);
+
+            return Note.fromVersia(note, instance);
+        }
+
+        if (!instance) {
+            throw new Error("Instance must be provided when fetching note");
         }
 
         const { created_at, extensions, group, id, is_sensitive, subject } =
             versiaNote.data;
 
-        if (!versiaNote.author.domain) {
-            throw new Error("Entity author domain is missing");
-        }
-
-        const instance = await Instance.resolve(versiaNote.author.domain);
-        const author = await User.resolve(versiaNote.author);
+        const author = await User.resolve(versiaNote.author, instance);
 
         if (!author) {
             throw new Error("Entity author could not be resolved");
@@ -1041,7 +1064,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const mentions = (
             await Promise.all(
-                versiaNote.mentions.map((m) => User.resolve(m)) ?? [],
+                versiaNote.mentions.map((m) => User.resolve(m, instance)) ?? [],
             )
         ).filter((m) => m !== null);
 
@@ -1052,10 +1075,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 : (group as "public" | "followers" | "unlisted");
 
         const reply = versiaNote.repliesTo
-            ? await Note.resolve(versiaNote.repliesTo)
+            ? await Note.resolve(versiaNote.repliesTo, instance)
             : null;
         const quote = versiaNote.quotes
-            ? await Note.resolve(versiaNote.quotes)
+            ? await Note.resolve(versiaNote.quotes, instance)
             : null;
         const spoiler = subject ? await sanitizedHtmlStrip(subject) : undefined;
 

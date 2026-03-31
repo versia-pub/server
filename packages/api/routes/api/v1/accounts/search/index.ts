@@ -101,7 +101,7 @@ export default apiRoute((app) =>
 
                     const foundAccount = await User.fromVersia(
                         accountData,
-                        instance.data.baseUrl,
+                        instance,
                     );
 
                     accounts.push(foundAccount);

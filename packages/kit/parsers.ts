@@ -87,7 +87,9 @@ export const parseMentionsFromText = async (text: string): Promise<User[]> => {
                 VersiaEntities.User,
             );
 
-            const user = await User.fromVersia(userEntity, url.hostname);
+            const instance = await Instance.resolve(url.hostname);
+
+            const user = await User.fromVersia(userEntity, instance);
 
             if (user) {
                 finalList.push(user);

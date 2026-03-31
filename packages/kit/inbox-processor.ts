@@ -182,32 +182,36 @@ export class InboxProcessor {
         shouldCheckSignature && federationInboxLogger.debug`Signature is valid`;
 
         try {
+            // TODO: Rip out bridge code so this is never null
+            const instance = this.sender?.instance as Instance;
+
             await new EntitySorter(this.body)
-                .on(VersiaEntities.Note, (n) => InboxProcessor.processNote(n))
+                .on(VersiaEntities.Note, (n) =>
+                    InboxProcessor.processNote(n, instance),
+                )
                 .on(VersiaEntities.Follow, (f) =>
-                    InboxProcessor.processFollowRequest(f),
+                    InboxProcessor.processFollowRequest(f, instance),
                 )
                 .on(VersiaEntities.FollowAccept, (f) =>
-                    InboxProcessor.processFollowAccept(f),
+                    InboxProcessor.processFollowAccept(f, instance),
                 )
                 .on(VersiaEntities.FollowReject, (f) =>
-                    InboxProcessor.processFollowReject(f),
+                    InboxProcessor.processFollowReject(f, instance),
                 )
                 .on(VersiaEntities.Like, (l) =>
-                    InboxProcessor.processLikeRequest(l),
+                    InboxProcessor.processLikeRequest(l, instance),
                 )
                 .on(VersiaEntities.Delete, (d) =>
-                    InboxProcessor.processDelete(d),
+                    InboxProcessor.processDelete(d, instance),
                 )
                 .on(VersiaEntities.User, (u) =>
-                    InboxProcessor.processUser(
-                        u,
-                        this.sender?.instance.data.baseUrl ?? "",
-                    ),
+                    InboxProcessor.processUser(u, instance),
                 )
-                .on(VersiaEntities.Share, (s) => InboxProcessor.processShare(s))
+                .on(VersiaEntities.Share, (s) =>
+                    InboxProcessor.processShare(s, instance),
+                )
                 .on(VersiaEntities.Reaction, (r) =>
-                    InboxProcessor.processReaction(r),
+                    InboxProcessor.processReaction(r, instance),
                 )
                 .sort(() => {
                     throw new ApiError(400, "Unknown entity type");
@@ -225,9 +229,10 @@ export class InboxProcessor {
      */
     private static async processReaction(
         reaction: VersiaEntities.Reaction,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(reaction.author);
-        const note = await Note.resolve(reaction.object);
+        const author = await User.resolve(reaction.author, sender);
+        const note = await Note.resolve(reaction.object, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -246,7 +251,10 @@ export class InboxProcessor {
      * @param {VersiaNote} note - The Note entity to process.
      * @returns {Promise<void>}
      */
-    private static async processNote(note: VersiaEntities.Note): Promise<void> {
+    private static async processNote(
+        note: VersiaEntities.Note,
+        sender: Instance,
+    ): Promise<void> {
         // If note has a blocked word
         if (
             Object.values(note.content?.data ?? {})
@@ -262,7 +270,7 @@ export class InboxProcessor {
             return;
         }
 
-        await Note.fromVersia(note);
+        await Note.fromVersia(note, sender);
     }
 
     /**
@@ -274,7 +282,7 @@ export class InboxProcessor {
      */
     private static async processUser(
         user: VersiaEntities.User,
-        domain: string,
+        sender: Instance,
     ): Promise<void> {
         if (
             config.validation.filters.username.some((filter) =>
@@ -303,7 +311,7 @@ export class InboxProcessor {
             return;
         }
 
-        await User.fromVersia(user, domain);
+        await User.fromVersia(user, sender);
     }
 
     /**
@@ -314,9 +322,10 @@ export class InboxProcessor {
      */
     private static async processFollowRequest(
         follow: VersiaEntities.Follow,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(follow.author);
-        const followee = await User.resolve(follow.followee);
+        const author = await User.resolve(follow.author, sender);
+        const followee = await User.resolve(follow.followee, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -362,9 +371,10 @@ export class InboxProcessor {
      */
     private static async processFollowAccept(
         followAccept: VersiaEntities.FollowAccept,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(followAccept.author);
-        const follower = await User.resolve(followAccept.follower);
+        const author = await User.resolve(followAccept.author, sender);
+        const follower = await User.resolve(followAccept.follower, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -397,9 +407,10 @@ export class InboxProcessor {
      */
     private static async processFollowReject(
         followReject: VersiaEntities.FollowReject,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(followReject.author);
-        const follower = await User.resolve(followReject.follower);
+        const author = await User.resolve(followReject.author, sender);
+        const follower = await User.resolve(followReject.follower, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -432,9 +443,10 @@ export class InboxProcessor {
      */
     private static async processShare(
         share: VersiaEntities.Share,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(share.author);
-        const sharedNote = await Note.resolve(share.shared);
+        const author = await User.resolve(share.author, sender);
+        const sharedNote = await Note.resolve(share.shared, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -455,10 +467,11 @@ export class InboxProcessor {
      */ // JS doesn't allow the use of `delete` as a variable name
     public static async processDelete(
         delete_: VersiaEntities.Delete,
+        sender: Instance,
     ): Promise<void> {
         const toDelete = delete_.deleted;
 
-        const author = await User.resolve(delete_.author);
+        const author = await User.resolve(delete_.author, sender);
 
         switch (delete_.data.deleted_type) {
             case "Note": {
@@ -478,7 +491,7 @@ export class InboxProcessor {
                 return;
             }
             case "User": {
-                const userToDelete = await User.resolve(toDelete);
+                const userToDelete = await User.resolve(toDelete, sender);
 
                 if (!userToDelete) {
                     throw new ApiError(404, "User to delete not found");
@@ -573,9 +586,10 @@ export class InboxProcessor {
      */
     private static async processLikeRequest(
         like: VersiaEntities.Like,
+        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(like.author);
-        const likedNote = await Note.resolve(like.liked);
+        const author = await User.resolve(like.author, sender);
+        const likedNote = await Note.resolve(like.liked, sender);
 
         if (!author) {
             throw new ApiError(404, "Author not found");

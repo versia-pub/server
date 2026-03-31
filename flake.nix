@@ -48,6 +48,7 @@
         default = pkgs.mkShell rec {
           libPath = with pkgs;
             lib.makeLibraryPath [
+              vips
               stdenv.cc.cc.lib
             ];
 
@@ -55,7 +56,6 @@
 
           buildInputs = with pkgs; [
             bun
-            vips
             nodePackages.typescript
             nodePackages.typescript-language-server
             nix-ld

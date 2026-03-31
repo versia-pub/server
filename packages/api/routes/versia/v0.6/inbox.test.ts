@@ -40,6 +40,17 @@ mock(new URL("/.well-known/versia", instanceUrl).href, {
         headers: {
             "Content-Type": "application/json",
         },
+        data: {
+            versions: ["0.6.0"],
+        },
+    },
+});
+
+mock(new URL("/.versia/v0.6/instance", instanceUrl).href, {
+    response: {
+        headers: {
+            "Content-Type": "application/vnd.versia+json; charset=utf-8",
+        },
         data: new VersiaEntities.InstanceMetadata({
             type: "InstanceMetadata",
             name: "Versia",
@@ -70,7 +81,7 @@ mock(new URL("/.well-known/versia", instanceUrl).href, {
 mock(new URL(`/.versia/v0.6/entities/User/${userId}`, instanceUrl).href, {
     response: {
         headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/vnd.versia+json; charset=utf-8",
         },
         data: new VersiaEntities.User({
             id: userId,
@@ -132,7 +143,7 @@ describe("Inbox Tests", () => {
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
-            new URL(exampleNote.data.author),
+            instanceUrl,
             new Request(inboxUrl, {
                 method: "POST",
                 headers: {
@@ -150,6 +161,8 @@ describe("Inbox Tests", () => {
             headers: signedRequest.headers,
             body: signedRequest.body,
         });
+
+        console.log(await response.text());
 
         expect(response.status).toBe(200);
 
@@ -174,7 +187,7 @@ describe("Inbox Tests", () => {
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
-            new URL(exampleRequest.data.author),
+            instanceUrl,
             new Request(inboxUrl, {
                 method: "POST",
                 headers: {
@@ -227,7 +240,7 @@ describe("Inbox Tests", () => {
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
-            new URL(exampleRequest.data.author),
+            instanceUrl,
             new Request(inboxUrl, {
                 method: "POST",
                 headers: {
@@ -322,7 +335,7 @@ describe("Inbox Tests", () => {
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
-            new URL(exampleRequest.data.author),
+            instanceUrl,
             new Request(inboxUrl, {
                 method: "POST",
                 headers: {
@@ -402,7 +415,7 @@ describe("Inbox Tests", () => {
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
-            new URL(exampleRequest.data.author),
+            instanceUrl,
             new Request(inboxUrl, {
                 method: "POST",
                 headers: {
