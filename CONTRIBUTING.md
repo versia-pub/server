@@ -11,10 +11,11 @@ Versia Server is built using the following technologies:
 
 - [Bun](https://bun.sh) - A JavaScript runtime similar to Node.js, but faster and with more features
 - [PostgreSQL](https://www.postgresql.org/) - A relational database
-  - [`pg_uuidv7`](https://github.com/fboulnois/pg_uuidv7) - A PostgreSQL extension that provides a UUIDv7 data type
+- [Drizzle ORM](https://orm.drizzle.team/) - An ORM for TypeScript and JavaScript, used for database interactions
 - [Docker](https://www.docker.com/) - A containerization platform, used for development and deployment
 - [Sharp](https://sharp.pixelplumbing.com/) - An image processing library, used for fast image resizing and converting
 - [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript
+- [Biome](https://biomejs.dev) - A code formatter and linter, used to enforce a consistent code style
 
 ## Getting Started
 
@@ -36,7 +37,7 @@ git clone https://github.com/versia-pub/server.git
 bun install
 ```
 
-1. Set up a PostgreSQL database (you need a special extension, please look at [the database documentation](https://server.versia.pub/setup/database))
+1. Set up a PostgreSQL database.
 
 2. Copy the `config/config.example.toml` file to `config/config.toml` and edit it to set up the database connection and other settings.
 
@@ -104,6 +105,12 @@ bun lint --write
 
 You can also install the Biome Visual Studio Code extension and have it format your code automatically on save.
 
+### Conventions
+
+- We always use ESM and the very latest TypeScript/JavaScript features available in Bun.
+- We use double quotes for strings and four spaces for indentation.
+- We try to use JSDoc comments for all functions and classes, and we use explicit type annotations for all variables and function return values.
+
 ### TypeScript
 
 Linting should not be ignored, except if they are false positives, in which case you can use a comment to disable the rule for the line or the file. If you need to disable a rule, please add a comment explaining why.
@@ -138,6 +145,20 @@ To add tests for a route, create a `route_file_name.test.ts` file in the same di
 Documentation for the Versia protocol is available on [versia.pub](https://versia.pub/). If you are thinking of modifying the protocol, please make sure to send a pull request over there to get it approved and merged before you send your pull request here.
 
 This project should not need much documentation, but if you think that something needs to be documented, please add it to the README, docs or contribution guide.
+
+## Code structure
+
+This project uses a monorepo structure with Bun as the package manager. Packages are located in the `packages` directory:
+- Packages that start with `@versia-server/` are utility packages for the server, such as the database and tables packages.
+- Packages that start with `@versia` are published packages that can be used by third-party developers, such as the `@versia/client` package.
+
+### ORM
+
+Our codebase uses Drizzle as an ORM, which is exposed in the `@versia-server/kit/db` and `@versia-server/kit/tables` packages.
+
+### API and worker
+
+The app has two modes: worker and API. The worker mode is used for background tasks, while the API mode serves HTTP requests. The entry point for the worker is `worker.ts`, and for the API, it is `api.ts`.
 
 ## Reporting bugs
 
