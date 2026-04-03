@@ -18,18 +18,18 @@ export const refetchInstanceCommand = defineCommand(
             ? new URL(url_or_host).host
             : url_or_host;
 
-        const instance = await Instance.fromSql(eq(Instances.baseUrl, host));
+        const instance = await Instance.fromSql(eq(Instances.domain, host));
 
         if (!instance) {
             throw new Error(`Instance ${chalk.gray(host)} not found.`);
         }
 
         await fetchQueue.add(FetchJobType.Instance, {
-            uri: new URL(`https://${instance.data.baseUrl}`).origin,
+            uri: new URL(`https://${instance.data.domain}`).origin,
         });
 
         console.info(
-            `Refresh job enqueued for ${chalk.gray(instance.data.baseUrl)}.`,
+            `Refresh job enqueued for ${chalk.gray(instance.data.domain)}.`,
         );
     },
 );

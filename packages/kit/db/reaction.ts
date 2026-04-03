@@ -1,4 +1,5 @@
 import * as VersiaEntities from "@versia/sdk/entities";
+import { config } from "@versia-server/config";
 import { randomUUIDv7 } from "bun";
 import {
     and,
@@ -212,13 +213,17 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         );
     }
 
-    public getUri(baseUrl: URL): URL {
-        return this.data.uri
-            ? new URL(this.data.uri)
-            : new URL(
-                  `/notes/${this.data.noteId}/reactions/${this.id}`,
-                  baseUrl,
-              );
+    public getUri(): URL {
+        const domain = this.data.note.author.instance?.domain
+            ? new URL(`https://${this.data.note.author.instance.domain}`)
+            : config.http.base_url;
+
+        return new URL(
+            `/.versia/v0.6/entities/${encodeURIComponent(
+                "pub.versia:reactions/Reaction",
+            )}/${this.id}`,
+            domain,
+        );
     }
 
     public get local(): boolean {
@@ -237,7 +242,7 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
         let noteReference = this.data.note.id;
 
         if (this.data.note.author.instance) {
-            noteReference = `${this.data.note.author.instance.baseUrl}:${this.data.note.remoteId}`;
+            noteReference = `${this.data.note.author.instance.domain}:${this.data.note.remoteId}`;
         }
 
         return new VersiaEntities.Reaction({

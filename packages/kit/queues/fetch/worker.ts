@@ -20,7 +20,7 @@ export const getFetchWorker = (): Worker<FetchJobData, void, FetchJobType> =>
                     const host = new URL(uri).hostname;
 
                     const existingInstance = await Instance.fromSql(
-                        eq(Instances.baseUrl, host),
+                        eq(Instances.domain, host),
                     );
 
                     if (existingInstance) {

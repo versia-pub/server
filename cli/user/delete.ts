@@ -38,7 +38,7 @@ export const deleteUserCommand = defineCommand(
             `Created At: ${chalk.blue(user.data.createdAt.toISOString())}`,
         );
         console.info(
-            `Instance: ${chalk.blue(user.data.instance?.baseUrl || "Local")}`,
+            `Instance: ${chalk.blue(user.data.instance?.domain || "Local")}`,
         );
 
         if (confirmFlag) {

@@ -229,13 +229,13 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         return new VersiaEntities.Reference(
             this.data.remoteId as string,
-            (this.data.instance as typeof Instance.$type).baseUrl,
+            (this.data.instance as typeof Instance.$type).domain,
         );
     }
 
     public get uri(): URL {
-        const domain = this.data.instance?.baseUrl
-            ? new URL(`https://${this.data.instance.baseUrl}`)
+        const domain = this.data.instance?.domain
+            ? new URL(`https://${this.data.instance.domain}`)
             : config.http.base_url;
 
         return new URL(
@@ -335,7 +335,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             author: this.id,
             created_at: new Date().toISOString(),
             followee: followee.data.instance
-                ? `${followee.data.instance.baseUrl}:${followee.id}`
+                ? `${followee.data.instance.domain}:${followee.id}`
                 : followee.id,
         });
     }
@@ -357,7 +357,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             author: this.id,
             created_at: new Date().toISOString(),
             follower: follower.data.instance
-                ? `${follower.data.instance.baseUrl}:${follower.id}`
+                ? `${follower.data.instance.domain}:${follower.id}`
                 : follower.id,
         });
 
@@ -382,7 +382,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             author: this.id,
             created_at: new Date().toISOString(),
             follower: follower.data.instance
-                ? `${follower.data.instance.baseUrl}:${follower.id}`
+                ? `${follower.data.instance.domain}:${follower.id}`
                 : follower.id,
         });
 
@@ -840,7 +840,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
                 ? reference
                 : new VersiaEntities.Reference(
                       reference.id,
-                      instance.data.baseUrl,
+                      instance.data.domain,
                   ),
         );
     }
@@ -910,7 +910,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     public getAcct(): string {
         return this.local
             ? this.data.username
-            : `${this.data.username}@${this.data.instance?.baseUrl}`;
+            : `${this.data.username}@${this.data.instance?.domain}`;
     }
 
     public static getAcct(
@@ -1008,7 +1008,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         try {
             await Instance.federationRequester.postEntity(
-                user.data.instance.baseUrl,
+                user.data.instance.domain,
                 entity,
             );
         } catch (e) {
@@ -1034,7 +1034,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             uri: this.uri.href,
             url: new URL(
                 `/@${user.username}${
-                    user.instanceId ? `@${user.instance?.baseUrl}` : ""
+                    user.instanceId ? `@${user.instance?.domain}` : ""
                 }`,
                 config.http.base_url,
             ).href,

@@ -154,7 +154,7 @@ export class InboxProcessor {
         !this.sender &&
             federationInboxLogger.debug`Processing request from potential bridge`;
 
-        if (this.sender && isDefederated(this.sender.instance.data.baseUrl)) {
+        if (this.sender && isDefederated(this.sender.instance.data.domain)) {
             // Return 201 to avoid
             // 1. Leaking defederated instance information
             // 2. Preventing the sender from thinking the message was not delivered and retrying
@@ -162,7 +162,7 @@ export class InboxProcessor {
         }
 
         federationInboxLogger.debug`Instance ${chalk.gray(
-            this.sender?.instance.data.baseUrl,
+            this.sender?.instance.data.domain,
         )} is not defederated`;
 
         const shouldCheckSignature = this.shouldCheckSignature();

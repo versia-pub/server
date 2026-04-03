@@ -274,7 +274,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
     public static async resolve(domain: string): Promise<Instance> {
         const existingInstance = await Instance.fromSql(
-            eq(Instances.baseUrl, domain),
+            eq(Instances.domain, domain),
         );
 
         if (existingInstance) {
@@ -287,7 +287,7 @@ export class Instance extends BaseInterface<typeof Instances> {
 
         return Instance.insert({
             id: randomUUIDv7(),
-            baseUrl: domain,
+            domain,
             name: metadata.data.name,
             version: metadata.data.software.version,
             logo: metadata.data.logo,
@@ -298,11 +298,11 @@ export class Instance extends BaseInterface<typeof Instances> {
     }
 
     public async updateFromRemote(): Promise<Instance> {
-        const output = await Instance.fetchMetadata(this.data.baseUrl);
+        const output = await Instance.fetchMetadata(this.data.domain);
 
         if (!output) {
             federationResolversLogger.error`Failed to update instance ${chalk.bold(
-                this.data.baseUrl,
+                this.data.domain,
             )}`;
             throw new Error("Failed to update instance");
         }
@@ -353,7 +353,7 @@ export class Instance extends BaseInterface<typeof Instances> {
             !this.data.extensions?.["pub.versia:instance_messaging"]?.endpoint
         ) {
             federationMessagingLogger.info`Instance ${chalk.gray(
-                this.data.baseUrl,
+                this.data.domain,
             )} does not support Instance Messaging, skipping message`;
 
             return;

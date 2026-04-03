@@ -37,8 +37,6 @@ const updatedAt = () =>
         .defaultNow()
         .notNull();
 
-const uri = () => text("uri").unique();
-
 const id = () => uuid("id").primaryKey();
 
 export const Challenges = pgTable("Challenges", {
@@ -136,7 +134,6 @@ export const PushSubscriptionsRelations = relations(
 
 export const Reactions = pgTable("Reaction", {
     id: id(),
-    uri: uri(),
     remoteId: text("remote_id"),
     // Emoji ID is nullable, in which case it is a text emoji, and the emojiText field is used
     emojiId: uuid("emojiId").references(() => Emojis.id, {
@@ -560,7 +557,7 @@ export const NotesRelations = relations(Notes, ({ many, one }) => ({
 
 export const Instances = pgTable("Instances", {
     id: id(),
-    baseUrl: text("base_url").notNull(),
+    domain: text("domain").notNull(),
     name: text("name").notNull(),
     version: text("version").notNull(),
     logo: jsonb("logo").$type<typeof NonTextContentFormatSchema._input>(),

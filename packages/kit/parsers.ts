@@ -39,7 +39,7 @@ export const parseMentionsFromText = async (text: string): Promise<User[]> => {
         .select({
             id: Users.id,
             username: Users.username,
-            baseUrl: Instances.baseUrl,
+            baseUrl: Instances.domain,
         })
         .from(Users)
         .leftJoin(Instances, eq(Users.instanceId, Instances.id))
@@ -50,7 +50,7 @@ export const parseMentionsFromText = async (text: string): Promise<User[]> => {
                         eq(Users.username, person[1] ?? ""),
                         isLocal(person[2])
                             ? isNull(Users.instanceId)
-                            : eq(Instances.baseUrl, person[2] ?? ""),
+                            : eq(Instances.domain, person[2] ?? ""),
                     ),
                 ),
             ),
@@ -110,8 +110,8 @@ export const linkifyUserMentions = (text: string, mentions: User[]): string => {
 
         if (mention.remote) {
             return finalText.replaceAll(
-                `@${username}@${instance?.baseUrl}`,
-                linkTemplate(`@${username}@${instance?.baseUrl}`),
+                `@${username}@${instance?.domain}`,
+                linkTemplate(`@${username}@${instance?.domain}`),
             );
         }
 

@@ -166,7 +166,7 @@ export default apiRoute((app) =>
                                 and(
                                     eq(Users.username, username),
                                     domain
-                                        ? eq(Instances.baseUrl, domain)
+                                        ? eq(Instances.domain, domain)
                                         : isNull(Users.instanceId),
                                 ),
                             )

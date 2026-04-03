@@ -82,12 +82,12 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                     }
 
                     await job.log(
-                        `Entity [${data.id}] is from remote instance [${sender.data.baseUrl}]`,
+                        `Entity [${data.id}] is from remote instance [${sender.data.domain}]`,
                     );
 
                     if (!sender.data.publicKey?.key) {
                         throw new Error(
-                            `Instance ${sender.data.baseUrl} has no public key stored in database`,
+                            `Instance ${sender.data.domain} has no public key stored in database`,
                         );
                     }
 
@@ -124,7 +124,7 @@ export const getInboxWorker = (): Worker<InboxJobData, void, InboxJobType> =>
                             );
 
                             await job.log(
-                                `Sending error message to instance [${sender.data.baseUrl}]`,
+                                `Sending error message to instance [${sender.data.domain}]`,
                             );
 
                             await sender.sendMessage(

@@ -1,5 +1,4 @@
 import * as VersiaEntities from "@versia/sdk/entities";
-import { config } from "@versia-server/config";
 import {
     and,
     desc,
@@ -161,15 +160,11 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             );
     }
 
-    public getUri(): URL {
-        return new URL(`/likes/${this.data.id}`, config.http.base_url);
-    }
-
     public toVersia(): VersiaEntities.Like {
         let likedReference = this.data.liked.id;
 
         if (this.data.liked.author.instance) {
-            likedReference = `${this.data.liked.author.instance.baseUrl}:${this.data.liked.remoteId}`;
+            likedReference = `${this.data.liked.author.instance.domain}:${this.data.liked.remoteId}`;
         }
 
         return new VersiaEntities.Like({

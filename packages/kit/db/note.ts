@@ -427,7 +427,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     public get reference(): VersiaEntities.Reference {
         if (this.remote) {
             const instanceUrl = new URL(
-                this.author.data.instance?.baseUrl || "",
+                this.author.data.instance?.domain || "",
             );
             return new VersiaEntities.Reference(this.id, instanceUrl.hostname);
         }
@@ -978,7 +978,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 ? reference
                 : new VersiaEntities.Reference(
                       reference.id,
-                      instance.data.baseUrl,
+                      instance.data.domain,
                   ),
         );
     }
@@ -1232,11 +1232,11 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 acct: User.getAcct(
                     mention.instanceId === null,
                     mention.username,
-                    mention.instance?.baseUrl,
+                    mention.instance?.domain,
                 ),
                 url: new URL(
                     `/@${mention.username}${
-                        mention.instance ? `@${mention.instance.baseUrl}` : ""
+                        mention.instance ? `@${mention.instance.domain}` : ""
                     }`,
                     config.http.base_url,
                 ).toString(),
@@ -1274,8 +1274,8 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     public getUri(): URL {
-        const domain = this.author.data.instance?.baseUrl
-            ? new URL(`https://${this.author.data.instance.baseUrl}`)
+        const domain = this.author.data.instance?.domain
+            ? new URL(`https://${this.author.data.instance.domain}`)
             : config.http.base_url;
 
         return new URL(
@@ -1315,13 +1315,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         let quoteReference = status.quote?.id ?? null;
 
         if (quoteReference && status.quote?.author.instance) {
-            quoteReference = `${status.quote.author.instance.baseUrl}:${status.quote.remoteId}`;
+            quoteReference = `${status.quote.author.instance.domain}:${status.quote.remoteId}`;
         }
 
         let replyReference = status.reply?.id ?? null;
 
         if (replyReference && status.reply?.author.instance) {
-            replyReference = `${status.reply.author.instance.baseUrl}:${status.reply.remoteId}`;
+            replyReference = `${status.reply.author.instance.domain}:${status.reply.remoteId}`;
         }
 
         return new VersiaEntities.Note({
@@ -1349,7 +1349,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             is_sensitive: status.sensitive,
             mentions: status.mentions.map((mention) =>
                 mention.instance
-                    ? `${mention.instance.baseUrl}:${mention.id}`
+                    ? `${mention.instance.domain}:${mention.id}`
                     : mention.id,
             ),
             quotes: quoteReference,
@@ -1379,7 +1379,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             id: this.id,
             created_at: new Date().toISOString(),
             shared: this.data.reblog.author.instance
-                ? `${this.data.reblog.author.instance.baseUrl}:${this.data.reblog.id}`
+                ? `${this.data.reblog.author.instance.domain}:${this.data.reblog.id}`
                 : this.data.reblog.id,
         });
     }
@@ -1499,7 +1499,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             } else if (reaction.emoji?.instance === null) {
                 emojiName = `:${reaction.emoji.shortcode}:`;
             } else if (reaction.emoji?.instance) {
-                emojiName = `:${reaction.emoji.shortcode}@${reaction.emoji.instance.baseUrl}:`;
+                emojiName = `:${reaction.emoji.shortcode}@${reaction.emoji.instance.domain}:`;
             } else {
                 continue; // Skip invalid reactions
             }
