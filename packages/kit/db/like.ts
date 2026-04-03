@@ -1,4 +1,5 @@
 import * as VersiaEntities from "@versia/sdk/entities";
+import { config } from "@versia-server/config";
 import {
     and,
     desc,
@@ -20,7 +21,9 @@ import { BaseInterface } from "./base.ts";
 import type { User } from "./user.ts";
 
 type LikeType = InferSelectModel<typeof Likes> & {
-    liker: InferSelectModel<typeof Users>;
+    liker: InferSelectModel<typeof Users> & {
+        instance: InferSelectModel<typeof Instances> | null;
+    };
     liked: InferSelectModel<typeof Notes> & {
         author: InferSelectModel<typeof Users> & {
             instance: InferSelectModel<typeof Instances> | null;
@@ -70,7 +73,11 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                         },
                     },
                 },
-                liker: true,
+                liker: {
+                    with: {
+                        instance: true,
+                    },
+                },
             },
         });
 
@@ -102,7 +109,11 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
                         },
                     },
                 },
-                liker: true,
+                liker: {
+                    with: {
+                        instance: true,
+                    },
+                },
             },
         });
 
@@ -167,22 +178,28 @@ export class Like extends BaseInterface<typeof Likes, LikeType> {
             likedReference = `${this.data.liked.author.instance.domain}:${this.data.liked.remoteId}`;
         }
 
-        return new VersiaEntities.Like({
-            id: this.id,
-            author: this.data.liker.id,
-            type: "pub.versia:likes/Like",
-            created_at: this.data.createdAt.toISOString(),
-            liked: likedReference,
-        });
+        return new VersiaEntities.Like(
+            {
+                id: this.id,
+                author: this.data.liker.id,
+                type: "pub.versia:likes/Like",
+                created_at: this.data.createdAt.toISOString(),
+                liked: likedReference,
+            },
+            this.data.liker.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public unlikeToVersia(unliker?: User): VersiaEntities.Delete {
-        return new VersiaEntities.Delete({
-            type: "Delete",
-            created_at: new Date().toISOString(),
-            author: unliker ? unliker.id : this.data.liker.id,
-            deleted_type: "pub.versia:likes/Like",
-            deleted: this.id,
-        });
+        return new VersiaEntities.Delete(
+            {
+                type: "Delete",
+                created_at: new Date().toISOString(),
+                author: unliker ? unliker.id : this.data.liker.id,
+                deleted_type: "pub.versia:likes/Like",
+                deleted: this.id,
+            },
+            this.data.liker.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 }

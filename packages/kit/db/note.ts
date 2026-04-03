@@ -426,13 +426,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
     public get reference(): VersiaEntities.Reference {
         if (this.remote) {
-            const instanceUrl = new URL(
+            return new VersiaEntities.Reference(
+                this.id,
                 this.author.data.instance?.domain || "",
             );
-            return new VersiaEntities.Reference(this.id, instanceUrl.hostname);
         }
 
-        return new VersiaEntities.Reference(this.id);
+        return new VersiaEntities.Reference(this.id, config.http.base_url.host);
     }
 
     public async federateToUsers(): Promise<void> {
@@ -941,19 +941,13 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
      */
     public static async resolve(
         reference: VersiaEntities.Reference,
-        defaultInstance?: Instance,
     ): Promise<Note | null> {
         // Check if note not already in database
-        if (
-            !(reference.domain || defaultInstance) ||
-            reference.domain === config.http.base_url.hostname
-        ) {
+        if (reference.domain === config.http.base_url.hostname) {
             return await Note.fromId(reference.id);
         }
 
-        const instance = reference.domain
-            ? await Instance.resolve(reference.domain)
-            : (defaultInstance as Instance);
+        const instance = await Instance.resolve(reference.domain);
 
         const foundNote = await Note.fromSql(
             and(
@@ -973,14 +967,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             return foundNote;
         }
 
-        return Note.fromVersia(
-            reference.domain
-                ? reference
-                : new VersiaEntities.Reference(
-                      reference.id,
-                      instance.data.domain,
-                  ),
-        );
+        return Note.fromVersia(reference);
     }
 
     /**
@@ -1003,12 +990,6 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         instance?: Instance,
     ): Promise<Note> {
         if (versiaNote instanceof VersiaEntities.Reference) {
-            if (!versiaNote.domain) {
-                throw new Error(
-                    "Cannot fetch Versia note from reference without domain",
-                );
-            }
-
             // No bridge support for notes yet
             const note = await Instance.federationRequester.fetchEntity(
                 versiaNote,
@@ -1027,7 +1008,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
         const { created_at, extensions, group, id, is_sensitive, subject } =
             versiaNote.data;
 
-        const author = await User.resolve(versiaNote.author, instance);
+        const author = await User.resolve(versiaNote.author);
 
         if (!author) {
             throw new Error("Entity author could not be resolved");
@@ -1064,7 +1045,7 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
 
         const mentions = (
             await Promise.all(
-                versiaNote.mentions.map((m) => User.resolve(m, instance)) ?? [],
+                versiaNote.mentions.map((m) => User.resolve(m)) ?? [],
             )
         ).filter((m) => m !== null);
 
@@ -1075,10 +1056,10 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
                 : (group as "public" | "followers" | "unlisted");
 
         const reply = versiaNote.repliesTo
-            ? await Note.resolve(versiaNote.repliesTo, instance)
+            ? await Note.resolve(versiaNote.repliesTo)
             : null;
         const quote = versiaNote.quotes
-            ? await Note.resolve(versiaNote.quotes, instance)
+            ? await Note.resolve(versiaNote.quotes)
             : null;
         const spoiler = subject ? await sanitizedHtmlStrip(subject) : undefined;
 
@@ -1296,13 +1277,16 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
     }
 
     public deleteToVersia(): VersiaEntities.Delete {
-        return new VersiaEntities.Delete({
-            type: "Delete",
-            author: this.author.id,
-            deleted_type: "Note",
-            deleted: this.id,
-            created_at: new Date().toISOString(),
-        });
+        return new VersiaEntities.Delete(
+            {
+                type: "Delete",
+                author: this.author.id,
+                deleted_type: "Note",
+                deleted: this.id,
+                created_at: new Date().toISOString(),
+            },
+            this.data.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     /**
@@ -1324,48 +1308,51 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             replyReference = `${status.reply.author.instance.domain}:${status.reply.remoteId}`;
         }
 
-        return new VersiaEntities.Note({
-            type: "Note",
-            created_at: status.createdAt.toISOString(),
-            id: status.id,
-            author: this.author.id,
-            content: {
-                "text/html": {
-                    content: status.content,
-                    remote: false,
+        return new VersiaEntities.Note(
+            {
+                type: "Note",
+                created_at: status.createdAt.toISOString(),
+                id: status.id,
+                author: this.author.id,
+                content: {
+                    "text/html": {
+                        content: status.content,
+                        remote: false,
+                    },
+                    "text/plain": {
+                        content: htmlToText(status.content),
+                        remote: false,
+                    },
                 },
-                "text/plain": {
-                    content: htmlToText(status.content),
-                    remote: false,
+                previews: [],
+                attachments: status.attachments.map(
+                    (attachment) =>
+                        new Media(attachment).toVersia().data as z.infer<
+                            typeof NonTextContentFormatSchema
+                        >,
+                ),
+                is_sensitive: status.sensitive,
+                mentions: status.mentions.map((mention) =>
+                    mention.instance
+                        ? `${mention.instance.domain}:${mention.id}`
+                        : mention.id,
+                ),
+                quotes: quoteReference,
+                replies_to: replyReference,
+                subject: status.spoilerText,
+                // TODO: Refactor as part of groups
+                group: status.visibility === "public" ? "public" : "followers",
+                extensions: {
+                    "pub.versia:custom_emojis": {
+                        emojis: status.emojis.map((emoji) =>
+                            new Emoji(emoji).toVersia(),
+                        ),
+                    },
+                    // TODO: Add polls and reactions
                 },
             },
-            previews: [],
-            attachments: status.attachments.map(
-                (attachment) =>
-                    new Media(attachment).toVersia().data as z.infer<
-                        typeof NonTextContentFormatSchema
-                    >,
-            ),
-            is_sensitive: status.sensitive,
-            mentions: status.mentions.map((mention) =>
-                mention.instance
-                    ? `${mention.instance.domain}:${mention.id}`
-                    : mention.id,
-            ),
-            quotes: quoteReference,
-            replies_to: replyReference,
-            subject: status.spoilerText,
-            // TODO: Refactor as part of groups
-            group: status.visibility === "public" ? "public" : "followers",
-            extensions: {
-                "pub.versia:custom_emojis": {
-                    emojis: status.emojis.map((emoji) =>
-                        new Emoji(emoji).toVersia(),
-                    ),
-                },
-                // TODO: Add polls and reactions
-            },
-        });
+            status.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public toVersiaShare(): VersiaEntities.Share {
@@ -1373,25 +1360,31 @@ export class Note extends BaseInterface<typeof Notes, NoteTypeWithRelations> {
             throw new Error("Cannot share a non-reblogged note");
         }
 
-        return new VersiaEntities.Share({
-            type: "pub.versia:share/Share",
-            author: this.author.id,
-            id: this.id,
-            created_at: new Date().toISOString(),
-            shared: this.data.reblog.author.instance
-                ? `${this.data.reblog.author.instance.domain}:${this.data.reblog.id}`
-                : this.data.reblog.id,
-        });
+        return new VersiaEntities.Share(
+            {
+                type: "pub.versia:share/Share",
+                author: this.author.id,
+                id: this.id,
+                created_at: new Date().toISOString(),
+                shared: this.data.reblog.author.instance
+                    ? `${this.data.reblog.author.instance.domain}:${this.data.reblog.id}`
+                    : this.data.reblog.id,
+            },
+            this.data.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public toVersiaUnshare(): VersiaEntities.Delete {
-        return new VersiaEntities.Delete({
-            type: "Delete",
-            created_at: new Date().toISOString(),
-            author: this.author.id,
-            deleted_type: "pub.versia:share/Share",
-            deleted: this.id,
-        });
+        return new VersiaEntities.Delete(
+            {
+                type: "Delete",
+                created_at: new Date().toISOString(),
+                author: this.author.id,
+                deleted_type: "pub.versia:share/Share",
+                deleted: this.id,
+            },
+            this.data.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     /**

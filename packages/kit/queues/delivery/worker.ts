@@ -62,7 +62,10 @@ export const getDeliveryWorker = (): Worker<
                     }
 
                     await sender.federateToUser(
-                        await entityCtor.fromJSON(entity),
+                        await entityCtor.fromJSON(
+                            entity,
+                            config.http.base_url.hostname,
+                        ),
                         recipient,
                     );
 

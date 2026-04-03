@@ -19,7 +19,10 @@ type MaybePromise<T> = T | Promise<T>;
 export class EntitySorter {
     private readonly handlers: EntitySorterHandlers = new Map();
 
-    public constructor(private readonly jsonData: JSONObject) {}
+    public constructor(
+        private readonly jsonData: JSONObject,
+        public instanceDomain: string,
+    ) {}
 
     public on<T extends typeof Entity>(
         entity: T,
@@ -45,7 +48,7 @@ export class EntitySorter {
 
         if (entity) {
             await this.handlers.get(entity)?.(
-                await entity.fromJSON(this.jsonData),
+                await entity.fromJSON(this.jsonData, this.instanceDomain),
             );
         } else {
             await defaultHandler?.();

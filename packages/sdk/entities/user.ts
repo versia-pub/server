@@ -7,12 +7,20 @@ import { Entity } from "./entity.ts";
 export class User extends Entity {
     public static override name = "User";
 
-    public constructor(public override data: z.infer<typeof UserSchema>) {
-        super(data);
+    public constructor(
+        public override data: z.infer<typeof UserSchema>,
+        instanceDomain: string,
+    ) {
+        super(data, instanceDomain);
     }
 
-    public static override fromJSON(json: JSONObject): Promise<User> {
-        return UserSchema.parseAsync(json).then((u) => new User(u));
+    public static override fromJSON(
+        json: JSONObject,
+        instanceDomain: string,
+    ): Promise<User> {
+        return UserSchema.parseAsync(json).then(
+            (u) => new User(u, instanceDomain),
+        );
     }
 
     public get avatar(): ImageContentFormat | undefined {

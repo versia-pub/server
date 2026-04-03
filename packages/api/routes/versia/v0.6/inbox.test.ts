@@ -83,15 +83,18 @@ mock(new URL(`/.versia/v0.6/entities/User/${userId}`, instanceUrl).href, {
         headers: {
             "Content-Type": "application/vnd.versia+json; charset=utf-8",
         },
-        data: new VersiaEntities.User({
-            id: userId,
-            created_at: "2025-04-18T10:32:01.427Z",
-            type: "User",
-            username: "testuser",
-            fields: [],
-            manually_approves_followers: false,
-            indexable: true,
-        }).toJSON(),
+        data: new VersiaEntities.User(
+            {
+                id: userId,
+                created_at: "2025-04-18T10:32:01.427Z",
+                type: "User",
+                username: "testuser",
+                fields: [],
+                manually_approves_followers: false,
+                indexable: true,
+            },
+            instanceUrl.hostname,
+        ).toJSON(),
     },
 });
 
@@ -111,35 +114,38 @@ afterAll(async () => {
 
 describe("Inbox Tests", () => {
     test("should correctly process inbox request", async () => {
-        const exampleNote = new VersiaEntities.Note({
-            id: noteId,
-            created_at: "2025-04-18T10:32:01.427Z",
-            type: "Note",
-            extensions: {
-                "pub.versia:custom_emojis": {
-                    emojis: [],
+        const exampleNote = new VersiaEntities.Note(
+            {
+                id: noteId,
+                created_at: "2025-04-18T10:32:01.427Z",
+                type: "Note",
+                extensions: {
+                    "pub.versia:custom_emojis": {
+                        emojis: [],
+                    },
                 },
+                previews: [],
+                attachments: [],
+                author: userId,
+                content: {
+                    "text/html": {
+                        content: "<p>Hello!</p>",
+                        remote: false,
+                    },
+                    "text/plain": {
+                        content: "Hello!",
+                        remote: false,
+                    },
+                },
+                group: "public",
+                is_sensitive: false,
+                mentions: [],
+                quotes: null,
+                replies_to: null,
+                subject: "",
             },
-            previews: [],
-            attachments: [],
-            author: userId,
-            content: {
-                "text/html": {
-                    content: "<p>Hello!</p>",
-                    remote: false,
-                },
-                "text/plain": {
-                    content: "Hello!",
-                    remote: false,
-                },
-            },
-            group: "public",
-            is_sensitive: false,
-            mentions: [],
-            quotes: null,
-            replies_to: null,
-            subject: "",
-        });
+            instanceUrl.hostname,
+        );
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
@@ -177,13 +183,16 @@ describe("Inbox Tests", () => {
     });
 
     test("should correctly process Share", async () => {
-        const exampleRequest = new VersiaEntities.Share({
-            id: shareId,
-            created_at: "2025-04-18T10:32:01.427Z",
-            type: "pub.versia:share/Share",
-            author: userId,
-            shared: noteId,
-        });
+        const exampleRequest = new VersiaEntities.Share(
+            {
+                id: shareId,
+                created_at: "2025-04-18T10:32:01.427Z",
+                type: "pub.versia:share/Share",
+                author: userId,
+                shared: noteId,
+            },
+            instanceUrl.hostname,
+        );
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
@@ -229,14 +238,17 @@ describe("Inbox Tests", () => {
     });
 
     test("should correctly process Reaction", async () => {
-        const exampleRequest = new VersiaEntities.Reaction({
-            id: reactionId,
-            created_at: "2025-04-18T10:32:01.427Z",
-            type: "pub.versia:reactions/Reaction",
-            author: userId,
-            object: noteId,
-            content: "👍",
-        });
+        const exampleRequest = new VersiaEntities.Reaction(
+            {
+                id: reactionId,
+                created_at: "2025-04-18T10:32:01.427Z",
+                type: "pub.versia:reactions/Reaction",
+                author: userId,
+                object: noteId,
+                content: "👍",
+            },
+            instanceUrl.hostname,
+        );
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
@@ -304,34 +316,37 @@ describe("Inbox Tests", () => {
     });
 
     test("should correctly process Reaction with custom emoji", async () => {
-        const exampleRequest = new VersiaEntities.Reaction({
-            id: reaction2Id,
-            created_at: "2025-04-18T10:32:01.427Z",
-            type: "pub.versia:reactions/Reaction",
-            author: userId,
-            object: noteId,
-            content: ":neocat:",
-            extensions: {
-                "pub.versia:custom_emojis": {
-                    emojis: [
-                        {
-                            name: ":neocat:",
-                            url: {
-                                "image/webp": {
-                                    hash: "e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649",
-                                    size: 4664,
-                                    width: 256,
-                                    height: 256,
-                                    remote: true,
-                                    content:
-                                        "https://cdn.cpluspatch.com/versia-cpp/e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649/neocat.webp",
+        const exampleRequest = new VersiaEntities.Reaction(
+            {
+                id: reaction2Id,
+                created_at: "2025-04-18T10:32:01.427Z",
+                type: "pub.versia:reactions/Reaction",
+                author: userId,
+                object: noteId,
+                content: ":neocat:",
+                extensions: {
+                    "pub.versia:custom_emojis": {
+                        emojis: [
+                            {
+                                name: ":neocat:",
+                                url: {
+                                    "image/webp": {
+                                        hash: "e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649",
+                                        size: 4664,
+                                        width: 256,
+                                        height: 256,
+                                        remote: true,
+                                        content:
+                                            "https://cdn.cpluspatch.com/versia-cpp/e06240155d2cb90e8dc05327d023585ab9d47216ff547ad72aaf75c485fe9649/neocat.webp",
+                                    },
                                 },
                             },
-                        },
-                    ],
+                        ],
+                    },
                 },
             },
-        });
+            instanceUrl.hostname,
+        );
 
         const signedRequest = await sign(
             instanceKeys.privateKey,
@@ -405,13 +420,16 @@ describe("Inbox Tests", () => {
         expect(noteToDelete).not.toBeNull();
 
         // Create a Delete request
-        const exampleRequest = new VersiaEntities.Delete({
-            created_at: new Date().toISOString(),
-            type: "Delete",
-            author: userId,
-            deleted_type: "Note",
-            deleted: noteId,
-        });
+        const exampleRequest = new VersiaEntities.Delete(
+            {
+                created_at: new Date().toISOString(),
+                type: "Delete",
+                author: userId,
+                deleted_type: "Note",
+                deleted: noteId,
+            },
+            instanceUrl.hostname,
+        );
 
         const signedRequest = await sign(
             instanceKeys.privateKey,

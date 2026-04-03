@@ -4,11 +4,19 @@ import type { JSONObject } from "../types.ts";
 export class Entity {
     public static name = "Entity";
 
-    // biome-ignore lint/suspicious/noExplicitAny: This is a base class that is never instanciated directly
-    public constructor(public data: any) {}
+    public constructor(
+        // biome-ignore lint/suspicious/noExplicitAny: This is a base class that is never instanciated directly
+        public data: any,
+        public instanceDomain: string,
+    ) {}
 
-    public static fromJSON(json: JSONObject): Promise<Entity> {
-        return EntitySchema.parseAsync(json).then((u) => new Entity(u));
+    public static fromJSON(
+        json: JSONObject,
+        instanceDomain: string,
+    ): Promise<Entity> {
+        return EntitySchema.parseAsync(json).then(
+            (u) => new Entity(u, instanceDomain),
+        );
     }
 
     public toJSON(): JSONObject {
@@ -19,10 +27,19 @@ export class Entity {
 export class Reference {
     public constructor(
         public id: string,
-        public domain?: string,
+        public domain: string,
     ) {}
 
-    public static fromString(str: string): Reference {
+    /**
+     * Parses a reference from a string. The string can be in the format "domain:id" or just "id" if the domain is the local instance (in which case a default domain must be provided).
+     * @param str
+     * @param defaultDomain
+     * @returns
+     */
+    public static fromString(
+        str: string,
+        defaultDomain: URL | string,
+    ): Reference {
         // Expect format: domain:id or id (if domain is the local instance)
         // Handle IPv6 addresses in brackets
         const chunks = str.split(":");
@@ -36,10 +53,21 @@ export class Reference {
             return new Reference(id, domain);
         }
 
-        return new Reference(str);
+        if (!defaultDomain) {
+            throw new Error(
+                `Invalid reference string: ${str}. Expected format "domain:id" or "id" with a default domain provided.`,
+            );
+        }
+
+        return new Reference(
+            str,
+            defaultDomain instanceof URL
+                ? defaultDomain.hostname
+                : defaultDomain,
+        );
     }
 
     public toString(): string {
-        return this.domain ? `${this.domain}:${this.id}` : this.id;
+        return `${this.domain}:${this.id}`;
     }
 }

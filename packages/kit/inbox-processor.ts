@@ -185,33 +185,31 @@ export class InboxProcessor {
             // TODO: Rip out bridge code so this is never null
             const instance = this.sender?.instance as Instance;
 
-            await new EntitySorter(this.body)
+            await new EntitySorter(this.body, instance.data.domain)
                 .on(VersiaEntities.Note, (n) =>
                     InboxProcessor.processNote(n, instance),
                 )
                 .on(VersiaEntities.Follow, (f) =>
-                    InboxProcessor.processFollowRequest(f, instance),
+                    InboxProcessor.processFollowRequest(f),
                 )
                 .on(VersiaEntities.FollowAccept, (f) =>
-                    InboxProcessor.processFollowAccept(f, instance),
+                    InboxProcessor.processFollowAccept(f),
                 )
                 .on(VersiaEntities.FollowReject, (f) =>
-                    InboxProcessor.processFollowReject(f, instance),
+                    InboxProcessor.processFollowReject(f),
                 )
                 .on(VersiaEntities.Like, (l) =>
-                    InboxProcessor.processLikeRequest(l, instance),
+                    InboxProcessor.processLikeRequest(l),
                 )
                 .on(VersiaEntities.Delete, (d) =>
-                    InboxProcessor.processDelete(d, instance),
+                    InboxProcessor.processDelete(d),
                 )
                 .on(VersiaEntities.User, (u) =>
                     InboxProcessor.processUser(u, instance),
                 )
-                .on(VersiaEntities.Share, (s) =>
-                    InboxProcessor.processShare(s, instance),
-                )
+                .on(VersiaEntities.Share, (s) => InboxProcessor.processShare(s))
                 .on(VersiaEntities.Reaction, (r) =>
-                    InboxProcessor.processReaction(r, instance),
+                    InboxProcessor.processReaction(r),
                 )
                 .sort(() => {
                     throw new ApiError(400, "Unknown entity type");
@@ -229,10 +227,9 @@ export class InboxProcessor {
      */
     private static async processReaction(
         reaction: VersiaEntities.Reaction,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(reaction.author, sender);
-        const note = await Note.resolve(reaction.object, sender);
+        const author = await User.resolve(reaction.author);
+        const note = await Note.resolve(reaction.object);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -322,10 +319,9 @@ export class InboxProcessor {
      */
     private static async processFollowRequest(
         follow: VersiaEntities.Follow,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(follow.author, sender);
-        const followee = await User.resolve(follow.followee, sender);
+        const author = await User.resolve(follow.author);
+        const followee = await User.resolve(follow.followee);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -371,10 +367,9 @@ export class InboxProcessor {
      */
     private static async processFollowAccept(
         followAccept: VersiaEntities.FollowAccept,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(followAccept.author, sender);
-        const follower = await User.resolve(followAccept.follower, sender);
+        const author = await User.resolve(followAccept.author);
+        const follower = await User.resolve(followAccept.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -407,10 +402,9 @@ export class InboxProcessor {
      */
     private static async processFollowReject(
         followReject: VersiaEntities.FollowReject,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(followReject.author, sender);
-        const follower = await User.resolve(followReject.follower, sender);
+        const author = await User.resolve(followReject.author);
+        const follower = await User.resolve(followReject.follower);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -443,10 +437,9 @@ export class InboxProcessor {
      */
     private static async processShare(
         share: VersiaEntities.Share,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(share.author, sender);
-        const sharedNote = await Note.resolve(share.shared, sender);
+        const author = await User.resolve(share.author);
+        const sharedNote = await Note.resolve(share.shared);
 
         if (!author) {
             throw new ApiError(404, "Author not found");
@@ -467,11 +460,10 @@ export class InboxProcessor {
      */ // JS doesn't allow the use of `delete` as a variable name
     public static async processDelete(
         delete_: VersiaEntities.Delete,
-        sender: Instance,
     ): Promise<void> {
         const toDelete = delete_.deleted;
 
-        const author = await User.resolve(delete_.author, sender);
+        const author = await User.resolve(delete_.author);
 
         switch (delete_.data.deleted_type) {
             case "Note": {
@@ -491,7 +483,7 @@ export class InboxProcessor {
                 return;
             }
             case "User": {
-                const userToDelete = await User.resolve(toDelete, sender);
+                const userToDelete = await User.resolve(toDelete);
 
                 if (!userToDelete) {
                     throw new ApiError(404, "User to delete not found");
@@ -586,10 +578,9 @@ export class InboxProcessor {
      */
     private static async processLikeRequest(
         like: VersiaEntities.Like,
-        sender: Instance,
     ): Promise<void> {
-        const author = await User.resolve(like.author, sender);
-        const likedNote = await Note.resolve(like.liked, sender);
+        const author = await User.resolve(like.author);
+        const likedNote = await Note.resolve(like.liked);
 
         if (!author) {
             throw new ApiError(404, "Author not found");

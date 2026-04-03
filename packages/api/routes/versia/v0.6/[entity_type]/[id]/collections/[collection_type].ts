@@ -4,6 +4,7 @@ import {
     EntitySchema,
     URICollectionSchema,
 } from "@versia/sdk/schemas";
+import { config } from "@versia-server/config";
 import { ApiError } from "@versia-server/kit";
 import { apiRoute, handleZodError } from "@versia-server/kit/api";
 import { db, Instance, Note, User } from "@versia-server/kit/db";
@@ -112,13 +113,16 @@ export default apiRoute((app) =>
                                 ),
                             );
 
-                            entity = new VersiaEntities.URICollection({
-                                author: note.author.id,
-                                total: replyCount,
-                                items: replies.map((reply) =>
-                                    reply.reference.toString(),
-                                ),
-                            });
+                            entity = new VersiaEntities.URICollection(
+                                {
+                                    author: note.author.id,
+                                    total: replyCount,
+                                    items: replies.map((reply) =>
+                                        reply.reference.toString(),
+                                    ),
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
                         case "quotes": {
@@ -146,13 +150,16 @@ export default apiRoute((app) =>
                                 ),
                             );
 
-                            entity = new VersiaEntities.URICollection({
-                                author: note.author.id,
-                                total: quoteCount,
-                                items: quotes.map((quote) =>
-                                    quote.reference.toString(),
-                                ),
-                            });
+                            entity = new VersiaEntities.URICollection(
+                                {
+                                    author: note.author.id,
+                                    total: quoteCount,
+                                    items: quotes.map((quote) =>
+                                        quote.reference.toString(),
+                                    ),
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
                         case "pub.versia:share/Shares": {
@@ -180,13 +187,16 @@ export default apiRoute((app) =>
                                 ),
                             );
 
-                            entity = new VersiaEntities.URICollection({
-                                author: note.author.id,
-                                total: shareCount,
-                                items: shares.map((share) =>
-                                    share.reference.toString(),
-                                ),
-                            });
+                            entity = new VersiaEntities.URICollection(
+                                {
+                                    author: note.author.id,
+                                    total: shareCount,
+                                    items: shares.map((share) =>
+                                        share.reference.toString(),
+                                    ),
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
                     }
@@ -226,23 +236,29 @@ export default apiRoute((app) =>
                                 offset,
                             );
 
-                            entity = new VersiaEntities.Collection({
-                                author: user.id,
-                                total,
-                                items: outboxItems.map((note) =>
-                                    note.toVersia(),
-                                ),
-                            });
+                            entity = new VersiaEntities.Collection(
+                                {
+                                    author: user.id,
+                                    total,
+                                    items: outboxItems.map((note) =>
+                                        note.toVersia(),
+                                    ),
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
 
                         case "followers": {
                             if (user.data.isHidingCollections) {
-                                entity = new VersiaEntities.URICollection({
-                                    author: user.id,
-                                    items: [],
-                                    total: 0,
-                                });
+                                entity = new VersiaEntities.URICollection(
+                                    {
+                                        author: user.id,
+                                        items: [],
+                                        total: 0,
+                                    },
+                                    config.http.base_url.hostname,
+                                );
                                 break;
                             }
 
@@ -258,23 +274,29 @@ export default apiRoute((app) =>
                                 offset,
                             );
 
-                            entity = new VersiaEntities.URICollection({
-                                author: user.id,
-                                items: followers.map((follower) =>
-                                    follower.reference.toString(),
-                                ),
-                                total,
-                            });
+                            entity = new VersiaEntities.URICollection(
+                                {
+                                    author: user.id,
+                                    items: followers.map((follower) =>
+                                        follower.reference.toString(),
+                                    ),
+                                    total,
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
 
                         case "following": {
                             if (user.data.isHidingCollections) {
-                                entity = new VersiaEntities.URICollection({
-                                    author: user.id,
-                                    items: [],
-                                    total: 0,
-                                });
+                                entity = new VersiaEntities.URICollection(
+                                    {
+                                        author: user.id,
+                                        items: [],
+                                        total: 0,
+                                    },
+                                    config.http.base_url.hostname,
+                                );
                                 break;
                             }
 
@@ -290,13 +312,16 @@ export default apiRoute((app) =>
                                 offset,
                             );
 
-                            entity = new VersiaEntities.URICollection({
-                                author: user.id,
-                                items: following.map((followed) =>
-                                    followed.reference.toString(),
-                                ),
-                                total,
-                            });
+                            entity = new VersiaEntities.URICollection(
+                                {
+                                    author: user.id,
+                                    items: following.map((followed) =>
+                                        followed.reference.toString(),
+                                    ),
+                                    total,
+                                },
+                                config.http.base_url.hostname,
+                            );
                             break;
                         }
 

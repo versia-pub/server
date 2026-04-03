@@ -224,7 +224,10 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public get reference(): VersiaEntities.Reference {
         if (this.local) {
-            return new VersiaEntities.Reference(this.id);
+            return new VersiaEntities.Reference(
+                this.id,
+                config.http.base_url.hostname,
+            );
         }
 
         return new VersiaEntities.Reference(
@@ -330,14 +333,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
     }
 
     private unfollowToVersia(followee: User): VersiaEntities.Unfollow {
-        return new VersiaEntities.Unfollow({
-            type: "Unfollow",
-            author: this.id,
-            created_at: new Date().toISOString(),
-            followee: followee.data.instance
-                ? `${followee.data.instance.domain}:${followee.id}`
-                : followee.id,
-        });
+        return new VersiaEntities.Unfollow(
+            {
+                type: "Unfollow",
+                author: this.id,
+                created_at: new Date().toISOString(),
+                followee: followee.data.instance
+                    ? `${followee.data.instance.domain}:${followee.id}`
+                    : followee.id,
+            },
+            this.data.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public async acceptFollowRequest(follower: User): Promise<void> {
@@ -352,14 +358,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         await follower.recalculateFollowerCount();
         await this.recalculateFollowingCount();
 
-        const entity = new VersiaEntities.FollowAccept({
-            type: "FollowAccept",
-            author: this.id,
-            created_at: new Date().toISOString(),
-            follower: follower.data.instance
-                ? `${follower.data.instance.domain}:${follower.id}`
-                : follower.id,
-        });
+        const entity = new VersiaEntities.FollowAccept(
+            {
+                type: "FollowAccept",
+                author: this.id,
+                created_at: new Date().toISOString(),
+                follower: follower.data.instance
+                    ? `${follower.data.instance.domain}:${follower.id}`
+                    : follower.id,
+            },
+            this.data.instance?.domain ?? config.http.base_url.hostname,
+        );
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
             entity: entity.toJSON(),
@@ -377,14 +386,17 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             throw new Error("Followee must be a local user");
         }
 
-        const entity = new VersiaEntities.FollowReject({
-            type: "FollowReject",
-            author: this.id,
-            created_at: new Date().toISOString(),
-            follower: follower.data.instance
-                ? `${follower.data.instance.domain}:${follower.id}`
-                : follower.id,
-        });
+        const entity = new VersiaEntities.FollowReject(
+            {
+                type: "FollowReject",
+                author: this.id,
+                created_at: new Date().toISOString(),
+                follower: follower.data.instance
+                    ? `${follower.data.instance.domain}:${follower.id}`
+                    : follower.id,
+            },
+            this.data.instance?.domain ?? config.http.base_url.hostname,
+        );
 
         await deliveryQueue.add(DeliveryJobType.FederateEntity, {
             entity: entity.toJSON(),
@@ -686,12 +698,6 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         instance?: Instance,
     ): Promise<User> {
         if (versiaUser instanceof VersiaEntities.Reference) {
-            if (!versiaUser.domain) {
-                throw new Error(
-                    "Cannot fetch Versia user from reference without domain",
-                );
-            }
-
             const user = await Instance.federationRequester.fetchEntity(
                 versiaUser,
                 VersiaEntities.User,
@@ -802,13 +808,9 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
     public static async resolve(
         reference: VersiaEntities.Reference,
-        defaultInstance?: Instance,
     ): Promise<User> {
         // Check if user not already in database
-        if (
-            !(reference.domain || defaultInstance) ||
-            reference.domain === config.http.base_url.hostname
-        ) {
+        if (reference.domain === config.http.base_url.hostname) {
             const user = await User.fromId(reference.id);
 
             if (!user) {
@@ -820,9 +822,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
             return user;
         }
 
-        const instance = reference.domain
-            ? await Instance.resolve(reference.domain)
-            : (defaultInstance as Instance);
+        const instance = await Instance.resolve(reference.domain);
 
         const foundUser = await User.fromSql(
             and(
@@ -836,12 +836,7 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
         }
 
         return User.fromVersia(
-            reference.domain
-                ? reference
-                : new VersiaEntities.Reference(
-                      reference.id,
-                      instance.data.domain,
-                  ),
+            new VersiaEntities.Reference(reference.id, instance.data.domain),
         );
     }
 
@@ -1088,39 +1083,42 @@ export class User extends BaseInterface<typeof Users, UserWithRelations> {
 
         const user = this.data;
 
-        return new VersiaEntities.User({
-            id: user.id,
-            type: "User",
-            bio: {
-                "text/html": {
-                    content: user.note,
-                    remote: false,
+        return new VersiaEntities.User(
+            {
+                id: user.id,
+                type: "User",
+                bio: {
+                    "text/html": {
+                        content: user.note,
+                        remote: false,
+                    },
+                    "text/plain": {
+                        content: htmlToText(user.note),
+                        remote: false,
+                    },
                 },
-                "text/plain": {
-                    content: htmlToText(user.note),
-                    remote: false,
+                created_at: user.createdAt.toISOString(),
+                indexable: this.data.isIndexable,
+                username: user.username,
+                manually_approves_followers: this.data.isLocked,
+                avatar: this.avatar?.toVersia().data as z.infer<
+                    typeof ImageContentFormatSchema
+                >,
+                header: this.header?.toVersia().data as z.infer<
+                    typeof ImageContentFormatSchema
+                >,
+                display_name: user.displayName,
+                fields: user.fields,
+                extensions: {
+                    "pub.versia:custom_emojis": {
+                        emojis: user.emojis.map((emoji) =>
+                            new Emoji(emoji).toVersia(),
+                        ),
+                    },
                 },
             },
-            created_at: user.createdAt.toISOString(),
-            indexable: this.data.isIndexable,
-            username: user.username,
-            manually_approves_followers: this.data.isLocked,
-            avatar: this.avatar?.toVersia().data as z.infer<
-                typeof ImageContentFormatSchema
-            >,
-            header: this.header?.toVersia().data as z.infer<
-                typeof ImageContentFormatSchema
-            >,
-            display_name: user.displayName,
-            fields: user.fields,
-            extensions: {
-                "pub.versia:custom_emojis": {
-                    emojis: user.emojis.map((emoji) =>
-                        new Emoji(emoji).toVersia(),
-                    ),
-                },
-            },
-        });
+            this.data.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public toMention(): z.infer<typeof MentionSchema> {

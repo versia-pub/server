@@ -75,7 +75,7 @@ export class FederationRequester {
             );
         }
 
-        const entity = await entityType.fromJSON(jsonData);
+        const entity = await entityType.fromJSON(jsonData, url.hostname);
 
         return entity as InstanceType<T>;
     }
@@ -150,7 +150,10 @@ export class FederationRequester {
             entities.push(
                 ...collection.data.items.map(
                     (item) =>
-                        collectionItemType.fromJSON(item) as InstanceType<T>,
+                        collectionItemType.fromJSON(
+                            item,
+                            reference.domain,
+                        ) as InstanceType<T>,
                 ),
             );
             limit -= collection.data.items.length;

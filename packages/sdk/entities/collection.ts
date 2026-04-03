@@ -7,25 +7,37 @@ import type { JSONObject } from "../types.ts";
 import { Entity } from "./entity.ts";
 
 export class Collection extends Entity {
-    public constructor(public override data: z.infer<typeof CollectionSchema>) {
-        super(data);
+    public constructor(
+        public override data: z.infer<typeof CollectionSchema>,
+        instanceDomain: string,
+    ) {
+        super(data, instanceDomain);
     }
 
-    public static override fromJSON(json: JSONObject): Promise<Collection> {
-        return CollectionSchema.parseAsync(json).then((u) => new Collection(u));
+    public static override fromJSON(
+        json: JSONObject,
+        instanceDomain: string,
+    ): Promise<Collection> {
+        return CollectionSchema.parseAsync(json).then(
+            (u) => new Collection(u, instanceDomain),
+        );
     }
 }
 
 export class URICollection extends Entity {
     public constructor(
         public override data: z.infer<typeof URICollectionSchema>,
+        instanceDomain: string,
     ) {
-        super(data);
+        super(data, instanceDomain);
     }
 
-    public static override fromJSON(json: JSONObject): Promise<URICollection> {
+    public static override fromJSON(
+        json: JSONObject,
+        instanceDomain: string,
+    ): Promise<URICollection> {
         return URICollectionSchema.parseAsync(json).then(
-            (u) => new URICollection(u),
+            (u) => new URICollection(u, instanceDomain),
         );
     }
 }

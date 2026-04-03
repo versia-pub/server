@@ -7,16 +7,24 @@ import { Entity, Reference } from "./entity.ts";
 export class Note extends Entity {
     public static override name = "Note";
 
-    public constructor(public override data: z.infer<typeof NoteSchema>) {
-        super(data);
+    public constructor(
+        public override data: z.infer<typeof NoteSchema>,
+        instanceDomain: string,
+    ) {
+        super(data, instanceDomain);
     }
 
-    public static override fromJSON(json: JSONObject): Promise<Note> {
-        return NoteSchema.parseAsync(json).then((n) => new Note(n));
+    public static override fromJSON(
+        json: JSONObject,
+        instanceDomain: string,
+    ): Promise<Note> {
+        return NoteSchema.parseAsync(json).then(
+            (n) => new Note(n, instanceDomain),
+        );
     }
 
     public get author(): Reference {
-        return Reference.fromString(this.data.author);
+        return Reference.fromString(this.data.author, this.instanceDomain);
     }
 
     public get group(): Reference | null {
@@ -27,20 +35,24 @@ export class Note extends Entity {
             return null;
         }
 
-        return Reference.fromString(this.data.group);
+        return Reference.fromString(this.data.group, this.instanceDomain);
     }
 
     public get mentions(): Reference[] {
-        return this.data.mentions.map((m) => Reference.fromString(m));
+        return this.data.mentions.map((m) =>
+            Reference.fromString(m, this.instanceDomain),
+        );
     }
 
     public get quotes(): Reference | null {
-        return this.data.quotes ? Reference.fromString(this.data.quotes) : null;
+        return this.data.quotes
+            ? Reference.fromString(this.data.quotes, this.instanceDomain)
+            : null;
     }
 
     public get repliesTo(): Reference | null {
         return this.data.replies_to
-            ? Reference.fromString(this.data.replies_to)
+            ? Reference.fromString(this.data.replies_to, this.instanceDomain)
             : null;
     }
 

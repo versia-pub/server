@@ -10,7 +10,7 @@ export class InstanceMetadata extends Entity {
     public constructor(
         public override data: z.infer<typeof InstanceMetadataSchema>,
     ) {
-        super(data);
+        super(data, data.domain);
     }
 
     public get logo(): ImageContentFormat | undefined {

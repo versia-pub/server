@@ -26,7 +26,9 @@ import type { User } from "./user.ts";
 
 type ReactionType = InferSelectModel<typeof Reactions> & {
     emoji: typeof Emoji.$type | null;
-    author: InferSelectModel<typeof Users>;
+    author: InferSelectModel<typeof Users> & {
+        instance: InferSelectModel<typeof Instances> | null;
+    };
     note: InferSelectModel<typeof Notes> & {
         author: InferSelectModel<typeof Users> & {
             instance: InferSelectModel<typeof Instances> | null;
@@ -72,7 +74,11 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                         media: true,
                     },
                 },
-                author: true,
+                author: {
+                    with: {
+                        instance: true,
+                    },
+                },
                 note: {
                     with: {
                         author: {
@@ -112,7 +118,11 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
                         media: true,
                     },
                 },
-                author: true,
+                author: {
+                    with: {
+                        instance: true,
+                    },
+                },
                 note: {
                     with: {
                         author: {
@@ -245,37 +255,43 @@ export class Reaction extends BaseInterface<typeof Reactions, ReactionType> {
             noteReference = `${this.data.note.author.instance.domain}:${this.data.note.remoteId}`;
         }
 
-        return new VersiaEntities.Reaction({
-            type: "pub.versia:reactions/Reaction",
-            author: this.data.author.id,
-            created_at: this.data.createdAt.toISOString(),
-            id: this.id,
-            object: noteReference,
-            content: this.hasCustomEmoji()
-                ? `:${this.data.emoji?.shortcode}:`
-                : this.data.emojiText || "",
-            extensions: this.hasCustomEmoji()
-                ? {
-                      "pub.versia:custom_emojis": {
-                          emojis: [
-                              new Emoji(
-                                  this.data.emoji as typeof Emoji.$type,
-                              ).toVersia(),
-                          ],
-                      },
-                  }
-                : undefined,
-        });
+        return new VersiaEntities.Reaction(
+            {
+                type: "pub.versia:reactions/Reaction",
+                author: this.data.author.id,
+                created_at: this.data.createdAt.toISOString(),
+                id: this.id,
+                object: noteReference,
+                content: this.hasCustomEmoji()
+                    ? `:${this.data.emoji?.shortcode}:`
+                    : this.data.emojiText || "",
+                extensions: this.hasCustomEmoji()
+                    ? {
+                          "pub.versia:custom_emojis": {
+                              emojis: [
+                                  new Emoji(
+                                      this.data.emoji as typeof Emoji.$type,
+                                  ).toVersia(),
+                              ],
+                          },
+                      }
+                    : undefined,
+            },
+            this.data.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public toVersiaUnreact(): VersiaEntities.Delete {
-        return new VersiaEntities.Delete({
-            type: "Delete",
-            created_at: new Date().toISOString(),
-            author: this.data.authorId,
-            deleted_type: "pub.versia:reactions/Reaction",
-            deleted: this.id,
-        });
+        return new VersiaEntities.Delete(
+            {
+                type: "Delete",
+                created_at: new Date().toISOString(),
+                author: this.data.authorId,
+                deleted_type: "pub.versia:reactions/Reaction",
+                deleted: this.id,
+            },
+            this.data.author.instance?.domain ?? config.http.base_url.hostname,
+        );
     }
 
     public static async fromVersia(
